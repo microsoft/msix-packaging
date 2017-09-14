@@ -1,0 +1,57 @@
+<VisualStudioProject Name="xqc-basic" ProjectGUID="{C03914F5-AA13-4B1C-A4B0-8FD6560AB574}" ProjectType="Visual C++" Version="9.00">
+  <Platforms>
+    <Platform Name="Win32"/>
+    <Platform Name="x64"/>
+  </Platforms>
+  <Configurations>
+    <Configuration Name="Debug|Win32" ATLMinimizesCRunTimeLibraryUsage="FALSE" CharacterSet="2" ConfigurationType="1" IntermediateDirectory="./$(OutDir)/xqc-basic" OutputDirectory="..\..\build\windows\VC9\$(PlatformName)\Debug" UseOfMFC="0">
+      <Tool Name="VCPreBuildEventTool"/>
+      <Tool Name="VCPreLinkEventTool"/>
+      <Tool Name="VCResourceCompilerTool"/>
+      <Tool Name="VCXMLDataGeneratorTool"/>
+      <Tool Name="VCManagedWrapperGeneratorTool"/>
+      <Tool Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+      <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="../../include,../../src/lexer,../../../xerces-c-src/include,../../../xerces-c-src/src" AssemblerListingLocation="./$(IntDir)/" BasicRuntimeChecks="3" CompileAs="0" DebugInformationFormat="3" MinimalRebuild="TRUE" ObjectFile="./$(IntDir)/" Optimization="0" PrecompiledHeaderFile="./$(IntDir)/xqc-basic.pch" PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE" RuntimeLibrary="3" StringPooling="TRUE" SuppressStartupBanner="TRUE" UsePrecompiledHeader="0" WarningLevel="3"/>
+      <Tool Name="VCLinkerTool" AdditionalDependencies="xqilla23d.lib xerces-c_3d.lib" AdditionalLibraryDirectories="$(OutDir);../../../xerces-c-src/Build/Win32/VC9/$(ConfigurationName)" AdditionalOptions="/machine:x86" GenerateDebugInformation="TRUE" LinkIncremental="2" OptimizeReferences="1" OutputFile="$(OutDir)/xqc-basic.exe" ProgramDatabaseFile="$(OutDir)/xqc-basic.pdb" SuppressStartupBanner="TRUE" TargetMachine="0"/>
+      <Tool Name="VCPostBuildEventTool"/>
+      <Tool Name="VCCustomBuildTool"/></Configuration>
+    <Configuration Name="Release|Win32" ATLMinimizesCRunTimeLibraryUsage="FALSE" CharacterSet="2" ConfigurationType="1" IntermediateDirectory="./$(OutDir)/xqc-basic" OutputDirectory="..\..\build\windows\VC9\$(PlatformName)\Release" UseOfMFC="0">
+      <Tool Name="VCPreBuildEventTool"/>
+      <Tool Name="VCPreLinkEventTool"/>
+      <Tool Name="VCResourceCompilerTool"/>
+      <Tool Name="VCXMLDataGeneratorTool"/>
+      <Tool Name="VCManagedWrapperGeneratorTool"/>
+      <Tool Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+      <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="../../include,../../src/lexer,../../../xerces-c-src/include,../../../xerces-c-src/src" AssemblerListingLocation="./$(IntDir)/" CompileAs="0" DebugInformationFormat="3" EnableFunctionLevelLinking="TRUE" InlineFunctionExpansion="1" MinimalRebuild="TRUE" ObjectFile="./$(IntDir)/" Optimization="2" PrecompiledHeaderFile="./$(IntDir)/xqc-basic.pch" PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE" RuntimeLibrary="2" StringPooling="TRUE" SuppressStartupBanner="TRUE" UsePrecompiledHeader="0" WarningLevel="3"/>
+      <Tool Name="VCLinkerTool" AdditionalDependencies="xqilla23.lib xerces-c_3.lib" AdditionalLibraryDirectories="$(OutDir);../../../xerces-c-src/Build/Win32/VC9/$(ConfigurationName)" AdditionalOptions="/machine:x86" GenerateDebugInformation="TRUE" LinkIncremental="1" OptimizeReferences="2" OutputFile="$(OutDir)/xqc-basic.exe" ProgramDatabaseFile="$(OutDir)/xqc-basic.pdb" SuppressStartupBanner="TRUE" TargetMachine="0"/>
+      <Tool Name="VCPostBuildEventTool"/>
+      <Tool Name="VCCustomBuildTool"/></Configuration>
+    <Configuration Name="Debug|x64" ATLMinimizesCRunTimeLibraryUsage="FALSE" CharacterSet="2" ConfigurationType="1" IntermediateDirectory="./$(OutDir)/xqc-basic" OutputDirectory="..\..\build\windows\VC9\$(PlatformName)\Debug" UseOfMFC="0">
+      <Tool Name="VCPreBuildEventTool"/>
+      <Tool Name="VCPreLinkEventTool"/>
+      <Tool Name="VCResourceCompilerTool"/>
+      <Tool Name="VCXMLDataGeneratorTool"/>
+      <Tool Name="VCManagedWrapperGeneratorTool"/>
+      <Tool Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+      <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="../../include,../../src/lexer,../../../xerces-c-src/include,../../../xerces-c-src/src" AssemblerListingLocation="./$(IntDir)/" BasicRuntimeChecks="3" CompileAs="0" DebugInformationFormat="3" MinimalRebuild="TRUE" ObjectFile="./$(IntDir)/" Optimization="0" PrecompiledHeaderFile="./$(IntDir)/xqc-basic.pch" PreprocessorDefinitions="WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE" RuntimeLibrary="3" StringPooling="TRUE" SuppressStartupBanner="TRUE" UsePrecompiledHeader="0" WarningLevel="3"/>
+      <Tool Name="VCLinkerTool" AdditionalDependencies="xqilla23d.lib xerces-c_3d.lib" AdditionalLibraryDirectories="$(OutDir);../../../xerces-c-src/Build/Win64/VC9/$(ConfigurationName)" AdditionalOptions="/machine:x64" GenerateDebugInformation="TRUE" LinkIncremental="2" OptimizeReferences="1" OutputFile="$(OutDir)/xqc-basic.exe" ProgramDatabaseFile="$(OutDir)/xqc-basic.pdb" SuppressStartupBanner="TRUE" TargetMachine="0"/>
+      <Tool Name="VCPostBuildEventTool"/>
+      <Tool Name="VCCustomBuildTool"/></Configuration>
+    <Configuration Name="Release|x64" ATLMinimizesCRunTimeLibraryUsage="FALSE" CharacterSet="2" ConfigurationType="1" IntermediateDirectory="./$(OutDir)/xqc-basic" OutputDirectory="..\..\build\windows\VC9\$(PlatformName)\Release" UseOfMFC="0">
+      <Tool Name="VCPreBuildEventTool"/>
+      <Tool Name="VCPreLinkEventTool"/>
+      <Tool Name="VCResourceCompilerTool"/>
+      <Tool Name="VCXMLDataGeneratorTool"/>
+      <Tool Name="VCManagedWrapperGeneratorTool"/>
+      <Tool Name="VCAuxiliaryManagedWrapperGeneratorTool"/>
+      <Tool Name="VCCLCompilerTool" AdditionalIncludeDirectories="../../include,../../src/lexer,../../../xerces-c-src/include,../../../xerces-c-src/src" AssemblerListingLocation="./$(IntDir)/" CompileAs="0" DebugInformationFormat="3" EnableFunctionLevelLinking="TRUE" InlineFunctionExpansion="1" MinimalRebuild="TRUE" ObjectFile="./$(IntDir)/" Optimization="2" PrecompiledHeaderFile="./$(IntDir)/xqc-basic.pch" PreprocessorDefinitions="WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CONSOLE" RuntimeLibrary="2" StringPooling="TRUE" SuppressStartupBanner="TRUE" UsePrecompiledHeader="0" WarningLevel="3"/>
+      <Tool Name="VCLinkerTool" AdditionalDependencies="xqilla23.lib xerces-c_3.lib" AdditionalLibraryDirectories="$(OutDir);../../../xerces-c-src/Build/Win64/VC9/$(ConfigurationName)" AdditionalOptions="/machine:x64" GenerateDebugInformation="TRUE" LinkIncremental="1" OptimizeReferences="2" OutputFile="$(OutDir)/xqc-basic.exe" ProgramDatabaseFile="$(OutDir)/xqc-basic.pdb" SuppressStartupBanner="TRUE" TargetMachine="0"/>
+      <Tool Name="VCPostBuildEventTool"/>
+      <Tool Name="VCCustomBuildTool"/></Configuration>
+  </Configurations>
+  <References/>
+  <Files>
+    <File RelativePath="..\..\src\samples\xqc-api\xqc-basic.c"/>
+  </Files>
+  <Globals/>
+</VisualStudioProject>

@@ -1,0 +1,155 @@
+<errors>
+  <error id="applyUpdates-011" reason="result failure"/>
+  <error id="applyUpdates-012" reason="result failure"/>
+  <error id="applyUpdates-013" reason="result failure"/>
+  <error id="applyUpdates-014" reason="result failure"/>
+  <error id="applyUpdates-021" reason="result failure"/>
+  <error id="applyUpdates-022" reason="result failure"/>
+  <error id="applyUpdates-025" reason="result failure"/>
+  <error id="applyUpdates-026" reason="result failure"/>
+  <error id="complex-deletes-q10" reason="result failure"/>
+  <error id="complex-deletes-q3" reason="result failure"/>
+  <error id="complex-deletes-q8" reason="result failure"/>
+  <error id="complex-deletes-q9" reason="result failure"/>
+  <error id="complex-replacevalues-q7" reason="result failure"/>
+  <error id="fn-put-001" reason="error failure"/>
+  <error id="fn-put-002" reason="error failure"/>
+  <error id="fn-put-003" reason="error failure"/>
+  <error id="fn-put-004" reason="error failure"/>
+  <error id="fn-put-005" reason="error failure"/>
+  <error id="fn-put-006" reason="error failure"/>
+  <error id="fn-put-007" reason="error failure"/>
+  <error id="fn-put-009" reason="error failure"/>
+  <error id="fn-put-010" reason="error failure"/>
+  <error id="fn-put-013" reason="error failure"/>
+  <error id="id-comma-expr-037" reason="error failure"/>
+  <error id="id-conditional-expr-037" reason="error failure"/>
+  <error id="id-insert-expr-081-no-inherit" reason="result failure"/>
+  <error id="id-insert-expr-082-no-inherit" reason="result failure"/>
+  <error id="id-insert-expr-083-no-inherit" reason="result failure"/>
+  <error id="id-insert-expr-084-no-inherit" reason="result failure"/>
+  <error id="id-insert-expr-085-no-inherit" reason="result failure"/>
+  <error id="id-insert-expr-086-no-inherit" reason="result failure"/>
+  <error id="id-rename-expr-033-no-inherit" reason="result failure"/>
+  <error id="id-rename-expr-034-no-inherit" reason="result failure"/>
+  <error id="id-replace-expr-045-no-inherit" reason="result failure"/>
+  <error id="id-transform-expr-042" reason="error failure"/>
+  <error id="id-transform-expr-043" reason="error failure"/>
+  <error id="id-transform-expr-044" reason="error failure"/>
+  <error id="id-transform-expr-045" reason="error failure"/>
+  <error id="id-transform-expr-046" reason="error failure"/>
+  <error id="id-transform-expr-047" reason="error failure"/>
+  <error id="id-transform-expr-048" reason="error failure"/>
+  <error id="id-transform-expr-049" reason="error failure"/>
+  <error id="id-transform-expr-050" reason="error failure"/>
+  <error id="id-transform-expr-052" reason="result failure"/>
+  <error id="id-transform-expr-053" reason="result failure"/>
+  <error id="id-typeswitch-expr-038" reason="no error failure"/>
+  <error id="propagateNamespaces02" reason="result failure"/>
+  <error id="propagateNamespaces03" reason="result failure"/>
+  <error id="propagateNamespaces04" reason="result failure"/>
+  <error id="propagateNamespaces06" reason="result failure"/>
+  <error id="put-001" reason="error failure"/>
+  <error id="removeType-valskip-del-001" reason="error failure"/>
+  <error id="removeType-valskip-del-002" reason="error failure"/>
+  <error id="removeType-valskip-del-003" reason="error failure"/>
+  <error id="removeType-valskip-del-004" reason="error failure"/>
+  <error id="removeType-valskip-del-005" reason="error failure"/>
+  <error id="removeType-valskip-ins-001" reason="error failure"/>
+  <error id="removeType-valskip-ins-002" reason="error failure"/>
+  <error id="removeType-valskip-ins-003" reason="error failure"/>
+  <error id="removeType-valskip-ins-004" reason="error failure"/>
+  <error id="removeType-valskip-ins-005" reason="error failure"/>
+  <error id="removeType-valskip-ins-006" reason="error failure"/>
+  <error id="removeType-valskip-ins-007" reason="error failure"/>
+  <error id="removeType-valskip-ins-008" reason="error failure"/>
+  <error id="removeType-valskip-ins-009" reason="error failure"/>
+  <error id="removeType-valskip-ins-010" reason="error failure"/>
+  <error id="removeType-valskip-ins-011" reason="error failure"/>
+  <error id="removeType-valskip-ins-012" reason="error failure"/>
+  <error id="removeType-valskip-ins-013" reason="error failure"/>
+  <error id="removeType-valskip-ren-001" reason="error failure"/>
+  <error id="removeType-valskip-ren-002" reason="error failure"/>
+  <error id="removeType-valskip-ren-003" reason="error failure"/>
+  <error id="removeType-valskip-ren-004" reason="error failure"/>
+  <error id="removeType-valskip-ren-005" reason="error failure"/>
+  <error id="removeType-valskip-ren-006" reason="error failure"/>
+  <error id="removeType-valskip-repnode-001" reason="error failure"/>
+  <error id="removeType-valskip-repnode-002" reason="error failure"/>
+  <error id="removeType-valskip-repnode-003" reason="error failure"/>
+  <error id="removeType-valskip-repnode-004" reason="error failure"/>
+  <error id="removeType-valskip-repnode-005" reason="error failure"/>
+  <error id="removeType-valskip-repnode-006" reason="error failure"/>
+  <error id="revalidate-vallax-del-001" reason="error failure"/>
+  <error id="revalidate-vallax-del-002" reason="error failure"/>
+  <error id="revalidate-vallax-del-003" reason="error failure"/>
+  <error id="revalidate-vallax-del-004" reason="error failure"/>
+  <error id="revalidate-vallax-ins-001" reason="error failure"/>
+  <error id="revalidate-vallax-ins-002" reason="error failure"/>
+  <error id="revalidate-vallax-ins-003" reason="error failure"/>
+  <error id="revalidate-vallax-ins-004" reason="error failure"/>
+  <error id="revalidate-vallax-ins-005" reason="error failure"/>
+  <error id="revalidate-vallax-ins-006" reason="error failure"/>
+  <error id="revalidate-vallax-ins-007" reason="error failure"/>
+  <error id="revalidate-vallax-ren-001" reason="error failure"/>
+  <error id="revalidate-vallax-ren-002" reason="error failure"/>
+  <error id="revalidate-vallax-ren-003" reason="error failure"/>
+  <error id="revalidate-vallax-repnode-001" reason="error failure"/>
+  <error id="revalidate-vallax-repnode-002" reason="error failure"/>
+  <error id="revalidate-vallax-repnode-003" reason="error failure"/>
+  <error id="revalidate-valstrict-del-001" reason="error failure"/>
+  <error id="revalidate-valstrict-del-002" reason="error failure"/>
+  <error id="revalidate-valstrict-del-003" reason="error failure"/>
+  <error id="revalidate-valstrict-del-004" reason="error failure"/>
+  <error id="revalidate-valstrict-ins-001" reason="error failure"/>
+  <error id="revalidate-valstrict-ins-002" reason="error failure"/>
+  <error id="revalidate-valstrict-ins-003" reason="error failure"/>
+  <error id="revalidate-valstrict-ins-004" reason="error failure"/>
+  <error id="revalidate-valstrict-ins-005" reason="error failure"/>
+  <error id="revalidate-valstrict-ins-006" reason="error failure"/>
+  <error id="revalidate-valstrict-ins-007" reason="error failure"/>
+  <error id="revalidate-valstrict-ren-001" reason="error failure"/>
+  <error id="revalidate-valstrict-ren-002" reason="error failure"/>
+  <error id="revalidate-valstrict-ren-003" reason="error failure"/>
+  <error id="revalidate-valstrict-repnode-001" reason="error failure"/>
+  <error id="revalidate-valstrict-repnode-002" reason="error failure"/>
+  <error id="revalidate-valstrict-repnode-003" reason="error failure"/>
+  <error id="revalidate-valtrans-ins-001" reason="error failure"/>
+  <error id="revalidate-valtrans-ins-002" reason="error failure"/>
+  <error id="revalidate-valtrans-ins-003" reason="error failure"/>
+  <error id="revalidation-declaration-01-fail" reason="no error failure"/>
+  <error id="revalidation-declaration-03-fail" reason="no error failure"/>
+  <error id="revalidation-declaration-05-fail" reason="no error failure"/>
+  <error id="setToUntyped-001" reason="error failure"/>
+  <error id="setToUntyped-002" reason="error failure"/>
+  <error id="setToUntyped-003" reason="error failure"/>
+  <error id="setToUntyped-004" reason="error failure"/>
+  <error id="setToUntyped-005" reason="error failure"/>
+  <error id="setToUntyped-006" reason="error failure"/>
+  <error id="setToUntyped-007" reason="error failure"/>
+  <error id="setToUntyped-008" reason="error failure"/>
+  <error id="setToUntyped-009" reason="error failure"/>
+  <error id="setToUntyped-010" reason="error failure"/>
+  <error id="stf-delete-01" reason="no error failure"/>
+  <error id="stf-insert-01" reason="no error failure"/>
+  <error id="stf-insert-02" reason="no error failure"/>
+  <error id="stf-insert-after-01" reason="no error failure"/>
+  <error id="stf-insert-after-02" reason="no error failure"/>
+  <error id="stf-insert-after-03" reason="no error failure"/>
+  <error id="stf-insert-into-01" reason="no error failure"/>
+  <error id="stf-insert-into-02" reason="no error failure"/>
+  <error id="stf-insert-into-03" reason="no error failure"/>
+  <error id="stf-insert-into-04" reason="no error failure"/>
+  <error id="stf-rename-01" reason="no error failure"/>
+  <error id="stf-rename-02" reason="no error failure"/>
+  <error id="stf-replace-node-01" reason="no error failure"/>
+  <error id="stf-replace-node-02" reason="no error failure"/>
+  <error id="stf-replace-node-04" reason="no error failure"/>
+  <error id="stf-replace-node-05" reason="no error failure"/>
+  <error id="stf-replace-node-06" reason="no error failure"/>
+  <error id="stf-replace-node-07" reason="no error failure"/>
+  <error id="stf-replace-value-of-node-01" reason="no error failure"/>
+  <error id="stf-replace-value-of-node-02" reason="no error failure"/>
+  <error id="stf-transform-01" reason="no error failure"/>
+  <error id="stf-transform-02" reason="no error failure"/>
+</errors>

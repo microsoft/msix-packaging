@@ -1,0 +1,1265 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build" ToolsVersion="4.0">
+  <ItemGroup Label="ProjectConfigurations" >
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Static Debug|Win32">
+      <Configuration>Static Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Static Debug|x64">
+      <Configuration>Static Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Static Release|Win32">
+      <Configuration>Static Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Static Release|x64">
+      <Configuration>Static Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals" >
+  <ProjectGuid>{63E85107-41E0-4FC7-8083-40E85861B426}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props"/>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration" >
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Static Debug|Win32'" Label="Configuration" >
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration" >
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Static Release|Win32'" Label="Configuration" >
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration" >
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Static Debug|x64'" Label="Configuration" >
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration" >
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Static Release|x64'" Label="Configuration" >
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props"/>
+  <ImportGroup Label="ExtensionSettings" >
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets" >
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+    </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Static Debug|Win32'" Label="PropertySheets" >
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+    </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets" >
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+    </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Static Release|Win32'" Label="PropertySheets" >
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+    </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets" >
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+    </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Static Debug|x64'" Label="PropertySheets" >
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+    </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets" >
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+    </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Static Release|x64'" Label="PropertySheets" >
+    <Import Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" />
+    </ImportGroup>
+  <PropertyGroup Label="UserMacros"/>
+  <PropertyGroup >
+    <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" >..\..\build\windows\VC11\$(Platform)\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" >./$(OutDir)xqilla\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" >false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" >xqilla23d</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" >.dll</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Static Debug|Win32'" >..\..\build\windows\VC11\$(Platform)\Static Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Static Debug|Win32'" >./$(OutDir)xqilla\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Static Debug|Win32'" >false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Static Debug|Win32'" >xqilla23sd</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Static Debug|Win32'" >.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" >..\..\build\windows\VC11\$(Platform)\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" >./$(OutDir)xqilla\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" >false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" >xqilla23</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" >.dll</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Static Release|Win32'" >..\..\build\windows\VC11\$(Platform)\Static Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Static Release|Win32'" >./$(OutDir)xqilla\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Static Release|Win32'" >false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Static Release|Win32'" >xqilla23s</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Static Release|Win32'" >.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" >..\..\build\windows\VC11\$(Platform)\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" >./$(OutDir)xqilla\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" >false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" >xqilla23d</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" >.dll</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Static Debug|x64'" >..\..\build\windows\VC11\$(Platform)\Static Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Static Debug|x64'" >./$(OutDir)xqilla\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Static Debug|x64'" >false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Static Debug|x64'" >xqilla23sd</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Static Debug|x64'" >.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'" >..\..\build\windows\VC11\$(Platform)\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'" >./$(OutDir)xqilla\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'" >false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'" >xqilla23</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'" >.dll</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Static Release|x64'" >..\..\build\windows\VC11\$(Platform)\Static Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Static Release|x64'" >./$(OutDir)xqilla\</IntDir>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Static Release|x64'" >false</LinkIncremental>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Static Release|x64'" >xqilla23s</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Static Release|x64'" >.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" >
+    <ClCompile >
+      <Optimization>Disabled</Optimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <AdditionalIncludeDirectories>../../include;../../src/lexer;../../../xerces-c-src/include;../../../xerces-c-src/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;_USRDLL;XQILLA_APIS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>./$(OutDir)xqilla.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(OutDir)xqilla/</AssemblerListingLocation>
+      <ObjectFileName>$(OutDir)xqilla/</ObjectFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat >ProgramDatabase</DebugInformationFormat>
+      <BasicRuntimeChecks >EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link >
+      <AdditionalOptions >/machine:x86 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>xerces-c_3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../../xerces-c-src/Build/Win32/VC9/$(ConfigurationName);../../../xerces-c-src/Build/Win32/VC10/$(ConfigurationName);../../../xerces-c-src/Build/Win32/VC11/$(ConfigurationName);../lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)xqilla23d.pdb</ProgramDatabaseFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ImportLibrary >$(OutDir)xqilla23d.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <TargetMachine>NotSet</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static Debug|Win32'" >
+    <ClCompile >
+      <Optimization>Disabled</Optimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <AdditionalIncludeDirectories>../../include;../../src/lexer;../../../xerces-c-src/include;../../../xerces-c-src/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;_LIB;XQILLA_API=;XERCES_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>./$(OutDir)xqilla.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(OutDir)xqilla/</AssemblerListingLocation>
+      <ObjectFileName>$(OutDir)xqilla/</ObjectFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat >ProgramDatabase</DebugInformationFormat>
+      <BasicRuntimeChecks >EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib >
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalOptions >/machine:x86 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" >
+    <ClCompile >
+      <Optimization>MaxSpeed</Optimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>../../include;../../src/lexer;../../../xerces-c-src/include;../../../xerces-c-src/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_USRDLL;XQILLA_APIS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>./$(OutDir)xqilla.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(OutDir)xqilla/</AssemblerListingLocation>
+      <ObjectFileName>$(OutDir)xqilla/</ObjectFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat >ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link >
+      <AdditionalOptions >/machine:x86 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>xerces-c_3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../../xerces-c-src/Build/Win32/VC9/$(ConfigurationName);../../../xerces-c-src/Build/Win32/VC10/$(ConfigurationName);../../../xerces-c-src/Build/Win32/VC11/$(ConfigurationName);../lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)xqilla23.pdb</ProgramDatabaseFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ImportLibrary >$(OutDir)xqilla23.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <TargetMachine>NotSet</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static Release|Win32'" >
+    <ClCompile >
+      <Optimization>MaxSpeed</Optimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>../../include;../../src/lexer;../../../xerces-c-src/include;../../../xerces-c-src/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_LIB;XQILLA_API=;XERCES_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>./$(OutDir)xqilla.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(OutDir)xqilla/</AssemblerListingLocation>
+      <ObjectFileName>$(OutDir)xqilla/</ObjectFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat >ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib >
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalOptions >/machine:x86 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" >
+    <ClCompile >
+      <Optimization>Disabled</Optimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <AdditionalIncludeDirectories>../../include;../../src/lexer;../../../xerces-c-src/include;../../../xerces-c-src/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;_USRDLL;XQILLA_APIS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>./$(OutDir)xqilla.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(OutDir)xqilla/</AssemblerListingLocation>
+      <ObjectFileName>$(OutDir)xqilla/</ObjectFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat >ProgramDatabase</DebugInformationFormat>
+      <BasicRuntimeChecks >EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link >
+      <AdditionalOptions >/machine:x64 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>xerces-c_3d.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../../xerces-c-src/Build/Win64/VC9/$(ConfigurationName);../../../xerces-c-src/Build/Win64/VC10/$(ConfigurationName);../../../xerces-c-src/Build/Win64/VC11/$(ConfigurationName);../lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)xqilla23d.pdb</ProgramDatabaseFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ImportLibrary >$(OutDir)xqilla23d.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <TargetMachine>NotSet</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static Debug|x64'" >
+    <ClCompile >
+      <Optimization>Disabled</Optimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <AdditionalIncludeDirectories>../../include;../../src/lexer;../../../xerces-c-src/include;../../../xerces-c-src/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;_DEBUG;_CRT_SECURE_NO_WARNINGS;_LIB;XQILLA_API=;XERCES_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>./$(OutDir)xqilla.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(OutDir)xqilla/</AssemblerListingLocation>
+      <ObjectFileName>$(OutDir)xqilla/</ObjectFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat >ProgramDatabase</DebugInformationFormat>
+      <BasicRuntimeChecks >EnableFastChecks</BasicRuntimeChecks>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib >
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalOptions >/machine:x64 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" >
+    <ClCompile >
+      <Optimization>MaxSpeed</Optimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>../../include;../../src/lexer;../../../xerces-c-src/include;../../../xerces-c-src/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_USRDLL;XQILLA_APIS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>./$(OutDir)xqilla.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(OutDir)xqilla/</AssemblerListingLocation>
+      <ObjectFileName>$(OutDir)xqilla/</ObjectFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat >ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Link >
+      <AdditionalOptions >/machine:x64 %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>xerces-c_3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>../../../xerces-c-src/Build/Win64/VC9/$(ConfigurationName);../../../xerces-c-src/Build/Win64/VC10/$(ConfigurationName);../../../xerces-c-src/Build/Win64/VC11/$(ConfigurationName);../lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <ProgramDatabaseFile>$(OutDir)xqilla23.pdb</ProgramDatabaseFile>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <ImportLibrary >$(OutDir)xqilla23.lib</ImportLibrary>
+      <OptimizeReferences>true</OptimizeReferences>
+      <TargetMachine>NotSet</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Static Release|x64'" >
+    <ClCompile >
+      <Optimization>MaxSpeed</Optimization>
+      <MinimalRebuild>true</MinimalRebuild>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>../../include;../../src/lexer;../../../xerces-c-src/include;../../../xerces-c-src/src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_WINDOWS;NDEBUG;_CRT_SECURE_NO_WARNINGS;_LIB;XQILLA_API=;XERCES_STATIC_LIBRARY;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <PrecompiledHeaderOutputFile>./$(OutDir)xqilla.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>$(OutDir)xqilla/</AssemblerListingLocation>
+      <ObjectFileName>$(OutDir)xqilla/</ObjectFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat >ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+    </ClCompile>
+    <Lib >
+      <OutputFile>$(OutDir)$(TargetName)$(TargetExt)</OutputFile>
+      <AdditionalOptions >/machine:x64 %(AdditionalOptions)</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup >
+    <ClInclude Include="..\..\include\xqc.h" />
+    <ClInclude Include="..\..\include\xqilla\xqilla-dom3.hpp" />
+    <ClInclude Include="..\..\include\xqilla\xqilla-simple.hpp" />
+    <ClInclude Include="..\..\include\xqilla\xqilla-xqc.h" />
+    <ClInclude Include="..\..\include\xqilla\ast\LocationInfo.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQCastableAs.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQCastAs.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQContextItem.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQCopy.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQCopyOf.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQFunction.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\ASTNode.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQIf.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\ASTNodeImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQInlineFunction.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQLiteral.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQNav.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQOperator.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQSequence.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQStep.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQTreatAs.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQFunctionCoercion.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQVariable.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\StaticAnalysis.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\StaticType.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\NumericFunction.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQDOMConstructor.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQDocumentConstructor.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQElementConstructor.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQAttributeConstructor.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQNamespaceConstructor.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQPIConstructor.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQCommentConstructor.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQTextConstructor.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQFunctionCall.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQFunctionConversion.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQFunctionDeref.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQPartialApply.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQFunctionRef.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQGlobalVariable.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQOrderingChange.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQQuantified.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQTypeswitch.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQValidate.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQAtomize.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQEffectiveBooleanValue.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQMap.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQAnalyzeString.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\ConvertFunctionArg.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQDocumentOrder.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQPredicate.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQReturn.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\TupleNode.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\ContextTuple.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\ForTuple.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\LetTuple.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\OrderByTuple.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\WhereTuple.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\CountTuple.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQNamespaceBinding.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQCallTemplate.hpp" />
+    <ClInclude Include="..\..\include\xqilla\ast\XQApplyTemplates.hpp" />
+    <ClInclude Include="..\..\include\xqilla\debug\InteractiveDebugger.hpp" />
+    <ClInclude Include="..\..\include\xqilla\debug\InputParser.hpp" />
+    <ClInclude Include="..\..\include\xqilla\debug\DebugListener.hpp" />
+    <ClInclude Include="..\..\include\xqilla\debug\DebugHookDecorator.hpp" />
+    <ClInclude Include="..\..\include\xqilla\debug\ASTDebugHook.hpp" />
+    <ClInclude Include="..\..\include\xqilla\debug\TupleDebugHook.hpp" />
+    <ClInclude Include="..\..\include\xqilla\debug\StackFrame.hpp" />
+    <ClInclude Include="..\..\include\xqilla\events\ContentSequenceFilter.hpp" />
+    <ClInclude Include="..\..\include\xqilla\events\EventGenerator.hpp" />
+    <ClInclude Include="..\..\include\xqilla\events\EventHandler.hpp" />
+    <ClInclude Include="..\..\include\xqilla\events\EventSerializer.hpp" />
+    <ClInclude Include="..\..\include\xqilla\events\NSFixupFilter.hpp" />
+    <ClInclude Include="..\..\include\xqilla\events\QueryPathTreeFilter.hpp" />
+    <ClInclude Include="..\..\include\xqilla\events\SequenceBuilder.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fastxdm\FastXDMConfiguration.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTContains.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTSelection.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTWords.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTOr.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTAnd.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTMildnot.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTUnaryNot.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\AllMatches.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\TokenInfo.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\Tokenizer.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\DefaultTokenizer.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\TokenStore.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\DefaultTokenStore.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTOption.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTOrder.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTRange.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTDistance.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTScope.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTContent.hpp" />
+    <ClInclude Include="..\..\include\xqilla\fulltext\FTWindow.hpp" />
+    <ClInclude Include="..\..\include\xqilla\axis\NodeTest.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\ContextHelpers.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\DynamicContext.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\StaticContext.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\ItemFactory.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\MessageListener.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\ModuleResolver.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\URIResolver.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\VariableStore.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\Scope.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\VarHashEntry.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\VariableTypeStore.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\Collation.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\ExternalFunctionResolver.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\UpdateFactory.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\RegexGroupStore.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\impl\CollationImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\impl\VarHashEntryImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\impl\VarStoreImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\impl\VariableStoreTemplate.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\impl\CodepointCollation.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\impl\XQContextImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\impl\XQDynamicContextImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\context\impl\ItemFactoryImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\dom-api\impl\XQillaNSResolverImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\dom-api\XPath2Result.hpp" />
+    <ClInclude Include="..\..\include\xqilla\dom-api\XQillaExpression.hpp" />
+    <ClInclude Include="..\..\include\xqilla\dom-api\XQillaNSResolver.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\XQillaException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\ContextException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\ASTException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\DynamicErrorException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\FunctionException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\IllegalArgumentException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\ItemException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\NamespaceLookupException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\StaticErrorException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\TypeErrorException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\TypeNotFoundException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\XMLParseException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\XPath2ErrorException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\XPath2TypeCastException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\XPath2TypeMatchException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\XQException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\QueryInterruptedException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\exceptions\QueryTimeoutException.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\EXSLTMathFunction.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\ExternalFunction.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionLookup.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionAnalyzeString.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionAbs.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionAcos.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionAdjustDateTimeToTimezone.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionAdjustDateToTimezone.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionAdjustTimeToTimezone.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionAsin.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionAtan.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionBaseURI.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionCaseFold.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionCeiling.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionCodepointsToString.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionCollection.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionCompare.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionConcat.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionContains.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionCos.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionCount.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionCurrentDate.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionCurrentDateTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionCurrentTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionDateTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionDayFromDate.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionDayFromDateTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionDaysFromDuration.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionDefaultCollation.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionDistinctValues.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionDocAvailable.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionDoc.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionDocument.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionDocumentURI.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionEmpty.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionEndsWith.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionError.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionExp.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionFloor.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionFunctionArity.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionFunctionName.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionHoursFromDateTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionHoursFromDuration.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionHoursFromTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionId.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionIdref.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionImplicitTimezone.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionLang.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionLast.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionLocalNameFromQName.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionLocalname.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionLog.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionLowerCase.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionMatches.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionMinutesFromDateTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionMinutesFromDuration.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionMinutesFromTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionMonthFromDate.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionMonthFromDateTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionMonthsFromDuration.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionName.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionNamespaceURIFromQName.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionNamespaceUri.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionNilled.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionNodeName.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionNormalizeSpace.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionNormalizeUnicode.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionNot.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionNumber.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionParseHTML.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionParseJSON.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionExplain.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionSerializeJSON.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionSin.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionSqrt.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionParseXML.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionPosition.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionPower.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionPrefixFromQName.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionQName.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionRegexGroup.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionReplace.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionResolveURI.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionRoot.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionRoundHalfToEven.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionRound.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionSecondsFromDateTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionSecondsFromDuration.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionSecondsFromTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionSentences.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionStartsWith.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionStaticBaseURI.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionString.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionStringLength.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionStringToCodepoints.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionSubstring.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionTan.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionTimezoneFromDate.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionTimezoneFromDateTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionTimezoneFromTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionTokenize.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionTrace.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionHead.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionTail.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionUnordered.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionUnparsedText.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionUpperCase.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionWords.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionYearFromDate.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionYearFromDateTime.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionYearsFromDuration.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FuncFactory.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FuncFactoryTemplate.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\RegExpFunction.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\XQUserFunction.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\FunctionSignature.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\XQillaFunction.hpp" />
+    <ClInclude Include="..\..\include\xqilla\functions\BuiltInModules.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATAnySimpleType.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATAnyURIOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATBase64BinaryOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATBooleanOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATDateOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATDateTimeOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATDecimalOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATDoubleOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATDurationOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATFloatOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATGDayOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATGMonthDayOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATGMonthOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATGYearMonthOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATGYearOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATHexBinaryOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATNotationOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATQNameOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATStringOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATTimeOrDerived.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\ATUntypedAtomic.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\AnyAtomicType.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\DateOrTimeType.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\FunctionRef.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\Item.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\Node.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\Numeric.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\Timezone.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\DatatypeLookup.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\DatatypeFactory.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATBooleanOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATDecimalOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATDoubleOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATFloatOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATQNameOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATDurationOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATDateTimeOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATDateOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATTimeOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATGDayOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATGMonthDayOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATGMonthOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATGYearMonthOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\items\impl\ATGYearOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\mapm\m_apm.h" />
+    <ClInclude Include="..\..\include\xqilla\operators\And.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\ArithmeticOperator.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\ComparisonOperator.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\Divide.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\Equals.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\Except.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\GeneralComp.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\GreaterThanEqual.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\GreaterThan.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\IntegerDivide.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\Intersect.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\LessThanEqual.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\LessThan.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\Minus.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\Mod.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\Multiply.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\NodeComparison.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\NotEquals.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\OrderComparison.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\Or.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\Plus.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\UnaryMinus.hpp" />
+    <ClInclude Include="..\..\include\xqilla\operators\Union.hpp" />
+    <ClInclude Include="..\..\include\xqilla\optimizer\Optimizer.hpp" />
+    <ClInclude Include="..\..\include\xqilla\optimizer\ASTCopier.hpp" />
+    <ClInclude Include="..\..\include\xqilla\optimizer\ASTReleaser.hpp" />
+    <ClInclude Include="..\..\include\xqilla\optimizer\ASTVisitor.hpp" />
+    <ClInclude Include="..\..\include\xqilla\optimizer\PartialEvaluator.hpp" />
+    <ClInclude Include="..\..\include\xqilla\optimizer\StaticTyper.hpp" />
+    <ClInclude Include="..\..\include\xqilla\optimizer\QueryPathNode.hpp" />
+    <ClInclude Include="..\..\include\xqilla\optimizer\QueryPathTreeGenerator.hpp" />
+    <ClInclude Include="..\..\include\xqilla\optimizer\ASTToXML.hpp" />
+    <ClInclude Include="..\..\include\xqilla\parser\QName.hpp" />
+    <ClInclude Include="..\..\include\xqilla\runtime\ClosureResult.hpp" />
+    <ClInclude Include="..\..\include\xqilla\runtime\TupleResult.hpp" />
+    <ClInclude Include="..\..\include\xqilla\runtime\Sequence.hpp" />
+    <ClInclude Include="..\..\include\xqilla\runtime\ResultBuffer.hpp" />
+    <ClInclude Include="..\..\include\xqilla\runtime\ResultBufferImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\runtime\Result.hpp" />
+    <ClInclude Include="..\..\include\xqilla\runtime\ResultImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\runtime\SequenceResult.hpp" />
+    <ClInclude Include="..\..\include\xqilla\runtime\EmptyResult.hpp" />
+    <ClInclude Include="..\..\include\xqilla\schema\DocumentCache.hpp" />
+    <ClInclude Include="..\..\include\xqilla\schema\SequenceType.hpp" />
+    <ClInclude Include="..\..\include\xqilla\schema\AnyAtomicTypeDatatypeValidator.hpp" />
+    <ClInclude Include="..\..\include\xqilla\schema\DocumentCacheImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\schema\SchemaValidatorFilter.hpp" />
+    <ClInclude Include="..\..\include\xqilla\simple-api\XQilla.hpp" />
+    <ClInclude Include="..\..\include\xqilla\simple-api\XQillaConfiguration.hpp" />
+    <ClInclude Include="..\..\include\xqilla\simple-api\XQQuery.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\FunctionPut.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\PendingUpdateList.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\UApplyUpdates.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\UDelete.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\URename.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\UReplace.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\UReplaceValueOf.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\UInsertAsFirst.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\UInsertAsLast.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\UInsertInto.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\UInsertAfter.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\UInsertBefore.hpp" />
+    <ClInclude Include="..\..\include\xqilla\update\UTransform.hpp" />
+    <ClInclude Include="..\..\include\xqilla\utils\NumUtils.hpp" />
+    <ClInclude Include="..\..\include\xqilla\utils\XPath2NSUtils.hpp" />
+    <ClInclude Include="..\..\include\xqilla\utils\XPath2Utils.hpp" />
+    <ClInclude Include="..\..\include\xqilla\utils\XMLChCompare.hpp" />
+    <ClInclude Include="..\..\include\xqilla\utils\XStr.hpp" />
+    <ClInclude Include="..\..\include\xqilla\utils\ContextUtils.hpp" />
+    <ClInclude Include="..\..\include\xqilla\utils\UTF8Str.hpp" />
+    <ClInclude Include="..\..\include\xqilla\utils\XQillaPlatformUtils.hpp" />
+    <ClInclude Include="..\..\include\xqilla\utils\utf8proc.h" />
+    <ClInclude Include="..\..\include\xqilla\utils\UnicodeTransformer.hpp" />
+    <ClInclude Include="..\..\include\xqilla\utils\DelayedModule.hpp" />
+    <ClInclude Include="..\..\include\xqilla\framework\ReferenceCounted.hpp" />
+    <ClInclude Include="..\..\include\xqilla\framework\XPath2MemoryManager.hpp" />
+    <ClInclude Include="..\..\include\xqilla\framework\BaseMemoryManager.hpp" />
+    <ClInclude Include="..\..\include\xqilla\framework\ProxyMemoryManager.hpp" />
+    <ClInclude Include="..\..\include\xqilla\framework\StringPool.hpp" />
+    <ClInclude Include="..\..\include\xqilla\framework\XPath2MemoryManagerImpl.hpp" />
+    <ClInclude Include="..\..\include\xqilla\framework\XQillaExport.hpp" />
+    <ClInclude Include="..\..\include\xqilla\xerces\XercesConfiguration.hpp" />
+    <ClInclude Include="..\..\include\xqilla\xqts\TestSuiteParser.hpp" />
+    <ClInclude Include="..\..\include\xqilla\xqts\TestSuiteResultListener.hpp" />
+    <ClInclude Include="..\..\include\xqilla\xqts\TestSuiteRunner.hpp" />
+    <ClInclude Include="..\..\src\context\impl\VarTypeStoreImpl.hpp" />
+    <ClInclude Include="..\..\src\dom-api\XPath2NodeSerializer.hpp" />
+    <ClInclude Include="..\..\src\dom-api\XQillaImplementation.hpp" />
+    <ClInclude Include="..\..\src\dom-api\impl\XPath2ResultImpl.hpp" />
+    <ClInclude Include="..\..\src\dom-api\impl\XPathDocumentImpl.hpp" />
+    <ClInclude Include="..\..\src\dom-api\impl\XPathNamespaceImpl.hpp" />
+    <ClInclude Include="..\..\src\dom-api\impl\XQillaBuilderImpl.hpp" />
+    <ClInclude Include="..\..\src\dom-api\impl\XQillaDocumentImpl.hpp" />
+    <ClInclude Include="..\..\src\dom-api\impl\XQillaExpressionImpl.hpp" />
+    <ClInclude Include="..\..\src\dom-api\impl\XQillaXMLGrammarPoolImpl.hpp" />
+    <ClInclude Include="..\..\src\events\NoInheritFilter.hpp" />
+    <ClInclude Include="..\..\src\exceptions\InvalidLexicalSpaceException.hpp" />
+    <ClInclude Include="..\..\src\exceptions\MiscException.hpp" />
+    <ClInclude Include="..\..\src\fastxdm\FastXDMDocument.hpp" />
+    <ClInclude Include="..\..\src\fastxdm\FastXDMNodeImpl.hpp" />
+    <ClInclude Include="..\..\src\fastxdm\FastXDMSequenceBuilder.hpp" />
+    <ClInclude Include="..\..\src\fastxdm\FastXDMUpdateFactory.hpp" />
+    <ClInclude Include="..\..\src\functions\CoreModule.hpp" />
+    <ClInclude Include="..\..\src\functions\FnModule.hpp" />
+    <ClInclude Include="..\..\src\items\DatatypeFactoryTemplate.hpp" />
+    <ClInclude Include="..\..\src\items\impl\ATAnySimpleTypeImpl.hpp" />
+    <ClInclude Include="..\..\src\items\impl\ATAnyURIOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\src\items\impl\ATBase64BinaryOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\src\items\impl\ATHexBinaryOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\src\items\impl\ATNotationOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\src\items\impl\ATStringOrDerivedImpl.hpp" />
+    <ClInclude Include="..\..\src\items\impl\ATUntypedAtomicImpl.hpp" />
+    <ClInclude Include="..\..\src\items\impl\FunctionRefImpl.hpp" />
+    <ClInclude Include="..\..\src\lexer\FlexLexer.h" />
+    <ClInclude Include="..\..\src\lexer\XQLexer.hpp" />
+    <ClInclude Include="..\..\src\lexer\XSLT2Lexer.hpp" />
+    <ClInclude Include="..\..\src\mapm\m_apm_lc.h" />
+    <ClInclude Include="..\..\src\parser\XQParser.hpp" />
+    <ClInclude Include="..\..\src\schema\FaxppDocumentCacheImpl.hpp" />
+    <ClInclude Include="..\..\src\utils\DateUtils.hpp" />
+    <ClInclude Include="..\..\src\utils\utf8proc\utf8proc_data.h" />
+    <ClInclude Include="..\..\src\xerces\AncestorAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\AncestorOrSelfAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\AttributeAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\Axis.hpp" />
+    <ClInclude Include="..\..\src\xerces\ChildAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\DescendantAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\DescendantOrSelfAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\FollowingAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\FollowingSiblingAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\NamespaceAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\ParentAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\PrecedingAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\PrecedingSiblingAxis.hpp" />
+    <ClInclude Include="..\..\src\xerces\XercesNodeImpl.hpp" />
+    <ClInclude Include="..\..\src\xerces\XercesSequenceBuilder.hpp" />
+    <ClInclude Include="..\..\src\xerces\XercesURIResolver.hpp" />
+    <ClInclude Include="..\..\src\xerces\XercesUpdateFactory.hpp" />
+    <ClInclude Include="..\..\src\yajl\yajl_buf.h" />
+    <ClInclude Include="..\..\src\yajl\yajl_common.h" />
+    <ClInclude Include="..\..\src\yajl\yajl_encode.h" />
+    <ClInclude Include="..\..\src\yajl\yajl_gen.h" />
+    <ClInclude Include="..\..\src\yajl\yajl_lex.h" />
+    <ClInclude Include="..\..\src\yajl\yajl_parse.h" />
+    <ClInclude Include="..\..\src\yajl\yajl_parser.h" />
+    <ClInclude Include="..\..\src\xqc\XQillaXQCImplementation.hpp" />
+    <ClInclude Include="..\..\src\xqc\XQillaXQCStaticContext.hpp" />
+    <ClInclude Include="..\..\src\xqc\XQillaXQCDynamicContext.hpp" />
+    <ClInclude Include="..\..\src\xqc\XQillaXQCExpression.hpp" />
+    <ClInclude Include="..\..\src\xqc\XQillaXQCSequence.hpp" />
+    <ClInclude Include="..\..\src\xqc\XQillaXQCInputStream.hpp" />
+  </ItemGroup>
+  <ItemGroup >
+    <ClCompile Include="..\..\src\ast\ASTNodeImpl.cpp" />
+    <ClCompile Include="..\..\src\ast\TupleNode.cpp" />
+    <ClCompile Include="..\..\src\ast\ContextTuple.cpp" />
+    <ClCompile Include="..\..\src\ast\ConvertFunctionArg.cpp" />
+    <ClCompile Include="..\..\src\ast\ForTuple.cpp" />
+    <ClCompile Include="..\..\src\ast\LetTuple.cpp" />
+    <ClCompile Include="..\..\src\ast\NumericFunction.cpp" />
+    <ClCompile Include="..\..\src\ast\OrderByTuple.cpp" />
+    <ClCompile Include="..\..\src\ast\StaticAnalysis.cpp" />
+    <ClCompile Include="..\..\src\ast\StaticType.cpp" />
+    <ClCompile Include="..\..\src\ast\WhereTuple.cpp" />
+    <ClCompile Include="..\..\src\ast\CountTuple.cpp" />
+    <ClCompile Include="..\..\src\ast\XQAnalyzeString.cpp" />
+    <ClCompile Include="..\..\src\ast\XQApplyTemplates.cpp" />
+    <ClCompile Include="..\..\src\ast\XQAtomize.cpp" />
+    <ClCompile Include="..\..\src\ast\XQEffectiveBooleanValue.cpp" />
+    <ClCompile Include="..\..\src\ast\XQMap.cpp" />
+    <ClCompile Include="..\..\src\ast\XQAttributeConstructor.cpp" />
+    <ClCompile Include="..\..\src\ast\XQNamespaceConstructor.cpp" />
+    <ClCompile Include="..\..\src\ast\XQCallTemplate.cpp" />
+    <ClCompile Include="..\..\src\ast\XQCastAs.cpp" />
+    <ClCompile Include="..\..\src\ast\XQCastableAs.cpp" />
+    <ClCompile Include="..\..\src\ast\XQCommentConstructor.cpp" />
+    <ClCompile Include="..\..\src\ast\XQContextItem.cpp" />
+    <ClCompile Include="..\..\src\ast\XQCopy.cpp" />
+    <ClCompile Include="..\..\src\ast\XQCopyOf.cpp" />
+    <ClCompile Include="..\..\src\ast\XQDOMConstructor.cpp" />
+    <ClCompile Include="..\..\src\ast\XQDocumentConstructor.cpp" />
+    <ClCompile Include="..\..\src\ast\XQDocumentOrder.cpp" />
+    <ClCompile Include="..\..\src\ast\XQElementConstructor.cpp" />
+    <ClCompile Include="..\..\src\ast\XQFunction.cpp" />
+    <ClCompile Include="..\..\src\ast\XQFunctionCall.cpp" />
+    <ClCompile Include="..\..\src\ast\XQFunctionConversion.cpp" />
+    <ClCompile Include="..\..\src\ast\XQFunctionDeref.cpp" />
+    <ClCompile Include="..\..\src\ast\XQPartialApply.cpp" />
+    <ClCompile Include="..\..\src\ast\XQFunctionRef.cpp" />
+    <ClCompile Include="..\..\src\ast\XQGlobalVariable.cpp" />
+    <ClCompile Include="..\..\src\ast\XQIf.cpp" />
+    <ClCompile Include="..\..\src\ast\XQInlineFunction.cpp" />
+    <ClCompile Include="..\..\src\ast\XQLiteral.cpp" />
+    <ClCompile Include="..\..\src\ast\XQNamespaceBinding.cpp" />
+    <ClCompile Include="..\..\src\ast\XQNav.cpp" />
+    <ClCompile Include="..\..\src\ast\XQOperator.cpp" />
+    <ClCompile Include="..\..\src\ast\XQOrderingChange.cpp" />
+    <ClCompile Include="..\..\src\ast\XQPIConstructor.cpp" />
+    <ClCompile Include="..\..\src\ast\XQPredicate.cpp" />
+    <ClCompile Include="..\..\src\ast\XQQuantified.cpp" />
+    <ClCompile Include="..\..\src\ast\XQReturn.cpp" />
+    <ClCompile Include="..\..\src\ast\XQSequence.cpp" />
+    <ClCompile Include="..\..\src\ast\XQStep.cpp" />
+    <ClCompile Include="..\..\src\ast\XQTextConstructor.cpp" />
+    <ClCompile Include="..\..\src\ast\XQTreatAs.cpp" />
+    <ClCompile Include="..\..\src\ast\XQFunctionCoercion.cpp" />
+    <ClCompile Include="..\..\src\ast\XQTypeswitch.cpp" />
+    <ClCompile Include="..\..\src\ast\XQValidate.cpp" />
+    <ClCompile Include="..\..\src\ast\XQVariable.cpp" />
+    <ClCompile Include="..\..\src\axis\NodeTest.cpp" />
+    <ClCompile Include="..\..\src\context\UpdateFactory.cpp" />
+    <ClCompile Include="..\..\src\context\impl\CodepointCollation.cpp" />
+    <ClCompile Include="..\..\src\context\impl\CollationImpl.cpp" />
+    <ClCompile Include="..\..\src\context\impl\ItemFactoryImpl.cpp" />
+    <ClCompile Include="..\..\src\context\impl\VarHashEntryImpl.cpp" />
+    <ClCompile Include="..\..\src\context\impl\VarStoreImpl.cpp" />
+    <ClCompile Include="..\..\src\context\impl\VarTypeStoreImpl.cpp" />
+    <ClCompile Include="..\..\src\context\impl\XQContextImpl.cpp" />
+    <ClCompile Include="..\..\src\context\impl\XQDynamicContextImpl.cpp" />
+    <ClCompile Include="..\..\src\debug\ASTDebugHook.cpp" />
+    <ClCompile Include="..\..\src\debug\DebugHookDecorator.cpp" />
+    <ClCompile Include="..\..\src\debug\InputParser.cpp" />
+    <ClCompile Include="..\..\src\debug\InteractiveDebugger.cpp" />
+    <ClCompile Include="..\..\src\debug\TupleDebugHook.cpp" />
+    <ClCompile Include="..\..\src\debug\StackFrame.cpp" />
+    <ClCompile Include="..\..\src\dom-api\XPath2NodeSerializer.cpp" />
+    <ClCompile Include="..\..\src\dom-api\XQillaImplementation.cpp" />
+    <ClCompile Include="..\..\src\dom-api\impl\XPath2ResultImpl.cpp" />
+    <ClCompile Include="..\..\src\dom-api\impl\XPathDocumentImpl.cpp" />
+    <ClCompile Include="..\..\src\dom-api\impl\XPathNamespaceImpl.cpp" />
+    <ClCompile Include="..\..\src\dom-api\impl\XQillaBuilderImpl.cpp" />
+    <ClCompile Include="..\..\src\dom-api\impl\XQillaDocumentImpl.cpp" />
+    <ClCompile Include="..\..\src\dom-api\impl\XQillaExpressionImpl.cpp" />
+    <ClCompile Include="..\..\src\dom-api\impl\XQillaNSResolverImpl.cpp" />
+    <ClCompile Include="..\..\src\dom-api\impl\XQillaXMLGrammarPoolImpl.cpp" />
+    <ClCompile Include="..\..\src\events\ContentSequenceFilter.cpp" />
+    <ClCompile Include="..\..\src\events\EventGenerator.cpp" />
+    <ClCompile Include="..\..\src\events\EventSerializer.cpp" />
+    <ClCompile Include="..\..\src\events\NSFixupFilter.cpp" />
+    <ClCompile Include="..\..\src\events\NoInheritFilter.cpp" />
+    <ClCompile Include="..\..\src\events\QueryPathTreeFilter.cpp" />
+    <ClCompile Include="..\..\src\exceptions\XQException.cpp" />
+    <ClCompile Include="..\..\src\exceptions\XQillaException.cpp" />
+    <ClCompile Include="..\..\src\fastxdm\FastXDMConfiguration.cpp" />
+    <ClCompile Include="..\..\src\fastxdm\FastXDMDocument.cpp" />
+    <ClCompile Include="..\..\src\fastxdm\FastXDMNodeImpl.cpp" />
+    <ClCompile Include="..\..\src\fastxdm\FastXDMSequenceBuilder.cpp" />
+    <ClCompile Include="..\..\src\fastxdm\FastXDMUpdateFactory.cpp" />
+    <ClCompile Include="..\..\src\framework\BaseMemoryManager.cpp" />
+    <ClCompile Include="..\..\src\framework\ProxyMemoryManager.cpp" />
+    <ClCompile Include="..\..\src\framework\ReferenceCounted.cpp" />
+    <ClCompile Include="..\..\src\framework\StringPool.cpp" />
+    <ClCompile Include="..\..\src\framework\XPath2MemoryManagerImpl.cpp" />
+    <ClCompile Include="..\..\src\fulltext\DefaultTokenStore.cpp" />
+    <ClCompile Include="..\..\src\fulltext\DefaultTokenizer.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTAnd.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTContains.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTContent.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTDistance.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTMildnot.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTOr.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTOrder.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTScope.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTUnaryNot.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTWindow.cpp" />
+    <ClCompile Include="..\..\src\fulltext\FTWords.cpp" />
+    <ClCompile Include="..\..\src\functions\EXSLTMathFunction.cpp" />
+    <ClCompile Include="..\..\src\functions\ExternalFunction.cpp" />
+    <ClCompile Include="..\..\src\functions\FuncFactory.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionAbs.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionAcos.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionAdjustDateTimeToTimezone.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionAdjustDateToTimezone.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionAdjustTimeToTimezone.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionAnalyzeString.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionAsin.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionAtan.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionBaseURI.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionCaseFold.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionCeiling.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionCodepointsToString.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionCollection.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionCompare.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionConcat.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionContains.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionCos.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionCount.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionCurrentDate.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionCurrentDateTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionCurrentTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionDateTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionDayFromDate.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionDayFromDateTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionDaysFromDuration.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionDefaultCollation.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionDistinctValues.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionDoc.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionDocument.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionDocAvailable.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionDocumentURI.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionEmpty.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionEndsWith.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionError.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionExp.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionFloor.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionFunctionArity.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionFunctionName.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionHoursFromDateTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionHoursFromDuration.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionHoursFromTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionId.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionIdref.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionImplicitTimezone.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionLang.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionLast.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionLocalNameFromQName.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionLocalname.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionLog.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionLookup.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionLowerCase.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionMatches.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionMinutesFromDateTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionMinutesFromDuration.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionMinutesFromTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionMonthFromDate.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionMonthFromDateTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionMonthsFromDuration.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionName.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionNamespaceURIFromQName.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionNamespaceUri.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionNilled.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionNodeName.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionNormalizeSpace.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionNormalizeUnicode.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionNot.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionNumber.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionParseHTML.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionParseJSON.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionExplain.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionParseXML.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionPosition.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionPower.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionPrefixFromQName.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionQName.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionRegexGroup.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionReplace.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionResolveURI.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionRoot.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionRound.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionRoundHalfToEven.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionSecondsFromDateTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionSecondsFromDuration.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionSecondsFromTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionSentences.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionSerializeJSON.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionSin.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionSqrt.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionStartsWith.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionStaticBaseURI.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionString.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionStringLength.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionStringToCodepoints.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionSubstring.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionTan.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionTimezoneFromDate.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionTimezoneFromDateTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionTimezoneFromTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionTokenize.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionTrace.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionHead.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionTail.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionUnordered.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionUnparsedText.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionUpperCase.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionWords.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionYearFromDate.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionYearFromDateTime.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionYearsFromDuration.cpp" />
+    <ClCompile Include="..\..\src\functions\RegExpFunction.cpp" />
+    <ClCompile Include="..\..\src\functions\XQUserFunction.cpp" />
+    <ClCompile Include="..\..\src\functions\FunctionSignature.cpp" />
+    <ClCompile Include="..\..\src\functions\XQillaFunction.cpp" />
+    <ClCompile Include="..\..\src\functions\BuiltInModules.cpp" />
+    <ClCompile Include="..\..\src\items\ATDurationOrDerived.cpp" />
+    <ClCompile Include="..\..\src\items\ATUntypedAtomic.cpp" />
+    <ClCompile Include="..\..\src\items\AnyAtomicType.cpp" />
+    <ClCompile Include="..\..\src\items\DatatypeFactory.cpp" />
+    <ClCompile Include="..\..\src\items\DatatypeLookup.cpp" />
+    <ClCompile Include="..\..\src\items\DateOrTimeType.cpp" />
+    <ClCompile Include="..\..\src\items\Item.cpp" />
+    <ClCompile Include="..\..\src\items\Node.cpp" />
+    <ClCompile Include="..\..\src\items\Numeric.cpp" />
+    <ClCompile Include="..\..\src\items\Timezone.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATAnySimpleTypeImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATAnyURIOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATBase64BinaryOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATBooleanOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATDateOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATDateTimeOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATDecimalOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATDoubleOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATDurationOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATFloatOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATGDayOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATGMonthDayOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATGMonthOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATGYearMonthOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATGYearOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATHexBinaryOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATNotationOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATQNameOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATStringOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATTimeOrDerivedImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\ATUntypedAtomicImpl.cpp" />
+    <ClCompile Include="..\..\src\items\impl\FunctionRefImpl.cpp" />
+    <ClCompile Include="..\..\src\lexer\XQLexer.cpp" />
+    <ClCompile Include="..\..\src\lexer\XQLexer2.cpp" />
+    <ClCompile Include="..\..\src\lexer\XSLT2Lexer.cpp" />
+    <ClCompile Include="..\..\src\mapm\m_apm.cpp" />
+    <ClCompile Include="..\..\src\mapm\mapm5sin.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_add.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_cpi.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_div.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_exp.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_fam.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_fft.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_flr.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_fpf.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_gcd.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_lg2.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_lg3.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_log.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_mt.cpp" />
+    <ClCompile Include="..\..\src\mapm\mapm_mul.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_pow.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_rcp.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_rnd.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_set.c" />
+    <ClCompile Include="..\..\src\mapm\mapm_sin.c" />
+    <ClCompile Include="..\..\src\mapm\mapmasin.c" />
+    <ClCompile Include="..\..\src\mapm\mapmasn0.c" />
+    <ClCompile Include="..\..\src\mapm\mapmcbrt.c" />
+    <ClCompile Include="..\..\src\mapm\mapmcnst.c" />
+    <ClCompile Include="..\..\src\mapm\mapmfact.c" />
+    <ClCompile Include="..\..\src\mapm\mapmfmul.c" />
+    <ClCompile Include="..\..\src\mapm\mapmgues.c" />
+    <ClCompile Include="..\..\src\mapm\mapmhasn.c" />
+    <ClCompile Include="..\..\src\mapm\mapmhsin.c" />
+    <ClCompile Include="..\..\src\mapm\mapmipwr.c" />
+    <ClCompile Include="..\..\src\mapm\mapmistr.c" />
+    <ClCompile Include="..\..\src\mapm\mapmpwr2.c" />
+    <ClCompile Include="..\..\src\mapm\mapmrsin.c" />
+    <ClCompile Include="..\..\src\mapm\mapmsqrt.c" />
+    <ClCompile Include="..\..\src\mapm\mapmstck.c" />
+    <ClCompile Include="..\..\src\mapm\mapmutil.c" />
+    <ClCompile Include="..\..\src\mapm\mapmutl2.c" />
+    <ClCompile Include="..\..\src\operators\And.cpp" />
+    <ClCompile Include="..\..\src\operators\ArithmeticOperator.cpp" />
+    <ClCompile Include="..\..\src\operators\ComparisonOperator.cpp" />
+    <ClCompile Include="..\..\src\operators\Divide.cpp" />
+    <ClCompile Include="..\..\src\operators\Equals.cpp" />
+    <ClCompile Include="..\..\src\operators\Except.cpp" />
+    <ClCompile Include="..\..\src\operators\GeneralComp.cpp" />
+    <ClCompile Include="..\..\src\operators\GreaterThan.cpp" />
+    <ClCompile Include="..\..\src\operators\GreaterThanEqual.cpp" />
+    <ClCompile Include="..\..\src\operators\IntegerDivide.cpp" />
+    <ClCompile Include="..\..\src\operators\Intersect.cpp" />
+    <ClCompile Include="..\..\src\operators\LessThan.cpp" />
+    <ClCompile Include="..\..\src\operators\LessThanEqual.cpp" />
+    <ClCompile Include="..\..\src\operators\Minus.cpp" />
+    <ClCompile Include="..\..\src\operators\Mod.cpp" />
+    <ClCompile Include="..\..\src\operators\Multiply.cpp" />
+    <ClCompile Include="..\..\src\operators\NodeComparison.cpp" />
+    <ClCompile Include="..\..\src\operators\NotEquals.cpp" />
+    <ClCompile Include="..\..\src\operators\Or.cpp" />
+    <ClCompile Include="..\..\src\operators\OrderComparison.cpp" />
+    <ClCompile Include="..\..\src\operators\Plus.cpp" />
+    <ClCompile Include="..\..\src\operators\UnaryMinus.cpp" />
+    <ClCompile Include="..\..\src\operators\Union.cpp" />
+    <ClCompile Include="..\..\src\optimizer\ASTCopier.cpp" />
+    <ClCompile Include="..\..\src\optimizer\ASTReleaser.cpp" />
+    <ClCompile Include="..\..\src\optimizer\ASTVisitor.cpp" />
+    <ClCompile Include="..\..\src\optimizer\PartialEvaluator.cpp" />
+    <ClCompile Include="..\..\src\optimizer\StaticTyper.cpp" />
+    <ClCompile Include="..\..\src\optimizer\Optimizer.cpp" />
+    <ClCompile Include="..\..\src\optimizer\QueryPathNode.cpp" />
+    <ClCompile Include="..\..\src\optimizer\QueryPathTreeGenerator.cpp" />
+    <ClCompile Include="..\..\src\optimizer\ASTToXML.cpp" />
+    <ClCompile Include="..\..\src\parser\QName.cpp" />
+    <ClCompile Include="..\..\src\parser\XQParser.cpp" />
+    <ClCompile Include="..\..\src\runtime\ClosureResult.cpp" />
+    <ClCompile Include="..\..\src\runtime\EmptyResult.cpp" />
+    <ClCompile Include="..\..\src\runtime\Result.cpp" />
+    <ClCompile Include="..\..\src\runtime\ResultBuffer.cpp" />
+    <ClCompile Include="..\..\src\runtime\ResultBufferImpl.cpp" />
+    <ClCompile Include="..\..\src\runtime\ResultImpl.cpp" />
+    <ClCompile Include="..\..\src\runtime\Sequence.cpp" />
+    <ClCompile Include="..\..\src\runtime\SequenceResult.cpp" />
+    <ClCompile Include="..\..\src\schema\AnyAtomicTypeDatatypeValidator.cpp" />
+    <ClCompile Include="..\..\src\schema\DocumentCacheImpl.cpp" />
+    <ClCompile Include="..\..\src\schema\FaxppDocumentCacheImpl.cpp" />
+    <ClCompile Include="..\..\src\schema\SchemaValidatorFilter.cpp" />
+    <ClCompile Include="..\..\src\schema\SequenceType.cpp" />
+    <ClCompile Include="..\..\src\simple-api\XQQuery.cpp" />
+    <ClCompile Include="..\..\src\simple-api\XQilla.cpp" />
+    <ClCompile Include="..\..\src\update\FunctionPut.cpp" />
+    <ClCompile Include="..\..\src\update\PendingUpdateList.cpp" />
+    <ClCompile Include="..\..\src\update\UApplyUpdates.cpp" />
+    <ClCompile Include="..\..\src\update\UDelete.cpp" />
+    <ClCompile Include="..\..\src\update\UInsertAfter.cpp" />
+    <ClCompile Include="..\..\src\update\UInsertAsFirst.cpp" />
+    <ClCompile Include="..\..\src\update\UInsertAsLast.cpp" />
+    <ClCompile Include="..\..\src\update\UInsertBefore.cpp" />
+    <ClCompile Include="..\..\src\update\UInsertInto.cpp" />
+    <ClCompile Include="..\..\src\update\URename.cpp" />
+    <ClCompile Include="..\..\src\update\UReplace.cpp" />
+    <ClCompile Include="..\..\src\update\UReplaceValueOf.cpp" />
+    <ClCompile Include="..\..\src\update\UTransform.cpp" />
+    <ClCompile Include="..\..\src\utils\ContextUtils.cpp" />
+    <ClCompile Include="..\..\src\utils\DateUtils.cpp" />
+    <ClCompile Include="..\..\src\utils\NumUtils.cpp" />
+    <ClCompile Include="..\..\src\utils\UnicodeTransformer.cpp" />
+    <ClCompile Include="..\..\src\utils\utf8proc\utf8proc.c" />
+    <ClCompile Include="..\..\src\utils\UTF8Str.cpp" />
+    <ClCompile Include="..\..\src\utils\XMLChCompare.cpp" />
+    <ClCompile Include="..\..\src\utils\XPath2NSUtils.cpp" />
+    <ClCompile Include="..\..\src\utils\XPath2Utils.cpp" />
+    <ClCompile Include="..\..\src\utils\XQillaPlatformUtils.cpp" />
+    <ClCompile Include="..\..\src\utils\XStr.cpp" />
+    <ClCompile Include="..\..\src\utils\DelayedModule.cpp" />
+    <ClCompile Include="..\..\src\xerces\AncestorAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\AncestorOrSelfAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\AttributeAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\Axis.cpp" />
+    <ClCompile Include="..\..\src\xerces\ChildAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\DescendantAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\DescendantOrSelfAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\FollowingAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\FollowingSiblingAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\NamespaceAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\ParentAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\PrecedingAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\PrecedingSiblingAxis.cpp" />
+    <ClCompile Include="..\..\src\xerces\XercesConfiguration.cpp" />
+    <ClCompile Include="..\..\src\xerces\XercesNodeImpl.cpp" />
+    <ClCompile Include="..\..\src\xerces\XercesSequenceBuilder.cpp" />
+    <ClCompile Include="..\..\src\xerces\XercesURIResolver.cpp" />
+    <ClCompile Include="..\..\src\xerces\XercesUpdateFactory.cpp" />
+    <ClCompile Include="..\..\src\xqts\TestSuiteParser.cpp" />
+    <ClCompile Include="..\..\src\xqts\TestSuiteResultListener.cpp" />
+    <ClCompile Include="..\..\src\xqts\TestSuiteRunner.cpp" />
+    <ClCompile Include="..\..\src\yajl\yajl.c" />
+    <ClCompile Include="..\..\src\yajl\yajl_buf.c" />
+    <ClCompile Include="..\..\src\yajl\yajl_encode.c" />
+    <ClCompile Include="..\..\src\yajl\yajl_gen.c" />
+    <ClCompile Include="..\..\src\yajl\yajl_lex.c" />
+    <ClCompile Include="..\..\src\yajl\yajl_parser.c" />
+    <ClCompile Include="..\..\src\xqc\XQillaXQCImplementation.cpp" />
+    <ClCompile Include="..\..\src\xqc\XQillaXQCStaticContext.cpp" />
+    <ClCompile Include="..\..\src\xqc\XQillaXQCDynamicContext.cpp" />
+    <ClCompile Include="..\..\src\xqc\XQillaXQCExpression.cpp" />
+    <ClCompile Include="..\..\src\xqc\XQillaXQCSequence.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets"/>
+  <ImportGroup Label="ExtensionTargets" >
+  </ImportGroup>
+  <ItemGroup >
+  </ItemGroup>
+</Project>

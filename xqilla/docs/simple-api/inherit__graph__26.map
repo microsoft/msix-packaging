@@ -1,0 +1,4 @@
+<map id="G" name="G">
+<area shape="rect" id="node1" href="$classLocationInfo.html" title="A class that gives records a location in the query." alt="" coords="7,5,111,35"/>
+<area shape="rect" id="node3" href="$classResultImpl.html" title="A lazily evaluated query result." alt="" coords="160,5,253,35"/>
+</map>

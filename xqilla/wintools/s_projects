@@ -1,0 +1,58 @@
+#
+# This script drives construction of Visual Studio (version 7.1) projects 
+# files, using an xquery script (genproject.template),an input XML
+# document, and a file containing a list of project names.
+#
+
+# xml document input template
+CONFIG_INPUT=xqilla.template.xml
+
+# temporary xml document, post-sed-replacement
+CONFIG_OUTPUT=xqilla.xml
+
+# substitute some variables in the XML document template
+sed -f lib_paths.sed < $CONFIG_INPUT > $CONFIG_OUTPUT
+
+# find the xqilla command line tool
+XQILLA=`which xqilla`
+if [ ! -x "$XQILLA" ]; then
+    XQILLA="../xqilla"
+fi
+if [ ! -x "$XQILLA" ]; then
+    XQILLA="../build/xqilla"
+fi
+if [ ! -x "$XQILLA" ]; then
+    echo "XQilla executable not found. Maybe you need to add it to the path?"
+    exit 1
+fi
+echo XQILLA = $XQILLA
+
+# generate the VC9 project files
+# generate VC10 and VC11 filter information for xqilla project
+$XQILLA -u genproject.xq -v projectFile "$CONFIG_OUTPUT" -v outputPath "../Win32Projects"
+$XQILLA -u xqilla.vs2010.xq -v projectFile "$CONFIG_OUTPUT" -v outputPath "../Win32Projects"
+$XQILLA -u xqilla.vs2010_filter.xq -v projectFile "$CONFIG_OUTPUT" -v outputPath "../Win32Projects"
+
+# Post process the VC9 files to put the "Name" attribute first,
+# since VC9 doesn't use a proper XML parser :-(
+
+for file in `ls ../Win32Projects/VC9/*.vcproj`
+do
+# This only works if the start elements are always on a single line.
+#
+#                        attrs before "Name"       attrs after "Name"
+#                            |-------|                 |-------|
+sed -i -e 's/<\([^/>][^> ]*\)\([^>]*\) Name="\([^"]*\)"\([^>]*\)>/<\1 Name="\3"\2\4>/' $file
+#             |-------------|                |-------|
+#              element name             value of "Name" attr
+done
+
+for file in `ls ../Win32Projects/VC10/*.vcxproj ../Win32Projects/VC10/*.vcxproj.filters ../Win32Projects/VC11/*.vcxproj ../Win32Projects/VC11/*.vcxproj.filters`
+do
+sed '2,$s/xmlns="http:\/\/schemas.microsoft.com\/developer\/msbuild\/2003"//' $file > temp
+sed '1 i\
+<?xml version="1.0" encoding="utf-8" ?>
+' temp > temp2
+rm -f temp
+mv temp2 $file
+done

@@ -1,0 +1,30 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$classDocumentCache.html" title="Expression Context is a storage for contexts." alt="" coords="241,5,377,35"/>
+<area shape="rect" id="node5" href="$classItemFactory.html" title="ItemFactory" alt="" coords="256,59,363,88"/>
+<area shape="rect" id="node7" href="$classModuleCache.html" title="ModuleCache" alt="" coords="253,112,365,141"/>
+<area shape="rect" id="node9" href="$classScope.html" title="used inside VariableStore to implement variable scoping" alt="" coords="247,165,372,195"/>
+<area shape="rect" id="node11" href="$classSequence.html" title="An eagerly evaluated result of a query execution." alt="" coords="265,219,353,248"/>
+<area shape="rect" id="node13" href="$classSequenceBuilder.html" title="SequenceBuilder" alt="" coords="243,272,376,301"/>
+<area shape="rect" id="node15" href="$classStaticContext.html" title="The parse time static context interface." alt="" coords="249,325,369,355"/>
+<area shape="rect" id="node19" href="$classStaticType.html" title="Class that represents the static type of an expression." alt="" coords="263,379,356,408"/>
+<area shape="rect" id="node21" href="$classUpdateFactory.html" title="UpdateFactory" alt="" coords="248,432,371,461"/>
+<area shape="rect" id="node23" href="$classURIResolver.html" title="This is an abstract class used to resolve URIs in different ways." alt="" coords="259,485,360,515"/>
+<area shape="rect" id="node25" href="$classVarHashEntry.html" title="The class that stores the values of the variables." alt="" coords="221,539,397,568"/>
+<area shape="rect" id="node27" href="$classVariableTypeStore.html" title="This is the wrapper class for the variable store, which implements the lookup and..." alt="" coords="239,592,380,621"/>
+<area shape="rect" id="node29" href="$classxercesc_1_1InputSource.html" title="A single input source for an XML entity." alt="" coords="227,645,392,675"/>
+<area shape="rect" id="node39" href="$classxercesc_1_1XMLFormatTarget.html" title="xercesc::XMLFormatTarget" alt="" coords="207,699,412,728"/>
+<area shape="rect" id="node47" href="$classxercesc_1_1XMLFormatter.html" title="This class provides the basic formatting capabilities that are required to turn the..." alt="" coords="217,752,401,781"/>
+<area shape="rect" id="node49" href="$classXQilla.html" title="Provides factory methods for creating XQQuery and DynamicContext objects." alt="" coords="280,805,339,835"/>
+<area shape="rect" id="node51" href="$classXQillaConfiguration.html" title="XQillaConfiguration" alt="" coords="236,859,383,888"/>
+<area shape="rect" id="node57" href="$classXQQuery.html" title="Encapsulates a query expression." alt="" coords="268,912,351,941"/>
+<area shape="rect" id="node17" href="$classDynamicContext.html" title="The execution time dynamic context interface." alt="" coords="509,325,648,355"/>
+<area shape="rect" id="node31" href="$classxercesc_1_1LocalFileInputSource.html" title="This class is a derivative of the standard InputSource class." alt="" coords="467,485,691,515"/>
+<area shape="rect" id="node33" href="$classxercesc_1_1MemBufInputSource.html" title="This class is a derivative of the standard InputSource class." alt="" coords="467,539,691,568"/>
+<area shape="rect" id="node35" href="$classxercesc_1_1StdInInputSource.html" title="This class is a derivative of the standard InputSource class." alt="" coords="477,592,680,621"/>
+<area shape="rect" id="node37" href="$classxercesc_1_1URLInputSource.html" title="This class is a derivative of the standard InputSource class." alt="" coords="481,645,676,675"/>
+<area shape="rect" id="node41" href="$classxercesc_1_1LocalFileFormatTarget.html" title="xercesc::LocalFileFormatTarget" alt="" coords="461,699,696,728"/>
+<area shape="rect" id="node43" href="$classxercesc_1_1MemBufFormatTarget.html" title="xercesc::MemBufFormatTarget" alt="" coords="461,752,696,781"/>
+<area shape="rect" id="node45" href="$classxercesc_1_1StdOutFormatTarget.html" title="xercesc::StdOutFormatTarget" alt="" coords="465,805,692,835"/>
+<area shape="rect" id="node53" href="$classFastXDMConfiguration.html" title="FastXDMConfiguration" alt="" coords="493,859,664,888"/>
+<area shape="rect" id="node55" href="$classXercesConfiguration.html" title="XercesConfiguration" alt="" coords="500,912,657,941"/>
+</map>

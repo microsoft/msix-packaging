@@ -1,0 +1,17 @@
+<map id="G" name="G">
+<area shape="rect" id="node3" href="$ItemFactory_8hpp.html" title="ItemFactory.hpp" alt="" coords="1171,315,1302,344"/>
+<area shape="rect" id="node7" href="$ATDateOrDerived_8hpp.html" title="ATDateOrDerived.hpp" alt="" coords="206,237,377,267"/>
+<area shape="rect" id="node10" href="$ATDateTimeOrDerived_8hpp.html" title="ATDateTimeOrDerived.hpp" alt="" coords="1526,237,1729,267"/>
+<area shape="rect" id="node13" href="$ATDurationOrDerived_8hpp.html" title="ATDurationOrDerived.hpp" alt="" coords="1393,83,1585,112"/>
+<area shape="rect" id="node23" href="$ATTimeOrDerived_8hpp.html" title="ATTimeOrDerived.hpp" alt="" coords="1753,237,1921,267"/>
+<area shape="rect" id="node47" href="$Sequence_8hpp.html" title="Sequence.hpp" alt="" coords="1691,315,1809,344"/>
+<area shape="rect" id="node5" href="$xqilla-simple_8hpp.html" title="xqilla&#45;simple.hpp" alt="" coords="1171,392,1302,421"/>
+<area shape="rect" id="node15" href="$DynamicContext_8hpp.html" title="DynamicContext.hpp" alt="" coords="21,160,186,189"/>
+<area shape="rect" id="node26" href="$Timezone_8hpp.html" title="Timezone.hpp" alt="" coords="1071,160,1186,189"/>
+<area shape="rect" id="node18" href="$ContextHelpers_8hpp.html" title="ContextHelpers.hpp" alt="" coords="25,237,182,267"/>
+<area shape="rect" id="node30" href="$ATGDayOrDerived_8hpp.html" title="ATGDayOrDerived.hpp" alt="" coords="1043,237,1214,267"/>
+<area shape="rect" id="node33" href="$ATGMonthDayOrDerived_8hpp.html" title="ATGMonthDayOrDerived.hpp" alt="" coords="1238,237,1451,267"/>
+<area shape="rect" id="node36" href="$ATGMonthOrDerived_8hpp.html" title="ATGMonthOrDerived.hpp" alt="" coords="401,237,587,267"/>
+<area shape="rect" id="node39" href="$ATGYearMonthOrDerived_8hpp.html" title="ATGYearMonthOrDerived.hpp" alt="" coords="611,237,825,267"/>
+<area shape="rect" id="node42" href="$ATGYearOrDerived_8hpp.html" title="ATGYearOrDerived.hpp" alt="" coords="849,237,1019,267"/>
+</map>

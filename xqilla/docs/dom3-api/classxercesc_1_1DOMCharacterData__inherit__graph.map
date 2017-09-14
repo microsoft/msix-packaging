@@ -1,0 +1,6 @@
+<map id="G" name="G">
+<area shape="rect" id="node5" href="$classxercesc_1_1DOMComment.html" title="This interface inherits from CharacterData and represents the content of a comment..." alt="" coords="5,160,192,189"/>
+<area shape="rect" id="node7" href="$classxercesc_1_1DOMText.html" title="The DOMText interface inherits from DOMCharacterData and represents the textual content..." alt="" coords="216,160,365,189"/>
+<area shape="rect" id="node2" href="$classxercesc_1_1DOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model..." alt="" coords="117,5,272,35"/>
+<area shape="rect" id="node9" href="$classxercesc_1_1DOMCDATASection.html" title="CDATA sections are used to escape blocks of text containing characters that would..." alt="" coords="183,237,399,267"/>
+</map>

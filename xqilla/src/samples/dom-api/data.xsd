@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<xs:schema elementFormDefault='unqualified' xmlns:xs='http://www.w3.org/2001/XMLSchema' xmlns:foo='foofoo'>
+
+<xs:element name="Publication" abstract="true" type="PublicationType"/>
+
+<xs:element name="Book" substitutionGroup="Publication" type="BookType"/>
+<xs:element name="Magazine" substitutionGroup="Publication" type="MagazineType"/>
+
+<xs:complexType name="PublicationType">
+  <xs:sequence>
+      <xs:element name="ISBN" type="xs:integer"/>
+  </xs:sequence>
+</xs:complexType>
+
+<xs:complexType name="BookType">
+  <xs:complexContent>
+    <xs:extension base="PublicationType">
+      <xs:sequence>
+        <xs:element name="Price" type="xs:decimal"/>
+      </xs:sequence>
+    </xs:extension>
+  </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="MagazineType">
+  <xs:complexContent>
+    <xs:extension base="PublicationType">
+      <xs:sequence>
+        <xs:element name="SubscriptionPrice" type="xs:decimal"/>
+      </xs:sequence>
+    </xs:extension>
+  </xs:complexContent>
+</xs:complexType>
+
+<xs:complexType name="PublicationContainer">
+    <xs:sequence>
+        <xs:element ref="Publication" maxOccurs="unbounded"/>
+    </xs:sequence>
+</xs:complexType>
+ 
+
+<xs:element name="Catalogue" type="PublicationContainer" />
+
+</xs:schema>

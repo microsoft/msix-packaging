@@ -1,0 +1,24 @@
+<Catalogue xmlns:xsi='http://www.w3.org/2001/XMLSchema-instance' xmlns:foo='foofoo' xsi:noNamespaceSchemaLocation='data.xsd'>
+  <Book>
+    <ISBN>1234</ISBN>
+    <Price>14.99</Price>
+  </Book>
+  <Book>
+    <ISBN>1235</ISBN>
+    <Price>89.99</Price>
+  </Book>
+  <Magazine>
+    <ISBN>1236</ISBN>
+    <SubscriptionPrice>120</SubscriptionPrice>
+  </Magazine>
+  <Book>
+    <ISBN>1237</ISBN>
+    <Price>14.999</Price>
+  </Book>
+  <Magazine>
+    <ISBN>1238</ISBN>
+    <SubscriptionPrice>33.33</SubscriptionPrice>
+  </Magazine>
+</Catalogue>
+
+

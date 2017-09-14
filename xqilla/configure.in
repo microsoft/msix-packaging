@@ -1,0 +1,326 @@
+#                                               -*- Autoconf -*-
+# Process this file with autoconf to produce a configure script.
+
+AC_PREREQ(2.59)
+AC_INIT([XQilla],[2.3.3],[])
+AC_CONFIG_AUX_DIR(autotools)
+AC_CANONICAL_TARGET([])
+AM_INIT_AUTOMAKE(XQilla, 2.3.3,)
+AC_CONFIG_SRCDIR([src/runtime/Result.cpp])
+AC_CONFIG_HEADERS([src/config/xqilla_config_unix.h])
+AC_CONFIG_MACRO_DIR([autotools/m4])
+
+# Turn off rebuilding of configure, Makefile.in etc. by default
+AM_MAINTAINER_MODE
+
+# Check debug option
+AC_MSG_CHECKING(if --enable-debug option specified)
+AC_ARG_ENABLE(debug,
+        [AS_HELP_STRING(--enable-debug,Build a debugging version.)],
+        [xqilla_cv_debug="$enable_debug"], [xqilla_cv_debug="no"])
+AC_MSG_RESULT($xqilla_cv_debug)
+
+# Check if rpath is disabled
+AC_MSG_CHECKING(if --enable-rpath option specified)
+AC_ARG_ENABLE(rpath,
+	[AC_HELP_STRING([--disable-rpath],
+			[Patches libtool to not use rpath in the libraries produced.])],
+	[xqilla_cv_rpath="$enable_rpath"], [xqilla_cv_rpath="yes"])
+AC_MSG_RESULT($xqilla_cv_rpath)
+
+# Don't override anything if it's already set from the environment.
+optimize_def="-O"
+case $host_os in
+aix4.3.*|aix5*)
+        optimize_def="-O2"
+        CC=${CC-"xlc_r"}
+        CPPFLAGS="$CPPFLAGS -D_THREAD_SAFE"
+        LDFLAGS="$LDFLAGS -Wl,-brtl";;
+bsdi3*) CC=${CC-"shlicc2"}
+        LIBS="$LIBS -lipc";;
+cygwin*)
+        CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE -D_REENTRANT";;
+freebsd*)
+        CPPFLAGS="$CPPFLAGS -D_THREAD_SAFE"
+        LDFLAGS="$LDFLAGS -pthread";;
+gnu*|k*bsd*-gnu|linux*)
+        optimize_def="-O2"
+        CPPFLAGS="$CPPFLAGS -D_GNU_SOURCE -D_REENTRANT";;
+hpux*)  CPPFLAGS="$CPPFLAGS -D_REENTRANT";;
+irix*)  optimize_def="-O2"
+        CPPFLAGS="$CPPFLAGS -D_SGI_MP_SOURCE";;
+mpeix*) CPPFLAGS="$CPPFLAGS -D_POSIX_SOURCE -D_SOCKET_SOURCE"
+        LIBS="$LIBS -lsocket -lsvipc";;
+osf*)   CPPFLAGS="$CPPFLAGS -pthread";;
+*qnx*)  AC_DEFINE(HAVE_QNX)
+        AH_TEMPLATE(HAVE_QNX, [Define to 1 if building on QNX.]);;
+solaris*)
+        CPPFLAGS="$CPPFLAGS -D_REENTRANT"
+        LIBS="$LIBS -lm";;
+esac
+
+# Set CFLAGS/CXXFLAGS.  We MUST set the flags before we call autoconf
+# compiler configuration macros, because if we don't, they set CFLAGS
+# to no optimization and -g, which isn't what we want.
+if test "$xqilla_cv_debug" = "yes"; then
+        AC_DEFINE(DEBUG)
+        AH_TEMPLATE(DEBUG, [Define to 1 if you want a debugging version.])
+        
+        CFLAGS="$CFLAGS -g"
+        CXXFLAGS="$CXXFLAGS -g"
+else
+	CFLAGS=${CFLAGS-$optimize_def}
+	CXXFLAGS=${CXXFLAGS-"$CFLAGS"}
+fi
+
+# Check for the Xerces-C library
+AC_MSG_CHECKING([if --with-xerces=DIR option specified])
+AC_ARG_WITH(xerces,
+        [AS_HELP_STRING(--with-xerces=DIR,Path of Xerces. [DIR="/usr/local"])],
+        [with_xerces="$withval"], [with_xerces="no"])
+AC_MSG_RESULT($with_xerces)
+if test "$with_xerces" = "no"; then
+        with_xerces="/usr/local"
+fi
+
+# Find the include directory
+if test `ls $with_xerces/src/xercesc/util/XercesVersion.hpp 2>/dev/null | wc -l` -gt 0 ; then
+   xerces_include_dir="$with_xerces/src"
+   xerces_include="-I$with_xerces/src"
+   xerces_source_tree="yes"
+
+elif test `ls $with_xerces/include/xercesc/util/XercesVersion.hpp 2>/dev/null | wc -l` -gt 0 ; then
+   xerces_include_dir="$with_xerces/include"
+   xerces_include="-I$with_xerces/include"
+   xerces_source_tree="no"
+
+elif test `ls $with_xerces/../src/xercesc/util/XercesVersion.hpp 2>/dev/null | wc -l` -gt 0 ; then
+   xerces_include_dir="$with_xerces/../src"
+   xerces_include="-I$with_xerces/../src -I$with_xerces/src"
+   xerces_source_tree="yes"
+
+else
+   AC_MSG_ERROR([Unable to find the Xerces-C include directory.])
+fi
+
+# Work out the Xerces-C version
+AC_MSG_CHECKING([for Xerces-C version])
+xerces_version_major=`grep "^\#define XERCES_VERSION_MAJOR" "$xerces_include_dir"/xercesc/util/XercesVersion.hpp | sed -e 's/^\#define XERCES_VERSION_MAJOR \([0-9]*\)/\1/'`
+xerces_version_minor=`grep "^\#define XERCES_VERSION_MINOR" "$xerces_include_dir"/xercesc/util/XercesVersion.hpp | sed -e 's/^\#define XERCES_VERSION_MINOR \([0-9]*\)/\1/'`
+xerces_version=$xerces_version_major"."$xerces_version_minor
+AC_MSG_RESULT([$xerces_version])
+
+if test "$xerces_version_major" -lt "3" -a "$xerces_source_tree" = "no"; then
+   AC_MSG_ERROR([For Xerces-C versions before 3.0 the source tree is required to build XQilla. You must specify the path to the Xerces-C source tree using --with-xerces.])
+fi
+
+# Find the library
+if test `ls $with_xerces/lib/libxerces-c.* 2>/dev/null | wc -l` -gt 0 ; then
+   xerces_lib="$with_xerces/lib"
+elif test `ls $with_xerces/src/libxerces-c.* 2>/dev/null | wc -l` -gt 0 ; then
+   xerces_lib="$with_xerces/src"
+else
+   if test "$xerces_source_tree" = "yes" -a "$xerces_version_major" -ge "3"; then
+      xerces_lib="$with_xerces/src"
+   else
+      xerces_lib="$with_xerces/lib"
+   fi
+
+   AC_MSG_WARN([Unable to find the Xerces-C library. Guessed path is $xerces_lib.])
+fi
+
+AC_SUBST(xerces_include)
+AC_SUBST(xerces_include_dir)
+AC_SUBST(xerces_lib)
+
+# The DOM samples only build against Xerces-C 3.0 or newer
+AM_CONDITIONAL([BUILD_DOM_SAMPLES], [test "$xerces_version_major" -ge "3"])
+
+# Check for the BinInputStream::getContentType() method
+AH_TEMPLATE(HAVE_GETCONTENTTYPE, [Define to 1 if the Xerces-C library supports the BinInputStream::getContentType() method.])
+CPPFLAGS_BKUP="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $xerces_include"
+AC_LANG_PUSH(C++)
+AC_TRY_COMPILE([#include <xercesc/util/BinMemInputStream.hpp>],
+        [XERCES_CPP_NAMESPACE_QUALIFIER BinMemInputStream(0, 0).getContentType();],
+        [ac_found_getcontenttype="yes"], [ac_found_getcontenttype="no"])
+AC_LANG_POP(C++)
+CPPFLAGS="$CPPFLAGS_BKUP"
+AC_MSG_CHECKING([if the Xerces-C library supports the BinInputStream::getContentType() method])
+AC_MSG_RESULT($ac_found_getcontenttype)
+if test "$ac_found_getcontenttype" = yes
+then
+        AC_DEFINE(HAVE_GETCONTENTTYPE)
+else
+        AC_MSG_WARN([XQilla will build with reduced functionality. To change this, either use Xerces-C 3.0 or apply xqilla/src/xercesc_content_type.patch to Xerces-C 2.8.])
+fi
+
+# Check for the RegularExpression::allMatches() method
+AH_TEMPLATE(HAVE_ALLMATCHES, [Define to 1 if the Xerces-C library supports the RegularExpression::allMatches() method.])
+CPPFLAGS_BKUP="$CPPFLAGS"
+CPPFLAGS="$CPPFLAGS $xerces_include"
+AC_LANG_PUSH(C++)
+AC_TRY_COMPILE([#include<xercesc/util/regx/RegularExpression.hpp>],
+        [XERCES_CPP_NAMESPACE_QUALIFIER RegularExpression(".*").allMatches(0, 0, 0, 0);],
+        [ac_found_allmatches="yes"], [ac_found_allmatches="no"])
+AC_LANG_POP(C++)
+CPPFLAGS="$CPPFLAGS_BKUP"
+AC_MSG_CHECKING([if the Xerces-C library supports the RegularExpression::allMatches() method])
+AC_MSG_RESULT($ac_found_allmatches)
+if test "$ac_found_allmatches" = yes
+then
+        AC_DEFINE(HAVE_ALLMATCHES)
+else
+        AC_MSG_WARN([XQilla will build with reduced functionality. To change this, either use Xerces-C 3.0 or apply xqilla/src/xercesc_regex.patch to Xerces-C 2.8.])
+fi
+
+
+# Check if the FAXPP library is present
+AH_TEMPLATE(HAVE_FAXPP, [Define to 1 if the FAXPP library is present.])
+AC_MSG_CHECKING([if --with-faxpp=DIR option specified])
+AC_ARG_WITH(faxpp,
+        [AS_HELP_STRING(--with-faxpp=DIR,Path of FAXPP. [DIR="/usr/local"])],
+        [with_faxpp="$withval"], [with_faxpp="/usr/local"])
+AC_MSG_RESULT($with_faxpp)
+if test "$with_faxpp" != "no"; then
+   AC_MSG_CHECKING([if the FAXPP library is present])
+   if test `ls $with_faxpp/lib/libfaxpp.* 2>/dev/null | wc -l` -gt 0 ; then
+        AC_MSG_RESULT([yes])
+        AC_DEFINE(HAVE_FAXPP)
+        faxpp_lib="-L$with_faxpp/lib -R$with_faxpp/lib"
+        faxpp_library="-lfaxpp"
+        faxpp_include="-I$with_faxpp/include"
+   elif test `ls $with_faxpp/libfaxpp.* 2>/dev/null | wc -l` -gt 0 ; then
+        if test `ls $with_faxpp/include/faxpp/parser.h 2>/dev/null | wc -l` -gt 0 ; then
+                AC_MSG_RESULT([yes])
+                AC_DEFINE(HAVE_FAXPP)
+                faxpp_lib="-L$with_faxpp -R$with_faxpp"
+                faxpp_library="-lfaxpp"
+                faxpp_include="-I$with_faxpp/include"
+        elif test `ls $with_faxpp/../include/faxpp/parser.h 2>/dev/null | wc -l` -gt 0 ; then
+                AC_MSG_RESULT([yes])
+                AC_DEFINE(HAVE_FAXPP)
+                faxpp_lib="-L$with_faxpp -R$with_faxpp"
+                faxpp_library="-lfaxpp"
+                faxpp_include="-I$with_faxpp/../include"
+        fi
+   else
+        AC_MSG_RESULT([no])
+        faxpp_lib=""
+        faxpp_library=""
+        faxpp_include=""
+   fi
+fi
+AC_SUBST(faxpp_include)
+AC_SUBST(faxpp_lib)
+AC_SUBST(faxpp_library)
+
+# Check if the HTML Tidy library is present
+AH_TEMPLATE(HAVE_LIBTIDY, [Define to 1 if the HTML Tidy library is present.])
+AC_MSG_CHECKING([if --with-tidy=DIR option specified])
+AC_ARG_WITH(tidy,
+        [AS_HELP_STRING(--with-tidy=DIR,Path of the HTML Tidy library. [DIR="/usr"])],
+        [with_tidy="$withval"], [with_tidy="/usr"])
+AC_MSG_RESULT($with_tidy)
+if test "$with_tidy" != "no"; then
+   AC_MSG_CHECKING([if the HTML Tidy library is present])
+   if test `ls $with_tidy/lib/libtidy.* 2>/dev/null | wc -l` -gt 0 ; then
+        if test `ls $with_tidy/include/tidy/tidy.h 2>/dev/null | wc -l` -gt 0 ; then
+                AC_MSG_RESULT([yes])
+                AC_DEFINE(HAVE_LIBTIDY)
+                tidy_lib="-L$with_tidy/lib -R$with_tidy/lib"
+                tidy_library="-ltidy"
+                tidy_include="-I$with_tidy/include/tidy"
+        elif test `ls $with_tidy/include/tidy.h 2>/dev/null | wc -l` -gt 0 ; then
+                AC_MSG_RESULT([yes])
+                AC_DEFINE(HAVE_LIBTIDY)
+                tidy_lib="-L$with_tidy/lib -R$with_tidy/lib"
+                tidy_library="-ltidy"
+                tidy_include="-I$with_tidy/include"
+        else
+                AC_MSG_RESULT([no])
+                tidy_lib=""
+                tidy_library=""
+                tidy_include=""
+        fi
+   else
+        AC_MSG_RESULT([no])
+        tidy_lib=""
+        tidy_library=""
+        tidy_include=""
+   fi
+fi
+AC_SUBST(tidy_include)
+AC_SUBST(tidy_lib)
+AC_SUBST(tidy_library)
+
+# Checks for programs.
+AC_PROG_CXX
+AC_PROG_CC
+AC_PROG_LIBTOOL
+AC_PROG_CPP
+AC_PROG_INSTALL
+AC_PROG_LN_S
+AC_PROG_MAKE_SET
+AC_CHECK_PROGS(YACC, 'bison -y', [${am_missing_run} bison])
+if test "$YACC" != "bison -y"; then
+    AC_MSG_WARN([XQilla requires bison if you need to rebuild the parser.])
+fi 
+AM_PROG_LEX
+
+# Check for unicode support in flex
+AC_MSG_CHECKING([unicode support in flex])
+flex --help | grep "\-U" > /dev/null
+if test "$?" -eq "0"; then
+	AC_MSG_RESULT([found])
+else
+	AC_MSG_RESULT([not found])
+  AC_MSG_WARN([XQilla requires a version of flex supporting the -U (16-bit unicode) flag if you need to rebuild the lexer.])
+fi
+
+# Set up extra compiler flags for GCC
+if test "$GXX" = "yes"; then
+  if test "$xqilla_cv_debug" = "yes"; then
+    CXXFLAGS="$CXXFLAGS -Wall -ftemplate-depth-50 ${targetoptions}"
+    CFLAGS="$CFLAGS -Wall ${targetoptions}"
+  else
+    CXXFLAGS="$CXXFLAGS -ftemplate-depth-50 ${targetoptions}"
+    CFLAGS="$CFLAGS ${targetoptions}"
+  fi
+fi
+
+# Patch libtool to not use rpath if required
+if test "$xqilla_cv_rpath" = "no"; then
+ AC_MSG_RESULT([Patching libtool to not use rpath.])
+ sed < libtool > libtool-2 \
+   's/^hardcode_libdir_flag_spec.*$'/'hardcode_libdir_flag_spec=" -D__LIBTOOL_NO_RPATH__ "/'
+ mv libtool-2 libtool
+ chmod 755 libtool
+fi
+
+# Checks for libraries.
+AC_CHECK_LIB(pthread,pthread_create)
+AC_CHECK_LIB(socket,connect)
+AC_CHECK_LIB(nsl,gethostbyname)
+
+# Checks for header files.
+AC_FUNC_ALLOCA
+AC_HEADER_STDC
+AC_CHECK_HEADERS([limits.h malloc.h stddef.h stdlib.h string.h sys/time.h sys/timeb.h wchar.h])
+
+# Checks for typedefs, structures, and compiler characteristics.
+AC_HEADER_STDBOOL
+AC_C_CONST
+AC_C_INLINE
+AC_TYPE_SIZE_T
+AC_HEADER_TIME
+AC_STRUCT_TM
+AC_CHECK_TYPES([ptrdiff_t])
+
+# Checks for library functions.
+AC_FUNC_ERROR_AT_LINE
+AC_FUNC_MKTIME
+AC_CHECK_FUNCS([floor ftime gettimeofday memmove memset pow sqrt strchr strstr tzset localtime_r])
+
+AC_CONFIG_FILES([Makefile include/Makefile])
+AC_OUTPUT

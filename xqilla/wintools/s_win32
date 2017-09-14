@@ -1,0 +1,6 @@
+#!/bin/sh
+#	$Id$
+#
+# s_projects requires that xqilla (the command line program) be in 
+# your PATH
+sh ./s_projects

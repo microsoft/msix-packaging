@@ -1,0 +1,27 @@
+<map id="G" name="G">
+<area shape="rect" id="node7" href="$ATAnyURIOrDerived_8hpp.html" title="xqilla/items/ATAnyURIOrDerived.hpp" alt="" coords="631,392,892,421"/>
+<area shape="rect" id="node28" href="$ATBooleanOrDerived_8hpp.html" title="xqilla/items/ATBooleanOrDerived.hpp" alt="" coords="2908,392,3178,421"/>
+<area shape="rect" id="node33" href="$ATDateOrDerived_8hpp.html" title="xqilla/items/ATDateOrDerived.hpp" alt="" coords="1804,83,2055,112"/>
+<area shape="rect" id="node43" href="$ATDecimalOrDerived_8hpp.html" title="xqilla/items/ATDecimalOrDerived.hpp" alt="" coords="2083,315,2352,344"/>
+<area shape="rect" id="node52" href="$ATDurationOrDerived_8hpp.html" title="xqilla/items/ATDurationOrDerived.hpp" alt="" coords="1799,237,2071,267"/>
+<area shape="rect" id="node65" href="$ATDateTimeOrDerived_8hpp.html" title="xqilla/items/ATDateTimeOrDerived.hpp" alt="" coords="2079,83,2362,112"/>
+<area shape="rect" id="node74" href="$ATDoubleOrDerived_8hpp.html" title="xqilla/items/ATDoubleOrDerived.hpp" alt="" coords="2851,315,3112,344"/>
+<area shape="rect" id="node80" href="$ATFloatOrDerived_8hpp.html" title="xqilla/items/ATFloatOrDerived.hpp" alt="" coords="2579,315,2827,344"/>
+<area shape="rect" id="node85" href="$ATGDayOrDerived_8hpp.html" title="xqilla/items/ATGDayOrDerived.hpp" alt="" coords="58,83,308,112"/>
+<area shape="rect" id="node91" href="$ATGMonthOrDerived_8hpp.html" title="xqilla/items/ATGMonthOrDerived.hpp" alt="" coords="332,83,599,112"/>
+<area shape="rect" id="node97" href="$ATGMonthDayOrDerived_8hpp.html" title="xqilla/items/ATGMonthDayOrDerived.hpp" alt="" coords="623,83,916,112"/>
+<area shape="rect" id="node103" href="$ATGYearMonthOrDerived_8hpp.html" title="xqilla/items/ATGYearMonthOrDerived.hpp" alt="" coords="940,83,1234,112"/>
+<area shape="rect" id="node109" href="$ATGYearOrDerived_8hpp.html" title="xqilla/items/ATGYearOrDerived.hpp" alt="" coords="1258,83,1508,112"/>
+<area shape="rect" id="node115" href="$ATQNameOrDerived_8hpp.html" title="xqilla/items/ATQNameOrDerived.hpp" alt="" coords="1828,392,2095,421"/>
+<area shape="rect" id="node120" href="$ATStringOrDerived_8hpp.html" title="xqilla/items/ATStringOrDerived.hpp" alt="" coords="3187,315,3440,344"/>
+<area shape="rect" id="node126" href="$ATTimeOrDerived_8hpp.html" title="xqilla/items/ATTimeOrDerived.hpp" alt="" coords="1532,83,1780,112"/>
+<area shape="rect" id="node134" href="$ATUntypedAtomic_8hpp.html" title="xqilla/items/ATUntypedAtomic.hpp" alt="" coords="2220,392,2471,421"/>
+<area shape="rect" id="node141" href="$XMemory_8hpp.html" title="xercesc/util/XMemory.hpp" alt="" coords="3354,701,3548,731"/>
+<area shape="rect" id="node12" href="$AnyAtomicType_8hpp.html" title="xqilla/items/AnyAtomicType.hpp" alt="" coords="2066,469,2300,499"/>
+<area shape="rect" id="node15" href="$Item_8hpp.html" title="xqilla/items/Item.hpp" alt="" coords="2074,547,2236,576"/>
+<area shape="rect" id="node18" href="$ReferenceCounted_8hpp.html" title="xqilla/framework/ReferenceCounted.hpp" alt="" coords="1980,624,2271,653"/>
+<area shape="rect" id="node21" href="$MemoryManager_8hpp.html" title="xercesc/framework/MemoryManager.hpp" alt="" coords="2332,701,2626,731"/>
+<area shape="rect" id="node37" href="$DateOrTimeType_8hpp.html" title="xqilla/items/DateOrTimeType.hpp" alt="" coords="1119,160,1364,189"/>
+<area shape="rect" id="node58" href="$Timezone_8hpp.html" title="xqilla/items/Timezone.hpp" alt="" coords="1388,160,1583,189"/>
+<area shape="rect" id="node47" href="$Numeric_8hpp.html" title="xqilla/items/Numeric.hpp" alt="" coords="2546,392,2732,421"/>
+</map>

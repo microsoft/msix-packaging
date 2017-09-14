@@ -1,0 +1,260 @@
+XQilla: an XQuery and XPath 2.0 library and command line interpreter.
+version 2.3.3 (2015.07.07):
+	* Fixed a localization bug parsing floating point numbers.
+	* Added Visual Studio 2012 projects.
+	* Added Visual Studio 2008 projects.
+	* Removed Visual Studio 2005 and 2003 projects.
+	* Modified to build against Xerces-C 3.1.3.
+	
+version 2.3.2 (2015.07.07):
+	* XQilla can now be built with Visual Studios 2013.
+	
+version 2.3.1 (2015.05.18):
+	* Modified to build against Xerces-C 3.1.2.
+	* Added Visual Studio 2010 projects.
+	* Fixed a bug that could cause incorrect query results when combining
+	  nested expressions and functions.
+	* Fixed a crash that could happen when XQilla is built with Visual
+	  Studio 2010 or higher.
+
+version 2.3.0 (2011.09.09):
+	* Added support for XQuery 3.0 version declarations.
+	* Updated to support XQuery 3.0 higher order functions, including
+	  partial function application, function coercion, and function item
+	  SequenceType checking.
+	* Implemented XQuery 3.0 FLWOR clause ordering.
+	* Implemented XQuery 3.0 FLWOR count clause.
+	* Implemented XQuery 3.0 extended typeswitch syntax.
+	* Implemented XQuery 3.0 namespace test and constructor.
+	* Implemented XQuery 3.0 private functions.
+	* Updated to the latest W3C XQuery Full Text syntax.
+	* Implemented Unicode word bounding and sentence bounding for XQuery
+	  Full Text tokenization.
+	* Implemented XQuery Full Text case options.
+	* Implemented XQuery 1.0 second edition semantics for module import.
+	* Added the xqilla:explain() function to return the query plan of an
+	  expression.
+	* Added xqilla:words() and xqilla:sentences() to perform Unicode word
+	  and sentance boundary detection.
+	* Added xqilla:drop().
+	* Rewrote a number of the built-in XQuery functions in XQuery itself.
+	* Implemented constant time indexing into materialized sequences.
+	* Improved the efficiency of the tail call optimization code.
+	* Optimized boolean operators.
+	* Optimized DOMDocument::evaluate() calls.
+	* Fixed various bugs in static typing.
+	* Fixed various memory leaks in the DOM 3 API, and regular expressions.
+	* Fixed a bug that caused a crash when using huge integers.
+	* Modified to build against Xerces-C 3.1.1
+	* Added Visual Studio 2010 support.
+	* Build fix for AIX 5.3.
+	* Build fix for the clang++ compiler.
+	* Build fix for GCC 4.6.
+
+version 2.2.4 (2010.03.01):
+	* Modified to build against Xerces-C 3.1.0
+	* Modified the DOM 3 API to only orphan grammars if PSVI is enabled.
+	* Fixed computed attribute constructors not to use the default element
+	  namespace for names.
+	* Modified node serialization to generate prefixes for attributes with
+	  no prefix but in a namespace.
+	* Modified node serialization to use existing prefixes if possible.
+	* Fixed an unknown exception during certain update operations.
+	* Build fix for Sun Workshop 6 compiler.
+	* Build fix for older GCC.
+	* Added maintainer mode (--enable-maintainer-mode) to rebuild build
+	  related files.
+
+version 2.2.3 (2009.11.12):
+	* Work around for a Xerces-C bug in DOMDocument::importNode() that
+	  resulted in badly copied prefixes using XQuery Update.
+	* Fixed a segfault in the DOM 3 API by orphaning Xerces-C Grammar
+	  correctly.
+	* Fixed optimization of count(), exists(), and empty() based on static
+	  type if the argument uses doc() or collection().
+	* Fixed a bug that caused a crash when using "order by" in some
+	  circumstances.
+	* Fixed query/module static-typing to also (re-)static type the modules
+	  it imports.
+	* Fixed a bug in fn:codepoint-equal().
+
+version 2.2.2 (2009.07.02):
+	* Fixed XQillaDocumentImpl::cloneNode() to return an instance of
+	  XQillaDocumentImpl.
+	* Fixed XPath 2.0 so that it doesn't recognize entities in
+	  string literals.
+	* Fixed a bug in the constant folding identity transforms for
+	  arithmetic expressions.
+	* Fixed a bug in the undefined context item check.
+	* Fixed the transform expression to copy document nodes rather than
+	  dissolving them.
+	* Fixed a bug in the static typing of external functions.
+	* Fixed a bug in fn:matches()with a zero-length string as the first
+	  argument.
+	* Fixed a couple of bugs in the debug API, and made it report exit() and
+	  end() events correctly.
+	* Fixed variable inlining so that variables aren't inlined into loops.
+	* Fixed a segfault when parsing a document from a memory buffer.
+	* Fixed a bug in XQC_Implementation->parse_document_file() that
+	  caused parsing to always fail.
+	* Workaround a bug in Xerces-C that can cause corrupted memory when
+	  deleting a mutex.
+	* Fixed a bug related to unsigned int/XMLSize_t type difference between
+	  Xerces-C 2.8 and 3.0.
+	* Fixed alignment on sparc architectures that could cause a SIGBUS
+	  crash.
+	* Fixed a Windows memory bug involving the URI used in resolving a
+	  document or collection.
+	* Fixed Windows compile warnings related to Xerces-C types.
+	* Updated libtool version to 2.2.6.
+	* Fixed some compiler issues related to the xlC compiler.
+
+version 2.2.0 (2009.01.05):
+	* Added a debugging API, and a command line debugger invoked by passing
+	  a "-d" flag to the command line tool.
+	* Added a partial implementation of XSLT 2.0. This should currently be
+	  considered alpha quality.
+	* Added an implementation of the current draft of XQC, a standard C API
+	  for accessing XQuery implementations.
+	* Added a prototype implementation of higher order functions for XQuery.
+	* Added the ExternalFunctionResolver API to resolve implementations for
+	  external functions that are unknown before compile time.
+	* Added the xqilla:analyze-string() extension function for performing
+	  complex regular expression analysis.
+	* Added query options for controlling schema validation, document
+	  projection and lint warnings.
+	* Added a --disable-rpath configure option for maintainers.
+	* Implemented function and variable inlining, and other partial
+	  evaluation optimizations.
+	* Implemented tail recursion optimization.
+	* Modified XQilla to compile against Xerces-C 3.0. A source installation
+	  of Xerces-C is no longer necessary for compilation.
+	* Improved static typing with cardinality information.
+	* Fixed a bug in schema validation of a document in no namespace.
+	* Fixed schema validation to check ID/IDREF constraints correctly.
+	* Fixed a bug in validation of SequenceTypes like
+	  document-node(schema-element(XX)).
+	* Fixed a bug in re-writing documents to disk after updating them, when
+	  they have a space in their document URIs.
+
+version 2.1.4 (2008.07.31):
+	* Fixed a bug in XQTreatAs that removed type checking under
+	  circumstances where it was still needed.
+
+version 2.1.3 (2008.07.29):
+	* Modified the StaticAnalysis class in order to reduce the memory
+	  footprint of a prepared query by at least 50%.
+	* Changed the code so that compilation against a patched version of
+	  Xerces-C 2.8 is no longer required. XQilla will build with reduced
+	  functionality without the patches.
+	* Workaround a Windows optimizer issue that caused instance of
+	  queries to fail in a release build on Windows.
+	* Fixed another Solaris compilation bug.
+
+version 2.1.2 (2008.04.28):
+	* Fixed a bug in static resolution of replace expressions
+	* Fixed the Xerces-C data model layer to work correctly with DOM Level 1
+	  elements and attributes.
+	* Worked around a Xerces-C bug that resulted in exceptions when using
+	  the DOM 3 API with certain schemas.
+	* Fixed a 64 bit compilation problem.
+	* Fixed a Solaris compilation problem.
+
+version 2.1.1 (2008.04.08):
+	* Added the xqilla:parse-json() and xqilla:serialize-json() extension
+	  functions to parse and serialize JSON.
+	* Added the xqilla:parse-html() function which uses HTML Tidy to parse
+	  HTML into XML. The function will not be compiled if TidyLib is not
+	  found.
+	* Added fn:unparsed-text(), a function from XSLT 2.0 which can fetch a
+	  URL and return it as a string.
+	* Added an xqilla:time() function which outputs the time taken to
+	  evaluate it's argument.
+	* Added src/xercesc_content_type.patch which should be applied
+	  against Xerces-C 2.8 to fix an HTTP connection bug.
+	* Added src/xercesc_regex.patch which should be applied against Xerces-C
+	  2.8 to fix a regular expression bug in fn:replace().
+	* Added project files for Visual C++ 8, including 64 bit build
+	  targets.
+	* Changed the default XQuery Update revalidation mode to LAX.
+	* Fixed a bug in the lexing of element and attribute content in
+	  queries that incorrectly rejected certain Unicode characters.
+	* Fixed a bug in external functions when used with modules.
+	* Fixed a memory leak in the FastXDMURIResolver.
+	* Fixed a segfault in XPath2ResultImpl if the results were only
+	  partially navigated.
+	* Fixed a bug in XPath2ResultImpl where XQExceptions weren't being
+	  turned into XQillaExceptions.
+	* Fixed XQilla to compile using Visual C++ 6.
+	* Fixed compilation flags to work under HPUX.
+
+version 2.0.0 (2007.12.12):
+	* Changed the license for XQilla to the Apache License v2, a more
+	  permissive open-source licence.
+	* Implemented document projection, an optimisation technique that prunes
+	  sub-trees of documents not needed for the query at parse time. This is
+	  enabled by default.
+	* Added a new extension function xqilla:parse-xml() which takes a string
+	  and parses it as an XML document.
+	* Added optional support for using the FAXPP XML parser instead of the
+	  Xerces-C parser.
+	* Added a command line option to the "xqilla" utility for binding
+	  external variables from the command line.
+	* Implemented better error messages for type errors.
+	* Modified the embedded MAPM library so we are now using it under the
+	  terms of the MIT licence.
+	* Fixed miscellaneous bugs in the XQuery Update implementation.
+	* Fixed a bug with the algorithm to add and subtract an
+	  xs:dayTimeDuration to or from an xs:date.
+	* Fixed a bug in XercesNodeImpl which caused a segfault if the node was
+	  created as a value of a global variable in another module.
+
+version 1.1.0 (2007.08.31):
+	* Added support for XQuery Update (Last Call Working Draft, 28 August
+	  2007).
+	* Added XQillaConfiguration, which encapsulates everything needed to
+	  create or use a new data model.
+	* Implemented a new data model called FastXDM. It places nodes in a
+	  sequential array, and is much faster and more memory efficient than
+	  the DOM based data model. This is now the default data model.
+	* Implemented XercesConfiguration, to enable use of the Xerces-C DOM
+	  based data model.
+	* Implemented EventHandler, an event based execution interface. This is
+	  used primarily for efficient evaluation of constructed nodes. This can
+	  be invoked using XQQuery::execute(EventHandler*,DynamicContext*).
+	* Added the ExternalFunction class, to allow users to easily implement
+	  XQuery external functions.
+	* Added the MessageListener interface, to allow users to easily receive
+	  warning and trace messages.
+	* Implemented closures, to enable the efficient and lazy execution of
+	  "let" expressions.
+	* Implemented more lazy execution code for "order by" expressions
+	* Added better error messages for sequence type checking errors.
+	* Removed the XQDebugCallback API.
+	* Rewrote the lexer and parser to be more memory efficient.
+	* Rewrote "validate" expressions to be more memory efficient.
+	* Modified the XQuery Test Suite runner to run the forthcoming XQuery
+	  Update test suite.
+	* Made minor changes to allow compilation against the Xerces-C 2.8
+	  release candidate.
+	* Fixed a bug in the limit checking of the seconds field in the time
+	  when parsing.
+	* Fixed modules so that the correct language is used to parse the
+	  module.
+	* Fixed a bug in the code to create a new dynamic context for a
+	  module.
+	* Fixed possible segmentation faults and memory leaks when using the
+	  DOM3 API
+	* A number of other miscellaneous minor bug fixes.
+
+version 1.0.1 (2007.02.12):
+	* Fixed fn:concat() to accept more than 51 arguments.
+	* Fixed module parsing, to use the correct language enumeration when
+	  parsing. Output modules in the query plan.
+	* Fixed a race condition in the parsing of function signatures.
+	* Fixed parse errors in the DOM3 API, which were being thrown as
+	  XQException instead of XQillaException. [1626534]
+	* Fixed the building of shared libraries under Cygwin, by adding
+	  -no-undefined to the libtool line in the Makefile. [1639669]
+	* Fixed a bug in the static typing of user defined functions, that could
+	  result in incorrect errors.

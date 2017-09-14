@@ -1,0 +1,11 @@
+<map id="G" name="G">
+<area shape="rect" id="node5" href="$XPath2MemoryManager_8hpp.html" title="xqilla/framework/XPath2MemoryManager.hpp" alt="" coords="5,392,328,421"/>
+<area shape="rect" id="node21" href="$Node_8hpp.html" title="xqilla/items/Node.hpp" alt="" coords="704,83,869,112"/>
+<area shape="rect" id="node47" href="$XMemory_8hpp.html" title="xercesc/util/XMemory.hpp" alt="" coords="1189,469,1384,499"/>
+<area shape="rect" id="node15" href="$MemoryManager_8hpp.html" title="xercesc/framework/MemoryManager.hpp" alt="" coords="453,469,747,499"/>
+<area shape="rect" id="node23" href="$ATQNameOrDerived_8hpp.html" title="xqilla/items/ATQNameOrDerived.hpp" alt="" coords="355,160,621,189"/>
+<area shape="rect" id="node39" href="$ATBooleanOrDerived_8hpp.html" title="xqilla/items/ATBooleanOrDerived.hpp" alt="" coords="652,160,921,189"/>
+<area shape="rect" id="node27" href="$AnyAtomicType_8hpp.html" title="xqilla/items/AnyAtomicType.hpp" alt="" coords="513,237,748,267"/>
+<area shape="rect" id="node30" href="$Item_8hpp.html" title="xqilla/items/Item.hpp" alt="" coords="901,315,1064,344"/>
+<area shape="rect" id="node33" href="$ReferenceCounted_8hpp.html" title="xqilla/framework/ReferenceCounted.hpp" alt="" coords="564,392,855,421"/>
+</map>

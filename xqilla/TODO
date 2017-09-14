@@ -1,0 +1,61 @@
+Features
+--------
+
+Complete XQuery Fulltext support
+XQueryP support
+XQuery 1.1 Grouping support
+Complete XSLT 2.0 support
+Support pre-parsed modules
+Improve exceptions heirachy, and implement XQuery 1.1 try/catch
+Implement EXSLT math functions
+
+
+Optimization
+------------
+
+Hash map implementation of distinct-values()
+nested loop elimination (group recognition, join recognition)
+common sub-expression extraction
+faster modifiable data model
+Document projection for recursive functions
+pull event execution
+Remove and free unused global variables
+Better static typing esp. for higher order functions
+
+
+Infrastructure
+--------------
+
+query plan output using event API
+string pool that returns numeric identifier
+support for UTF-8 execution?
+extract basic schema types from Xerces-C
+abstract schema type access (no direct access to Xerces objects)
+Improve MAPM concurrency
+Windows -- re-enable warning 4996 (xqilla_config.h) and address the "unsafe" warnings
+	for use of strcat, strcpy, etc
+Write query plans to byte code, and execute the byte code in a virtual machine
+Save out parsed query to disk
+
+
+QA
+--
+
+fix UTF-16 bugs
+fix XQTS bugs
+new test suite
+test XQuery Fulltext
+Fix ATDoubleOrDerivedImpl and ATFloatOrDerivedImpl to use double and float types
+Make xs:decimal infinite length
+Fix numeric output methods to use variable size buffers
+Fix module import to work correctly, including:
+  - using the correct static context
+  - returning known schema types
+  - checking import circularities correctly
+
+
+Query Prepare Optimization
+--------------------------
+
+Rewrite DatatypeLookup to be cheaper and more efficient - maybe write our own primitive type handling?
+DocumentCacheImpl is expensive to create, maybe don't always create a scanner? Maybe handle primitive schema types ourselves?
