@@ -4,3 +4,6 @@
 [submodule "openssl"]
 	path = openssl
 	url = https://github.com/openssl/openssl.git
+[submodule "xerces"]
+	path = xerces
+	url = https://github.com/apache/xerces-c.git
