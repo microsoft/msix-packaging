@@ -7,3 +7,6 @@
 [submodule "xerces"]
 	path = xerces
 	url = https://github.com/apache/xerces-c.git
+[submodule "xalan"]
+	path = xalan
+	url = https://github.com/apache/xalan-c.git
