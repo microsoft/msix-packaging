@@ -25,6 +25,17 @@
 /* Begin PBXFileReference section */
 		EED4B3CD1F6BAE3A00C2F5E9 /* MacXPlat */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = MacXPlat; sourceTree = BUILT_PRODUCTS_DIR; };
 		EED4B3D01F6BAE3A00C2F5E9 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		EED4B3D71F6E238E00C2F5E9 /* Base64Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Base64Stream.hpp; sourceTree = "<group>"; };
+		EED4B3D81F6E238E00C2F5E9 /* CRC32Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CRC32Stream.hpp; sourceTree = "<group>"; };
+		EED4B3D91F6E238E00C2F5E9 /* Exceptions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Exceptions.hpp; sourceTree = "<group>"; };
+		EED4B3DA1F6E238E00C2F5E9 /* FileStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FileStream.hpp; sourceTree = "<group>"; };
+		EED4B3DB1F6E238E00C2F5E9 /* OffsetStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = OffsetStream.hpp; sourceTree = "<group>"; };
+		EED4B3DC1F6E238E00C2F5E9 /* PartitionStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PartitionStream.hpp; sourceTree = "<group>"; };
+		EED4B3DD1F6E238E00C2F5E9 /* SequenceStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SequenceStream.hpp; sourceTree = "<group>"; };
+		EED4B3DE1F6E238E00C2F5E9 /* SHA256Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SHA256Stream.hpp; sourceTree = "<group>"; };
+		EED4B3DF1F6E238E00C2F5E9 /* StreamBase.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = StreamBase.hpp; sourceTree = "<group>"; };
+		EED4B3E01F6E238E00C2F5E9 /* ZipFileStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ZipFileStream.hpp; sourceTree = "<group>"; };
+		EED4B3E11F6E238E00C2F5E9 /* ZipStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ZipStream.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -41,6 +52,17 @@
 		EED4B3C41F6BAE3A00C2F5E9 = {
 			isa = PBXGroup;
 			children = (
+				EED4B3D71F6E238E00C2F5E9 /* Base64Stream.hpp */,
+				EED4B3D81F6E238E00C2F5E9 /* CRC32Stream.hpp */,
+				EED4B3D91F6E238E00C2F5E9 /* Exceptions.hpp */,
+				EED4B3DA1F6E238E00C2F5E9 /* FileStream.hpp */,
+				EED4B3DB1F6E238E00C2F5E9 /* OffsetStream.hpp */,
+				EED4B3DC1F6E238E00C2F5E9 /* PartitionStream.hpp */,
+				EED4B3DD1F6E238E00C2F5E9 /* SequenceStream.hpp */,
+				EED4B3DE1F6E238E00C2F5E9 /* SHA256Stream.hpp */,
+				EED4B3DF1F6E238E00C2F5E9 /* StreamBase.hpp */,
+				EED4B3E01F6E238E00C2F5E9 /* ZipFileStream.hpp */,
+				EED4B3E11F6E238E00C2F5E9 /* ZipStream.hpp */,
 				EED4B3CF1F6BAE3A00C2F5E9 /* MacXPlat */,
 				EED4B3CE1F6BAE3A00C2F5E9 /* Products */,
 			);
