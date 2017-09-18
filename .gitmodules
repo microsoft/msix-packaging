@@ -10,3 +10,6 @@
 [submodule "xalan"]
 	path = xalan
 	url = https://github.com/apache/xalan-c.git
+[submodule "fb-util-for-appx"]
+	path = fb-util-for-appx
+	url = https://github.com/facebook/fb-util-for-appx.git
