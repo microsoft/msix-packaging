@@ -27,6 +27,18 @@ namespace xPlat {
             throw NotImplementedException();
         }
 
+        // just like ferror
+        virtual int Ferror()
+        {
+            throw NotImplementedException();
+        }
+
+        // just like feof
+        virtual int Feof()
+        {
+            throw NotImplementedException();
+        }
+
         virtual void CopyTo(StreamBase& to)
         {
             std::uint8_t buffer[1024];  // 1k at a time ought to be sufficient

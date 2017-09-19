@@ -42,11 +42,21 @@ namespace xPlat {
             std::size_t bytesRead = std::fread(
                 static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
             );
-            if (bytesRead < size && !std::feof(file))
+            if (bytesRead < size && !Feof())
             {
-                throw FileException(name, std::ferror(file));
+                throw FileException(name, Ferror());
             }
             return bytesRead;
+        }
+
+        int Ferror()
+        {
+            return std::ferror(file);
+        }
+
+        int Feof()
+        {
+            return std::feof(file);
         }
 
         void Write(std::size_t size, const std::uint8_t* bytes)

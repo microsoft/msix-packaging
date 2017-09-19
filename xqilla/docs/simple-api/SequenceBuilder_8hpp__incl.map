@@ -1,9 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node5" href="$EventHandler_8hpp.html" title="xqilla/events/EventHandler.hpp" alt="" coords="59,83,288,112"/>
-<area shape="rect" id="node30" href="$XMemory_8hpp.html" title="xercesc/util/XMemory.hpp" alt="" coords="883,392,1077,421"/>
-<area shape="rect" id="node8" href="$AnyAtomicType_8hpp.html" title="xqilla/items/AnyAtomicType.hpp" alt="" coords="371,160,605,189"/>
-<area shape="rect" id="node25" href="$LocationInfo_8hpp.html" title="xqilla/ast/LocationInfo.hpp" alt="" coords="43,315,237,344"/>
-<area shape="rect" id="node11" href="$Item_8hpp.html" title="xqilla/items/Item.hpp" alt="" coords="413,237,576,267"/>
-<area shape="rect" id="node14" href="$ReferenceCounted_8hpp.html" title="xqilla/framework/ReferenceCounted.hpp" alt="" coords="515,315,805,344"/>
-<area shape="rect" id="node17" href="$MemoryManager_8hpp.html" title="xercesc/framework/MemoryManager.hpp" alt="" coords="565,392,859,421"/>
-</map>

@@ -1,15 +1,15 @@
-[submodule "zlib"]
-	path = zlib
+[submodule "lib/zlib"]
+	path = lib/zlib
 	url = https://github.com/madler/zlib.git
-[submodule "openssl"]
-	path = openssl
+[submodule "lib/openssl"]
+	path = lib/openssl
 	url = https://github.com/openssl/openssl.git
-[submodule "xerces"]
-	path = xerces
+[submodule "lib/xerces"]
+	path = lib/xerces
 	url = https://github.com/apache/xerces-c.git
-[submodule "xalan"]
-	path = xalan
+[submodule "lib/xalan"]
+	path = lib/xalan
 	url = https://github.com/apache/xalan-c.git
-[submodule "fb-util-for-appx"]
-	path = fb-util-for-appx
+[submodule "sample/fb-util-for-appx"]
+	path = sample/fb-util-for-appx
 	url = https://github.com/facebook/fb-util-for-appx.git

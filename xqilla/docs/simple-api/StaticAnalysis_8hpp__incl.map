@@ -1,9 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node7" href="$StaticType_8hpp.html" title="xqilla/ast/StaticType.hpp" alt="" coords="224,83,408,112"/>
-<area shape="rect" id="node10" href="$AnyAtomicType_8hpp.html" title="xqilla/items/AnyAtomicType.hpp" alt="" coords="467,160,701,189"/>
-<area shape="rect" id="node27" href="$XPath2MemoryManager_8hpp.html" title="xqilla/framework/XPath2MemoryManager.hpp" alt="" coords="805,315,1128,344"/>
-<area shape="rect" id="node39" href="$XMemory_8hpp.html" title="xercesc/util/XMemory.hpp" alt="" coords="1333,392,1528,421"/>
-<area shape="rect" id="node13" href="$Item_8hpp.html" title="xqilla/items/Item.hpp" alt="" coords="412,237,575,267"/>
-<area shape="rect" id="node16" href="$ReferenceCounted_8hpp.html" title="xqilla/framework/ReferenceCounted.hpp" alt="" coords="291,315,581,344"/>
-<area shape="rect" id="node19" href="$MemoryManager_8hpp.html" title="xercesc/framework/MemoryManager.hpp" alt="" coords="707,392,1000,421"/>
-</map>

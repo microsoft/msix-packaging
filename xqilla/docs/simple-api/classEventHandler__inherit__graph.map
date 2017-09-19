@@ -1,9 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$classEventFilter.html" title="EventFilter" alt="" coords="291,83,387,112"/>
-<area shape="rect" id="node13" href="$classEventSerializer.html" title="EventSerializer" alt="" coords="411,83,533,112"/>
-<area shape="rect" id="node15" href="$classSequenceBuilder.html" title="SequenceBuilder" alt="" coords="557,83,691,112"/>
-<area shape="rect" id="node5" href="$classContentSequenceFilter.html" title="ContentSequenceFilter" alt="" coords="5,160,184,189"/>
-<area shape="rect" id="node7" href="$classNSFixupFilter.html" title="NSFixupFilter" alt="" coords="208,160,315,189"/>
-<area shape="rect" id="node9" href="$classQueryPathTreeFilter.html" title="QueryPathTreeFilter" alt="" coords="339,160,496,189"/>
-<area shape="rect" id="node11" href="$classSchemaValidatorFilter.html" title="The SchemaValidatorFilter class will modify the incoming event stream by validating..." alt="" coords="520,160,688,189"/>
-</map>

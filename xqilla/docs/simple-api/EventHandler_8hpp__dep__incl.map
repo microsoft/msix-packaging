@@ -1,9 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node3" href="$ContentSequenceFilter_8hpp.html" title="ContentSequenceFilter.hpp" alt="" coords="5,83,211,112"/>
-<area shape="rect" id="node5" href="$EventSerializer_8hpp.html" title="EventSerializer.hpp" alt="" coords="235,83,384,112"/>
-<area shape="rect" id="node9" href="$NSFixupFilter_8hpp.html" title="NSFixupFilter.hpp" alt="" coords="408,83,541,112"/>
-<area shape="rect" id="node12" href="$QueryPathTreeFilter_8hpp.html" title="QueryPathTreeFilter.hpp" alt="" coords="565,83,749,112"/>
-<area shape="rect" id="node14" href="$SequenceBuilder_8hpp.html" title="SequenceBuilder.hpp" alt="" coords="773,83,936,112"/>
-<area shape="rect" id="node16" href="$SchemaValidatorFilter_8hpp.html" title="SchemaValidatorFilter.hpp" alt="" coords="960,83,1155,112"/>
-<area shape="rect" id="node7" href="$xqilla-simple_8hpp.html" title="xqilla&#45;simple.hpp" alt="" coords="327,160,457,189"/>
-</map>

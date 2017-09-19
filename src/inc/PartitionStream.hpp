@@ -9,6 +9,8 @@
 
 namespace xPlat {
 
+
+
     // A stream for breaking a stream into partitions of equal length
     template <std::size_t partitionSize, typename StreamFactory>
     class PartitionStream : public StreamBase
@@ -33,7 +35,6 @@ namespace xPlat {
         cosnt std::vector<Stream>& Partitions() const { return partitions; }
 
     protected:
-
         void MoveToNextPartition()
         {
             if (bytesWritten)

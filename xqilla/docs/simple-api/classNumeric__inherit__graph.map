@@ -1,8 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node9" href="$classATDecimalOrDerived.html" title="ATDecimalOrDerived" alt="" coords="5,315,168,344"/>
-<area shape="rect" id="node11" href="$classATDoubleOrDerived.html" title="ATDoubleOrDerived" alt="" coords="192,315,347,344"/>
-<area shape="rect" id="node13" href="$classATFloatOrDerived.html" title="ATFloatOrDerived" alt="" coords="371,315,512,344"/>
-<area shape="rect" id="node2" href="$classAnyAtomicType.html" title="AnyAtomicType" alt="" coords="207,160,332,189"/>
-<area shape="rect" id="node4" href="$classItem.html" title="Item" alt="" coords="243,83,296,112"/>
-<area shape="rect" id="node6" href="$classReferenceCounted.html" title="Super class for reference counted classes." alt="" coords="195,5,344,35"/>
-</map>

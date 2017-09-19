@@ -1,6 +1,0 @@
-<map id="G" name="G">
-<area shape="rect" id="node2" href="$classxercesc_1_1DOMDocumentRange.html" title="xercesc::DOMDocumentRange" alt="" coords="13,5,248,35"/>
-<area shape="rect" id="node4" href="$classxercesc_1_1DOMXPathEvaluator.html" title="The evaluation of XPath expressions is provided by DOMXPathEvaluator." alt="" coords="19,59,243,88"/>
-<area shape="rect" id="node6" href="$classxercesc_1_1DOMDocumentTraversal.html" title="DOMDocumentTraversal contains methods that create DOMNodeIterators and DOMTreeWalkers..." alt="" coords="5,112,256,141"/>
-<area shape="rect" id="node8" href="$classxercesc_1_1DOMNode.html" title="The DOMNode interface is the primary datatype for the entire Document Object Model..." alt="" coords="53,165,208,195"/>
-</map>
