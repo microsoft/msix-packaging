@@ -51,6 +51,30 @@ namespace xPlat {
         };
     }
 
+
+    /* Zip File Structure
+    [LocalFileHeader 1]
+    [encryption header 1]
+    [file data 1]
+    [data descriptor 1]
+    .
+        .
+        .
+    [LocalFileHeader n]
+    [encryption header n]
+    [file data n]
+    [data descriptor n]
+    [archive decryption header]
+    [archive extra data record]
+    [CentralFileHeader 1]
+        .
+        .
+    [CentralFileHeader n]
+    [Zip64EndOfCentralDirectoryRecord]
+    [Zip64EndOfCentralDirectoryLocator]
+    [EndCentralDirectoryRecord]
+    */
+
     // This represents a raw stream over a.zip file.
     class ZipStream : public StreamBase
     {
@@ -66,6 +90,7 @@ namespace xPlat {
             LocalFileHeader = 0x04034b50,
             DataDescriptor = 0x08074b50,
             CentralFileHeader = 0x02014b50,
+            DigitalSignature = 0x05054b50,
             Zip64EndOfCD = 0x06064b50,
             Zip64EndOfCDLocator = 0x07064b50,
             EndOfCentralDirectory = 0x06054b50,
@@ -157,9 +182,218 @@ namespace xPlat {
             {/*constructor*/}
         }; //class LocalFileHeader
 
+        
+
+        class CentralFileHeader : public StructuredObject
+        {
+        public:
+            std::uint32_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
+            void SetSignature(std::uint32_t value) { Field(0).SetValue(value); }
+
+            std::uint16_t GetVersionMadeBy() { return Field(1).Value<std::uint16_t>(); }
+            void SetVersionMadeBy(std::uint16_t value) { Field(1).SetValue(value); }
+
+            std::uint16_t GetVersionNeededToExtract() { return Field(2).Value<std::uint16_t>(); }
+            void SetVersionNeededToExtract(std::uint16_t value) { Field(2).SetValue(value); }
+
+            std::uint16_t GetGeneralPurposeBitFlag() { return Field(3).Value<std::uint16_t>(); }
+            void SetGeneralPurposeBitFlag(std::uint16_t value) { Field(3).SetValue(value); }
+
+            std::uint16_t GetCompressionMethod() { return Field(4).Value<std::uint16_t>(); }
+            void SetCompressionMethod(std::uint16_t value) { Field(4).SetValue(value); }
+
+            std::uint16_t GetLastModFileTime() { return Field(5).Value<std::uint16_t>(); }
+            void SetLastModFileTime(std::uint16_t value) { Field(5).SetValue(value); }
+
+            std::uint16_t GetLastModFileDate() { return Field(6).Value<std::uint16_t>(); }
+            void SetLastModFileDate(std::uint16_t value) { Field(6).SetValue(value); }
+
+            std::uint32_t GetCrc32() { return Field(7).Value<std::uint32_t>(); }
+            void SetCrc(std::uint16_t value) { Field(7).SetValue(value); }
+
+            std::uint32_t GetCompressedSize() { return Field(8).Value<std::uint32_t>(); }
+            void SetCompressedSize(std::uint32_t value) { Field(8).SetValue(value); }
+
+            std::uint32_t GetUncompressedSize() { return Field(9).Value<std::uint32_t>(); }
+            void SetUncompressedSize(std::uint32_t value) { Field(9).SetValue(value); }
+
+            std::uint16_t GetFileNameLength() { return Field(10).Value<std::uint16_t>(); }
+            void SetFileNameLength(std::uint16_t value) { Field(10).SetValue(value); }
+
+            std::uint16_t GetExtraFieldLength() { return Field(11).Value<std::uint16_t>(); }
+            void SetExtraFieldLength(std::uint16_t value) { Field(11).SetValue(value); }
+
+            std::uint16_t GetFileCommentLength() { return Field(12).Value<std::uint16_t>(); }
+            void SetFileCommentLength(std::uint16_t value) { Field(12).SetValue(value); }
+
+            std::uint16_t GetDiskNumberStart() { return Field(13).Value<std::uint16_t>(); }
+            void SetDiskNumberStart(std::uint16_t value) { Field(13).SetValue(value); }
+
+            std::uint16_t GetInternalFileAttributes() { return Field(14).Value<std::uint16_t>(); }
+            void SetInternalFileAttributes(std::uint16_t value) { Field(14).SetValue(value); }
+
+            std::uint16_t GetExternalFileAttributes() { return Field(15).Value<std::uint16_t>(); }
+            void SetExternalFileAttributes(std::uint16_t value) { Field(15).SetValue(value); }
+
+            //16 - relative offset of local header 4 bytes
+            std::uint32_t GetRelativeOffsetOfLocalHeader() { return Field(16).Value<std::uint32_t>(); }
+            void SetRelativeOffsetOfLocalHeader(std::uint32_t value) { Field(16).SetValue(value); }
+
+            std::string GetFileName() {
+                auto data = Field(17).Value<std::vector<std::uint8_t>>();
+                return std::string(data.begin(), data.end());
+            }
+
+            void SetFileName(std::string name)
+            {
+                auto data = Field(17).Value<std::vector<std::uint8_t>>();
+                data.resize(name.size());
+                data.assign(name.begin(), name.end());
+                SetFileNameLength(static_cast<std::uint16_t>(name.size()));
+            }
+
+            std::string GetExtraField() {
+                auto data = Field(18).Value<std::vector<std::uint8_t>>();
+                return std::string(data.begin(), data.end());
+            }
+
+            void SetExtraField(std::string extra)
+            {
+                auto data = Field(18).Value<std::vector<std::uint8_t>>();
+                data.resize(extra.size());
+                data.assign(extra.begin(), extra.end());
+                SetExtraFieldLength(static_cast<std::uint16_t>(extra.size()));
+            }
+
+            std::string GetComment() {
+                auto data = Field(19).Value<std::vector<std::uint8_t>>();
+                return std::string(data.begin(), data.end());
+            }
+
+            void SetComment(std::string comment)
+            {
+                auto data = Field(18).Value<std::vector<std::uint8_t>>();
+                data.resize(comment.size());
+                data.assign(comment.begin(), comment.end());
+                SetExtraFieldLength(static_cast<std::uint16_t>(comment.size()));
+            }
+
+            CentralFileHeader(StreamBase& stream) : StructuredObject(
+            {
+                // 0 - central file header signature   4 bytes(0x02014b50)
+                Meta::Field4Bytes(stream, [](std::uint32_t& v)
+                {
+                    if (v != Signatures::CentralFileHeader)
+                    {
+                    throw ZipException("central file header does not match signature", ZipException::Error::InvalidHeader);
+                    }
+                }),
+                // 1 - version made by                 2 bytes
+                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                // 2 - version needed to extract       2 bytes
+                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                // 3 - general purpose bit flag        2 bytes
+                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                // 4 - compression method              2 bytes
+                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                // 5 - last mod file time              2 bytes
+                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                // 6 - last mod file date              2 bytes
+                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                // 7 - crc - 32                          4 bytes
+                Meta::Field4Bytes(stream,[](std::uint32_t& v) {}),
+                // 8 - compressed size                 4 bytes
+                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                // 9 - uncompressed size               4 bytes
+                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                //10 - file name length                2 bytes
+                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                {
+                    if (GetFileNameLength() > std::numeric_limits<std::uint16_t>::max())
+                    {
+                        throw ZipException("file name exceeds max size", ZipException::Error::FieldOutOfRange);
+                    }
+                    Field(17).Value<std::vector<std::uint8_t>>().resize(GetFileNameLength(), 0);
+                }),
+                //11 - extra field length              2 bytes
+                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                {
+                    if (GetExtraFieldLength() > std::numeric_limits<std::uint16_t>::max())
+                    {
+                        throw ZipException("file name exceeds max size", ZipException::Error::FieldOutOfRange);
+                    }
+                    Field(18).Value<std::vector<std::uint8_t>>().resize(GetExtraFieldLength(), 0);
+                }),
+                //12 - file comment length             2 bytes
+                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                {
+                    if (GetFileCommentLength() > std::numeric_limits<std::uint16_t>::max())
+                    {
+                        throw ZipException("file comment exceeds max size", ZipException::Error::FieldOutOfRange);
+                    }
+                    Field(19).Value<std::vector<std::uint8_t>>().resize(GetFileCommentLength(), 0);
+                }),
+                //13 - disk number start               2 bytes
+                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                //14 - internal file attributes        2 bytes
+                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                //15 - external file attributes        4 bytes
+                Meta::Field4Bytes(stream,[](std::uint32_t& v) {}),
+                //16 - relative offset of local header 4 bytes
+                Meta::Field4Bytes(stream,[](std::uint32_t& v) {}),
+                //17 - file name(variable size)
+                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {}),
+                //18 - extra field(variable size)
+                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {}),
+                //19 - file comment(variable size)
+                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {})
+            })
+            {/*constructor*/
+            }
+        };//class CentralFileHeader
+            
+
+        class DigitalSignature : public StructuredObject
+        {
+        public:
+            std::uint32_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
+            void SetSignature(std::uint32_t value) { Field(0).SetValue(value); }
+
+            std::uint16_t GetDataSize() { return Field(1).Value<std::uint16_t>(); }
+            void SetDataSize(std::uint16_t value) { Field(1).SetValue(value); }
+            
+            DigitalSignature(StreamBase& stream) : StructuredObject(
+            {
+                // 0 - header signature  4 bytes(0x05054b50)
+                Meta::Field4Bytes(stream, [](std::uint32_t& v)
+                {   if (v != Signatures::DigitalSignature)
+                {
+                    throw ZipException("digital signature does not match signature", ZipException::Error::InvalidHeader);
+                }
+                }),
+                // 1 - size of data 2 bytes
+                Meta::Field2Bytes(stream, [this](std::uint16_t& v) 
+                {
+                    if (GetDataSize() > std::numeric_limits<std::uint16_t>::max())
+                    {
+                        throw ZipException("signature data exceeds max size", ZipException::Error::FieldOutOfRange);
+                    }
+                    Field(2).Value<std::vector<std::uint8_t>>().resize(GetDataSize(), 0);
+                }),
+                // 2 - signature data(variable size)
+                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {})
+            })
+            {/*constructor*/
+            }
+        };//class DigitalSignature
+
+           
+
         class Zip64EndOfCentralDirectoryRecord : public StructuredObject
         {
         public:
+                       
+            
             std::uint32_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
             void GetSignature(std::uint32_t value) { Field(0).SetValue(value); }
 
