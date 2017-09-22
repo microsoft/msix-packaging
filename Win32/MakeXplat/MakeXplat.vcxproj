@@ -89,6 +89,7 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\src\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -115,6 +116,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\src\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -141,7 +143,14 @@
   <ItemGroup>
     <ProjectReference Include="..\xPlatAppx\xPlatAppx.vcxproj">
       <Project>{551bfacc-bcbf-4d65-a0de-3aa48f79005e}</Project>
+      <LinkLibraryDependencies>true</LinkLibraryDependencies>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\MakeXplat\main.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\inc\xPlatAppx.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

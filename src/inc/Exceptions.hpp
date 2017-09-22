@@ -1,4 +1,5 @@
-
+#include <cstdint>
+#include <string>
 #include <exception>
 
 namespace xPlat {
@@ -6,7 +7,7 @@ namespace xPlat {
     class ExceptionBase : public std::exception
     {
     public:
-        enum Facility : std::uint32_t {
+        enum Facility : uint32_t {
             NONE = 0x0000,
             FILE = 0x1000,
             ZIP =  0x2000,
@@ -17,7 +18,7 @@ namespace xPlat {
         ExceptionBase() {}
         ExceptionBase(Facility facility) : facility(facility) {}
 
-        void SetLastError(std::uint32_t error)
+        void SetLastError(uint32_t error)
         {
             code = header + facility + (error & Facility::MAX);
         }
@@ -26,17 +27,18 @@ namespace xPlat {
 
     protected:
         Facility facility = Facility::NONE;
-        std::uint32_t header = 0x8BAD0000;   // facility 2989
-        std::uint32_t code   = 0xFFFFFFFF;   // by default, something very bad happened...
+        uint32_t header = 0x8BAD0000;   // facility 2989
+        uint32_t code   = 0xFFFFFFFF;   // by default, something very bad happened...
     };
 
-    class NotImplementedException : public ExceptionBase { public: NotImplementedException() { SetLastError(1); } };
-    class NotSupportedException : public ExceptionBase {   public: NotSupportedException()   { SetLastError(2); } };
+    class NotImplementedException   : public ExceptionBase { public: NotImplementedException()  { SetLastError(1); } };
+    class NotSupportedException     : public ExceptionBase { public: NotSupportedException()    { SetLastError(2); } };
+    class InvalidArgumentException  : public ExceptionBase { public: InvalidArgumentException() { SetLastError(3); } };
 
     class FileException : public ExceptionBase
     {
     public:
-        FileException(std::string message, std::uint32_t error = 0) :
+        FileException(std::string message, uint32_t error = 0) :
             reason(message),
             ExceptionBase(ExceptionBase::Facility::FILE)
         {

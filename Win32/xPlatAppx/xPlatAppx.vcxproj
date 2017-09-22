@@ -88,7 +88,8 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;XPLATAPPX_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;XPLATAPPX_API</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\src\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -114,7 +115,8 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;XPLATAPPX_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;XPLATAPPX_API</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\src\inc</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -149,8 +151,15 @@
     <ClInclude Include="..\..\src\inc\SequenceStream.hpp" />
     <ClInclude Include="..\..\src\inc\SHA256Stream.hpp" />
     <ClInclude Include="..\..\src\inc\StreamBase.hpp" />
+    <ClInclude Include="..\..\src\inc\xPlatAppx.hpp" />
     <ClInclude Include="..\..\src\inc\ZipFileStream.hpp" />
     <ClInclude Include="..\..\src\inc\ZipStream.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="xPlatAppx.def" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\xPlatAppx\xPlatAppx.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
