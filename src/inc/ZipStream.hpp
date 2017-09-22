@@ -288,40 +288,40 @@ namespace xPlat {
                     {
                         throw ZipException("file name exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    Field(17).Value<std::vector<std::uint8_t>>().resize(GetFileNameLength(), 0);
+                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(17)).resize(GetFileNameLength(), 0);
                 }),
                 //11 - extra field length              2 bytes
-                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
                 {
                     if (GetExtraFieldLength() > std::numeric_limits<std::uint16_t>::max())
                     {
                         throw ZipException("file name exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    Field(18).Value<std::vector<std::uint8_t>>().resize(GetExtraFieldLength(), 0);
+                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(18)).resize(GetExtraFieldLength(), 0);
                 }),
                 //12 - file comment length             2 bytes
-                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
                 {
                     if (GetFileCommentLength() > std::numeric_limits<std::uint16_t>::max())
                     {
                         throw ZipException("file comment exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    Field(19).Value<std::vector<std::uint8_t>>().resize(GetFileCommentLength(), 0);
+                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(19)).resize(GetFileCommentLength(), 0);
                 }),
                 //13 - disk number start               2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 //14 - internal file attributes        2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 //15 - external file attributes        4 bytes
-                Meta::Field4Bytes(stream,[](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream,[](std::uint32_t& v) {}),
                 //16 - relative offset of local header 4 bytes
-                Meta::Field4Bytes(stream,[](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream,[](std::uint32_t& v) {}),
                 //17 - file name(variable size)
-                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {}),
+                std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {}),
                 //18 - extra field(variable size)
-                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {}),
+                std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {}),
                 //19 - file comment(variable size)
-                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {})
+                std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {})
             })
             {/*constructor*/
             }
