@@ -162,92 +162,92 @@ namespace xPlat {
         class CentralFileHeader : public StructuredObject
         {
         public:
-            std::uint32_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
-            void SetSignature(std::uint32_t value) { Field(0).SetValue(value); }
+            std::uint32_t GetSignature() { return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
+            void SetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
 
-            std::uint16_t GetVersionMadeBy() { return Field(1).Value<std::uint16_t>(); }
-            void SetVersionMadeBy(std::uint16_t value) { Field(1).SetValue(value); }
+            std::uint16_t GetVersionMadeBy() { return ObjectBase::GetValue<std::uint16_t>(Field(1)); }
+            void SetVersionMadeBy(std::uint16_t value) { ObjectBase::SetValue(Field(1), value); }
 
-            std::uint16_t GetVersionNeededToExtract() { return Field(2).Value<std::uint16_t>(); }
-            void SetVersionNeededToExtract(std::uint16_t value) { Field(2).SetValue(value); }
+            std::uint16_t GetVersionNeededToExtract() { return ObjectBase::GetValue<std::uint16_t>(Field(2)); }
+            void SetVersionNeededToExtract(std::uint16_t value) { ObjectBase::SetValue(Field(2), value); }
 
-            std::uint16_t GetGeneralPurposeBitFlag() { return Field(3).Value<std::uint16_t>(); }
-            void SetGeneralPurposeBitFlag(std::uint16_t value) { Field(3).SetValue(value); }
+            std::uint16_t GetGeneralPurposeBitFlag() { return ObjectBase::GetValue<std::uint16_t>(Field(3)); }
+            void SetGeneralPurposeBitFlag(std::uint16_t value) { ObjectBase::SetValue(Field(3), value); }
 
-            std::uint16_t GetCompressionMethod() { return Field(4).Value<std::uint16_t>(); }
-            void SetCompressionMethod(std::uint16_t value) { Field(4).SetValue(value); }
+            std::uint16_t GetCompressionMethod() { return ObjectBase::GetValue<std::uint_fast16_t>(Field(4)); }
+            void SetCompressionMethod(std::uint16_t value) { ObjectBase::SetValue(Field(4), value); }
 
-            std::uint16_t GetLastModFileTime() { return Field(5).Value<std::uint16_t>(); }
-            void SetLastModFileTime(std::uint16_t value) { Field(5).SetValue(value); }
+            std::uint16_t GetLastModFileTime() { return ObjectBase::GetValue<std::uint16_t>(Field(5)); }
+            void SetLastModFileTime(std::uint16_t value) { ObjectBase::SetValue(Field(5), value); }
 
-            std::uint16_t GetLastModFileDate() { return Field(6).Value<std::uint16_t>(); }
-            void SetLastModFileDate(std::uint16_t value) { Field(6).SetValue(value); }
+            std::uint16_t GetLastModFileDate() { return ObjectBase::GetValue<std::uint16_t>(Field(6)); }
+            void SetLastModFileDate(std::uint16_t value) { ObjectBase::SetValue(Field(6), value); }
 
-            std::uint32_t GetCrc32() { return Field(7).Value<std::uint32_t>(); }
-            void SetCrc(std::uint16_t value) { Field(7).SetValue(value); }
+            std::uint32_t GetCrc32() { return ObjectBase::GetValue<std::uint32_t>(Field(7)); }
+            void SetCrc(std::uint16_t value) { ObjectBase::SetValue(Field(7), value); }
 
-            std::uint32_t GetCompressedSize() { return Field(8).Value<std::uint32_t>(); }
-            void SetCompressedSize(std::uint32_t value) { Field(8).SetValue(value); }
+            std::uint32_t GetCompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(8)); }
+            void SetCompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(8), value); }
 
-            std::uint32_t GetUncompressedSize() { return Field(9).Value<std::uint32_t>(); }
-            void SetUncompressedSize(std::uint32_t value) { Field(9).SetValue(value); }
+            std::uint32_t GetUncompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(9)); }
+            void SetUncompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(9), value); }
 
-            std::uint16_t GetFileNameLength() { return Field(10).Value<std::uint16_t>(); }
-            void SetFileNameLength(std::uint16_t value) { Field(10).SetValue(value); }
+            std::uint16_t GetFileNameLength() { return ObjectBase::GetValue<std::uint16_t>(Field(10)); }
+            void SetFileNameLength(std::uint16_t value) { ObjectBase::SetValue(Field(10), value); }
 
-            std::uint16_t GetExtraFieldLength() { return Field(11).Value<std::uint16_t>(); }
-            void SetExtraFieldLength(std::uint16_t value) { Field(11).SetValue(value); }
+            std::uint16_t GetExtraFieldLength() { return ObjectBase::GetValue<std::uint16_t>(Field(11)); }
+            void SetExtraFieldLength(std::uint16_t value) { ObjectBase::SetValue(Field(11), value); }
 
-            std::uint16_t GetFileCommentLength() { return Field(12).Value<std::uint16_t>(); }
-            void SetFileCommentLength(std::uint16_t value) { Field(12).SetValue(value); }
+            std::uint16_t GetFileCommentLength() { return ObjectBase::GetValue<std::uint16_t>(Field(12)); }
+            void SetFileCommentLength(std::uint16_t value) { ObjectBase::SetValue(Field(12), value); }
 
-            std::uint16_t GetDiskNumberStart() { return Field(13).Value<std::uint16_t>(); }
-            void SetDiskNumberStart(std::uint16_t value) { Field(13).SetValue(value); }
+            std::uint16_t GetDiskNumberStart() { return ObjectBase::GetValue<std::uint16_t>(Field(13)); }
+            void SetDiskNumberStart(std::uint16_t value) { ObjectBase::SetValue(Field(13), value); }
 
-            std::uint16_t GetInternalFileAttributes() { return Field(14).Value<std::uint16_t>(); }
-            void SetInternalFileAttributes(std::uint16_t value) { Field(14).SetValue(value); }
+            std::uint16_t GetInternalFileAttributes() { return ObjectBase::GetValue<std::uint16_t>(Field(14)); }
+            void SetInternalFileAttributes(std::uint16_t value) { ObjectBase::SetValue(Field(14), value); }
 
-            std::uint16_t GetExternalFileAttributes() { return Field(15).Value<std::uint16_t>(); }
-            void SetExternalFileAttributes(std::uint16_t value) { Field(15).SetValue(value); }
+            std::uint16_t GetExternalFileAttributes() { return ObjectBase::GetValue<std::uint16_t>(Field(15)); }
+            void SetExternalFileAttributes(std::uint16_t value) { ObjectBase::SetValue(Field(15), value); }
 
             //16 - relative offset of local header 4 bytes
-            std::uint32_t GetRelativeOffsetOfLocalHeader() { return Field(16).Value<std::uint32_t>(); }
-            void SetRelativeOffsetOfLocalHeader(std::uint32_t value) { Field(16).SetValue(value); }
+            std::uint32_t GetRelativeOffsetOfLocalHeader() { return ObjectBase::GetValue<std::uint32_t>(Field(16)); }
+            void SetRelativeOffsetOfLocalHeader(std::uint32_t value) { ObjectBase::SetValue(Field(16), value); }
 
             std::string GetFileName() {
-                auto data = Field(17).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(17));
                 return std::string(data.begin(), data.end());
             }
 
             void SetFileName(std::string name)
             {
-                auto data = Field(17).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(17));
                 data.resize(name.size());
                 data.assign(name.begin(), name.end());
                 SetFileNameLength(static_cast<std::uint16_t>(name.size()));
             }
 
             std::string GetExtraField() {
-                auto data = Field(18).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(18));
                 return std::string(data.begin(), data.end());
             }
 
             void SetExtraField(std::string extra)
             {
-                auto data = Field(18).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(18));
                 data.resize(extra.size());
                 data.assign(extra.begin(), extra.end());
                 SetExtraFieldLength(static_cast<std::uint16_t>(extra.size()));
             }
 
             std::string GetComment() {
-                auto data = Field(19).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(19));
                 return std::string(data.begin(), data.end());
             }
 
             void SetComment(std::string comment)
             {
-                auto data = Field(18).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(19));
                 data.resize(comment.size());
                 data.assign(comment.begin(), comment.end());
                 SetExtraFieldLength(static_cast<std::uint16_t>(comment.size()));
@@ -256,7 +256,7 @@ namespace xPlat {
             CentralFileHeader(StreamBase* stream) : StructuredObject(
             {
                 // 0 - central file header signature   4 bytes(0x02014b50)
-                Meta::Field4Bytes(stream, [](std::uint32_t& v)
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
                 {
                     if (v != Signatures::CentralFileHeader)
                     {
@@ -264,25 +264,25 @@ namespace xPlat {
                     }
                 }),
                 // 1 - version made by                 2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 2 - version needed to extract       2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 3 - general purpose bit flag        2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 4 - compression method              2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 5 - last mod file time              2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 6 - last mod file date              2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 7 - crc - 32                          4 bytes
-                Meta::Field4Bytes(stream,[](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream,[](std::uint32_t& v) {}),
                 // 8 - compressed size                 4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 9 - uncompressed size               4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 //10 - file name length                2 bytes
-                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
                 {
                     if (GetFileNameLength() > std::numeric_limits<std::uint16_t>::max())
                     {
