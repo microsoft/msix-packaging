@@ -339,14 +339,14 @@ namespace xPlat {
             DigitalSignature(StreamBase* stream) : StructuredObject(
             {
                 // 0 - header signature  4 bytes(0x05054b50)
-                Meta::Field4Bytes(stream, [](std::uint32_t& v)
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
                 {   if (v != Signatures::DigitalSignature)
                 {
                     throw ZipException("digital signature does not match signature", ZipException::Error::InvalidHeader);
                 }
                 }),
                 // 1 - size of data 2 bytes
-                Meta::Field2Bytes(stream, [this](std::uint16_t& v) 
+                std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v) 
                 {
                     if (GetDataSize() > std::numeric_limits<std::uint16_t>::max())
                     {
@@ -355,7 +355,7 @@ namespace xPlat {
                     Field(2).Value<std::vector<std::uint8_t>>().resize(GetDataSize(), 0);
                 }),
                 // 2 - signature data(variable size)
-                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {})
+                std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {})
             })
             {/*constructor*/
             }
@@ -402,7 +402,7 @@ namespace xPlat {
             Zip64EndOfCentralDirectoryRecord(StreamBase* stream) : StructuredObject(
             {
                 // 0 - zip64 end of central dir signature 4 bytes(0x06064b50)
-                Meta::Field4Bytes(stream,[](std::uint32_t& v)
+                std::make_shared<Meta::Field4Bytes>(stream,[](std::uint32_t& v)
                 {
                     if (v != Signatures::Zip64EndOfCD)
                     {
@@ -410,25 +410,25 @@ namespace xPlat {
                     }
                 }),
                 // 1 - size of zip64 end of central directory record 8 bytes
-                Meta::Field8Bytes(stream,[](std::uint64_t& v) {}),
+                std::make_shared<Meta::Field8Bytes>(stream,[](std::uint64_t& v) {}),
                 // 2 - version made by                 2 bytes
-                Meta::Field2Bytes(stream,[](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream,[](std::uint16_t& v) {}),
                 // 3 - version needed to extract       2 bytes
-                Meta::Field2Bytes(stream,[](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream,[](std::uint16_t& v) {}),
                 // 4 - number of this disk             4 bytes
-                Meta::Field4Bytes(stream,[](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream,[](std::uint32_t& v) {}),
                 // 5 - number of the disk with the start of the central directory  4 bytes
-                Meta::Field4Bytes(stream,[](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream,[](std::uint32_t& v) {}),
                 // 6 - total number of entries in the central directory on this disk  8 bytes
-                Meta::Field8Bytes(stream,[](std::uint64_t& v) {}),
+                std::make_shared<Meta::Field8Bytes>(stream,[](std::uint64_t& v) {}),
                 // 7 - total number of entries in the central directory 8 bytes
-                Meta::Field8Bytes(stream,[](std::uint64_t& v) {}),
+                std::make_shared<Meta::Field8Bytes>(stream,[](std::uint64_t& v) {}),
                 // 8 - size of the central directory   8 bytes
-                Meta::Field8Bytes(stream,[](std::uint64_t& v) {}),
+                std::make_shared<Meta::Field8Bytes>(stream,[](std::uint64_t& v) {}),
                 // 9 - offset of start of central directory with respect to the starting disk number        8 bytes
-                Meta::Field8Bytes(stream,[](std::uint64_t& v) {}),
+                std::make_shared<Meta::Field8Bytes>(stream,[](std::uint64_t& v) {}),
                 //10 - zip64 extensible data sector(variable size)
-                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {})
+                std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {})
             })
             {/*constructor*/}
         }; //class Zip64EndOfCentralDirectoryRecord
@@ -451,7 +451,7 @@ namespace xPlat {
             Zip64EndOfCentralDirectoryLocator(StreamBase* stream) : StructuredObject(
             {
                 // 0 - zip64 end of central dir locator signature 4 bytes(0x07064b50)
-                Meta::Field4Bytes(stream, [](std::uint32_t& v)
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
                 {
                     if (v != Signatures::Zip64EndOfCDLocator)
                     {
@@ -459,11 +459,11 @@ namespace xPlat {
                     }
                 }),
                 // 1 - number of the disk with the start of the zip64 end of central directory               4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 2 - relative offset of the zip64 end of central directory record 8 bytes
-                Meta::Field8Bytes(stream, [](std::uint64_t& v) {}),
+                std::make_shared<Meta::Field8Bytes>(stream, [](std::uint64_t& v) {}),
                 // 3 - total number of disks           4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {})
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {})
             })
             {/*constructor*/}
         }; //class Zip64EndOfCentralDirectoryLocator
@@ -506,26 +506,26 @@ namespace xPlat {
             EndCentralDirectoryRecord(StreamBase* stream) : StructuredObject(
             {
                 // 0 - end of central dir signature    4 bytes  (0x06054b50)
-                Meta::Field4Bytes(stream, [](std::uint32_t& v)
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
                 {   if (v != Signatures::EndOfCentralDirectory)
                     {
                         throw ZipException("file header does not match signature", ZipException::Error::InvalidHeader);
                     }
                 }),
                 // 1 - number of this disk             2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 2 - number of the disk with the start of the central directory  2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 3 - total number of entries in the central directory on this disk  2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 4 - total number of entries in the central directory           2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 5 - size of the central directory   4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 6 - offset of start of centraldirectory with respect to the starting disk number        4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 7 - .ZIP file comment length        2 bytes
-                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
                 {
                     if (GetCommentLength() > std::numeric_limits<std::uint16_t>::max())
                     {
@@ -534,7 +534,7 @@ namespace xPlat {
                     Field(8).Value<std::vector<std::uint8_t>>().resize(GetCommentLength(), 0);
                 }),
                 // 8 - .ZIP file comment       (variable size)
-                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {})
+                std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {})
             })
             {/*constructor*/}
         };//class EndOfCentralDirectoryRecord
