@@ -176,11 +176,11 @@ namespace xPlat {
             DataDescriptor(StreamBase& stream) : StructuredObject(
             {
                 // 0 - crc - 32                          4 bytes    
-                Meta::Field4Bytes(stream, [this](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [this](std::uint32_t& v) {}),
                 // 1 - compressed size                 4 bytes
-                Meta::Field4Bytes(stream, [this](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [this](std::uint32_t& v) {}),
                 // 2 - uncompressed size               4 bytes
-                Meta::Field4Bytes(stream, [this](std::uint32_t& v) {})
+                std::make_shared<Meta::Field4Bytes>(stream, [this](std::uint32_t& v) {})
                 
             })
             {/*constructor*/}
