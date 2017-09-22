@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cstdint>
 #include <string>
 #include <exception>
@@ -34,19 +36,4 @@ namespace xPlat {
     class NotImplementedException   : public ExceptionBase { public: NotImplementedException()  { SetLastError(1); } };
     class NotSupportedException     : public ExceptionBase { public: NotSupportedException()    { SetLastError(2); } };
     class InvalidArgumentException  : public ExceptionBase { public: InvalidArgumentException() { SetLastError(3); } };
-
-    class FileException : public ExceptionBase
-    {
-    public:
-        FileException(std::string message, uint32_t error = 0) :
-            reason(message),
-            ExceptionBase(ExceptionBase::Facility::FILE)
-        {
-            SetLastError(error);
-        }
-
-        std::string reason;
-    };
-
-
 }

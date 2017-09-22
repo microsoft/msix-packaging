@@ -1,3 +1,4 @@
+#pragma once
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
@@ -27,31 +28,6 @@ namespace xPlat {
 
     };
 
-    namespace Meta
-    {
-        class FieldNBytes : public FieldBase<std::vector<std::uint8_t>>
-        {
-        public:
-            using Lambda = std::function<void(std::vector<std::uint8_t>& v)>;
-            FieldNBytes(StreamBase& stream, Lambda validator) : FieldBase(stream, validator) {}
-
-            size_t Size() { return Value().size(); }
-
-            virtual void Write()
-            {
-                Validate();
-                stream.Write(Size(), static_cast<std::uint8_t>(const_cast<T>(Value().data())));
-            }
-
-            virtual void Read()
-            {
-                stream.Read(Size(), static_cast<std::uint8_t>(const_cast<T>(Value().data())));
-                Validate();
-            }
-        };
-    }
-
-
     /* Zip File Structure
     [LocalFileHeader 1]
     [encryption header 1]
@@ -76,7 +52,7 @@ namespace xPlat {
     */
 
     // This represents a raw stream over a.zip file.
-    class ZipStream : public StreamBase
+    class ZipStream
     {
         enum MagicNumbers
         {
@@ -105,8 +81,8 @@ namespace xPlat {
         class LocalFileHeader : public StructuredObject
         {
         public:
-            std::uint16_t GetFileNameLength() { return Field(9).Value<std::uint16_t>(); }
-            void SetFileNameLength(std::uint16_t value) { Field(9).SetValue(value); }
+            std::uint16_t GetFileNameLength() { return ObjectBase::GetValue(Field(9)); }
+            void SetFileNameLength(std::uint16_t value) { ObjectBase::SetValue(Field(9), value); }
 
             std::uint16_t GetExtraFieldLength() { return Field(10).Value<std::uint16_t>(); }
             void SetExtraFieldLength(std::uint16_t value) { Field(10).SetValue(value); }
@@ -130,7 +106,7 @@ namespace xPlat {
                 SetFileNameLength(static_cast<std::uint16_t>(name.size()));
             }
 
-            LocalFileHeader(StreamBase& stream) : StructuredObject(
+            LocalFileHeader(StreamBase* stream) : StructuredObject(
             {
                 // 0 - local file header signature     4 bytes(0x04034b50)
                 Meta::Field4Bytes(stream, [](std::uint32_t& v)
@@ -181,8 +157,6 @@ namespace xPlat {
             })
             {/*constructor*/}
         }; //class LocalFileHeader
-
-        
 
         class CentralFileHeader : public StructuredObject
         {
@@ -278,7 +252,7 @@ namespace xPlat {
                 SetExtraFieldLength(static_cast<std::uint16_t>(comment.size()));
             }
 
-            CentralFileHeader(StreamBase& stream) : StructuredObject(
+            CentralFileHeader(StreamBase* stream) : StructuredObject(
             {
                 // 0 - central file header signature   4 bytes(0x02014b50)
                 Meta::Field4Bytes(stream, [](std::uint32_t& v)
@@ -351,7 +325,6 @@ namespace xPlat {
             {/*constructor*/
             }
         };//class CentralFileHeader
-            
 
         class DigitalSignature : public StructuredObject
         {
@@ -362,7 +335,7 @@ namespace xPlat {
             std::uint16_t GetDataSize() { return Field(1).Value<std::uint16_t>(); }
             void SetDataSize(std::uint16_t value) { Field(1).SetValue(value); }
             
-            DigitalSignature(StreamBase& stream) : StructuredObject(
+            DigitalSignature(StreamBase* stream) : StructuredObject(
             {
                 // 0 - header signature  4 bytes(0x05054b50)
                 Meta::Field4Bytes(stream, [](std::uint32_t& v)
@@ -386,8 +359,6 @@ namespace xPlat {
             {/*constructor*/
             }
         };//class DigitalSignature
-
-           
 
         class Zip64EndOfCentralDirectoryRecord : public StructuredObject
         {
@@ -427,7 +398,7 @@ namespace xPlat {
             std::uint64_t GetOffsetfStartOfCD() { return Field(9).Value<std::uint64_t>(); }
             void SetOffsetfStartOfCD(std::uint64_t value) { Field(9).SetValue(value); }
 
-            Zip64EndOfCentralDirectoryRecord(StreamBase& stream) : StructuredObject(
+            Zip64EndOfCentralDirectoryRecord(StreamBase* stream) : StructuredObject(
             {
                 // 0 - zip64 end of central dir signature 4 bytes(0x06064b50)
                 Meta::Field4Bytes(stream,[](std::uint32_t& v)
@@ -461,7 +432,6 @@ namespace xPlat {
             {/*constructor*/}
         }; //class Zip64EndOfCentralDirectoryRecord
 
-
         class Zip64EndOfCentralDirectoryLocator : public StructuredObject
         {
         public:
@@ -477,7 +447,7 @@ namespace xPlat {
             std::uint32_t GetTotalNumberOfDisks() { return Field(3).Value<std::uint32_t>(); }
             void SetTotalNumberOfDisks(std::uint32_t value) { Field(3).SetValue(value); }
 
-            Zip64EndOfCentralDirectoryLocator(StreamBase& stream) : StructuredObject(
+            Zip64EndOfCentralDirectoryLocator(StreamBase* stream) : StructuredObject(
             {
                 // 0 - zip64 end of central dir locator signature 4 bytes(0x07064b50)
                 Meta::Field4Bytes(stream, [](std::uint32_t& v)
@@ -532,7 +502,7 @@ namespace xPlat {
                 SetCommentLength(static_cast<std::uint16_t>(comment.size()));
             }
 
-            EndCentralDirectoryRecord(StreamBase& stream) : StructuredObject(
+            EndCentralDirectoryRecord(StreamBase* stream) : StructuredObject(
             {
                 // 0 - end of central dir signature    4 bytes  (0x06054b50)
                 Meta::Field4Bytes(stream, [](std::uint32_t& v)
@@ -568,4 +538,17 @@ namespace xPlat {
             {/*constructor*/}
         };//class EndOfCentralDirectoryRecord
 
+    public:
+        ZipStream(StreamPtr&& stream) : stream(std::move(stream)) { }
+
+        void Read()
+        {
+            EndCentralDirectoryRecord endCentralDirectoryRecord(stream.get());
+
+            stream->Seek(endCentralDirectoryRecord.Size(), xPlat::StreamBase::Reference::END);
+            endCentralDirectoryRecord.Read();
+        }
+
+    protected:
+        StreamPtr stream
     };//class ZipStream

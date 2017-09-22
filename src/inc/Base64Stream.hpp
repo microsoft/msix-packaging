@@ -7,7 +7,7 @@
 namespace xPlat {
 
     // A stream for encoding-to/decoding-from base64
-    class Base64Stream : public StreamBase
+    class Base64Stream : public StreamBase <Base64Stream>
     {
     public:
 

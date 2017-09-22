@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <string>
 #include <cstdio>
@@ -6,13 +8,26 @@
 #include "StreamBase.hpp"
 
 namespace xPlat {
+    class FileException : public ExceptionBase
+    {
+    public:
+        FileException(std::string message, uint32_t error = 0) :
+            reason(message),
+            ExceptionBase(ExceptionBase::Facility::FILE)
+        {
+            SetLastError(error);
+        }
+
+        std::string reason;
+    };
+
     // TODO: turns out we DO need some sort of abstraction over storage -- investigate using BOOST?
     class FileStream : public StreamBase
     {
     public:
         enum Mode { READ = 0, WRITE, APPEND, READ_UPDATE, WRITE_UPDATE, APPEND_UPDATE };
 
-        FileStream(std::string& path, Mode& mode) : name(path)
+        FileStream(std::string&& path, Mode mode) : name(path)
         {
             static char* modes[] = { "r", "w", "a", "r+", "w+", "a+" };
             file = std::fopen(path.c_str(), modes[mode]);
@@ -22,7 +37,12 @@ namespace xPlat {
             }
         }
 
-        void Close()
+        virtual ~FileStream()
+        {
+            Close();
+        }
+
+        virtual void Close() override
         {
             if (file) {
                 int rc = std::fclose(file);
@@ -31,13 +51,13 @@ namespace xPlat {
             }
         }
 
-        void Seek(long offset, Reference where)
+        virtual void Seek(long offset, StreamBase::Reference where) override
         {
             int rc = std::fseek(file, offset, where);
             if (rc != 0) { throw FileException(name, rc); }
         }
 
-        std::size_t Read(std::size_t size, const std::uint8_t* bytes)
+        virtual std::size_t Read(std::size_t size, const std::uint8_t* bytes) override
         {
             std::size_t bytesRead = std::fread(
                 static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
@@ -49,17 +69,17 @@ namespace xPlat {
             return bytesRead;
         }
 
-        int Ferror()
+        virtual int Ferror() override
         {
             return std::ferror(file);
         }
 
-        int Feof()
+        virtual int Feof() override
         {
             return std::feof(file);
         }
 
-        void Write(std::size_t size, const std::uint8_t* bytes)
+        virtual void Write(std::size_t size, const std::uint8_t* bytes) override
         {
             std::size_t bytesWritten = std::fwrite(
                 static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
