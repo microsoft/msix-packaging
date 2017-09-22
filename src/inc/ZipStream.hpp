@@ -78,24 +78,12 @@ namespace xPlat {
             Deflate = 8,
         };
 
-        class CentralDirectory
-        {
-        public:
-            CentralDirectory(StreamBase& stream) : _stream(stream)
-            {
-            }
-
-
-
-        private:
-            StreamBase &_stream;
-        };
 
         class LocalFileHeader : public StructuredObject
         {
         public:
-            std::uint16_t GetFileNameLength() { return ObjectBase::GetValue(Field(9)); }
-            void SetFileNameLength(std::uint16_t value) { ObjectBase::SetValue(Field(9), value); }
+            std::uint16_t GetFileNameLength() { return Field(9).Value<std::uint16_t>(); }
+            void SetFileNameLength(std::uint16_t value) { Field(9).SetValue(value); }
 
             std::uint16_t GetExtraFieldLength() { return Field(10).Value<std::uint16_t>(); }
             void SetExtraFieldLength(std::uint16_t value) { Field(10).SetValue(value); }
@@ -187,7 +175,7 @@ namespace xPlat {
             DataDescriptor(StreamBase& stream) : StructuredObject(
             {
                 // 0 - crc - 32                          4 bytes    
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                Meta::Field4Bytes(stream, [this](std::uint32_t& v) {}),
                 // 1 - compressed size                 4 bytes
                 Meta::Field4Bytes(stream, [this](std::uint32_t& v) {}),
                 // 2 - uncompressed size               4 bytes
@@ -597,5 +585,5 @@ namespace xPlat {
         }
 
     protected:
-        StreamPtr stream
+        StreamPtr stream;
     };//class ZipStream
