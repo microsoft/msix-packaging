@@ -102,6 +102,19 @@ namespace xPlat {
             Deflate = 8,
         };
 
+        class CentralDirectory
+        {
+        public:
+            CentralDirectory(StreamBase& stream) : _stream(stream)
+            {
+            }
+
+
+
+        private:
+            StreamBase &_stream;
+        };
+
         class LocalFileHeader : public StructuredObject
         {
         public:
@@ -183,6 +196,31 @@ namespace xPlat {
         }; //class LocalFileHeader
 
         
+        class DataDescriptor : public StructuredObject
+        {
+        public:
+            std::uint32_t GetCrc32() { return Field(0).Value<std::uint32_t>(); }
+            void SetCrc32(std::uint32_t value) { Field(0).SetValue(value); }
+
+            std::uint32_t GetCompressedSize() { return Field(1).Value<std::uint32_t>(); }
+            void SetCompressedSize(std::uint32_t value) { Field(1).SetValue(value); }
+            
+            std::uint32_t GetUncompressedSize() { return Field(2).Value<std::uint32_t>(); }
+            void SetUncompressedSize(std::uint32_t value) { Field(2).SetValue(value); }
+
+            DataDescriptor(StreamBase& stream) : StructuredObject(
+            {
+                // 0 - crc - 32                          4 bytes    
+                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                // 1 - compressed size                 4 bytes
+                Meta::Field4Bytes(stream, [this](std::uint32_t& v) {}),
+                // 2 - uncompressed size               4 bytes
+                Meta::Field4Bytes(stream, [this](std::uint32_t& v) {})
+                
+            })
+            {/*constructor*/}
+        };//class DataDescriptor
+
 
         class CentralFileHeader : public StructuredObject
         {
@@ -500,6 +538,11 @@ namespace xPlat {
         class EndCentralDirectoryRecord : public StructuredObject
         {
         public:
+            //std::uint16_t SizeOfEndCentralDirectoryRecord() { return }
+
+            std::uint32_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
+            void SetSignature(std::uint32_t value) { Field(0).SetValue(value); }
+            
             std::uint16_t GetNumberOfDisk() { return Field(1).Value<std::uint16_t>(); }
             void SetNumberOfDisk(std::uint16_t value) { Field(1).SetValue(value); }
 
@@ -509,8 +552,11 @@ namespace xPlat {
             std::uint16_t GetTotalNumberOfEntries() { return Field(3).Value<std::uint16_t>(); }
             void SetTotalNumberOfEntries(std::uint16_t value) { Field(3).SetValue(value); }
 
-            std::uint32_t GetSizeOfCentralDirectory() { return Field(4).Value<std::uint32_t>(); }
-            void SetSizeOfCentralDirectory(std::uint32_t value) { Field(4).SetValue(value); }
+            std::uint16_t GetTotalEntriesInCentralDirectory() { return Field(4).Value<std::uint16_t>(); }
+            void SetTotalEntriesInCentralDirectory(std::uint16_t value) { Field(4).SetValue(value); }
+
+            std::uint32_t GetSizeOfCentralDirectory() { return Field(5).Value<std::uint32_t>(); }
+            void SetSizeOfCentralDirectory(std::uint32_t value) { Field(5).SetValue(value); }
 
             std::uint32_t GetOffsetOfCentralDirectory() { return Field(6).Value<std::uint32_t>(); }
             void SetOffsetOfCentralDirectory(std::uint32_t value) { Field(6).SetValue(value); }
