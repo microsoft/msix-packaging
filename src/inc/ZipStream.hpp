@@ -173,14 +173,14 @@ namespace xPlat {
             std::uint32_t GetUncompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(2)); }
             void SetUncompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(2), value); }
 
-            DataDescriptor(StreamBase& stream) : StructuredObject(
+            DataDescriptor(StreamBase* stream) : StructuredObject(
             {
                 // 0 - crc - 32                          4 bytes    
-                std::make_shared<Meta::Field4Bytes>(stream, [this](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 1 - compressed size                 4 bytes
-                std::make_shared<Meta::Field4Bytes>(stream, [this](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 2 - uncompressed size               4 bytes
-                std::make_shared<Meta::Field4Bytes>(stream, [this](std::uint32_t& v) {})
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {})
                 
             })
             {/*constructor*/}
@@ -467,10 +467,10 @@ namespace xPlat {
             std::uint16_t GetSignature() { return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
             void GetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
 
-            std::uint16_t GetNumberOfDisk() { return ObjectBase::GetValue<std::uint16_t>(Field(1)); }
+            std::uint32_t GetNumberOfDisk() { return ObjectBase::GetValue<std::uint32_t>(Field(1)); }
             void SetNumberOfDisk(std::uint32_t value) { ObjectBase::SetValue(Field(1), value); }
 
-            std::uint16_t GetRelativeOffset() { return ObjectBase::GetValue<std::uint64_t>(Field(2)); }
+            std::uint64_t GetRelativeOffset() { return ObjectBase::GetValue<std::uint64_t>(Field(2)); }
             void SetTotalNumberOfEntries(std::uint64_t value) { ObjectBase::SetValue(Field(2), value); }
 
             std::uint32_t GetTotalNumberOfDisks() { return ObjectBase::GetValue<std::uint32_t>(Field(3)); }
@@ -499,9 +499,6 @@ namespace xPlat {
         class EndCentralDirectoryRecord : public StructuredObject
         {
         public:
-            std::uint16_t GetNumberOfDisk() { return ObjectBase::GetValue<std::uint16_t>(Field(1)); }
-            void SetNumberOfDisk(std::uint16_t value) { ObjectBase::SetValue(Field(1), value); }
-
             std::uint32_t GetSignature() { return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
             void SetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
             
@@ -587,3 +584,4 @@ namespace xPlat {
     protected:
         StreamPtr stream;
     };//class ZipStream
+}

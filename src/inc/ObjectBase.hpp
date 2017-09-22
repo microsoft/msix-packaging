@@ -20,8 +20,8 @@ namespace xPlat {
         virtual void Validate() = 0;
         virtual size_t Size() = 0;
 
-        template <class T> static T&   GetValue(ObjectBase* o)           { return static_cast<T&>(o->v);      }
-        template <class T> static void SetValue(ObjectBase* o, T& value) { o->v = static_cast<void*>(&value); }
+        template <class T> static T&   GetValue(ObjectBase* o)           { return reinterpret_cast<T&>(o->v);      }
+        template <class T> static void SetValue(ObjectBase* o, T& value) { o->v = reinterpret_cast<void*>(&value); }
         //template <class T> static T&   GetValue(ObjectBase& o)           { return static_cast<T&>(o.v);      }
         //template <class T> static void SetValue(ObjectBase& o, T& value) { o.v = static_cast<void*>(&value); }
 
@@ -85,16 +85,16 @@ namespace xPlat {
 
             virtual void Write()
             {
-                stream.Write(sizeof(T), static_cast<std::uint8_t>(const_cast<T>(&value)));
+                stream->Write(sizeof(T), reinterpret_cast<std::uint8_t*>(const_cast<T*>(&value)));
             }
 
             virtual void Read()
             {
-                stream.Read(sizeof(T), static_cast<std::uint8_t>(const_cast<T>(&value)));
+                stream->Read(sizeof(T), reinterpret_cast<std::uint8_t*>(const_cast<T*>(&value)));
                 Validate();
             }
 
-            void Validate() { validate(Value()); }
+            void Validate() { validate(ObjectBase::GetValue<T>(this)); }
 
             virtual size_t Size() { return sizeof(T); }
 
@@ -122,24 +122,31 @@ namespace xPlat {
             Field8Bytes(StreamBase* stream, Lambda&& validator) : FieldBase<std::uint64_t>(stream, validator) {}
         };
 
-        class FieldNBytes : public FieldBase<std::vector<std::uint8_t>>
+        class FieldNBytes : public ObjectBase
         {
         public:
             using Lambda = std::function<void(std::vector<std::uint8_t>& v)>;
-            FieldNBytes(StreamBase* stream, Lambda validator) : FieldBase(stream, validator) {}
+            FieldNBytes(StreamBase* stream, Lambda validator) : stream(stream), validate(validator), ObjectBase(&value) {}
 
-            size_t Size() { return GetValue().size(); }
+            size_t Size() { return value.size(); }
 
             virtual void Write()
             {
-                stream->Write(Size(), GetValue().data());
+                stream->Write(Size(), value.data());
             }
 
             virtual void Read()
             {
-                stream->Read(Size(), GetValue().data());
+                stream->Read(Size(), value.data());
                 Validate();
             }
+
+            void Validate() { validate(value); }
+
+        protected:
+            std::vector<std::uint8_t> value;
+            StreamBase* stream;
+            Lambda validate;
         };
     }
 }
