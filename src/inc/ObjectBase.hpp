@@ -20,8 +20,10 @@ namespace xPlat {
         virtual void Validate() = 0;
         virtual size_t Size() = 0;
 
-        template <class T> static T&   GetValue(ObjectBase& o)           { return static_cast<T&>(o.v);      }
-        template <class T> static void SetValue(ObjectBase& o, T& value) { o.v = static_cast<void*>(&value); }
+        template <class T> static T&   GetValue(ObjectBase* o)           { return static_cast<T&>(o->v);      }
+        template <class T> static void SetValue(ObjectBase* o, T& value) { o->v = static_cast<void*>(&value); }
+        //template <class T> static T&   GetValue(ObjectBase& o)           { return static_cast<T&>(o.v);      }
+        //template <class T> static void SetValue(ObjectBase& o, T& value) { o.v = static_cast<void*>(&value); }
 
     protected:
         void* value() { return v; }
@@ -39,7 +41,6 @@ namespace xPlat {
         {
             for (auto field : fields)
             {
-                field->Validate();
                 field->Write();
             }
         }
@@ -77,14 +78,13 @@ namespace xPlat {
         public:
             using Lambda = std::function<void(T& v)>;
 
-            FieldBase(StreamBase* stream, Lambda validator) : stream(stream), validate(validator) {}
+            FieldBase(StreamBase* stream, Lambda validator) : stream(stream), validate(validator), ObjectBase(&value) {}
 
-            virtual T& Value()          { return value; }
+            virtual T&   GetValue()     { return value; }
             virtual void SetValue(T& v) { value = v; }
 
             virtual void Write()
             {
-                Validate();
                 stream.Write(sizeof(T), static_cast<std::uint8_t>(const_cast<T>(&value)));
             }
 
@@ -128,17 +128,16 @@ namespace xPlat {
             using Lambda = std::function<void(std::vector<std::uint8_t>& v)>;
             FieldNBytes(StreamBase* stream, Lambda validator) : FieldBase(stream, validator) {}
 
-            size_t Size() { return Value().size(); }
+            size_t Size() { return GetValue().size(); }
 
             virtual void Write()
             {
-                Validate();
-                stream->Write(Size(), static_cast<std::uint8_t>(const_cast<T>(Value().data())));
+                stream->Write(Size(), GetValue().data());
             }
 
             virtual void Read()
             {
-                stream->Read(Size(), static_cast<std::uint8_t>(const_cast<T>(Value().data())));
+                stream->Read(Size(), GetValue().data());
                 Validate();
             }
         };

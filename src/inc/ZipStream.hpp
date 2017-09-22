@@ -81,11 +81,11 @@ namespace xPlat {
         class LocalFileHeader : public StructuredObject
         {
         public:
-            std::uint16_t GetFileNameLength() { return ObjectBase::GetValue(Field(9)); }
+            std::uint16_t GetFileNameLength() { return ObjectBase::GetValue<std::uint16_t>(Field(9)); }
             void SetFileNameLength(std::uint16_t value) { ObjectBase::SetValue(Field(9), value); }
 
-            std::uint16_t GetExtraFieldLength() { return Field(10).Value<std::uint16_t>(); }
-            void SetExtraFieldLength(std::uint16_t value) { Field(10).SetValue(value); }
+            std::uint16_t GetExtraFieldLength() { return ObjectBase::GetValue<std::uint16_t>(Field(10)); }
+            void SetExtraFieldLength(std::uint16_t value) { ObjectBase::SetValue(Field(10), value); }
 
             std::uint32_t GetCompressedSize() { return Field(7).Value<std::uint32_t>(); }
             void SetCompressedSize(std::uint32_t value) { Field(7).SetValue(value); }
@@ -470,7 +470,7 @@ namespace xPlat {
         class EndCentralDirectoryRecord : public StructuredObject
         {
         public:
-            std::uint16_t GetNumberOfDisk() { return Field(1).Value<std::uint16_t>(); }
+            std::uint16_t GetNumberOfDisk() { return Field(1)->GetValue<std::uint16_t>(); }
             void SetNumberOfDisk(std::uint16_t value) { Field(1).SetValue(value); }
 
             std::uint16_t GetNumberOfDisk() { return Field(1).Value<std::uint16_t>(); }
