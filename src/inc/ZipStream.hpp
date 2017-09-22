@@ -175,13 +175,12 @@ namespace xPlat {
 
             DataDescriptor(StreamBase& stream) : StructuredObject(
             {
-                // 0 - crc - 32                          4 bytes    
-                Meta::Field4Bytes(stream, [this](std::uint32_t& v) {}),
+                // 0 - crc - 32                          4 bytes   
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 1 - compressed size                 4 bytes
-                Meta::Field4Bytes(stream, [this](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 2 - uncompressed size               4 bytes
-                Meta::Field4Bytes(stream, [this](std::uint32_t& v) {})
-                
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
             })
             {/*constructor*/}
         };//class DataDescriptor
@@ -380,8 +379,8 @@ namespace xPlat {
                     if (GetDataSize() > std::numeric_limits<std::uint16_t>::max())
                     {
                         throw ZipException("signature data exceeds max size", ZipException::Error::FieldOutOfRange);
-                    }
-                    Field(2).Value<std::vector<std::uint8_t>>().resize(GetDataSize(), 0);
+                    }                
+                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(2)).resize(GetDataSize());
                 }),
                 // 2 - signature data(variable size)
                 std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {})
@@ -393,12 +392,10 @@ namespace xPlat {
         class Zip64EndOfCentralDirectoryRecord : public StructuredObject
         {
         public:
-                       
-            
             std::uint32_t GetSignature() { return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
             void GetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
 
-            std::uint64_t GetSizeOfZip64CDRecord() { return Field(1).Value<std::uint64_t>(); }
+            std::uint64_t GetSizeOfZip64CDRecord() { return ObjectBase::GetValue<std::uint32_t>(Field(1)); }
             void SetGetSizeOfZip64CDRecord(std::uint64_t value) { ObjectBase::SetValue(Field(1), value); }
 
             std::uint16_t GetVersionMadeBy() { return ObjectBase::GetValue<std::uint16_t>(Field(2)); }
@@ -408,25 +405,22 @@ namespace xPlat {
             void SetVersionNeededToExtract(std::uint16_t value) { ObjectBase::SetValue(Field(3), value); }
 
             std::uint32_t GetNumberOfThisDisk() { return ObjectBase::GetValue<std::uint32_t>(Field(4)); }
-            void SetNumberOfThisDisk(std::uint32_t value) { Field(4).SetValue(value); }
+            void SetNumberOfThisDisk(std::uint32_t value) { ObjectBase::SetValue(Field(4), value); }
 
             std::uint32_t GetNumberOfTheDiskWithStart() { return ObjectBase::GetValue<std::uint32_t>(Field(5)); }
-            void SetNumberOfTheDiskWithStart(std::uint32_t value) { Field(5).SetValue(value); }
+            void SetNumberOfTheDiskWithStart(std::uint32_t value) { ObjectBase::SetValue(Field(5), value); }
 
-            std::uint64_t GetTotalNumberOfEntriesOnDisk() { return Field(5).Value<std::uint64_t>(); }
-            void SetTotalNumberOfEntriesOnDisk(std::uint64_t value) { Field(5).SetValue(value); }
+            std::uint64_t GetTotalNumberOfEntries() { return ObjectBase::GetValue<std::uint64_t>(Field(6)); }
+            void SetTotalNumberOfEntries(std::uint64_t value) { ObjectBase::SetValue(Field(6), value); }
 
-            std::uint64_t GetTotalNumberOfEntries() { return Field(6).Value<std::uint64_t>(); }
-            void SetTotalNumberOfEntries(std::uint64_t value) { Field(6).SetValue(value); }
+            std::uint64_t GetTotalNumberOfEntriesInCD() { return ObjectBase::GetValue<std::uint64_t>(Field(7)); }
+            void SetTotalNumberOfEntriesInCD(std::uint64_t value) { ObjectBase::SetValue(Field(7), value); }
 
-            std::uint64_t GetTotalNumberOfEntriesInCD() { return Field(7).Value<std::uint64_t>(); }
-            void SetTotalNumberOfEntriesInCD(std::uint64_t value) { Field(7).SetValue(value); }
+            std::uint64_t GetSizeOfCD() { return ObjectBase::GetValue<std::uint64_t>(Field(8)); }
+            void SetSizeOfCD(std::uint64_t value) { ObjectBase::SetValue(Field(8), value); }
 
-            std::uint64_t GetSizeOfCD() { return Field(8).Value<std::uint64_t>(); }
-            void SetSizeOfCD(std::uint64_t value) { Field(8).SetValue(value); }
-
-            std::uint64_t GetOffsetfStartOfCD() { return Field(9).Value<std::uint64_t>(); }
-            void SetOffsetfStartOfCD(std::uint64_t value) { Field(9).SetValue(value); }
+            std::uint64_t GetOffsetfStartOfCD() { return ObjectBase::GetValue<std::uint64_t>(Field(9)); }
+            void SetOffsetfStartOfCD(std::uint64_t value) { ObjectBase::SetValue(Field(9), value); }
 
             Zip64EndOfCentralDirectoryRecord(StreamBase* stream) : StructuredObject(
             {
@@ -465,17 +459,17 @@ namespace xPlat {
         class Zip64EndOfCentralDirectoryLocator : public StructuredObject
         {
         public:
-            std::uint16_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
-            void GetSignature(std::uint32_t value) { Field(0).SetValue(value); }
+            std::uint32_t GetSignature() { return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
+            void GetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
 
             std::uint16_t GetNumberOfDisk() { return ObjectBase::GetValue<std::uint16_t>(Field(1)); }
-            void SetNumberOfDisk(std::uint32_t value) { Field(1).SetValue(value); }
+            void SetNumberOfDisk(std::uint32_t value) { ObjectBase::SetValue(Field(1), value); }
 
-            std::uint16_t GetRelativeOffset() { return Field(2).Value<std::uint64_t>(); }
-            void SetTotalNumberOfEntries(std::uint64_t value) { Field(2).SetValue(value); }
+            std::uint16_t GetRelativeOffset() { return ObjectBase::GetValue<std::uint16_t>(Field(2)); }
+            void SetTotalNumberOfEntries(std::uint64_t value) { ObjectBase::SetValue(Field(2), value); }
 
             std::uint32_t GetTotalNumberOfDisks() { return ObjectBase::GetValue<std::uint32_t>(Field(3)); }
-            void SetTotalNumberOfDisks(std::uint32_t value) { Field(3).SetValue(value); }
+            void SetTotalNumberOfDisks(std::uint32_t value) { ObjectBase::SetValue(Field(3), value); }
 
             Zip64EndOfCentralDirectoryLocator(StreamBase* stream) : StructuredObject(
             {
@@ -500,39 +494,39 @@ namespace xPlat {
         class EndCentralDirectoryRecord : public StructuredObject
         {
         public:
-            std::uint16_t GetNumberOfDisk() { return Field(1)->GetValue<std::uint16_t>(); }
-            void SetNumberOfDisk(std::uint16_t value) { Field(1).SetValue(value); }
-
             std::uint32_t GetSignature() { return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
-            void SetSignature(std::uint32_t value) { Field(0).SetValue(value); }
+            void SetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
             
             std::uint16_t GetNumberOfDisk() { return ObjectBase::GetValue<std::uint16_t>(Field(1)); }
-            void SetNumberOfDisk(std::uint16_t value) { Field(1).SetValue(value); }
+            void SetNumberOfDisk(std::uint16_t value) { ObjectBase::SetValue(Field(1), value); }
+
+            std::uint16_t GetNumberOfDiskWithStart() { return ObjectBase::GetValue<std::uint16_t>(Field(2)); }
+            void SetNumberOfDiskWithStart(std::uint16_t value) { ObjectBase::SetValue(Field(1), value); }
 
             std::uint16_t GetTotalNumberOfEntries() { return ObjectBase::GetValue<std::uint16_t>(Field(3)); }
-            void SetTotalNumberOfEntries(std::uint16_t value) { Field(3).SetValue(value); }
+            void SetTotalNumberOfEntries(std::uint16_t value) { ObjectBase::SetValue(Field(3), value); }
 
             std::uint16_t GetTotalEntriesInCentralDirectory() { return ObjectBase::GetValue<std::uint16_t>(Field(4)); }
-            void SetTotalEntriesInCentralDirectory(std::uint16_t value) { Field(4).SetValue(value); }
+            void SetTotalEntriesInCentralDirectory(std::uint16_t value) { ObjectBase::SetValue(Field(4), value); }
 
             std::uint32_t GetSizeOfCentralDirectory() { return ObjectBase::GetValue<std::uint32_t>(Field(5)); }
-            void SetSizeOfCentralDirectory(std::uint32_t value) { Field(5).SetValue(value); }
+            void SetSizeOfCentralDirectory(std::uint32_t value) { ObjectBase::SetValue(Field(5), value); }
 
             std::uint32_t GetOffsetOfCentralDirectory() { return ObjectBase::GetValue<std::uint32_t>(Field(6)); }
-            void SetOffsetOfCentralDirectory(std::uint32_t value) { Field(6).SetValue(value); }
+            void SetOffsetOfCentralDirectory(std::uint32_t value) { ObjectBase::SetValue(Field(6), value); }
 
             std::uint16_t GetCommentLength() { return ObjectBase::GetValue<std::uint16_t>(Field(7)); }
-            void SetCommentLength(std::uint16_t value) { Field(7).SetValue(value); }
+            void SetCommentLength(std::uint16_t value) { ObjectBase::SetValue(Field(7), value); }
 
             std::string GetComment()
             {
-                auto data = Field(8).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(8));
                 return std::string(data.begin(), data.end());
             }
 
             void SetComment(std::string comment)
             {
-                auto data = Field(8).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(8));
                 data.resize(comment.size());
                 data.assign(comment.begin(), comment.end());
                 SetCommentLength(static_cast<std::uint16_t>(comment.size()));
@@ -566,7 +560,7 @@ namespace xPlat {
                     {
                         throw ZipException("commentfield exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    Field(8).Value<std::vector<std::uint8_t>>().resize(GetCommentLength(), 0);
+                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(8)).resize(GetCommentLength());
                 }),
                 // 8 - .ZIP file comment       (variable size)
                 std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {})
@@ -575,7 +569,7 @@ namespace xPlat {
         };//class EndOfCentralDirectoryRecord
 
     public:
-        ZipStream(StreamPtr&& stream) : stream(std::move(stream)) { }
+        ZipStream(StreamPtr& stream) : stream(std::move(stream)) { }
 
         void Read()
         {
