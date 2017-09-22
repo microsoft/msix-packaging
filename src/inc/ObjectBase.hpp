@@ -17,8 +17,8 @@ namespace xPlat {
         virtual void Read() = 0;
         virtual void Validate() {}
 
-        template <class T>
-        virtual T& Value() = 0;
+        template <class T> virtual T& Value()              { throw NotSupportedException(); }
+        template <class T> virtual void SetValue(T& value) { throw NotSupportedException(); }
     };
 
     class StructuredObject : public ObjectBase
@@ -61,7 +61,8 @@ namespace xPlat {
 
             FieldBase(StreamBase& stream, Lambda validator) : stream(stream), validate(validator) {}
 
-            virtual T& Value() { return value; }
+            virtual T& Value()          { return value; }
+            virtual void SetValue(T& v) { value = v; }
 
             virtual void Write()
             {
@@ -78,6 +79,7 @@ namespace xPlat {
             void Validate() { validate(Value()); }
 
             T& Value() { return value; }
+            void SetValue(T& v) { value = v; }
 
         protected:
             T value;

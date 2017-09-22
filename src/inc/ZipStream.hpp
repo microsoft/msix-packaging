@@ -79,8 +79,17 @@ namespace xPlat {
         class LocalFileHeader : public StructuredObject
         {
         public:
-            std::uint16_t FileNameLength()   { return Field(9).Value<std::uint16_t>(); }
-            std::uint16_t ExtraFieldLength() { return Field(10).Value<std::uint16_t>(); }
+            std::uint16_t GetFileNameLength()   { return Field(9).Value<std::uint16_t>(); }
+            void SetFileNameLength(std::uint16_t value) { Field(9).SetValue(value); }
+
+            std::uint16_t GetExtraFieldLength() { return Field(10).Value<std::uint16_t>(); }
+            void SetExtraFieldLength(std::uint16_t value) { Field(10).SetValue(value); }
+
+            std::uint32_t GetCompressedSize() { return Field(7).Value<std::uint32_t>(); }
+            void SetCompressedSize(std::uint32_t value) { Field(7).SetValue(value); }
+
+            std::uint32_t GetUncompressedSize() { return Field(8).Value<std::uint32_t>(); }
+            void SetUncompressedSize(std::uint32_t value) { Field(8).SetValue(value); }
 
             std::string   GetFileName() {
                 auto data = Field(11).Value<std::vector<std::uint8_t>>();
@@ -92,6 +101,7 @@ namespace xPlat {
                 auto data = Field(11).Value<std::vector<std::uint8_t>>();
                 data.resize(name.size());
                 data.assign(name.begin(), name.end());
+                SetFileNameLength(static_cast<std::uint16_t>(name.size()));
             }
 
             LocalFileHeader(StreamBase& stream) : StructuredObject(
@@ -121,20 +131,20 @@ namespace xPlat {
                 // 9 - file name length                2 bytes
                 Meta::Field2Bytes(stream, [this](std::uint16_t& v)
                 {
-                    if (FileNameLength() > std::numeric_limits<std::uint16_t>::max())
+                    if (GetFileNameLength() > std::numeric_limits<std::uint16_t>::max())
                     {
                         throw ZipException("file name field exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    Field(11).Value<std::vector<std::uint8_t>>().resize(FileNameLength(), 0);
+                    Field(11).Value<std::vector<std::uint8_t>>().resize(GetFileNameLength(), 0);
                 }),
                 // 10- extra field length              2 bytes
                 Meta::Field2Bytes(stream, [this](std::uint16_t& v)
                 {
-                    if (ExtraFieldLength() > std::numeric_limits<std::uint16_t>::max())
+                    if (GetExtraFieldLength() > std::numeric_limits<std::uint16_t>::max())
                     {
                         throw ZipException("extra field exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    Field(12).Value<std::vector<std::uint8_t>>().resize(ExtraFieldLength());
+                    Field(12).Value<std::vector<std::uint8_t>>().resize(GetExtraFieldLength());
                 }),
                 // 11- file name (variable size)
                 Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {}),
@@ -142,6 +152,7 @@ namespace xPlat {
                 Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {})
             })
             {
+                //Field(0).SetValue(static_cast<std::uint32_t>(Signatures::LocalFileHeader));
             }
         };
 
