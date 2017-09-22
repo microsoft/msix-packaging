@@ -4,6 +4,7 @@
 #include "StreamBase.hpp"
 #include "ObjectBase.hpp"
 
+#include <memory>
 #include <string>
 #include <limits>
 #include <functional>
@@ -82,26 +83,26 @@ namespace xPlat {
         class LocalFileHeader : public StructuredObject
         {
         public:
-            std::uint16_t GetFileNameLength() { return Field(9).Value<std::uint16_t>(); }
-            void SetFileNameLength(std::uint16_t value) { Field(9).SetValue(value); }
+            std::uint16_t GetFileNameLength() { return ObjectBase::GetValue<std::uint16_t>(Field(9)); }
+            void SetFileNameLength(std::uint16_t value) { ObjectBase::SetValue(Field(9), value); }
 
-            std::uint16_t GetExtraFieldLength() { return Field(10).Value<std::uint16_t>(); }
-            void SetExtraFieldLength(std::uint16_t value) { Field(10).SetValue(value); }
+            std::uint16_t GetExtraFieldLength() { return ObjectBase::GetValue<std::uint16_t>(Field(10)); }
+            void SetExtraFieldLength(std::uint16_t value) { ObjectBase::SetValue(Field(10), value); }
 
-            std::uint32_t GetCompressedSize() { return Field(7).Value<std::uint32_t>(); }
-            void SetCompressedSize(std::uint32_t value) { Field(7).SetValue(value); }
+            std::uint32_t GetCompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(7)); }
+            void SetCompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(7), value); }
 
-            std::uint32_t GetUncompressedSize() { return Field(8).Value<std::uint32_t>(); }
-            void SetUncompressedSize(std::uint32_t value) { Field(8).SetValue(value); }
+            std::uint32_t GetUncompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(8)); }
+            void SetUncompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(8), value); }
 
             std::string   GetFileName() {
-                auto data = Field(11).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(11));
                 return std::string(data.begin(), data.end());
             }
 
             void SetFileName(std::string name)
             {
-                auto data = Field(11).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(11));
                 data.resize(name.size());
                 data.assign(name.begin(), name.end());
                 SetFileNameLength(static_cast<std::uint16_t>(name.size()));
@@ -110,7 +111,7 @@ namespace xPlat {
             LocalFileHeader(StreamBase* stream) : StructuredObject(
             {
                 // 0 - local file header signature     4 bytes(0x04034b50)
-                Meta::Field4Bytes(stream, [](std::uint32_t& v)
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
                 {
                     if (v != Signatures::LocalFileHeader)
                     {
@@ -118,43 +119,43 @@ namespace xPlat {
                     }
                 }),
                 // 1 - version needed to extract       2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 2 - general purpose bit flag        2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 3 - compression method              2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 4 - last mod file time              2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 5 - last mod file date              2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 6 - crc - 32                        4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 7 - compressed size                 4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 8 - uncompressed size               4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 9 - file name length                2 bytes
-                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
                 {
                     if (GetFileNameLength() > std::numeric_limits<std::uint16_t>::max())
                     {
                         throw ZipException("file name field exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    Field(11).Value<std::vector<std::uint8_t>>().resize(GetFileNameLength(), 0);
+                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(11)).resize(GetFileNameLength(), 0);
                 }),
                 // 10- extra field length              2 bytes
-                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
                 {
                     if (GetExtraFieldLength() > std::numeric_limits<std::uint16_t>::max())
                     {
                         throw ZipException("extra field exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    Field(12).Value<std::vector<std::uint8_t>>().resize(GetExtraFieldLength());
+                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(12)).resize(GetExtraFieldLength(), 0);
                 }),
                 // 11- file name (variable size)
-                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {}),
+                std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {}),
                 // 12- extra field (variable size)
-                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {})
+                std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {})
             })
             {/*constructor*/}
         }; //class LocalFileHeader
@@ -163,14 +164,14 @@ namespace xPlat {
         class DataDescriptor : public StructuredObject
         {
         public:
-            std::uint32_t GetCrc32() { return Field(0).Value<std::uint32_t>(); }
-            void SetCrc32(std::uint32_t value) { Field(0).SetValue(value); }
+            std::uint32_t GetCrc32() {return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
+            void SetCrc32(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
 
-            std::uint32_t GetCompressedSize() { return Field(1).Value<std::uint32_t>(); }
-            void SetCompressedSize(std::uint32_t value) { Field(1).SetValue(value); }
+            std::uint32_t GetCompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(1)); }
+            void SetCompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(1), value); }
             
-            std::uint32_t GetUncompressedSize() { return Field(2).Value<std::uint32_t>(); }
-            void SetUncompressedSize(std::uint32_t value) { Field(2).SetValue(value); }
+            std::uint32_t GetUncompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(2)); }
+            void SetUncompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(2), value); }
 
             DataDescriptor(StreamBase& stream) : StructuredObject(
             {
@@ -188,92 +189,92 @@ namespace xPlat {
         class CentralFileHeader : public StructuredObject
         {
         public:
-            std::uint32_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
-            void SetSignature(std::uint32_t value) { Field(0).SetValue(value); }
+            std::uint32_t GetSignature() { return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
+            void SetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
 
-            std::uint16_t GetVersionMadeBy() { return Field(1).Value<std::uint16_t>(); }
-            void SetVersionMadeBy(std::uint16_t value) { Field(1).SetValue(value); }
+            std::uint16_t GetVersionMadeBy() { return ObjectBase::GetValue<std::uint16_t>(Field(1)); }
+            void SetVersionMadeBy(std::uint16_t value) { ObjectBase::SetValue(Field(1), value); }
 
-            std::uint16_t GetVersionNeededToExtract() { return Field(2).Value<std::uint16_t>(); }
-            void SetVersionNeededToExtract(std::uint16_t value) { Field(2).SetValue(value); }
+            std::uint16_t GetVersionNeededToExtract() { return ObjectBase::GetValue<std::uint16_t>(Field(2)); }
+            void SetVersionNeededToExtract(std::uint16_t value) { ObjectBase::SetValue(Field(2), value); }
 
-            std::uint16_t GetGeneralPurposeBitFlag() { return Field(3).Value<std::uint16_t>(); }
-            void SetGeneralPurposeBitFlag(std::uint16_t value) { Field(3).SetValue(value); }
+            std::uint16_t GetGeneralPurposeBitFlag() { return ObjectBase::GetValue<std::uint16_t>(Field(3)); }
+            void SetGeneralPurposeBitFlag(std::uint16_t value) { ObjectBase::SetValue(Field(3), value); }
 
-            std::uint16_t GetCompressionMethod() { return Field(4).Value<std::uint16_t>(); }
-            void SetCompressionMethod(std::uint16_t value) { Field(4).SetValue(value); }
+            std::uint16_t GetCompressionMethod() { return ObjectBase::GetValue<std::uint16_t>(Field(4)); }
+            void SetCompressionMethod(std::uint16_t value) { ObjectBase::SetValue(Field(4), value); }
 
-            std::uint16_t GetLastModFileTime() { return Field(5).Value<std::uint16_t>(); }
-            void SetLastModFileTime(std::uint16_t value) { Field(5).SetValue(value); }
+            std::uint16_t GetLastModFileTime() { return ObjectBase::GetValue<std::uint16_t>(Field(5)); }
+            void SetLastModFileTime(std::uint16_t value) { ObjectBase::SetValue(Field(5), value); }
 
-            std::uint16_t GetLastModFileDate() { return Field(6).Value<std::uint16_t>(); }
-            void SetLastModFileDate(std::uint16_t value) { Field(6).SetValue(value); }
+            std::uint16_t GetLastModFileDate() { return ObjectBase::GetValue<std::uint16_t>(Field(6)); }
+            void SetLastModFileDate(std::uint16_t value) { ObjectBase::SetValue(Field(6), value); }
 
-            std::uint32_t GetCrc32() { return Field(7).Value<std::uint32_t>(); }
-            void SetCrc(std::uint16_t value) { Field(7).SetValue(value); }
+            std::uint32_t GetCrc32() { return ObjectBase::GetValue<std::uint32_t>(Field(7)); }
+            void SetCrc(std::uint16_t value) { ObjectBase::SetValue(Field(7), value); }
 
-            std::uint32_t GetCompressedSize() { return Field(8).Value<std::uint32_t>(); }
-            void SetCompressedSize(std::uint32_t value) { Field(8).SetValue(value); }
+            std::uint32_t GetCompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(8)); }
+            void SetCompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(8), value); }
 
-            std::uint32_t GetUncompressedSize() { return Field(9).Value<std::uint32_t>(); }
-            void SetUncompressedSize(std::uint32_t value) { Field(9).SetValue(value); }
+            std::uint32_t GetUncompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(9)); }
+            void SetUncompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(9), value); }
 
-            std::uint16_t GetFileNameLength() { return Field(10).Value<std::uint16_t>(); }
-            void SetFileNameLength(std::uint16_t value) { Field(10).SetValue(value); }
+            std::uint16_t GetFileNameLength() { return ObjectBase::GetValue<std::uint16_t>(Field(10)); }
+            void SetFileNameLength(std::uint16_t value) { ObjectBase::SetValue(Field(10), value); }
 
-            std::uint16_t GetExtraFieldLength() { return Field(11).Value<std::uint16_t>(); }
-            void SetExtraFieldLength(std::uint16_t value) { Field(11).SetValue(value); }
+            std::uint16_t GetExtraFieldLength() { return ObjectBase::GetValue<std::uint16_t>(Field(11)); }
+            void SetExtraFieldLength(std::uint16_t value) { ObjectBase::SetValue(Field(11), value); }
 
-            std::uint16_t GetFileCommentLength() { return Field(12).Value<std::uint16_t>(); }
-            void SetFileCommentLength(std::uint16_t value) { Field(12).SetValue(value); }
+            std::uint16_t GetFileCommentLength() { return ObjectBase::GetValue<std::uint16_t>(Field(12)); }
+            void SetFileCommentLength(std::uint16_t value) { ObjectBase::SetValue(Field(12), value); }
 
-            std::uint16_t GetDiskNumberStart() { return Field(13).Value<std::uint16_t>(); }
-            void SetDiskNumberStart(std::uint16_t value) { Field(13).SetValue(value); }
+            std::uint16_t GetDiskNumberStart() { return ObjectBase::GetValue<std::uint16_t>(Field(13)); }
+            void SetDiskNumberStart(std::uint16_t value) { ObjectBase::SetValue(Field(13), value); }
 
-            std::uint16_t GetInternalFileAttributes() { return Field(14).Value<std::uint16_t>(); }
-            void SetInternalFileAttributes(std::uint16_t value) { Field(14).SetValue(value); }
+            std::uint16_t GetInternalFileAttributes() { return ObjectBase::GetValue<std::uint16_t>(Field(14)); }
+            void SetInternalFileAttributes(std::uint16_t value) { ObjectBase::SetValue(Field(14), value); }
 
-            std::uint16_t GetExternalFileAttributes() { return Field(15).Value<std::uint16_t>(); }
-            void SetExternalFileAttributes(std::uint16_t value) { Field(15).SetValue(value); }
+            std::uint16_t GetExternalFileAttributes() { return ObjectBase::GetValue<std::uint16_t>(Field(15)); }
+            void SetExternalFileAttributes(std::uint16_t value) { ObjectBase::SetValue(Field(15), value); }
 
             //16 - relative offset of local header 4 bytes
-            std::uint32_t GetRelativeOffsetOfLocalHeader() { return Field(16).Value<std::uint32_t>(); }
-            void SetRelativeOffsetOfLocalHeader(std::uint32_t value) { Field(16).SetValue(value); }
+            std::uint32_t GetRelativeOffsetOfLocalHeader() { return ObjectBase::GetValue<std::uint32_t>(Field(16)); }
+            void SetRelativeOffsetOfLocalHeader(std::uint32_t value) { ObjectBase::SetValue(Field(16), value); }
 
             std::string GetFileName() {
-                auto data = Field(17).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::uint8_t>(Field(17));
                 return std::string(data.begin(), data.end());
             }
 
             void SetFileName(std::string name)
             {
-                auto data = Field(17).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::uint8_t>(Field(17));
                 data.resize(name.size());
                 data.assign(name.begin(), name.end());
                 SetFileNameLength(static_cast<std::uint16_t>(name.size()));
             }
 
             std::string GetExtraField() {
-                auto data = Field(18).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::uint8_t>(Field(18));
                 return std::string(data.begin(), data.end());
             }
 
             void SetExtraField(std::string extra)
             {
-                auto data = Field(18).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::uint8_t>(Field(18));
                 data.resize(extra.size());
                 data.assign(extra.begin(), extra.end());
                 SetExtraFieldLength(static_cast<std::uint16_t>(extra.size()));
             }
 
             std::string GetComment() {
-                auto data = Field(19).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::uint8_t>(Field(19));
                 return std::string(data.begin(), data.end());
             }
 
             void SetComment(std::string comment)
             {
-                auto data = Field(18).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::uint8_t>(Field(19));
                 data.resize(comment.size());
                 data.assign(comment.begin(), comment.end());
                 SetExtraFieldLength(static_cast<std::uint16_t>(comment.size()));
@@ -356,11 +357,11 @@ namespace xPlat {
         class DigitalSignature : public StructuredObject
         {
         public:
-            std::uint32_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
-            void SetSignature(std::uint32_t value) { Field(0).SetValue(value); }
+            std::uint32_t GetSignature() { return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
+            void SetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
 
-            std::uint16_t GetDataSize() { return Field(1).Value<std::uint16_t>(); }
-            void SetDataSize(std::uint16_t value) { Field(1).SetValue(value); }
+            std::uint16_t GetDataSize() { return ObjectBase::GetValue<std::uint16_t>(Field(10)); }
+            void SetDataSize(std::uint16_t value) { ObjectBase::SetValue(Field(1), value); }
             
             DigitalSignature(StreamBase* stream) : StructuredObject(
             {
@@ -392,22 +393,22 @@ namespace xPlat {
         public:
                        
             
-            std::uint32_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
-            void GetSignature(std::uint32_t value) { Field(0).SetValue(value); }
+            std::uint32_t GetSignature() { return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
+            void GetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
 
             std::uint64_t GetSizeOfZip64CDRecord() { return Field(1).Value<std::uint64_t>(); }
-            void SetGetSizeOfZip64CDRecord(std::uint64_t value) { Field(1).SetValue(value); }
+            void SetGetSizeOfZip64CDRecord(std::uint64_t value) { ObjectBase::SetValue(Field(1), value); }
 
-            std::uint16_t GetVersionMadeBy() { return Field(2).Value<std::uint16_t>(); }
-            void SetNumberOfDisk(std::uint16_t value) { Field(3).SetValue(value); }
+            std::uint16_t GetVersionMadeBy() { return ObjectBase::GetValue<std::uint16_t>(Field(2)); }
+            void SetNumberOfDisk(std::uint16_t value) { ObjectBase::SetValue(Field(3), value); }
 
-            std::uint16_t GetVersionNeededToExtract() { return Field(3).Value<std::uint16_t>(); }
-            void SetVersionNeededToExtract(std::uint16_t value) { Field(3).SetValue(value); }
+            std::uint16_t GetVersionNeededToExtract() { return ObjectBase::GetValue<std::uint16_t>(Field(3)); }
+            void SetVersionNeededToExtract(std::uint16_t value) { ObjectBase::SetValue(Field(3), value); }
 
-            std::uint32_t GetNumberOfThisDisk() { return Field(4).Value<std::uint32_t>(); }
+            std::uint32_t GetNumberOfThisDisk() { return ObjectBase::GetValue<std::uint32_t>(Field(4)); }
             void SetNumberOfThisDisk(std::uint32_t value) { Field(4).SetValue(value); }
 
-            std::uint32_t GetNumberOfTheDiskWithStart() { return Field(5).Value<std::uint32_t>(); }
+            std::uint32_t GetNumberOfTheDiskWithStart() { return ObjectBase::GetValue<std::uint32_t>(Field(5)); }
             void SetNumberOfTheDiskWithStart(std::uint32_t value) { Field(5).SetValue(value); }
 
             std::uint64_t GetTotalNumberOfEntriesOnDisk() { return Field(5).Value<std::uint64_t>(); }
@@ -465,13 +466,13 @@ namespace xPlat {
             std::uint16_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
             void GetSignature(std::uint32_t value) { Field(0).SetValue(value); }
 
-            std::uint16_t GetNumberOfDisk() { return Field(1).Value<std::uint32_t>(); }
+            std::uint16_t GetNumberOfDisk() { return ObjectBase::GetValue<std::uint16_t>(Field(1)); }
             void SetNumberOfDisk(std::uint32_t value) { Field(1).SetValue(value); }
 
             std::uint16_t GetRelativeOffset() { return Field(2).Value<std::uint64_t>(); }
             void SetTotalNumberOfEntries(std::uint64_t value) { Field(2).SetValue(value); }
 
-            std::uint32_t GetTotalNumberOfDisks() { return Field(3).Value<std::uint32_t>(); }
+            std::uint32_t GetTotalNumberOfDisks() { return ObjectBase::GetValue<std::uint32_t>(Field(3)); }
             void SetTotalNumberOfDisks(std::uint32_t value) { Field(3).SetValue(value); }
 
             Zip64EndOfCentralDirectoryLocator(StreamBase* stream) : StructuredObject(
@@ -499,28 +500,25 @@ namespace xPlat {
         public:
             //std::uint16_t SizeOfEndCentralDirectoryRecord() { return }
 
-            std::uint32_t GetSignature() { return Field(0).Value<std::uint32_t>(); }
+            std::uint32_t GetSignature() { return ObjectBase::GetValue<std::uint32_t>(Field(0)); }
             void SetSignature(std::uint32_t value) { Field(0).SetValue(value); }
             
-            std::uint16_t GetNumberOfDisk() { return Field(1).Value<std::uint16_t>(); }
+            std::uint16_t GetNumberOfDisk() { return ObjectBase::GetValue<std::uint16_t>(Field(1)); }
             void SetNumberOfDisk(std::uint16_t value) { Field(1).SetValue(value); }
 
-            std::uint16_t GetNumberOfDisk() { return Field(1).Value<std::uint16_t>(); }
-            void SetNumberOfDisk(std::uint16_t value) { Field(1).SetValue(value); }
-
-            std::uint16_t GetTotalNumberOfEntries() { return Field(3).Value<std::uint16_t>(); }
+            std::uint16_t GetTotalNumberOfEntries() { return ObjectBase::GetValue<std::uint16_t>(Field(3)); }
             void SetTotalNumberOfEntries(std::uint16_t value) { Field(3).SetValue(value); }
 
-            std::uint16_t GetTotalEntriesInCentralDirectory() { return Field(4).Value<std::uint16_t>(); }
+            std::uint16_t GetTotalEntriesInCentralDirectory() { return ObjectBase::GetValue<std::uint16_t>(Field(4)); }
             void SetTotalEntriesInCentralDirectory(std::uint16_t value) { Field(4).SetValue(value); }
 
-            std::uint32_t GetSizeOfCentralDirectory() { return Field(5).Value<std::uint32_t>(); }
+            std::uint32_t GetSizeOfCentralDirectory() { return ObjectBase::GetValue<std::uint32_t>(Field(5)); }
             void SetSizeOfCentralDirectory(std::uint32_t value) { Field(5).SetValue(value); }
 
-            std::uint32_t GetOffsetOfCentralDirectory() { return Field(6).Value<std::uint32_t>(); }
+            std::uint32_t GetOffsetOfCentralDirectory() { return ObjectBase::GetValue<std::uint32_t>(Field(6)); }
             void SetOffsetOfCentralDirectory(std::uint32_t value) { Field(6).SetValue(value); }
 
-            std::uint16_t GetCommentLength() { return Field(7).Value<std::uint16_t>(); }
+            std::uint16_t GetCommentLength() { return ObjectBase::GetValue<std::uint16_t>(Field(7)); }
             void SetCommentLength(std::uint16_t value) { Field(7).SetValue(value); }
 
             std::string GetComment()
