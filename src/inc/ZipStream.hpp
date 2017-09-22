@@ -4,6 +4,7 @@
 #include "StreamBase.hpp"
 #include "ObjectBase.hpp"
 
+#include <memory>
 #include <string>
 #include <limits>
 #include <functional>
@@ -87,20 +88,20 @@ namespace xPlat {
             std::uint16_t GetExtraFieldLength() { return ObjectBase::GetValue<std::uint16_t>(Field(10)); }
             void SetExtraFieldLength(std::uint16_t value) { ObjectBase::SetValue(Field(10), value); }
 
-            std::uint32_t GetCompressedSize() { return Field(7).Value<std::uint32_t>(); }
-            void SetCompressedSize(std::uint32_t value) { Field(7).SetValue(value); }
+            std::uint32_t GetCompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(7)); }
+            void SetCompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(7), value); }
 
-            std::uint32_t GetUncompressedSize() { return Field(8).Value<std::uint32_t>(); }
-            void SetUncompressedSize(std::uint32_t value) { Field(8).SetValue(value); }
+            std::uint32_t GetUncompressedSize() { return ObjectBase::GetValue<std::uint32_t>(Field(8)); }
+            void SetUncompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(8), value); }
 
             std::string   GetFileName() {
-                auto data = Field(11).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(11));
                 return std::string(data.begin(), data.end());
             }
 
             void SetFileName(std::string name)
             {
-                auto data = Field(11).Value<std::vector<std::uint8_t>>();
+                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(11));
                 data.resize(name.size());
                 data.assign(name.begin(), name.end());
                 SetFileNameLength(static_cast<std::uint16_t>(name.size()));
@@ -109,7 +110,7 @@ namespace xPlat {
             LocalFileHeader(StreamBase* stream) : StructuredObject(
             {
                 // 0 - local file header signature     4 bytes(0x04034b50)
-                Meta::Field4Bytes(stream, [](std::uint32_t& v)
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
                 {
                     if (v != Signatures::LocalFileHeader)
                     {
@@ -117,43 +118,43 @@ namespace xPlat {
                     }
                 }),
                 // 1 - version needed to extract       2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 2 - general purpose bit flag        2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 3 - compression method              2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 4 - last mod file time              2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 5 - last mod file date              2 bytes
-                Meta::Field2Bytes(stream, [](std::uint16_t& v) {}),
+                std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
                 // 6 - crc - 32                        4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 7 - compressed size                 4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 8 - uncompressed size               4 bytes
-                Meta::Field4Bytes(stream, [](std::uint32_t& v) {}),
+                std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
                 // 9 - file name length                2 bytes
-                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
                 {
                     if (GetFileNameLength() > std::numeric_limits<std::uint16_t>::max())
                     {
                         throw ZipException("file name field exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    Field(11).Value<std::vector<std::uint8_t>>().resize(GetFileNameLength(), 0);
+                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(11)).resize(GetFileNameLength(), 0);
                 }),
                 // 10- extra field length              2 bytes
-                Meta::Field2Bytes(stream, [this](std::uint16_t& v)
+                std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
                 {
                     if (GetExtraFieldLength() > std::numeric_limits<std::uint16_t>::max())
                     {
                         throw ZipException("extra field exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    Field(12).Value<std::vector<std::uint8_t>>().resize(GetExtraFieldLength());
+                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(12)).resize(GetExtraFieldLength(), 0);
                 }),
                 // 11- file name (variable size)
-                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {}),
+                std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {}),
                 // 12- extra field (variable size)
-                Meta::FieldNBytes(stream, [](std::vector<std::uint8_t>& data) {})
+                std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {})
             })
             {/*constructor*/}
         }; //class LocalFileHeader
