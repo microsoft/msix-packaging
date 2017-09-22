@@ -1,0 +1,31 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<!-- @@BEGIN_SDKSPLIT
+
+  THRESHOLD HOLOGRAPHIC MANIFEST SCHEMA
+
+  This is the Schema that defines elements and attributes for the Holographic
+  Platform features in Thresold.  These types are imported into the Foundation
+  schema and included in products that support Holographic.
+
+  !!!WARNING!!!
+
+  Don't make any changes to this schema.  Changes will affect a wide range of
+  partners and can potentially break product and test code, as well as existing
+  .appx packages and manifests.  Please contact 'manifest' alias if you need to
+  request any addition or modification.
+
+@@END_SDKSPLIT -->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://schemas.microsoft.com/appx/manifest/holographic/windows10"
+           xmlns="http://schemas.microsoft.com/appx/manifest/holographic/windows10"
+           xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
+           xmlns:u="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+           >
+
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10"/>
+
+  <xs:element name="HoloContent" substitutionGroup="u:HoloContentChoice" type="t:ST_FileName"/>
+
+</xs:schema>

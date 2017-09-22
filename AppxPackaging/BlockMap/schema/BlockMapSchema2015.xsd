@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           xmlns="http://schemas.microsoft.com/appx/2015/blockmap"
+           xmlns:b="http://schemas.microsoft.com/appx/2010/blockmap"
+           targetNamespace="http://schemas.microsoft.com/appx/2015/blockmap"
+           elementFormDefault="qualified" attributeFormDefault="unqualified">
+  <xs:import namespace="http://schemas.microsoft.com/appx/2010/blockmap"/>
+  
+    <xs:element name="BlockMap" type="CT_BlockMap"/>
+    <xs:element name="File" type="CT_File"/>
+    <xs:element name="FileHash" type="CT_FileHash"/>
+
+  <xs:complexType name="CT_BlockMap">
+        <xs:sequence>
+            <xs:element ref="File" minOccurs="1" maxOccurs="unbounded"/>
+        </xs:sequence>
+        <xs:attribute name="HashMethod" type="xs:anyURI" use="required">
+            <xs:annotation>
+                <xs:documentation>The method used for computing cryptographic hashes.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="CT_File">
+        <xs:sequence>
+            <xs:element ref="b:Block" minOccurs="0" maxOccurs="unbounded"/>
+            <xs:element ref="FileHash" minOccurs="0" maxOccurs="1"/>
+        </xs:sequence>
+        <xs:attribute name="Name" type="b:ST_FileName" use="required">
+            <xs:annotation>
+                <xs:documentation>Root path and file name.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+      <xs:attribute name="Id" type="ST_FileId" use="required">
+        <xs:annotation>
+          <xs:documentation>Id of the file.</xs:documentation>
+        </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Size" type="xs:nonNegativeInteger" use="required">
+            <xs:annotation>
+                <xs:documentation>Size, in bytes, of the file's uncompressed data.</xs:documentation>
+            </xs:annotation>
+      </xs:attribute>
+      <xs:attribute name="Encrypted" type="xs:boolean" use="required">
+            <xs:annotation>
+                <xs:documentation>Flag, indicates if file within the package is encrypted or not.</xs:documentation>
+            </xs:annotation>
+      </xs:attribute>
+    </xs:complexType>
+
+    <xs:complexType name="CT_FileHash">
+        <xs:attribute name="Hash" type="xs:base64Binary" use="required">
+            <xs:annotation>
+                <xs:documentation>The hash value of the *uncompressed* data.</xs:documentation>
+            </xs:annotation>
+        </xs:attribute>
+    </xs:complexType>
+
+    <xs:simpleType name="ST_FileId">
+      <xs:annotation>
+        <xs:documentation>The Id of the file must be non-empty and no more than 16 characters. It is a HEX encoding of a UINT64 integer, which the max length will be 16 characters "FFFFFFFFFFFFFFFF"</xs:documentation>
+      </xs:annotation>
+      <xs:restriction base="xs:string">
+        <xs:pattern value="[0-9a-fA-F]+"/>
+        <xs:minLength value="1"/>
+        <xs:maxLength value="16"/>
+      </xs:restriction>
+    </xs:simpleType>
+
+</xs:schema>

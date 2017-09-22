@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @@BEGIN_SDKSPLIT
+
+  RS2 RESTRICTED CAPABILITIES MANIFEST SCHEMA
+
+  This is the Schema that defines elements and attributes for the Universal App
+  Platform features in RS2.  These types are imported into the Foundation
+  schema and included in products that support UAP.
+
+  !!!WARNING!!!
+
+  Don't make any changes to this schema.  Changes will affect a wide range of
+  partners and can potentially break product and test code, as well as existing
+  .appx packages and manifests. Please follow https://osgwiki.com/wiki/Manifest_Request
+  if you need to request any addition or modification.
+
+@@END_SDKSPLIT -->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3"
+           xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3"
+           xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
+           xmlns:rescap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3"
+           xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+           >
+
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
+
+  <xs:element name="Extension" substitutionGroup="f:ApplicationExtensionChoice">
+    <xs:complexType>
+      <xs:choice minOccurs="0">
+        <xs:element name="DesktopAppMigration" type="CT_DesktopAppMigration"/>
+      </xs:choice>
+      <xs:attribute name="Category" type="t:ST_ApplicationExtensionCategory_Restricted3" use="required"/>
+      <xs:attributeGroup ref="t:ExtensionBaseAttributes"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="MigrationProgIds">
+    <xs:complexType>
+      <xs:sequence>
+        <xs:element name="MigrationProgId" minOccurs="0" maxOccurs="10000" type="t:ST_ProgId" />
+      </xs:sequence>
+    </xs:complexType>
+    <xs:unique name="MigrationProgId_ProgId">
+      <xs:selector xpath="rescap3:MigrationProgId"/>
+      <xs:field xpath="."/>
+    </xs:unique>
+  </xs:element>
+
+  <xs:attributeGroup name="DdeExecAttributes">
+    <xs:attribute name="DdeExecCommand" type="t:ST_NonEmptyString" form="qualified" use="optional"/>
+    <xs:attribute name="DdeExecApplication" type="t:ST_NonEmptyString" form="qualified" use="optional"/>
+    <xs:attribute name="DdeExecTopic" type="t:ST_NonEmptyString" form="qualified" use="optional"/>
+    <xs:attribute name="DdeExecIfExec" type="t:ST_NonEmptyString" form="qualified" use="optional"/>
+  </xs:attributeGroup>
+
+  <xs:complexType name="CT_DesktopAppMigration">
+    <xs:sequence>
+      <xs:element name="DesktopApp" minOccurs="0" maxOccurs="10000">
+        <xs:complexType>
+          <xs:attribute name="AumId" type="t:ST_NonEmptyString"/>
+          <xs:attribute name="ShortcutPath" type="t:ST_NonEmptyString"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="AcquisitionUri" type="t:ST_URI" use="optional"/>
+  </xs:complexType>
+
+</xs:schema>
