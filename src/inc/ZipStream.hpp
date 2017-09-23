@@ -78,35 +78,35 @@ namespace xPlat {
         };
 
 
-        class LocalFileHeader : public StructuredObject
+        class LocalFileHeader : public Meta::StructuredObject
         {
         public:
-            std::uint16_t GetFileNameLength() { return *ObjectBase::GetValue<std::uint16_t>(Field(9)); }
-            void SetFileNameLength(std::uint16_t value) { ObjectBase::SetValue(Field(9), value); }
+            std::uint16_t GetFileNameLength() { return *Meta::Object::GetValue<std::uint16_t>(Field(9)); }
+            void SetFileNameLength(std::uint16_t value) { Meta::Object::SetValue(Field(9), value); }
 
-            std::uint16_t GetExtraFieldLength() { return *ObjectBase::GetValue<std::uint16_t>(Field(10)); }
-            void SetExtraFieldLength(std::uint16_t value) { ObjectBase::SetValue(Field(10), value); }
+            std::uint16_t GetExtraFieldLength() { return *Meta::Object::GetValue<std::uint16_t>(Field(10)); }
+            void SetExtraFieldLength(std::uint16_t value) { Meta::Object::SetValue(Field(10), value); }
 
-            std::uint32_t GetCompressedSize() { return *ObjectBase::GetValue<std::uint32_t>(Field(7)); }
-            void SetCompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(7), value); }
+            std::uint32_t GetCompressedSize() { return *Meta::Object::GetValue<std::uint32_t>(Field(7)); }
+            void SetCompressedSize(std::uint32_t value) { Meta::Object::SetValue(Field(7), value); }
 
-            std::uint32_t GetUncompressedSize() { return *ObjectBase::GetValue<std::uint32_t>(Field(8)); }
-            void SetUncompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(8), value); }
+            std::uint32_t GetUncompressedSize() { return *Meta::Object::GetValue<std::uint32_t>(Field(8)); }
+            void SetUncompressedSize(std::uint32_t value) { Meta::Object::SetValue(Field(8), value); }
 
             std::string   GetFileName() {
-                auto data = *ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(11));
+                auto data = *Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(11));
                 return std::string(data.begin(), data.end());
             }
 
             void SetFileName(std::string name)
             {
-                auto data = *ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(11));
+                auto data = *Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(11));
                 data.resize(name.size());
                 data.assign(name.begin(), name.end());
                 SetFileNameLength(static_cast<std::uint16_t>(name.size()));
             }
 
-            LocalFileHeader(StreamBase* stream) : StructuredObject(
+            LocalFileHeader(StreamBase* stream) : Meta::StructuredObject(
             {
                 // 0 - local file header signature     4 bytes(0x04034b50)
                 std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
@@ -139,7 +139,7 @@ namespace xPlat {
                     {
                         throw ZipException("file name field exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(11))->resize(GetFileNameLength(), 0);
+                    Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(11))->resize(GetFileNameLength(), 0);
                 }),
                 // 10- extra field length              2 bytes
                 std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
@@ -148,7 +148,7 @@ namespace xPlat {
                     {
                         throw ZipException("extra field exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(12))->resize(GetExtraFieldLength(), 0);
+                    Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(12))->resize(GetExtraFieldLength(), 0);
                 }),
                 // 11- file name (variable size)
                 std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {}),
@@ -159,19 +159,19 @@ namespace xPlat {
         }; //class LocalFileHeader
 
 
-        class DataDescriptor : public StructuredObject
+        class DataDescriptor : public Meta::StructuredObject
         {
         public:
-            std::uint32_t GetCrc32() {return *ObjectBase::GetValue<std::uint32_t>(Field(0)); }
-            void SetCrc32(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
+            std::uint32_t GetCrc32() {return *Meta::Object::GetValue<std::uint32_t>(Field(0)); }
+            void SetCrc32(std::uint32_t value) { Meta::Object::SetValue(Field(0), value); }
 
-            std::uint32_t GetCompressedSize() { return *ObjectBase::GetValue<std::uint32_t>(Field(1)); }
-            void SetCompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(1), value); }
+            std::uint32_t GetCompressedSize() { return *Meta::Object::GetValue<std::uint32_t>(Field(1)); }
+            void SetCompressedSize(std::uint32_t value) { Meta::Object::SetValue(Field(1), value); }
             
-            std::uint32_t GetUncompressedSize() { return *ObjectBase::GetValue<std::uint32_t>(Field(2)); }
-            void SetUncompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(2), value); }
+            std::uint32_t GetUncompressedSize() { return *Meta::Object::GetValue<std::uint32_t>(Field(2)); }
+            void SetUncompressedSize(std::uint32_t value) { Meta::Object::SetValue(Field(2), value); }
 
-            DataDescriptor(StreamBase* stream) : StructuredObject(
+            DataDescriptor(StreamBase* stream) : Meta::StructuredObject(
             {
                 // 0 - crc - 32                          4 bytes    
                 std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v) {}),
@@ -184,69 +184,69 @@ namespace xPlat {
             {/*constructor*/}
         };//class DataDescriptor
 
-        class CentralFileHeader : public StructuredObject
+        class CentralFileHeader : public Meta::StructuredObject
         {
         public:
-            std::uint32_t GetSignature() { return *ObjectBase::GetValue<std::uint32_t>(Field(0)); }
-            void SetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
+            std::uint32_t GetSignature() { return *Meta::Object::GetValue<std::uint32_t>(Field(0)); }
+            void SetSignature(std::uint32_t value) { Meta::Object::SetValue(Field(0), value); }
 
-            std::uint16_t GetVersionMadeBy() { return *ObjectBase::GetValue<std::uint16_t>(Field(1)); }
-            void SetVersionMadeBy(std::uint16_t value) { ObjectBase::SetValue(Field(1), value); }
+            std::uint16_t GetVersionMadeBy() { return *Meta::Object::GetValue<std::uint16_t>(Field(1)); }
+            void SetVersionMadeBy(std::uint16_t value) { Meta::Object::SetValue(Field(1), value); }
 
-            std::uint16_t GetVersionNeededToExtract() { return *ObjectBase::GetValue<std::uint16_t>(Field(2)); }
-            void SetVersionNeededToExtract(std::uint16_t value) { ObjectBase::SetValue(Field(2), value); }
+            std::uint16_t GetVersionNeededToExtract() { return *Meta::Object::GetValue<std::uint16_t>(Field(2)); }
+            void SetVersionNeededToExtract(std::uint16_t value) { Meta::Object::SetValue(Field(2), value); }
 
-            std::uint16_t GetGeneralPurposeBitFlag() { return *ObjectBase::GetValue<std::uint16_t>(Field(3)); }
-            void SetGeneralPurposeBitFlag(std::uint16_t value) { ObjectBase::SetValue(Field(3), value); }
+            std::uint16_t GetGeneralPurposeBitFlag() { return *Meta::Object::GetValue<std::uint16_t>(Field(3)); }
+            void SetGeneralPurposeBitFlag(std::uint16_t value) { Meta::Object::SetValue(Field(3), value); }
 
-            std::uint16_t GetCompressionMethod() { return *ObjectBase::GetValue<std::uint16_t>(Field(4)); }
-            void SetCompressionMethod(std::uint16_t value) { ObjectBase::SetValue(Field(4), value); }
+            std::uint16_t GetCompressionMethod() { return *Meta::Object::GetValue<std::uint16_t>(Field(4)); }
+            void SetCompressionMethod(std::uint16_t value) { Meta::Object::SetValue(Field(4), value); }
 
-            std::uint16_t GetLastModFileTime() { return *ObjectBase::GetValue<std::uint16_t>(Field(5)); }
-            void SetLastModFileTime(std::uint16_t value) { ObjectBase::SetValue(Field(5), value); }
+            std::uint16_t GetLastModFileTime() { return *Meta::Object::GetValue<std::uint16_t>(Field(5)); }
+            void SetLastModFileTime(std::uint16_t value) { Meta::Object::SetValue(Field(5), value); }
 
-            std::uint16_t GetLastModFileDate() { return *ObjectBase::GetValue<std::uint16_t>(Field(6)); }
-            void SetLastModFileDate(std::uint16_t value) { ObjectBase::SetValue(Field(6), value); }
+            std::uint16_t GetLastModFileDate() { return *Meta::Object::GetValue<std::uint16_t>(Field(6)); }
+            void SetLastModFileDate(std::uint16_t value) { Meta::Object::SetValue(Field(6), value); }
 
-            std::uint32_t GetCrc32() { return *ObjectBase::GetValue<std::uint32_t>(Field(7)); }
-            void SetCrc(std::uint16_t value) { ObjectBase::SetValue(Field(7), value); }
+            std::uint32_t GetCrc32() { return *Meta::Object::GetValue<std::uint32_t>(Field(7)); }
+            void SetCrc(std::uint16_t value) { Meta::Object::SetValue(Field(7), value); }
 
-            std::uint32_t GetCompressedSize() { return *ObjectBase::GetValue<std::uint32_t>(Field(8)); }
-            void SetCompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(8), value); }
+            std::uint32_t GetCompressedSize() { return *Meta::Object::GetValue<std::uint32_t>(Field(8)); }
+            void SetCompressedSize(std::uint32_t value) { Meta::Object::SetValue(Field(8), value); }
 
-            std::uint32_t GetUncompressedSize() { return *ObjectBase::GetValue<std::uint32_t>(Field(9)); }
-            void SetUncompressedSize(std::uint32_t value) { ObjectBase::SetValue(Field(9), value); }
+            std::uint32_t GetUncompressedSize() { return *Meta::Object::GetValue<std::uint32_t>(Field(9)); }
+            void SetUncompressedSize(std::uint32_t value) { Meta::Object::SetValue(Field(9), value); }
 
-            std::uint16_t GetFileNameLength() { return *ObjectBase::GetValue<std::uint16_t>(Field(10)); }
-            void SetFileNameLength(std::uint16_t value) { ObjectBase::SetValue(Field(10), value); }
+            std::uint16_t GetFileNameLength() { return *Meta::Object::GetValue<std::uint16_t>(Field(10)); }
+            void SetFileNameLength(std::uint16_t value) { Meta::Object::SetValue(Field(10), value); }
 
-            std::uint16_t GetExtraFieldLength() { return *ObjectBase::GetValue<std::uint16_t>(Field(11)); }
-            void SetExtraFieldLength(std::uint16_t value) { ObjectBase::SetValue(Field(11), value); }
+            std::uint16_t GetExtraFieldLength() { return *Meta::Object::GetValue<std::uint16_t>(Field(11)); }
+            void SetExtraFieldLength(std::uint16_t value) { Meta::Object::SetValue(Field(11), value); }
 
-            std::uint16_t GetFileCommentLength() { return *ObjectBase::GetValue<std::uint16_t>(Field(12)); }
-            void SetFileCommentLength(std::uint16_t value) { ObjectBase::SetValue(Field(12), value); }
+            std::uint16_t GetFileCommentLength() { return *Meta::Object::GetValue<std::uint16_t>(Field(12)); }
+            void SetFileCommentLength(std::uint16_t value) { Meta::Object::SetValue(Field(12), value); }
 
-            std::uint16_t GetDiskNumberStart() { return *ObjectBase::GetValue<std::uint16_t>(Field(13)); }
-            void SetDiskNumberStart(std::uint16_t value) { ObjectBase::SetValue(Field(13), value); }
+            std::uint16_t GetDiskNumberStart() { return *Meta::Object::GetValue<std::uint16_t>(Field(13)); }
+            void SetDiskNumberStart(std::uint16_t value) { Meta::Object::SetValue(Field(13), value); }
 
-            std::uint16_t GetInternalFileAttributes() { return *ObjectBase::GetValue<std::uint16_t>(Field(14)); }
-            void SetInternalFileAttributes(std::uint16_t value) { ObjectBase::SetValue(Field(14), value); }
+            std::uint16_t GetInternalFileAttributes() { return *Meta::Object::GetValue<std::uint16_t>(Field(14)); }
+            void SetInternalFileAttributes(std::uint16_t value) { Meta::Object::SetValue(Field(14), value); }
 
-            std::uint16_t GetExternalFileAttributes() { return *ObjectBase::GetValue<std::uint16_t>(Field(15)); }
-            void SetExternalFileAttributes(std::uint16_t value) { ObjectBase::SetValue(Field(15), value); }
+            std::uint16_t GetExternalFileAttributes() { return *Meta::Object::GetValue<std::uint16_t>(Field(15)); }
+            void SetExternalFileAttributes(std::uint16_t value) { Meta::Object::SetValue(Field(15), value); }
 
             //16 - relative offset of local header 4 bytes
-            std::uint32_t GetRelativeOffsetOfLocalHeader() { return *ObjectBase::GetValue<std::uint32_t>(Field(16)); }
-            void SetRelativeOffsetOfLocalHeader(std::uint32_t value) { ObjectBase::SetValue(Field(16), value); }
+            std::uint32_t GetRelativeOffsetOfLocalHeader() { return *Meta::Object::GetValue<std::uint32_t>(Field(16)); }
+            void SetRelativeOffsetOfLocalHeader(std::uint32_t value) { Meta::Object::SetValue(Field(16), value); }
 
             std::string GetFileName() {
-                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(17));
+                auto data = Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(17));
                 return std::string(data->begin(), data->end());
             }
 
             void SetFileName(std::string name)
             {
-                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(17));
+                auto data = Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(17));
                 data->resize(name.size());
                 data->assign(name.begin(), name.end());
                 SetFileNameLength(static_cast<std::uint16_t>(name.size()));
@@ -254,13 +254,13 @@ namespace xPlat {
 
             std::string GetExtraField()
             {
-                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(18));
+                auto data = Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(18));
                 return std::string(data->begin(), data->end());
             }
 
             void SetExtraField(std::string extra)
             {
-                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(18));
+                auto data = Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(18));
                 data->resize(extra.size());
                 data->assign(extra.begin(), extra.end());
                 SetExtraFieldLength(static_cast<std::uint16_t>(extra.size()));
@@ -268,19 +268,19 @@ namespace xPlat {
 
             std::string GetComment()
             {
-                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(19));
+                auto data = Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(19));
                 return std::string(data->begin(), data->end());
             }
 
             void SetComment(std::string comment)
             {
-                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(19));
+                auto data = Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(19));
                 data->resize(comment.size());
                 data->assign(comment.begin(), comment.end());
                 SetExtraFieldLength(static_cast<std::uint16_t>(comment.size()));
             }
 
-            CentralFileHeader(StreamBase* stream) : StructuredObject(
+            CentralFileHeader(StreamBase* stream) : Meta::StructuredObject(
             {
                 // 0 - central file header signature   4 bytes(0x02014b50)
                 std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
@@ -315,7 +315,7 @@ namespace xPlat {
                     {
                         throw ZipException("file name exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(17))->resize(GetFileNameLength(), 0);
+                    Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(17))->resize(GetFileNameLength(), 0);
                 }),
                 //11 - extra field length              2 bytes
                 std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
@@ -324,7 +324,7 @@ namespace xPlat {
                     {
                         throw ZipException("file name exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(18))->resize(GetExtraFieldLength(), 0);
+                    Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(18))->resize(GetExtraFieldLength(), 0);
                 }),
                 //12 - file comment length             2 bytes
                 std::make_shared<Meta::Field2Bytes>(stream, [this](std::uint16_t& v)
@@ -333,7 +333,7 @@ namespace xPlat {
                     {
                         throw ZipException("file comment exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(19))->resize(GetFileCommentLength(), 0);
+                    Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(19))->resize(GetFileCommentLength(), 0);
                 }),
                 //13 - disk number start               2 bytes
                 std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v) {}),
@@ -354,16 +354,16 @@ namespace xPlat {
             }
         };//class CentralFileHeader
 
-        class DigitalSignature : public StructuredObject
+        class DigitalSignature : public Meta::StructuredObject
         {
         public:
-            std::uint32_t GetSignature() { return *ObjectBase::GetValue<std::uint32_t>(Field(0)); }
-            void SetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
+            std::uint32_t GetSignature() { return *Meta::Object::GetValue<std::uint32_t>(Field(0)); }
+            void SetSignature(std::uint32_t value) { Meta::Object::SetValue(Field(0), value); }
 
-            std::uint16_t GetDataSize() { return *ObjectBase::GetValue<std::uint16_t>(Field(10)); }
-            void SetDataSize(std::uint16_t value) { ObjectBase::SetValue(Field(1), value); }
+            std::uint16_t GetDataSize() { return *Meta::Object::GetValue<std::uint16_t>(Field(10)); }
+            void SetDataSize(std::uint16_t value) { Meta::Object::SetValue(Field(1), value); }
             
-            DigitalSignature(StreamBase* stream) : StructuredObject(
+            DigitalSignature(StreamBase* stream) : Meta::StructuredObject(
             {
                 // 0 - header signature  4 bytes(0x05054b50)
                 std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
@@ -379,7 +379,7 @@ namespace xPlat {
                     {
                         throw ZipException("signature data exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(2))->resize(GetDataSize(), 0);
+                    Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(2))->resize(GetDataSize(), 0);
                 }),
                 // 2 - signature data(variable size)
                 std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {})
@@ -388,44 +388,44 @@ namespace xPlat {
             }
         };//class DigitalSignature
 
-        class Zip64EndOfCentralDirectoryRecord : public StructuredObject
+        class Zip64EndOfCentralDirectoryRecord : public Meta::StructuredObject
         {
         public:
 
-            std::uint32_t GetSignature() { return *ObjectBase::GetValue<std::uint32_t>(Field(0)); }
-            void GetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
+            std::uint32_t GetSignature() { return *Meta::Object::GetValue<std::uint32_t>(Field(0)); }
+            void GetSignature(std::uint32_t value) { Meta::Object::SetValue(Field(0), value); }
 
-            std::uint64_t GetSizeOfZip64CDRecord() { return *ObjectBase::GetValue<std::uint_fast64_t>(Field(1)); }
-            void SetGetSizeOfZip64CDRecord(std::uint64_t value) { ObjectBase::SetValue(Field(1), value); }
+            std::uint64_t GetSizeOfZip64CDRecord() { return *Meta::Object::GetValue<std::uint_fast64_t>(Field(1)); }
+            void SetGetSizeOfZip64CDRecord(std::uint64_t value) { Meta::Object::SetValue(Field(1), value); }
 
-            std::uint16_t GetVersionMadeBy() { return *ObjectBase::GetValue<std::uint16_t>(Field(2)); }
-            void SetNumberOfDisk(std::uint16_t value) { ObjectBase::SetValue(Field(3), value); }
+            std::uint16_t GetVersionMadeBy() { return *Meta::Object::GetValue<std::uint16_t>(Field(2)); }
+            void SetNumberOfDisk(std::uint16_t value) { Meta::Object::SetValue(Field(3), value); }
 
-            std::uint16_t GetVersionNeededToExtract() { return *ObjectBase::GetValue<std::uint16_t>(Field(3)); }
-            void SetVersionNeededToExtract(std::uint16_t value) { ObjectBase::SetValue(Field(3), value); }
+            std::uint16_t GetVersionNeededToExtract() { return *Meta::Object::GetValue<std::uint16_t>(Field(3)); }
+            void SetVersionNeededToExtract(std::uint16_t value) { Meta::Object::SetValue(Field(3), value); }
 
-            std::uint32_t GetNumberOfThisDisk() { return *ObjectBase::GetValue<std::uint32_t>(Field(4)); }
-            void SetNumberOfThisDisk(std::uint32_t value) { ObjectBase::SetValue(Field(4), value); }
+            std::uint32_t GetNumberOfThisDisk() { return *Meta::Object::GetValue<std::uint32_t>(Field(4)); }
+            void SetNumberOfThisDisk(std::uint32_t value) { Meta::Object::SetValue(Field(4), value); }
 
-            std::uint32_t GetNumberOfTheDiskWithStart() { return *ObjectBase::GetValue<std::uint32_t>(Field(5)); }
-            void SetNumberOfTheDiskWithStart(std::uint32_t value) { ObjectBase::SetValue(Field(5), value); }
+            std::uint32_t GetNumberOfTheDiskWithStart() { return *Meta::Object::GetValue<std::uint32_t>(Field(5)); }
+            void SetNumberOfTheDiskWithStart(std::uint32_t value) { Meta::Object::SetValue(Field(5), value); }
 
-            std::uint64_t GetTotalNumberOfEntriesOnDisk() { return *ObjectBase::GetValue<std::uint64_t>(Field(5)); }
-            void SetTotalNumberOfEntriesOnDisk(std::uint64_t value) { ObjectBase::SetValue(Field(5), value); }
+            std::uint64_t GetTotalNumberOfEntriesOnDisk() { return *Meta::Object::GetValue<std::uint64_t>(Field(5)); }
+            void SetTotalNumberOfEntriesOnDisk(std::uint64_t value) { Meta::Object::SetValue(Field(5), value); }
 
-            std::uint64_t GetTotalNumberOfEntries() { return *ObjectBase::GetValue<std::uint64_t>(Field(6)); }
-            void SetTotalNumberOfEntries(std::uint64_t value) { ObjectBase::SetValue(Field(6), value); }
+            std::uint64_t GetTotalNumberOfEntries() { return *Meta::Object::GetValue<std::uint64_t>(Field(6)); }
+            void SetTotalNumberOfEntries(std::uint64_t value) { Meta::Object::SetValue(Field(6), value); }
 
-            std::uint64_t GetTotalNumberOfEntriesInCD() { return *ObjectBase::GetValue<std::uint64_t>(Field(7)); }
-            void SetTotalNumberOfEntriesInCD(std::uint64_t value) { ObjectBase::SetValue(Field(7), value); }
+            std::uint64_t GetTotalNumberOfEntriesInCD() { return *Meta::Object::GetValue<std::uint64_t>(Field(7)); }
+            void SetTotalNumberOfEntriesInCD(std::uint64_t value) { Meta::Object::SetValue(Field(7), value); }
 
-            std::uint64_t GetSizeOfCD() { return *ObjectBase::GetValue<std::uint64_t>(Field(8)); }
-            void SetSizeOfCD(std::uint64_t value) { ObjectBase::SetValue(Field(8), value); }
+            std::uint64_t GetSizeOfCD() { return *Meta::Object::GetValue<std::uint64_t>(Field(8)); }
+            void SetSizeOfCD(std::uint64_t value) { Meta::Object::SetValue(Field(8), value); }
 
-            std::uint64_t GetOffsetfStartOfCD() { return *ObjectBase::GetValue<std::uint64_t>(Field(9)); }
-            void SetOffsetfStartOfCD(std::uint64_t value) { ObjectBase::SetValue(Field(9), value); }
+            std::uint64_t GetOffsetfStartOfCD() { return *Meta::Object::GetValue<std::uint64_t>(Field(9)); }
+            void SetOffsetfStartOfCD(std::uint64_t value) { Meta::Object::SetValue(Field(9), value); }
 
-            Zip64EndOfCentralDirectoryRecord(StreamBase* stream) : StructuredObject(
+            Zip64EndOfCentralDirectoryRecord(StreamBase* stream) : Meta::StructuredObject(
             {
                 // 0 - zip64 end of central dir signature 4 bytes(0x06064b50)
                 std::make_shared<Meta::Field4Bytes>(stream,[](std::uint32_t& v)
@@ -459,22 +459,22 @@ namespace xPlat {
             {/*constructor*/}
         }; //class Zip64EndOfCentralDirectoryRecord
 
-        class Zip64EndOfCentralDirectoryLocator : public StructuredObject
+        class Zip64EndOfCentralDirectoryLocator : public Meta::StructuredObject
         {
         public:
-            std::uint16_t GetSignature() { return *ObjectBase::GetValue<std::uint32_t>(Field(0)); }
-            void SetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
+            std::uint16_t GetSignature() { return *Meta::Object::GetValue<std::uint32_t>(Field(0)); }
+            void SetSignature(std::uint32_t value) { Meta::Object::SetValue(Field(0), value); }
 
-            std::uint32_t GetNumberOfDisk() { return *ObjectBase::GetValue<std::uint32_t>(Field(1)); }
-            void SetNumberOfDisk(std::uint32_t value) { ObjectBase::SetValue(Field(1), value); }
+            std::uint32_t GetNumberOfDisk() { return *Meta::Object::GetValue<std::uint32_t>(Field(1)); }
+            void SetNumberOfDisk(std::uint32_t value) { Meta::Object::SetValue(Field(1), value); }
 
-            std::uint64_t GetRelativeOffset() { return *ObjectBase::GetValue<std::uint64_t>(Field(2)); }
-            void SetTotalNumberOfEntries(std::uint64_t value) { ObjectBase::SetValue(Field(2), value); }
+            std::uint64_t GetRelativeOffset() { return *Meta::Object::GetValue<std::uint64_t>(Field(2)); }
+            void SetTotalNumberOfEntries(std::uint64_t value) { Meta::Object::SetValue(Field(2), value); }
 
-            std::uint32_t GetTotalNumberOfDisks() { return *ObjectBase::GetValue<std::uint32_t>(Field(3)); }
-            void SetTotalNumberOfDisks(std::uint32_t value) { ObjectBase::SetValue(Field(3), value); }
+            std::uint32_t GetTotalNumberOfDisks() { return *Meta::Object::GetValue<std::uint32_t>(Field(3)); }
+            void SetTotalNumberOfDisks(std::uint32_t value) { Meta::Object::SetValue(Field(3), value); }
 
-            Zip64EndOfCentralDirectoryLocator(StreamBase* stream) : StructuredObject(
+            Zip64EndOfCentralDirectoryLocator(StreamBase* stream) : Meta::StructuredObject(
             {
                 // 0 - zip64 end of central dir locator signature 4 bytes(0x07064b50)
                 std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
@@ -494,45 +494,45 @@ namespace xPlat {
             {/*constructor*/}
         }; //class Zip64EndOfCentralDirectoryLocator
 
-        class EndCentralDirectoryRecord : public StructuredObject
+        class EndCentralDirectoryRecord : public Meta::StructuredObject
         {
         public:
-            std::uint32_t GetSignature() { return *ObjectBase::GetValue<std::uint32_t>(Field(0)); }
-            void SetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
+            std::uint32_t GetSignature() { return *Meta::Object::GetValue<std::uint32_t>(Field(0)); }
+            void SetSignature(std::uint32_t value) { Meta::Object::SetValue(Field(0), value); }
             
-            std::uint16_t GetNumberOfDisk() { return *ObjectBase::GetValue<std::uint16_t>(Field(1)); }
-            void SetNumberOfDisk(std::uint16_t value) { ObjectBase::SetValue(Field(1), value); }
+            std::uint16_t GetNumberOfDisk() { return *Meta::Object::GetValue<std::uint16_t>(Field(1)); }
+            void SetNumberOfDisk(std::uint16_t value) { Meta::Object::SetValue(Field(1), value); }
 
-            std::uint16_t GetTotalNumberOfEntries() { return *ObjectBase::GetValue<std::uint16_t>(Field(3)); }
-            void SetTotalNumberOfEntries(std::uint16_t value) { ObjectBase::SetValue(Field(3), value); }
+            std::uint16_t GetTotalNumberOfEntries() { return *Meta::Object::GetValue<std::uint16_t>(Field(3)); }
+            void SetTotalNumberOfEntries(std::uint16_t value) { Meta::Object::SetValue(Field(3), value); }
 
-            std::uint16_t GetTotalEntriesInCentralDirectory() { return *ObjectBase::GetValue<std::uint16_t>(Field(4)); }
-            void SetTotalEntriesInCentralDirectory(std::uint16_t value) { ObjectBase::SetValue(Field(4), value); }
+            std::uint16_t GetTotalEntriesInCentralDirectory() { return *Meta::Object::GetValue<std::uint16_t>(Field(4)); }
+            void SetTotalEntriesInCentralDirectory(std::uint16_t value) { Meta::Object::SetValue(Field(4), value); }
 
-            std::uint32_t GetSizeOfCentralDirectory() { return *ObjectBase::GetValue<std::uint32_t>(Field(5)); }
-            void SetSizeOfCentralDirectory(std::uint32_t value) { ObjectBase::SetValue(Field(5), value); }
+            std::uint32_t GetSizeOfCentralDirectory() { return *Meta::Object::GetValue<std::uint32_t>(Field(5)); }
+            void SetSizeOfCentralDirectory(std::uint32_t value) { Meta::Object::SetValue(Field(5), value); }
 
-            std::uint32_t GetOffsetOfCentralDirectory() { return *ObjectBase::GetValue<std::uint32_t>(Field(6)); }
-            void SetOffsetOfCentralDirectory(std::uint32_t value) { ObjectBase::SetValue(Field(6), value); }
+            std::uint32_t GetOffsetOfCentralDirectory() { return *Meta::Object::GetValue<std::uint32_t>(Field(6)); }
+            void SetOffsetOfCentralDirectory(std::uint32_t value) { Meta::Object::SetValue(Field(6), value); }
 
-            std::uint16_t GetCommentLength() { return *ObjectBase::GetValue<std::uint16_t>(Field(7)); }
-            void SetCommentLength(std::uint16_t value) { ObjectBase::SetValue(Field(7), value); }
+            std::uint16_t GetCommentLength() { return *Meta::Object::GetValue<std::uint16_t>(Field(7)); }
+            void SetCommentLength(std::uint16_t value) { Meta::Object::SetValue(Field(7), value); }
 
             std::string GetComment()
             {
-                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(8));
+                auto data = Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(8));
                 return std::string(data->begin(), data->end());
             }
 
             void SetComment(std::string comment)
             {
-                auto data = ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(8));
+                auto data = Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(8));
                 data->resize(comment.size());
                 data->assign(comment.begin(), comment.end());
                 SetCommentLength(static_cast<std::uint16_t>(comment.size()));
             }
 
-            EndCentralDirectoryRecord(StreamBase* stream) : StructuredObject(
+            EndCentralDirectoryRecord(StreamBase* stream) : Meta::StructuredObject(
             {
                 // 0 - end of central dir signature    4 bytes  (0x06054b50)
                 std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
@@ -560,7 +560,7 @@ namespace xPlat {
                     {
                         throw ZipException("commentfield exceeds max size", ZipException::Error::FieldOutOfRange);
                     }
-                    ObjectBase::GetValue<std::vector<std::uint8_t>>(Field(8))->resize(GetCommentLength(), 0);
+                    Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(8))->resize(GetCommentLength(), 0);
                 }),
                 // 8 - .ZIP file comment       (variable size)
                 std::make_shared<Meta::FieldNBytes>(stream, [](std::vector<std::uint8_t>& data) {})
