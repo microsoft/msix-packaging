@@ -35,7 +35,7 @@ unsigned int UnpackAppx(char* source, char* destination)
         xPlat::ZipStream zip(std::move(std::make_unique<xPlat::FileStream>(
             std::move(appxFileName),
             xPlat::FileStream::Mode::READ)));
-
+        zip.Read();
     });
 }
 

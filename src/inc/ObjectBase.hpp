@@ -20,22 +20,27 @@ namespace xPlat {
         virtual void Validate() = 0;
         virtual size_t Size() = 0;
 
-        template <class T> static T&   GetValue(ObjectBase* o)           { return reinterpret_cast<T&>(o->v);      }
-        template <class T> static void SetValue(ObjectBase* o, T& value) { o->v = reinterpret_cast<void*>(&value); }
-        //template <class T> static T&   GetValue(ObjectBase& o)           { return static_cast<T&>(o.v);      }
-        //template <class T> static void SetValue(ObjectBase& o, T& value) { o.v = static_cast<void*>(&value); }
+        template <class T>
+        static T* GetValue(ObjectBase* o)
+        {
+            return reinterpret_cast<T*>(o->v);
+        }
+
+        template <class T>
+        static void SetValue(ObjectBase* o, T& value)
+        {
+            *reinterpret_cast<T*>(o->v) = value;
+        }
 
     protected:
         void* value() { return v; }
-        void setValue(void* value) { v = value; }
-
         void* v = nullptr;
     };
 
     class StructuredObject : public ObjectBase
     {
     public:
-        StructuredObject(std::initializer_list<std::shared_ptr<ObjectBase>> fields) : fields(fields), ObjectBase(&fields) { }
+        StructuredObject(std::initializer_list<std::shared_ptr<ObjectBase>> list) : fields(list), ObjectBase(&fields) { }
 
         virtual void Write()
         {
@@ -63,6 +68,7 @@ namespace xPlat {
             {
                 result += field->Size();
             }
+            return result;
         }
 
         ObjectBase* Field(size_t index) { return fields[index].get(); }
@@ -94,7 +100,7 @@ namespace xPlat {
                 Validate();
             }
 
-            void Validate() { validate(ObjectBase::GetValue<T>(this)); }
+            void Validate() { validate(GetValue()); }
 
             virtual size_t Size() { return sizeof(T); }
 
