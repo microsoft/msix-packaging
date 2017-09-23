@@ -12,7 +12,6 @@
 namespace xPlat {
 
     class ZipException : public ExceptionBase
-
     {
     public:
         enum Error : std::uint32_t
@@ -26,7 +25,6 @@ namespace xPlat {
             SetLastError(error);
         }
         std::string reason;
-
     };
 
     /* Zip File Structure
@@ -465,7 +463,7 @@ namespace xPlat {
         {
         public:
             std::uint16_t GetSignature() { return *ObjectBase::GetValue<std::uint32_t>(Field(0)); }
-            void GetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
+            void SetSignature(std::uint32_t value) { ObjectBase::SetValue(Field(0), value); }
 
             std::uint32_t GetNumberOfDisk() { return *ObjectBase::GetValue<std::uint32_t>(Field(1)); }
             void SetNumberOfDisk(std::uint32_t value) { ObjectBase::SetValue(Field(1), value); }
