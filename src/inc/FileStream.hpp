@@ -29,7 +29,7 @@ namespace xPlat {
 
         FileStream(std::string&& path, Mode mode) : name(path)
         {
-            static char* modes[] = { "r", "w", "a", "r+", "w+", "a+" };
+            static const char* modes[] = { "r", "w", "a", "r+", "w+", "a+" };
             file = std::fopen(path.c_str(), modes[mode]);
             if (!file)
             {
