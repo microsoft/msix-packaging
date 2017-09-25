@@ -64,5 +64,8 @@
     <ClCompile Include="..\..\src\xPlatAppx\xPlatAppx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\xPlatAppx\ZipStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

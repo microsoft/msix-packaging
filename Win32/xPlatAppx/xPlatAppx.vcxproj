@@ -160,6 +160,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\xPlatAppx\xPlatAppx.cpp" />
+    <ClCompile Include="..\..\src\xPlatAppx\ZipStream.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
