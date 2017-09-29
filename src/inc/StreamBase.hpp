@@ -21,6 +21,7 @@ namespace xPlat {
         virtual void Seek(long offset, Reference where)                       { throw NotImplementedException(); }
         virtual int Ferror()                                                  { throw NotImplementedException(); }
         virtual int Feof()                                                    { throw NotImplementedException(); }
+        virtual std::uint64_t Ftell()                                         { throw NotImplementedException(); }
 
         virtual void CopyTo(StreamBase& to)
         {

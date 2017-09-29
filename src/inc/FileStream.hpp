@@ -90,6 +90,12 @@ namespace xPlat {
             }
         }
 
+        virtual std::uint64_t Ftell()
+        {
+            auto result = ftell(file);
+            return static_cast<std::uint64_t>(result);
+        }
+
     protected:
         std::string name;
         FILE* file;

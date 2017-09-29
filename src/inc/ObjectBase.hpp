@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include <functional>
+#include <algorithm>
 #include <initializer_list>
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
@@ -49,19 +50,16 @@ namespace xPlat {
 
             virtual void Write()
             {
-                for (auto field : fields)
-                {
-                    field->Write();
-                }
+                std::for_each(fields.begin(), fields.end(), [&](auto field) { field->Write(); });
             }
 
             virtual void Read()
             {
-                for (auto field : fields)
+                std::for_each(fields.begin(), fields.end(), [&](auto field)
                 {
                     field->Read();
                     field->Validate();
-                }
+                });
             }
 
             virtual void Validate() {}
@@ -69,10 +67,7 @@ namespace xPlat {
             virtual size_t Size()
             {
                 size_t result = 0;
-                for (auto field : fields)
-                {
-                    result += field->Size();
-                }
+                std::for_each(fields.begin(), fields.end(), [&](auto field) { result += field->Size(); });
                 return result;
             }
 

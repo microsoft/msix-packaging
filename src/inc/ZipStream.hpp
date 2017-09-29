@@ -2,12 +2,11 @@
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
-#include "ObjectBase.hpp"
+#include "ZipFileStream.hpp"
 
+#include <vector>
+#include <map>
 #include <memory>
-#include <string>
-#include <limits>
-#include <functional>
 
 namespace xPlat {
 
@@ -18,6 +17,9 @@ namespace xPlat {
         {
             InvalidHeader = 1,
             FieldOutOfRange = 2,
+            InvalidEndOfCentralDirectoryRecord = 3,
+            InvalidZip64CentralDirectoryLocator = 4,
+            InvalidZip64CentralDirectoryRecord = 5,
         };
 
         ZipException(std::string message, Error error) : reason(message), ExceptionBase(ExceptionBase::Facility::ZIP)
@@ -30,13 +32,17 @@ namespace xPlat {
     // This represents a raw stream over a.zip file.
     class ZipStream
     {
-
     public:
         ZipStream(StreamPtr&& stream) : stream(std::move(stream)) { }
 
         void Read();
 
+        std::vector<std::string> GetFileNames();
+
+
     protected:
         StreamPtr stream;
+        std::map<std::string, std::shared_ptr<ZipFileStream>> containedFiles;
+
     };//class ZipStream
 }
