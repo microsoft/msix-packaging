@@ -47,6 +47,7 @@ namespace xPlat {
         {
         public:
             StructuredObject(std::initializer_list<std::shared_ptr<Object>> list) : fields(list), Object(&fields) { }
+            virtual ~StructuredObject() {}
 
             virtual void Write()
             {
@@ -91,11 +92,13 @@ namespace xPlat {
 
             virtual void Write()
             {
+                offset = stream->Ftell();
                 stream->Write(sizeof(T), reinterpret_cast<std::uint8_t*>(const_cast<T*>(&value)));
             }
 
             virtual void Read()
             {
+                offset = stream->Ftell();
                 stream->Read(sizeof(T), reinterpret_cast<std::uint8_t*>(const_cast<T*>(&value)));
                 Validate();
             }
@@ -105,6 +108,7 @@ namespace xPlat {
             virtual size_t Size() { return sizeof(T); }
 
         protected:
+            std::uint64_t offset = 0;
             T value;
             StreamBase* stream;
             Lambda validate;

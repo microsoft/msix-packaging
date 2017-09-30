@@ -18,7 +18,7 @@ namespace xPlat {
         // This way, derived classes only have to implement what they actually need, and everything else is not implemented.
         virtual void Write(std::size_t size, const std::uint8_t* bytes)       { throw NotImplementedException(); }
         virtual std::size_t Read(std::size_t size, const std::uint8_t* bytes) { throw NotImplementedException(); }
-        virtual void Seek(long offset, Reference where)                       { throw NotImplementedException(); }
+        virtual void Seek(std::uint64_t offset, Reference where)              { throw NotImplementedException(); }
         virtual int Ferror()                                                  { throw NotImplementedException(); }
         virtual int Feof()                                                    { throw NotImplementedException(); }
         virtual std::uint64_t Ftell()                                         { throw NotImplementedException(); }

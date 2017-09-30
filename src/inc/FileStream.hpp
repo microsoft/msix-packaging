@@ -51,10 +51,11 @@ namespace xPlat {
             }
         }
 
-        virtual void Seek(long offset, StreamBase::Reference where) override
+        virtual void Seek(std::uint64_t to, StreamBase::Reference whence) override
         {
-            int rc = std::fseek(file, offset, where);
+            int rc = std::fseek(file, to, whence);
             if (rc != 0) { throw FileException(name, rc); }
+            offset = Ftell();
         }
 
         virtual std::size_t Read(std::size_t size, const std::uint8_t* bytes) override
@@ -66,6 +67,7 @@ namespace xPlat {
             {
                 throw FileException(name, Ferror());
             }
+            offset = Ftell();
             return bytesRead;
         }
 
@@ -88,6 +90,7 @@ namespace xPlat {
             {
                 throw FileException(name, std::ferror(file));
             }
+            offset = Ftell();
         }
 
         virtual std::uint64_t Ftell()
@@ -97,6 +100,7 @@ namespace xPlat {
         }
 
     protected:
+        std::uint64_t offset = 0;
         std::string name;
         FILE* file;
     };
