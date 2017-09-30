@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Workspace
    version = "1.0">
+   <FileRef
+      location = "group:MacOS/MakeXplat/MakeXplat.xcodeproj">
+   </FileRef>
+   <FileRef
+      location = "group:MacOS/xPlatAppx/xPlatAppx.xcodeproj">
+   </FileRef>
 </Workspace>
