@@ -10,8 +10,12 @@ The xPlatAppx project is an effort to enable developers on a variety of platform
 OVERVIEW
 --------
 The xPlatAppx project includes:
+1. Cross platform API support for unpacakge of .appx package 
+2. Developer tooling to build .appx package on Windows, MacOS and Linux. 
 
-TODO: write stuffs here
+The scheduling of the highlevel work listed above will be determined with respect to the relative priorities. 
+
+<More detailed info will be added soon. >
 
 BUILD INSTRUCTIONS
 ------------------
