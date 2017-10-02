@@ -9,6 +9,7 @@
 #include "StreamBase.hpp"
 
 namespace xPlat {
+
     namespace Meta {
 
         // A uniary type with Read, Write, Validate, and Size

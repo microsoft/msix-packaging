@@ -1,7 +1,7 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "ObjectBase.hpp"
-#include "ZipStream.hpp"
+#include "ZipObject.hpp"
 
 #include <memory>
 #include <string>
@@ -69,7 +69,7 @@ namespace xPlat {
             // 0 - local file header signature     4 bytes(0x04034b50)
             std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
             {
-                if (v != Signatures::LocalFileHeader)
+                if (v != static_cast<std::uint32_t>(Signatures::LocalFileHeader))
                 {
                     throw ZipException("file header does not match signature", ZipException::Error::InvalidHeader);
                 }
@@ -150,7 +150,7 @@ namespace xPlat {
         {
             // 0 - zip64 end of central dir signature 4 bytes(0x06064b50)
             std::make_shared<Meta::Field4Bytes>(s,[](std::uint32_t& v)
-            {   if (v != Signatures::Zip64EndOfCD)
+            {   if (v != static_cast<std::uint32_t>(Signatures::Zip64EndOfCD))
                 {   throw ZipException("end of zip64 central directory does not match signature", ZipException::Error::InvalidHeader);
                 }
             }),
@@ -166,13 +166,13 @@ namespace xPlat {
             }),
             // 2 - version made by                 2 bytes
             std::make_shared<Meta::Field2Bytes>(s,[](std::uint16_t& v)
-            {   if (v != ZipVersions::Zip64FormatExtension)
+            {   if (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))
                 {   throw ZipException("invalid zip64 EOCD version made by", ZipException::Error::InvalidZip64CentralDirectoryRecord);
                 }
             }),
             // 3 - version needed to extract       2 bytes
             std::make_shared<Meta::Field2Bytes>(s,[](std::uint16_t& v)
-            {   if (v != ZipVersions::Zip64FormatExtension)
+            {   if (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))
                 {   throw ZipException("invalid zip64 EOCD version to extract", ZipException::Error::InvalidZip64CentralDirectoryRecord);
                 }
             }),
@@ -224,10 +224,10 @@ namespace xPlat {
             })
         })
         {
-            SetSignature(Signatures::Zip64EndOfCD);
+            SetSignature(static_cast<std::uint32_t>(Signatures::Zip64EndOfCD));
             SetGetSizeOfZip64CDRecord(this->Size() - 12);
-            SetVersionMadeBy(ZipVersions::Zip64FormatExtension);
-            SetVersionNeededToExtract(ZipVersions::Zip64FormatExtension);
+            SetVersionMadeBy(static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension));
+            SetVersionNeededToExtract(static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension));
             SetNumberOfThisDisk(0);
             SetTotalNumberOfEntries(0);
             Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(10))->resize(0);
@@ -263,32 +263,32 @@ namespace xPlat {
         {
             // 0 - zip64 end of central dir locator signature 4 bytes(0x07064b50)
             std::make_shared<Meta::Field4Bytes>(s, [](std::uint32_t& v)
-            {   if (v != Signatures::Zip64EndOfCDLocator)
+            {   if (v != static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator))
                 {   throw ZipException("end of central directory locator does not match signature", ZipException::Error::InvalidHeader);
                 }
             }),
             // 1 - number of the disk with the start of the zip64 end of central directory               4 bytes
             std::make_shared<Meta::Field4Bytes>(s, [](std::uint32_t& v)
             {   if (v != 0)
-                {   throw ZipException("Invalid disk number", ZipException::InvalidZip64CentralDirectoryLocator);
+                {   throw ZipException("Invalid disk number", ZipException::Error::InvalidZip64CentralDirectoryLocator);
                 }
             }),
             // 2 - relative offset of the zip64 end of central directory record 8 bytes
             std::make_shared<Meta::Field8Bytes>(s, [&](std::uint64_t& v)
             {   if ((v == 0) ||
                     (v >= stream->Ftell()))
-                {   throw ZipException("Invalid relative offset", ZipException::InvalidZip64CentralDirectoryLocator);
+                {   throw ZipException("Invalid relative offset", ZipException::Error::InvalidZip64CentralDirectoryLocator);
                 }
             }),
             // 3 - total number of disks           4 bytes
             std::make_shared<Meta::Field4Bytes>(s, [](std::uint32_t& v)
             {   if (v != 1)
-                {   throw ZipException("Invalid total number of disks", ZipException::InvalidZip64CentralDirectoryLocator);
+                {   throw ZipException("Invalid total number of disks", ZipException::Error::InvalidZip64CentralDirectoryLocator);
                 }
             })
         })
         {/*constructor*/
-            SetSignature(Signatures::Zip64EndOfCDLocator);
+            SetSignature(static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator));
             SetNumberOfDisk(0);
             SetTotalNumberOfDisks(1);
         }
@@ -311,7 +311,7 @@ namespace xPlat {
         {
             // 0 - end of central dir signature    4 bytes  (0x06054b50)
             std::make_shared<Meta::Field4Bytes>(stream, [](std::uint32_t& v)
-            {   if (v != Signatures::EndOfCentralDirectory)
+            {   if (v != static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory))
                 {   throw ZipException("invalid signiture", ZipException::Error::InvalidEndOfCentralDirectoryRecord);
                 }
             }),
@@ -365,7 +365,7 @@ namespace xPlat {
             })
         })
         {/*constructor*/
-            SetSignature(Signatures::EndOfCentralDirectory);
+            SetSignature(static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory));
             SetNumberOfDisk(0);
             SetDiskStart(0);
             // next 12 bytes need to be: FFFF FFFF  FFFF FFFF  FFFF FFFF
@@ -389,40 +389,40 @@ namespace xPlat {
 
     };//class EndOfCentralDirectoryRecord
 
-    void ZipStream::Read()
+    void ZipObject::Read()
     {
         // Confirm that the file IS the correct format
-        EndCentralDirectoryRecord endCentralDirectoryRecord(_stream.get());
-        _stream->Seek(-1 * endCentralDirectoryRecord.Size(), StreamBase::Reference::END);
+        EndCentralDirectoryRecord endCentralDirectoryRecord(m_stream.get());
+        m_stream->Seek(-1 * endCentralDirectoryRecord.Size(), StreamBase::Reference::END);
         endCentralDirectoryRecord.Read();
 
         // find where the zip central directory exists.
-        Zip64EndOfCentralDirectoryLocator zip64Locator(_stream.get());
-        _stream->Seek(-1*(endCentralDirectoryRecord.Size() + zip64Locator.Size()), StreamBase::Reference::END);
+        Zip64EndOfCentralDirectoryLocator zip64Locator(m_stream.get());
+        m_stream->Seek(-1*(endCentralDirectoryRecord.Size() + zip64Locator.Size()), StreamBase::Reference::END);
         zip64Locator.Read();
 
         // now read the zip central directory
-        Zip64EndOfCentralDirectoryRecord zip64EndOfCentralDirectory(_stream.get());
-        _stream->Seek(zip64Locator.GetRelativeOffset(), StreamBase::Reference::START);
+        Zip64EndOfCentralDirectoryRecord zip64EndOfCentralDirectory(m_stream.get());
+        m_stream->Seek(zip64Locator.GetRelativeOffset(), StreamBase::Reference::START);
         zip64EndOfCentralDirectory.Read();
-        _stream->Seek(zip64EndOfCentralDirectory.GetOffsetfStartOfCD(), StreamBase::Reference::START);
+        m_stream->Seek(zip64EndOfCentralDirectory.GetOffsetfStartOfCD(), StreamBase::Reference::START);
         for (std::uint32_t index = 0; index < zip64EndOfCentralDirectory.GetTotalNumberOfEntries(); index++)
         {
-            auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(_stream.get());
+            auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(m_stream.get());
             centralFileHeader->Read();
-            _centralDirectory.insert(std::make_pair(centralFileHeader->GetFileName(), centralFileHeader));
+            m_centralDirectory.insert(std::make_pair(centralFileHeader->GetFileName(), centralFileHeader));
         }
 
         // We should have no data between the end of the last central directory header and the start of the EoCD
-        if (_stream->Ftell() != zip64Locator.GetRelativeOffset())
+        if (m_stream->Ftell() != zip64Locator.GetRelativeOffset())
         {   throw ZipException("hidden data unsupported", ZipException::Error::HiddenDataBetweenLastCDHandEoCD);
         }
     }
 
-    std::vector<std::string> ZipStream::GetFileNames()
+    std::vector<std::string> ZipObject::GetFileNames()
     {
         std::vector<std::string> result;
-        std::for_each(_streams.begin(), _streams.end(), [&](auto it)
+        std::for_each(m_streams.begin(), m_streams.end(), [&](auto it)
         {
             result.push_back(it.first);
         });

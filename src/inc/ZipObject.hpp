@@ -14,7 +14,7 @@ namespace xPlat {
     class ZipException : public ExceptionBase
     {
     public:
-        enum Error : std::uint32_t
+        enum class Error : std::uint32_t
         {
             InvalidHeader                       = 1,
             FieldOutOfRange                     = 2,
@@ -27,19 +27,19 @@ namespace xPlat {
 
         ZipException(std::string message, Error error) : reason(message), ExceptionBase(ExceptionBase::Facility::ZIP)
         {
-            SetLastError(error);
+            SetLastError(static_cast<std::uint32_t>(error));
         }
         std::string reason;
     };
 
-    enum ZipVersions : std::uint16_t
+    enum class ZipVersions : std::uint16_t
     {
         Zip32DefaultVersion = 20,
         Zip64FormatExtension = 45,
     };
 
     // from ZIP file format specification detailed in AppNote.txt
-    enum Signatures : std::uint32_t
+    enum class Signatures : std::uint32_t
     {
         LocalFileHeader         = 0x04034b50,
         DataDescriptor          = 0x08074b50,
@@ -49,7 +49,7 @@ namespace xPlat {
         EndOfCentralDirectory   = 0x06054b50,
     };
 
-    enum CompressionType : std::uint16_t
+    enum class CompressionType : std::uint16_t
     {
         Store = 0,
         Deflate = 8,
@@ -57,13 +57,13 @@ namespace xPlat {
 
     // Hat tip to the people at Facebook.  Timestamp for files in ZIP archive 
     // format held constant to make pack/unpack deterministic
-    enum MagicNumbers : std::uint16_t
+    enum class MagicNumbers : std::uint16_t
     {
         FileTime = 0x6B60,  // kudos to those know this
         FileDate = 0xA2B1,  // :)
     };
 
-    enum GeneralPurposeBitFlags : std::uint16_t
+    enum class GeneralPurposeBitFlags : std::uint16_t
     {
         UNSUPPORTED_0           = 0x0001, // Bit 0: If set, indicates that the file is encrypted.
 
@@ -90,8 +90,16 @@ namespace xPlat {
         UNSUPPORTED_15          = 0x8000, // Reserved by PKWARE
     };
 
+    inline constexpr GeneralPurposeBitFlags operator &(GeneralPurposeBitFlags a, GeneralPurposeBitFlags b)
+    {   return static_cast<GeneralPurposeBitFlags>(static_cast<uint16_t>(a) & static_cast<uint16_t>(b));
+    }
+
+    inline constexpr GeneralPurposeBitFlags operator |(GeneralPurposeBitFlags a, GeneralPurposeBitFlags b)
+    {   return static_cast<GeneralPurposeBitFlags>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
+    }
+
     // if any of these are set, then fail.
-    static const std::uint16_t UnsupportedFlagsMask =
+    constexpr static const GeneralPurposeBitFlags UnsupportedFlagsMask =
         GeneralPurposeBitFlags::UNSUPPORTED_0  |
         GeneralPurposeBitFlags::UNSUPPORTED_6  |
         GeneralPurposeBitFlags::UNSUPPORTED_12 |
@@ -128,31 +136,35 @@ namespace xPlat {
         {
             // 0 - central file header signature   4 bytes(0x02014b50)
             std::make_shared<Meta::Field4Bytes>(s, [](std::uint32_t& v)
-            {   if (v != Signatures::CentralFileHeader)
+            {   if (v != static_cast<std::uint32_t>(Signatures::CentralFileHeader))
                 {   throw ZipException("signature mismatch", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             // 1 - version made by                 2 bytes
             std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v)
-            {   if (v != ZipVersions::Zip64FormatExtension)
+            {   if (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))
                 {   throw ZipException("unsupported version made by", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             // 2 - version needed to extract       2 bytes
             std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v)
-            {   if ((v != ZipVersions::Zip32DefaultVersion) && (v != ZipVersions::Zip64FormatExtension))
+            {   if ((v != static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) && 
+                    (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))
+                )
                 {   throw ZipException("unsupported version needed to extract", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             // 3 - general purpose bit flag        2 bytes
             std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v)
-            {   if ((v & UnsupportedFlagsMask) != 0)
+            {   if ((v & static_cast<std::uint16_t>(UnsupportedFlagsMask)) != 0)
                 {   throw ZipException("unsupported flag(s) specified", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             // 4 - compression method              2 bytes
             std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v)
-            {   if ((v != CompressionType::Store) && (v != CompressionType::Deflate))
+            {   if ((v != static_cast<std::uint16_t>(CompressionType::Store)) && 
+                    (v != static_cast<std::uint16_t>(CompressionType::Deflate))
+                )
                 {   throw ZipException("unsupported compression method", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
@@ -219,11 +231,12 @@ namespace xPlat {
             std::make_shared<Meta::FieldNBytes>(s, [](std::vector<std::uint8_t>& data) {})
         })
         {/*constructor*/
-            SetSignature(Signatures::CentralFileHeader);
-            SetVersionMadeBy(ZipVersions::Zip64FormatExtension);
-            SetVersionNeededToExtract(ZipVersions::Zip32DefaultVersion);    // only set to Zip64FormatExtension iff required!
-            SetLastModFileDate(MagicNumbers::FileDate);
-            SetLastModFileTime(MagicNumbers::FileTime);
+            SetSignature(static_cast<std::uint32_t>(Signatures::CentralFileHeader));
+            SetVersionMadeBy(static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension));
+            // only set to Zip64FormatExtension iff required!
+            SetVersionNeededToExtract(static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion));    
+            SetLastModFileDate(static_cast<std::uint16_t>(MagicNumbers::FileDate));
+            SetLastModFileTime(static_cast<std::uint16_t>(MagicNumbers::FileTime));
             SetExtraFieldLength(0);
             SetFileCommentLength(0);
             SetDiskNumberStart(0);
@@ -284,22 +297,22 @@ namespace xPlat {
     };//class CentralDirectoryFileHeader
 
     // This represents a raw stream over a.zip file.
-    class ZipStream
+    class ZipObject
     {
     public:
-        ZipStream(StreamPtr&& stream) : _stream(std::move(stream)) { }
+        ZipObject(StreamPtr&& stream) : m_stream(std::move(stream)) { }
 
         void Read();
 
         std::vector<std::string> GetFileNames();
 
     protected:
-        StreamPtr _stream;
-        std::map<std::string, std::shared_ptr<ZipFileStream>>                _streams;
-        std::map<std::string, std::shared_ptr<CentralDirectoryFileHeader>>   _centralDirectory;
+        StreamPtr m_stream;
+        std::map<std::string, std::shared_ptr<ZipFileStream>>                m_streams;
+        std::map<std::string, std::shared_ptr<CentralDirectoryFileHeader>>   m_centralDirectory;
 
         // TODO: change to uint64_t when adding full zip64 support
         //std::map<std::uint32_t, std::shared_ptr<LocalFileHeader>>   fileRepository;
 
-    };//class ZipStream
+    };//class ZipObject
 }

@@ -76,9 +76,9 @@ namespace xPlat {
             return std::ferror(file);
         }
 
-        virtual int Feof() override
+        virtual bool Feof() override
         {
-            return std::feof(file);
+            return 0 != std::feof(file);
         }
 
         virtual void Write(std::size_t size, const std::uint8_t* bytes) override
