@@ -3,46 +3,48 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 47;
+	objectVersion = 46;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		EE2E65C71F7610690070D4E4 /* Base64Stream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65BA1F7610690070D4E4 /* Base64Stream.hpp */; };
-		EE2E65C81F7610690070D4E4 /* CRC32Stream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65BB1F7610690070D4E4 /* CRC32Stream.hpp */; };
-		EE2E65C91F7610690070D4E4 /* Exceptions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65BC1F7610690070D4E4 /* Exceptions.hpp */; };
-		EE2E65CA1F7610690070D4E4 /* FileStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65BD1F7610690070D4E4 /* FileStream.hpp */; };
-		EE2E65CB1F7610690070D4E4 /* ObjectBase.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65BE1F7610690070D4E4 /* ObjectBase.hpp */; };
-		EE2E65CC1F7610690070D4E4 /* OffsetStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65BF1F7610690070D4E4 /* OffsetStream.hpp */; };
-		EE2E65CD1F7610690070D4E4 /* PartitionStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65C01F7610690070D4E4 /* PartitionStream.hpp */; };
-		EE2E65CE1F7610690070D4E4 /* SequenceStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65C11F7610690070D4E4 /* SequenceStream.hpp */; };
-		EE2E65CF1F7610690070D4E4 /* SHA256Stream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65C21F7610690070D4E4 /* SHA256Stream.hpp */; };
-		EE2E65D01F7610690070D4E4 /* StreamBase.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65C31F7610690070D4E4 /* StreamBase.hpp */; };
-		EE2E65D11F7610690070D4E4 /* xPlatAppx.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65C41F7610690070D4E4 /* xPlatAppx.hpp */; };
-		EE2E65D21F7610690070D4E4 /* ZipFileStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65C51F7610690070D4E4 /* ZipFileStream.hpp */; };
-		EE2E65D31F7610690070D4E4 /* ZipStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65C61F7610690070D4E4 /* ZipStream.hpp */; };
-		EE2E65D51F76109A0070D4E4 /* xPlatAppx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EE2E65D41F76109A0070D4E4 /* xPlatAppx.cpp */; };
+		7B5F64AD1F7F824B009387FB /* Base64Stream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F649D1F7F824B009387FB /* Base64Stream.hpp */; };
+		7B5F64AE1F7F824B009387FB /* CRC32Stream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F649E1F7F824B009387FB /* CRC32Stream.hpp */; };
+		7B5F64AF1F7F824B009387FB /* Exceptions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F649F1F7F824B009387FB /* Exceptions.hpp */; };
+		7B5F64B01F7F824B009387FB /* FileStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A01F7F824B009387FB /* FileStream.hpp */; };
+		7B5F64B11F7F824B009387FB /* ObjectBase.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A11F7F824B009387FB /* ObjectBase.hpp */; };
+		7B5F64B21F7F824B009387FB /* OffsetStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A21F7F824B009387FB /* OffsetStream.hpp */; };
+		7B5F64B31F7F824B009387FB /* PartitionStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A31F7F824B009387FB /* PartitionStream.hpp */; };
+		7B5F64B41F7F824B009387FB /* SequenceStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A41F7F824B009387FB /* SequenceStream.hpp */; };
+		7B5F64B51F7F824B009387FB /* SHA256Stream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A51F7F824B009387FB /* SHA256Stream.hpp */; };
+		7B5F64B61F7F824B009387FB /* StreamBase.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A61F7F824B009387FB /* StreamBase.hpp */; };
+		7B5F64B71F7F824B009387FB /* xPlatAppx.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A71F7F824B009387FB /* xPlatAppx.hpp */; };
+		7B5F64B81F7F824B009387FB /* ZipFileStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A81F7F824B009387FB /* ZipFileStream.hpp */; };
+		7B5F64B91F7F824B009387FB /* ZipStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A91F7F824B009387FB /* ZipStream.hpp */; };
+		7B5F64BA1F7F824B009387FB /* xPlatAppx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7B5F64AB1F7F824B009387FB /* xPlatAppx.cpp */; };
+		7B5F64BB1F7F824B009387FB /* ZipStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7B5F64AC1F7F824B009387FB /* ZipStream.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
-		EE2E65B31F760F210070D4E4 /* libxPlatAppx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libxPlatAppx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
-		EE2E65BA1F7610690070D4E4 /* Base64Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Base64Stream.hpp; path = ../../src/inc/Base64Stream.hpp; sourceTree = "<group>"; };
-		EE2E65BB1F7610690070D4E4 /* CRC32Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = CRC32Stream.hpp; path = ../../src/inc/CRC32Stream.hpp; sourceTree = "<group>"; };
-		EE2E65BC1F7610690070D4E4 /* Exceptions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = Exceptions.hpp; path = ../../src/inc/Exceptions.hpp; sourceTree = "<group>"; };
-		EE2E65BD1F7610690070D4E4 /* FileStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = FileStream.hpp; path = ../../src/inc/FileStream.hpp; sourceTree = "<group>"; };
-		EE2E65BE1F7610690070D4E4 /* ObjectBase.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ObjectBase.hpp; path = ../../src/inc/ObjectBase.hpp; sourceTree = "<group>"; };
-		EE2E65BF1F7610690070D4E4 /* OffsetStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = OffsetStream.hpp; path = ../../src/inc/OffsetStream.hpp; sourceTree = "<group>"; };
-		EE2E65C01F7610690070D4E4 /* PartitionStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = PartitionStream.hpp; path = ../../src/inc/PartitionStream.hpp; sourceTree = "<group>"; };
-		EE2E65C11F7610690070D4E4 /* SequenceStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = SequenceStream.hpp; path = ../../src/inc/SequenceStream.hpp; sourceTree = "<group>"; };
-		EE2E65C21F7610690070D4E4 /* SHA256Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = SHA256Stream.hpp; path = ../../src/inc/SHA256Stream.hpp; sourceTree = "<group>"; };
-		EE2E65C31F7610690070D4E4 /* StreamBase.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = StreamBase.hpp; path = ../../src/inc/StreamBase.hpp; sourceTree = "<group>"; };
-		EE2E65C41F7610690070D4E4 /* xPlatAppx.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = xPlatAppx.hpp; path = ../../src/inc/xPlatAppx.hpp; sourceTree = "<group>"; };
-		EE2E65C51F7610690070D4E4 /* ZipFileStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ZipFileStream.hpp; path = ../../src/inc/ZipFileStream.hpp; sourceTree = "<group>"; };
-		EE2E65C61F7610690070D4E4 /* ZipStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = ZipStream.hpp; path = ../../src/inc/ZipStream.hpp; sourceTree = "<group>"; };
-		EE2E65D41F76109A0070D4E4 /* xPlatAppx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = xPlatAppx.cpp; path = ../../src/xPlatAppx/xPlatAppx.cpp; sourceTree = "<group>"; };
+		7B5F648A1F7F807B009387FB /* libxPlatAppx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libxPlatAppx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		7B5F649D1F7F824B009387FB /* Base64Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Base64Stream.hpp; sourceTree = "<group>"; };
+		7B5F649E1F7F824B009387FB /* CRC32Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CRC32Stream.hpp; sourceTree = "<group>"; };
+		7B5F649F1F7F824B009387FB /* Exceptions.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Exceptions.hpp; sourceTree = "<group>"; };
+		7B5F64A01F7F824B009387FB /* FileStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = FileStream.hpp; sourceTree = "<group>"; };
+		7B5F64A11F7F824B009387FB /* ObjectBase.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ObjectBase.hpp; sourceTree = "<group>"; };
+		7B5F64A21F7F824B009387FB /* OffsetStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = OffsetStream.hpp; sourceTree = "<group>"; };
+		7B5F64A31F7F824B009387FB /* PartitionStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = PartitionStream.hpp; sourceTree = "<group>"; };
+		7B5F64A41F7F824B009387FB /* SequenceStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SequenceStream.hpp; sourceTree = "<group>"; };
+		7B5F64A51F7F824B009387FB /* SHA256Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = SHA256Stream.hpp; sourceTree = "<group>"; };
+		7B5F64A61F7F824B009387FB /* StreamBase.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = StreamBase.hpp; sourceTree = "<group>"; };
+		7B5F64A71F7F824B009387FB /* xPlatAppx.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = xPlatAppx.hpp; sourceTree = "<group>"; };
+		7B5F64A81F7F824B009387FB /* ZipFileStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ZipFileStream.hpp; sourceTree = "<group>"; };
+		7B5F64A91F7F824B009387FB /* ZipStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ZipStream.hpp; sourceTree = "<group>"; };
+		7B5F64AB1F7F824B009387FB /* xPlatAppx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xPlatAppx.cpp; sourceTree = "<group>"; };
+		7B5F64AC1F7F824B009387FB /* ZipStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZipStream.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		EE2E65B01F760F200070D4E4 /* Frameworks */ = {
+		7B5F64871F7F807B009387FB /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -52,68 +54,95 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		EE2E65AA1F760F200070D4E4 = {
+		7B5F64811F7F807B009387FB = {
 			isa = PBXGroup;
 			children = (
-				EE2E65C41F7610690070D4E4 /* xPlatAppx.hpp */,
-				EE2E65D41F76109A0070D4E4 /* xPlatAppx.cpp */,
-				EE2E65BA1F7610690070D4E4 /* Base64Stream.hpp */,
-				EE2E65BB1F7610690070D4E4 /* CRC32Stream.hpp */,
-				EE2E65BC1F7610690070D4E4 /* Exceptions.hpp */,
-				EE2E65BD1F7610690070D4E4 /* FileStream.hpp */,
-				EE2E65BE1F7610690070D4E4 /* ObjectBase.hpp */,
-				EE2E65BF1F7610690070D4E4 /* OffsetStream.hpp */,
-				EE2E65C01F7610690070D4E4 /* PartitionStream.hpp */,
-				EE2E65C11F7610690070D4E4 /* SequenceStream.hpp */,
-				EE2E65C21F7610690070D4E4 /* SHA256Stream.hpp */,
-				EE2E65C31F7610690070D4E4 /* StreamBase.hpp */,
-				EE2E65C51F7610690070D4E4 /* ZipFileStream.hpp */,
-				EE2E65C61F7610690070D4E4 /* ZipStream.hpp */,
-				EE2E65B41F760F210070D4E4 /* Products */,
+				7B5F649B1F7F8226009387FB /* Source */,
+				7B5F648B1F7F807B009387FB /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		EE2E65B41F760F210070D4E4 /* Products */ = {
+		7B5F648B1F7F807B009387FB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				EE2E65B31F760F210070D4E4 /* libxPlatAppx.dylib */,
+				7B5F648A1F7F807B009387FB /* libxPlatAppx.dylib */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		7B5F649B1F7F8226009387FB /* Source */ = {
+			isa = PBXGroup;
+			children = (
+				7B5F649C1F7F824B009387FB /* inc */,
+				7B5F64AA1F7F824B009387FB /* xPlatAppx */,
+			);
+			name = Source;
+			sourceTree = "<group>";
+		};
+		7B5F649C1F7F824B009387FB /* inc */ = {
+			isa = PBXGroup;
+			children = (
+				7B5F649D1F7F824B009387FB /* Base64Stream.hpp */,
+				7B5F649E1F7F824B009387FB /* CRC32Stream.hpp */,
+				7B5F649F1F7F824B009387FB /* Exceptions.hpp */,
+				7B5F64A01F7F824B009387FB /* FileStream.hpp */,
+				7B5F64A11F7F824B009387FB /* ObjectBase.hpp */,
+				7B5F64A21F7F824B009387FB /* OffsetStream.hpp */,
+				7B5F64A31F7F824B009387FB /* PartitionStream.hpp */,
+				7B5F64A41F7F824B009387FB /* SequenceStream.hpp */,
+				7B5F64A51F7F824B009387FB /* SHA256Stream.hpp */,
+				7B5F64A61F7F824B009387FB /* StreamBase.hpp */,
+				7B5F64A71F7F824B009387FB /* xPlatAppx.hpp */,
+				7B5F64A81F7F824B009387FB /* ZipFileStream.hpp */,
+				7B5F64A91F7F824B009387FB /* ZipStream.hpp */,
+			);
+			name = inc;
+			path = ../../src/inc;
+			sourceTree = "<group>";
+		};
+		7B5F64AA1F7F824B009387FB /* xPlatAppx */ = {
+			isa = PBXGroup;
+			children = (
+				7B5F64AB1F7F824B009387FB /* xPlatAppx.cpp */,
+				7B5F64AC1F7F824B009387FB /* ZipStream.cpp */,
+			);
+			name = xPlatAppx;
+			path = ../../src/xPlatAppx;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
-		EE2E65B11F760F200070D4E4 /* Headers */ = {
+		7B5F64881F7F807B009387FB /* Headers */ = {
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EE2E65CF1F7610690070D4E4 /* SHA256Stream.hpp in Headers */,
-				EE2E65CA1F7610690070D4E4 /* FileStream.hpp in Headers */,
-				EE2E65C91F7610690070D4E4 /* Exceptions.hpp in Headers */,
-				EE2E65D11F7610690070D4E4 /* xPlatAppx.hpp in Headers */,
-				EE2E65D31F7610690070D4E4 /* ZipStream.hpp in Headers */,
-				EE2E65C81F7610690070D4E4 /* CRC32Stream.hpp in Headers */,
-				EE2E65CC1F7610690070D4E4 /* OffsetStream.hpp in Headers */,
-				EE2E65D21F7610690070D4E4 /* ZipFileStream.hpp in Headers */,
-				EE2E65C71F7610690070D4E4 /* Base64Stream.hpp in Headers */,
-				EE2E65CE1F7610690070D4E4 /* SequenceStream.hpp in Headers */,
-				EE2E65CD1F7610690070D4E4 /* PartitionStream.hpp in Headers */,
-				EE2E65CB1F7610690070D4E4 /* ObjectBase.hpp in Headers */,
-				EE2E65D01F7610690070D4E4 /* StreamBase.hpp in Headers */,
+				7B5F64B51F7F824B009387FB /* SHA256Stream.hpp in Headers */,
+				7B5F64B01F7F824B009387FB /* FileStream.hpp in Headers */,
+				7B5F64AF1F7F824B009387FB /* Exceptions.hpp in Headers */,
+				7B5F64B71F7F824B009387FB /* xPlatAppx.hpp in Headers */,
+				7B5F64B91F7F824B009387FB /* ZipStream.hpp in Headers */,
+				7B5F64AE1F7F824B009387FB /* CRC32Stream.hpp in Headers */,
+				7B5F64B21F7F824B009387FB /* OffsetStream.hpp in Headers */,
+				7B5F64B81F7F824B009387FB /* ZipFileStream.hpp in Headers */,
+				7B5F64AD1F7F824B009387FB /* Base64Stream.hpp in Headers */,
+				7B5F64B41F7F824B009387FB /* SequenceStream.hpp in Headers */,
+				7B5F64B31F7F824B009387FB /* PartitionStream.hpp in Headers */,
+				7B5F64B11F7F824B009387FB /* ObjectBase.hpp in Headers */,
+				7B5F64B61F7F824B009387FB /* StreamBase.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		EE2E65B21F760F200070D4E4 /* xPlatAppx */ = {
+		7B5F64891F7F807B009387FB /* xPlatAppx */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = EE2E65B71F760F210070D4E4 /* Build configuration list for PBXNativeTarget "xPlatAppx" */;
+			buildConfigurationList = 7B5F64951F7F807B009387FB /* Build configuration list for PBXNativeTarget "xPlatAppx" */;
 			buildPhases = (
-				EE2E65AF1F760F200070D4E4 /* Sources */,
-				EE2E65B01F760F200070D4E4 /* Frameworks */,
-				EE2E65B11F760F200070D4E4 /* Headers */,
+				7B5F64861F7F807B009387FB /* Sources */,
+				7B5F64871F7F807B009387FB /* Frameworks */,
+				7B5F64881F7F807B009387FB /* Headers */,
 			);
 			buildRules = (
 			);
@@ -121,59 +150,60 @@
 			);
 			name = xPlatAppx;
 			productName = xPlatAppx;
-			productReference = EE2E65B31F760F210070D4E4 /* libxPlatAppx.dylib */;
+			productReference = 7B5F648A1F7F807B009387FB /* libxPlatAppx.dylib */;
 			productType = "com.apple.product-type.library.dynamic";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		EE2E65AB1F760F200070D4E4 /* Project object */ = {
+		7B5F64821F7F807B009387FB /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0800;
 				ORGANIZATIONNAME = Microsoft;
 				TargetAttributes = {
-					EE2E65B21F760F200070D4E4 = {
+					7B5F64891F7F807B009387FB = {
 						CreatedOnToolsVersion = 8.0;
 						ProvisioningStyle = Automatic;
 					};
 				};
 			};
-			buildConfigurationList = EE2E65AE1F760F200070D4E4 /* Build configuration list for PBXProject "xPlatAppx" */;
-			compatibilityVersion = "Xcode 6.3";
+			buildConfigurationList = 7B5F64851F7F807B009387FB /* Build configuration list for PBXProject "xPlatAppx" */;
+			compatibilityVersion = "Xcode 3.2";
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 			);
-			mainGroup = EE2E65AA1F760F200070D4E4;
-			productRefGroup = EE2E65B41F760F210070D4E4 /* Products */;
+			mainGroup = 7B5F64811F7F807B009387FB;
+			productRefGroup = 7B5F648B1F7F807B009387FB /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				EE2E65B21F760F200070D4E4 /* xPlatAppx */,
+				7B5F64891F7F807B009387FB /* xPlatAppx */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		EE2E65AF1F760F200070D4E4 /* Sources */ = {
+		7B5F64861F7F807B009387FB /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EE2E65D51F76109A0070D4E4 /* xPlatAppx.cpp in Sources */,
+				7B5F64BA1F7F824B009387FB /* xPlatAppx.cpp in Sources */,
+				7B5F64BB1F7F824B009387FB /* ZipStream.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		EE2E65B51F760F210070D4E4 /* Debug */ = {
+		7B5F64931F7F807B009387FB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -194,7 +224,7 @@
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
@@ -202,6 +232,7 @@
 					"DEBUG=1",
 					"$(inherited)",
 				);
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "PLATFORM_APPLE=1";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -215,12 +246,12 @@
 			};
 			name = Debug;
 		};
-		EE2E65B61F760F210070D4E4 /* Release */ = {
+		7B5F64941F7F807B009387FB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -241,8 +272,9 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_C_LANGUAGE_STANDARD = c11;
 				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "PLATFORM_APPLE=1";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -255,29 +287,27 @@
 			};
 			name = Release;
 		};
-		EE2E65B81F760F210070D4E4 /* Debug */ = {
+		7B5F64961F7F807B009387FB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				GCC_C_LANGUAGE_STANDARD = c11;
-				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "PLATFORM_APPLE=1";
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
 		};
-		EE2E65B91F760F210070D4E4 /* Release */ = {
+		7B5F64971F7F807B009387FB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
-				GCC_C_LANGUAGE_STANDARD = c11;
-				GCC_PREPROCESSOR_DEFINITIONS_NOT_USED_IN_PRECOMPS = "PLATFORM_APPLE=1";
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -286,24 +316,25 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		EE2E65AE1F760F200070D4E4 /* Build configuration list for PBXProject "xPlatAppx" */ = {
+		7B5F64851F7F807B009387FB /* Build configuration list for PBXProject "xPlatAppx" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				EE2E65B51F760F210070D4E4 /* Debug */,
-				EE2E65B61F760F210070D4E4 /* Release */,
+				7B5F64931F7F807B009387FB /* Debug */,
+				7B5F64941F7F807B009387FB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		EE2E65B71F760F210070D4E4 /* Build configuration list for PBXNativeTarget "xPlatAppx" */ = {
+		7B5F64951F7F807B009387FB /* Build configuration list for PBXNativeTarget "xPlatAppx" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				EE2E65B81F760F210070D4E4 /* Debug */,
-				EE2E65B91F760F210070D4E4 /* Release */,
+				7B5F64961F7F807B009387FB /* Debug */,
+				7B5F64971F7F807B009387FB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = EE2E65AB1F760F200070D4E4 /* Project object */;
+	rootObject = 7B5F64821F7F807B009387FB /* Project object */;
 }

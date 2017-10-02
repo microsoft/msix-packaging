@@ -29,7 +29,7 @@ namespace xPlat {
 
         FileStream(std::string&& path, Mode mode) : name(path)
         {
-            static const char* modes[] = { "r", "w", "a", "r+", "w+", "a+" };
+            static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
             file = std::fopen(path.c_str(), modes[mode]);
             if (!file)
             {
@@ -37,24 +37,25 @@ namespace xPlat {
             }
         }
 
-        virtual ~FileStream()
+        virtual ~FileStream() override
         {
             Close();
         }
 
         virtual void Close() override
         {
-            if (file) {
-                int rc = std::fclose(file);
-                if (rc != 0) { throw FileException(name, rc); }
+            if (file)
+            {   // the most we would ever do w.r.t. a failure from fclose is *maybe* log something...
+                std::fclose(file);
                 file = nullptr;
             }
         }
 
-        virtual void Seek(long offset, StreamBase::Reference where) override
+        virtual void Seek(std::uint64_t to, StreamBase::Reference whence) override
         {
-            int rc = std::fseek(file, offset, where);
+            int rc = std::fseek(file, to, whence);
             if (rc != 0) { throw FileException(name, rc); }
+            offset = Ftell();
         }
 
         virtual std::size_t Read(std::size_t size, const std::uint8_t* bytes) override
@@ -66,6 +67,7 @@ namespace xPlat {
             {
                 throw FileException(name, Ferror());
             }
+            offset = Ftell();
             return bytesRead;
         }
 
@@ -74,9 +76,9 @@ namespace xPlat {
             return std::ferror(file);
         }
 
-        virtual int Feof() override
+        virtual bool Feof() override
         {
-            return std::feof(file);
+            return 0 != std::feof(file);
         }
 
         virtual void Write(std::size_t size, const std::uint8_t* bytes) override
@@ -88,9 +90,17 @@ namespace xPlat {
             {
                 throw FileException(name, std::ferror(file));
             }
+            offset = Ftell();
+        }
+
+        virtual std::uint64_t Ftell() override
+        {
+            auto result = ftell(file);
+            return static_cast<std::uint64_t>(result);
         }
 
     protected:
+        std::uint64_t offset = 0;
         std::string name;
         FILE* file;
     };
