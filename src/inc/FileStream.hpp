@@ -37,7 +37,7 @@ namespace xPlat {
             }
         }
 
-        virtual ~FileStream()
+        virtual ~FileStream() override
         {
             Close();
         }
@@ -93,7 +93,7 @@ namespace xPlat {
             offset = Ftell();
         }
 
-        virtual std::uint64_t Ftell()
+        virtual std::uint64_t Ftell() override
         {
             auto result = ftell(file);
             return static_cast<std::uint64_t>(result);

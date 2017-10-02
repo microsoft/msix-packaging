@@ -330,8 +330,7 @@ namespace xPlat {
             // 3 - total number of entries in the central directory on this disk  2 bytes
             std::make_shared<Meta::Field2Bytes>(stream, [](std::uint16_t& v)
             {   if (v != std::numeric_limits<std::uint16_t>::max())
-                {
-                throw ZipException("unsupported total number of entries on this disk", ZipException::Error::InvalidEndOfCentralDirectoryRecord);
+                {   throw ZipException("unsupported total number of entries on this disk", ZipException::Error::InvalidEndOfCentralDirectoryRecord);
                 }
             }),
             // 4 - total number of entries in the central directory           2 bytes
@@ -393,29 +392,29 @@ namespace xPlat {
     void ZipStream::Read()
     {
         // Confirm that the file IS the correct format
-        EndCentralDirectoryRecord endCentralDirectoryRecord(stream.get());
-        stream->Seek(-1 * endCentralDirectoryRecord.Size(), StreamBase::Reference::END);
+        EndCentralDirectoryRecord endCentralDirectoryRecord(_stream.get());
+        _stream->Seek(-1 * endCentralDirectoryRecord.Size(), StreamBase::Reference::END);
         endCentralDirectoryRecord.Read();
 
         // find where the zip central directory exists.
-        Zip64EndOfCentralDirectoryLocator zip64Locator(stream.get());
-        stream->Seek(-1*(endCentralDirectoryRecord.Size() + zip64Locator.Size()), StreamBase::Reference::END);
+        Zip64EndOfCentralDirectoryLocator zip64Locator(_stream.get());
+        _stream->Seek(-1*(endCentralDirectoryRecord.Size() + zip64Locator.Size()), StreamBase::Reference::END);
         zip64Locator.Read();
 
         // now read the zip central directory
-        Zip64EndOfCentralDirectoryRecord zip64EndOfCentralDirectory(stream.get());
-        stream->Seek(zip64Locator.GetRelativeOffset(), StreamBase::Reference::START);
+        Zip64EndOfCentralDirectoryRecord zip64EndOfCentralDirectory(_stream.get());
+        _stream->Seek(zip64Locator.GetRelativeOffset(), StreamBase::Reference::START);
         zip64EndOfCentralDirectory.Read();
-        stream->Seek(zip64EndOfCentralDirectory.GetOffsetfStartOfCD(), StreamBase::Reference::START);
+        _stream->Seek(zip64EndOfCentralDirectory.GetOffsetfStartOfCD(), StreamBase::Reference::START);
         for (std::uint32_t index = 0; index < zip64EndOfCentralDirectory.GetTotalNumberOfEntries(); index++)
         {
-            auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(stream.get());
+            auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(_stream.get());
             centralFileHeader->Read();
-            centralDirectory.insert(std::make_pair(centralFileHeader->GetFileName(), centralFileHeader));
+            _centralDirectory.insert(std::make_pair(centralFileHeader->GetFileName(), centralFileHeader));
         }
 
         // We should have no data between the end of the last central directory header and the start of the EoCD
-        if (stream->Ftell() != zip64Locator.GetRelativeOffset())
+        if (_stream->Ftell() != zip64Locator.GetRelativeOffset())
         {   throw ZipException("hidden data unsupported", ZipException::Error::HiddenDataBetweenLastCDHandEoCD);
         }
     }
@@ -423,7 +422,7 @@ namespace xPlat {
     std::vector<std::string> ZipStream::GetFileNames()
     {
         std::vector<std::string> result;
-        std::for_each(streams.begin(), streams.end(), [&](auto it)
+        std::for_each(_streams.begin(), _streams.end(), [&](auto it)
         {
             result.push_back(it.first);
         });

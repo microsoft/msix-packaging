@@ -11,7 +11,7 @@ namespace xPlat {
     {
     public:
         // TODO: define what streams to pass in on the .ctor
-        ZipFileStream(std::string fileName) : fileName(fileName)
+        ZipFileStream(std::string&& fileName) : fileName(std::move(fileName))
         {
         }
 

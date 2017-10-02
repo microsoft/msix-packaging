@@ -91,11 +91,12 @@ namespace xPlat {
     };
 
     // if any of these are set, then fail.
-    static const std::uint16_t UnsupportedFlagsMask = GeneralPurposeBitFlags::UNSUPPORTED_0 +
-        GeneralPurposeBitFlags::UNSUPPORTED_6 +
-        GeneralPurposeBitFlags::UNSUPPORTED_12 +
-        GeneralPurposeBitFlags::UNSUPPORTED_13 +
-        GeneralPurposeBitFlags::UNSUPPORTED_14 +
+    static const std::uint16_t UnsupportedFlagsMask =
+        GeneralPurposeBitFlags::UNSUPPORTED_0  |
+        GeneralPurposeBitFlags::UNSUPPORTED_6  |
+        GeneralPurposeBitFlags::UNSUPPORTED_12 |
+        GeneralPurposeBitFlags::UNSUPPORTED_13 |
+        GeneralPurposeBitFlags::UNSUPPORTED_14 |
         GeneralPurposeBitFlags::UNSUPPORTED_15;
 
     class CentralDirectoryFileHeader : public Meta::StructuredObject
@@ -286,16 +287,16 @@ namespace xPlat {
     class ZipStream
     {
     public:
-        ZipStream(StreamPtr&& stream) : stream(std::move(stream)) { }
+        ZipStream(StreamPtr&& stream) : _stream(std::move(stream)) { }
 
         void Read();
 
         std::vector<std::string> GetFileNames();
 
     protected:
-        StreamPtr stream;
-        std::map<std::string, std::shared_ptr<ZipFileStream>>       streams;
-        std::map<std::string, std::shared_ptr<CentralDirectoryFileHeader>>   centralDirectory;
+        StreamPtr _stream;
+        std::map<std::string, std::shared_ptr<ZipFileStream>>                _streams;
+        std::map<std::string, std::shared_ptr<CentralDirectoryFileHeader>>   _centralDirectory;
 
         // TODO: change to uint64_t when adding full zip64 support
         //std::map<std::uint32_t, std::shared_ptr<LocalFileHeader>>   fileRepository;

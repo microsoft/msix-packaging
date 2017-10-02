@@ -47,14 +47,13 @@ namespace xPlat {
         {
         public:
             StructuredObject(std::initializer_list<std::shared_ptr<Object>> list) : fields(list), Object(&fields) { }
-            virtual ~StructuredObject() {}
 
-            virtual void Write()
+            virtual void Write() override
             {
                 std::for_each(fields.begin(), fields.end(), [&](auto field) { field->Write(); });
             }
 
-            virtual void Read()
+            virtual void Read() override
             {
                 std::for_each(fields.begin(), fields.end(), [&](auto field)
                 {
@@ -63,9 +62,9 @@ namespace xPlat {
                 });
             }
 
-            virtual void Validate() {}
+            virtual void Validate() override {}
 
-            virtual size_t Size()
+            virtual size_t Size() override
             {
                 size_t result = 0;
                 std::for_each(fields.begin(), fields.end(), [&](auto field) { result += field->Size(); });
@@ -90,22 +89,22 @@ namespace xPlat {
             virtual T&   GetValue()     { return value; }
             virtual void SetValue(T& v) { value = v; }
 
-            virtual void Write()
+            virtual void Write() override
             {
                 offset = stream->Ftell();
                 stream->Write(sizeof(T), reinterpret_cast<std::uint8_t*>(const_cast<T*>(&value)));
             }
 
-            virtual void Read()
+            virtual void Read() override
             {
                 offset = stream->Ftell();
                 stream->Read(sizeof(T), reinterpret_cast<std::uint8_t*>(const_cast<T*>(&value)));
                 Validate();
             }
 
-            void Validate() { validate(GetValue()); }
+            void Validate() override { validate(GetValue()); }
 
-            virtual size_t Size() { return sizeof(T); }
+            virtual size_t Size() override { return sizeof(T); }
 
         protected:
             std::uint64_t offset = 0;
@@ -142,20 +141,20 @@ namespace xPlat {
             using Lambda = std::function<void(std::vector<std::uint8_t>& v)>;
             FieldNBytes(StreamBase* stream, Lambda validator) : stream(stream), validate(validator), Object(&value) {}
 
-            size_t Size() { return value.size(); }
+            size_t Size() override { return value.size(); }
 
-            virtual void Write()
+            virtual void Write() override
             {
                 stream->Write(Size(), value.data());
             }
 
-            virtual void Read()
+            virtual void Read() override
             {
                 stream->Read(Size(), value.data());
                 Validate();
             }
 
-            void Validate() { validate(value); }
+            void Validate() override { validate(value); }
 
         protected:
             std::vector<std::uint8_t> value;
