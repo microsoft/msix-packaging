@@ -44,9 +44,9 @@ namespace xPlat {
 
         virtual void Close() override
         {
-            if (file) {
-                int rc = std::fclose(file);
-                if (rc != 0) { throw FileException(name, rc); }
+            if (file)
+            {   // the most we would ever do w.r.t. a failure from fclose is *maybe* log something...
+                std::fclose(file);
                 file = nullptr;
             }
         }

@@ -132,22 +132,22 @@ namespace xPlat {
     public:
         virtual ~CentralDirectoryFileHeader() {}
 
-        CentralDirectoryFileHeader(StreamBase* s) : stream(s), Meta::StructuredObject(
+        CentralDirectoryFileHeader(StreamBase* s) : m_stream(s), Meta::StructuredObject(
         {
             // 0 - central file header signature   4 bytes(0x02014b50)
-            std::make_shared<Meta::Field4Bytes>(s, [](std::uint32_t& v)
+            std::make_shared<Meta::Field4Bytes>([](std::uint32_t& v)
             {   if (v != static_cast<std::uint32_t>(Signatures::CentralFileHeader))
                 {   throw ZipException("signature mismatch", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             // 1 - version made by                 2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v)
+            std::make_shared<Meta::Field2Bytes>([](std::uint16_t& v)
             {   if (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))
                 {   throw ZipException("unsupported version made by", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             // 2 - version needed to extract       2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v)
+            std::make_shared<Meta::Field2Bytes>([](std::uint16_t& v)
             {   if ((v != static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) && 
                     (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))
                 )
@@ -155,13 +155,13 @@ namespace xPlat {
                 }
             }),
             // 3 - general purpose bit flag        2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v)
+            std::make_shared<Meta::Field2Bytes>([](std::uint16_t& v)
             {   if ((v & static_cast<std::uint16_t>(UnsupportedFlagsMask)) != 0)
                 {   throw ZipException("unsupported flag(s) specified", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             // 4 - compression method              2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v)
+            std::make_shared<Meta::Field2Bytes>([](std::uint16_t& v)
             {   if ((v != static_cast<std::uint16_t>(CompressionType::Store)) && 
                     (v != static_cast<std::uint16_t>(CompressionType::Deflate))
                 )
@@ -169,66 +169,66 @@ namespace xPlat {
                 }
             }),
             // 5 - last mod file time              2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v) {}),
+            std::make_shared<Meta::Field2Bytes>([](std::uint16_t& v) {}),
             // 6 - last mod file date              2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v) {}),
+            std::make_shared<Meta::Field2Bytes>([](std::uint16_t& v) {}),
             // 7 - crc - 32                          4 bytes
-            std::make_shared<Meta::Field4Bytes>(s,[&](std::uint32_t& v) {}),
+            std::make_shared<Meta::Field4Bytes>([&](std::uint32_t& v) {}),
             // 8 - compressed size                 4 bytes
-            std::make_shared<Meta::Field4Bytes>(s, [](std::uint32_t& v) {}),
+            std::make_shared<Meta::Field4Bytes>([](std::uint32_t& v) {}),
             // 9 - uncompressed size               4 bytes
-            std::make_shared<Meta::Field4Bytes>(s, [](std::uint32_t& v) {}),
+            std::make_shared<Meta::Field4Bytes>([](std::uint32_t& v) {}),
             //10 - file name length                2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [&](std::uint16_t& v)
+            std::make_shared<Meta::Field2Bytes>([&](std::uint16_t& v)
             {   if (v > std::numeric_limits<std::uint16_t>::max())
                 {   throw ZipException("file name exceeds max size", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
                 Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(17))->resize(v, 0);
             }),
             //11 - extra field length              2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [&](std::uint16_t& v)
+            std::make_shared<Meta::Field2Bytes>([&](std::uint16_t& v)
             {   if (v > std::numeric_limits<std::uint16_t>::max())
                 {   throw ZipException("file name exceeds max size", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
                 Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(18))->resize(v, 0);
             }),
             //12 - file comment length             2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [&](std::uint16_t& v)
+            std::make_shared<Meta::Field2Bytes>([&](std::uint16_t& v)
             {   if (v > std::numeric_limits<std::uint16_t>::max())
                 {   throw ZipException("file comment exceeds max size", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
                 Meta::Object::GetValue<std::vector<std::uint8_t>>(Field(19))->resize(v, 0);
             }),
             //13 - disk number start               2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v)
+            std::make_shared<Meta::Field2Bytes>([](std::uint16_t& v)
             {   if (v != 0)
                 {   throw ZipException("unsupported disk number start", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             //14 - internal file attributes        2 bytes
-            std::make_shared<Meta::Field2Bytes>(s, [](std::uint16_t& v)
+            std::make_shared<Meta::Field2Bytes>([](std::uint16_t& v)
             {   if (v != 0)
                 {   throw ZipException("unsupported internal file attributes", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             //15 - external file attributes        4 bytes
-            std::make_shared<Meta::Field4Bytes>(s,[](std::uint32_t& v)
+            std::make_shared<Meta::Field4Bytes>([](std::uint32_t& v)
             {   if (v != 0)
                 {   //throw ZipException("unsupported external file attributes", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             //16 - relative offset of local header 4 bytes
-            std::make_shared<Meta::Field4Bytes>(s,[&](std::uint32_t& v)
-            {   if (v >= stream->Ftell())
+            std::make_shared<Meta::Field4Bytes>([&](std::uint32_t& v)
+            {   if (v >= m_stream->Ftell())
                 {   throw ZipException("invalid relative offset", ZipException::Error::InvalidCentralDirectoryHeader);
                 }
             }),
             //17 - file name(variable size)
-            std::make_shared<Meta::FieldNBytes>(s, [](std::vector<std::uint8_t>& data) {}),
+            std::make_shared<Meta::FieldNBytes>([](std::vector<std::uint8_t>& data) {}),
             //18 - extra field(variable size)
-            std::make_shared<Meta::FieldNBytes>(s, [](std::vector<std::uint8_t>& data) {}),
+            std::make_shared<Meta::FieldNBytes>([](std::vector<std::uint8_t>& data) {}),
             //19 - file comment(variable size)
-            std::make_shared<Meta::FieldNBytes>(s, [](std::vector<std::uint8_t>& data) {})
+            std::make_shared<Meta::FieldNBytes>([](std::vector<std::uint8_t>& data) {})
         })
         {/*constructor*/
             SetSignature(static_cast<std::uint32_t>(Signatures::CentralFileHeader));
@@ -293,7 +293,7 @@ namespace xPlat {
         void SetInternalFileAttributes(std::uint16_t value) { Meta::Object::SetValue(Field(14), value); }
         void SetExternalFileAttributes(std::uint16_t value) { Meta::Object::SetValue(Field(15), value); }
 
-        StreamBase* stream = nullptr;
+        StreamBase* m_stream = nullptr;
     };//class CentralDirectoryFileHeader
 
     // This represents a raw stream over a.zip file.
