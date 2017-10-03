@@ -34,9 +34,12 @@ HELP
 ----
 
 If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset, then 1st:
- Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
- start -> visual studio installer -> Visual Studio Build Tools 2017, enable the 2014 toolset
- close, then re-open the solution.
+
+step 1: Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
+
+step 2: start -> visual studio installer -> Visual Studio Build Tools 2017, enable the 2014 toolset
+
+step 3: close, then re-open the solution.
 
 INSTALLATION
 ------------
