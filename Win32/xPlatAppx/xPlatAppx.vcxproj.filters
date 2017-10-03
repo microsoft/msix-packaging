@@ -45,13 +45,13 @@
     <ClInclude Include="..\..\src\inc\ZipFileStream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\inc\ZipStream.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\lib\zlib\zlib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\inc\xPlatAppx.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\inc\ZipObject.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -64,7 +64,7 @@
     <ClCompile Include="..\..\src\xPlatAppx\xPlatAppx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\xPlatAppx\ZipStream.cpp">
+    <ClCompile Include="..\..\src\xPlatAppx\ZipObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
