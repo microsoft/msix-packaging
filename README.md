@@ -37,9 +37,11 @@ If you are using Visual Studio 2017 and you run into errors about not being able
 
 step 1: Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
 
-step 2: start -> visual studio installer -> Visual Studio Build Tools 2017, enable the 2014 toolset
+step 2: start -> visual studio installer -> Visual Studio Build Tools 2017 -> Modify the 2014 toolset -> individual components 
 
-step 3: close, then re-open the solution.
+step 3: make sure that VC++ 2015.3 v140 toolset for desktop is selected and then unselect VC++ 2017 141 toolset
+
+step 4: close, then re-open the solution.
 
 INSTALLATION
 ------------
