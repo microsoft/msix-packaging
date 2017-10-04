@@ -47,7 +47,7 @@ namespace xPlat {
         class StructuredObject : public Object
         {
         public:
-            StructuredObject(std::initializer_list<std::shared_ptr<Object>> list) : fields(list), Object(&fields) { }
+            StructuredObject(std::initializer_list<std::shared_ptr<Object>> list) : Object(&fields), fields(list) { }
 
             virtual void Write(StreamBase* stream) override
             {
@@ -85,7 +85,7 @@ namespace xPlat {
         public:
             using Lambda = std::function<void(T& v)>;
 
-            FieldBase(Lambda validator) : validate(validator), Object(&value) {}
+            FieldBase(Lambda validator) : Object(&value), validate(validator) {}
 
             virtual T&   GetValue()     { return value; }
             virtual void SetValue(T& v) { value = v; }
@@ -139,7 +139,7 @@ namespace xPlat {
         {
         public:
             using Lambda = std::function<void(std::vector<std::uint8_t>& v)>;
-            FieldNBytes(Lambda validator) : validate(validator), Object(&value) {}
+            FieldNBytes(Lambda validator) : Object(&value), validate(validator) {}
 
             size_t Size() override { return value.size(); }
 

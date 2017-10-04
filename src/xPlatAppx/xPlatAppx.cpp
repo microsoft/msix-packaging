@@ -53,9 +53,9 @@ XPLATAPPX_API unsigned int UnpackAppx(char* source, char* destination)
 {
     return ResultOf(source, destination, [&]() {
         std::string appxFileName(source);
-        xPlat::ZipObject zip(std::move(std::make_unique<xPlat::FileStream>(
+        xPlat::ZipObject zip(std::make_unique<xPlat::FileStream>(
             std::move(appxFileName),
-            xPlat::FileStream::Mode::READ)));
+            xPlat::FileStream::Mode::READ));
         zip.Read();
     });
 }
