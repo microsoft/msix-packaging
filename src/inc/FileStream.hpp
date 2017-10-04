@@ -12,8 +12,8 @@ namespace xPlat {
     {
     public:
         FileException(std::string message, uint32_t error = 0) :
-            reason(message),
-            ExceptionBase(ExceptionBase::Facility::FILE)
+            ExceptionBase(ExceptionBase::Facility::FILE),
+            reason(message)
         {
             SetLastError(error);
         }

@@ -143,7 +143,7 @@ namespace xPlat {
     class Zip64EndOfCentralDirectoryRecord : public Meta::StructuredObject
     {
     public:
-        Zip64EndOfCentralDirectoryRecord(StreamBase* s) : m_stream(s), Meta::StructuredObject(
+        Zip64EndOfCentralDirectoryRecord(StreamBase* s) : Meta::StructuredObject(
         {
             // 0 - zip64 end of central dir signature 4 bytes(0x06064b50)
             std::make_shared<Meta::Field4Bytes>([](std::uint32_t& v)
@@ -219,7 +219,7 @@ namespace xPlat {
                 {   throw ZipException("unsupported extensible data", ZipException::Error::InvalidZip64CentralDirectoryRecord);
                 }
             })
-        })
+        }), m_stream(s)
         {
             SetSignature(static_cast<std::uint32_t>(Signatures::Zip64EndOfCD));
             SetGetSizeOfZip64CDRecord(this->Size() - 12);
@@ -259,7 +259,7 @@ namespace xPlat {
     class Zip64EndOfCentralDirectoryLocator : public Meta::StructuredObject
     {
     public:
-        Zip64EndOfCentralDirectoryLocator(StreamBase* s) : m_stream(s), Meta::StructuredObject(
+        Zip64EndOfCentralDirectoryLocator(StreamBase* s) : Meta::StructuredObject(
         {
             // 0 - zip64 end of central dir locator signature 4 bytes(0x07064b50)
             std::make_shared<Meta::Field4Bytes>([](std::uint32_t& v)
@@ -286,7 +286,7 @@ namespace xPlat {
                 {   throw ZipException("Invalid total number of disks", ZipException::Error::InvalidZip64CentralDirectoryLocator);
                 }
             })
-        })
+        }), m_stream(s)
         {/*constructor*/
             SetSignature(static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator));
             SetNumberOfDisk(0);
