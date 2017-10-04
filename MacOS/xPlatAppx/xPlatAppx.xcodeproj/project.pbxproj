@@ -19,9 +19,9 @@
 		7B5F64B61F7F824B009387FB /* StreamBase.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A61F7F824B009387FB /* StreamBase.hpp */; };
 		7B5F64B71F7F824B009387FB /* xPlatAppx.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A71F7F824B009387FB /* xPlatAppx.hpp */; };
 		7B5F64B81F7F824B009387FB /* ZipFileStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A81F7F824B009387FB /* ZipFileStream.hpp */; };
-		7B5F64B91F7F824B009387FB /* ZipStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F64A91F7F824B009387FB /* ZipStream.hpp */; };
 		7B5F64BA1F7F824B009387FB /* xPlatAppx.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7B5F64AB1F7F824B009387FB /* xPlatAppx.cpp */; };
-		7B5F64BB1F7F824B009387FB /* ZipStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7B5F64AC1F7F824B009387FB /* ZipStream.cpp */; };
+		EE2E65D71F833E2D0070D4E4 /* ZipObject.hpp in Headers */ = {isa = PBXBuildFile; fileRef = EE2E65D61F833E2D0070D4E4 /* ZipObject.hpp */; };
+		EE2E65D91F833E460070D4E4 /* ZipObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = EE2E65D81F833E460070D4E4 /* ZipObject.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,9 +38,9 @@
 		7B5F64A61F7F824B009387FB /* StreamBase.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = StreamBase.hpp; sourceTree = "<group>"; };
 		7B5F64A71F7F824B009387FB /* xPlatAppx.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = xPlatAppx.hpp; sourceTree = "<group>"; };
 		7B5F64A81F7F824B009387FB /* ZipFileStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ZipFileStream.hpp; sourceTree = "<group>"; };
-		7B5F64A91F7F824B009387FB /* ZipStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ZipStream.hpp; sourceTree = "<group>"; };
 		7B5F64AB1F7F824B009387FB /* xPlatAppx.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = xPlatAppx.cpp; sourceTree = "<group>"; };
-		7B5F64AC1F7F824B009387FB /* ZipStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZipStream.cpp; sourceTree = "<group>"; };
+		EE2E65D61F833E2D0070D4E4 /* ZipObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = ZipObject.hpp; sourceTree = "<group>"; };
+		EE2E65D81F833E460070D4E4 /* ZipObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZipObject.cpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +82,7 @@
 		7B5F649C1F7F824B009387FB /* inc */ = {
 			isa = PBXGroup;
 			children = (
+				EE2E65D61F833E2D0070D4E4 /* ZipObject.hpp */,
 				7B5F649D1F7F824B009387FB /* Base64Stream.hpp */,
 				7B5F649E1F7F824B009387FB /* CRC32Stream.hpp */,
 				7B5F649F1F7F824B009387FB /* Exceptions.hpp */,
@@ -94,7 +95,6 @@
 				7B5F64A61F7F824B009387FB /* StreamBase.hpp */,
 				7B5F64A71F7F824B009387FB /* xPlatAppx.hpp */,
 				7B5F64A81F7F824B009387FB /* ZipFileStream.hpp */,
-				7B5F64A91F7F824B009387FB /* ZipStream.hpp */,
 			);
 			name = inc;
 			path = ../../src/inc;
@@ -103,8 +103,8 @@
 		7B5F64AA1F7F824B009387FB /* xPlatAppx */ = {
 			isa = PBXGroup;
 			children = (
+				EE2E65D81F833E460070D4E4 /* ZipObject.cpp */,
 				7B5F64AB1F7F824B009387FB /* xPlatAppx.cpp */,
-				7B5F64AC1F7F824B009387FB /* ZipStream.cpp */,
 			);
 			name = xPlatAppx;
 			path = ../../src/xPlatAppx;
@@ -120,8 +120,8 @@
 				7B5F64B51F7F824B009387FB /* SHA256Stream.hpp in Headers */,
 				7B5F64B01F7F824B009387FB /* FileStream.hpp in Headers */,
 				7B5F64AF1F7F824B009387FB /* Exceptions.hpp in Headers */,
+				EE2E65D71F833E2D0070D4E4 /* ZipObject.hpp in Headers */,
 				7B5F64B71F7F824B009387FB /* xPlatAppx.hpp in Headers */,
-				7B5F64B91F7F824B009387FB /* ZipStream.hpp in Headers */,
 				7B5F64AE1F7F824B009387FB /* CRC32Stream.hpp in Headers */,
 				7B5F64B21F7F824B009387FB /* OffsetStream.hpp in Headers */,
 				7B5F64B81F7F824B009387FB /* ZipFileStream.hpp in Headers */,
@@ -190,8 +190,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EE2E65D91F833E460070D4E4 /* ZipObject.cpp in Sources */,
 				7B5F64BA1F7F824B009387FB /* xPlatAppx.cpp in Sources */,
-				7B5F64BB1F7F824B009387FB /* ZipStream.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -290,6 +290,7 @@
 		7B5F64961F7F807B009387FB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;
@@ -303,6 +304,7 @@
 		7B5F64971F7F807B009387FB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_CXX_LANGUAGE_STANDARD = "c++14";
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
 				EXECUTABLE_PREFIX = lib;

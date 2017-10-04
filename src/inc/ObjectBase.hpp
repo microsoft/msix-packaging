@@ -4,144 +4,117 @@
 #include <vector>
 #include <functional>
 #include <algorithm>
+#include <tuple>
+#include <type_traits>
 #include <initializer_list>
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 
 namespace xPlat {
-
     namespace Meta {
 
-        // A uniary type with Read, Write, Validate, and Size
-        class Object
+        // Represents a heterogeneous collection of types that can be operated on as a compile-time vector
+        template <typename... Types>
+        class TypeList
         {
+            std::tuple<Types...> fields;
+            static constexpr std::size_t last_index{ std::tuple_size<std::tuple<Types...>>::value };
+
         public:
-            Object(void* value) : v(value) {}
-            virtual ~Object() { }
+            template<std::size_t index = 0, typename FuncT>
+            inline typename std::enable_if<index == last_index, void>::type for_each(FuncT)
+            { }
 
-            virtual void Write(StreamBase* stream) = 0;
-            virtual void Read(StreamBase* stream) = 0;
-            virtual void Validate() = 0;
-            virtual size_t Size() = 0;
-
-            template <class T>
-            static T* GetValue(Object* o)
+            template<std::size_t index = 0, typename FuncT>
+            inline typename std::enable_if<index < last_index, void>::type for_each(FuncT f)
             {
-                return reinterpret_cast<T*>(o->v);
+                f(Field<index>());
+                for_each<index + 1, FuncT>(f);
             }
 
-            template <class T>
-            static void SetValue(Object* o, T& value)
-            {
-                *reinterpret_cast<T*>(o->v) = value;
-            }
-
-        protected:
-            void* value() { return v; }
-            void* v = nullptr;
+            template <size_t index>
+            inline auto& Field() { return std::get<index>(fields); }
         };
 
-        // Aggregates a collection of objects
-        //      validation is handled incrementally via Read
-        //      size is summation of size of all fields.
-        class StructuredObject : public Object
+        // Defines set of operations (size, write, read) for a serializable/deserializable type.
+        template <class... Types>
+        class StructuredObject : public TypeList<Types...>
         {
         public:
-            StructuredObject(std::initializer_list<std::shared_ptr<Object>> list) : Object(&fields), fields(list) { }
-
-            virtual void Write(StreamBase* stream) override
-            {
-                std::for_each(fields.begin(), fields.end(), [&](auto field) { field->Write(stream); });
-            }
-
-            virtual void Read(StreamBase* stream) override
-            {
-                std::for_each(fields.begin(), fields.end(), [&](auto field)
-                {
-                    field->Read(stream);
-                    field->Validate();
-                });
-            }
-
-            virtual void Validate() override {}
-
-            virtual size_t Size() override
+            size_t Size()
             {
                 size_t result = 0;
-                std::for_each(fields.begin(), fields.end(), [&](auto field) { result += field->Size(); });
+                this->for_each([&](auto& item)
+                {
+                    result += item.Size();
+                });
                 return result;
             }
 
-            Object* Field(size_t index) { return fields[index].get(); }
+            void Write(StreamBase* stream)
+            {
+                offset = stream->Ftell();
+                this->for_each([&](auto& item)
+                {
+                    item.Write(stream);
+                });
+            }
+
+            void Read(StreamBase* stream)
+            {
+                offset = stream->Ftell();
+                this->for_each([&](auto& item)
+                {
+                    item.Read(stream);
+                });
+            }
+
+            virtual void Validate() { }
 
         protected:
-            std::vector<std::shared_ptr<Object>> fields;
+            std::uint64_t offset = 0;   // For debugging purposes!
         };
 
-        // base type for serializable fields
+        // base type for individual serializable/deserializable fields
         template <class T>
-        class FieldBase : public Object
+        class FieldBase
         {
         public:
             using Lambda = std::function<void(T& v)>;
 
-            FieldBase(Lambda validator) : Object(&value), validate(validator) {}
-
-            virtual T&   GetValue()     { return value; }
-            virtual void SetValue(T& v) { value = v; }
-
-            virtual void Write(StreamBase* stream) override
+            FieldBase()
             {
-                offset = stream->Ftell();
+                validation = [](T&){};    // empty validation by-default.
+            }
+
+            virtual void Write(StreamBase* stream)
+            {
                 StreamBase::Write<T>(stream, &value);
             }
 
-            virtual void Read(StreamBase* stream) override
+            virtual void Read(StreamBase* stream)
             {
-                offset = stream->Ftell();
                 StreamBase::Read<T>(stream, &value);
                 Validate();
             }
 
-            void Validate() override { validate(GetValue()); }
+            virtual void Validate() { validation(this->value); }
+            virtual size_t Size()   { return sizeof(T); }
 
-            virtual size_t Size() override { return sizeof(T); }
-
-        protected:
-            std::uint64_t offset = 0;   // For debugging purposes!
-            T value;
-            Lambda validate;
+            T       value;
+            Lambda  validation;
         };
 
-        // 2 byte field
-        class Field2Bytes : public FieldBase<std::uint16_t>
-        {
-        public:
-            Field2Bytes(Lambda&& validator) : FieldBase<std::uint16_t>(validator) {}
-        };
-
-        // 4 byte field
-        class Field4Bytes : public FieldBase<std::uint32_t>
-        {
-        public:
-            Field4Bytes(Lambda&& validator) : FieldBase<std::uint32_t>(validator) {}
-        };
-
-        // 8 byte field
-        class Field8Bytes : public FieldBase<std::uint64_t>
-        {
-        public:
-            Field8Bytes(Lambda&& validator) : FieldBase<std::uint64_t>(validator) {}
-        };
+        class Field2Bytes : public FieldBase<std::uint16_t> { };
+        class Field4Bytes : public FieldBase<std::uint32_t> { };
+        class Field8Bytes : public FieldBase<std::uint64_t> { };
 
         // variable length field.
-        class FieldNBytes : public Object
+        class FieldNBytes : public FieldBase<std::vector<std::uint8_t>>
         {
         public:
-            using Lambda = std::function<void(std::vector<std::uint8_t>& v)>;
-            FieldNBytes(Lambda validator) : Object(&value), validate(validator) {}
-
-            size_t Size() override { return value.size(); }
+            virtual size_t Size() override      { return value.size(); }
+            virtual void Validate() override    { }
 
             virtual void Write(StreamBase* stream) override
             {
@@ -153,12 +126,6 @@ namespace xPlat {
                 stream->Read(Size(), value.data());
                 Validate();
             }
-
-            void Validate() override { validate(value); }
-
-        protected:
-            std::vector<std::uint8_t> value;
-            Lambda validate;
         };
     }
 }
