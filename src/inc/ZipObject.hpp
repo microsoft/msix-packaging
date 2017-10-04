@@ -25,7 +25,7 @@ namespace xPlat {
             HiddenDataBetweenLastCDHandEoCD     = 7,
         };
 
-        ZipException(std::string message, Error error) : ExceptionBase(ExceptionBase::Facility::ZIP), reason(message)
+        ZipException(std::string message, Error error) : reason(message), ExceptionBase(ExceptionBase::Facility::ZIP)
         {
             SetLastError(static_cast<std::uint32_t>(error));
         }
@@ -132,7 +132,7 @@ namespace xPlat {
     public:
         virtual ~CentralDirectoryFileHeader() {}
 
-        CentralDirectoryFileHeader(StreamBase* s) : Meta::StructuredObject(
+        CentralDirectoryFileHeader(StreamBase* s) : m_stream(s), Meta::StructuredObject(
         {
             // 0 - central file header signature   4 bytes(0x02014b50)
             std::make_shared<Meta::Field4Bytes>([](std::uint32_t& v)
@@ -229,7 +229,7 @@ namespace xPlat {
             std::make_shared<Meta::FieldNBytes>([](std::vector<std::uint8_t>& data) {}),
             //19 - file comment(variable size)
             std::make_shared<Meta::FieldNBytes>([](std::vector<std::uint8_t>& data) {})
-        }), m_stream(s)
+        })
         {/*constructor*/
             SetSignature(static_cast<std::uint32_t>(Signatures::CentralFileHeader));
             SetVersionMadeBy(static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension));

@@ -1,16 +1,15 @@
 #pragma once
 
-#if defined PLATFORM_APPLE
+#ifdef PLATFORM_APPLE
     #define XPLATAPPX_API
-#elif defined PLATFORM_ANDROID
-    #define XPLATAPPX_API
-#elif defined PLATFORM_LINUX
-    #define XPLATAPPX_API
-#elif defined XPLATAPPX_API
-    #define XPLATAPPX_API __declspec(dllexport)
-#else
-    #define XPLATAPPX_API __declspec(dllexport)
-#endif
+
+#else /*PLATFORM_MAC*/
+    #ifdef XPLATAPPX_API
+        #define XPLATAPPX_API __declspec(dllexport)
+    #else /*XPLATAPPX_API*/
+        #define XPLATAPPX_API __declspec(dllimport)
+    #endif /*XPLATAPPX_API*/
+#endif /*PLATFORM_MAC*/
 
 // TODO: add #defs to cover platform-specific differences?
 XPLATAPPX_API unsigned int UnpackAppx (char* source, char* destination);
