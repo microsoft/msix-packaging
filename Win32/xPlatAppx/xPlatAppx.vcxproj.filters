@@ -54,6 +54,9 @@
     <ClInclude Include="..\..\src\inc\ZipObject.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\inc\DirectoryObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="xPlatAppx.def">
@@ -65,6 +68,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\xPlatAppx\ZipObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\xPlatAppx\PAL\FileSystem\Win32\DirectoryObject.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\xPlatAppx\ZipFileStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

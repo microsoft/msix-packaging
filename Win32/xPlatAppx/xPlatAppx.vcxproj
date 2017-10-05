@@ -144,6 +144,7 @@
     <ClInclude Include="..\..\lib\zlib\zlib.h" />
     <ClInclude Include="..\..\src\inc\Base64Stream.hpp" />
     <ClInclude Include="..\..\src\inc\CRC32Stream.hpp" />
+    <ClInclude Include="..\..\src\inc\DirectoryObject.hpp" />
     <ClInclude Include="..\..\src\inc\Exceptions.hpp" />
     <ClInclude Include="..\..\src\inc\FileStream.hpp" />
     <ClInclude Include="..\..\src\inc\OffsetStream.hpp" />
@@ -159,7 +160,9 @@
     <None Include="xPlatAppx.def" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\xPlatAppx\PAL\FileSystem\Win32\DirectoryObject.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\xPlatAppx.cpp" />
+    <ClCompile Include="..\..\src\xPlatAppx\ZipFileStream.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\ZipObject.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

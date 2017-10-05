@@ -2,8 +2,7 @@
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
-#include "ObjectBase.hpp"
-#include "ZipFileStream.hpp"
+#include "StorageObject.hpp"
 
 #include <vector>
 #include <map>
@@ -26,7 +25,7 @@ namespace xPlat {
             InvalidLocalFileHeader              = 8,
         };
 
-        ZipException(std::string message, Error error) : reason(message), ExceptionBase(ExceptionBase::Facility::ZIP)
+        ZipException(std::string message, Error error) : reason(message), ExceptionBase(ExceptionBase::SubFacility::ZIP)
         {
             SetLastError(static_cast<std::uint32_t>(error));
         }
@@ -38,15 +37,20 @@ namespace xPlat {
     class LocalFileHeader;
 
     // This represents a raw stream over a.zip file.
-    class ZipObject
+    class ZipObject : public StorageObject
     {
     public:
         ZipObject(StreamBase* stream);
 
-        std::vector<std::string> GetFileNames();
+        // StorageObject methods
+        virtual std::vector<std::string>    GetFileNames() override;
+        virtual std::shared_ptr<StreamBase> GetFile(std::string& fileName) override;
+        virtual void                        RemoveFile(std::string& fileName) override;
+        virtual std::shared_ptr<StreamBase> OpenFile(std::string& fileName, FileStream::Mode mode) override;
+        virtual void                        CommitChanges() override;
 
     protected:
-        std::map<std::string, std::shared_ptr<ZipFileStream>>                m_streams;
+        std::map<std::string, std::shared_ptr<StreamBase>>                   m_streams;
         std::map<std::string, std::shared_ptr<CentralDirectoryFileHeader>>   m_centralDirectory;
 
         // TODO: change to uint64_t when adding full zip64 support

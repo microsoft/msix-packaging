@@ -3,6 +3,7 @@
 #include "StreamBase.hpp"
 #include "FileStream.hpp"
 #include "ZipObject.hpp"
+#include "DirectoryObject.hpp"
 
 #include <string>
 #include <memory>
@@ -49,21 +50,53 @@ unsigned int ResultOf(char* source, char* destination, Lambda lambda)
     return result;
 }
 
-XPLATAPPX_API unsigned int UnpackAppx(char* source, char* destination)
+XPLATAPPX_API unsigned int UnpackAppx(char* from, char* to)
 {
-    return ResultOf(source, destination, [&]() {
-        std::string appxFileName(source);
-        auto rawFile = std::make_unique<xPlat::FileStream>(
-            std::move(appxFileName),
-            xPlat::FileStream::Mode::READ);
+    return ResultOf(from, to, [&]() {
+        std::string source(from);
+        std::string target(to);
 
-        xPlat::ZipObject zip(rawFile.get());
+        xPlat::DirectoryObject directory(std::move(target));
+
+        auto rawFile = std::make_unique<xPlat::FileStream>(std::move(source), xPlat::FileStream::Mode::READ);
+
+        {
+            xPlat::ZipObject zip(rawFile.get());
+
+            auto fileNames = zip.GetFileNames();
+            for (auto fileName : fileNames)
+            {
+                auto sourceFile = zip.GetFile(fileName);
+                auto targetFile = directory.OpenFile(fileName, xPlat::FileStream::Mode::WRITE);
+
+                sourceFile->CopyTo(targetFile.get());
+            }
+        }
     });
 }
 
-XPLATAPPX_API unsigned int PackAppx  (char* source, char* destination)
+XPLATAPPX_API unsigned int PackAppx  (char* from, char* to)
 {
-    return ResultOf(source, destination, []() {
-        // TODO: implement here
+    return ResultOf(from, to, [&]() {
+        std::string source(from);
+        std::string target(to);
+
+        xPlat::DirectoryObject directory(std::move(source));
+
+        auto rawFile = std::make_unique<xPlat::FileStream>(std::move(target), xPlat::FileStream::Mode::WRITE);
+
+        {
+            xPlat::ZipObject zip(rawFile.get());
+
+            auto fileNames = directory.GetFileNames();
+            for (auto fileName : fileNames)
+            {
+                auto sourceFile = directory.GetFile(fileName);
+                auto targetFile = zip.OpenFile(fileName, xPlat::FileStream::Mode::WRITE);
+
+                sourceFile->CopyTo(targetFile.get());
+            }
+            zip.CommitChanges();
+        }
     });
 }

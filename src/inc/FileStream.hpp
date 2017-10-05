@@ -12,7 +12,7 @@ namespace xPlat {
     {
     public:
         FileException(std::string message, uint32_t error = 0) :
-            ExceptionBase(ExceptionBase::Facility::FILE),
+            ExceptionBase(ExceptionBase::SubFacility::FILE),
             reason(message)
         {
             SetLastError(error);
@@ -58,9 +58,9 @@ namespace xPlat {
             offset = Ftell();
         }
 
-        virtual std::size_t Read(std::size_t size, const std::uint8_t* bytes) override
+        virtual std::uint64_t Read(std::uint64_t size, const std::uint8_t* bytes) override
         {
-            std::size_t bytesRead = std::fread(
+            std::uint64_t bytesRead = std::fread(
                 static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
             );
             if (bytesRead < size && !Feof())
