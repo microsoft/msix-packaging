@@ -30,10 +30,12 @@ namespace xPlat {
         from: https://connect.microsoft.com/VisualStudio/feedback/details/1403302/unresolved-external-when-using-codecvt-utf8
         Posted by Microsoft on 2/16/2016 at 11:49 AM
         <snip>
-
-        A workaround is to replace 'char32_t' with 'unsigned int'. In VS2013, char32_t was a typedef of 'unsigned int'. In VS2015, char32_t is a distinct type of it's own. Switching your use of 'char32_t' to 'unsigned int' will get you the old behavior from earlier versions and won't trigger a missing export error.
+        A workaround is to replace 'char32_t' with 'unsigned int'. In VS2013, char32_t was a typedef of 'unsigned int'.
+        In VS2015, char32_t is a distinct type of it's own. Switching your use of 'char32_t' to 'unsigned int' will get
+        you the old behavior from earlier versions and won't trigger a missing export error.
 
         There is also a similar error to this one with 'char16_t' that can be worked around using 'unsigned short'.
+        <snip>
         */
         auto converted = std::wstring_convert<std::codecvt_utf8_utf16<unsigned short>, unsigned short>{}.from_bytes(utf8string.data());
         std::wstring result(converted.begin(), converted.end());
@@ -128,19 +130,8 @@ namespace xPlat {
 
     std::vector<std::string> DirectoryObject::GetFileNames()
     {
-        std::vector<std::string> result;
-        WalkDirectory<WalkOptions::Files | WalkOptions::Directories | WalkOptions::Recursive>(m_root, [&](
-            std::string, 
-            WalkOptions option, 
-            std::string&& name)
-        {
-            if (option == WalkOptions::Files)
-            {
-                result.push_back(std::move(name));
-            }
-            return true;
-        });
-        return result;
+        // TODO: Implement when standing-up the pack side for test validation purposes.
+        throw NotImplementedException();
     }
 
     std::shared_ptr<StreamBase> DirectoryObject::GetFile(std::string& fileName)
@@ -160,6 +151,7 @@ namespace xPlat {
 
     void DirectoryObject::RemoveFile(std::string& fileName)
     {
+        // TODO: Implement when standing-up the pack side for test validation purposes.
         throw NotImplementedException();
     }
 
