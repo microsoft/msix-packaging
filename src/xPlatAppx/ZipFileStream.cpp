@@ -10,12 +10,14 @@ namespace xPlat {
         throw NotImplementedException();
     }
 
-    std::uint64_t ZipFileStream::Read(std::uint64_t size, const std::uint8_t* bytes)
+    std::size_t ZipFileStream::Read(std::size_t size, const std::uint8_t* bytes)
     {
         m_stream->Seek(m_offset + m_relativePosition, StreamBase::Reference::START);
-
-        std::uint64_t amountToRead = std::min(size, (m_compressedSize - m_relativePosition));
-        std::uint64_t bytesRead = m_stream->Read(amountToRead, bytes);
+        
+        //TODO: the next line of code assumes that the amount to read will be less than 4GB
+        //Review this
+        std::size_t amountToRead = std::min(size, (size_t)(m_compressedSize - m_relativePosition));
+        std::size_t bytesRead = m_stream->Read(amountToRead, bytes);
         m_relativePosition += bytesRead;
         return bytesRead;
     }
@@ -53,6 +55,21 @@ namespace xPlat {
     std::uint64_t ZipFileStream::Ftell()
     {
         return m_relativePosition;
+    }
+
+    bool ZipFileStream::IsCompressed()
+    {
+        return (m_compressedSize == m_uncompressedSize);
+    }
+
+    std::uint64_t ZipFileStream::GetCompressedSize()
+    {
+        return m_compressedSize;
+    }
+
+    std::uint64_t ZipFileStream::GetUncompressedSize()
+    {
+        return m_uncompressedSize;
     }
 
 } /* xPlat */

@@ -30,19 +30,23 @@ namespace xPlat {
         }
 
         void Write(std::size_t size, const std::uint8_t* bytes) override;
-        std::uint64_t Read(std::uint64_t size, const std::uint8_t* bytes) override;
+        std::size_t Read(std::size_t size, const std::uint8_t* bytes) override;
         void Seek(std::uint64_t offset, Reference where) override;
         int Ferror() override;
         bool Feof() override;
         std::uint64_t Ftell()  override;
 
+        bool IsCompressed();
+        std::uint64_t GetCompressedSize();
+        std::uint64_t GetUncompressedSize();
+
     protected:
         std::string m_fileName;
 
         // TODO: change to uint64_t when adding 4+GB support
-        std::uint32_t m_offset;
-        std::uint32_t m_compressedSize;
-        std::uint32_t m_uncompressedSize;
+        std::uint64_t m_offset;
+        std::uint64_t m_compressedSize;
+        std::uint64_t m_uncompressedSize;
 
         bool m_isCompressed = false;
         std::uint64_t m_relativePosition = 0;
