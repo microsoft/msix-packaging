@@ -14,7 +14,7 @@ namespace xPlat {
     class DirectoryObject : public StorageObject
     {
     public:
-        DirectoryObject(std::string&& root) : m_root(std::move(root)) {}
+        DirectoryObject(std::string root) : m_root(std::move(root)) {}
 
         // StorageObject methods
         std::vector<std::string>    GetFileNames() override;

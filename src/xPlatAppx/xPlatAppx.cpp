@@ -53,12 +53,8 @@ unsigned int ResultOf(char* source, char* destination, Lambda lambda)
 XPLATAPPX_API unsigned int UnpackAppx(char* from, char* to)
 {
     return ResultOf(from, to, [&]() {
-        std::string source(from);
-        std::string target(to);
-
-        xPlat::DirectoryObject directory(std::move(target));
-
-        auto rawFile = std::make_unique<xPlat::FileStream>(std::move(source), xPlat::FileStream::Mode::READ);
+        xPlat::DirectoryObject directory(to);
+        auto rawFile = std::make_unique<xPlat::FileStream>(from, xPlat::FileStream::Mode::READ);
 
         {
             xPlat::ZipObject zip(rawFile.get());
@@ -78,12 +74,8 @@ XPLATAPPX_API unsigned int UnpackAppx(char* from, char* to)
 XPLATAPPX_API unsigned int PackAppx  (char* from, char* to)
 {
     return ResultOf(from, to, [&]() {
-        std::string source(from);
-        std::string target(to);
-
-        xPlat::DirectoryObject directory(std::move(source));
-
-        auto rawFile = std::make_unique<xPlat::FileStream>(std::move(target), xPlat::FileStream::Mode::WRITE);
+        xPlat::DirectoryObject directory(from);
+        auto rawFile = std::make_unique<xPlat::FileStream>(to, xPlat::FileStream::Mode::WRITE);
 
         {
             xPlat::ZipObject zip(rawFile.get());
