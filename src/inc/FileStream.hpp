@@ -27,13 +27,13 @@ namespace xPlat {
     public:
         enum Mode { READ = 0, WRITE, APPEND, READ_UPDATE, WRITE_UPDATE, APPEND_UPDATE };
 
-        FileStream(std::string&& path, Mode mode) : name(path)
+        FileStream(std::string&& path, Mode mode) : name(std::move(path))
         {
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
-            file = std::fopen(path.c_str(), modes[mode]);
+            file = std::fopen(name.c_str(), modes[mode]);
             if (!file)
             {
-                throw FileException(path);
+                throw FileException(name);
             }
         }
 

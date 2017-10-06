@@ -765,17 +765,17 @@ namespace xPlat {
         return result;
     }
 
-    std::shared_ptr<StreamBase> ZipObject::GetFile(std::string& fileName)
+    std::shared_ptr<StreamBase> ZipObject::GetFile(const std::string& fileName)
     {
         return m_streams[fileName];
     }
 
-    void ZipObject::RemoveFile(std::string& fileName)
+    void ZipObject::RemoveFile(const std::string& fileName)
     {
         throw NotImplementedException();
     }
 
-    std::shared_ptr<StreamBase> ZipObject::OpenFile(std::string& fileName, FileStream::Mode mode)
+    std::shared_ptr<StreamBase> ZipObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
         throw NotImplementedException();
     }
@@ -818,7 +818,7 @@ namespace xPlat {
         }
 
         // read the file repository
-        for (auto centralFileHeader : m_centralDirectory)
+        for (const auto& centralFileHeader : m_centralDirectory)
         {
             stream->Seek(centralFileHeader.second->GetRelativeOffsetOfLocalHeader(), xPlat::StreamBase::Reference::START);
             auto localFileHeader = std::make_shared<LocalFileHeader>(centralFileHeader.second);

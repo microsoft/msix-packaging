@@ -24,7 +24,7 @@ namespace xPlat {
         }
     };
 
-    std::wstring utf8_to_utf16(std::string& utf8string)
+    std::wstring utf8_to_utf16(const std::string& utf8string)
     {
         /*
         from: https://connect.microsoft.com/VisualStudio/feedback/details/1403302/unresolved-external-when-using-codecvt-utf8
@@ -42,7 +42,7 @@ namespace xPlat {
         return result;
     }
 
-    std::string utf16_to_utf8(std::wstring& utf16string)
+    std::string utf16_to_utf8(const std::wstring& utf16string)
     {
         auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
         std::string result(converted.begin(), converted.end());
@@ -56,18 +56,18 @@ namespace xPlat {
         Recursive = 4       // Enumerate recursively
     };
 
-    inline constexpr WalkOptions operator &(WalkOptions a, WalkOptions b)
+    inline constexpr WalkOptions operator& (WalkOptions a, WalkOptions b)
     {
         return static_cast<WalkOptions>(static_cast<uint16_t>(a) & static_cast<uint16_t>(b));
     }
 
-    inline constexpr WalkOptions operator |(WalkOptions a, WalkOptions b)
+    inline constexpr WalkOptions operator| (WalkOptions a, WalkOptions b)
     {
         return static_cast<WalkOptions>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
     }
 
     template <WalkOptions options, class Lambda>
-    void WalkDirectory(std::string& root, Lambda& visitor)
+    void WalkDirectory(const std::string& root, Lambda& visitor)
     {
         static std::string dot(".");
         static std::string dotdot("..");
@@ -122,7 +122,10 @@ namespace xPlat {
         while (FindNextFile(find.get(), &findFileData));
 
         DWORD lastError = GetLastError();
-        if ((lastError != ERROR_NO_MORE_FILES) && (lastError != ERROR_SUCCESS))
+        if ((lastError != ERROR_NO_MORE_FILES) &&
+            (lastError != ERROR_SUCCESS) &&
+            (lastError != ERROR_ALREADY_EXISTS)
+            )
         {
             throw Win32Exception(lastError);
         }
@@ -134,28 +137,19 @@ namespace xPlat {
         throw NotImplementedException();
     }
 
-    std::shared_ptr<StreamBase> DirectoryObject::GetFile(std::string& fileName)
-    {
-        // first check cache
-        auto index = m_streams.find(fileName);
-        if (index != m_streams.cend())
-        {
-            return index->second;
-        }
-        // create stream and populate cache
-        std::string path = m_root + "\\" + fileName;
-        auto result = m_streams[fileName] = std::make_unique<FileStream>(std::move(fileName), FileStream::Mode::READ);
-
-        return result;
-    }
-
-    void DirectoryObject::RemoveFile(std::string& fileName)
+    std::shared_ptr<StreamBase> DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
         throw NotImplementedException();
     }
 
-    std::shared_ptr<StreamBase> DirectoryObject::OpenFile(std::string& fileName, FileStream::Mode mode)
+    void DirectoryObject::RemoveFile(const std::string& fileName)
+    {
+        // TODO: Implement when standing-up the pack side for test validation purposes.
+        throw NotImplementedException();
+    }
+
+    std::shared_ptr<StreamBase> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
         static const std::string slash("\\");
 
@@ -210,6 +204,7 @@ namespace xPlat {
                 {
                     throw Win32Exception(GetLastError());
                 }
+
                 path = path + slash + PopFirst();
             }
         }

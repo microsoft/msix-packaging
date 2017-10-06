@@ -29,12 +29,12 @@ namespace xPlat {
         {
         }
 
-        virtual void Write(std::size_t size, const std::uint8_t* bytes) override;
-        virtual std::uint64_t Read(std::uint64_t size, const std::uint8_t* bytes) override;
-        virtual void Seek(std::uint64_t offset, Reference where) override;
-        virtual int Ferror() override;
-        virtual bool Feof() override;
-        virtual std::uint64_t Ftell()  override;
+        void Write(std::size_t size, const std::uint8_t* bytes) override;
+        std::uint64_t Read(std::uint64_t size, const std::uint8_t* bytes) override;
+        void Seek(std::uint64_t offset, Reference where) override;
+        int Ferror() override;
+        bool Feof() override;
+        std::uint64_t Ftell()  override;
 
     protected:
         std::string m_fileName;

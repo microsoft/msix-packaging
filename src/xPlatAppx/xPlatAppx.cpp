@@ -64,10 +64,10 @@ XPLATAPPX_API unsigned int UnpackAppx(char* from, char* to)
             xPlat::ZipObject zip(rawFile.get());
 
             auto fileNames = zip.GetFileNames();
-            for (auto fileName : fileNames)
+            for (const auto& fileName : fileNames)
             {
                 auto sourceFile = zip.GetFile(fileName);
-                auto targetFile = directory.OpenFile(fileName, xPlat::FileStream::Mode::WRITE);
+                auto targetFile = directory.OpenFile(fileName, xPlat::FileStream::Mode::WRITE_UPDATE);
 
                 sourceFile->CopyTo(targetFile.get());
             }
@@ -89,7 +89,7 @@ XPLATAPPX_API unsigned int PackAppx  (char* from, char* to)
             xPlat::ZipObject zip(rawFile.get());
 
             auto fileNames = directory.GetFileNames();
-            for (auto fileName : fileNames)
+            for (const auto& fileName : fileNames)
             {
                 auto sourceFile = directory.GetFile(fileName);
                 auto targetFile = zip.OpenFile(fileName, xPlat::FileStream::Mode::WRITE);

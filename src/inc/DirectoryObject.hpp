@@ -14,14 +14,14 @@ namespace xPlat {
     class DirectoryObject : public StorageObject
     {
     public:
-        DirectoryObject(std::string root) : m_root(root) {}
+        DirectoryObject(std::string&& root) : m_root(std::move(root)) {}
 
         // StorageObject methods
-        virtual std::vector<std::string>    GetFileNames() override;
-        virtual std::shared_ptr<StreamBase> GetFile(std::string& fileName) override;
-        virtual void                        RemoveFile(std::string& fileName) override;
-        virtual std::shared_ptr<StreamBase> OpenFile(std::string& fileName, FileStream::Mode mode) override;
-        virtual void                        CommitChanges() override;
+        std::vector<std::string>    GetFileNames() override;
+        std::shared_ptr<StreamBase> GetFile(const std::string& fileName) override;
+        void                        RemoveFile(const std::string& fileName) override;
+        std::shared_ptr<StreamBase> OpenFile(const std::string& fileName, FileStream::Mode mode) override;
+        void                        CommitChanges() override;
 
     protected:
         std::map<std::string, std::shared_ptr<StreamBase>> m_streams;
