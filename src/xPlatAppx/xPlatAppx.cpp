@@ -3,6 +3,7 @@
 #include "StreamBase.hpp"
 #include "FileStream.hpp"
 #include "ZipObject.hpp"
+#include "DirectoryObject.hpp"
 
 #include <string>
 #include <memory>
@@ -49,21 +50,45 @@ unsigned int ResultOf(char* source, char* destination, Lambda lambda)
     return result;
 }
 
-XPLATAPPX_API unsigned int UnpackAppx(char* source, char* destination)
+XPLATAPPX_API unsigned int UnpackAppx(char* from, char* to)
 {
-    return ResultOf(source, destination, [&]() {
-        std::string appxFileName(source);
-        auto rawFile = std::make_unique<xPlat::FileStream>(
-            std::move(appxFileName),
-            xPlat::FileStream::Mode::READ);
+    return ResultOf(from, to, [&]() {
+        xPlat::DirectoryObject directory(to);
+        auto rawFile = std::make_unique<xPlat::FileStream>(from, xPlat::FileStream::Mode::READ);
 
-        xPlat::ZipObject zip(rawFile.get());
+        {
+            xPlat::ZipObject zip(rawFile.get());
+
+            auto fileNames = zip.GetFileNames();
+            for (const auto& fileName : fileNames)
+            {
+                auto sourceFile = zip.GetFile(fileName);
+                auto targetFile = directory.OpenFile(fileName, xPlat::FileStream::Mode::WRITE_UPDATE);
+
+                sourceFile->CopyTo(targetFile.get());
+            }
+        }
     });
 }
 
-XPLATAPPX_API unsigned int PackAppx  (char* source, char* destination)
+XPLATAPPX_API unsigned int PackAppx  (char* from, char* to)
 {
-    return ResultOf(source, destination, []() {
-        // TODO: implement here
+    return ResultOf(from, to, [&]() {
+        xPlat::DirectoryObject directory(from);
+        auto rawFile = std::make_unique<xPlat::FileStream>(to, xPlat::FileStream::Mode::WRITE);
+
+        {
+            xPlat::ZipObject zip(rawFile.get());
+
+            auto fileNames = directory.GetFileNames();
+            for (const auto& fileName : fileNames)
+            {
+                auto sourceFile = directory.GetFile(fileName);
+                auto targetFile = zip.OpenFile(fileName, xPlat::FileStream::Mode::WRITE);
+
+                sourceFile->CopyTo(targetFile.get());
+            }
+            zip.CommitChanges();
+        }
     });
 }

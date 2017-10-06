@@ -9,7 +9,7 @@ namespace xPlat {
     class ExceptionBase : public std::exception
     {
     public:
-        enum Facility : uint32_t {
+        enum SubFacility : uint32_t {
             NONE = 0x0000,
             FILE = 0x1000,
             ZIP =  0x2000,
@@ -18,19 +18,20 @@ namespace xPlat {
         };
 
         ExceptionBase() {}
-        ExceptionBase(Facility facility) : facility(facility) {}
+        ExceptionBase(SubFacility subFacility) : subFacility(subFacility) {}
+        ExceptionBase(uint32_t headerOveride, SubFacility subFacility) : header(headerOveride), subFacility(subFacility) {}
 
         void SetLastError(uint32_t error)
         {
-            code = header + facility + (error & Facility::MAX);
+            code = header + subFacility + (error & SubFacility::MAX);
         }
 
         uint32_t Code() { return code; }
 
     protected:
-        Facility facility = Facility::NONE;
-        uint32_t header = 0x8BAD0000;   // facility 2989
-        uint32_t code   = 0xFFFFFFFF;   // by default, something very bad happened...
+        SubFacility subFacility = SubFacility::NONE;
+        uint32_t    header = 0x8BAD0000;   // SubFacility 2989
+        uint32_t    code   = 0xFFFFFFFF;   // by default, something very bad happened...
     };
 
     class NotImplementedException   : public ExceptionBase { public: NotImplementedException()  { SetLastError(1); } };

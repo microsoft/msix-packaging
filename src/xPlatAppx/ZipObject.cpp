@@ -2,6 +2,7 @@
 #include "StreamBase.hpp"
 #include "ObjectBase.hpp"
 #include "ZipObject.hpp"
+#include "ZipFileStream.hpp"
 
 #include <memory>
 #include <string>
@@ -754,6 +755,36 @@ namespace xPlat {
 
     };//class EndOfCentralDirectoryRecord
 
+    std::vector<std::string> ZipObject::GetFileNames()
+    {
+        std::vector<std::string> result;
+        std::for_each(m_streams.begin(), m_streams.end(), [&](auto it)
+        {
+            result.push_back(it.first);
+        });
+        return result;
+    }
+
+    std::shared_ptr<StreamBase> ZipObject::GetFile(const std::string& fileName)
+    {
+        return m_streams[fileName];
+    }
+
+    void ZipObject::RemoveFile(const std::string& fileName)
+    {
+        throw NotImplementedException();
+    }
+
+    std::shared_ptr<StreamBase> ZipObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    {
+        throw NotImplementedException();
+    }
+
+    void ZipObject::CommitChanges()
+    {
+        throw NotImplementedException();
+    }
+
     ZipObject::ZipObject(StreamBase* stream)
     {
         // Confirm that the file IS the correct format
@@ -787,7 +818,7 @@ namespace xPlat {
         }
 
         // read the file repository
-        for (auto centralFileHeader : m_centralDirectory)
+        for (const auto& centralFileHeader : m_centralDirectory)
         {
             stream->Seek(centralFileHeader.second->GetRelativeOffsetOfLocalHeader(), xPlat::StreamBase::Reference::START);
             auto localFileHeader = std::make_shared<LocalFileHeader>(centralFileHeader.second);
@@ -801,23 +832,13 @@ namespace xPlat {
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),
                 localFileHeader->GetUncompressedSize(),
-                localFileHeader->GetCompressionType() == CompressionType::Deflate
+                localFileHeader->GetCompressionType() == CompressionType::Deflate,
+                stream
                 );
 
             m_streams.insert(std::make_pair(
                 centralFileHeader.second->GetFileName(),
                 zipFileStream));
         }
-    }
-
-    std::vector<std::string> ZipObject::GetFileNames()
-    {
-        std::vector<std::string> result;
-        std::for_each(m_streams.begin(), m_streams.end(), [&](auto it)
-        {
-            result.push_back(it.first);
-        });
-        return result;
-    }
-
+    } // ZipObject::ZipObject
 } // namespace xPlat

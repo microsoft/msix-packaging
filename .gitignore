@@ -107,6 +107,9 @@ Temporary Items
 *.userosscache
 *.sln.docstates
 
+# Intermediate test files/data
+test/unpack
+
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
 
