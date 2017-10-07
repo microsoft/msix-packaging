@@ -828,7 +828,6 @@ namespace xPlat {
                 localFileHeader));
 
             auto zipFileStream = std::make_shared<ZipFileStream>(
-                centralFileHeader.second->GetFileName(),
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),
                 localFileHeader->GetUncompressedSize(),
