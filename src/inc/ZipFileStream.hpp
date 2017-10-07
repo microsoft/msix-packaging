@@ -13,14 +13,12 @@ namespace xPlat {
     public:
         // TODO: define what streams to pass in on the .ctor
         ZipFileStream(
-            std::string&& fileName,
             std::uint32_t offset,
             std::uint32_t compressedSize,
             std::uint32_t uncompressedSize,
             bool isCompressed,
             StreamBase* stream
         ) :
-            m_fileName(std::move(fileName)),
             m_offset(offset),
             m_compressedSize(compressedSize),
             m_uncompressedSize(uncompressedSize),
@@ -41,8 +39,6 @@ namespace xPlat {
         std::uint64_t GetUncompressedSize();
 
     protected:
-        std::string m_fileName;
-
         // TODO: change to uint64_t when adding 4+GB support
         std::uint64_t m_offset;
         std::uint64_t m_compressedSize;
