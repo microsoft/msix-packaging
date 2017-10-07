@@ -1,4 +1,4 @@
-
+#pragma once
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "StreamBase.hpp"
