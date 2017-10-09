@@ -50,7 +50,7 @@ namespace xPlat {
                     m_zstrm.opaque = Z_NULL;
                     m_zstrm.avail_in = 0;
                     m_zstrm.next_in = Z_NULL;
-                    int ret = inflateInit(&m_zstrm);
+                    int ret = inflateInit2(&m_zstrm, -MAX_WBITS, ZLIB_VERSION, InflateStream::BUFFERSIZE);
                     m_state = (ret == Z_OK) ? STATE_READY_TO_READ : STATE_COULD_NOT_INITIALIZE;
                 }
                 break;
