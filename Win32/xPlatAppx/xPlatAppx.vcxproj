@@ -149,6 +149,7 @@
     <ClInclude Include="..\..\src\inc\DirectoryObject.hpp" />
     <ClInclude Include="..\..\src\inc\Exceptions.hpp" />
     <ClInclude Include="..\..\src\inc\FileStream.hpp" />
+    <ClInclude Include="..\..\src\inc\InflateStream.hpp" />
     <ClInclude Include="..\..\src\inc\OffsetStream.hpp" />
     <ClInclude Include="..\..\src\inc\PartitionStream.hpp" />
     <ClInclude Include="..\..\src\inc\SequenceStream.hpp" />
@@ -162,10 +163,16 @@
     <None Include="xPlatAppx.def" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\xPlatAppx\InflateStream.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\PAL\FileSystem\Win32\DirectoryObject.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\xPlatAppx.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\ZipFileStream.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\ZipObject.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\lib\zlibstat.vcxproj">
+      <Project>{745dec58-ebb3-47a9-a9b8-4c6627c01bf8}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

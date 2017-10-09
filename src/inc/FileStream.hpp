@@ -58,9 +58,9 @@ namespace xPlat {
             offset = Ftell();
         }
 
-        virtual std::uint64_t Read(std::uint64_t size, const std::uint8_t* bytes) override
+        virtual std::size_t Read(std::size_t size, const std::uint8_t* bytes) override
         {
-            std::uint64_t bytesRead = std::fread(
+            std::size_t bytesRead = std::fread(
                 static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
             );
             if (bytesRead < size && !Feof())

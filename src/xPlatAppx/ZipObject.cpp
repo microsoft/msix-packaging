@@ -3,6 +3,7 @@
 #include "ObjectBase.hpp"
 #include "ZipObject.hpp"
 #include "ZipFileStream.hpp"
+#include "InflateStream.hpp"
 
 #include <memory>
 #include <string>
@@ -835,9 +836,19 @@ namespace xPlat {
                 stream
                 );
 
-            m_streams.insert(std::make_pair(
-                centralFileHeader.second->GetFileName(),
-                zipFileStream));
+            if (zipFileStream->IsCompressed())
+            {
+                auto inflateStream = std::make_shared<InflateStream>(zipFileStream, zipFileStream->GetCompressedSize(), zipFileStream->GetUncompressedSize());
+                m_streams.insert(std::make_pair(
+                    centralFileHeader.second->GetFileName(),
+                    inflateStream));
+            }
+            else
+            {
+                m_streams.insert(std::make_pair(
+                    centralFileHeader.second->GetFileName(),
+                    zipFileStream));
+            }
         }
     } // ZipObject::ZipObject
 } // namespace xPlat
