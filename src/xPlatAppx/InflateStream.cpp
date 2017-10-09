@@ -44,6 +44,7 @@ namespace xPlat {
                 case STATE_UNINITIALIZED:
                 {
                     m_offsetOfUncompressedWindow = 0;
+                    memset(&m_zstrm, 0, sizeof(m_zstrm));
                     m_zstrm.zalloc = Z_NULL;
                     m_zstrm.zfree = Z_NULL;
                     m_zstrm.opaque = Z_NULL;

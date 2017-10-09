@@ -59,7 +59,7 @@ namespace xPlat {
 
     bool ZipFileStream::IsCompressed()
     {
-        return (m_compressedSize == m_uncompressedSize);
+        return (m_isCompressed);
     }
 
     std::uint64_t ZipFileStream::GetCompressedSize()
