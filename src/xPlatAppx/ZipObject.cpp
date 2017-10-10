@@ -828,27 +828,19 @@ namespace xPlat {
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader(),
                 localFileHeader));
 
-            auto zipFileStream = std::make_shared<ZipFileStream>(
+            std::shared_ptr<StreamBase> fileStream = std::make_shared<ZipFileStream>(
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),
-                localFileHeader->GetUncompressedSize(),
                 localFileHeader->GetCompressionType() == CompressionType::Deflate,
                 stream
                 );
 
-            if (zipFileStream->IsCompressed())
+            if (localFileHeader->GetCompressionType() == CompressionType::Deflate)
             {
-                auto inflateStream = std::make_shared<InflateStream>(zipFileStream, zipFileStream->GetCompressedSize(), zipFileStream->GetUncompressedSize());
-                m_streams.insert(std::make_pair(
-                    centralFileHeader.second->GetFileName(),
-                    inflateStream));
+                fileStream = std::make_shared<InflateStream>(std::move(fileStream), localFileHeader->GetCompressedSize(), localFileHeader->GetUncompressedSize());
             }
-            else
-            {
-                m_streams.insert(std::make_pair(
-                    centralFileHeader.second->GetFileName(),
-                    zipFileStream));
-            }
+
+            m_streams.insert(std::make_pair(centralFileHeader.second->GetFileName(), fileStream));
         }
     } // ZipObject::ZipObject
 } // namespace xPlat
