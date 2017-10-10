@@ -194,22 +194,38 @@ namespace xPlat {
 
     void InflateStream::Seek(std::uint64_t offset, Reference where)
     {
+        std::uint64_t seekPosition = 0;
         switch (where)
         {
         case Reference::CURRENT:
-            m_seekPosition = m_seekPosition + offset;
+            seekPosition = m_seekPosition + offset;
             break;
         case Reference::START:
-            m_seekPosition = offset;
+            seekPosition = m_seekPosition = offset;
             break;
         case Reference::END:
-            m_seekPosition = m_uncompressedSize + offset;
+            seekPosition = m_uncompressedSize + offset;
             break;
         }
-        //we can't seek beyond the end of the uncompressed stream
-        m_seekPosition = min(m_seekPosition, m_uncompressedSize);
-        m_inflateBufferSeekPosition = 0;
-        Cleanup();
+        
+        // Can't seek beyond the end of the uncompressed stream
+        seekPosition = min(m_seekPosition, m_uncompressedSize);
+
+        if (seekPosition != m_seekPosition)
+        {
+            m_seekPosition = seekPosition;
+            // If the caller is trying to seek back to an earlier
+            // point in the inflated stream, we will need to reset
+            // zlib and start inflating from the beginning of the
+            // stream; otherwise, seeking forward is fine: We will 
+            // catch up to the seek pointer during the ::Read operation.
+            if (m_seekPosition < m_inflateBufferSeekPosition)
+            {
+                m_inflateBufferSeekPosition = 0;
+                Cleanup();
+            }
+        }
+
     }
 
     int InflateStream::Ferror()
