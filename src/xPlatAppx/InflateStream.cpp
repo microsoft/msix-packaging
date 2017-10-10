@@ -1,45 +1,132 @@
-
+#include "Exceptions.hpp"
 #include "ZipFileStream.hpp"
 #include "InflateStream.hpp"
 #include "StreamBase.hpp"
 
+#include <tuple>
+
 #include <limits>
 #include <algorithm>
-
-#define STATE_UNINITIALIZED               0
-#define STATE_COULD_NOT_INITIALIZE        1
-#define STATE_READY_TO_READ               2
-#define STATE_IO_ERROR_DURING_READ        3
-#define STATE_READY_TO_INFLATE            4
-#define STATE_ZLIB_ERROR_DURING_INFLATE   5
-#define STATE_READY_TO_COPY               6
-#define STATE_CLEANUP                     9
-#define STATE_EXIT                       10
-
-#ifdef WIN32
-#define Assert(a) {if (!(a)) MessageBoxA(GetTopWindow(nullptr), #a, "Assert", MB_OK);}
-#else
-#define Assert(a) 
-#endif
+#include <cassert>
 
 namespace xPlat {
 
+    class InflateException : public ExceptionBase
+    {
+    public:
+        InflateException() : ExceptionBase(ExceptionBase::SubFacility::INFLATE) { assert(false); }
+    };
+
+    #define Assert(a) {if (!(a)) throw InflateException();}
+
     InflateStream::InflateStream(
         std::shared_ptr<StreamBase> stream,
-        std::uint64_t compressedSize,
         std::uint64_t uncompressedSize
-    ) : m_stream(stream)
+    ) : m_stream(stream),
+        m_state(State::UNINITIALIZED),
+        m_uncompressedSize(uncompressedSize)
     {
-        m_state = STATE_UNINITIALIZED;
-        m_compressedSize = compressedSize;
-        m_uncompressedSize = uncompressedSize;
+        m_zstrm = {0};
+        m_stateMachine =
+        {
+            { State::CLEANUP, [&](std::size_t, const std::uint8_t*)
+                {
+                    Cleanup();
+                    return std::make_pair(false, State::UNINITIALIZED);
+                }
+            }, // State::CLEANUP
+            { State::UNINITIALIZED , [&](std::size_t, const std::uint8_t*)
+                {
+                    m_zstrm = { 0 };
+                    m_inflateBufferSeekPosition = 0;
+
+                    int ret = inflateInit2(&m_zstrm, -MAX_WBITS);
+                    if (ret != Z_OK) { throw InflateException(); }
+                    return std::make_pair(true, State::READY_TO_READ);
+                }
+            }, // State::UNINITIALIZED
+            { State::READY_TO_READ , [&](std::size_t, const std::uint8_t*)
+                {
+                    m_zstrm.avail_in = m_stream->Read(InflateStream::BUFFERSIZE, m_compressedBuffer);
+                    m_zstrm.next_in = m_compressedBuffer;
+                    return std::make_pair(true, State::READY_TO_INFLATE);
+                }
+            }, // State::READY_TO_READ
+            { State::READY_TO_INFLATE, [&](std::size_t, const std::uint8_t*)
+                {
+                    m_zstrm.avail_out = InflateStream::BUFFERSIZE;
+                    m_zstrm.next_out = m_inflateBuffer;
+                    m_zret = inflate(&m_zstrm, Z_NO_FLUSH);
+                    switch (m_zret)
+                    {
+                    case Z_NEED_DICT:
+                    case Z_DATA_ERROR:
+                    case Z_MEM_ERROR:
+                        Cleanup();
+                        throw xPlat::InflateException();
+                    case Z_STREAM_END:
+                    default:
+                        return std::make_pair(true, State::READY_TO_COPY);
+                    }
+                }
+            }, // State::READY_TO_INFLATE
+            { State::READY_TO_COPY , [&](std::size_t cbReadBuffer, const std::uint8_t* readBuffer)
+                {
+                    std::size_t bytesAvailable = InflateStream::BUFFERSIZE - m_zstrm.avail_out;
+                    Assert(bytesAvailable >= 0);
+                    if (bytesAvailable == 0)
+                    {   // actually at end of stream.
+                        Assert(m_zret == Z_STREAM_END);
+                        return std::make_pair(true, State::CLEANUP);
+                    }
+
+                    // If end of the inflated buffer position is less than the seek position,
+                    // we need to keep inflating until we reach the seek position
+                    if ((m_inflateBufferSeekPosition + bytesAvailable) < m_seekPosition)
+                    {
+                        m_inflateBufferSeekPosition += bytesAvailable;
+                        return std::make_pair(true, (m_zstrm.avail_out == 0) ? State::READY_TO_INFLATE : State::READY_TO_READ);
+                    }
+
+                    // Calculate the difference between the beginning of the window and the seek position.
+                    std::size_t skipBytes = (m_seekPosition - m_inflateBufferSeekPosition);
+                    std::size_t bytesToCopy = min(cbReadBuffer, bytesAvailable - skipBytes);
+                    Assert(bytesToCopy > 0);
+                    memcpy((void*)readBuffer, &m_inflateBuffer[skipBytes], bytesToCopy);
+                    readBuffer += bytesToCopy;
+                    cbReadBuffer -= bytesToCopy;
+                    m_bytesRead += bytesToCopy;
+                    m_seekPosition += bytesToCopy;
+
+                    // If there's still stuff remaining in the inflate buffer, it means the caller
+                    // didn't request all of it
+                    if ((skipBytes + bytesToCopy) < bytesAvailable)
+                    {
+                        return std::make_pair(false, State::READY_TO_COPY);
+                    }
+
+                    // We have drained the current inflate buffer. Update the window seek position.
+                    m_inflateBufferSeekPosition = m_seekPosition;
+
+                    // The caller got everything that they need for now. Return it to them.
+                    if (cbReadBuffer == 0)
+                    {
+                        return std::make_pair(false, State::READY_TO_COPY);
+                    }
+
+                    // If avail_out == 0, then there's still stuff that can be inflated; otherwise,
+                    // zlib is starved for new I/O, so we need to read the next chunk
+                    return std::make_pair(true, (m_zstrm.avail_out == 0) ? State::READY_TO_INFLATE : State::READY_TO_READ);
+                }
+            } // State::READY_TO_COPY
+        };
     }
 
     InflateStream::~InflateStream()
     {
         Cleanup();
     }
-    
+
     void InflateStream::Write(std::size_t size, const std::uint8_t* bytes)
     {
         throw NotImplementedException();
@@ -47,149 +134,21 @@ namespace xPlat {
 
     std::size_t InflateStream::Read(std::size_t cbReadBuffer, const std::uint8_t* readBuffer)
     {
-        std::size_t bytesRead = 0;
-
+        m_bytesRead = 0;
         if (m_seekPosition < m_uncompressedSize)
         {
             bool stayInLoop = true;
-            while (stayInLoop)
+            do
             {
-                switch (m_state)
-                {
-                    case STATE_UNINITIALIZED:
-                    {
-                        m_zstrm.zalloc = Z_NULL;
-                        m_zstrm.zfree = Z_NULL;
-                        m_zstrm.opaque = Z_NULL;
-                        m_zstrm.avail_in = 0;
-                        m_zstrm.next_in = Z_NULL;
-                        int ret = inflateInit2(&m_zstrm, -MAX_WBITS);
-                        m_state = (ret == Z_OK) ? STATE_READY_TO_READ : STATE_COULD_NOT_INITIALIZE;
-                        m_inflateBufferSeekPosition = 0;
-                    }
-                    break;
+                const auto& stateHandler = m_stateMachine[m_state];
+                auto&& result = stateHandler(cbReadBuffer, readBuffer);
+                stayInLoop = std::get<0>(result);
+                m_previous = m_state;
+                m_state = std::get<1>(result);
+            } while (stayInLoop);
+        }
 
-                    case STATE_COULD_NOT_INITIALIZE:
-                    {
-                        m_state = STATE_UNINITIALIZED;
-                        throw xPlat::IOException();
-                    }
-                    break;
-
-                    case STATE_READY_TO_READ:
-                    {
-                        try
-                        {
-                            m_zstrm.avail_in = m_stream->Read(InflateStream::BUFFERSIZE, m_compressedBuffer);
-                            m_zstrm.next_in = m_compressedBuffer;
-                            m_state = STATE_READY_TO_INFLATE;
-                        }
-                        catch (xPlat::ExceptionBase&)
-                        {
-                            m_state = STATE_IO_ERROR_DURING_READ;
-                        }
-                    }
-                    break;
-
-                    case STATE_IO_ERROR_DURING_READ:
-                    case STATE_ZLIB_ERROR_DURING_INFLATE:
-                    {
-                        Cleanup();
-                        throw xPlat::IOException();
-                    }
-                    break;
-
-                    case STATE_READY_TO_INFLATE:
-                    {
-                        m_zstrm.avail_out = InflateStream::BUFFERSIZE;
-                        m_zstrm.next_out = m_inflateBuffer;
-                        m_zret = inflate(&m_zstrm, Z_NO_FLUSH);
-                        switch (m_zret)
-                        {
-                            case Z_NEED_DICT:
-                            case Z_DATA_ERROR:
-                            case Z_MEM_ERROR:
-                                m_state = STATE_ZLIB_ERROR_DURING_INFLATE;
-                                break;
-                            case Z_STREAM_END:
-                            default:
-                                m_state = STATE_READY_TO_COPY;
-                                break;
-                        }
-                    }
-                    break;
-
-
-                    case STATE_READY_TO_COPY:
-                    {
-                        std::size_t bytesAvailable = InflateStream::BUFFERSIZE - m_zstrm.avail_out;
-                        if (bytesAvailable > 0)
-                        {
-                            // If end of the inflated buffer position is less than the seek position,
-                            // we need to keep inflating until we reach the seek position
-                            if ((m_inflateBufferSeekPosition + bytesAvailable) < m_seekPosition)
-                            {
-                                m_inflateBufferSeekPosition += bytesAvailable;
-                                m_state = (m_zstrm.avail_out == 0) ? STATE_READY_TO_INFLATE : STATE_READY_TO_READ;
-                            }
-                            else
-                            {
-                                std::size_t skipBytes = (m_seekPosition - m_inflateBufferSeekPosition);
-                                std::size_t bytesToCopy = min(cbReadBuffer, bytesAvailable - skipBytes);
-                                Assert(bytesToCopy > 0);
-                                memcpy((void*)readBuffer, &m_inflateBuffer[skipBytes], bytesToCopy);
-                                readBuffer += bytesToCopy;
-                                cbReadBuffer -= bytesToCopy;
-                                bytesRead += bytesToCopy;
-                                m_seekPosition += bytesToCopy;
-
-                                // If there's still stuff remaining in the inflate buffer, it means the caller
-                                // didn't request all of it
-                                if ((skipBytes + bytesToCopy) < bytesAvailable)
-                                {
-                                    stayInLoop = false;
-                                }
-                                else
-                                {
-                                    // We have drained the current inflate buffer. Update the window seek position.
-                                    m_inflateBufferSeekPosition = m_seekPosition;
-                                    // If avail_out == 0, then there's still stuff that can be inflated; otherwise,
-                                    // zlib is starved for new I/O, so we need to read the next chunk
-                                    m_state = (m_zstrm.avail_out == 0) ? STATE_READY_TO_INFLATE : STATE_READY_TO_READ;
-                                    // The caller got everything that they need for now. Return it to them.
-                                    if (cbReadBuffer == 0)
-                                    {
-                                        stayInLoop = false;
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            Assert(m_zret == Z_STREAM_END);
-                            m_state = (m_zret == Z_STREAM_END) ? STATE_CLEANUP : STATE_READY_TO_READ;
-                        }
-                    }
-                    break;
-
-                    case STATE_CLEANUP:
-                    {
-                        Cleanup();
-                        stayInLoop = false;
-                    }
-                    break;
-
-                    default:
-                    {
-                        Assert(false);
-                    }
-                    break;
-
-               } //switch
-            } //while
-        } //if    
-
-        return bytesRead;      
+        return m_bytesRead;
     }
 
     void InflateStream::Seek(std::uint64_t offset, Reference where)
@@ -245,12 +204,11 @@ namespace xPlat {
 
     void InflateStream::Cleanup()
     {
-        if (m_state != STATE_UNINITIALIZED)
+        if (m_state != State::UNINITIALIZED)
         {
             inflateEnd(&m_zstrm);
-            m_state = STATE_UNINITIALIZED;
+            m_state = State::UNINITIALIZED;
         }
     }
-
 } /* xPlat */
 

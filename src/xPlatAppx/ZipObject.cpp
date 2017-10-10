@@ -838,7 +838,7 @@ namespace xPlat {
 
             if (zipFileStream->IsCompressed())
             {
-                auto inflateStream = std::make_shared<InflateStream>(zipFileStream, zipFileStream->GetCompressedSize(), zipFileStream->GetUncompressedSize());
+                auto inflateStream = std::make_shared<InflateStream>(zipFileStream, zipFileStream->GetUncompressedSize());
                 m_streams.insert(std::make_pair(
                     centralFileHeader.second->GetFileName(),
                     inflateStream));
