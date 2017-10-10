@@ -10,12 +10,17 @@
 #define STATE_COULD_NOT_INITIALIZE        1
 #define STATE_READY_TO_READ               2
 #define STATE_IO_ERROR_DURING_READ        3
-#define STATE_COMPRESSED_DATA_READ        4
+#define STATE_READY_TO_INFLATE            4
 #define STATE_ZLIB_ERROR_DURING_INFLATE   5
-#define STATE_UNCOMPRESSED_DATA_AVAILABLE 6
-#define STATE_END_OF_COMPRESSED_STREAM    7
-#define STATE_UNCOMPRESSED_DATA_WRITTEN   8
-#define STATE_NO_MORE_DATA                9
+#define STATE_READY_TO_COPY               6
+#define STATE_CLEANUP                     9
+#define STATE_EXIT                       10
+
+#ifdef WIN32
+#define Assert(a) {if (!(a)) MessageBoxA(HWND_DESKTOP, #a, "Assert", MB_OK);}
+#else
+#define Assert(a) 
+#endif
 
 namespace xPlat {
 
@@ -26,111 +31,165 @@ namespace xPlat {
     ) : m_stream(stream)
     {
         m_state = STATE_UNINITIALIZED;
+        m_compressedSize = compressedSize;
+        m_uncompressedSize = uncompressedSize;
     }
 
+    InflateStream::~InflateStream()
+    {
+        if (m_state != STATE_UNINITIALIZED)
+        {
+            inflateEnd(&m_zstrm);
+            m_state = STATE_UNINITIALIZED;
+        }
+    }
+    
     void InflateStream::Write(std::size_t size, const std::uint8_t* bytes)
     {
         throw NotImplementedException();
     }
 
-    std::size_t InflateStream::Read(std::size_t size, const std::uint8_t* bytes)
+    std::size_t InflateStream::Read(std::size_t cbReadBuffer, const std::uint8_t* readBuffer)
     {
         std::size_t bytesRead = 0;
 
-        while (m_state != STATE_NO_MORE_DATA)
+        if (m_seekPosition < m_uncompressedSize)
         {
-            switch (m_state)
+            bool stayInLoop = true;
+            while (stayInLoop)
             {
-                case STATE_UNINITIALIZED:
+                switch (m_state)
                 {
-                    m_offsetOfUncompressedWindow = 0;
-                    memset(&m_zstrm, 0, sizeof(m_zstrm));
-                    m_zstrm.zalloc = Z_NULL;
-                    m_zstrm.zfree = Z_NULL;
-                    m_zstrm.opaque = Z_NULL;
-                    m_zstrm.avail_in = 0;
-                    m_zstrm.next_in = Z_NULL;
-                    int ret = inflateInit(&m_zstrm);
-                    m_state = (ret == Z_OK) ? STATE_READY_TO_READ : STATE_COULD_NOT_INITIALIZE;
-                }
-                break;
-
-                case STATE_COULD_NOT_INITIALIZE:
-                {
-                    m_state = STATE_UNINITIALIZED;
-                    throw xPlat::IOException();
-                }
-                break;
-
-               case STATE_READY_TO_READ:
-                {
-                    try
+                    case STATE_UNINITIALIZED:
                     {
-                        m_zstrm.avail_in = m_stream->Read(InflateStream::BUFFERSIZE, m_compressedBuffer);
-                        m_zstrm.next_in = m_compressedBuffer;
-                        m_state = (m_zstrm.avail_in == 0) ? STATE_NO_MORE_DATA : STATE_COMPRESSED_DATA_READ;                       
+                        m_zstrm.zalloc = Z_NULL;
+                        m_zstrm.zfree = Z_NULL;
+                        m_zstrm.opaque = Z_NULL;
+                        m_zstrm.avail_in = 0;
+                        m_zstrm.next_in = Z_NULL;
+                        int ret = inflateInit2(&m_zstrm, -MAX_WBITS);
+                        m_state = (ret == Z_OK) ? STATE_READY_TO_READ : STATE_COULD_NOT_INITIALIZE;
+                        m_inflateBufferSeekPosition = 0;
                     }
-                    catch (xPlat::ExceptionBase&)
+                    break;
+
+                    case STATE_COULD_NOT_INITIALIZE:
                     {
-                        m_state = STATE_IO_ERROR_DURING_READ;
+                        m_state = STATE_UNINITIALIZED;
+                        throw xPlat::IOException();
                     }
-                }
-                break;
+                    break;
 
-                case STATE_IO_ERROR_DURING_READ:
-                case STATE_ZLIB_ERROR_DURING_INFLATE:
-                {
-                    inflateEnd(&m_zstrm);
-                    m_state = STATE_UNINITIALIZED;
-                    throw xPlat::IOException();
-                }
-                break;
-                
-                case STATE_COMPRESSED_DATA_READ:
-                {
-                    m_zstrm.avail_out = InflateStream::BUFFERSIZE;
-                    m_zstrm.next_out = m_uncompressedBuffer;
-                    m_zret = inflate(&m_zstrm, Z_NO_FLUSH);
-                    switch (m_zret)
+                    case STATE_READY_TO_READ:
                     {
-                        case Z_NEED_DICT:
-                        case Z_DATA_ERROR:
-                        case Z_MEM_ERROR:
-                            m_state = STATE_ZLIB_ERROR_DURING_INFLATE;
-                            break;
-                        case Z_STREAM_END:
-                            //TODO
-                            break;
-                        default:
-                            std::size_t bytesAvailable = InflateStream::BUFFERSIZE - m_zstrm.avail_out;
-                            m_state = (bytesAvailable > 0) ? STATE_UNCOMPRESSED_DATA_AVAILABLE : STATE_COMPRESSED_DATA_READ;
-                            break;
+                        try
+                        {
+                            m_zstrm.avail_in = m_stream->Read(InflateStream::BUFFERSIZE, m_compressedBuffer);
+                            m_zstrm.next_in = m_compressedBuffer;
+                            m_state = STATE_READY_TO_INFLATE;
+                        }
+                        catch (xPlat::ExceptionBase&)
+                        {
+                            m_state = STATE_IO_ERROR_DURING_READ;
+                        }
                     }
-                }
-                break;
+                    break;
 
-                case STATE_UNCOMPRESSED_DATA_AVAILABLE:
-                {
-                    std::size_t bytesAvailable = InflateStream::BUFFERSIZE - m_zstrm.avail_out;
-                    std::uint64_t offsetOfEndUncompressedWindow = (m_offsetOfUncompressedWindow + bytesAvailable);
-                    if (offsetOfEndUncompressedWindow < m_seekPosition)
+                    case STATE_IO_ERROR_DURING_READ:
+                    case STATE_ZLIB_ERROR_DURING_INFLATE:
                     {
-                        m_offsetOfUncompressedWindow += bytesAvailable;
-                        m_state = STATE_COMPRESSED_DATA_READ;
+                        inflateEnd(&m_zstrm);
+                        m_state = STATE_UNINITIALIZED;
+                        throw xPlat::IOException();
                     }
-                    else
-                    if (m_offsetOfUncompressedWindow < m_seekPosition)
+                    break;
+
+                    case STATE_READY_TO_INFLATE:
                     {
-                        std::size_t bytesToCopy = min((size - bytesRead), bytesAvailable);
+                        m_zstrm.avail_out = InflateStream::BUFFERSIZE;
+                        m_zstrm.next_out = m_inflateBuffer;
+                        m_zret = inflate(&m_zstrm, Z_NO_FLUSH);
+                        switch (m_zret)
+                        {
+                            case Z_NEED_DICT:
+                            case Z_DATA_ERROR:
+                            case Z_MEM_ERROR:
+                                m_state = STATE_ZLIB_ERROR_DURING_INFLATE;
+                                break;
+                            case Z_STREAM_END:
+                            default:
+                                m_state = STATE_READY_TO_COPY;
+                                break;
+                        }
                     }
-                }
-                break;
+                    break;
 
 
+                    case STATE_READY_TO_COPY:
+                    {
+                        std::size_t bytesAvailable = InflateStream::BUFFERSIZE - m_zstrm.avail_out;
+                        if (bytesAvailable > 0)
+                        {
+                            // If end of the inflated buffer position is less than the seek position,
+                            // we need to keep inflating until we reach the seek position
+                            if ((m_inflateBufferSeekPosition + bytesAvailable) < m_seekPosition)
+                            {
+                                m_inflateBufferSeekPosition += bytesAvailable;
+                                m_state = (m_zstrm.avail_out == 0) ? STATE_READY_TO_INFLATE : STATE_READY_TO_READ;
+                            }
+                            else
+                            {
+                                std::size_t skipBytes = (m_seekPosition - m_inflateBufferSeekPosition);
+                                std::size_t bytesToCopy = min(cbReadBuffer, bytesAvailable - skipBytes);
+                                Assert(bytesToCopy > 0);
+                                memcpy((void*)readBuffer, &m_inflateBuffer[skipBytes], bytesToCopy);
+                                readBuffer += bytesToCopy;
+                                cbReadBuffer -= bytesToCopy;
+                                bytesRead += bytesToCopy;
+                                m_seekPosition += bytesToCopy;
 
+                                // If there's still stuff remaining in the inflate buffer
+                                if ((skipBytes + bytesToCopy) < bytesAvailable)
+                                {
+                                    stayInLoop = false;
+                                }
+                                else
+                                {
+                                    m_inflateBufferSeekPosition = m_seekPosition;
+                                    m_state = (m_zstrm.avail_out == 0) ? STATE_READY_TO_INFLATE : STATE_READY_TO_READ;
+                                    if (cbReadBuffer == 0)
+                                    {
+                                        stayInLoop = false;
+                                    }
+                                }
+                            }
+                        }
+                        else
+                        {
+                            Assert(m_zret == Z_STREAM_END);
+                            m_state = (m_zret == Z_STREAM_END) ? STATE_CLEANUP : STATE_READY_TO_READ;
+                        }
+                    }
+                    break;
 
-            }
-        }
+                    case STATE_CLEANUP:
+                    {
+                        inflateEnd(&m_zstrm);
+                        m_state = STATE_UNINITIALIZED;
+                        stayInLoop = false;
+                    }
+                    break;
+
+                    default:
+                    {
+                        Assert(false);
+                    }
+                    break;
+
+               } //switch
+            } //while
+        } //if    
+
         return bytesRead;      
     }
 
@@ -148,6 +207,11 @@ namespace xPlat {
             m_seekPosition = m_uncompressedSize + offset;
             break;
         }
+        //we can't seek beyond the end of the uncompressed stream
+        m_seekPosition = min(m_seekPosition, m_uncompressedSize);
+        m_inflateBufferSeekPosition = 0;
+        inflateEnd(&m_zstrm);
+        m_state = STATE_UNINITIALIZED;
     }
 
     int InflateStream::Ferror()
@@ -166,71 +230,4 @@ namespace xPlat {
     }
 
 } /* xPlat */
-
-#define CHUNK 4096
-#define assert(a) {;}
-
-int inf(FILE *source, FILE *dest)
-{
-    int ret;
-    unsigned have;
-    z_stream strm;
-    unsigned char in[CHUNK];
-    unsigned char out[CHUNK];
-    
-    /* allocate inflate state */
-    strm.zalloc = Z_NULL;
-    strm.zfree = Z_NULL;
-    strm.opaque = Z_NULL;
-    strm.avail_in = 0;
-    strm.next_in = Z_NULL;
-    ret = inflateInit(&strm);
-    if (ret != Z_OK)
-        return ret;
-    
-    /* decompress until deflate stream ends or end of file */
-    do 
-    {
-        strm.avail_in = fread(in, 1, CHUNK, source);
-        if (ferror(source))
-        {
-            (void)inflateEnd(&strm);
-            return Z_ERRNO;
-        }
-        if (strm.avail_in == 0)
-            break;
-        strm.next_in = in;
-    
-        /* run inflate() on input until output buffer not full */
-        do {
-    
-            strm.avail_out = CHUNK;
-            strm.next_out = out;
-            
-            ret = inflate(&strm, Z_NO_FLUSH);
-            assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
-            switch (ret) 
-            {
-                case Z_NEED_DICT:
-                    ret = Z_DATA_ERROR;     /* and fall through */
-                case Z_DATA_ERROR:
-                case Z_MEM_ERROR:
-                    (void)inflateEnd(&strm);
-                    return ret;
-            }
-            
-            have = CHUNK - strm.avail_out;
-            if (fwrite(out, 1, have, dest) != have || ferror(dest)) {
-                (void)inflateEnd(&strm);
-                return Z_ERRNO;
-            }
-        } 
-        while (strm.avail_out == 0);
-    } 
-    while (ret != Z_STREAM_END); /* done when inflate() says it's done */
-
-    /* clean up and return */
-    (void)inflateEnd(&strm);
-    return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
-}
 

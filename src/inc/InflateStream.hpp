@@ -26,6 +26,8 @@ namespace xPlat {
             std::uint64_t uncompressedSize
         );
 
+        ~InflateStream() override;
+
         void Write(std::size_t size, const std::uint8_t* bytes) override;
         std::size_t Read(std::size_t size, const std::uint8_t* bytes) override;
         void Seek(std::uint64_t offset, Reference where) override;
@@ -44,8 +46,8 @@ namespace xPlat {
         std::uint8_t m_state;
         z_stream m_zstrm;
         int m_zret;
-        std::uint8_t m_compressedBuffer[InflateStream::BUFFERSIZE];
-        std::uint8_t  m_uncompressedBuffer[InflateStream::BUFFERSIZE];
-        std::uint64_t m_offsetOfUncompressedWindow;
+        std::uint8_t  m_compressedBuffer[InflateStream::BUFFERSIZE];
+        std::uint8_t  m_inflateBuffer[InflateStream::BUFFERSIZE];
+        std::uint64_t m_inflateBufferSeekPosition = 0;
     };
 }

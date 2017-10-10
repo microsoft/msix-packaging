@@ -66,6 +66,7 @@ XPLATAPPX_API unsigned int UnpackAppx(char* from, char* to)
                 auto targetFile = directory.OpenFile(fileName, xPlat::FileStream::Mode::WRITE_UPDATE);
 
                 sourceFile->CopyTo(targetFile.get());
+                targetFile->Close();
             }
         }
     });
