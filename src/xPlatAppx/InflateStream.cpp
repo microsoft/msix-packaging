@@ -17,7 +17,7 @@
 #define STATE_EXIT                       10
 
 #ifdef WIN32
-#define Assert(a) {if (!(a)) MessageBoxA(HWND_DESKTOP, #a, "Assert", MB_OK);}
+#define Assert(a) {if (!(a)) MessageBoxA(GetTopWindow(nullptr), #a, "Assert", MB_OK);}
 #else
 #define Assert(a) 
 #endif
@@ -37,11 +37,7 @@ namespace xPlat {
 
     InflateStream::~InflateStream()
     {
-        if (m_state != STATE_UNINITIALIZED)
-        {
-            inflateEnd(&m_zstrm);
-            m_state = STATE_UNINITIALIZED;
-        }
+        Cleanup();
     }
     
     void InflateStream::Write(std::size_t size, const std::uint8_t* bytes)
@@ -98,8 +94,7 @@ namespace xPlat {
                     case STATE_IO_ERROR_DURING_READ:
                     case STATE_ZLIB_ERROR_DURING_INFLATE:
                     {
-                        inflateEnd(&m_zstrm);
-                        m_state = STATE_UNINITIALIZED;
+                        Cleanup();
                         throw xPlat::IOException();
                     }
                     break;
@@ -148,15 +143,20 @@ namespace xPlat {
                                 bytesRead += bytesToCopy;
                                 m_seekPosition += bytesToCopy;
 
-                                // If there's still stuff remaining in the inflate buffer
+                                // If there's still stuff remaining in the inflate buffer, it means the caller
+                                // didn't request all of it
                                 if ((skipBytes + bytesToCopy) < bytesAvailable)
                                 {
                                     stayInLoop = false;
                                 }
                                 else
                                 {
+                                    // We have drained the current inflate buffer. Update the window seek position.
                                     m_inflateBufferSeekPosition = m_seekPosition;
+                                    // If avail_out == 0, then there's still stuff that can be inflated; otherwise,
+                                    // zlib is starved for new I/O, so we need to read the next chunk
                                     m_state = (m_zstrm.avail_out == 0) ? STATE_READY_TO_INFLATE : STATE_READY_TO_READ;
+                                    // The caller got everything that they need for now. Return it to them.
                                     if (cbReadBuffer == 0)
                                     {
                                         stayInLoop = false;
@@ -174,8 +174,7 @@ namespace xPlat {
 
                     case STATE_CLEANUP:
                     {
-                        inflateEnd(&m_zstrm);
-                        m_state = STATE_UNINITIALIZED;
+                        Cleanup();
                         stayInLoop = false;
                     }
                     break;
@@ -210,8 +209,7 @@ namespace xPlat {
         //we can't seek beyond the end of the uncompressed stream
         m_seekPosition = min(m_seekPosition, m_uncompressedSize);
         m_inflateBufferSeekPosition = 0;
-        inflateEnd(&m_zstrm);
-        m_state = STATE_UNINITIALIZED;
+        Cleanup();
     }
 
     int InflateStream::Ferror()
@@ -227,6 +225,15 @@ namespace xPlat {
     std::uint64_t InflateStream::Ftell()
     {
         return m_seekPosition;
+    }
+
+    void InflateStream::Cleanup()
+    {
+        if (m_state != STATE_UNINITIALIZED)
+        {
+            inflateEnd(&m_zstrm);
+            m_state = STATE_UNINITIALIZED;
+        }
     }
 
 } /* xPlat */

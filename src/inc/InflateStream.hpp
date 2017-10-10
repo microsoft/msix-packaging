@@ -37,6 +37,7 @@ namespace xPlat {
 
     protected:
         static const unsigned int BUFFERSIZE = 4096;
+        void Cleanup();
 
         std::uint64_t m_seekPosition = 0;
         std::shared_ptr<StreamBase> m_stream;
