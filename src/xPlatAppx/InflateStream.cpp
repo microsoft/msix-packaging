@@ -55,7 +55,6 @@ namespace xPlat {
             }, // State::READY_TO_READ
             { State::READY_TO_INFLATE, [&](std::size_t, const std::uint8_t*)
                 {
-                    memset(m_inflateWindow, 0, InflateStream::BUFFERSIZE);
                     m_inflateWindowPosition = 0;
                     m_zstrm.avail_out = InflateStream::BUFFERSIZE;
                     m_zstrm.next_out = m_inflateWindow;
