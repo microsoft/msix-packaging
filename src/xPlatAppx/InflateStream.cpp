@@ -55,6 +55,7 @@ namespace xPlat {
             }, // State::READY_TO_READ
             { State::READY_TO_INFLATE, [&](std::size_t, const std::uint8_t*)
                 {
+                    memset(m_inflateWindow, 0, InflateStream::BUFFERSIZE);
                     m_inflateWindowPosition = 0;
                     m_zstrm.avail_out = InflateStream::BUFFERSIZE;
                     m_zstrm.next_out = m_inflateWindow;
@@ -68,7 +69,7 @@ namespace xPlat {
                         throw xPlat::InflateException();
                     case Z_STREAM_END:
                     default:
-                        m_fileCurrentWindowPositionEnd += InflateStream::BUFFERSIZE;
+                        m_fileCurrentWindowPositionEnd += (InflateStream::BUFFERSIZE - m_zstrm.avail_out);
                         return std::make_pair(true, State::READY_TO_COPY);
                     }
                 }
@@ -84,8 +85,8 @@ namespace xPlat {
                     // If the end of the current window position is less than the seek position, keep inflating
                     if (m_fileCurrentWindowPositionEnd < m_seekPosition)
                     {
-                        m_fileCurrentPosition += InflateStream::BUFFERSIZE;
-                        return std::make_pair(true, (m_zstrm.avail_out == 0) ? State::READY_TO_READ : State::READY_TO_INFLATE);
+                        m_fileCurrentPosition += m_zstrm.avail_out;
+                        return std::make_pair(true, (m_zstrm.avail_in == 0) ? State::READY_TO_READ : State::READY_TO_INFLATE);
                     }
 
                     // now that we're within the window between current file position and seek position
@@ -95,7 +96,7 @@ namespace xPlat {
 
                     // Calculate the difference between the beginning of the window and the seek position.
                     // if there's nothing left in the window to copy, then we need to fetch another window.
-                    std::size_t bytesRemainingInWindow = InflateStream::BUFFERSIZE - m_inflateWindowPosition;
+                    std::size_t bytesRemainingInWindow = (InflateStream::BUFFERSIZE - m_zstrm.avail_out) - m_inflateWindowPosition;
                     if (bytesRemainingInWindow == 0)
                     {
                         return std::make_pair(true, (m_zstrm.avail_in == 0) ? State::READY_TO_READ : State::READY_TO_INFLATE);
@@ -111,12 +112,6 @@ namespace xPlat {
                         m_seekPosition          += bytesToCopy;
                         m_inflateWindowPosition += bytesToCopy;
                         m_fileCurrentPosition   += bytesToCopy;
-                    }
-
-                    // If the caller's buffer isn't full and there's still window left to read, keep copying.
-                    if (cbReadBuffer > 0)
-                    {
-                        return std::make_pair(true, State::READY_TO_COPY);
                     }
 
                     return std::make_pair(false, State::READY_TO_COPY);

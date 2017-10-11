@@ -93,6 +93,11 @@ namespace xPlat {
             offset = Ftell();
         }
 
+        virtual void Flush() override
+        {
+            std::fflush(file);
+        }
+
         virtual std::uint64_t Ftell() override
         {
             auto result = ftell(file);
