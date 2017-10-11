@@ -837,7 +837,7 @@ namespace xPlat {
 
             if (localFileHeader->GetCompressionType() == CompressionType::Deflate)
             {
-                fileStream = std::make_shared<InflateStream>(std::move(fileStream), localFileHeader->GetCompressedSize(), localFileHeader->GetUncompressedSize());
+                fileStream = std::make_shared<InflateStream>(std::move(fileStream), localFileHeader->GetUncompressedSize());
             }
 
             m_streams.insert(std::make_pair(centralFileHeader.second->GetFileName(), fileStream));
