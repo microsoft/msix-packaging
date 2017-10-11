@@ -7,8 +7,12 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "StreamBase.hpp"
+#ifdef PLATFORM_APPLE
+#include <zlib.h>
+#else
 #include "..\..\lib\zlib\zlib.h"
-//TODO: this is annoying
+#endif
+
 #undef max
 #include <string>
 
