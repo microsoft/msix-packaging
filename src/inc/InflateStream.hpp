@@ -53,16 +53,19 @@ namespace xPlat {
         State m_previous = State::UNINITIALIZED;
         State m_state = State::UNINITIALIZED;
         std::map<State, std::function<std::tuple<bool, State>(std::size_t cbReadBuffer, const std::uint8_t* readBuffer)>> m_stateMachine;
-        std::size_t m_bytesRead = 0;
 
-        std::uint64_t m_seekPosition = 0;
+        std::uint64_t               m_seekPosition = 0;
         std::shared_ptr<StreamBase> m_stream;
-        std::uint64_t m_uncompressedSize;
+        std::uint64_t               m_uncompressedSize;
+        std::size_t                 m_bytesRead = 0;
 
         z_stream m_zstrm;
         int m_zret;
         std::uint8_t  m_compressedBuffer[InflateStream::BUFFERSIZE];
-        std::uint8_t  m_inflateBuffer[InflateStream::BUFFERSIZE];
-        std::uint64_t m_inflateBufferSeekPosition = 0;
+        std::uint8_t  m_inflateWindow[InflateStream::BUFFERSIZE];
+        std::size_t   m_inflateWindowPosition = 0;
+
+        std::uint64_t m_fileCurrentWindowPositionEnd = 0;
+        std::uint64_t m_fileCurrentPosition = 0;
     };
 }
