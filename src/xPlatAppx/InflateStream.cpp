@@ -103,7 +103,7 @@ namespace xPlat {
                         return std::make_pair(true, (m_zstrm.avail_in == 0) ? State::READY_TO_READ : State::READY_TO_INFLATE);
                     }
 
-                    std::size_t bytesToCopy = min(cbReadBuffer, bytesRemainingInWindow);
+                    std::size_t bytesToCopy = std::min(cbReadBuffer, bytesRemainingInWindow);
                     if (bytesToCopy > 0)
                     {
                         memcpy((void*)readBuffer, &(m_inflateWindow[m_inflateWindowPosition]), bytesToCopy);
@@ -167,7 +167,7 @@ namespace xPlat {
         }
         
         // Can't seek beyond the end of the uncompressed stream
-        seekPosition = min(m_seekPosition, m_uncompressedSize);
+        seekPosition = std::min(m_seekPosition, m_uncompressedSize);
 
         if (seekPosition != m_seekPosition)
         {
