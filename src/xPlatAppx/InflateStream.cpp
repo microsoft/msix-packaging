@@ -121,7 +121,7 @@ namespace xPlat {
                     else
                     if (m_offsetOfUncompressedWindow < m_seekPosition)
                     {
-                        std::size_t bytesToCopy = min((size - bytesRead), bytesAvailable);
+                        std::size_t bytesToCopy = std::min((size - bytesRead), bytesAvailable);
                     }
                 }
                 break;

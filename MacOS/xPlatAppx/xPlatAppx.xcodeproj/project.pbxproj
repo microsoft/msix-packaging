@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A6B2FF01F8EB9D700D058AB /* ZipFileStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B2FEF1F8EB9D700D058AB /* ZipFileStream.cpp */; };
+		4A6B2FF21F8EB9EF00D058AB /* InflateStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B2FF11F8EB9EF00D058AB /* InflateStream.cpp */; };
+		4A6B2FF41F8EB9FF00D058AB /* DirectoryObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B2FF31F8EB9FF00D058AB /* DirectoryObject.cpp */; };
+		4A6B2FF61F8EBA0C00D058AB /* DirectoryObject.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4A6B2FF51F8EBA0C00D058AB /* DirectoryObject.hpp */; };
+		4A6B2FF81F8EBA1400D058AB /* InflateStream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4A6B2FF71F8EBA1400D058AB /* InflateStream.hpp */; };
+		4A6B2FFA1F8EBA1B00D058AB /* StorageObject.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4A6B2FF91F8EBA1B00D058AB /* StorageObject.hpp */; };
+		4A6B30171F8EC26400D058AB /* libz.1.2.8.tbd in Frameworks */ = {isa = PBXBuildFile; fileRef = 4A6B30161F8EC26400D058AB /* libz.1.2.8.tbd */; };
 		7B5F64AD1F7F824B009387FB /* Base64Stream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F649D1F7F824B009387FB /* Base64Stream.hpp */; };
 		7B5F64AE1F7F824B009387FB /* CRC32Stream.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F649E1F7F824B009387FB /* CRC32Stream.hpp */; };
 		7B5F64AF1F7F824B009387FB /* Exceptions.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 7B5F649F1F7F824B009387FB /* Exceptions.hpp */; };
@@ -25,6 +32,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4A6B2FEF1F8EB9D700D058AB /* ZipFileStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZipFileStream.cpp; sourceTree = "<group>"; };
+		4A6B2FF11F8EB9EF00D058AB /* InflateStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InflateStream.cpp; sourceTree = "<group>"; };
+		4A6B2FF31F8EB9FF00D058AB /* DirectoryObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DirectoryObject.cpp; path = PAL/FileSystem/FTS/DirectoryObject.cpp; sourceTree = "<group>"; };
+		4A6B2FF51F8EBA0C00D058AB /* DirectoryObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = DirectoryObject.hpp; sourceTree = "<group>"; };
+		4A6B2FF71F8EBA1400D058AB /* InflateStream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = InflateStream.hpp; sourceTree = "<group>"; };
+		4A6B2FF91F8EBA1B00D058AB /* StorageObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = StorageObject.hpp; sourceTree = "<group>"; };
+		4A6B30131F8EC1B300D058AB /* com~apple~CloudDocs */ = {isa = PBXFileReference; lastKnownFileType = folder; name = "com~apple~CloudDocs"; path = "../../../../../Library/Mobile Documents/com~apple~CloudDocs"; sourceTree = "<group>"; };
+		4A6B30161F8EC26400D058AB /* libz.1.2.8.tbd */ = {isa = PBXFileReference; lastKnownFileType = "sourcecode.text-based-dylib-definition"; name = libz.1.2.8.tbd; path = usr/lib/libz.1.2.8.tbd; sourceTree = SDKROOT; };
 		7B5F648A1F7F807B009387FB /* libxPlatAppx.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libxPlatAppx.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		7B5F649D1F7F824B009387FB /* Base64Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = Base64Stream.hpp; sourceTree = "<group>"; };
 		7B5F649E1F7F824B009387FB /* CRC32Stream.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = CRC32Stream.hpp; sourceTree = "<group>"; };
@@ -48,17 +63,28 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A6B30171F8EC26400D058AB /* libz.1.2.8.tbd in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4A6B30121F8EC1B300D058AB /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4A6B30161F8EC26400D058AB /* libz.1.2.8.tbd */,
+				4A6B30131F8EC1B300D058AB /* com~apple~CloudDocs */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		7B5F64811F7F807B009387FB = {
 			isa = PBXGroup;
 			children = (
 				7B5F649B1F7F8226009387FB /* Source */,
 				7B5F648B1F7F807B009387FB /* Products */,
+				4A6B30121F8EC1B300D058AB /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
@@ -82,6 +108,9 @@
 		7B5F649C1F7F824B009387FB /* inc */ = {
 			isa = PBXGroup;
 			children = (
+				4A6B2FF91F8EBA1B00D058AB /* StorageObject.hpp */,
+				4A6B2FF71F8EBA1400D058AB /* InflateStream.hpp */,
+				4A6B2FF51F8EBA0C00D058AB /* DirectoryObject.hpp */,
 				EE2E65D61F833E2D0070D4E4 /* ZipObject.hpp */,
 				7B5F649D1F7F824B009387FB /* Base64Stream.hpp */,
 				7B5F649E1F7F824B009387FB /* CRC32Stream.hpp */,
@@ -103,6 +132,9 @@
 		7B5F64AA1F7F824B009387FB /* xPlatAppx */ = {
 			isa = PBXGroup;
 			children = (
+				4A6B2FF31F8EB9FF00D058AB /* DirectoryObject.cpp */,
+				4A6B2FF11F8EB9EF00D058AB /* InflateStream.cpp */,
+				4A6B2FEF1F8EB9D700D058AB /* ZipFileStream.cpp */,
 				EE2E65D81F833E460070D4E4 /* ZipObject.cpp */,
 				7B5F64AB1F7F824B009387FB /* xPlatAppx.cpp */,
 			);
@@ -119,11 +151,14 @@
 			files = (
 				7B5F64B51F7F824B009387FB /* SHA256Stream.hpp in Headers */,
 				7B5F64B01F7F824B009387FB /* FileStream.hpp in Headers */,
+				4A6B2FF81F8EBA1400D058AB /* InflateStream.hpp in Headers */,
+				4A6B2FFA1F8EBA1B00D058AB /* StorageObject.hpp in Headers */,
 				7B5F64AF1F7F824B009387FB /* Exceptions.hpp in Headers */,
 				EE2E65D71F833E2D0070D4E4 /* ZipObject.hpp in Headers */,
 				7B5F64B71F7F824B009387FB /* xPlatAppx.hpp in Headers */,
 				7B5F64AE1F7F824B009387FB /* CRC32Stream.hpp in Headers */,
 				7B5F64B21F7F824B009387FB /* OffsetStream.hpp in Headers */,
+				4A6B2FF61F8EBA0C00D058AB /* DirectoryObject.hpp in Headers */,
 				7B5F64B81F7F824B009387FB /* ZipFileStream.hpp in Headers */,
 				7B5F64AD1F7F824B009387FB /* Base64Stream.hpp in Headers */,
 				7B5F64B41F7F824B009387FB /* SequenceStream.hpp in Headers */,
@@ -190,6 +225,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4A6B2FF01F8EB9D700D058AB /* ZipFileStream.cpp in Sources */,
+				4A6B2FF41F8EB9FF00D058AB /* DirectoryObject.cpp in Sources */,
+				4A6B2FF21F8EB9EF00D058AB /* InflateStream.cpp in Sources */,
 				EE2E65D91F833E460070D4E4 /* ZipObject.cpp in Sources */,
 				7B5F64BA1F7F824B009387FB /* xPlatAppx.cpp in Sources */,
 			);
