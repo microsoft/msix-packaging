@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 #include <exception>
+#include <cassert>
 
 namespace xPlat {
 
@@ -10,14 +11,18 @@ namespace xPlat {
     {
     public:
         enum SubFacility : uint32_t {
-            NONE = 0x0000,
-            FILE = 0x1000,
-            ZIP =  0x2000,
-            CRC =  0x4000,
-            MAX =  0x0FFF      // always last, always defines bytes reserved for forwarding errors
+            NONE    = 0x0000,
+            FILE    = 0x1000,
+            ZIP     = 0x2000,
+            INFLATE = 0x4000,
+            MAX     = 0x0FFF      // always last, always defines bytes reserved for forwarding errors
         };
 
-        ExceptionBase() {}
+        ExceptionBase()
+        {
+            assert(false); // for debugging purposes.
+        }
+
         ExceptionBase(SubFacility subFacility) : subFacility(subFacility) {}
         ExceptionBase(uint32_t headerOveride, SubFacility subFacility) : header(headerOveride), subFacility(subFacility) {}
 

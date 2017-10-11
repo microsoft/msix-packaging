@@ -190,7 +190,6 @@ namespace xPlat {
                 if (directories.front() == name)
                 {
                     found = true;
-                    path = path + slash + PopFirst();
                     return false;
                 }
 
@@ -204,9 +203,9 @@ namespace xPlat {
                 {
                     throw Win32Exception(GetLastError());
                 }
-
-                path = path + slash + PopFirst();
             }
+            path = path + slash + PopFirst();
+            found = false;
         }
         name = path + slash + name;
         auto result = m_streams[fileName] = std::make_unique<FileStream>(std::move(name), mode);
