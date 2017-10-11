@@ -48,6 +48,7 @@ namespace xPlat {
             }, // State::UNINITIALIZED
             { State::READY_TO_READ , [&](std::size_t, const std::uint8_t*)
                 {
+                    Assert(m_zstrm.avail_in == 0);
                     m_zstrm.avail_in = m_stream->Read(InflateStream::BUFFERSIZE, m_compressedBuffer);
                     m_zstrm.next_in = m_compressedBuffer;
                     return std::make_pair(true, State::READY_TO_INFLATE);
@@ -77,7 +78,8 @@ namespace xPlat {
                 {
                     // Check if we're actually at the end of stream.
                     if (0 == (m_uncompressedSize - m_fileCurrentPosition))
-                    {   Assert(m_zret == Z_STREAM_END);
+                    {
+                        Assert((m_zret == Z_STREAM_END) && (m_zstrm.avail_in == 0));
                         return std::make_pair(true, State::CLEANUP);
                     }
 
