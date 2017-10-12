@@ -786,44 +786,46 @@ namespace xPlat {
         throw NotImplementedException();
     }
 
-    ZipObject::ZipObject(StreamBase* stream)
+    std::string ZipObject::GetPathSeparator() { return "/"; }
+
+    ZipObject::ZipObject(std::unique_ptr<StreamBase>&& stream) : m_stream(std::move(stream))
     {
         // Confirm that the file IS the correct format
         EndCentralDirectoryRecord endCentralDirectoryRecord;
-        stream->Seek(-1 * endCentralDirectoryRecord.Size(), StreamBase::Reference::END);
-        endCentralDirectoryRecord.Read(stream);
+        m_stream->Seek(-1 * endCentralDirectoryRecord.Size(), StreamBase::Reference::END);
+        endCentralDirectoryRecord.Read(m_stream.get());
 
         // find where the zip central directory exists.
-        Zip64EndOfCentralDirectoryLocator zip64Locator(stream);
-        stream->Seek(-1*(endCentralDirectoryRecord.Size() + zip64Locator.Size()), StreamBase::Reference::END);
-        zip64Locator.Read(stream);
+        Zip64EndOfCentralDirectoryLocator zip64Locator(m_stream.get());
+        m_stream->Seek(-1*(endCentralDirectoryRecord.Size() + zip64Locator.Size()), StreamBase::Reference::END);
+        zip64Locator.Read(m_stream.get());
 
         // now read the zip central directory
-        Zip64EndOfCentralDirectoryRecord zip64EndOfCentralDirectory(stream);
-        stream->Seek(zip64Locator.GetRelativeOffset(), StreamBase::Reference::START);
-        zip64EndOfCentralDirectory.Read(stream);
+        Zip64EndOfCentralDirectoryRecord zip64EndOfCentralDirectory(m_stream.get());
+        m_stream->Seek(zip64Locator.GetRelativeOffset(), StreamBase::Reference::START);
+        zip64EndOfCentralDirectory.Read(m_stream.get());
 
         // read the zip central directory
-        stream->Seek(zip64EndOfCentralDirectory.GetOffsetfStartOfCD(), StreamBase::Reference::START);
+        m_stream->Seek(zip64EndOfCentralDirectory.GetOffsetfStartOfCD(), StreamBase::Reference::START);
         for (std::uint32_t index = 0; index < zip64EndOfCentralDirectory.GetTotalNumberOfEntries(); index++)
         {
-            auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(stream);
-            centralFileHeader->Read(stream);
+            auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(m_stream.get());
+            centralFileHeader->Read(m_stream.get());
             // TODO: ensure that there are no collisions on name!
             m_centralDirectory.insert(std::make_pair(centralFileHeader->GetFileName(), centralFileHeader));
         }
 
         // We should have no data between the end of the last central directory header and the start of the EoCD
-        if (stream->Ftell() != zip64Locator.GetRelativeOffset())
+        if (m_stream->Ftell() != zip64Locator.GetRelativeOffset())
         {   throw ZipException("hidden data unsupported", ZipException::Error::HiddenDataBetweenLastCDHandEoCD);
         }
 
         // read the file repository
         for (const auto& centralFileHeader : m_centralDirectory)
         {
-            stream->Seek(centralFileHeader.second->GetRelativeOffsetOfLocalHeader(), xPlat::StreamBase::Reference::START);
+            m_stream->Seek(centralFileHeader.second->GetRelativeOffsetOfLocalHeader(), xPlat::StreamBase::Reference::START);
             auto localFileHeader = std::make_shared<LocalFileHeader>(centralFileHeader.second);
-            localFileHeader->Read(stream);
+            localFileHeader->Read(m_stream.get());
             m_fileRepository.insert(std::make_pair(
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader(),
                 localFileHeader));
@@ -832,7 +834,7 @@ namespace xPlat {
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),
                 localFileHeader->GetCompressionType() == CompressionType::Deflate,
-                stream
+                m_stream.get()
                 );
 
             if (localFileHeader->GetCompressionType() == CompressionType::Deflate)

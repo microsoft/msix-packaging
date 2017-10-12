@@ -12,6 +12,30 @@
     #define XPLATAPPX_API __declspec(dllexport)
 #endif
 
+enum xPlatValidationOptions : unsigned long
+{
+    xPlatValidationOptionFull                       = 0x00000000,
+    xPlatValidationOptionSkipSignatureOrigin        = 0x00000001,
+    xPlatValidationOptionSkipAppxManifestValidation = 0x00000002,
+};
+
+enum xPlatPackUnpackOptions : unsigned long
+{
+    xPlatPackUnpackOptionsNone                      = 0x00000000,
+    xPlatPackUnpackOptionsCreatePackageSubfolder    = 0x00000001
+};
+
 // TODO: add #defs to cover platform-specific differences?
-XPLATAPPX_API unsigned int UnpackAppx (char* source, char* destination);
-XPLATAPPX_API unsigned int PackAppx   (char* source, char* destination);
+XPLATAPPX_API unsigned int UnpackAppx (
+    xPlatPackUnpackOptions packUnpackOptions, 
+    xPlatValidationOptions validationOptions,
+    char* source,
+    char* destination
+);
+
+XPLATAPPX_API unsigned int PackAppx   (
+    xPlatPackUnpackOptions packUnpackOptions, 
+    xPlatValidationOptions validationOptions, 
+    char* source, 
+    char* certFile, 
+    char* destination);

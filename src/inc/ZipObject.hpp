@@ -40,9 +40,10 @@ namespace xPlat {
     class ZipObject : public StorageObject
     {
     public:
-        ZipObject(StreamBase* stream);
+        ZipObject(std::unique_ptr<StreamBase>&& stream);
 
         // StorageObject methods
+        std::string                 GetPathSeparator() override;
         std::vector<std::string>    GetFileNames() override;
         std::shared_ptr<StreamBase> GetFile(const std::string& fileName) override;
         void                        RemoveFile(const std::string& fileName) override;
@@ -50,6 +51,7 @@ namespace xPlat {
         void                        CommitChanges() override;
 
     protected:
+        std::unique_ptr<StreamBase>                                          m_stream;
         std::map<std::string, std::shared_ptr<StreamBase>>                   m_streams;
         std::map<std::string, std::shared_ptr<CentralDirectoryFileHeader>>   m_centralDirectory;
 

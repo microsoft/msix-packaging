@@ -16,6 +16,8 @@ namespace xPlat {
     public:
         virtual ~StorageObject() {}
 
+        virtual std::string GetPathSeparator() = 0;
+
         // Obtains a vector of UTF-8 formatted string names contained in the storage object
         virtual std::vector<std::string> GetFileNames() = 0;
 
