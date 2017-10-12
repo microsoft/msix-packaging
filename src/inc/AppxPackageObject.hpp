@@ -55,7 +55,7 @@ namespace xPlat {
 
         std::string GetPackageFullName()
         {
-            return Name + "_" + Version + "_" + (Architecture.size() == 0 ? "" : Architecture) + "_" + (ResourceId.size() == 0 ? "" : ResourceId) + "_" + PublisherHash;
+            return Name + "_" + Version + "_" + Architecture + "_" + ResourceId + "_" + PublisherHash;
         }
 
         std::string GetPackageFamilyName()
