@@ -131,6 +131,8 @@ namespace xPlat {
         }
     }
 
+    std::string DirectoryObject::GetPathSeparator() { return "\\"; }
+
     std::vector<std::string> DirectoryObject::GetFileNames()
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
@@ -151,8 +153,6 @@ namespace xPlat {
 
     std::shared_ptr<StreamBase> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
-        static const std::string slash("\\");
-
         std::vector<std::string> directories;
         auto PopFirst = [&directories]()
         {
@@ -181,7 +181,7 @@ namespace xPlat {
         std::string path = m_root;
         while (directories.size() != 0)
         {
-            WalkDirectory<WalkOptions::Directories>(path + slash + directories.front(), [&](
+            WalkDirectory<WalkOptions::Directories>(path + GetPathSeparator() + directories.front(), [&](
                 std::string,
                 WalkOptions option,
                 std::string&& name)
@@ -198,16 +198,16 @@ namespace xPlat {
 
             if (!found)
             {
-                std::wstring utf16Name = utf8_to_utf16(path + slash + directories.front());
+                std::wstring utf16Name = utf8_to_utf16(path + GetPathSeparator() + directories.front());
                 if (!CreateDirectory(utf16Name.c_str(), nullptr))
                 {
                     throw Win32Exception(GetLastError());
                 }
             }
-            path = path + slash + PopFirst();
+            path = path + GetPathSeparator() + PopFirst();
             found = false;
         }
-        name = path + slash + name;
+        name = path + GetPathSeparator() + name;
         auto result = m_streams[fileName] = std::make_unique<FileStream>(std::move(name), mode);
         return result;
     }
