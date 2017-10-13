@@ -1,13 +1,11 @@
+#define NOMINMAX /* windows.h, or more correctly windef.h, defines min as a macro... */
 #include "Exceptions.hpp"
 #include "ZipFileStream.hpp"
 #include "InflateStream.hpp"
 #include "StreamBase.hpp"
 
-#include <tuple>
-
-#include <limits>
-#include <algorithm>
 #include <cassert>
+#include <algorithm>
 
 namespace xPlat {
 
