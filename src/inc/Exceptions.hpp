@@ -12,13 +12,15 @@ namespace xPlat {
     // defines error codes
     enum class Error : std::uint32_t
     {
-        // win32 error codes
+        //
+        // Win32 error codes
+        //
         NotSupported                            = 0x80070032,
         InvalidParameter                        = 0x80070057,
         NotImplemented                          = 0x80070078,
 
         //
-        // xplat specific error codes
+        // xPlat specific error codes
         //
 
         // Basic file errors
@@ -27,15 +29,18 @@ namespace xPlat {
         FileRead                                = ERROR_FACILITY + 0x0003,
         FileWrite                               = ERROR_FACILITY + 0x0003,
 
-        // Zip errors
-        ZipInvalidHeader                        = ERROR_FACILITY + 0x0011,
-        ZipFieldOutOfRange                      = ERROR_FACILITY + 0x0012,
-        ZipInvalidEndOfCentralDirectoryRecord   = ERROR_FACILITY + 0x0013,
-        ZipInvalidZip64CentralDirectoryLocator  = ERROR_FACILITY + 0x0014,
-        ZipInvalidZip64CentralDirectoryRecord   = ERROR_FACILITY + 0x0015,
-        ZipInvalidCentralDirectoryHeader        = ERROR_FACILITY + 0x0016,
-        ZipHiddenDataBetweenLastCDHandEoCD      = ERROR_FACILITY + 0x0017,
-        ZipInvalidLocalFileHeader               = ERROR_FACILITY + 0x0018,
+        // Zip format errors
+        ZipCentralDirectoryHeader               = ERROR_FACILITY + 0x0011,
+        ZipLocalFileHeader                      = ERROR_FACILITY + 0x0012,
+        Zip64EOCDRecord                         = ERROR_FACILITY + 0x0013,
+        Zip64EOCDLocator                        = ERROR_FACILITY + 0x0014,
+        ZipEOCDRecord                           = ERROR_FACILITY + 0x0015,
+        ZipHiddenData                           = ERROR_FACILITY + 0x0016,
+
+        // Inflate errors
+        InflateInitialize                       = ERROR_FACILITY + 0x0021,
+        InflateRead                             = ERROR_FACILITY + 0x0022,
+        Inflate
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
@@ -62,14 +67,21 @@ namespace xPlat {
             assert(false);
         }
 
-        Exception(std::uint32_t error) : m_code(ERROR_FACILITY + error)
+        Exception(std::uint32_t error) : m_code(0x8007 + error)
         {
             assert(false);
         }
 
         Exception(std::uint32_t error, std::string& message) :
-            m_code(ERROR_FACILITY + error),
+            m_code(0x8007 + error),
             m_message(std::move(message))
+        {
+            assert(false);
+        }
+
+        Exception(std::uint32_t error, const char* message) :
+            m_code(0x8007 + error),
+            m_message(message)
         {
             assert(false);
         }

@@ -16,15 +16,6 @@
 
 namespace xPlat {
 
-    class Win32Exception : public ExceptionBase
-    {
-    public:
-        Win32Exception(DWORD error) : ExceptionBase(0x8007, SubFacility::NONE)
-        {
-            SetLastError(static_cast<std::uint32_t>(error));
-        }
-    };
-
     std::wstring utf8_to_utf16(const std::string& utf8string)
     {
         /*
@@ -87,7 +78,7 @@ namespace xPlat {
             {
                 return;
             }
-            throw Win32Exception(lastError);
+            Assert(lastError, false, "FindFirstFile failed.");
         }
 
         do
@@ -122,14 +113,11 @@ namespace xPlat {
         }
         while (FindNextFile(find.get(), &findFileData));
 
-        DWORD lastError = GetLastError();
-        if ((lastError != ERROR_NO_MORE_FILES) &&
+        Assert(static_cast<std::uint32_t>(GetLastError()),
+            ((lastError != ERROR_NO_MORE_FILES) &&
             (lastError != ERROR_SUCCESS) &&
-            (lastError != ERROR_ALREADY_EXISTS)
-            )
-        {
-            throw Win32Exception(lastError);
-        }
+            (lastError != ERROR_ALREADY_EXISTS)),
+            "FindNextFile");
     }
 
     std::string DirectoryObject::GetPathSeparator() { return "\\"; }
@@ -200,10 +188,9 @@ namespace xPlat {
             if (!found)
             {
                 std::wstring utf16Name = utf8_to_utf16(path + GetPathSeparator() + directories.front());
-                if (!CreateDirectory(utf16Name.c_str(), nullptr))
-                {
-                    throw Win32Exception(GetLastError());
-                }
+                Assert(static_cast<std::uint32_t>(GetLastError()),
+                    (!CreateDirectory(utf16Name.c_str(), nullptr)),
+                    "CreaetDirectory");
             }
             path = path + GetPathSeparator() + PopFirst();
             found = false;

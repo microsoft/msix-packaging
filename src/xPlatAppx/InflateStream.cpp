@@ -38,13 +38,13 @@ namespace xPlat {
                     m_fileCurrentWindowPositionEnd = 0;
 
                     int ret = inflateInit2(&m_zstrm, -MAX_WBITS);
-                    if (ret != Z_OK) { throw InflateException(); }
+                    Assert(Error::InflateInitialize, (ret != Z_OK), "inflateInit2");
                     return std::make_pair(true, State::READY_TO_READ);
                 }
             }, // State::UNINITIALIZED
             { State::READY_TO_READ , [&](std::size_t, const std::uint8_t*)
                 {
-                    Assert(m_zstrm.avail_in == 0);
+                    Assert(Error::InflateRead,(m_zstrm.avail_in == 0), "uninflated bytes overwritten");
                     m_zstrm.avail_in = m_stream->Read(InflateStream::BUFFERSIZE, m_compressedBuffer);
                     m_zstrm.next_in = m_compressedBuffer;
                     return std::make_pair(true, State::READY_TO_INFLATE);
@@ -62,6 +62,7 @@ namespace xPlat {
                     case Z_DATA_ERROR:
                     case Z_MEM_ERROR:
                         Cleanup();
+
                         throw xPlat::InflateException();
                     case Z_STREAM_END:
                     default:
