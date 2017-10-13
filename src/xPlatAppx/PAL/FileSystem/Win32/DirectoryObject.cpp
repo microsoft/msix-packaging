@@ -113,7 +113,8 @@ namespace xPlat {
         }
         while (FindNextFile(find.get(), &findFileData));
 
-        Assert(static_cast<std::uint32_t>(GetLastError()),
+        std::uint32_t lastError = static_cast<std::uint32_t>(GetLastError());
+        Assert(lastError,
             ((lastError != ERROR_NO_MORE_FILES) &&
             (lastError != ERROR_SUCCESS) &&
             (lastError != ERROR_ALREADY_EXISTS)),

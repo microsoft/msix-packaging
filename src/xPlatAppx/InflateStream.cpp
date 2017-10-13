@@ -8,13 +8,6 @@
 #include <algorithm>
 
 namespace xPlat {
-
-    class InflateException : public ExceptionBase
-    {
-    public:
-        InflateException() : ExceptionBase(ExceptionBase::SubFacility::INFLATE) { assert(false); }
-    };
-
     InflateStream::InflateStream(
         std::shared_ptr<StreamBase> stream,
         std::uint64_t uncompressedSize
@@ -38,7 +31,7 @@ namespace xPlat {
                     m_fileCurrentWindowPositionEnd = 0;
 
                     int ret = inflateInit2(&m_zstrm, -MAX_WBITS);
-                    Assert(Error::InflateInitialize, (ret != Z_OK), "inflateInit2");
+                    Assert(Error::InflateInitialize, (ret != Z_OK), "inflateInit2 failed");
                     return std::make_pair(true, State::READY_TO_READ);
                 }
             }, // State::UNINITIALIZED
@@ -62,8 +55,7 @@ namespace xPlat {
                     case Z_DATA_ERROR:
                     case Z_MEM_ERROR:
                         Cleanup();
-
-                        throw xPlat::InflateException();
+                        Assert(Error::InflateCorruptData, false, "inflate failed unexpectedly.");
                     case Z_STREAM_END:
                     default:
                         m_fileCurrentWindowPositionEnd += (InflateStream::BUFFERSIZE - m_zstrm.avail_out);
@@ -76,7 +68,7 @@ namespace xPlat {
                     // Check if we're actually at the end of stream.
                     if (0 == (m_uncompressedSize - m_fileCurrentPosition))
                     {
-                        Assert((m_zret == Z_STREAM_END) && (m_zstrm.avail_in == 0));
+                        Assert(Error::InflateCorruptData, ((m_zret == Z_STREAM_END) && (m_zstrm.avail_in == 0)), "unexpected extra data");
                         return std::make_pair(true, State::CLEANUP);
                     }
 

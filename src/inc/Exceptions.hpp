@@ -40,7 +40,7 @@ namespace xPlat {
         // Inflate errors
         InflateInitialize                       = ERROR_FACILITY + 0x0021,
         InflateRead                             = ERROR_FACILITY + 0x0022,
-        Inflate
+        InflateCorruptData                      = ERROR_FACILITY + 0x0023,
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
@@ -94,7 +94,6 @@ namespace xPlat {
         std::string     m_message;
     };
 
-    // Helpers to make code more terse and more readable at the same time.  
-    #define Assert(c, a)   {if (!(a)) throw Exception(c);}
+    // Helper to make code more terse and more readable at the same time.
     #define Assert(c, a, m) {if (!(a)) throw Exception(c,m);}
 }
