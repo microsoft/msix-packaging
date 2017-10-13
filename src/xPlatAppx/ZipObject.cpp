@@ -187,33 +187,33 @@ namespace xPlat {
             // 0 - central file header signature   4 bytes(0x02014b50)
             Field<0>().validation = [](std::uint32_t& v)
             {   Assert(Error::ZipCentralDirectoryHeader,
-                    (v != static_cast<std::uint32_t>(Signatures::CentralFileHeader)),
+                    (v == static_cast<std::uint32_t>(Signatures::CentralFileHeader)),
                     "CDFH Signature");
             };
             // 1 - version made by                 2 bytes
             Field<1>().validation = [](std::uint16_t& v)
             {   Assert(Error::ZipCentralDirectoryHeader,
-                    (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
+                    (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
                     "unsupported version made by");
             };
             // 2 - version needed to extract       2 bytes
             Field<2>().validation = [](std::uint16_t& v)
             {   Assert(Error::ZipCentralDirectoryHeader,
-                    ((v != static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) &&
-                    (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))),
+                    ((v == static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) ||
+                    (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))),
                     "unsupported version needed to extract");
             };
             // 3 - general purpose bit flag        2 bytes
             Field<3>().validation = [](std::uint16_t& v)
             {   Assert(Error::ZipCentralDirectoryHeader,
-                ((v & static_cast<std::uint16_t>(UnsupportedFlagsMask)) != 0),
+                ((v & static_cast<std::uint16_t>(UnsupportedFlagsMask)) == 0),
                 "unsupported flag(s) specified");
             };
             // 4 - compression method              2 bytes
             Field<4>().validation = [](std::uint16_t& v)
             {   Assert(Error::ZipCentralDirectoryHeader,
-                    ((v != static_cast<std::uint16_t>(CompressionType::Store)) &&
-                    (v != static_cast<std::uint16_t>(CompressionType::Deflate))),
+                    ((v == static_cast<std::uint16_t>(CompressionType::Store)) ||
+                    (v == static_cast<std::uint16_t>(CompressionType::Deflate))),
                     "unsupported compression method");
             };
             // 5 - last mod file time              2 bytes
@@ -223,30 +223,30 @@ namespace xPlat {
             // 9 - uncompressed size               4 bytes
             //10 - file name length                2 bytes
             Field<10>().validation = [&](std::uint16_t& v)
-            {   Assert(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported file name size");
+            {   Assert(Error::ZipCentralDirectoryHeader, (v != 0), "unsupported file name size");
                 Field<17>().value.resize(v,0);
             };
             //11 - extra field length              2 bytes
             Field<11>().validation = [&](std::uint16_t& v)
-            {   Assert(Error::ZipCentralDirectoryHeader, (v != 0), "unsupported extra field size");
+            {   Assert(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported extra field size");
                 Field<18>().value.resize(v,0);
             };
             //12 - file comment length             2 bytes
             Field<12>().validation = [&](std::uint16_t& v)
-            {   Assert(Error::ZipCentralDirectoryHeader, (v != 0), "unsupported file comment size");
+            {   Assert(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported file comment size");
             };
             //13 - disk number start               2 bytes
             Field<13>().validation = [](std::uint16_t& v)
-            {   Assert(Error::ZipCentralDirectoryHeader, (v != 0), "unsupported disk number start");
+            {   Assert(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported disk number start");
             };
             //14 - internal file attributes        2 bytes
             Field<14>().validation = [](std::uint16_t& v)
-            {   Assert(Error::ZipCentralDirectoryHeader, (v != 0), "unsupported internal file attributes");
+            {   Assert(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported internal file attributes");
             };
             //15 - external file attributes        4 bytes
             //16 - relative offset of local header 4 bytes
             Field<16>().validation = [&](std::uint32_t& v)
-            {   Assert(Error::ZipCentralDirectoryHeader, (v >= m_stream->Ftell()), "invalid relative offset");
+            {   Assert(Error::ZipCentralDirectoryHeader, (v < m_stream->Ftell()), "invalid relative offset");
             };
             //17 - file name(variable size)
             //18 - extra field(variable size)
@@ -345,54 +345,54 @@ namespace xPlat {
             // 0 - local file header signature     4 bytes(0x04034b50)
             Field<0>().validation = [](std::uint32_t& v)
             {   Assert(Error::ZipLocalFileHeader,
-                    (v != static_cast<std::uint32_t>(Signatures::LocalFileHeader)),
+                    (v == static_cast<std::uint32_t>(Signatures::LocalFileHeader)),
                     "file header does not match signature");
             };
             // 1 - version needed to extract       2 bytes
             Field<1>().validation = [](std::uint16_t& v)
             {   Assert(Error::ZipLocalFileHeader, 
-                    ((v != static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) &&
-                    (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))),
+                    ((v == static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) ||
+                    (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))),
                     "unsupported version needed to extract");
             };
             // 2 - general purpose bit flag        2 bytes
             Field<2>().validation = [&](std::uint16_t& v)
             {   Assert(Error::ZipLocalFileHeader, 
-                    ((v & static_cast<std::uint16_t>(UnsupportedFlagsMask)) != 0),
+                    ((v & static_cast<std::uint16_t>(UnsupportedFlagsMask)) == 0),
                     "unsupported flag(s) specified");
                 Assert(Error::ZipLocalFileHeader,
-                    (IsGeneralPurposeBitSet() != m_directoryEntry->IsGeneralPurposeBitSet()),
+                    (IsGeneralPurposeBitSet() == m_directoryEntry->IsGeneralPurposeBitSet()),
                     "inconsistent general purpose bits specified");
             };
             // 3 - compression method              2 bytes
             Field<3>().validation = [](std::uint16_t& v)
             {   Assert(Error::ZipLocalFileHeader, 
-                    ((v != static_cast<std::uint16_t>(CompressionType::Store)) &&
-                    (v != static_cast<std::uint16_t>(CompressionType::Deflate)) ),
+                    ((v == static_cast<std::uint16_t>(CompressionType::Store)) ||
+                    (v == static_cast<std::uint16_t>(CompressionType::Deflate)) ),
                     "unsupported compression method");
             };
             // 4 - last mod file time              2 bytes
             // 5 - last mod file date              2 bytes
             // 6 - crc - 32                        4 bytes
             Field<6>().validation = [&](std::uint32_t& v)
-            {   Assert(Error::ZipLocalFileHeader, (IsGeneralPurposeBitSet() && (v != 0)), "Invalid CRC");
+            {   Assert(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid CRC");
             };
             // 7 - compressed size                 4 bytes
             Field<7>().validation = [&](std::uint32_t& v)
-            {   Assert(Error::ZipLocalFileHeader, (IsGeneralPurposeBitSet() && (v != 0)), "Invalid compressed size");
+            {   Assert(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid compressed size");
             };
             // 8 - uncompressed size               4 bytes
             Field<8>().validation = [&](std::uint32_t& v)
-            {   Assert(Error::ZipLocalFileHeader, (IsGeneralPurposeBitSet() && (v != 0)), "Invalid uncompressed size");
+            {   Assert(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid uncompressed size");
             };
             // 9 - file name length                2 bytes
             Field<9>().validation = [&](std::uint16_t& v)
-            {   Assert(Error::ZipLocalFileHeader, (v == 0), "unsupported file name size");
+            {   Assert(Error::ZipLocalFileHeader, (v != 0), "unsupported file name size");
                 Field<11>().value.resize(GetFileNameLength(), 0);
             };
             // 10- extra field length              2 bytes
             Field<10>().validation = [&](std::uint16_t& v)
-            {   Assert(Error::ZipLocalFileHeader, (v != 0), "unsupported extra field size");
+            {   Assert(Error::ZipLocalFileHeader, (v == 0), "unsupported extra field size");
                 Field<12>().value.resize(GetExtraFieldLength(), 0);
             };
             // 11- file name (variable size)
@@ -474,7 +474,7 @@ namespace xPlat {
             // 0 - zip64 end of central dir signature 4 bytes(0x06064b50)
             Field<0>().validation = [](std::uint32_t& v)
             {   Assert(Error::Zip64EOCDRecord,
-                    (v != static_cast<std::uint32_t>(Signatures::Zip64EndOfCD)),
+                    (v == static_cast<std::uint32_t>(Signatures::Zip64EndOfCD)),
                     "end of zip64 central directory does not match signature");
             };
             // 1 - size of zip64 end of central directory record 8 bytes
@@ -482,50 +482,49 @@ namespace xPlat {
             {   //4.3.14.1 The value stored into the "size of zip64 end of central
                 //    directory record" should be the size of the remaining
                 //    record and should not include the leading 12 bytes.
-                auto size = this->Size() - 12;
-                Assert(Error::Zip64EOCDRecord, (v != size), "invalid size of zip64 EOCD");
+                Assert(Error::Zip64EOCDRecord, (v == (this->Size() - 12)), "invalid size of zip64 EOCD");
             };
             // 2 - version made by                 2 bytes
             Field<2>().validation = [](std::uint16_t& v)
             {   Assert(Error::Zip64EOCDRecord,
-                    (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
+                    (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
                     "invalid zip64 EOCD version made by");
             };
             // 3 - version needed to extract       2 bytes
             Field<3>().validation = [](std::uint16_t& v)
             {   Assert(Error::Zip64EOCDRecord,
-                    (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
+                    (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
                     "invalid zip64 EOCD version to extract");
             };
             // 4 - number of this disk             4 bytes
             Field<4>().validation = [](std::uint32_t& v)
-            {   Assert(Error::Zip64EOCDRecord, (v != 0), "invalid disk number");
+            {   Assert(Error::Zip64EOCDRecord, (v == 0), "invalid disk number");
             };
             // 5 - number of the disk with the start of the central directory  4 bytes
             Field<5>().validation = [](std::uint32_t& v)
-            {   Assert(Error::Zip64EOCDRecord, (v != 0), "invalid disk index");
+            {   Assert(Error::Zip64EOCDRecord, (v == 0), "invalid disk index");
             };
             // 6 - total number of entries in the central directory on this disk  8 bytes
             Field<6>().validation = [](std::uint64_t& v)
-            {   Assert(Error::Zip64EOCDRecord, (v == 0), "invalid number of entries");
+            {   Assert(Error::Zip64EOCDRecord, (v != 0), "invalid number of entries");
             };
             // 7 - total number of entries in the central directory 8 bytes
             Field<7>().validation = [&](std::uint64_t& v)
-            {   Assert(Error::Zip64EOCDRecord, (v != this->GetTotalNumberOfEntries()), "invalid total number of entries");
+            {   Assert(Error::Zip64EOCDRecord, (v == this->GetTotalNumberOfEntries()), "invalid total number of entries");
             };
             // 8 - size of the central directory   8 bytes
             Field<8>().validation = [&](std::uint64_t& v)
             {   // TODO: tighten up this validation
-                Assert(Error::Zip64EOCDRecord, ((v == 0) || (v >= m_stream->Ftell())), "invalid size of central directory");
+                Assert(Error::Zip64EOCDRecord, ((v != 0) && (v < m_stream->Ftell())), "invalid size of central directory");
             };
             // 9 - offset of start of central directory with respect to the starting disk number        8 bytes
             Field<9>().validation = [&](std::uint64_t& v)
             {   // TODO: tighten up this validation
-                Assert(Error::Zip64EOCDRecord, ((v == 0) || (v >= m_stream->Ftell())), "invalid start of central directory");
+                Assert(Error::Zip64EOCDRecord, ((v != 0) && (v < m_stream->Ftell())), "invalid start of central directory");
             };
             //10 - zip64 extensible data sector(variable size)
             Field<10>().validation = [](std::vector<std::uint8_t>& data)
-            {   Assert(Error::Zip64EOCDRecord, (data.size() != 0), "unsupported extensible data");
+            {   Assert(Error::Zip64EOCDRecord, (data.size() == 0), "unsupported extensible data");
             };
 
             SetSignature(static_cast<std::uint32_t>(Signatures::Zip64EndOfCD));
@@ -575,20 +574,20 @@ namespace xPlat {
             // 0 - zip64 end of central dir locator signature 4 bytes(0x07064b50)
             Field<0>().validation = [](std::uint32_t& v)
             {   Assert(Error::Zip64EOCDLocator,
-                    (v != static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator)),
+                    (v == static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator)),
                     "end of central directory locator does not match signature");
             };
             // 1 - number of the disk with the start of the zip64 end of central directory               4 bytes
             Field<1>().validation = [](std::uint32_t& v)
-            {   Assert(Error::Zip64EOCDLocator, (v != 0), "Invalid disk number");
+            {   Assert(Error::Zip64EOCDLocator, (v == 0), "Invalid disk number");
             };
             // 2 - relative offset of the zip64 end of central directory record 8 bytes
             Field<2>().validation = [&](std::uint64_t& v)
-            {   Assert(Error::Zip64EOCDLocator, ((v == 0) || (v >= m_stream->Ftell())), "Invalid relative offset");
+            {   Assert(Error::Zip64EOCDLocator, ((v != 0) && (v < m_stream->Ftell())), "Invalid relative offset");
             };
             // 3 - total number of disks           4 bytes
             Field<3>().validation = [](std::uint32_t& v)
-            {   Assert(Error::Zip64EOCDLocator, (v != 1), "Invalid total number of disks");
+            {   Assert(Error::Zip64EOCDLocator, (v == 1), "Invalid total number of disks");
             };
 
             SetSignature(static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator));
@@ -629,48 +628,48 @@ namespace xPlat {
             // 0 - end of central dir signature    4 bytes  (0x06054b50)
             Field<0>().validation = [](std::uint32_t& v)
             {   Assert(Error::ZipEOCDRecord,
-                    (v != static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory)),
+                    (v == static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory)),
                     "invalid signiture");
             };
             // 1 - number of this disk             2 bytes
             Field<1>().validation = [](std::uint16_t& v)
-            {   Assert(Error::ZipEOCDRecord, (v != 0), "unsupported disk number");
+            {   Assert(Error::ZipEOCDRecord, (v == 0), "unsupported disk number");
             };
             // 2 - number of the disk with the start of the central directory  2 bytes
             Field<2>().validation = [](std::uint16_t& v)
-            {   Assert(Error::ZipEOCDRecord, (v != 0), "unsupported EoCDR disk number");
+            {   Assert(Error::ZipEOCDRecord, (v == 0), "unsupported EoCDR disk number");
             };
             // 3 - total number of entries in the central directory on this disk  2 bytes
             Field<3>().validation = [](std::uint16_t& v)
             {   Assert(Error::ZipEOCDRecord,
-                    (v != std::numeric_limits<std::uint16_t>::max()),
+                    (v == std::numeric_limits<std::uint16_t>::max()),
                     "unsupported total number of entries on this disk");
             };
             // 4 - total number of entries in the central directory           2 bytes
             Field<4>().validation = [](std::uint16_t& v)
             {   Assert(Error::ZipEOCDRecord,
-                    (v != std::numeric_limits<std::uint16_t>::max()),
+                    (v == std::numeric_limits<std::uint16_t>::max()),
                     "unsupported total number of entries");
             };
             // 5 - size of the central directory   4 bytes
             Field<5>().validation = [](std::uint32_t& v)
             {   Assert(Error::ZipEOCDRecord,
-                    (v != std::numeric_limits<std::uint32_t>::max()),
+                    (v == std::numeric_limits<std::uint32_t>::max()),
                     "unsupported size of central directory");
             };
             // 6 - offset of start of central directory with respect to the starting disk number        4 bytes
             Field<6>().validation = [](std::uint32_t& v)
             {   Assert(Error::ZipEOCDRecord,
-                    (v != std::numeric_limits<std::uint32_t>::max()),
+                    (v == std::numeric_limits<std::uint32_t>::max()),
                     "unsupported offset of start of central directory");
             };
             // 7 - .ZIP file comment length        2 bytes
             Field<7>().validation = [&](std::uint16_t& v)
-            {   Assert(Error::ZipEOCDRecord, (v != 0), "Zip comment unsupported");
+            {   Assert(Error::ZipEOCDRecord, (v == 0), "Zip comment unsupported");
             };
             // 8 - .ZIP file comment       (variable size)
             Field<8>().validation = [](std::vector<std::uint8_t>& data)
-            {   Assert(Error::ZipEOCDRecord, (data.size() != 0), "Zip comment unsupported");
+            {   Assert(Error::ZipEOCDRecord, (data.size() == 0), "Zip comment unsupported");
             };
 
             SetSignature(static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory));
@@ -757,7 +756,7 @@ namespace xPlat {
         }
 
         // We should have no data between the end of the last central directory header and the start of the EoCD
-        Assert(Error::ZipHiddenData, (m_stream->Ftell() != zip64Locator.GetRelativeOffset()), "hidden data unsupported");
+        Assert(Error::ZipHiddenData, (m_stream->Ftell() == zip64Locator.GetRelativeOffset()), "hidden data unsupported");
 
         // read the file repository
         for (const auto& centralFileHeader : m_centralDirectory)

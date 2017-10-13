@@ -115,9 +115,9 @@ namespace xPlat {
 
         std::uint32_t lastError = static_cast<std::uint32_t>(GetLastError());
         Assert(lastError,
-            ((lastError != ERROR_NO_MORE_FILES) &&
-            (lastError != ERROR_SUCCESS) &&
-            (lastError != ERROR_ALREADY_EXISTS)),
+            ((lastError == ERROR_NO_MORE_FILES) ||
+            (lastError == ERROR_SUCCESS) ||
+            (lastError == ERROR_ALREADY_EXISTS)),
             "FindNextFile");
     }
 
@@ -189,9 +189,11 @@ namespace xPlat {
             if (!found)
             {
                 std::wstring utf16Name = utf8_to_utf16(path + GetPathSeparator() + directories.front());
-                Assert(static_cast<std::uint32_t>(GetLastError()),
-                    (!CreateDirectory(utf16Name.c_str(), nullptr)),
-                    "CreaetDirectory");
+                if (!CreateDirectory(utf16Name.c_str(), nullptr))
+                {
+                    auto lastError = static_cast<std::uint32_t>(GetLastError());
+                    Assert(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreaetDirectory");
+                }
             }
             path = path + GetPathSeparator() + PopFirst();
             found = false;

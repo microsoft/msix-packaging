@@ -31,7 +31,7 @@ namespace xPlat {
                     m_fileCurrentWindowPositionEnd = 0;
 
                     int ret = inflateInit2(&m_zstrm, -MAX_WBITS);
-                    Assert(Error::InflateInitialize, (ret != Z_OK), "inflateInit2 failed");
+                    Assert(Error::InflateInitialize, (ret == Z_OK), "inflateInit2 failed");
                     return std::make_pair(true, State::READY_TO_READ);
                 }
             }, // State::UNINITIALIZED
@@ -68,7 +68,7 @@ namespace xPlat {
                     // Check if we're actually at the end of stream.
                     if (0 == (m_uncompressedSize - m_fileCurrentPosition))
                     {
-                        Assert(Error::InflateCorruptData, ((m_zret == Z_STREAM_END) && (m_zstrm.avail_in == 0)), "unexpected extra data");
+                        Assert(Error::InflateCorruptData, ((m_zret != Z_STREAM_END) || (m_zstrm.avail_in != 0)), "unexpected extra data");
                         return std::make_pair(true, State::CLEANUP);
                     }
 
