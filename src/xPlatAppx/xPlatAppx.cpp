@@ -4,6 +4,7 @@
 #include "FileStream.hpp"
 #include "ZipObject.hpp"
 #include "DirectoryObject.hpp"
+#include "AppxPackageObject.hpp"
 
 #include <string>
 #include <memory>
@@ -50,46 +51,40 @@ unsigned int ResultOf(char* source, char* destination, Lambda lambda)
     return result;
 }
 
-XPLATAPPX_API unsigned int UnpackAppx(char* from, char* to)
+XPLATAPPX_API unsigned int UnpackAppx(
+    xPlatPackUnpackOptions packUnpackOptions,
+    xPlatValidationOptions validationOptions,
+    char* source,
+    char* destination)
 {
-    return ResultOf(from, to, [&]() {
-        xPlat::DirectoryObject directory(to);
-        auto rawFile = std::make_unique<xPlat::FileStream>(from, xPlat::FileStream::Mode::READ);
+    return ResultOf(source, destination, [&]() {
+        // TODO: what if source and destination are something OTHER than a file paths?
+        xPlat::AppxPackageObject appx(validationOptions,
+            std::make_unique<xPlat::ZipObject>(
+                std::make_unique<xPlat::FileStream>(
+                    source, xPlat::FileStream::Mode::READ
+                    )));
 
-        {
-            xPlat::ZipObject zip(rawFile.get());
-
-            auto fileNames = zip.GetFileNames();
-            for (const auto& fileName : fileNames)
-            {
-                auto sourceFile = zip.GetFile(fileName);
-                auto targetFile = directory.OpenFile(fileName, xPlat::FileStream::Mode::WRITE_UPDATE);
-
-                sourceFile->CopyTo(targetFile.get());
-                targetFile->Close();
-            }
-        }
+        appx.Unpack(packUnpackOptions, xPlat::DirectoryObject(destination));
     });
 }
 
-XPLATAPPX_API unsigned int PackAppx  (char* from, char* to)
+XPLATAPPX_API unsigned int PackAppx(
+    xPlatPackUnpackOptions packUnpackOptions,
+    xPlatValidationOptions validationOptions,
+    char* source,
+    char* certFile,
+    char* destination)
 {
-    return ResultOf(from, to, [&]() {
-        xPlat::DirectoryObject directory(from);
-        auto rawFile = std::make_unique<xPlat::FileStream>(to, xPlat::FileStream::Mode::WRITE);
+    return ResultOf(source, destination, [&]() {
+        // TODO: what if source and destination are something OTHER than a file paths?
+        xPlat::AppxPackageObject appx(validationOptions, std::move(
+            std::make_unique<xPlat::ZipObject>(std::move(
+                std::make_unique<xPlat::FileStream>(destination, xPlat::FileStream::Mode::WRITE_UPDATE)
+            ))
+        ));
 
-        {
-            xPlat::ZipObject zip(rawFile.get());
-
-            auto fileNames = directory.GetFileNames();
-            for (const auto& fileName : fileNames)
-            {
-                auto sourceFile = directory.GetFile(fileName);
-                auto targetFile = zip.OpenFile(fileName, xPlat::FileStream::Mode::WRITE);
-
-                sourceFile->CopyTo(targetFile.get());
-            }
-            zip.CommitChanges();
-        }
+        appx.Pack(packUnpackOptions, certFile, xPlat::DirectoryObject(source));
+        appx.CommitChanges();
     });
 }

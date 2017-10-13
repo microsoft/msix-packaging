@@ -17,6 +17,7 @@ namespace xPlat {
         DirectoryObject(std::string root) : m_root(std::move(root)) {}
 
         // StorageObject methods
+        std::string                 GetPathSeparator() override;
         std::vector<std::string>    GetFileNames() override;
         std::shared_ptr<StreamBase> GetFile(const std::string& fileName) override;
         void                        RemoveFile(const std::string& fileName) override;
