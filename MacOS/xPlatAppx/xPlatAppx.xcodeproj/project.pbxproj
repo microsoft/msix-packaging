@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4A519DAA1F9173240013ADE5 /* AppxPackageObject.hpp in Headers */ = {isa = PBXBuildFile; fileRef = 4A519DA91F9173240013ADE5 /* AppxPackageObject.hpp */; };
+		4A519DAC1F91732B0013ADE5 /* AppxPackageObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A519DAB1F91732B0013ADE5 /* AppxPackageObject.cpp */; };
 		4A6B2FF01F8EB9D700D058AB /* ZipFileStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B2FEF1F8EB9D700D058AB /* ZipFileStream.cpp */; };
 		4A6B2FF21F8EB9EF00D058AB /* InflateStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B2FF11F8EB9EF00D058AB /* InflateStream.cpp */; };
 		4A6B2FF41F8EB9FF00D058AB /* DirectoryObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4A6B2FF31F8EB9FF00D058AB /* DirectoryObject.cpp */; };
@@ -32,6 +34,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		4A519DA91F9173240013ADE5 /* AppxPackageObject.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = AppxPackageObject.hpp; sourceTree = "<group>"; };
+		4A519DAB1F91732B0013ADE5 /* AppxPackageObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = AppxPackageObject.cpp; sourceTree = "<group>"; };
 		4A6B2FEF1F8EB9D700D058AB /* ZipFileStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ZipFileStream.cpp; sourceTree = "<group>"; };
 		4A6B2FF11F8EB9EF00D058AB /* InflateStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = InflateStream.cpp; sourceTree = "<group>"; };
 		4A6B2FF31F8EB9FF00D058AB /* DirectoryObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = DirectoryObject.cpp; path = PAL/FileSystem/FTS/DirectoryObject.cpp; sourceTree = "<group>"; };
@@ -108,6 +112,7 @@
 		7B5F649C1F7F824B009387FB /* inc */ = {
 			isa = PBXGroup;
 			children = (
+				4A519DA91F9173240013ADE5 /* AppxPackageObject.hpp */,
 				4A6B2FF91F8EBA1B00D058AB /* StorageObject.hpp */,
 				4A6B2FF71F8EBA1400D058AB /* InflateStream.hpp */,
 				4A6B2FF51F8EBA0C00D058AB /* DirectoryObject.hpp */,
@@ -132,6 +137,7 @@
 		7B5F64AA1F7F824B009387FB /* xPlatAppx */ = {
 			isa = PBXGroup;
 			children = (
+				4A519DAB1F91732B0013ADE5 /* AppxPackageObject.cpp */,
 				4A6B2FF31F8EB9FF00D058AB /* DirectoryObject.cpp */,
 				4A6B2FF11F8EB9EF00D058AB /* InflateStream.cpp */,
 				4A6B2FEF1F8EB9D700D058AB /* ZipFileStream.cpp */,
@@ -164,6 +170,7 @@
 				7B5F64B41F7F824B009387FB /* SequenceStream.hpp in Headers */,
 				7B5F64B31F7F824B009387FB /* PartitionStream.hpp in Headers */,
 				7B5F64B11F7F824B009387FB /* ObjectBase.hpp in Headers */,
+				4A519DAA1F9173240013ADE5 /* AppxPackageObject.hpp in Headers */,
 				7B5F64B61F7F824B009387FB /* StreamBase.hpp in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -229,6 +236,7 @@
 				4A6B2FF41F8EB9FF00D058AB /* DirectoryObject.cpp in Sources */,
 				4A6B2FF21F8EB9EF00D058AB /* InflateStream.cpp in Sources */,
 				EE2E65D91F833E460070D4E4 /* ZipObject.cpp in Sources */,
+				4A519DAC1F91732B0013ADE5 /* AppxPackageObject.cpp in Sources */,
 				7B5F64BA1F7F824B009387FB /* xPlatAppx.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

@@ -64,8 +64,9 @@ XPLATAPPX_API unsigned int UnpackAppx(
                 std::make_unique<xPlat::FileStream>(
                     source, xPlat::FileStream::Mode::READ
                     )));
-
-        appx.Unpack(packUnpackOptions, xPlat::DirectoryObject(destination));
+        
+        xPlat::DirectoryObject to(destination);
+        appx.Unpack(packUnpackOptions, to);
     });
 }
 
@@ -84,7 +85,8 @@ XPLATAPPX_API unsigned int PackAppx(
             ))
         ));
 
-        appx.Pack(packUnpackOptions, certFile, xPlat::DirectoryObject(source));
+        xPlat::DirectoryObject from(source);
+        appx.Pack(packUnpackOptions, certFile, from);
         appx.CommitChanges();
     });
 }

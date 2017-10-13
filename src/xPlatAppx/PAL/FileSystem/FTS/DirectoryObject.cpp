@@ -5,32 +5,25 @@
 
 namespace xPlat {
     
-    class FTSException : public ExceptionBase
-    {
-    public:
-        FTSException(int rc) : ExceptionBase(0x8f75, SubFacility::NONE)
-        {
-            SetLastError(static_cast<std::uint32_t>(rc));
-        }
-    };
-    
     std::vector<std::string> DirectoryObject::GetFileNames()
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
     
     std::shared_ptr<StreamBase> DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
     
     void DirectoryObject::RemoveFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
+    
+    std::string DirectoryObject::GetPathSeparator() { return "/"; }
     
     std::shared_ptr<StreamBase> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
