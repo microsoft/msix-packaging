@@ -11,6 +11,7 @@
 
 // UNICODE MUST be defined before you include Windows.h if you want the non-ascii versions of APIs (and you do)
 #define UNICODE
+#define NOMINMAX
 #include <windows.h>
 
 namespace xPlat {
