@@ -186,37 +186,35 @@ namespace xPlat {
         {
             // 0 - central file header signature   4 bytes(0x02014b50)
             Field<0>().validation = [](std::uint32_t& v)
-            {   if (v != static_cast<std::uint32_t>(Signatures::CentralFileHeader))
-                {   throw ZipException("signature mismatch", ZipException::Error::InvalidCentralDirectoryHeader);
-                }
+            {   Assert(Error::ZipInvalidCentralDirectoryHeader,
+                    (v != static_cast<std::uint32_t>(Signatures::CentralFileHeader)),
+                    "CDFH Signature");
             };
             // 1 - version made by                 2 bytes
             Field<1>().validation = [](std::uint16_t& v)
-            {   if (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))
-                {   throw ZipException("unsupported version made by", ZipException::Error::InvalidCentralDirectoryHeader);
-                }
+            {   Assert(Error::ZipInvalidCentralDirectoryHeader,
+                    (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
+                    "unsupported version made by");
             };
             // 2 - version needed to extract       2 bytes
             Field<2>().validation = [](std::uint16_t& v)
-            {   if ((v != static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) &&
-                    (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))
-                    )
-                {   throw ZipException("unsupported version needed to extract", ZipException::Error::InvalidCentralDirectoryHeader);
-                }
+            {   Assert(Error::ZipInvalidCentralDirectoryHeader,
+                    ((v != static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) &&
+                    (v != static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))),
+                    "unsupported version needed to extract");
             };
             // 3 - general purpose bit flag        2 bytes
             Field<3>().validation = [](std::uint16_t& v)
-            {   if ((v & static_cast<std::uint16_t>(UnsupportedFlagsMask)) != 0)
-                {   throw ZipException("unsupported flag(s) specified", ZipException::Error::InvalidCentralDirectoryHeader);
-                }
+            {   Assert(Error::ZipInvalidCentralDirectoryHeader,
+                ((v & static_cast<std::uint16_t>(UnsupportedFlagsMask)) != 0),
+                "unsupported flag(s) specified");
             };
             // 4 - compression method              2 bytes
             Field<4>().validation = [](std::uint16_t& v)
-            {   if ((v != static_cast<std::uint16_t>(CompressionType::Store)) &&
-                    (v != static_cast<std::uint16_t>(CompressionType::Deflate))
-                    )
-                {   throw ZipException("unsupported compression method", ZipException::Error::InvalidCentralDirectoryHeader);
-                }
+            {   Assert(Error::ZipInvalidCentralDirectoryHeader,
+                    ((v != static_cast<std::uint16_t>(CompressionType::Store)) &&
+                    (v != static_cast<std::uint16_t>(CompressionType::Deflate))),
+                    "unsupported compression method");
             };
             // 5 - last mod file time              2 bytes
             // 6 - last mod file date              2 bytes
@@ -225,29 +223,21 @@ namespace xPlat {
             // 9 - uncompressed size               4 bytes
             //10 - file name length                2 bytes
             Field<10>().validation = [&](std::uint16_t& v)
-            {   if (v == 0)
-                {   throw ZipException("unsupported file name size", ZipException::Error::InvalidCentralDirectoryHeader);
-                }
+            {   Assert(Error::ZipInvalidCentralDirectoryHeader, (v == 0), "unsupported file name size");
                 Field<17>().value.resize(v,0);
             };
             //11 - extra field length              2 bytes
             Field<11>().validation = [&](std::uint16_t& v)
-            {   if (v != 0)
-                {   throw ZipException("unsupported extra field size", ZipException::Error::InvalidCentralDirectoryHeader);
-                }
+            {   Assert(Error::ZipInvalidCentralDirectoryHeader, (v != 0), "unsupported extra field size");
                 Field<18>().value.resize(v,0);
             };
             //12 - file comment length             2 bytes
             Field<12>().validation = [&](std::uint16_t& v)
-            {   if (v != 0)
-                {   throw ZipException("unsupported file comment size", ZipException::Error::InvalidCentralDirectoryHeader);
-                }
+            {   Assert(Error::ZipInvalidCentralDirectoryHeader, (v != 0), "unsupported file comment size");
             };
             //13 - disk number start               2 bytes
             Field<13>().validation = [](std::uint16_t& v)
-            {   if (v != 0)
-                {   throw ZipException("unsupported disk number start", ZipException::Error::InvalidCentralDirectoryHeader);
-                }
+            {   Assert(Error::ZipInvalidCentralDirectoryHeader, (v != 0), "unsupported disk number start");
             };
             //14 - internal file attributes        2 bytes
             Field<14>().validation = [](std::uint16_t& v)
@@ -773,17 +763,17 @@ namespace xPlat {
 
     void ZipObject::RemoveFile(const std::string& fileName)
     {
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::shared_ptr<StreamBase> ZipObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     void ZipObject::CommitChanges()
     {
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::string ZipObject::GetPathSeparator() { return "/"; }

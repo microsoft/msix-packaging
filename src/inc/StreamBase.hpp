@@ -13,12 +13,12 @@ namespace xPlat {
         virtual ~StreamBase() {}
 
         // This way, derived classes only have to implement what they actually need, and everything else is not implemented.
-        virtual void Write(std::size_t size, const std::uint8_t* bytes)       { throw NotImplementedException(); }
-        virtual std::size_t Read(std::size_t size, const std::uint8_t* bytes) { throw NotImplementedException(); }
-        virtual void Seek(std::uint64_t offset, Reference where)              { throw NotImplementedException(); }
-        virtual int Ferror()                                                  { throw NotImplementedException(); }
-        virtual bool Feof()                                                   { throw NotImplementedException(); }
-        virtual std::uint64_t Ftell()                                         { throw NotImplementedException(); }
+        virtual void Write(std::size_t size, const std::uint8_t* bytes)       { throw Exception(Error::NotImplemented); }
+        virtual std::size_t Read(std::size_t size, const std::uint8_t* bytes) { throw Exception(Error::NotImplemented); }
+        virtual void Seek(std::uint64_t offset, Reference where)              { throw Exception(Error::NotImplemented); }
+        virtual int Ferror()                                                  { throw Exception(Error::NotImplemented); }
+        virtual bool Feof()                                                   { throw Exception(Error::NotImplemented); }
+        virtual std::uint64_t Ftell()                                         { throw Exception(Error::NotImplemented); }
 
         virtual void CopyTo(StreamBase* to)
         {

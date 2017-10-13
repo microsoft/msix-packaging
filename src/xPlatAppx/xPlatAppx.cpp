@@ -39,13 +39,13 @@ unsigned int ResultOf(char* source, char* destination, Lambda lambda)
     {
         if (source == nullptr || destination == nullptr)
         {
-            throw xPlat::InvalidArgumentException();
+            throw xPlat::Exception(xPlat::Error::InvalidParameter);
         }
         lambda();
     }
-    catch (xPlat::ExceptionBase& exception)
+    catch (xPlat::Exception& e)
     {
-        result = exception.Code();
+        result = e.Code();
     }
 
     return result;

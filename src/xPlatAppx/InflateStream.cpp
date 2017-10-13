@@ -15,8 +15,6 @@ namespace xPlat {
         InflateException() : ExceptionBase(ExceptionBase::SubFacility::INFLATE) { assert(false); }
     };
 
-    #define Assert(a) {if (!(a)) throw InflateException();}
-
     InflateStream::InflateStream(
         std::shared_ptr<StreamBase> stream,
         std::uint64_t uncompressedSize
@@ -126,7 +124,7 @@ namespace xPlat {
 
     void InflateStream::Write(std::size_t size, const std::uint8_t* bytes)
     {
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::size_t InflateStream::Read(std::size_t cbReadBuffer, const std::uint8_t* readBuffer)

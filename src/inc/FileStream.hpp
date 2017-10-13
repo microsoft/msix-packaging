@@ -8,19 +8,6 @@
 #include "StreamBase.hpp"
 
 namespace xPlat {
-    class FileException : public ExceptionBase
-    {
-    public:
-        FileException(std::string message, uint32_t error = 0) :
-            ExceptionBase(ExceptionBase::SubFacility::FILE),
-            reason(message)
-        {
-            SetLastError(error);
-        }
-
-        std::string reason;
-    };
-
     // TODO: turns out we DO need some sort of abstraction over storage -- investigate using BOOST?
     class FileStream : public StreamBase
     {
@@ -31,10 +18,7 @@ namespace xPlat {
         {
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
             file = std::fopen(name.c_str(), modes[mode]);
-            if (!file)
-            {
-                throw FileException(name);
-            }
+            Assert(Error::FileOpen, !file, name);
         }
 
         virtual ~FileStream() override
@@ -54,7 +38,7 @@ namespace xPlat {
         virtual void Seek(std::uint64_t to, StreamBase::Reference whence) override
         {
             int rc = std::fseek(file, to, whence);
-            if (rc != 0) { throw FileException(name, rc); }
+            Assert(Error::FileSeek, rc != 0, name);
             offset = Ftell();
         }
 
@@ -63,10 +47,7 @@ namespace xPlat {
             std::size_t bytesRead = std::fread(
                 static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
             );
-            if (bytesRead < size && !Feof())
-            {
-                throw FileException(name, Ferror());
-            }
+            Assert(Error::FileRead, (bytesRead < size && !Feof()), name);
             offset = Ftell();
             return bytesRead;
         }
@@ -86,10 +67,7 @@ namespace xPlat {
             std::size_t bytesWritten = std::fwrite(
                 static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
             );
-            if (bytesWritten != size)
-            {
-                throw FileException(name, std::ferror(file));
-            }
+            Assert(Error::FileWrite, (bytesWritten != size), name);
             offset = Ftell();
         }
 

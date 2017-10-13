@@ -137,19 +137,19 @@ namespace xPlat {
     std::vector<std::string> DirectoryObject::GetFileNames()
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::shared_ptr<StreamBase> DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     void DirectoryObject::RemoveFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::shared_ptr<StreamBase> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)

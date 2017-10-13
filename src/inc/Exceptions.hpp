@@ -7,40 +7,82 @@
 
 namespace xPlat {
 
-    class ExceptionBase : public std::exception
+    static const std::uint32_t ERROR_FACILITY = 0x8BAD0000;   // Facility 2989
+
+    // defines error codes
+    enum class Error : std::uint32_t
     {
-    public:
-        enum SubFacility : uint32_t {
-            NONE    = 0x0000,
-            FILE    = 0x1000,
-            ZIP     = 0x2000,
-            INFLATE = 0x4000,
-            MAX     = 0x0FFF      // always last, always defines bytes reserved for forwarding errors
-        };
+        // win32 error codes
+        NotSupported                            = 0x80070032,
+        InvalidParameter                        = 0x80070057,
+        NotImplemented                          = 0x80070078,
 
-        ExceptionBase()
-        {
-            assert(false); // for debugging purposes.
-        }
+        //
+        // xplat specific error codes
+        //
 
-        ExceptionBase(SubFacility subFacility) : subFacility(subFacility) {}
-        ExceptionBase(uint32_t headerOveride, SubFacility subFacility) : header(headerOveride), subFacility(subFacility) {}
+        // Basic file errors
+        FileOpen                                = ERROR_FACILITY + 0x0001,
+        FileSeek                                = ERROR_FACILITY + 0x0002,
+        FileRead                                = ERROR_FACILITY + 0x0003,
+        FileWrite                               = ERROR_FACILITY + 0x0003,
 
-        void SetLastError(uint32_t error)
-        {
-            code = header + subFacility + (error & SubFacility::MAX);
-        }
-
-        uint32_t Code() { return code; }
-
-    protected:
-        SubFacility subFacility = SubFacility::NONE;
-        uint32_t    header = 0x8BAD0000;   // SubFacility 2989
-        uint32_t    code   = 0xFFFFFFFF;   // by default, something very bad happened...
+        // Zip errors
+        ZipInvalidHeader                        = ERROR_FACILITY + 0x0011,
+        ZipFieldOutOfRange                      = ERROR_FACILITY + 0x0012,
+        ZipInvalidEndOfCentralDirectoryRecord   = ERROR_FACILITY + 0x0013,
+        ZipInvalidZip64CentralDirectoryLocator  = ERROR_FACILITY + 0x0014,
+        ZipInvalidZip64CentralDirectoryRecord   = ERROR_FACILITY + 0x0015,
+        ZipInvalidCentralDirectoryHeader        = ERROR_FACILITY + 0x0016,
+        ZipHiddenDataBetweenLastCDHandEoCD      = ERROR_FACILITY + 0x0017,
+        ZipInvalidLocalFileHeader               = ERROR_FACILITY + 0x0018,
     };
 
-    class NotImplementedException   : public ExceptionBase { public: NotImplementedException()  { SetLastError(1); } };
-    class NotSupportedException     : public ExceptionBase { public: NotSupportedException()    { SetLastError(2); } };
-    class InvalidArgumentException  : public ExceptionBase { public: InvalidArgumentException() { SetLastError(3); } };
-    class IOException               : public ExceptionBase { public: IOException()              { SetLastError(4); } };
+    // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
+    // Throwing xPlat::Exception will break into the debugger on chk builds to aid debugging
+    class Exception : public std::exception
+    {
+    public:
+        Exception(Error error) : m_code(static_cast<std::uint32_t>(error))
+        {
+            assert(false);
+        }
+
+        Exception(Error error, std::string& message) :
+            m_code(static_cast<std::uint32_t>(error)),
+            m_message(std::move(message))
+        {
+            assert(false);
+        }
+
+        Exception(Error error, const char* message) :
+            m_code(static_cast<std::uint32_t>(error)),
+            m_message(message)
+        {
+            assert(false);
+        }
+
+        Exception(std::uint32_t error) : m_code(ERROR_FACILITY + error)
+        {
+            assert(false);
+        }
+
+        Exception(std::uint32_t error, std::string& message) :
+            m_code(ERROR_FACILITY + error),
+            m_message(std::move(message))
+        {
+            assert(false);
+        }
+
+        uint32_t        Code()      { return m_code; }
+        std::string&    Message()   { return m_message; }
+
+    protected:
+        std::uint32_t   m_code;
+        std::string     m_message;
+    };
+
+    // Helpers to make code more terse and more readable at the same time.  
+    #define Assert(c, a)   {if (!(a)) throw Exception(c);}
+    #define Assert(c, a, m) {if (!(a)) throw Exception(c,m);}
 }
