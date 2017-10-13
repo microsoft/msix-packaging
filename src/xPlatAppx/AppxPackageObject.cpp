@@ -14,7 +14,7 @@ namespace xPlat {
         // TODO: Implement
     }
 
-    std::shared_ptr<StreamBase> AppxSignatureObject::GetWholeFileValidationStream(std::string file)
+    std::shared_ptr<StreamBase> AppxSignatureObject::GetWholeFileValidationStream(const std::string& file)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
@@ -25,18 +25,18 @@ namespace xPlat {
         // TODO: Implement
     }
 
-    std::shared_ptr<StreamBase> AppxBlockMapObject::GetBlockMapValidationStream(std::string file)
+    std::shared_ptr<StreamBase> AppxBlockMapObject::GetBlockMapValidationStream(const std::string& file)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
     }
 
     AppxPackageId::AppxPackageId(
-        std::string name,
-        std::string version,
-        std::string resourceId,
-        std::string architecture,
-        std::string publisher) :
+        const std::string& name,
+        const std::string& version,
+        const std::string& resourceId,
+        const std::string& architecture,
+        const std::string& publisher) :
         Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), PublisherHash(publisher)
     {
         // TODO: Implement validation?
@@ -58,7 +58,7 @@ namespace xPlat {
         }
     }
 
-    void AppxPackageObject::Pack(xPlatPackUnpackOptions options, std::string certFile, StorageObject& from)
+    void AppxPackageObject::Pack(xPlatPackUnpackOptions options, const std::string& certFile, StorageObject& from)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);

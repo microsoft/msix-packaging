@@ -59,11 +59,11 @@ XPLATAPPX_API unsigned int UnpackAppx(
 {
     return ResultOf(source, destination, [&]() {
         // TODO: what if source and destination are something OTHER than a file paths?
-        xPlat::AppxPackageObject appx(validationOptions, std::move(
-            std::make_unique<xPlat::ZipObject>(std::move(
-                std::make_unique<xPlat::FileStream>(source, xPlat::FileStream::Mode::READ)
-            ))
-        ));
+        xPlat::AppxPackageObject appx(validationOptions,
+            std::make_unique<xPlat::ZipObject>(
+                std::make_unique<xPlat::FileStream>(
+                    source, xPlat::FileStream::Mode::READ
+                    )));
 
         appx.Unpack(packUnpackOptions, xPlat::DirectoryObject(destination));
     });
