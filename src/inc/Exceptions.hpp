@@ -28,6 +28,7 @@ namespace xPlat {
         FileSeek                                = ERROR_FACILITY + 0x0002,
         FileRead                                = ERROR_FACILITY + 0x0003,
         FileWrite                               = ERROR_FACILITY + 0x0003,
+        FileCreateDirectory                     = ERROR_FACILITY + 0x0004,
 
         // Zip format errors
         ZipCentralDirectoryHeader               = ERROR_FACILITY + 0x0011,
