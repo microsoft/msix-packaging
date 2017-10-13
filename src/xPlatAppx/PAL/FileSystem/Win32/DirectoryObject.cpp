@@ -192,7 +192,7 @@ namespace xPlat {
                 if (!CreateDirectory(utf16Name.c_str(), nullptr))
                 {
                     auto lastError = static_cast<std::uint32_t>(GetLastError());
-                    Assert(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreaetDirectory");
+                    Assert(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreateDirectory");
                 }
             }
             path = path + GetPathSeparator() + PopFirst();
