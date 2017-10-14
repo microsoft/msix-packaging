@@ -1,50 +1,100 @@
+#pragma once
 
+#include <cstdint>
+#include <string>
 #include <exception>
+#include <cassert>
 
 namespace xPlat {
 
-    class ExceptionBase : public std::exception
+    static const std::uint32_t ERROR_FACILITY = 0x8BAD0000;   // Facility 2989
+
+    // defines error codes
+    enum class Error : std::uint32_t
+    {
+        //
+        // Win32 error codes
+        //
+        NotSupported                            = 0x80070032,
+        InvalidParameter                        = 0x80070057,
+        NotImplemented                          = 0x80070078,
+
+        //
+        // xPlat specific error codes
+        //
+
+        // Basic file errors
+        FileOpen                                = ERROR_FACILITY + 0x0001,
+        FileSeek                                = ERROR_FACILITY + 0x0002,
+        FileRead                                = ERROR_FACILITY + 0x0003,
+        FileWrite                               = ERROR_FACILITY + 0x0003,
+        FileCreateDirectory                     = ERROR_FACILITY + 0x0004,
+
+        // Zip format errors
+        ZipCentralDirectoryHeader               = ERROR_FACILITY + 0x0011,
+        ZipLocalFileHeader                      = ERROR_FACILITY + 0x0012,
+        Zip64EOCDRecord                         = ERROR_FACILITY + 0x0013,
+        Zip64EOCDLocator                        = ERROR_FACILITY + 0x0014,
+        ZipEOCDRecord                           = ERROR_FACILITY + 0x0015,
+        ZipHiddenData                           = ERROR_FACILITY + 0x0016,
+
+        // Inflate errors
+        InflateInitialize                       = ERROR_FACILITY + 0x0021,
+        InflateRead                             = ERROR_FACILITY + 0x0022,
+        InflateCorruptData                      = ERROR_FACILITY + 0x0023,
+    };
+
+    // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
+    // Throwing xPlat::Exception will break into the debugger on chk builds to aid debugging
+    class Exception : public std::exception
     {
     public:
-        enum Facility : std::uint32_t {
-            NONE = 0x0000,
-            FILE = 0x1000,
-            ZIP =  0x2000,
-            CRC =  0x4000,
-            MAX =  0x0FFF      // always last, always defines bytes reserved for forwarding errors
-        };
-
-        ExceptionBase() {}
-        ExceptionBase(Facility facility) : facility(facility) {}
-
-        void SetLastError(std::uint32_t error)
+        Exception(Error error) : m_code(static_cast<std::uint32_t>(error))
         {
-            code = header + facility + (error & Facility::MAX);
+            assert(false);
         }
 
-        uint32_t Code() { return code; }
+        Exception(Error error, std::string& message) :
+            m_code(static_cast<std::uint32_t>(error)),
+            m_message(message)
+        {
+            assert(false);
+        }
+
+        Exception(Error error, const char* message) :
+            m_code(static_cast<std::uint32_t>(error)),
+            m_message(message)
+        {
+            assert(false);
+        }
+
+        Exception(std::uint32_t error) : m_code(0x8007 + error)
+        {
+            assert(false);
+        }
+
+        Exception(std::uint32_t error, std::string& message) :
+            m_code(0x8007 + error),
+            m_message(message)
+        {
+            assert(false);
+        }
+
+        Exception(std::uint32_t error, const char* message) :
+            m_code(0x8007 + error),
+            m_message(message)
+        {
+            assert(false);
+        }
+
+        uint32_t        Code()      { return m_code; }
+        std::string&    Message()   { return m_message; }
 
     protected:
-        Facility facility = Facility::NONE;
-        std::uint32_t header = 0x8BAD0000;   // facility 2989
-        std::uint32_t code   = 0xFFFFFFFF;   // by default, something very bad happened...
+        std::uint32_t   m_code;
+        std::string     m_message;
     };
 
-    class NotImplementedException : public ExceptionBase { public: NotImplementedException() { SetLastError(1); } };
-    class NotSupportedException : public ExceptionBase {   public: NotSupportedException()   { SetLastError(2); } };
-
-    class FileException : public ExceptionBase
-    {
-    public:
-        FileException(std::string message, std::uint32_t error = 0) :
-            reason(message),
-            ExceptionBase(ExceptionBase::Facility::FILE)
-        {
-            SetLastError(error);
-        }
-
-        std::string reason;
-    };
-
-
+    // Helper to make code more terse and more readable at the same time.
+    #define ThrowIf(c, a, m) {if (!(a)) throw xPlat::Exception(c,m);}
 }

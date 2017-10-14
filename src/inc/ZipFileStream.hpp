@@ -1,5 +1,6 @@
-
+#pragma once
 #include "Exceptions.hpp"
+#include "StreamBase.hpp"
 #include "StreamBase.hpp"
 
 #include <string>
@@ -10,30 +11,37 @@ namespace xPlat {
     class ZipFileStream : public StreamBase
     {
     public:
-        enum CompressionType : std::uint16_t { Store = 0, Deflate = 8 };
-
         // TODO: define what streams to pass in on the .ctor
-        ZipFileStream(std::string fileName, std::size_t compressedSize, std::size_t uncompressedSize,
-            CompressionType compressionType, std::size_t headerOffset, std::uint32_t crc32) :
-            fileName(fileName),
-            compressedSize(compressedSize),
-            uncompressedSize(uncompressedSize),
-            compressionType(compressionType),
-            headerOffset(headerOffset),
-            crc32(crc32)
+        ZipFileStream(
+            std::uint32_t offset,
+            std::uint32_t size,
+            bool isCompressed,
+            StreamBase* stream
+        ) :
+            m_offset(offset),
+            m_size(size),
+            m_isCompressed(isCompressed),
+            m_stream(stream)
         {
         }
 
+        void Write(std::size_t size, const std::uint8_t* bytes) override;
+        std::size_t Read(std::size_t size, const std::uint8_t* bytes) override;
+        void Seek(std::uint64_t offset, Reference where) override;
+        int Ferror() override;
+        bool Feof() override;
+        std::uint64_t Ftell()  override;
+
+        bool IsCompressed();
+        std::uint64_t Size();
+
     protected:
-        std::string fileName;
-        std::size_t compressedSize;
-        std::size_t uncompressedSize;
-        CompressionType compressionType;
+        // TODO: change to uint64_t when adding 4+GB support
+        std::uint64_t m_offset;
+        std::uint64_t m_size;
 
-        std::size_t headerOffset;
-        std::uint32_t crc32;
-
-        std::string sanitizedName;
-
+        bool m_isCompressed = false;
+        std::uint64_t m_relativePosition = 0;
+        StreamBase* m_stream = nullptr;
     };
 }

@@ -1,108 +1,131 @@
+#pragma once
 
+#include <memory>
 #include <vector>
 #include <functional>
+#include <algorithm>
+#include <tuple>
+#include <type_traits>
 #include <initializer_list>
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 
 namespace xPlat {
-
-    class ObjectBase
-    {
-    public:
-        ObjectBase() {}
-        virtual ~ObjectBase() {}
-
-        virtual void Write() = 0;
-        virtual void Read() = 0;
-        virtual void Validate() {}
-
-        template <class T> virtual T& Value()              { throw NotSupportedException(); }
-        template <class T> virtual void SetValue(T& value) { throw NotSupportedException(); }
-    };
-
-    class StructuredObject : public ObjectBase
-    {
-    public:
-        StructuredObject(std::initializer_list<ObjectBase> fields) : list(fields) { }
-
-        virtual void Write()
-        {
-            for (auto field : list)
-            {
-                field.Validate();
-                field.Write();
-            }
-        }
-
-        virtual void Read()
-        {
-            for (auto field : list)
-            {
-                field.Read();
-                field.Validate();
-            }
-        }
-
-        ObjectBase& Field(size_t index) { return list[index]; }
-
-        std::vector<ObjectBase>& Value() { return list; }
-
-    protected:
-        std::vector<ObjectBase> list;
-    };
-
     namespace Meta {
+
+        // Represents a heterogeneous collection of types that can be operated on as a compile-time vector
+        template <typename... Types>
+        class TypeList
+        {
+            std::tuple<Types...> fields;
+            static constexpr std::size_t last_index{ std::tuple_size<std::tuple<Types...>>::value };
+
+        public:
+            template<std::size_t index = 0, typename FuncT>
+            inline typename std::enable_if<index == last_index, void>::type for_each(FuncT)
+            { }
+
+            template<std::size_t index = 0, typename FuncT>
+            inline typename std::enable_if<index < last_index, void>::type for_each(FuncT f)
+            {
+                f(Field<index>());
+                for_each<index + 1, FuncT>(f);
+            }
+
+            template <size_t index>
+            inline auto& Field() { return std::get<index>(fields); }
+        };
+
+        // Defines set of operations (size, write, read) for a serializable/deserializable type.
+        template <class... Types>
+        class StructuredObject : public TypeList<Types...>
+        {
+        public:
+            size_t Size()
+            {
+                size_t result = 0;
+                this->for_each([&](auto& item)
+                {
+                    result += item.Size();
+                });
+                return result;
+            }
+
+            void Write(StreamBase* stream)
+            {
+                offset = stream->Ftell();
+                this->for_each([&](auto& item)
+                {
+                    item.Write(stream);
+                });
+            }
+
+            void Read(StreamBase* stream)
+            {
+                offset = stream->Ftell();
+                this->for_each([&](auto& item)
+                {
+                    item.Read(stream);
+                });
+            }
+
+            virtual void Validate() { }
+
+        protected:
+            std::uint64_t offset = 0;   // For debugging purposes!
+        };
+
+        // base type for individual serializable/deserializable fields
         template <class T>
-        class FieldBase : public ObjectBase
+        class FieldBase
         {
         public:
             using Lambda = std::function<void(T& v)>;
 
-            FieldBase(StreamBase& stream, Lambda validator) : stream(stream), validate(validator) {}
-
-            virtual T& Value()          { return value; }
-            virtual void SetValue(T& v) { value = v; }
-
-            virtual void Write()
+            FieldBase()
             {
-                Validate();
-                stream.Write(sizeof(T), static_cast<std::uint8_t>(const_cast<T>(&value)));
+                validation = [](T&){};    // empty validation by-default.
             }
 
-            virtual void Read()
+            virtual void Write(StreamBase* stream)
             {
-                stream.Read(sizeof(T), static_cast<std::uint8_t>(const_cast<T>(&value)));
+                StreamBase::Write<T>(stream, &value);
+            }
+
+            virtual void Read(StreamBase* stream)
+            {
+                StreamBase::Read<T>(stream, &value);
                 Validate();
             }
 
-            void Validate() { validate(Value()); }
+            virtual void Validate() { validation(this->value); }
+            virtual size_t Size()   { return sizeof(T); }
 
-            T& Value() { return value; }
-            void SetValue(T& v) { value = v; }
-
-        protected:
-            T value;
-            StreamBase& stream;
-            Lambda validate;
+            T       value;
+            Lambda  validation;
         };
 
-        class Field2Bytes : public FieldBase<std::uint16_t>
-        {
-        public:
-            Field2Bytes(StreamBase& stream, Lambda&& validator) : FieldBase<std::uint16_t>(stream, validator) {}
-        };
+        class Field2Bytes : public FieldBase<std::uint16_t> { };
+        class Field4Bytes : public FieldBase<std::uint32_t> { };
+        class Field8Bytes : public FieldBase<std::uint64_t> { };
 
-        class Field4Bytes : public FieldBase<std::uint32_t>
+        // variable length field.
+        class FieldNBytes : public FieldBase<std::vector<std::uint8_t>>
         {
         public:
-            Field4Bytes(StreamBase& stream, Lambda&& validator) : FieldBase<std::uint32_t>(stream, validator) {}
-        };
+            virtual size_t Size() override      { return value.size(); }
+            virtual void Validate() override    { }
 
-        class Field8Bytes : public FieldBase<std::uint64_t>
-        {
-        public:
-            Field8Bytes(StreamBase& stream, Lambda&& validator) : FieldBase<std::uint64_t>(stream, validator) {}
+            virtual void Write(StreamBase* stream) override
+            {
+                stream->Write(Size(), value.data());
+            }
+
+            virtual void Read(StreamBase* stream) override
+            {
+                stream->Read(Size(), value.data());
+                Validate();
+            }
         };
     }
 }

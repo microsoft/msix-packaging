@@ -1,4 +1,4 @@
-
+#pragma once
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 
@@ -7,8 +7,8 @@ namespace xPlat {
     class OffsetStream : public StreamBase
     {
     public:
-        void CopyTo(StreamBase& to) { throw NotImplementedException(); }
-        virtual void Write(std::size_t size, const std::uint8_t* bytes)
+        virtual void CopyTo(StreamBase* to) override { throw Exception(Error::NotImplemented); }
+        virtual void Write(std::size_t size, const std::uint8_t* bytes) override
         {
             count += size;
         }
@@ -17,6 +17,5 @@ namespace xPlat {
     protected:
 
         std::size_t count = 0;
-
     };
 }
