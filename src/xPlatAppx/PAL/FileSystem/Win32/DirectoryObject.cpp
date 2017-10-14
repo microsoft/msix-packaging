@@ -78,7 +78,7 @@ namespace xPlat {
             {
                 return;
             }
-            Assert(lastError, false, "FindFirstFile failed.");
+            ThrowIf(lastError, false, "FindFirstFile failed.");
         }
 
         do
@@ -114,7 +114,7 @@ namespace xPlat {
         while (FindNextFile(find.get(), &findFileData));
 
         std::uint32_t lastError = static_cast<std::uint32_t>(GetLastError());
-        Assert(lastError,
+        ThrowIf(lastError,
             ((lastError == ERROR_NO_MORE_FILES) ||
             (lastError == ERROR_SUCCESS) ||
             (lastError == ERROR_ALREADY_EXISTS)),
@@ -192,7 +192,7 @@ namespace xPlat {
                 if (!CreateDirectory(utf16Name.c_str(), nullptr))
                 {
                     auto lastError = static_cast<std::uint32_t>(GetLastError());
-                    Assert(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreateDirectory");
+                    ThrowIf(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreateDirectory");
                 }
             }
             path = path + GetPathSeparator() + PopFirst();

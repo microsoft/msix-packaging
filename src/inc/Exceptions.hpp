@@ -56,7 +56,7 @@ namespace xPlat {
 
         Exception(Error error, std::string& message) :
             m_code(static_cast<std::uint32_t>(error)),
-            m_message(std::move(message))
+            m_message(message)
         {
             assert(false);
         }
@@ -75,7 +75,7 @@ namespace xPlat {
 
         Exception(std::uint32_t error, std::string& message) :
             m_code(0x8007 + error),
-            m_message(std::move(message))
+            m_message(message)
         {
             assert(false);
         }
@@ -96,5 +96,5 @@ namespace xPlat {
     };
 
     // Helper to make code more terse and more readable at the same time.
-    #define Assert(c, a, m) {if (!(a)) throw Exception(c,m);}
+    #define ThrowIf(c, a, m) {if (!(a)) throw xPlat::Exception(c,m);}
 }

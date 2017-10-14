@@ -18,7 +18,7 @@ namespace xPlat {
         {
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
             file = std::fopen(path.c_str(), modes[mode]);
-            Assert(Error::FileOpen, (file), path.c_str());
+            ThrowIf(Error::FileOpen, (file), path.c_str());
         }
 
         virtual ~FileStream() override
@@ -38,7 +38,7 @@ namespace xPlat {
         virtual void Seek(std::uint64_t to, StreamBase::Reference whence) override
         {
             int rc = std::fseek(file, to, whence);
-            Assert(Error::FileSeek, (rc == 0), "seek failed");
+            ThrowIf(Error::FileSeek, (rc == 0), "seek failed");
             offset = Ftell();
         }
 
@@ -47,7 +47,7 @@ namespace xPlat {
             std::size_t bytesRead = std::fread(
                 static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
             );
-            Assert(Error::FileRead, (bytesRead == size || Feof()), "read failed");
+            ThrowIf(Error::FileRead, (bytesRead == size || Feof()), "read failed");
             offset = Ftell();
             return bytesRead;
         }
@@ -67,7 +67,7 @@ namespace xPlat {
             std::size_t bytesWritten = std::fwrite(
                 static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
             );
-            Assert(Error::FileWrite, (bytesWritten == size), "write failed");
+            ThrowIf(Error::FileWrite, (bytesWritten == size), "write failed");
             offset = Ftell();
         }
 

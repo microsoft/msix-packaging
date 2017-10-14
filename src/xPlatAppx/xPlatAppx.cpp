@@ -37,10 +37,7 @@ unsigned int ResultOf(char* source, char* destination, Lambda lambda)
     unsigned int result = 0;
     try
     {
-        if (source == nullptr || destination == nullptr)
-        {
-            throw xPlat::Exception(xPlat::Error::InvalidParameter);
-        }
+        ThrowIf(xPlat::Error::InvalidParameter, (source != nullptr && destination != nullptr), "Invalid parameters");
         lambda();
     }
     catch (xPlat::Exception& e)

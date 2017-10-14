@@ -31,13 +31,13 @@ namespace xPlat {
                     m_fileCurrentWindowPositionEnd = 0;
 
                     int ret = inflateInit2(&m_zstrm, -MAX_WBITS);
-                    Assert(Error::InflateInitialize, (ret == Z_OK), "inflateInit2 failed");
+                    ThrowIf(Error::InflateInitialize, (ret == Z_OK), "inflateInit2 failed");
                     return std::make_pair(true, State::READY_TO_READ);
                 }
             }, // State::UNINITIALIZED
             { State::READY_TO_READ , [&](std::size_t, const std::uint8_t*)
                 {
-                    Assert(Error::InflateRead,(m_zstrm.avail_in == 0), "uninflated bytes overwritten");
+                    ThrowIf(Error::InflateRead,(m_zstrm.avail_in == 0), "uninflated bytes overwritten");
                     m_zstrm.avail_in = m_stream->Read(InflateStream::BUFFERSIZE, m_compressedBuffer);
                     m_zstrm.next_in = m_compressedBuffer;
                     return std::make_pair(true, State::READY_TO_INFLATE);
@@ -55,7 +55,7 @@ namespace xPlat {
                     case Z_DATA_ERROR:
                     case Z_MEM_ERROR:
                         Cleanup();
-                        Assert(Error::InflateCorruptData, false, "inflate failed unexpectedly.");
+                        ThrowIf(Error::InflateCorruptData, false, "inflate failed unexpectedly.");
                     case Z_STREAM_END:
                     default:
                         m_fileCurrentWindowPositionEnd += (InflateStream::BUFFERSIZE - m_zstrm.avail_out);
@@ -68,7 +68,7 @@ namespace xPlat {
                     // Check if we're actually at the end of stream.
                     if (0 == (m_uncompressedSize - m_fileCurrentPosition))
                     {
-                        Assert(Error::InflateCorruptData, ((m_zret != Z_STREAM_END) || (m_zstrm.avail_in != 0)), "unexpected extra data");
+                        ThrowIf(Error::InflateCorruptData, ((m_zret != Z_STREAM_END) || (m_zstrm.avail_in != 0)), "unexpected extra data");
                         return std::make_pair(true, State::CLEANUP);
                     }
 
