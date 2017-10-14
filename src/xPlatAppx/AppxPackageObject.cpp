@@ -17,7 +17,7 @@ namespace xPlat {
     std::shared_ptr<StreamBase> AppxSignatureObject::GetWholeFileValidationStream(const std::string& file)
     {
         // TODO: Implement
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     AppxBlockMapObject::AppxBlockMapObject(std::shared_ptr<StreamBase>&& stream)
@@ -28,7 +28,7 @@ namespace xPlat {
     std::shared_ptr<StreamBase> AppxBlockMapObject::GetBlockMapValidationStream(const std::string& file)
     {
         // TODO: Implement
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     AppxPackageId::AppxPackageId(
@@ -61,7 +61,7 @@ namespace xPlat {
     void AppxPackageObject::Pack(xPlatPackUnpackOptions options, const std::string& certFile, StorageObject& from)
     {
         // TODO: Implement
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     void AppxPackageObject::Unpack(xPlatPackUnpackOptions options, StorageObject& to)
@@ -89,7 +89,7 @@ namespace xPlat {
     std::vector<std::string> AppxPackageObject::GetFootprintFiles()
     {
         // TODO: Implement
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::string AppxPackageObject::GetPathSeparator() { return "/"; }
@@ -108,18 +108,18 @@ namespace xPlat {
     void AppxPackageObject::RemoveFile(const std::string& fileName)
     {
         // TODO: Implement
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::shared_ptr<StreamBase> AppxPackageObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
         // TODO: Implement
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     void AppxPackageObject::CommitChanges()
     {
         // TODO: Implement
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 }

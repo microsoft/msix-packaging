@@ -9,29 +9,6 @@
 #include <memory>
 
 namespace xPlat {
-
-    class ZipException : public ExceptionBase
-    {
-    public:
-        enum class Error : std::uint32_t
-        {
-            InvalidHeader                       = 1,
-            FieldOutOfRange                     = 2,
-            InvalidEndOfCentralDirectoryRecord  = 3,
-            InvalidZip64CentralDirectoryLocator = 4,
-            InvalidZip64CentralDirectoryRecord  = 5,
-            InvalidCentralDirectoryHeader       = 6,
-            HiddenDataBetweenLastCDHandEoCD     = 7,
-            InvalidLocalFileHeader              = 8,
-        };
-
-        ZipException(std::string&& message, Error error) : reason(std::move(message)), ExceptionBase(ExceptionBase::SubFacility::ZIP)
-        {
-            SetLastError(static_cast<std::uint32_t>(error));
-        }
-        std::string reason;
-    };
-
     // forward declarations
     class CentralDirectoryFileHeader;
     class LocalFileHeader;

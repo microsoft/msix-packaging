@@ -8,15 +8,6 @@
 #include <algorithm>
 
 namespace xPlat {
-
-    class InflateException : public ExceptionBase
-    {
-    public:
-        InflateException() : ExceptionBase(ExceptionBase::SubFacility::INFLATE) { assert(false); }
-    };
-
-    #define Assert(a) {if (!(a)) throw InflateException();}
-
     InflateStream::InflateStream(
         std::shared_ptr<StreamBase> stream,
         std::uint64_t uncompressedSize
@@ -40,13 +31,13 @@ namespace xPlat {
                     m_fileCurrentWindowPositionEnd = 0;
 
                     int ret = inflateInit2(&m_zstrm, -MAX_WBITS);
-                    if (ret != Z_OK) { throw InflateException(); }
+                    ThrowIf(Error::InflateInitialize, (ret == Z_OK), "inflateInit2 failed");
                     return std::make_pair(true, State::READY_TO_READ);
                 }
             }, // State::UNINITIALIZED
             { State::READY_TO_READ , [&](std::size_t, const std::uint8_t*)
                 {
-                    Assert(m_zstrm.avail_in == 0);
+                    ThrowIf(Error::InflateRead,(m_zstrm.avail_in == 0), "uninflated bytes overwritten");
                     m_zstrm.avail_in = m_stream->Read(InflateStream::BUFFERSIZE, m_compressedBuffer);
                     m_zstrm.next_in = m_compressedBuffer;
                     return std::make_pair(true, State::READY_TO_INFLATE);
@@ -64,7 +55,7 @@ namespace xPlat {
                     case Z_DATA_ERROR:
                     case Z_MEM_ERROR:
                         Cleanup();
-                        throw xPlat::InflateException();
+                        ThrowIf(Error::InflateCorruptData, false, "inflate failed unexpectedly.");
                     case Z_STREAM_END:
                     default:
                         m_fileCurrentWindowPositionEnd += (InflateStream::BUFFERSIZE - m_zstrm.avail_out);
@@ -77,7 +68,7 @@ namespace xPlat {
                     // Check if we're actually at the end of stream.
                     if (0 == (m_uncompressedSize - m_fileCurrentPosition))
                     {
-                        Assert((m_zret == Z_STREAM_END) && (m_zstrm.avail_in == 0));
+                        ThrowIf(Error::InflateCorruptData, ((m_zret != Z_STREAM_END) || (m_zstrm.avail_in != 0)), "unexpected extra data");
                         return std::make_pair(true, State::CLEANUP);
                     }
 
@@ -126,7 +117,7 @@ namespace xPlat {
 
     void InflateStream::Write(std::size_t size, const std::uint8_t* bytes)
     {
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::size_t InflateStream::Read(std::size_t cbReadBuffer, const std::uint8_t* readBuffer)

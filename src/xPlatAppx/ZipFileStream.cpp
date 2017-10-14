@@ -7,7 +7,7 @@ namespace xPlat {
 
     void ZipFileStream::Write(std::size_t size, const std::uint8_t* bytes)
     {
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::size_t ZipFileStream::Read(std::size_t size, const std::uint8_t* bytes)

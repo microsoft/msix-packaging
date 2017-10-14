@@ -37,15 +37,12 @@ unsigned int ResultOf(char* source, char* destination, Lambda lambda)
     unsigned int result = 0;
     try
     {
-        if (source == nullptr || destination == nullptr)
-        {
-            throw xPlat::InvalidArgumentException();
-        }
+        ThrowIf(xPlat::Error::InvalidParameter, (source != nullptr && destination != nullptr), "Invalid parameters");
         lambda();
     }
-    catch (xPlat::ExceptionBase& exception)
+    catch (xPlat::Exception& e)
     {
-        result = exception.Code();
+        result = e.Code();
     }
 
     return result;
@@ -64,8 +61,9 @@ XPLATAPPX_API unsigned int UnpackAppx(
                 std::make_unique<xPlat::FileStream>(
                     source, xPlat::FileStream::Mode::READ
                     )));
-
-        appx.Unpack(packUnpackOptions, xPlat::DirectoryObject(destination));
+        
+        xPlat::DirectoryObject to(destination);
+        appx.Unpack(packUnpackOptions, to);
     });
 }
 
@@ -84,7 +82,8 @@ XPLATAPPX_API unsigned int PackAppx(
             ))
         ));
 
-        appx.Pack(packUnpackOptions, certFile, xPlat::DirectoryObject(source));
+        xPlat::DirectoryObject from(source);
+        appx.Pack(packUnpackOptions, certFile, from);
         appx.CommitChanges();
     });
 }
