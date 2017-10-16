@@ -30,10 +30,5 @@ namespace xPlat {
     protected:
         std::unique_ptr<StreamBase>                                          m_stream;
         std::map<std::string, std::shared_ptr<StreamBase>>                   m_streams;
-        std::map<std::string, std::shared_ptr<CentralDirectoryFileHeader>>   m_centralDirectory;
-
-        // TODO: change to uint64_t when adding full zip64 support
-        std::map<std::uint32_t, std::shared_ptr<LocalFileHeader>>            m_fileRepository;
-
     };//class ZipObject
 }

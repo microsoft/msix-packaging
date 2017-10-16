@@ -746,25 +746,29 @@ namespace xPlat {
         zip64EndOfCentralDirectory.Read(m_stream.get());
 
         // read the zip central directory
+        std::map<std::string, std::shared_ptr<CentralDirectoryFileHeader>> centralDirectory;
         m_stream->Seek(zip64EndOfCentralDirectory.GetOffsetfStartOfCD(), StreamBase::Reference::START);
         for (std::uint32_t index = 0; index < zip64EndOfCentralDirectory.GetTotalNumberOfEntries(); index++)
         {
             auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(m_stream.get());
             centralFileHeader->Read(m_stream.get());
             // TODO: ensure that there are no collisions on name!
-            m_centralDirectory.insert(std::make_pair(centralFileHeader->GetFileName(), centralFileHeader));
+            centralDirectory.insert(std::make_pair(centralFileHeader->GetFileName(), centralFileHeader));
         }
 
         // We should have no data between the end of the last central directory header and the start of the EoCD
         ThrowIf(Error::ZipHiddenData, (m_stream->Ftell() == zip64Locator.GetRelativeOffset()), "hidden data unsupported");
 
-        // read the file repository
-        for (const auto& centralFileHeader : m_centralDirectory)
+        // TODO: change to uint64_t when adding full zip64 support
+        std::map<std::uint32_t, std::shared_ptr<LocalFileHeader>> fileRepository;
+
+        // Read the file repository
+        for (const auto& centralFileHeader : centralDirectory)
         {
             m_stream->Seek(centralFileHeader.second->GetRelativeOffsetOfLocalHeader(), xPlat::StreamBase::Reference::START);
             auto localFileHeader = std::make_shared<LocalFileHeader>(centralFileHeader.second);
             localFileHeader->Read(m_stream.get());
-            m_fileRepository.insert(std::make_pair(
+            fileRepository.insert(std::make_pair(
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader(),
                 localFileHeader));
 
