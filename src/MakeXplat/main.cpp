@@ -20,9 +20,10 @@ struct Options
 {
     void Specify(Command spec)
     {
-        if (spec != specified && specified != Command::None)
+        if (specified != Command::None)
         {
-            throw std::invalid_argument("command specified");
+            specified = Command::Help; // Because clearly the user needs some
+            throw std::invalid_argument("invalid command specified");
         }
         specified = spec;
     }
