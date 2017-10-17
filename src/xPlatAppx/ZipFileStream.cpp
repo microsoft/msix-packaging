@@ -37,7 +37,7 @@ namespace xPlat {
             newPos = m_offset + m_compressedSize + offset;
             break;
         }
-
+        //TODO: We need to constrain newPos so that it can't exceed the end of the stream
         m_stream->Seek(newPos, Reference::START);
         m_relativePosition = m_stream->Ftell() - m_offset;
     }

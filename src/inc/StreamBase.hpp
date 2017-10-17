@@ -32,10 +32,10 @@ namespace xPlat {
         }
 
         template <class T>
-        static void Read(StreamBase* stream, T* value)
+        static std::size_t Read(StreamBase* stream, T* value)
         {
             //static_assert(std::is_pod<T>::value, "specified value type must be both trivial and standard-layout");
-            stream->Read(sizeof(T), reinterpret_cast<std::uint8_t*>(const_cast<T*>(value)));
+            return stream->Read(sizeof(T), reinterpret_cast<std::uint8_t*>(const_cast<T*>(value)));
         }
 
         template <class T>

@@ -150,6 +150,7 @@
     <ClInclude Include="..\..\src\inc\InflateStream.hpp" />
     <ClInclude Include="..\..\src\inc\OffsetStream.hpp" />
     <ClInclude Include="..\..\src\inc\PartitionStream.hpp" />
+    <ClInclude Include="..\..\src\inc\RangeStream.hpp" />
     <ClInclude Include="..\..\src\inc\SequenceStream.hpp" />
     <ClInclude Include="..\..\src\inc\SHA256Stream.hpp" />
     <ClInclude Include="..\..\src\inc\StreamBase.hpp" />
@@ -163,6 +164,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\xPlatAppx\InflateStream.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\PAL\FileSystem\Win32\DirectoryObject.cpp" />
+    <ClCompile Include="..\..\src\xPlatAppx\RangeStream.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\xPlatAppx.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\ZipFileStream.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\ZipObject.cpp" />

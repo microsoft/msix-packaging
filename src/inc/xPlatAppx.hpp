@@ -15,3 +15,5 @@
 // TODO: add #defs to cover platform-specific differences?
 XPLATAPPX_API unsigned int UnpackAppx (char* source, char* destination);
 XPLATAPPX_API unsigned int PackAppx   (char* source, char* destination);
+XPLATAPPX_API unsigned int ValidateAppxSignature(char* appx);
+

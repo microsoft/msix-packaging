@@ -43,4 +43,5 @@ namespace xPlat {
     class NotSupportedException     : public ExceptionBase { public: NotSupportedException()    { SetLastError(2); } };
     class InvalidArgumentException  : public ExceptionBase { public: InvalidArgumentException() { SetLastError(3); } };
     class IOException               : public ExceptionBase { public: IOException()              { SetLastError(4); } };
+    class InvalidStreamFormat       : public ExceptionBase { public: InvalidStreamFormat()      { SetLastError(5); } };
 }

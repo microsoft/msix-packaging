@@ -159,7 +159,7 @@ namespace xPlat {
             seekPosition = m_seekPosition + offset;
             break;
         case Reference::START:
-            seekPosition = m_seekPosition = offset;
+            seekPosition = offset;
             break;
         case Reference::END:
             seekPosition = m_uncompressedSize + offset;
@@ -167,7 +167,7 @@ namespace xPlat {
         }
         
         // Can't seek beyond the end of the uncompressed stream
-        seekPosition = min(m_seekPosition, m_uncompressedSize);
+        seekPosition = min(seekPosition, m_uncompressedSize);
 
         if (seekPosition != m_seekPosition)
         {
