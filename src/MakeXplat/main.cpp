@@ -22,7 +22,7 @@ struct State
 {
     bool Specify(UserSpecified spec)
     {
-        if (specified != UserSpecified::Nothing)
+        if (specified != UserSpecified::Nothing || spec == UserSpecified::Help)
         {
             specified = UserSpecified::Help; // Because clearly the user needs some
             return false;
@@ -289,10 +289,7 @@ int main(int argc, char* argv[])
             })
         },
         {
-            "-?", Command("Displays this help text.", [&]() {
-        state.Specify(UserSpecified::Help);
-                return false;
-            }, {})
+            "-?", Command("Displays this help text.", [&]() { return state.Specify(UserSpecified::Help);}, {})
         },
     };
 
