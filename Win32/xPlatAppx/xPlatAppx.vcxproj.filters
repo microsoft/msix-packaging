@@ -60,6 +60,9 @@
     <ClInclude Include="..\..\src\inc\InflateStream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\inc\AppxPackageObject.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\src\inc\RangeStream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -83,6 +86,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\xPlatAppx\InflateStream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\xPlatAppx\AppxPackageObject.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\xPlatAppx\RangeStream.cpp">

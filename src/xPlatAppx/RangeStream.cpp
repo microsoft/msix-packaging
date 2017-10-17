@@ -26,7 +26,7 @@ namespace xPlat {
 
     void RangeStream::Write(std::size_t size, const std::uint8_t* bytes)
     {
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::size_t RangeStream::Read(std::size_t cbReadBuffer, const std::uint8_t* readBuffer)

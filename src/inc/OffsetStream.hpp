@@ -7,7 +7,7 @@ namespace xPlat {
     class OffsetStream : public StreamBase
     {
     public:
-        virtual void CopyTo(StreamBase& to) override { throw NotImplementedException(); }
+        virtual void CopyTo(StreamBase* to) override { throw Exception(Error::NotImplemented); }
         virtual void Write(std::size_t size, const std::uint8_t* bytes) override
         {
             count += size;

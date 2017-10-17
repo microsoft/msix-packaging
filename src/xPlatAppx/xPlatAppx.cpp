@@ -5,6 +5,7 @@
 #include "RangeStream.hpp"
 #include "ZipObject.hpp"
 #include "DirectoryObject.hpp"
+#include "AppxPackageObject.hpp"
 
 #include <string>
 #include <memory>
@@ -126,15 +127,12 @@ unsigned int ResultOf(char* source, char* destination, Lambda lambda)
     unsigned int result = 0;
     try
     {
-        if (source == nullptr || destination == nullptr)
-        {
-            throw xPlat::InvalidArgumentException();
-        }
+        ThrowErrorIfNot(xPlat::Error::InvalidParameter, (source != nullptr && destination != nullptr), "Invalid parameters");
         lambda();
     }
-    catch (xPlat::ExceptionBase& exception)
+    catch (xPlat::Exception& e)
     {
-        result = exception.Code();
+        result = e.Code();
     }
 
     return result;
@@ -145,61 +143,54 @@ unsigned int ResultOf(char* appx, Lambda lambda)
     unsigned int result = 0;
     try
     {
-        if (appx == nullptr)
-        {
-            throw xPlat::InvalidArgumentException();
-        }
+        ThrowErrorIfNot(xPlat::Error::InvalidParameter, (appx != nullptr), "Invalid parameters");
         lambda();
     }
-    catch (xPlat::ExceptionBase& exception)
+    catch (xPlat::Exception& e)
     {
-        result = exception.Code();
+        result = e.Code();
     }
 
     return result;
 }
 
-XPLATAPPX_API unsigned int UnpackAppx(char* from, char* to)
+XPLATAPPX_API unsigned int UnpackAppx(
+    xPlatPackUnpackOptions packUnpackOptions,
+    xPlatValidationOptions validationOptions,
+    char* source,
+    char* destination)
 {
-    return ResultOf(from, to, [&]() {
-        xPlat::DirectoryObject directory(to);
-        auto rawFile = std::make_unique<xPlat::FileStream>(from, xPlat::FileStream::Mode::READ);
-
-        {
-            xPlat::ZipObject zip(rawFile.get());
-
-            auto fileNames = zip.GetFileNames();
-            for (const auto& fileName : fileNames)
-            {
-                auto sourceFile = zip.GetFile(fileName);
-                auto targetFile = directory.OpenFile(fileName, xPlat::FileStream::Mode::WRITE_UPDATE);
-
-                sourceFile->CopyTo(targetFile.get());
-                targetFile->Close();
-            }
-        }
+    return ResultOf(source, destination, [&]() {
+        // TODO: what if source and destination are something OTHER than a file paths?
+        xPlat::AppxPackageObject appx(validationOptions,
+            std::make_unique<xPlat::ZipObject>(
+                std::make_unique<xPlat::FileStream>(
+                    source, xPlat::FileStream::Mode::READ
+                    )));
+        
+        xPlat::DirectoryObject to(destination);
+        appx.Unpack(packUnpackOptions, to);
     });
 }
 
-XPLATAPPX_API unsigned int PackAppx  (char* from, char* to)
+XPLATAPPX_API unsigned int PackAppx(
+    xPlatPackUnpackOptions packUnpackOptions,
+    xPlatValidationOptions validationOptions,
+    char* source,
+    char* certFile,
+    char* destination)
 {
-    return ResultOf(from, to, [&]() {
-        xPlat::DirectoryObject directory(from);
-        auto rawFile = std::make_unique<xPlat::FileStream>(to, xPlat::FileStream::Mode::WRITE);
+    return ResultOf(source, destination, [&]() {
+        // TODO: what if source and destination are something OTHER than a file paths?
+        xPlat::AppxPackageObject appx(validationOptions, std::move(
+            std::make_unique<xPlat::ZipObject>(std::move(
+                std::make_unique<xPlat::FileStream>(destination, xPlat::FileStream::Mode::WRITE_UPDATE)
+            ))
+        ));
 
-        {
-            xPlat::ZipObject zip(rawFile.get());
-
-            auto fileNames = directory.GetFileNames();
-            for (const auto& fileName : fileNames)
-            {
-                auto sourceFile = directory.GetFile(fileName);
-                auto targetFile = zip.OpenFile(fileName, xPlat::FileStream::Mode::WRITE);
-
-                sourceFile->CopyTo(targetFile.get());
-            }
-            zip.CommitChanges();
-        }
+        xPlat::DirectoryObject from(source);
+        appx.Pack(packUnpackOptions, certFile, from);
+        appx.CommitChanges();
     });
 }
 
@@ -210,18 +201,15 @@ XPLATAPPX_API unsigned int ValidateAppxSignature(char* appx)
         auto rawFile = std::make_unique<xPlat::FileStream>(appx, xPlat::FileStream::Mode::READ);
 
         {
-            xPlat::ZipObject zip(rawFile.get());
+            xPlat::ZipObject zip(std::move(rawFile));
             auto p7xStream = zip.GetFile("AppxSignature.p7x");
             std::uint8_t buffer[16384];
             
             std::size_t cbRead = p7xStream->Read(sizeof(buffer), buffer);
             BLOBHEADER *pblob = (BLOBHEADER*)buffer;
             
-            if (cbRead > sizeof(BLOBHEADER) && pblob->headerId != SIGNATURE_ID)
-            {
-                throw xPlat::InvalidStreamFormat();
-            }
-            
+            ThrowErrorIfNot(xPlat::Error::SignatureInvalid, (cbRead > sizeof(BLOBHEADER) && pblob->headerId == SIGNATURE_ID), "Invalid signature");
+                        
             //auto rangeStream = std::make_unique<xPlat::RangeStream>(p7xStream, sizeof(P7xFileId), cbStream - sizeof(P7xFileId));
             //auto tempStream = std::make_unique<xPlat::FileStream>("e:\\temp\\temp.p7x", xPlat::FileStream::WRITE);
             //rangeStream->CopyTo(tempStream.get());

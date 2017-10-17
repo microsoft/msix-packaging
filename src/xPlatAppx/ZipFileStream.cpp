@@ -7,7 +7,7 @@ namespace xPlat {
 
     void ZipFileStream::Write(std::size_t size, const std::uint8_t* bytes)
     {
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::size_t ZipFileStream::Read(std::size_t size, const std::uint8_t* bytes)
@@ -16,7 +16,7 @@ namespace xPlat {
         
         //TODO: the next line of code assumes that the amount to read will be less than 4GB
         //Review this
-        std::size_t amountToRead = std::min(size, (size_t)(m_compressedSize - m_relativePosition));
+        std::size_t amountToRead = std::min(size, (size_t)(m_size - m_relativePosition));
         std::size_t bytesRead = m_stream->Read(amountToRead, bytes);
         m_relativePosition += bytesRead;
         return bytesRead;
@@ -34,7 +34,7 @@ namespace xPlat {
             newPos = m_offset + offset;
             break;
         case Reference::END:
-            newPos = m_offset + m_compressedSize + offset;
+            newPos = m_offset + m_size + offset;
             break;
         }
         //TODO: We need to constrain newPos so that it can't exceed the end of the stream
@@ -49,7 +49,7 @@ namespace xPlat {
 
     bool ZipFileStream::Feof()
     {
-        return m_relativePosition >= m_compressedSize;
+        return m_relativePosition >= m_size;
     }
 
     std::uint64_t ZipFileStream::Ftell()
@@ -62,14 +62,8 @@ namespace xPlat {
         return (m_isCompressed);
     }
 
-    std::uint64_t ZipFileStream::GetCompressedSize()
+    std::uint64_t ZipFileStream::Size()
     {
-        return m_compressedSize;
+        return m_size;
     }
-
-    std::uint64_t ZipFileStream::GetUncompressedSize()
-    {
-        return m_uncompressedSize;
-    }
-
 } /* xPlat */

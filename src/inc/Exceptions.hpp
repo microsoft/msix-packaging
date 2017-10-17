@@ -7,41 +7,93 @@
 
 namespace xPlat {
 
-    class ExceptionBase : public std::exception
+    static const std::uint32_t ERROR_FACILITY = 0x8BAD0000;   // Facility 2989
+
+    // defines error codes
+    enum class Error : std::uint32_t
     {
-    public:
-        enum SubFacility : uint32_t {
-            NONE    = 0x0000,
-            FILE    = 0x1000,
-            ZIP     = 0x2000,
-            INFLATE = 0x4000,
-            MAX     = 0x0FFF      // always last, always defines bytes reserved for forwarding errors
-        };
+        //
+        // Win32 error codes
+        //
+        NotSupported                = 0x80070032,
+        InvalidParameter            = 0x80070057,
+        NotImplemented              = 0x80070078,
 
-        ExceptionBase()
-        {
-            assert(false); // for debugging purposes.
-        }
+        //
+        // xPlat specific error codes
+        //
 
-        ExceptionBase(SubFacility subFacility) : subFacility(subFacility) {}
-        ExceptionBase(uint32_t headerOveride, SubFacility subFacility) : header(headerOveride), subFacility(subFacility) {}
+        // Basic file errors
+        FileOpen                    = ERROR_FACILITY + 0x0001,
+        FileSeek                    = ERROR_FACILITY + 0x0002,
+        FileRead                    = ERROR_FACILITY + 0x0003,
+        FileWrite                   = ERROR_FACILITY + 0x0003,
+        FileCreateDirectory         = ERROR_FACILITY + 0x0004,
 
-        void SetLastError(uint32_t error)
-        {
-            code = header + subFacility + (error & SubFacility::MAX);
-        }
+        // Zip format errors
+        ZipCentralDirectoryHeader   = ERROR_FACILITY + 0x0011,
+        ZipLocalFileHeader          = ERROR_FACILITY + 0x0012,
+        Zip64EOCDRecord             = ERROR_FACILITY + 0x0013,
+        Zip64EOCDLocator            = ERROR_FACILITY + 0x0014,
+        ZipEOCDRecord               = ERROR_FACILITY + 0x0015,
+        ZipHiddenData               = ERROR_FACILITY + 0x0016,
 
-        uint32_t Code() { return code; }
+        // Inflate errors
+        InflateInitialize           = ERROR_FACILITY + 0x0021,
+        InflateRead                 = ERROR_FACILITY + 0x0022,
+        InflateCorruptData          = ERROR_FACILITY + 0x0023,
 
-    protected:
-        SubFacility subFacility = SubFacility::NONE;
-        uint32_t    header = 0x8BAD0000;   // SubFacility 2989
-        uint32_t    code   = 0xFFFFFFFF;   // by default, something very bad happened...
+        // Signature errors
+        SignatureInvalid            = ERROR_FACILITY + 0x0030,
     };
 
-    class NotImplementedException   : public ExceptionBase { public: NotImplementedException()  { SetLastError(1); } };
-    class NotSupportedException     : public ExceptionBase { public: NotSupportedException()    { SetLastError(2); } };
-    class InvalidArgumentException  : public ExceptionBase { public: InvalidArgumentException() { SetLastError(3); } };
-    class IOException               : public ExceptionBase { public: IOException()              { SetLastError(4); } };
-    class InvalidStreamFormat       : public ExceptionBase { public: InvalidStreamFormat()      { SetLastError(5); } };
+    // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
+    // Throwing xPlat::Exception will break into the debugger on chk builds to aid debugging
+    class Exception : public std::exception
+    {
+    public:
+        Exception(Error error) : m_code(static_cast<std::uint32_t>(error))
+        {}
+
+        Exception(Error error, std::string& message) :
+            m_code(static_cast<std::uint32_t>(error)),
+            m_message(message)
+        {}
+
+        Exception(Error error, const char* message) :
+            m_code(static_cast<std::uint32_t>(error)),
+            m_message(message)
+        {}
+
+        Exception(std::uint32_t error) : m_code(0x8007 + error)
+        {}
+
+        Exception(std::uint32_t error, std::string& message) :
+            m_code(0x8007 + error),
+            m_message(message)
+        {}
+
+        Exception(std::uint32_t error, const char* message) :
+            m_code(0x8007 + error),
+            m_message(message)
+        {}
+
+        uint32_t        Code() { return m_code; }
+        std::string&    Message() { return m_message; }
+
+    protected:
+        std::uint32_t   m_code;
+        std::string     m_message;
+    };
+}
+
+
+// Helper to make code more terse and more readable at the same time.
+#define ThrowErrorIfNot(c, a, m)     \
+{                                    \
+    if (!(a))                        \
+    {                                \
+        assert(false);               \
+        throw xPlat::Exception(c,m); \
+    }                                \
 }

@@ -11,18 +11,10 @@
 
 // UNICODE MUST be defined before you include Windows.h if you want the non-ascii versions of APIs (and you do)
 #define UNICODE
+#define NOMINMAX
 #include <windows.h>
 
 namespace xPlat {
-
-    class Win32Exception : public ExceptionBase
-    {
-    public:
-        Win32Exception(DWORD error) : ExceptionBase(0x8007, SubFacility::NONE)
-        {
-            SetLastError(static_cast<std::uint32_t>(error));
-        }
-    };
 
     std::wstring utf8_to_utf16(const std::string& utf8string)
     {
@@ -86,7 +78,7 @@ namespace xPlat {
             {
                 return;
             }
-            throw Win32Exception(lastError);
+            ThrowErrorIfNot(lastError, false, "FindFirstFile failed.");
         }
 
         do
@@ -121,38 +113,36 @@ namespace xPlat {
         }
         while (FindNextFile(find.get(), &findFileData));
 
-        DWORD lastError = GetLastError();
-        if ((lastError != ERROR_NO_MORE_FILES) &&
-            (lastError != ERROR_SUCCESS) &&
-            (lastError != ERROR_ALREADY_EXISTS)
-            )
-        {
-            throw Win32Exception(lastError);
-        }
+        std::uint32_t lastError = static_cast<std::uint32_t>(GetLastError());
+        ThrowErrorIfNot(lastError,
+            ((lastError == ERROR_NO_MORE_FILES) ||
+            (lastError == ERROR_SUCCESS) ||
+            (lastError == ERROR_ALREADY_EXISTS)),
+            "FindNextFile");
     }
+
+    std::string DirectoryObject::GetPathSeparator() { return "\\"; }
 
     std::vector<std::string> DirectoryObject::GetFileNames()
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::shared_ptr<StreamBase> DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     void DirectoryObject::RemoveFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
-        throw NotImplementedException();
+        throw Exception(Error::NotImplemented);
     }
 
     std::shared_ptr<StreamBase> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
-        static const std::string slash("\\");
-
         std::vector<std::string> directories;
         auto PopFirst = [&directories]()
         {
@@ -181,7 +171,7 @@ namespace xPlat {
         std::string path = m_root;
         while (directories.size() != 0)
         {
-            WalkDirectory<WalkOptions::Directories>(path + slash + directories.front(), [&](
+            WalkDirectory<WalkOptions::Directories>(path + GetPathSeparator() + directories.front(), [&](
                 std::string,
                 WalkOptions option,
                 std::string&& name)
@@ -198,16 +188,17 @@ namespace xPlat {
 
             if (!found)
             {
-                std::wstring utf16Name = utf8_to_utf16(path + slash + directories.front());
+                std::wstring utf16Name = utf8_to_utf16(path + GetPathSeparator() + directories.front());
                 if (!CreateDirectory(utf16Name.c_str(), nullptr))
                 {
-                    throw Win32Exception(GetLastError());
+                    auto lastError = static_cast<std::uint32_t>(GetLastError());
+                    ThrowErrorIfNot(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreateDirectory");
                 }
             }
-            path = path + slash + PopFirst();
+            path = path + GetPathSeparator() + PopFirst();
             found = false;
         }
-        name = path + slash + name;
+        name = path + GetPathSeparator() + name;
         auto result = m_streams[fileName] = std::make_unique<FileStream>(std::move(name), mode);
         return result;
     }
