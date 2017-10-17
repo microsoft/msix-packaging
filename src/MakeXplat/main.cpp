@@ -8,112 +8,132 @@
 #include <string>
 #include <initializer_list>
 
-enum class Command
+// Describes which command the user specified
+enum class UserSpecified
 {
-    None,
+    Nothing,
     Help,
     Pack,
     Unpack
 };
 
-struct Options
+// Tracks the state of the current parse operation as well as implements input validation
+struct State
 {
-    bool Specify(Command spec)
+    bool Specify(UserSpecified spec)
     {
-        if (specified != Command::None)
+        if (specified != UserSpecified::Nothing)
         {
-            specified = Command::Help; // Because clearly the user needs some
+            specified = UserSpecified::Help; // Because clearly the user needs some
             return false;
         }
         specified = spec;
         return true;
     }
 
-    void CreatePackageSubfolder()
+    bool CreatePackageSubfolder()
     {
         unpackOptions = static_cast<xPlatPackUnpackOptions>(unpackOptions | xPlatPackUnpackOptions::xPlatPackUnpackOptionsCreatePackageSubfolder);
+        return true;
     }
 
-    void SkipManifestValidation()
+    bool SkipManifestValidation()
     {
         validationOptions = static_cast<xPlatValidationOptions>(validationOptions | xPlatValidationOptions::xPlatValidationOptionSkipAppxManifestValidation);
+        return true;
     }
 
-    void SkipSignatureValidation()
+    bool SkipSignatureValidation()
     {
         validationOptions = static_cast<xPlatValidationOptions>(validationOptions | xPlatValidationOptions::xPlatValidationOptionSkipSignatureOrigin);
+        return true;
     }
 
-    void SetPackageName(const std::string& name)        { packageName = name; }
-    void SetCertificateName(const std::string& name)    { certName = name; }
-    void SetDirectoryName(const std::string& name)      { directoryName = name; }
+    bool SetPackageName(const std::string& name)
+    {
+        if (!packageName.empty() || name.empty()) { return false; }
+        packageName = name;
+        return true;
+    }
+
+    bool SetCertificateName(const std::string& name)
+    {
+        if (!certName.empty() || name.empty()) { return false; }
+        certName = name;
+        return true;
+    }
+
+    bool SetDirectoryName(const std::string& name)
+    {
+        if (!directoryName.empty() || name.empty()) { return false; }
+        directoryName = name;
+        return true;
+    }
 
     std::string packageName;
     std::string certName;
     std::string directoryName;
-    Command specified                           = Command::None;
-    xPlatValidationOptions validationOptions    = xPlatValidationOptions::xPlatValidationOptionFull;
-    xPlatPackUnpackOptions unpackOptions        = xPlatPackUnpackOptions::xPlatPackUnpackOptionsNone;
+    UserSpecified specified                  = UserSpecified::Nothing;
+    xPlatValidationOptions validationOptions = xPlatValidationOptions::xPlatValidationOptionFull;
+    xPlatPackUnpackOptions unpackOptions     = xPlatPackUnpackOptions::xPlatPackUnpackOptionsNone;
 };
 
+// describes an option to a command that the user may specify
 struct Option
 {
-    using Callback = std::function<bool(const std::string& value)>;
+    using CBF = std::function<bool(const std::string& value)>;
 
-    Option(bool param, const std::string& help, Callback callback):
-        m_help(help), m_callback(callback), m_takesParameter(param)
-    {
-    }
+    Option(bool param, const std::string& help, CBF callback): Help(help), Callback(callback), TakesParameter(param)
+    {}
 
-    bool m_takesParameter;
-    std::string m_name;
-    std::string m_help;
-    Callback m_callback;
+    bool        TakesParameter;
+    std::string Name;
+    std::string Help;
+    CBF         Callback;
 };
 
-class Switch
+// describes a command that the user may specify.
+struct Command
 {
-public:
-    using Callback = std::function<bool()>;
+    using CBF = std::function<bool()>;
 
-    Switch(const std::string& help, Callback callback, std::map<std::string, Option> options) :
-        m_help(help), m_callback(callback), m_options(options)
-    { }
+    Command(const std::string& help, CBF callback, std::map<std::string, Option> options) :
+        Help(help), Callback(callback), Options(options)
+    {}
 
-    std::string m_help;
-    std::map<std::string, Option> m_options;
-    Callback m_callback;
+    std::string                   Help;
+    std::map<std::string, Option> Options;
+    CBF                           Callback;
 };
 
-int Help(char* toolName, std::map<std::string, Switch>& switches, Options& options)
+// Displays contextual formatted help to the user.
+int Help(char* toolName, std::map<std::string, Command>& commands, State& state)
 {
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << "------" << std::endl;
 
-    auto command = switches.find("");
-
-    switch (options.specified)
+    auto command = commands.end();
+    switch (state.specified)
     {
-    case Command::None:
-    case Command::Help:
+    case UserSpecified::Nothing:
+    case UserSpecified::Help:
         std::cout << "    " << toolName << " <command> [options] " << std::endl;
         std::cout << std::endl;
         std::cout << "Valid commands:" << std::endl;
         std::cout << "---------------" << std::endl;
-
-        for each (const auto& command in switches)
+        for each (const auto& command in commands)
         {
             std::cout << "    " << std::left << std::setfill(' ') << std::setw(10) <<
-                command.first << "--  " << command.second.m_help << std::endl;
+                command.first << "--  " << command.second.Help << std::endl;
         }
 
         std::cout << std::endl;
-        std::cout << "For help with a specific command, enter " << toolName << " <command> --?" << std::endl;
-        return -1;
-    case Command::Pack:
-        command = switches.find("-pack");
-        std::cout << "    " << toolName << " -pack --p <package> --c <certificate> --d <directory> [options] " << std::endl;
+        std::cout << "For help with a specific command, enter " << toolName << " <command> -?" << std::endl;
+        return 0;
+    case UserSpecified::Pack:
+        command = commands.find("pack");
+        std::cout << "    " << toolName << " pack -p <package> -c <certificate> -d <directory> [options] " << std::endl;
         std::cout << std::endl;
         std::cout << "Description:" << std::endl;
         std::cout << "------------" << std::endl;
@@ -121,17 +141,16 @@ int Help(char* toolName, std::map<std::string, Switch>& switches, Options& optio
         std::cout << "    content <directory> (including subfolders), and signs the package using  " << std::endl;
         std::cout << "    the specified <certificate>.  You must include a valid app package manifest " << std::endl;
         std::cout << "    named AppxManifest.xml in the content directory if you do not specify the " << std::endl;
-        std::cout << "    --nmv option." << std::endl;
-
+        std::cout << "    -mv option." << std::endl;
         break;
-    case Command::Unpack:
-        command = switches.find("-unpack");
-        std::cout << "    " << toolName << " -upack --p <package> --d <directory> [options] " << std::endl;
+    case UserSpecified::Unpack:
+        command = commands.find("unpack");
+        std::cout << "    " << toolName << " upack -p <package> -d <directory> [options] " << std::endl;
         std::cout << std::endl;
         std::cout << "Description:" << std::endl;
         std::cout << "------------" << std::endl;
-        std::cout << "    Extracts all files within an app package at the <input pakcage name> to the" << std::endl;
-        std::cout << "    specified <output directory>.  The output has the same directory structure " << std::endl;
+        std::cout << "    Extracts all files within an app package at the input <package> name to the" << std::endl;
+        std::cout << "    specified output <directory>.  The output has the same directory structure " << std::endl;
         std::cout << "    as the package." << std::endl;
         break;
     }
@@ -139,88 +158,130 @@ int Help(char* toolName, std::map<std::string, Switch>& switches, Options& optio
     std::cout << "Options:" << std::endl;
     std::cout << "--------" << std::endl;
 
-    for each (const auto& option in command->second.m_options)
+    for each (const auto& option in command->second.Options)
     {
         std::cout << "    " << std::left << std::setfill(' ') << std::setw(5) <<
-            option.first << ": " << option.second.m_help << std::endl;
+            option.first << ": " << option.second.Help << std::endl;
     }
-    return -1;
+    return 0;
 }
 
-bool Parse(std::map<std::string, Switch>& switches, int argc, char* argv[])
+// error text if the user provided underspecified input
+void Error(char* toolName)
 {
-    int index = 1;
-    while(index < argc)
-    {
-        auto command = switches.find(argv[index]);
-        if (command == switches.end()) { return false; }
-
-        if (!command->second.m_callback()) { return false; }
-
-        if (++index == argc) { break; }
-        auto option = command->second.m_options.find(argv[index]);
-        while (option != command->second.m_options.end())
-        {
-            char* parameter = "";
-            if (option->second.m_takesParameter)
-            {
-                if (++index == argc) { break; }
-                parameter = argv[index];
-            }
-            if (!option->second.m_callback(parameter)) { return false; }
-            if (++index == argc) { break; }
-            option = command->second.m_options.find(argv[index]);
-        }
-    }
-
-    return true;
+    std::cout << toolName << ": error : Missing required options.  Use '-?' for more details." << std::endl;
 }
 
+// Parses argc/argv input via commands into state, and calls into the 
+// appropriate function with the correct parameters if warranted.
+int ParseAndRun(std::map<std::string, Command>& commands, State& state, int argc, char* argv[])
+{
+    auto ParseInput = [&]()->bool {
+        int index = 1;
+        while (index < argc)
+        {
+            auto command = commands.find(argv[index]);
+            if (command == commands.end())    { return false; }
+            if (!command->second.Callback())  { return false; }
+            if (++index == argc)              { break; }
+            auto option = command->second.Options.find(argv[index]);
+            while (option != command->second.Options.end())
+            {
+                char* parameter = "";
+                if (option->second.TakesParameter)
+                {
+                    if (++index == argc) { break; }
+                    parameter = argv[index];
+                }
+                if (!option->second.Callback(parameter)) { return false; }
+                if (++index == argc) { break; }
+                option = command->second.Options.find(argv[index]);
+            }
+        }
+        return true;
+    };
+
+    if (!ParseInput())
+    {
+        return Help(argv[0], commands, state);
+    }
+
+    switch (state.specified)
+    {
+    case UserSpecified::Nothing:
+        return Help(argv[0], commands, state);
+    case UserSpecified::Pack:
+        if (state.packageName.empty() || state.certName.empty() || state.directoryName.empty())
+        {
+            Error(argv[0]);
+            return -1;
+        }
+        return PackAppx(state.unpackOptions, state.validationOptions,
+            const_cast<char*>(state.packageName.c_str()),
+            const_cast<char*>(state.certName.c_str()),
+            const_cast<char*>(state.directoryName.c_str())
+        );
+
+    case UserSpecified::Unpack:
+        if (state.packageName.empty() || state.directoryName.empty())
+        {
+            Error(argv[0]);
+            return -1;
+        }
+        return UnpackAppx(state.unpackOptions, state.validationOptions,
+            const_cast<char*>(state.packageName.c_str()),
+            const_cast<char*>(state.directoryName.c_str())
+        );
+    }
+    return -1; // should never end up here.
+}
+
+// Defines the grammar of commands and each command's associated options,
 int main(int argc, char* argv[])
 {
-    std::cout << "Microsoft (R) " << argv[0] << " Tool version " << std::endl; // TODO: specify version
+    std::cout << "Microsoft (R) " << argv[0] << " version " << std::endl; // TODO: specify version
     std::cout << "Copyright (C) 2017 Microsoft.  All rights reserved." << std::endl;
 
-    Options options;
-    std::map<std::string, Switch> switches = {
-        { "-pack", Switch("Create a new package from files on disk", [&]() { return options.Specify(Command::Pack); },
+    State state;
+    std::map<std::string, Command> commands = {
+        { "pack", Command("Create a new package from files on disk", [&]() { return state.Specify(UserSpecified::Pack); },
             {
                 { "-p", Option(true, "REQUIRED, specify output package file name.",
-                [&](const std::string& name) { options.SetPackageName(name); return true; })
+                [&](const std::string& name) { return state.SetPackageName(name); })
                 },
                 { "-c", Option(true, "REQUIRED, specify input certificate name.",
-                    [&](const std::string& name) { options.SetCertificateName(name); return true; })
+                    [&](const std::string& name) { return state.SetCertificateName(name); })
                 },
                 { "-d", Option(true, "REQUIRED, specify input directory name.",
-                    [&](const std::string& name) { options.SetDirectoryName(name); return true; })
+                    [&](const std::string& name) { return state.SetDirectoryName(name); })
                 },
                 {"-mv", Option(false, "Skips manifest validation.  By default manifest validation is enabled.",
-                    [&](const std::string&) { options.SkipManifestValidation(); return true; })
+                    [&](const std::string&) { return state.SkipManifestValidation(); })
                 },
                 { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
-                    [&](const std::string&) { options.SkipSignatureValidation(); return true; })
+                    [&](const std::string&) { return state.SkipSignatureValidation(); })
                 },
                 { "-?", Option(false, "Displays this help text.",
                     [&](const std::string&) { return false; })
                 }
             })
         },
-        { "-unpack", Switch("Create a new package from files on disk", [&]() { return options.Specify(Command::Unpack); },
+        { "unpack", Command("Create a new package from files on disk", [&]() { return state.Specify(UserSpecified::Unpack); },
             {
                 { "-p", Option(true, "REQUIRED, specify input package name.",
-                [&](const std::string& name) { options.SetPackageName(name); return true; })
+                [&](const std::string& name) { return state.SetPackageName(name); })
                 },
                 { "-d", Option(true, "REQUIRED, specify output directory name.",
-                    [&](const std::string& name) { options.SetDirectoryName(name);return true; })
+                    [&](const std::string& name) { return state.SetDirectoryName(name); })
                 },
                 { "-pfn", Option(false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
-                    [&](const std::string&) { options.CreatePackageSubfolder(); return true; })
+                    [&](const std::string&) { return state.CreatePackageSubfolder(); })
                 },
                 { "-mv", Option(false, "Skips manifest validation.  By default manifest validation is enabled.",
-                    [&](const std::string&) { options.SkipManifestValidation(); return true; })
+                    [&](const std::string&) { return state.SkipManifestValidation(); })
                 },
                 { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
-                    [&](const std::string&) { options.SkipSignatureValidation(); return true; })
+                    [&](const std::string&) { return state.SkipSignatureValidation(); })
                 },
                 { "-?", Option(false, "Displays this help text.",
                     [&](const std::string&) { return false; })
@@ -228,49 +289,12 @@ int main(int argc, char* argv[])
             })
         },
         {
-            "-?", Switch("Displays this help text.", [&]() {
-                options.Specify(Command::Help);
+            "-?", Command("Displays this help text.", [&]() {
+        state.Specify(UserSpecified::Help);
                 return false;
             }, {})
         },
     };
 
-    if (!Parse(switches, argc, argv))
-    {
-        return Help(argv[0], switches, options);
-    }
-    else
-    {
-        switch (options.specified)
-        {
-        case Command::None:
-            return Help(argv[0], switches, options);
-        case Command::Pack:
-            if (options.packageName.empty() || options.certName.empty() || options.directoryName.empty())
-            {
-                std::cout << argv[0] << ": error : Missing required options.  Use '-?' option for more details." << std::endl;
-                return -1;
-            }
-            return PackAppx(
-                options.unpackOptions,
-                options.validationOptions,
-                const_cast<char*>(options.packageName.c_str()),
-                const_cast<char*>(options.certName.c_str()),
-                const_cast<char*>(options.directoryName.c_str())
-            );
-
-        case Command::Unpack:
-            if (options.packageName.empty() || options.directoryName.empty())
-            {
-                std::cout << argv[0] << ": error : Missing required options.  Use '-?' option for more details." << std::endl;
-                return -1;
-            }
-            return UnpackAppx(
-                options.unpackOptions,
-                options.validationOptions,
-                const_cast<char*>(options.packageName.c_str()),
-                const_cast<char*>(options.directoryName.c_str())
-            );
-        }
-    }
+    return ParseAndRun(commands, state, argc, argv);
 }
