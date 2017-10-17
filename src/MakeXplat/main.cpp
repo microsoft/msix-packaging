@@ -122,7 +122,7 @@ int Help(char* toolName, std::map<std::string, Command>& commands, State& state)
         std::cout << std::endl;
         std::cout << "Valid commands:" << std::endl;
         std::cout << "---------------" << std::endl;
-        for each (const auto& command in commands)
+        for (const auto& command : commands)
         {
             std::cout << "    " << std::left << std::setfill(' ') << std::setw(10) <<
                 command.first << "--  " << command.second.Help << std::endl;
@@ -158,7 +158,7 @@ int Help(char* toolName, std::map<std::string, Command>& commands, State& state)
     std::cout << "Options:" << std::endl;
     std::cout << "--------" << std::endl;
 
-    for each (const auto& option in command->second.Options)
+    for (const auto& option : command->second.Options)
     {
         std::cout << "    " << std::left << std::setfill(' ') << std::setw(5) <<
             option.first << ": " << option.second.Help << std::endl;
