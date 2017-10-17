@@ -18,14 +18,15 @@ enum class Command
 
 struct Options
 {
-    void Specify(Command spec)
+    bool Specify(Command spec)
     {
         if (specified != Command::None)
         {
             specified = Command::Help; // Because clearly the user needs some
-            throw std::invalid_argument("invalid command specified");
+            return false;
         }
         specified = spec;
+        return true;
     }
 
     void CreatePackageSubfolder()
@@ -57,7 +58,7 @@ struct Options
 
 struct Option
 {
-    using Callback = std::function<void(const std::string& value)>;
+    using Callback = std::function<bool(const std::string& value)>;
 
     Option(bool param, const std::string& help, Callback callback):
         m_help(help), m_callback(callback), m_takesParameter(param)
@@ -73,7 +74,7 @@ struct Option
 class Switch
 {
 public:
-    using Callback = std::function<void()>;
+    using Callback = std::function<bool()>;
 
     Switch(const std::string& help, Callback callback, std::map<std::string, Option> options) :
         m_help(help), m_callback(callback), m_options(options)
@@ -148,42 +149,30 @@ int Help(char* toolName, std::map<std::string, Switch>& switches, Options& optio
 
 bool Parse(std::map<std::string, Switch>& switches, int argc, char* argv[])
 {
-    try
+    int index = 1;
+    while(index < argc)
     {
-        int index = 1;
-        while(index < argc)
+        auto command = switches.find(argv[index]);
+        if (command == switches.end()) { return false; }
+
+        if (!command->second.m_callback()) { return false; }
+
+        if (++index == argc) { break; }
+        auto option = command->second.m_options.find(argv[index]);
+        while (option != command->second.m_options.end())
         {
-            auto command = switches.find(argv[index]);
-            if (command == switches.end())
+            char* parameter = "";
+            if (option->second.m_takesParameter)
             {
-                return false;
-            }
-
-            command->second.m_callback();
-
-            if (++index == argc) { break; }
-            auto option = command->second.m_options.find(argv[index]);
-            while (option != command->second.m_options.end())
-            {
-                if (option->second.m_takesParameter)
-                {
-                    if (++index == argc) { break; }
-                    option->second.m_callback(argv[index]);
-                }
-                else
-                {
-                    option->second.m_callback("");
-                }
-
                 if (++index == argc) { break; }
-                option = command->second.m_options.find(argv[index]);
+                parameter = argv[index];
             }
+            if (!option->second.m_callback(parameter)) { return false; }
+            if (++index == argc) { break; }
+            option = command->second.m_options.find(argv[index]);
         }
     }
-    catch (std::exception)
-    {
-        return false;
-    }
+
     return true;
 }
 
@@ -194,54 +183,54 @@ int main(int argc, char* argv[])
 
     Options options;
     std::map<std::string, Switch> switches = {
-        { "-pack", Switch("Create a new package from files on disk", [&]() { options.Specify(Command::Pack); },
+        { "-pack", Switch("Create a new package from files on disk", [&]() { return options.Specify(Command::Pack); },
             {
                 { "-p", Option(true, "REQUIRED, specify output package file name.",
-                [&](const std::string& name) { options.SetPackageName(name); })
+                [&](const std::string& name) { options.SetPackageName(name); return true; })
                 },
                 { "-c", Option(true, "REQUIRED, specify input certificate name.",
-                    [&](const std::string& name) { options.SetCertificateName(name); })
+                    [&](const std::string& name) { options.SetCertificateName(name); return true; })
                 },
                 { "-d", Option(true, "REQUIRED, specify input directory name.",
-                    [&](const std::string& name) { options.SetDirectoryName(name); })
+                    [&](const std::string& name) { options.SetDirectoryName(name); return true; })
                 },
                 {"-mv", Option(false, "Skips manifest validation.  By default manifest validation is enabled.",
-                    [&](const std::string&) { options.SkipManifestValidation(); })
+                    [&](const std::string&) { options.SkipManifestValidation(); return true; })
                 },
                 { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
-                    [&](const std::string&) { options.SkipManifestValidation(); })
+                    [&](const std::string&) { options.SkipSignatureValidation(); return true; })
                 },
                 { "-?", Option(false, "Displays this help text.",
-                    [&](const std::string&) { throw std::invalid_argument("pack help"); })
+                    [&](const std::string&) { return false; })
                 }
             })
         },
-        { "-unpack", Switch("Create a new package from files on disk", [&]() { options.Specify(Command::Unpack); },
+        { "-unpack", Switch("Create a new package from files on disk", [&]() { return options.Specify(Command::Unpack); },
             {
                 { "-p", Option(true, "REQUIRED, specify input package name.",
-                [&](const std::string& name) { options.SetPackageName(name); })
+                [&](const std::string& name) { options.SetPackageName(name); return true; })
                 },
                 { "-d", Option(true, "REQUIRED, specify output directory name.",
-                    [&](const std::string& name) { options.SetDirectoryName(name); })
+                    [&](const std::string& name) { options.SetDirectoryName(name);return true; })
                 },
                 { "-pfn", Option(false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
-                    [&](const std::string&) { options.CreatePackageSubfolder(); })
+                    [&](const std::string&) { options.CreatePackageSubfolder(); return true; })
                 },
                 { "-mv", Option(false, "Skips manifest validation.  By default manifest validation is enabled.",
-                    [&](const std::string&) { options.SkipManifestValidation(); })
+                    [&](const std::string&) { options.SkipManifestValidation(); return true; })
                 },
                 { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
-                    [&](const std::string&) { options.SkipManifestValidation(); })
+                    [&](const std::string&) { options.SkipSignatureValidation(); return true; })
                 },
                 { "-?", Option(false, "Displays this help text.",
-                    [&](const std::string&) { throw std::invalid_argument("unpack help"); })
+                    [&](const std::string&) { return false; })
                 }
             })
         },
         {
             "-?", Switch("Displays this help text.", [&]() {
                 options.Specify(Command::Help);
-                throw std::invalid_argument("help");
+                return false;
             }, {})
         },
     };
