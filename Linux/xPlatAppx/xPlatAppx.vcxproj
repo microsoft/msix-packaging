@@ -50,12 +50,28 @@
   <ImportGroup Label="Shared" />
   <ImportGroup Label="PropertySheets" />
   <PropertyGroup Label="UserMacros" />
-    <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <TargetName>$(ProjectName)</TargetName>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
+    <TargetName>$(ProjectName)</TargetName>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <TargetName>$(ProjectName)</TargetName>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
+    <TargetName>$(ProjectName)</TargetName>
+    <TargetExt>.so</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <CLanguageStandard>Default</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <PreprocessorDefinitions>PLATFORM_LINUX</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\inc;..\..\lib\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -63,31 +79,51 @@
       <CppLanguageStandard>Default</CppLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);PLATFORM_LINUX</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\inc;..\..\lib\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Wno-reorder  -Wno-conversion %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <Link>
+      <LibraryDependencies>zlibstatLinux</LibraryDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$HOME/projects/zlibstatLinux/bin/$(Platform)/$(Configuration)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x86'">
     <ClCompile>
       <CLanguageStandard>Default</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <PreprocessorDefinitions>PLATFORM_LINUX</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\inc;..\..\lib\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Wno-reorder  -Wno-conversion %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <Link>
+      <LibraryDependencies>zlibstatLinux</LibraryDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$HOME/projects/zlibstatLinux/bin/$(Platform)/$(Configuration)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x86'">
     <ClCompile>
       <CLanguageStandard>Default</CLanguageStandard>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions);PLATFORM_LINUX</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>..\..\src\inc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\src\inc;..\..\lib\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>-Wno-reorder  -Wno-conversion %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <Link>
+      <LibraryDependencies>zlibstatLinux</LibraryDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$HOME/projects/zlibstatLinux/bin/$(Platform)/$(Configuration)</AdditionalLibraryDirectories>
+    </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\xPlatAppx\AppxPackageObject.cpp" />
+    <ClCompile Include="..\..\src\xPlatAppx\InflateStream.cpp" />
+    <ClCompile Include="..\..\src\xPlatAppx\PAL\FileSystem\FTS\DirectoryObject.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\xPlatAppx.cpp" />
+    <ClCompile Include="..\..\src\xPlatAppx\ZipFileStream.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\ZipObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\lib\zlib\zlib.h" />
+    <ClInclude Include="..\..\lib\zlib\zconf.h" />
     <ClInclude Include="..\..\src\inc\Base64Stream.hpp" />
     <ClInclude Include="..\..\src\inc\CRC32Stream.hpp" />
     <ClInclude Include="..\..\src\inc\Exceptions.hpp" />
@@ -101,8 +137,21 @@
     <ClInclude Include="..\..\src\inc\ZipFileStream.hpp" />
     <ClInclude Include="..\..\src\inc\ZipObject.hpp" />
     <ClInclude Include="..\..\src\inc\ObjectBase.hpp" />
+    <ClInclude Include="..\..\src\inc\StorageObject.hpp" />
+    <ClInclude Include="..\..\src\inc\DirectoryObject.hpp" />
+    <ClInclude Include="..\..\src\inc\InflateStream.hpp" />
+    <ClInclude Include="..\..\src\inc\AppxPackageObject.hpp" />
   </ItemGroup>
-  <ItemDefinitionGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Link>
+      <LibraryDependencies>zlibstatLinux</LibraryDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories);$HOME/projects/zlibstatLinux/bin/$(Platform)/$(Configuration)</AdditionalLibraryDirectories>
+    </Link>
+    <ClCompile />
+    <ClCompile>
+      <AdditionalOptions>-Wno-reorder  -Wno-conversion %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

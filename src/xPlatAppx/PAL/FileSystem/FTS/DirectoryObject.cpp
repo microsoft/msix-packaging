@@ -39,7 +39,7 @@ namespace xPlat {
             
             char v = *p;
             *p = '\0';
-            ThrowIf(Error::FileCreateDirectory,(mkdir(path.c_str(), mode) != -1 || errno == EEXIST), path.c_str());
+            ThrowErrorIfNot(Error::FileCreateDirectory,(mkdir(path.c_str(), mode) != -1 || errno == EEXIST), path.c_str());
             *p = v;
             p++;
         }
