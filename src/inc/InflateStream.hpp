@@ -10,6 +10,8 @@
 
 #ifdef PLATFORM_APPLE
 #include <zlib.h>
+#elif defined PLATFORM_ANDROID
+#include <zlib.h>
 #else
 #include "zlib.h"
 #endif
