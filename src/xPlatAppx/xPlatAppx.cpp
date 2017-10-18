@@ -203,13 +203,14 @@ XPLATAPPX_API unsigned int ValidateAppxSignature(char* appx)
         {
             xPlat::ZipObject zip(std::move(rawFile));
             auto p7xStream = zip.GetFile("AppxSignature.p7x");
-            std::uint8_t buffer[16384];
-            
-            std::size_t cbRead = p7xStream->Read(sizeof(buffer), buffer);
-            BLOBHEADER *pblob = (BLOBHEADER*)buffer;
-            
+            std::vector<std::uint8_t> buffer(sizeof(BLOBHEADER));
+
+            std::uint8_t* start = buffer.data();
+            std::size_t cbRead = p7xStream->Read(start, start + buffer.size());
+            BLOBHEADER *pblob = reinterpret_cast<BLOBHEADER*>(buffer.data());
+
             ThrowErrorIfNot(xPlat::Error::SignatureInvalid, (cbRead > sizeof(BLOBHEADER) && pblob->headerId == SIGNATURE_ID), "Invalid signature");
-                        
+
             //auto rangeStream = std::make_unique<xPlat::RangeStream>(p7xStream, sizeof(P7xFileId), cbStream - sizeof(P7xFileId));
             //auto tempStream = std::make_unique<xPlat::FileStream>("e:\\temp\\temp.p7x", xPlat::FileStream::WRITE);
             //rangeStream->CopyTo(tempStream.get());

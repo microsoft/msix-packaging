@@ -42,12 +42,12 @@ namespace xPlat {
             offset = Ftell();
         }
 
-        virtual std::size_t Read(std::size_t size, const std::uint8_t* bytes) override
+        virtual std::size_t Read(const std::uint8_t* start, const std::uint8_t* end) override
         {
             std::size_t bytesRead = std::fread(
-                static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
+                reinterpret_cast<void*>(const_cast<std::uint8_t*>(start)), 1, end-start, file
             );
-            ThrowErrorIfNot(Error::FileRead, (bytesRead == size || Feof()), "read failed");
+            ThrowErrorIfNot(Error::FileRead, (bytesRead == (end-start) || Feof()), "read failed");
             offset = Ftell();
             return bytesRead;
         }
@@ -62,13 +62,18 @@ namespace xPlat {
             return 0 != std::feof(file);
         }
 
-        virtual void Write(std::size_t size, const std::uint8_t* bytes) override
+        virtual void Write(const std::uint8_t* start, const std::uint8_t* end) override
         {
             std::size_t bytesWritten = std::fwrite(
-                static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
+                static_cast<void*>(const_cast<std::uint8_t*>(start)), 1, end-start, file
             );
-            ThrowErrorIfNot(Error::FileWrite, (bytesWritten == size), "write failed");
+            ThrowErrorIfNot(Error::FileWrite, (bytesWritten == (end-start)), "write failed");
             offset = Ftell();
+        }
+
+        void Flush() override
+        {
+            std::fflush(file);
         }
 
         virtual std::uint64_t Ftell() override

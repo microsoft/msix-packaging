@@ -25,8 +25,8 @@ namespace xPlat {
         {
         }
 
-        void Write(std::size_t size, const std::uint8_t* bytes) override;
-        std::size_t Read(std::size_t size, const std::uint8_t* bytes) override;
+        void Write(const std::uint8_t* start, const std::uint8_t* end) override;
+        std::size_t Read(const std::uint8_t* start, const std::uint8_t* end) override;
         void Seek(std::uint64_t offset, Reference where) override;
         int Ferror() override;
         bool Feof() override;

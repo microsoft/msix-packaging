@@ -24,19 +24,19 @@ namespace xPlat {
     {
     }
 
-    void RangeStream::Write(std::size_t size, const std::uint8_t* bytes)
+    void RangeStream::Write(const std::uint8_t* start, const std::uint8_t* end)
     {
         throw Exception(Error::NotImplemented);
     }
 
-    std::size_t RangeStream::Read(std::size_t cbReadBuffer, const std::uint8_t* readBuffer)
+    std::size_t RangeStream::Read(const std::uint8_t* start, const std::uint8_t* end)
     {
         size_t bytesRead = 0;
-        cbReadBuffer = std::min((std::uint64_t)cbReadBuffer, m_cbLength - m_seekPosition);
+        size_t cbReadBuffer = std::min(static_cast<size_t>(end-start), static_cast<size_t>(m_cbLength - m_seekPosition));
         if (cbReadBuffer)
         {
             m_stream->Seek(m_beginOffset + m_seekPosition, xPlat::StreamBase::Reference::START);
-            bytesRead = m_stream->Read(cbReadBuffer, readBuffer);
+            bytesRead = m_stream->Read(start, start + cbReadBuffer);
             m_seekPosition += bytesRead;
         }
         return bytesRead;
@@ -77,4 +77,3 @@ namespace xPlat {
         return m_seekPosition;
     }
 } /* xPlat */
-

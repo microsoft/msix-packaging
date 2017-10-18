@@ -18,13 +18,13 @@ namespace xPlat {
         m_zstrm = {0};
         m_stateMachine =
         {
-            { State::CLEANUP, [&](std::size_t, const std::uint8_t*)
+            { State::CLEANUP, [&](const std::uint8_t*, const std::uint8_t*)
                 {
                     Cleanup();
                     return std::make_pair(false, State::UNINITIALIZED);
                 }
             }, // State::CLEANUP
-            { State::UNINITIALIZED , [&](std::size_t, const std::uint8_t*)
+            { State::UNINITIALIZED , [&](const std::uint8_t*, const std::uint8_t*)
                 {
                     m_zstrm = { 0 };
                     m_fileCurrentPosition = 0;
@@ -35,15 +35,15 @@ namespace xPlat {
                     return std::make_pair(true, State::READY_TO_READ);
                 }
             }, // State::UNINITIALIZED
-            { State::READY_TO_READ , [&](std::size_t, const std::uint8_t*)
+            { State::READY_TO_READ , [&](const std::uint8_t*, const std::uint8_t*)
                 {
                     ThrowErrorIfNot(Error::InflateRead,(m_zstrm.avail_in == 0), "uninflated bytes overwritten");
-                    m_zstrm.avail_in = m_stream->Read(InflateStream::BUFFERSIZE, m_compressedBuffer);
+                    m_zstrm.avail_in = m_stream->Read(m_compressedBuffer, m_compressedBuffer + InflateStream::BUFFERSIZE);
                     m_zstrm.next_in = m_compressedBuffer;
                     return std::make_pair(true, State::READY_TO_INFLATE);
                 }
             }, // State::READY_TO_READ
-            { State::READY_TO_INFLATE, [&](std::size_t, const std::uint8_t*)
+            { State::READY_TO_INFLATE, [&](const std::uint8_t*, const std::uint8_t*)
                 {
                     m_inflateWindowPosition = 0;
                     m_zstrm.avail_out = InflateStream::BUFFERSIZE;
@@ -63,12 +63,12 @@ namespace xPlat {
                     }
                 }
             }, // State::READY_TO_INFLATE
-            { State::READY_TO_COPY , [&](std::size_t cbReadBuffer, const std::uint8_t* readBuffer)
+            { State::READY_TO_COPY , [&](const std::uint8_t* start, const std::uint8_t* end)
                 {
                     // Check if we're actually at the end of stream.
                     if (0 == (m_uncompressedSize - m_fileCurrentPosition))
                     {
-                        ThrowErrorIfNot(Error::InflateCorruptData, ((m_zret != Z_STREAM_END) || (m_zstrm.avail_in != 0)), "unexpected extra data");
+                        ThrowErrorIfNot(Error::InflateCorruptData, ((m_zret == Z_STREAM_END) && (m_zstrm.avail_in == 0)), "unexpected extra data");
                         return std::make_pair(true, State::CLEANUP);
                     }
 
@@ -92,19 +92,20 @@ namespace xPlat {
                         return std::make_pair(true, (m_zstrm.avail_in == 0) ? State::READY_TO_READ : State::READY_TO_INFLATE);
                     }
 
-                    std::size_t bytesToCopy = std::min(cbReadBuffer, bytesRemainingInWindow);
+                    std::size_t bytesToCopy = std::min(static_cast<size_t>(end - start), bytesRemainingInWindow);
                     if (bytesToCopy > 0)
                     {
-                        memcpy((void*)readBuffer, &(m_inflateWindow[m_inflateWindowPosition]), bytesToCopy);
-                        readBuffer              += bytesToCopy;
-                        cbReadBuffer            -= bytesToCopy;
+                        memcpy(
+                            static_cast<void*>(const_cast<std::uint8_t*>(start)),
+                            &(m_inflateWindow[m_inflateWindowPosition]),
+                            bytesToCopy);
                         m_bytesRead             += bytesToCopy;
                         m_seekPosition          += bytesToCopy;
                         m_inflateWindowPosition += bytesToCopy;
                         m_fileCurrentPosition   += bytesToCopy;
                     }
 
-                    return std::make_pair(false, State::READY_TO_COPY);
+                    return std::make_pair(m_bytesRead != (end - m_startCurrentBuffer), State::READY_TO_COPY);
                 }
             } // State::READY_TO_COPY
         };
@@ -115,27 +116,28 @@ namespace xPlat {
         Cleanup();
     }
 
-    void InflateStream::Write(std::size_t size, const std::uint8_t* bytes)
+    void InflateStream::Write(const std::uint8_t* , const std::uint8_t*)
     {
         throw Exception(Error::NotImplemented);
     }
 
-    std::size_t InflateStream::Read(std::size_t cbReadBuffer, const std::uint8_t* readBuffer)
+    std::size_t InflateStream::Read(const std::uint8_t* start, const std::uint8_t* end)
     {
         m_bytesRead = 0;
+        m_startCurrentBuffer = start;
         if (m_seekPosition < m_uncompressedSize)
         {
             bool stayInLoop = true;
-            do
+            while (stayInLoop && ((start + m_bytesRead) != end))
             {
                 const auto& stateHandler = m_stateMachine[m_state];
-                auto&& result = stateHandler(cbReadBuffer, readBuffer);
+                auto&& result = stateHandler(start + m_bytesRead, end);
                 stayInLoop = std::get<0>(result);
                 m_previous = m_state;
                 m_state = std::get<1>(result);
-            } while (stayInLoop);
+            }
         }
-
+        m_startCurrentBuffer = nullptr;
         return m_bytesRead;
     }
 

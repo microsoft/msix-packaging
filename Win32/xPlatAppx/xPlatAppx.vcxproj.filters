@@ -33,9 +33,6 @@
     <ClInclude Include="..\..\src\inc\PartitionStream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\inc\SequenceStream.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\inc\SHA256Stream.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>

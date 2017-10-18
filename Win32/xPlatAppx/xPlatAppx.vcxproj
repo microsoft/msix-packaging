@@ -162,7 +162,6 @@
     <ClInclude Include="..\..\src\inc\OffsetStream.hpp" />
     <ClInclude Include="..\..\src\inc\PartitionStream.hpp" />
     <ClInclude Include="..\..\src\inc\RangeStream.hpp" />
-    <ClInclude Include="..\..\src\inc\SequenceStream.hpp" />
     <ClInclude Include="..\..\src\inc\SHA256Stream.hpp" />
     <ClInclude Include="..\..\src\inc\StreamBase.hpp" />
     <ClInclude Include="..\..\src\inc\xPlatAppx.hpp" />
