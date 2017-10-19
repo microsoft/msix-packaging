@@ -10,6 +10,9 @@
 #include "StorageObject.hpp"
 #include "ZipObject.hpp"
 #include "xPlatAppx.hpp"
+#include "ComHelper.hpp"
+#include "AppxPackaging.hpp"
+#include "AppxBlockMapObject.hpp"
 
 namespace xPlat {
     // Object backed by AppxSignature.p7x
@@ -19,18 +22,6 @@ namespace xPlat {
         AppxSignatureObject(std::shared_ptr<StreamBase>&& stream);
 
         std::shared_ptr<StreamBase> GetWholeFileValidationStream(const std::string& file);
-
-    protected:
-        std::shared_ptr<StreamBase> m_stream;
-    };
-
-    // Object backed by AppxBlockMap.xml
-    class AppxBlockMapObject
-    {
-    public:
-        AppxBlockMapObject(std::shared_ptr<StreamBase>&& stream);
-
-        std::shared_ptr<StreamBase> GetBlockMapValidationStream(const std::string& file);
 
     protected:
         std::shared_ptr<StreamBase> m_stream;
@@ -78,7 +69,8 @@ namespace xPlat {
     };
 
     // Storage object representing the entire AppxPackage
-    class AppxPackageObject : public StorageObject
+    class AppxPackageObject : public xPlat::ComClass<AppxPackageObject, IAppxPackageReader, IAppxFilesEnumerator>,
+                              public StorageObject
     {
     public:
         AppxPackageObject(xPlatValidationOptions validation, std::unique_ptr<StorageObject>&& container);
@@ -90,6 +82,13 @@ namespace xPlat {
         AppxBlockMapObject*         GetAppxBlockMap()  const { return m_appxBlockMap.get(); }
         AppxManifestObject*         GetAppxManifest()  const { return m_appxManifest.get(); }
 
+        // IAppxPackageReader
+        HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override;
+        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file) override;
+        HRESULT STDMETHODCALLTYPE GetPayloadFile(LPCWSTR fileName, IAppxFile** file) override;
+        HRESULT STDMETHODCALLTYPE GetPayloadFiles(IAppxFilesEnumerator**  filesEnumerator) override;
+        HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) override;
+
         // returns a list of the footprint files found within this appx package.
         std::vector<std::string>    GetFootprintFiles();
 
@@ -100,6 +99,11 @@ namespace xPlat {
         void                        RemoveFile(const std::string& fileName) override;
         std::shared_ptr<StreamBase> OpenFile(const std::string& fileName, FileStream::Mode mode) override;
         void                        CommitChanges() override;
+
+        // IAppxFilesEnumerator
+        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) override;
+        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override;
+        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override;
 
     protected:
         std::map<std::string, std::shared_ptr<StreamBase>>  m_streams;

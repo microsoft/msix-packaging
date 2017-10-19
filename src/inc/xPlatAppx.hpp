@@ -12,6 +12,8 @@
     #define XPLATAPPX_API __declspec(dllexport)
 #endif
 
+#include "AppxPackaging.hpp"
+
 enum xPlatValidationOptions : unsigned long
 {
     xPlatValidationOptionFull                       = 0x00000000,

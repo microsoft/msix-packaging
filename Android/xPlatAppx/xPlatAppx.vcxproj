@@ -70,7 +70,7 @@
       <AdditionalIncludeDirectories>..\..\src\inc;$(NDKRoot)\platforms\$(AndroidAPILevel)\arch-x86\usr\include;$(NDKRoot)\sources\android\native_app_glue;$(NDKRoot)\sources\android\ndk_helper;$(NDKRoot)\sources\android\cpufeatures;$(StlIncludeDirectories)%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Enabled</ExceptionHandling>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
-      <AdditionalOptions>-Wno-reorder -Wno-pessimizing-move %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-Wno-reorder -Wno-pessimizing-move -Wno-unused-private-field %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <LibraryDependencies>$(StlLibraryName);%(LibraryDependencies);z</LibraryDependencies>
@@ -88,7 +88,7 @@
       <AdditionalIncludeDirectories>..\..\src\inc;$(NDKRoot)\platforms\$(AndroidAPILevel)\arch-x86\usr\include;$(NDKRoot)\sources\android\native_app_glue;$(NDKRoot)\sources\android\ndk_helper;$(NDKRoot)\sources\android\cpufeatures;$(StlIncludeDirectories)%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <AdditionalOptions>-Wno-reorder -Wno-pessimizing-move %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-Wno-reorder -Wno-pessimizing-move -Wno-unused-private-field %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <LibraryDependencies>$(StlLibraryName);%(LibraryDependencies);z</LibraryDependencies>
@@ -104,7 +104,7 @@
       <AdditionalIncludeDirectories>..\..\src\inc;$(NDKRoot)\platforms\$(AndroidAPILevel)\arch-arm\usr\include;$(NDKRoot)\sources\android\native_app_glue;$(NDKRoot)\sources\android\ndk_helper;$(NDKRoot)\sources\android\cpufeatures;$(StlIncludeDirectories)%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <AdditionalOptions>-Wno-reorder -Wno-pessimizing-move %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-Wno-reorder -Wno-pessimizing-move -Wno-unused-private-field %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <LibraryDependencies>$(StlLibraryName);%(LibraryDependencies);z</LibraryDependencies>
@@ -122,7 +122,7 @@
       <AdditionalIncludeDirectories>..\..\src\inc;$(NDKRoot)\platforms\$(AndroidAPILevel)\arch-arm\usr\include;$(NDKRoot)\sources\android\native_app_glue;$(NDKRoot)\sources\android\ndk_helper;$(NDKRoot)\sources\android\cpufeatures;$(StlIncludeDirectories)%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CppLanguageStandard>c++1y</CppLanguageStandard>
       <ExceptionHandling>Enabled</ExceptionHandling>
-      <AdditionalOptions>-Wno-reorder -Wno-pessimizing-move %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions>-Wno-reorder -Wno-pessimizing-move -Wno-unused-private-field %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <LibraryDependencies>$(StlLibraryName);%(LibraryDependencies);z</LibraryDependencies>
@@ -130,15 +130,18 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\xPlatAppx\AppxPackageObject.cpp" />
+    <ClCompile Include="..\..\src\xPlatAppx\AppxPackaging_i.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\InflateStream.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\PAL\FileSystem\FTS\DirectoryObject.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\xPlatAppx.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\ZipFileStream.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\ZipObject.cpp" />
+    <ClInclude Include="..\..\src\inc\AppxFactory.hpp" />
+    <ClInclude Include="..\..\src\xPlatAppx\AppxBlockMapObject.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\lib\zlib\zlib.h" />
-    <ClInclude Include="..\..\lib\zlib\zconf.h" />
+    <ClInclude Include="..\..\src\inc\AppxPackaging.hpp" />
+    <ClInclude Include="..\..\src\inc\AppxWindows.hpp" />
     <ClInclude Include="..\..\src\inc\Base64Stream.hpp" />
     <ClInclude Include="..\..\src\inc\CRC32Stream.hpp" />
     <ClInclude Include="..\..\src\inc\Exceptions.hpp" />
@@ -156,6 +159,8 @@
     <ClInclude Include="..\..\src\inc\DirectoryObject.hpp" />
     <ClInclude Include="..\..\src\inc\InflateStream.hpp" />
     <ClInclude Include="..\..\src\inc\AppxPackageObject.hpp" />
+    <ClInclude Include="..\..\src\inc\ComHelper.hpp" />
+    <ClInclude Include="..\..\src\inc\AppxBlockMapObject.hpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

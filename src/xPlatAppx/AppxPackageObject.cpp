@@ -2,6 +2,8 @@
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
 #include "AppxPackageObject.hpp"
+#include "AppxPackaging.hpp"
+#include "ComHelper.hpp"
 
 #include <string>
 #include <vector>
@@ -15,17 +17,6 @@ namespace xPlat {
     }
 
     std::shared_ptr<StreamBase> AppxSignatureObject::GetWholeFileValidationStream(const std::string& file)
-    {
-        // TODO: Implement
-        throw Exception(Error::NotImplemented);
-    }
-
-    AppxBlockMapObject::AppxBlockMapObject(std::shared_ptr<StreamBase>&& stream)
-    {
-        // TODO: Implement
-    }
-
-    std::shared_ptr<StreamBase> AppxBlockMapObject::GetBlockMapValidationStream(const std::string& file)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
@@ -121,5 +112,71 @@ namespace xPlat {
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
+    }
+
+    // IAppxPackageReader
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader**  blockMapReader)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFile(LPCWSTR fileName, IAppxFile** file)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFiles(IAppxFilesEnumerator** filesEnumerator)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxManifestReader** manifestReader)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
+    }
+
+    // IAppxFilesEnumerator
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetCurrent(IAppxFile** file)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetHasCurrent(BOOL* hasCurrent)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::MoveNext(BOOL* hasNext)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
     }
 }
