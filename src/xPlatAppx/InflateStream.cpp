@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <algorithm>
+#include <cstring>
 
 namespace xPlat {
     InflateStream::InflateStream(
@@ -31,13 +32,13 @@ namespace xPlat {
                     m_fileCurrentWindowPositionEnd = 0;
 
                     int ret = inflateInit2(&m_zstrm, -MAX_WBITS);
-                    ThrowIf(Error::InflateInitialize, (ret == Z_OK), "inflateInit2 failed");
+                    ThrowErrorIfNot(Error::InflateInitialize, (ret == Z_OK), "inflateInit2 failed");
                     return std::make_pair(true, State::READY_TO_READ);
                 }
             }, // State::UNINITIALIZED
             { State::READY_TO_READ , [&](std::size_t, const std::uint8_t*)
                 {
-                    ThrowIf(Error::InflateRead,(m_zstrm.avail_in == 0), "uninflated bytes overwritten");
+                    ThrowErrorIfNot(Error::InflateRead,(m_zstrm.avail_in == 0), "uninflated bytes overwritten");
                     m_zstrm.avail_in = m_stream->Read(InflateStream::BUFFERSIZE, m_compressedBuffer);
                     m_zstrm.next_in = m_compressedBuffer;
                     return std::make_pair(true, State::READY_TO_INFLATE);
@@ -55,7 +56,7 @@ namespace xPlat {
                     case Z_DATA_ERROR:
                     case Z_MEM_ERROR:
                         Cleanup();
-                        ThrowIf(Error::InflateCorruptData, false, "inflate failed unexpectedly.");
+                        ThrowErrorIfNot(Error::InflateCorruptData, false, "inflate failed unexpectedly.");
                     case Z_STREAM_END:
                     default:
                         m_fileCurrentWindowPositionEnd += (InflateStream::BUFFERSIZE - m_zstrm.avail_out);
@@ -68,7 +69,7 @@ namespace xPlat {
                     // Check if we're actually at the end of stream.
                     if (0 == (m_uncompressedSize - m_fileCurrentPosition))
                     {
-                        ThrowIf(Error::InflateCorruptData, ((m_zret != Z_STREAM_END) || (m_zstrm.avail_in != 0)), "unexpected extra data");
+                        ThrowErrorIfNot(Error::InflateCorruptData, ((m_zret != Z_STREAM_END) || (m_zstrm.avail_in != 0)), "unexpected extra data");
                         return std::make_pair(true, State::CLEANUP);
                     }
 
@@ -154,7 +155,7 @@ namespace xPlat {
             seekPosition = m_uncompressedSize + offset;
             break;
         }
-        
+
         // Can't seek beyond the end of the uncompressed stream
         seekPosition = std::min(m_seekPosition, m_uncompressedSize);
 
@@ -164,7 +165,7 @@ namespace xPlat {
             // If the caller is trying to seek back to an earlier
             // point in the inflated stream, we will need to reset
             // zlib and start inflating from the beginning of the
-            // stream; otherwise, seeking forward is fine: We will 
+            // stream; otherwise, seeking forward is fine: We will
             // catch up to the seek pointer during the ::Read operation.
             if (m_seekPosition < m_fileCurrentPosition)
             {
