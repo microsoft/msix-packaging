@@ -103,7 +103,7 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <PreprocessorDefinitions>_DEBUG;_WINDOWS;_USRDLL;XPLATAPPX_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;WIN32;_USRDLL;XPLATAPPX_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\src\inc;..\..\lib\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <EnableModules>false</EnableModules>
@@ -139,7 +139,7 @@
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_USRDLL;XPLATAPPX_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;WIN32;_USRDLL;XPLATAPPX_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>..\..\src\inc;..\..\lib\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
       <EnableModules>false</EnableModules>
@@ -152,13 +152,19 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\..\lib\zlib\zlib.h" />
+    <ClInclude Include="..\..\src\inc\AppxBlockMapObject.hpp" />
+    <ClInclude Include="..\..\src\inc\AppxFactory.hpp" />
     <ClInclude Include="..\..\src\inc\AppxPackageObject.hpp" />
+    <ClInclude Include="..\..\src\inc\AppxPackaging.hpp" />
+    <ClInclude Include="..\..\src\inc\AppxWindows.hpp" />
     <ClInclude Include="..\..\src\inc\Base64Stream.hpp" />
+    <ClInclude Include="..\..\src\inc\ComHelper.hpp" />
     <ClInclude Include="..\..\src\inc\CRC32Stream.hpp" />
     <ClInclude Include="..\..\src\inc\DirectoryObject.hpp" />
     <ClInclude Include="..\..\src\inc\Exceptions.hpp" />
     <ClInclude Include="..\..\src\inc\FileStream.hpp" />
     <ClInclude Include="..\..\src\inc\InflateStream.hpp" />
+    <ClInclude Include="..\..\src\inc\ObjectBase.hpp" />
     <ClInclude Include="..\..\src\inc\OffsetStream.hpp" />
     <ClInclude Include="..\..\src\inc\PartitionStream.hpp" />
     <ClInclude Include="..\..\src\inc\SequenceStream.hpp" />
@@ -172,7 +178,9 @@
     <None Include="xPlatAppx.def" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\src\xPlatAppx\AppxBlockMapObject.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\AppxPackageObject.cpp" />
+    <ClCompile Include="..\..\src\xPlatAppx\AppxPackaging_i.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\InflateStream.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\PAL\FileSystem\Win32\DirectoryObject.cpp" />
     <ClCompile Include="..\..\src\xPlatAppx\xPlatAppx.cpp" />

@@ -2,18 +2,18 @@
 #include <windows.h>
 #include <strsafe.h>
 #include <shlwapi.h>
-#include "xPlatAppxPackaging.h"
+#include "AppxPackaging.hpp"
 #include <wrl/client.h>
 
 using namespace Microsoft::WRL;
 
 // Types of footprint files in an app package
 const int FootprintFilesCount = 4;
-const XPLATAPPX_FOOTPRINT_FILE_TYPE FootprintFilesType[FootprintFilesCount] = {
-    XPLATAPPX_FOOTPRINT_FILE_TYPE_MANIFEST,
-    XPLATAPPX_FOOTPRINT_FILE_TYPE_BLOCKMAP,
-    XPLATAPPX_FOOTPRINT_FILE_TYPE_SIGNATURE,
-    XPLATAPPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY
+const APPX_FOOTPRINT_FILE_TYPE FootprintFilesType[FootprintFilesCount] = {
+    APPX_FOOTPRINT_FILE_TYPE_MANIFEST,
+    APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP,
+    APPX_FOOTPRINT_FILE_TYPE_SIGNATURE,
+    APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY
 };
 const LPCWSTR FootprintFilesName[FootprintFilesCount] = {
     L"manifest",
@@ -108,19 +108,19 @@ HRESULT GetOutputStream(_In_ LPCWSTR path, _In_ LPCWSTR fileName, _Outptr_ IStre
 //   reader 
 //     On success, receives the created instance of IAppxPackageReader.
 //
-HRESULT GetPackageReader(_In_ LPWSTR inputFileName, _Outptr_ IXplatAppxPackage** package)
+HRESULT GetPackageReader(_In_ LPWSTR inputFileName, _Outptr_ IAppxPackageReader** package)
 {
     HRESULT hr = S_OK;
-    ComPtr<IXplatAppxFactory> appxFactory;
+    ComPtr<IAppxFactory> appxFactory;
     ComPtr<IStream> inputStream;
 
-    // TODO: Get the Factory
+    hr = CoCreateAppxFactory(APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST, &appxFactory);
 
     // Create a new package reader using the factory.  For 
     // simplicity, we don't verify the digital signature of the package.
     if (SUCCEEDED(hr))
     {
-        hr = appxFactory->CreatePackageFromFile(inputFileName, XPLATAPPX_VALIDATION_OPTION_SKIPAPPXMANIFEST, package);
+        hr = appxFactory->CreatePackageReader(inputStream.Get(), package);
     }
 
     return hr;
@@ -135,7 +135,7 @@ HRESULT GetPackageReader(_In_ LPWSTR inputFileName, _Outptr_ IXplatAppxPackage**
 //   outputPath 
 //      The path of the folder for the extracted files.
 //
-HRESULT ExtractFile(_In_ IXplatAppxFile* file, _In_ LPCWSTR outputPath)
+HRESULT ExtractFile(_In_ IAppxFile* file, _In_ LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
     LPWSTR fileName = nullptr;
@@ -193,14 +193,14 @@ HRESULT ExtractFile(_In_ IXplatAppxFile* file, _In_ LPCWSTR outputPath)
 //   outputPath 
 //      The path of the folder for the extracted footprint files.
 //
-HRESULT ExtractFootprintFiles(_In_ IXplatAppxPackage* package, _In_ LPCWSTR outputPath)
+HRESULT ExtractFootprintFiles(_In_ IAppxPackageReader* package, _In_ LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
     wprintf(L"\nExtracting footprint files from the package...\n");
 
     for (int i = 0; SUCCEEDED(hr) && (i < FootprintFilesCount); i++)
     {
-        ComPtr<IXplatAppxFile> footprintFile;
+        ComPtr<IAppxFile> footprintFile;
         hr = package->GetFootprintFile(FootprintFilesType[i], &footprintFile);
         if (footprintFile)
         {
@@ -223,24 +223,24 @@ HRESULT ExtractFootprintFiles(_In_ IXplatAppxPackage* package, _In_ LPCWSTR outp
 //   outputPath 
 //      The path of the folder for the extracted payload files.
 //
-HRESULT ExtractPayloadFiles(_In_ IXplatAppxPackage* package, _In_ LPCWSTR outputPath)
+HRESULT ExtractPayloadFiles(_In_ IAppxPackageReader* package, _In_ LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
-    ComPtr<IEnumXplatAppxFile> files;
+    ComPtr<IAppxFilesEnumerator> files;
     wprintf(L"\nExtracting payload files from the package...\n");
 
     // Get an enumerator of all payload files from the package reader and iterate
     // through all files.
-    hr = package->GetFiles(&files);
+    hr = package->GetPayloadFiles(&files);
 
     if (SUCCEEDED(hr))
     {
-        boolean hasCurrent = FALSE;
+        BOOL hasCurrent = FALSE;
         hr = files->GetHasCurrent(&hasCurrent);
 
         while (SUCCEEDED(hr) && hasCurrent)
         {
-            ComPtr<IXplatAppxFile> file;
+            ComPtr<IAppxFile> file;
             hr = files->GetCurrent(&file);
             if (SUCCEEDED(hr))
             {
@@ -265,7 +265,7 @@ int wmain(_In_ int argc, _In_count_(argc) wchar_t** argv)
     if (SUCCEEDED(hr))
     {
         // Create a package using the file name in argv[1] 
-        ComPtr<IXplatAppxPackage> package;
+        ComPtr<IAppxPackageReader> package;
         hr = GetPackageReader(argv[1], &package);
 
         // Print information about all footprint files, and extract them to disk
