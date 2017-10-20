@@ -1,5 +1,0 @@
-LIBRARY "xPlatAppx.dll"
-
-EXPORTS
-    UnpackAppx
-    PackAppx
