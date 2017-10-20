@@ -7,6 +7,7 @@
 #elif defined PLATFORM_LINUX
     #define XPLATAPPX_API
 #elif defined XPLATAPPX_API
+    #undef XPLATAPPX_API
     #define XPLATAPPX_API __declspec(dllexport)
 #else
     #define XPLATAPPX_API __declspec(dllexport)

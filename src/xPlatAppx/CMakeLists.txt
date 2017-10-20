@@ -5,6 +5,11 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake) # main (top) cmake dir
 
+include_directories(
+	${include_directories}
+	${CMAKE_PROJECT_ROOT}/lib/zlib
+)
+
 set(LIB_SOURCES
 	AppxBlockMapObject.cpp
 	AppxPackageObject.cpp
@@ -13,6 +18,8 @@ set(LIB_SOURCES
 	xPlatAppx.cpp
 	ZipFileStream.cpp
 	ZipObject.cpp
+	PAL/FileSystem/Win32/DirectoryObject.cpp
+	PAL/FileSystem/POSIX/DirectoryObject.cpp
 )
 
 # Define two variables in order not to repeat ourselves.

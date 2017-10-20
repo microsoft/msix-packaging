@@ -1,3 +1,5 @@
+// ONLY build on platforms other than Win32
+#ifndef WIN32
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "DirectoryObject.hpp"
@@ -60,3 +62,4 @@ namespace xPlat {
         m_streams.clear();
     }
 }
+#endif

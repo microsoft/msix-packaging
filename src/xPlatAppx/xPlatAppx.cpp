@@ -11,8 +11,8 @@
 #include <string>
 #include <memory>
 
-// on apple platforms, compile with -fvisibility=hidden
 #ifdef PLATFORM_APPLE
+// on apple platforms, compile with -fvisibility=hidden
 #undef XPLATAPPX_API
 #define XPLATAPPX_API __attribute__((visibility("default")))
 

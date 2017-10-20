@@ -4,6 +4,7 @@
 
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake) # main (top) cmake dir
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
 add_subdirectory(xPlatAppx)
 add_subdirectory(MakeXPlat)
