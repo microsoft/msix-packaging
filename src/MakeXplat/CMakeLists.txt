@@ -6,4 +6,15 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 project (MakeXplat)
 
 set (XPLATAPPX_API 1)
-add_executable(MakeXPlat main.cpp)
+
+include_directories(
+	${include_directories}
+	${CMAKE_PROJECT_ROOT}/src/inc
+	)
+
+add_executable(MakeXPlat
+	main.cpp
+	)
+
+ADD_DEPENDENCIES(MakeXPlat xPlatAppx)
+target_link_libraries(MakeXPlat xPlatAppx)

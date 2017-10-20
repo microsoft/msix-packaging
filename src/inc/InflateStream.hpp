@@ -1,7 +1,6 @@
 
 #pragma once
 #ifdef WIN32
-#define ZLIB_WINAPI
 #include "zlib.h"
 #else
 #include <zlib.h>
