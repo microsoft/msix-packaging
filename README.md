@@ -15,10 +15,13 @@ The xPlatAppx project includes:
 
 TODO: write stuffs here
 
-INSTALLATION
-------------
+PREREQUISITES
+-------------
+    Make sure that you have CMAKE, and CLANG installed on your machine 
 
-TODO: write stuffs here
+    * http://releases.llvm.org/download.html
+    * https://cmake.org/download/
+
 
 SUPPORT
 -------
