@@ -33,17 +33,17 @@ set_target_properties(${LIBRARY_NAME} PROPERTIES
 	PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
 )
 
-IF(Win32)
+IF(WIN32)
 	MESSAGE("xPlatAppx takes a static dependency on zlib")
 	include_directories(
 		${include_directories}
 		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
 		${CMAKE_PROJECT_ROOT}/lib/zlib
 	)
-	add_dependencies(${PROJECT_NAME} zlibstatic)
-	find_library(ZLIB libz.a)
+	#add_dependencies(${PROJECT_NAME} zlibstatic)	
 	target_link_libraries(${PROJECT_NAME} zlibstatic)
 ELSE()
 	MESSAGE("xPlatAppx takes a dynamic dependency on zlib")
+	#find_library(ZLIB libz.a)
 	# TODO: Where/how to bind?
 ENDIF()

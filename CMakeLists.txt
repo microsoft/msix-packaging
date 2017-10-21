@@ -6,16 +6,16 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 # Set build options
-OPTION(Win32 "Build for Win32"   OFF)
-OPTION(MacOS "Build for MacOS"   OFF)
-OPTION(iOS   "Build for iOS"     OFF)
+OPTION(WIN32 "Build for Win32"   OFF)
+OPTION(MACOS "Build for MacOS"   OFF)
+OPTION(IOS   "Build for iOS"     OFF)
 OPTION(AOSP  "Build for Android" OFF)
 OPTION(LINUX "Build for Linux"   OFF)
 
 # Enforce that target platform is specified.
-IF((NOT Win32) AND (NOT MacOS) AND (NOT iOS) AND (NOT AOSP) AND (NOT Linux))
-    MESSAGE( "You must specify one of: [Win32|MacOS|iOS|AOSP|Linux]" )
-    MESSAGE( "For example, use cmake -DWin32=on .." )
+IF((NOT WIN32) AND (NOT MACOS) AND (NOT IOS) AND (NOT AOSP) AND (NOT LINUX))
+    MESSAGE( "You must specify one of: [WIN32|MACOS|IOS|AOSP|LINUX]" )
+    MESSAGE( "For example, use cmake -DWIN32=on .." )
     RETURN()
 ENDIF()
 
@@ -60,15 +60,7 @@ SET(CMAKE_MACOSX_RPATH ON)
 #SET(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 #SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-# Target definitions:
-# Sub projects must all define a custom target but with different names to avoid conflicts.
-# Each of these define what we want to issue when building from the top directory while 
-# being able to issue the same target in sub directories *when* we compile only a subproject.
-
-add_custom_target(xPlatAppx_library)
-add_custom_target(MakeXplat_tool)
-ADD_DEPENDENCIES(xPlatAppx_library zlibstatic)
-ADD_DEPENDENCIES(MakeXplat_tool xPlatAppx_library)
-
 add_subdirectory(lib)
 add_subdirectory(src)
+
+ADD_DEPENDENCIES(SRC LIBS)

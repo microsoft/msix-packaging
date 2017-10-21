@@ -12,9 +12,9 @@ include_directories(
 	${CMAKE_PROJECT_ROOT}/src/inc
 	)
 
-add_executable(MakeXPlat
+add_executable(MakeXplat
 	main.cpp
 	)
 
-ADD_DEPENDENCIES(MakeXPlat xPlatAppx)
-target_link_libraries(MakeXPlat xPlatAppx)
+ADD_DEPENDENCIES(MakeXplat xPlatAppx)
+target_link_libraries(MakeXplat xPlatAppx)
