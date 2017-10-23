@@ -11,7 +11,7 @@ project(${LIBRARY_NAME})
 
 # Define PALs
 IF(WIN32)
-	set (XPLATAPPX_API 1)
+	set (XPLATAPPX_API=1)
 	set (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
 ELSE()
 	set (DirectoryObject PAL/FileSystem/POSIX/DirectoryObject.cpp)
@@ -33,9 +33,6 @@ set(LIB_SOURCES
 
 # Define the library
 add_library(${LIBRARY_NAME} SHARED ${LIB_SOURCES})
-
-#set_target_properties(${LIBRARY_NAME} PROPERTIES VERSION ${PROJECT_VERSION})
-set_target_properties(${LIBRARY_NAME} PROPERTIES PUBLIC_HEADER ../inc/xPlatAppx.hpp)
 
 # specify that this library is to be built with C++14
 set_property(TARGET ${LIBRARY_NAME} PROPERTY CXX_STANDARD 14)

@@ -8,10 +8,6 @@ project (MakeXplat)
 # Define two variables in order not to repeat ourselves.
 set(BINARY_NAME MakeXplat)
 
-IF(WIN32)
-	set (XPLATAPPX_API 1)
-ENDIF()
-
 include_directories(
 	${include_directories}
 	${CMAKE_PROJECT_ROOT}/src/inc
