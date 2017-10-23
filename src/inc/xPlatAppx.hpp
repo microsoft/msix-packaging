@@ -1,16 +1,10 @@
 #pragma once
 
-#if defined PLATFORM_APPLE
-    #define XPLATAPPX_API
-#elif defined PLATFORM_ANDROID
-    #define XPLATAPPX_API
-#elif defined PLATFORM_LINUX
-    #define XPLATAPPX_API
-#elif defined XPLATAPPX_API
+#if defined XPLATAPPX_API
     #undef XPLATAPPX_API
     #define XPLATAPPX_API __declspec(dllexport)
 #else
-    #define XPLATAPPX_API __declspec(dllexport)
+    #define XPLATAPPX_API
 #endif
 
 #include "AppxPackaging.hpp"

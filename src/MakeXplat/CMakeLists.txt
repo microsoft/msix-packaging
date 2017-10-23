@@ -5,16 +5,24 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 project (MakeXplat)
 
-set (XPLATAPPX_API 1)
+# Define two variables in order not to repeat ourselves.
+set(BINARY_NAME MakeXplat)
+
+IF(WIN32)
+	set (XPLATAPPX_API 1)
+ENDIF()
 
 include_directories(
 	${include_directories}
 	${CMAKE_PROJECT_ROOT}/src/inc
 	)
 
-add_executable(MakeXplat
+add_executable(${BINARY_NAME}
 	main.cpp
 	)
 
-ADD_DEPENDENCIES(MakeXplat xPlatAppx)
-target_link_libraries(MakeXplat xPlatAppx)
+# specify that this binary is to be built with C++14
+set_property(TARGET ${BINARY_NAME} PROPERTY CXX_STANDARD 14)
+
+ADD_DEPENDENCIES(${BINARY_NAME} xPlatAppx)
+target_link_libraries(${BINARY_NAME} xPlatAppx)
