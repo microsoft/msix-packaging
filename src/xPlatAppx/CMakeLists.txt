@@ -19,6 +19,34 @@ ENDIF()
 
 MESSAGE("PAL: DirectoryObject = ${DirectoryObject}")
 
+set(LIB_PUBLIC_HEADERS
+    ../inc/xPlatAppx.hpp
+    ../inc/AppxWindows.hpp
+    ../inc/AppxPackaging.hpp
+)
+
+set(LIB_PRIVATE_HEADERS
+    ../inc/AppxBlockMapObject.hpp
+    ../inc/CRC32Stream.hpp
+    ../inc/ObjectBase.hpp
+    ../inc/StreamBase.hpp
+    ../inc/AppxFactory.hpp
+    ../inc/ComHelper.hpp
+    ../inc/OffsetStream.hpp
+    ../inc/ZipFileStream.hpp
+    ../inc/AppxPackageObject.hpp
+    ../inc/DirectoryObject.hpp
+    ../inc/PartitionStream.hpp
+    ../inc/ZipObject.hpp
+    ../inc/Exceptions.hpp
+    ../inc/SHA256Stream.hpp
+    ../inc/FileStream.hpp
+    ../inc/SequenceStream.hpp
+    ../inc/Base64Stream.hpp
+    ../inc/InflateStream.hpp
+    ../inc/StorageObject.hpp
+)
+
 set(LIB_SOURCES
 	AppxBlockMapObject.cpp
 	AppxPackageObject.cpp
@@ -32,7 +60,7 @@ set(LIB_SOURCES
 
 
 # Define the library
-add_library(${LIBRARY_NAME} SHARED ${LIB_SOURCES})
+add_library(${LIBRARY_NAME} SHARED ${LIB_SOURCES} ${LIB_PUBLIC_HEADERS} ${LIB_PRIVATE_HEADERS})
 
 # specify that this library is to be built with C++14
 set_property(TARGET ${LIBRARY_NAME} PROPERTY CXX_STANDARD 14)
@@ -45,17 +73,11 @@ set_target_properties(${LIBRARY_NAME} PROPERTIES
 	PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
 )
 
-#IF(WIN32)
-	MESSAGE("xPlatAppx takes a static dependency on zlib")
-	include_directories(
-		${include_directories}
-		${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
-		${CMAKE_PROJECT_ROOT}/lib/zlib
-	)
-	target_link_libraries(${PROJECT_NAME} zlibstatic)
-#ELSE()
-#	MESSAGE("xPlatAppx takes a dynamic dependency on zlib")
-#	#find_library(ZLIB libz.a)
-#	# TODO: Where/how to bind?
-#ENDIF()
- 
+MESSAGE("xPlatAppx takes a static dependency on zlib")
+include_directories(
+	${include_directories}
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
+	${CMAKE_PROJECT_ROOT}/lib/zlib
+)
+
+target_link_libraries(${PROJECT_NAME} zlibstatic)
