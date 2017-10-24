@@ -19,11 +19,26 @@ OVERVIEW
 
 PREREQUISITES
 -------------
-    Make sure that you have CMAKE, and CLANG installed on your machine 
+    Make sure that you have CMAKE installed on your machine 
 
-    * http://releases.llvm.org/download.html
     * https://cmake.org/download/
 
+    VS 2017 clients: 
+    ----------------
+    Open Visual Studio 2017
+    File->Open Folder->navigate to project root and select "CMakeLists.txt"
+
+    See: https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/
+    for details regarding how to configure your environment.
+
+    Xcode clients: 
+    --------------
+    open terminal, from project root:
+    mkdir build && cd build && cmake -DMACOS=on -G"Xcode" ..
+    open xcode
+    File->Open->navigate to project root/build and select "Project.xcodeproj"
+
+    See: https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode for additional details
 
 SUPPORT
 -------
