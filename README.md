@@ -15,16 +15,53 @@ OVERVIEW
 --------
     The xPlatAppx project includes:
 
-    TODO: write stuffs here
+        xPlatAppx       - A shared library (DLL on Win32, dylib on MacOs, SO on Linux) that exports a subset
+                          of the functionality contained within appxpackaging.dll on Windows.  See:
+                          https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx
+                          for additional details.
+
+                          On platforms that do not support COM (e.g. anything _other_ than Windows) instead of
+                          CoCreating IAppxFactory, a c-style export: CoCreateAppxFactory is provided instead.
+                          See sample folder at root of package for cross platform consumption examples
+
+                          Finally, there are two additional exports: 'Pack' and 'Unpack' that provide
+                          simplified package and unpackage implementations respectively.
+                          
+        MakeXplatAppx   - A command line wrapper over the Pack and Unpack implementations.  This tool exists
+                          primarily as a means of validating the implementation of xPlatAppx internal routines
+                          and is compiled for Win32, MacOS, and Linux platforms.
 
 PREREQUISITES
 -------------
-    Make sure that you have CMAKE, and CLANG installed on your machine 
+    Make sure that you have CMAKE installed on your machine 
 
-    * http://releases.llvm.org/download.html
     * https://cmake.org/download/
 
+    VS 2017 clients: 
+    ----------------
+    Open Visual Studio 2017
+    File->Open Folder->navigate to project root and select "CMakeLists.txt"
 
+    See: https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/
+    for details regarding how to configure your environment.
+
+    Xcode clients: 
+    --------------
+    open terminal, from project root:
+    mkdir build && cd build && cmake -DMACOS=on -G"Xcode" ..
+    open xcode
+    File->Open->navigate to project root/build and select "Project.xcodeproj"
+
+    See: https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode for additional details
+
+BUILD
+-----
+    On Windows using Visual Studio 2017 nmake:
+        makewin32.cmd
+
+    On Mac using make: 
+        ./makemac
+    
 SUPPORT
 -------
     TODO: write stuffs here
