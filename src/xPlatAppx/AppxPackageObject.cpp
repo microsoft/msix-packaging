@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <functional>
 
 namespace xPlat {
 
@@ -74,56 +75,36 @@ namespace xPlat {
             APPXMANIFEST_XML, m_container->GetFile(APPXMANIFEST_XML)));
         ThrowErrorIf(Error::AppxMissingAppxManifestXML, (m_appxBlockMap == nullptr), "AppxManifest.xml not in archive!");
 
-        std::map<std::string, bool> footPrintFileNames = {
-            { APPXBLOCKMAP_XML,  false },
-            { APPXMANIFEST_XML,  false },
-            { APPXSIGNATURE_P7X, false },
-            { CODEINTEGRITY_CAT, false },
-            { CONTENT_TYPES_XML, false },
+        struct Config
+        {
+            using lambda = std::function<std::shared_ptr<StreamBase>()>;
+            Config(lambda f) : ValidationStream(f) {}
+            lambda ValidationStream;
         };
 
+        std::map<std::string, Config> footPrintFileNames = {
+            { APPXBLOCKMAP_XML,  Config([&](){ m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return m_appxBlockMap->GetStream();})  },
+            { APPXMANIFEST_XML,  Config([&](){ m_footprintFiles.push_back(APPXMANIFEST_XML);  return m_appxManifest->GetStream();})  },
+            { APPXSIGNATURE_P7X, Config([&](){ m_footprintFiles.push_back(APPXSIGNATURE_P7X); return m_appxSignature->GetStream();}) },
+            { CODEINTEGRITY_CAT, Config([&](){ m_footprintFiles.push_back(CODEINTEGRITY_CAT); return m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, m_container->GetFile(CODEINTEGRITY_CAT));}) },
+            { CONTENT_TYPES_XML, Config([&]()->std::shared_ptr<StreamBase>{ return nullptr;}) }, // content types is never implicitly unpacked
+        };
+
+        // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
+        // and partition the container's file names into footprint and payload files.
         for (const auto& fileName : m_container->GetFileNames())
         {
             std::shared_ptr<StreamBase> stream = nullptr;
 
             auto footPrintFile = footPrintFileNames.find(fileName);
-            if (footPrintFile == footPrintFileNames.end())
+            if (footPrintFile != footPrintFileNames.end())
             {
-                stream = m_appxBlockMap->ValidationStream(fileName, m_container->GetFile(fileName));
-                m_payloadFiles.push_back(fileName);
+                stream = footPrintFile->second.ValidationStream();
             }
             else
             {
-                ThrowErrorIf(Error::AppxDuplicateFootprintFile, (footPrintFile->second), "two or more footprint files with same name!");
-                footPrintFile->second = true;
-
-                // CONTENT_TYPES_XML is not a footprint file we surface out via unpack indirectly.
-                // However, we will do so for every other footprint file type...
-                if (footPrintFile->first == CONTENT_TYPES_XML)
-                {
-                    stream = nullptr;
-                }
-                else
-                {
-                    m_footprintFiles.push_back(fileName);
-                }
-
-                if (footPrintFile->first == APPXBLOCKMAP_XML)
-                {
-                    stream = m_appxBlockMap->GetStream();
-                }
-                else if (footPrintFile->first == APPXMANIFEST_XML)
-                {
-                    stream = m_appxManifest->GetStream();
-                }
-                else if (footPrintFile->first == APPXSIGNATURE_P7X)
-                {
-                    stream = m_appxSignature->GetStream();
-                }
-                else if (footPrintFile->first == CODEINTEGRITY_CAT)
-                {
-                    stream = m_appxSignature->GetValidationStream(footPrintFile->first, m_container->GetFile(fileName));
-                }
+                m_payloadFiles.push_back(fileName);
+                stream = m_appxBlockMap->ValidationStream(fileName, m_container->GetFile(fileName));
             }
 
             if (stream != nullptr) { m_streams[fileName] = stream; }
