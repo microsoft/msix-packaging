@@ -19,6 +19,7 @@ IF((NOT WIN32) AND (NOT MACOS) AND (NOT IOS) AND (NOT AOSP) AND (NOT LINUX))
     RETURN()
 ENDIF()
 
+<<<<<<< HEAD
 IF(MACOS)
         # Incredibly, for both clang and g++, while a single compile-and-link
         # invocation will create an executable.dSYM/ dir with debug info,
@@ -44,6 +45,10 @@ IF(MACOS)
             "${DSYMUTIL_PROGRAM} <TARGET>")
         endif ()
 ENDIF()
+=======
+# TODO: specify c++ 14
+#ADD_DEFINITIONS(-std=c++14)
+>>>>>>> origin/feature
 
 enable_testing() # needed on top-level CMakeLists.txt
 

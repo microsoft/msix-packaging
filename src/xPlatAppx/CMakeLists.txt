@@ -58,10 +58,13 @@ set(LIB_SOURCES
 	${DirectoryObject}
 )
 
+<<<<<<< HEAD
 # Copy out public headers
  configure_file(../inc/xPlatAppx.hpp     ${CMAKE_CURRENT_BINARY_DIR}/xPlatAppx.hpp    )
  configure_file(../inc/AppxWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/AppxWindows.hpp  )
  configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
+=======
+>>>>>>> origin/feature
 
 # Define the library
 add_library(${LIBRARY_NAME} SHARED ${LIB_SOURCES} ${LIB_PUBLIC_HEADERS} ${LIB_PRIVATE_HEADERS})
@@ -82,9 +85,15 @@ include_directories(
 	${include_directories}
 	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
 	${CMAKE_PROJECT_ROOT}/lib/zlib
+<<<<<<< HEAD
 	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
 	${CMAKE_PROJECT_ROOT}/lib/xerces/src
 )
 
 target_link_libraries(${PROJECT_NAME} zlibstatic)
 target_link_libraries(${PROJECT_NAME} xerces-c)
+=======
+)
+
+target_link_libraries(${PROJECT_NAME} zlibstatic)
+>>>>>>> origin/feature
