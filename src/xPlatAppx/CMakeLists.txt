@@ -58,6 +58,10 @@ set(LIB_SOURCES
 	${DirectoryObject}
 )
 
+# Copy out public headers
+ configure_file(../inc/xPlatAppx.hpp     ${CMAKE_CURRENT_BINARY_DIR}/xPlatAppx.hpp    )
+ configure_file(../inc/AppxWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/AppxWindows.hpp  )
+ configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
 
 # Define the library
 add_library(${LIBRARY_NAME} SHARED ${LIB_SOURCES} ${LIB_PUBLIC_HEADERS} ${LIB_PRIVATE_HEADERS})
