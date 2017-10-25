@@ -11,8 +11,8 @@
 #include <string>
 #include <memory>
 
-// on apple platforms, compile with -fvisibility=hidden
 #ifdef PLATFORM_APPLE
+// on apple platforms, compile with -fvisibility=hidden
 #undef XPLATAPPX_API
 #define XPLATAPPX_API __attribute__((visibility("default")))
 
@@ -30,7 +30,7 @@ static void finalizer(void) {                               // 3
 
 #endif
 
-XPLATAPPX_API unsigned int UnpackAppx(
+XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION UnpackAppx(
     xPlatPackUnpackOptions packUnpackOptions,
     xPlatValidationOptions validationOptions,
     char* source,
@@ -50,7 +50,7 @@ XPLATAPPX_API unsigned int UnpackAppx(
     });
 }
 
-XPLATAPPX_API unsigned int PackAppx(
+XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION PackAppx(
     xPlatPackUnpackOptions packUnpackOptions,
     xPlatValidationOptions validationOptions,
     char* source,

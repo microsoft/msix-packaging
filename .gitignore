@@ -107,6 +107,9 @@ Temporary Items
 *.userosscache
 *.sln.docstates
 
+# cmake build files
+bin
+
 # Intermediate test files/data
 test/unpack
 

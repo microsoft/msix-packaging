@@ -1,20 +1,13 @@
 
 #pragma once
 #ifdef WIN32
-#define ZLIB_WINAPI
+#include "zlib.h"
+#else
+#include <zlib.h>
 #endif
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
-#include "StreamBase.hpp"
-
-#ifdef PLATFORM_APPLE
-#include <zlib.h>
-#elif defined PLATFORM_ANDROID
-#include <zlib.h>
-#else
-#include "zlib.h"
-#endif
 
 //TODO: this is annoying
 #undef max
