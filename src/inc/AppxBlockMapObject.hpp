@@ -56,9 +56,10 @@ namespace xPlat {
     class AppxBlockMapObject : public xPlat::ComClass<AppxBlockMapObject, IAppxBlockMapBlocksEnumerator>
     {
     public:
-        AppxBlockMapObject(std::shared_ptr<StreamBase>&& stream);
+        AppxBlockMapObject(std::shared_ptr<StreamBase> stream);
 
-        std::shared_ptr<StreamBase> GetBlockMapValidationStream(const std::string& file);
+        std::shared_ptr<StreamBase> GetStream() { return m_stream; }
+        std::shared_ptr<StreamBase> ValidationStream(const std::string& file, std::shared_ptr<StreamBase> stream);
 
         // IAppxBlockMapBlocksEnumerator
         HRESULT STDMETHODCALLTYPE GetCurrent(IAppxBlockMapBlock** block);

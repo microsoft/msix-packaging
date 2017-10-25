@@ -14,8 +14,9 @@
 enum xPlatValidationOptions : unsigned long
 {
     xPlatValidationOptionFull                       = 0x00000000,
-    xPlatValidationOptionSkipSignatureOrigin        = 0x00000001,
-    xPlatValidationOptionSkipAppxManifestValidation = 0x00000002,
+    xPlatValidationOptionSkipSignature              = 0x00000001,
+    xPlatValidationOptionSkipSignatureOrigin        = 0x00000002,
+    xPlatValidationOptionSkipAppxManifestValidation = 0x00000004,
 };
 
 enum xPlatPackUnpackOptions : unsigned long

@@ -78,6 +78,9 @@ include_directories(
 	${include_directories}
 	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
 	${CMAKE_PROJECT_ROOT}/lib/zlib
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
+	${CMAKE_PROJECT_ROOT}/lib/xerces/src
 )
 
 target_link_libraries(${PROJECT_NAME} zlibstatic)
+target_link_libraries(${PROJECT_NAME} xerces-c)

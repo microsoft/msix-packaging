@@ -46,6 +46,14 @@ namespace xPlat {
         InflateInitialize           = ERROR_FACILITY + 0x0021,
         InflateRead                 = ERROR_FACILITY + 0x0022,
         InflateCorruptData          = ERROR_FACILITY + 0x0023,
+
+        // AppxPackage format errors
+        AppxMissingSignatureP7X     = ERROR_FACILITY + 0x0031,
+        AppxMissingContentTypesXML  = ERROR_FACILITY + 0x0032,
+        AppxMissingBlockMapXML      = ERROR_FACILITY + 0x0033,
+        AppxMissingAppxManifestXML  = ERROR_FACILITY + 0x0034,
+        AppxDuplicateFootprintFile  = ERROR_FACILITY + 0x0035,
+
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
@@ -123,3 +131,5 @@ namespace xPlat {
         throw xPlat::Exception(c,m); \
     }                                \
 }
+
+#define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
