@@ -55,24 +55,24 @@ namespace xPlat {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
         m_appxSignature = std::make_unique<AppxSignatureObject>(m_container->GetFile(APPXSIGNATURE_P7X));
-        ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (m_appxSignature != nullptr), "AppxSignature.p7x not in archive!");
+        ThrowErrorIf(Error::AppxMissingSignatureP7X, (m_appxSignature == nullptr), "AppxSignature.p7x not in archive!");
 
         // 2. Get content type using signature object for validation
         // TODO: switch underlying type of m_contentType to something more specific.
         m_contentType = std::make_unique<XmlObject>(m_appxSignature->GetValidationStream(
             CONTENT_TYPES_XML, m_container->GetFile(CONTENT_TYPES_XML)));
-        ThrowErrorIfNot(Error::AppxMissingContentTypesXML, (m_contentType != nullptr), "[Content_Types].xml not in archive!");
+        ThrowErrorIf(Error::AppxMissingContentTypesXML, (m_contentType == nullptr), "[Content_Types].xml not in archive!");
 
         // 3. Get blockmap object using signature object for validation
         m_appxBlockMap = std::make_unique<AppxBlockMapObject>(m_appxSignature->GetValidationStream(
             APPXBLOCKMAP_XML, m_container->GetFile(APPXBLOCKMAP_XML)));
-        ThrowErrorIfNot(Error::AppxMissingBlockMapXML, (m_appxBlockMap != nullptr), "AppxBlockMap.xml not in archive!");
+        ThrowErrorIf(Error::AppxMissingBlockMapXML, (m_appxBlockMap == nullptr), "AppxBlockMap.xml not in archive!");
 
         // 4. Get manifest object using blockmap object for validation
         // TODO: pass validation flags and other necessary goodness through.
         m_appxManifest = std::make_unique<AppxManifestObject>(m_appxBlockMap->ValidationStream(
             APPXMANIFEST_XML, m_container->GetFile(APPXMANIFEST_XML)));
-        ThrowErrorIfNot(Error::AppxMissingAppxManifestXML, (m_appxBlockMap != nullptr), "AppxManifest.xml not in archive!");
+        ThrowErrorIf(Error::AppxMissingAppxManifestXML, (m_appxBlockMap == nullptr), "AppxManifest.xml not in archive!");
 
         std::map<std::string, bool> footPrintFileNames = {
             { APPXBLOCKMAP_XML,  false },

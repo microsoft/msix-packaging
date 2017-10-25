@@ -16,7 +16,7 @@ namespace xPlat {
     {
     public:
         // TODO: Implement actual XML validation....
-        XmlObject(std::shared_ptr<StreamBase>& stream) : m_stream(stream) {}
+        XmlObject(std::shared_ptr<StreamBase> stream) : m_stream(stream) {}
 
         // StreamBase interface is largely pass through.
         // XML de-serialization happens during construction, of this object.
