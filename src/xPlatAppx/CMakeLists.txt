@@ -20,31 +20,28 @@ ENDIF()
 MESSAGE("PAL: DirectoryObject = ${DirectoryObject}")
 
 set(LIB_PUBLIC_HEADERS
-    ../inc/xPlatAppx.hpp
-    ../inc/AppxWindows.hpp
     ../inc/AppxPackaging.hpp
+    ../inc/AppxWindows.hpp
+    ../inc/xPlatAppx.hpp
 )
 
 set(LIB_PRIVATE_HEADERS
     ../inc/AppxBlockMapObject.hpp
-    ../inc/CRC32Stream.hpp
-    ../inc/ObjectBase.hpp
-    ../inc/StreamBase.hpp
     ../inc/AppxFactory.hpp
-    ../inc/ComHelper.hpp
-    ../inc/OffsetStream.hpp
-    ../inc/ZipFileStream.hpp
     ../inc/AppxPackageObject.hpp
+    ../inc/ComHelper.hpp
     ../inc/DirectoryObject.hpp
-    ../inc/PartitionStream.hpp
-    ../inc/ZipObject.hpp
     ../inc/Exceptions.hpp
-    ../inc/SHA256Stream.hpp
     ../inc/FileStream.hpp
-    ../inc/SequenceStream.hpp
-    ../inc/Base64Stream.hpp
     ../inc/InflateStream.hpp
+    ../inc/ObjectBase.hpp
     ../inc/StorageObject.hpp
+    ../inc/StreamBase.hpp
+    ../inc/VerifierObject.hpp
+    ../inc/XmlObject.hpp
+    ../inc/xPlatAppx.hpp
+    ../inc/ZipFileStream.hpp
+    ../inc/ZipObject.hpp
 )
 
 set(LIB_SOURCES

@@ -14,6 +14,24 @@
                 "environment": [],
                 "externalConsole": true,
                 "MIMode": "lldb"
+            },
+            {
+                "name": "(Windows) Launch",
+                "type": "cppvsdbg",
+                "request": "launch",                
+                "program": "${workspaceRoot}\\.vs\\bin\\MakeXPlat",
+                "symbolSearchPath" : "${workspaceRoot}\\.vs\\bin",
+                "logging": {
+                    "moduleLoad": false,
+                    "trace": true
+                },
+                "args": ["unpack", 
+                    "-d" ,"${workspaceRoot}\\test\\unpack", 
+                    "-p", "${workspaceRoot}\\test\\appx\\UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx" ],
+                "stopAtEntry": false,                
+                "cwd": "${workspaceRoot}",
+                "environment": [],
+                "externalConsole": true
             }
         ]
     }

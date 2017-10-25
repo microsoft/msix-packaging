@@ -20,14 +20,12 @@ namespace xPlat {
     #define CONTENT_TYPES_XML "[Content_Types].xml"
 
     AppxSignatureObject::AppxSignatureObject(std::shared_ptr<StreamBase> stream) :
-        m_stream(stream)
+        VerifierObject(stream)
     {
         // TODO: Implement
     }
 
-    std::shared_ptr<StreamBase> AppxSignatureObject::GetValidationStream(
-        const std::string& file,
-        std::shared_ptr<StreamBase> stream)
+    std::shared_ptr<StreamBase> AppxSignatureObject::GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream)
     {
         // TODO: Implement -- for now, just pass through.
         return stream;
@@ -44,7 +42,7 @@ namespace xPlat {
         // TODO: Implement validation?
     }
 
-    AppxManifestObject::AppxManifestObject(std::shared_ptr<StreamBase> stream) : m_stream(stream)
+    AppxManifestObject::AppxManifestObject(std::shared_ptr<StreamBase> stream) : VerifierObject(stream)
     {
         // TODO: Implement
     }
@@ -56,30 +54,30 @@ namespace xPlat {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
         m_appxSignature = std::make_unique<AppxSignatureObject>(m_container->GetFile(APPXSIGNATURE_P7X));
-        ThrowErrorIf(Error::AppxMissingSignatureP7X, (m_appxSignature == nullptr), "AppxSignature.p7x not in archive!");
+        ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (m_appxSignature->HasStream()), "AppxSignature.p7x not in archive!");
 
         // 2. Get content type using signature object for validation
         // TODO: switch underlying type of m_contentType to something more specific.
         m_contentType = std::make_unique<XmlObject>(m_appxSignature->GetValidationStream(
             CONTENT_TYPES_XML, m_container->GetFile(CONTENT_TYPES_XML)));
-        ThrowErrorIf(Error::AppxMissingContentTypesXML, (m_contentType == nullptr), "[Content_Types].xml not in archive!");
+        ThrowErrorIfNot(Error::AppxMissingContentTypesXML, (m_contentType->HasStream()), "[Content_Types].xml not in archive!");
 
         // 3. Get blockmap object using signature object for validation
         m_appxBlockMap = std::make_unique<AppxBlockMapObject>(m_appxSignature->GetValidationStream(
             APPXBLOCKMAP_XML, m_container->GetFile(APPXBLOCKMAP_XML)));
-        ThrowErrorIf(Error::AppxMissingBlockMapXML, (m_appxBlockMap == nullptr), "AppxBlockMap.xml not in archive!");
+        ThrowErrorIfNot(Error::AppxMissingBlockMapXML, (m_appxBlockMap->HasStream()), "AppxBlockMap.xml not in archive!");
 
         // 4. Get manifest object using blockmap object for validation
         // TODO: pass validation flags and other necessary goodness through.
-        m_appxManifest = std::make_unique<AppxManifestObject>(m_appxBlockMap->ValidationStream(
+        m_appxManifest = std::make_unique<AppxManifestObject>(m_appxBlockMap->GetValidationStream(
             APPXMANIFEST_XML, m_container->GetFile(APPXMANIFEST_XML)));
-        ThrowErrorIf(Error::AppxMissingAppxManifestXML, (m_appxBlockMap == nullptr), "AppxManifest.xml not in archive!");
+        ThrowErrorIfNot(Error::AppxMissingAppxManifestXML, (m_appxBlockMap->HasStream()), "AppxManifest.xml not in archive!");
 
         struct Config
         {
             using lambda = std::function<std::shared_ptr<StreamBase>()>;
-            Config(lambda f) : ValidationStream(f) {}
-            lambda ValidationStream;
+            Config(lambda f) : GetValidationStream(f) {}
+            lambda GetValidationStream;
         };
 
         std::map<std::string, Config> footPrintFileNames = {
@@ -99,12 +97,12 @@ namespace xPlat {
             auto footPrintFile = footPrintFileNames.find(fileName);
             if (footPrintFile != footPrintFileNames.end())
             {
-                stream = footPrintFile->second.ValidationStream();
+                stream = footPrintFile->second.GetValidationStream();
             }
             else
             {
                 m_payloadFiles.push_back(fileName);
-                stream = m_appxBlockMap->ValidationStream(fileName, m_container->GetFile(fileName));
+                stream = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(fileName));
             }
 
             if (stream != nullptr) { m_streams[fileName] = stream; }

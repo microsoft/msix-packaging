@@ -11,23 +11,22 @@
 #include "ZipObject.hpp"
 #include "xPlatAppx.hpp"
 #include "ComHelper.hpp"
+#include "VerifierObject.hpp"
 #include "XmlObject.hpp"
 #include "AppxPackaging.hpp"
 #include "AppxBlockMapObject.hpp"
 
 namespace xPlat {
     // Object backed by AppxSignature.p7x
-    class AppxSignatureObject
+    class AppxSignatureObject : public VerifierObject
     {
     public:
         AppxSignatureObject(std::shared_ptr<StreamBase> stream);
 
-        std::shared_ptr<StreamBase> GetStream() { return m_stream; }
-        std::shared_ptr<StreamBase> GetValidationStream(const std::string& file, std::shared_ptr<StreamBase> stream);
+        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override;
 
     protected:
         std::map<std::string, std::vector<std::uint8_t>> m_digests;
-        std::shared_ptr<StreamBase>                      m_stream;
     };
 
     // The 5-tuple that describes the identity of a package
@@ -58,12 +57,16 @@ namespace xPlat {
     };
 
     // Object backed by AppxManifest.xml
-    class AppxManifestObject
+    class AppxManifestObject : public VerifierObject
     {
     public:
         AppxManifestObject(std::shared_ptr<StreamBase> stream);
 
-        std::shared_ptr<StreamBase> GetStream() { return m_stream; }
+        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override
+        {
+            throw Exception(Error::NotSupported);
+        }
+
         AppxPackageId* GetPackageId()           { return m_packageId.get(); }
         std::string GetPackageFullName()        { return m_packageId->GetPackageFullName(); }
 
