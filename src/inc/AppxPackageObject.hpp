@@ -11,20 +11,22 @@
 #include "ZipObject.hpp"
 #include "xPlatAppx.hpp"
 #include "ComHelper.hpp"
+#include "VerifierObject.hpp"
+#include "XmlObject.hpp"
 #include "AppxPackaging.hpp"
 #include "AppxBlockMapObject.hpp"
 
 namespace xPlat {
     // Object backed by AppxSignature.p7x
-    class AppxSignatureObject
+    class AppxSignatureObject : public VerifierObject
     {
     public:
-        AppxSignatureObject(std::shared_ptr<StreamBase>&& stream);
+        AppxSignatureObject(std::shared_ptr<StreamBase> stream);
 
-        std::shared_ptr<StreamBase> GetWholeFileValidationStream(const std::string& file);
+        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override;
 
     protected:
-        std::shared_ptr<StreamBase> m_stream;
+        std::map<std::string, std::vector<std::uint8_t>> m_digests;
     };
 
     // The 5-tuple that describes the identity of a package
@@ -55,13 +57,18 @@ namespace xPlat {
     };
 
     // Object backed by AppxManifest.xml
-    class AppxManifestObject
+    class AppxManifestObject : public VerifierObject
     {
     public:
-        AppxManifestObject(std::shared_ptr<StreamBase>&& stream);
+        AppxManifestObject(std::shared_ptr<StreamBase> stream);
 
-        AppxPackageId* GetPackageId()       { return m_packageId.get(); }
-        std::string GetPackageFullName()    { return m_packageId->GetPackageFullName(); }
+        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override
+        {
+            throw Exception(Error::NotSupported);
+        }
+
+        AppxPackageId* GetPackageId()           { return m_packageId.get(); }
+        std::string GetPackageFullName()        { return m_packageId->GetPackageFullName(); }
 
     protected:
         std::shared_ptr<StreamBase> m_stream;
@@ -90,7 +97,7 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) override;
 
         // returns a list of the footprint files found within this appx package.
-        std::vector<std::string>    GetFootprintFiles();
+        std::vector<std::string>&    GetFootprintFiles() { return m_footprintFiles; }
 
         // StorageObject methods
         std::string                 GetPathSeparator() override;
@@ -112,5 +119,10 @@ namespace xPlat {
         std::unique_ptr<AppxBlockMapObject>     m_appxBlockMap;
         std::unique_ptr<AppxManifestObject>     m_appxManifest;
         std::unique_ptr<StorageObject>          m_container;
+
+        std::vector<std::string>                m_payloadFiles;
+        std::vector<std::string>                m_footprintFiles;
+
+        std::unique_ptr<XmlObject>              m_contentType;
     };
 }

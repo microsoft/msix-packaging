@@ -20,31 +20,28 @@ ENDIF()
 MESSAGE("PAL: DirectoryObject = ${DirectoryObject}")
 
 set(LIB_PUBLIC_HEADERS
-    ../inc/xPlatAppx.hpp
-    ../inc/AppxWindows.hpp
     ../inc/AppxPackaging.hpp
+    ../inc/AppxWindows.hpp
+    ../inc/xPlatAppx.hpp
 )
 
 set(LIB_PRIVATE_HEADERS
     ../inc/AppxBlockMapObject.hpp
-    ../inc/CRC32Stream.hpp
-    ../inc/ObjectBase.hpp
-    ../inc/StreamBase.hpp
     ../inc/AppxFactory.hpp
-    ../inc/ComHelper.hpp
-    ../inc/OffsetStream.hpp
-    ../inc/ZipFileStream.hpp
     ../inc/AppxPackageObject.hpp
+    ../inc/ComHelper.hpp
     ../inc/DirectoryObject.hpp
-    ../inc/PartitionStream.hpp
-    ../inc/ZipObject.hpp
     ../inc/Exceptions.hpp
-    ../inc/SHA256Stream.hpp
     ../inc/FileStream.hpp
-    ../inc/SequenceStream.hpp
-    ../inc/Base64Stream.hpp
     ../inc/InflateStream.hpp
+    ../inc/ObjectBase.hpp
     ../inc/StorageObject.hpp
+    ../inc/StreamBase.hpp
+    ../inc/VerifierObject.hpp
+    ../inc/XmlObject.hpp
+    ../inc/xPlatAppx.hpp
+    ../inc/ZipFileStream.hpp
+    ../inc/ZipObject.hpp
 )
 
 set(LIB_SOURCES
@@ -58,6 +55,10 @@ set(LIB_SOURCES
 	${DirectoryObject}
 )
 
+# Copy out public headers
+ configure_file(../inc/xPlatAppx.hpp     ${CMAKE_CURRENT_BINARY_DIR}/xPlatAppx.hpp    )
+ configure_file(../inc/AppxWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/AppxWindows.hpp  )
+ configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
 
 # Define the library
 add_library(${LIBRARY_NAME} SHARED ${LIB_SOURCES} ${LIB_PUBLIC_HEADERS} ${LIB_PRIVATE_HEADERS})
@@ -78,6 +79,9 @@ include_directories(
 	${include_directories}
 	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
 	${CMAKE_PROJECT_ROOT}/lib/zlib
+	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
+	${CMAKE_PROJECT_ROOT}/lib/xerces/src
 )
 
 target_link_libraries(${PROJECT_NAME} zlibstatic)
+target_link_libraries(${PROJECT_NAME} xerces-c)

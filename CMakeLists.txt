@@ -19,8 +19,31 @@ IF((NOT WIN32) AND (NOT MACOS) AND (NOT IOS) AND (NOT AOSP) AND (NOT LINUX))
     RETURN()
 ENDIF()
 
-# TODO: specify c++ 14
-#ADD_DEFINITIONS(-std=c++14)
+IF(MACOS)
+        # Incredibly, for both clang and g++, while a single compile-and-link
+        # invocation will create an executable.dSYM/ dir with debug info,
+        # with separate compilation the final link does NOT create the
+        # dSYM dir.
+        # The "dsymutil" program will create the dSYM dir for us.
+        # Strangely it takes in the executable and not the object
+        # files even though it's the latter that contain the debug info.
+        # Thus it will only work if the object files are still sitting around.
+        find_program(DSYMUTIL_PROGRAM dsymutil)
+        if (DSYMUTIL_PROGRAM)
+          set(CMAKE_C_LINK_EXECUTABLE
+            "${CMAKE_C_LINK_EXECUTABLE}"
+            "${DSYMUTIL_PROGRAM} <TARGET>")
+          set(CMAKE_C_CREATE_SHARED_LIBRARY
+            "${CMAKE_C_CREATE_SHARED_LIBRARY}"
+            "${DSYMUTIL_PROGRAM} <TARGET>")
+          set(CMAKE_CXX_LINK_EXECUTABLE
+            "${CMAKE_CXX_LINK_EXECUTABLE}"
+            "${DSYMUTIL_PROGRAM} <TARGET>")
+          set(CMAKE_CXX_CREATE_SHARED_LIBRARY
+            "${CMAKE_CXX_CREATE_SHARED_LIBRARY}"
+            "${DSYMUTIL_PROGRAM} <TARGET>")
+        endif ()
+ENDIF()
 
 enable_testing() # needed on top-level CMakeLists.txt
 
@@ -29,6 +52,11 @@ SET(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
+
+# Default version is 0.0.0
+SET(VERSION_MAJOR "0")
+SET(VERSION_MINOR "0")
+SET(VERSION_PATCH "0")
 
 ## Git (and its revision)
 find_package(Git) # QUIET) # if we don't find git or FindGit.cmake is not on the system we ignore it.
@@ -44,13 +72,20 @@ IF(GIT_FOUND)
     MESSAGE(STATUS "GIT branch ${GIT_REFSPEC}")
     MESSAGE(STATUS "GIT revision ${GIT_SHA1}")
     set (VCS_REVISION ${GIT_SHA1})
+
+    git_describe(GIT_DESCRIPTION)
+    MESSAGE(STATUS "GIT Description '${GIT_DESCRIPTION}'" )
+    string(REGEX MATCH "v([0-9]+)\\.([0-9]+)\\-([0-9]+)" _dummy "${GIT_DESCRIPTION}")
+    SET(VERSION_MAJOR ${CMAKE_MATCH_1})
+    SET(VERSION_MINOR ${CMAKE_MATCH_2})
+    SET(VERSION_PATCH ${CMAKE_MATCH_3})
+ELSE()
+    MESSAGE("git not found.")
 ENDIF()
 
 # Set the version number of your project here (format is MAJOR.MINOR.PATCHLEVEL - e.g. 1.0.0)
-SET(VERSION_MAJOR "0")
-SET(VERSION_MINOR "0")
-SET(VERSION_PATCH "0")
 SET(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+MESSAGE (STATUS "xPlatAppx version ${VERSION}")
 
 # Mac needed variables 
 # [TODO: adapt as needed]

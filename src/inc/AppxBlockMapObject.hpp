@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "StreamBase.hpp"
+#include "VerifierObject.hpp"
 #include "AppxPackaging.hpp"
 #include "ComHelper.hpp"
 
@@ -53,20 +54,19 @@ namespace xPlat {
     };
 
     // Object backed by AppxBlockMap.xml
-    class AppxBlockMapObject : public xPlat::ComClass<AppxBlockMapObject, IAppxBlockMapBlocksEnumerator>
+    class AppxBlockMapObject : public VerifierObject, public xPlat::ComClass<AppxBlockMapObject, IAppxBlockMapBlocksEnumerator>
     {
     public:
-        AppxBlockMapObject(std::shared_ptr<StreamBase>&& stream);
+        AppxBlockMapObject(std::shared_ptr<StreamBase> stream);
 
-        std::shared_ptr<StreamBase> GetBlockMapValidationStream(const std::string& file);
+        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override;
 
         // IAppxBlockMapBlocksEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxBlockMapBlock** block);
-        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent);
-        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext);
+        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxBlockMapBlock** block) override;
+        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override;
+        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override;
 
     protected:
-        std::shared_ptr<StreamBase> m_stream;
         std::map<std::string, std::shared_ptr<AppxBlockMapFile>> m_blockMapfiles;
     };
 }
