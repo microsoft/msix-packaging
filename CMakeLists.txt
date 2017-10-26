@@ -53,6 +53,11 @@ SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")
 SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 
+# Default version is 0.0.0
+SET(VERSION_MAJOR "0")
+SET(VERSION_MINOR "0")
+SET(VERSION_PATCH "0")
+
 ## Git (and its revision)
 find_package(Git) # QUIET) # if we don't find git or FindGit.cmake is not on the system we ignore it.
 
@@ -67,13 +72,20 @@ IF(GIT_FOUND)
     MESSAGE(STATUS "GIT branch ${GIT_REFSPEC}")
     MESSAGE(STATUS "GIT revision ${GIT_SHA1}")
     set (VCS_REVISION ${GIT_SHA1})
+
+    git_describe(GIT_DESCRIPTION)
+    MESSAGE(STATUS "GIT Description '${GIT_DESCRIPTION}'" )
+    string(REGEX MATCH "v([0-9]+)\\.([0-9]+)\\-([0-9]+)" _dummy "${GIT_DESCRIPTION}")
+    SET(VERSION_MAJOR ${CMAKE_MATCH_1})
+    SET(VERSION_MINOR ${CMAKE_MATCH_2})
+    SET(VERSION_PATCH ${CMAKE_MATCH_3})
+ELSE()
+    MESSAGE("git not found.")
 ENDIF()
 
 # Set the version number of your project here (format is MAJOR.MINOR.PATCHLEVEL - e.g. 1.0.0)
-SET(VERSION_MAJOR "0")
-SET(VERSION_MINOR "0")
-SET(VERSION_PATCH "0")
 SET(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+MESSAGE (STATUS "xPlatAppx version ${VERSION}")
 
 # Mac needed variables 
 # [TODO: adapt as needed]

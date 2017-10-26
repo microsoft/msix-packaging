@@ -11,7 +11,7 @@ namespace xPlat {
     class VerifierObject
     {
     public:
-        VerifierObject(std::shared_ptr<StreamBase> stream) : m_stream(stream) {}
+        VerifierObject(std::shared_ptr<StreamBase> stream) : m_stream(std::move(stream)) {}
 
         inline bool HasStream() { return m_stream != nullptr;}
         inline std::shared_ptr<StreamBase>& GetStream() { return m_stream; }       

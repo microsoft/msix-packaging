@@ -20,7 +20,7 @@ namespace xPlat {
     #define CONTENT_TYPES_XML "[Content_Types].xml"
 
     AppxSignatureObject::AppxSignatureObject(std::shared_ptr<StreamBase> stream) :
-        VerifierObject(stream)
+        VerifierObject(std::move(stream))
     {
         // TODO: Implement
     }
@@ -42,7 +42,7 @@ namespace xPlat {
         // TODO: Implement validation?
     }
 
-    AppxManifestObject::AppxManifestObject(std::shared_ptr<StreamBase> stream) : VerifierObject(stream)
+    AppxManifestObject::AppxManifestObject(std::shared_ptr<StreamBase> stream) : VerifierObject(std::move(stream))
     {
         // TODO: Implement
     }
