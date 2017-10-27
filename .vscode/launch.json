@@ -1,0 +1,37 @@
+{
+        "version": "0.2.0",
+        "configurations": [
+            {
+                "name": "(lldb) Launch",
+                "type": "cppdbg",
+                "request": "launch",
+                "program": "${workspaceRoot}/build/bin/MakeXPlat",
+                "args": ["unpack", 
+                    "-d" ,"${workspaceRoot}/test/unpack", 
+                    "-p", "${workspaceRoot}/test/appx/StoreSigned_Desktop_x64_MoviesTV.appx" ],
+                "stopAtEntry": false,
+                "cwd": "${workspaceRoot}/build/bin",
+                "environment": [],
+                "externalConsole": true,
+                "MIMode": "lldb"
+            },
+            {
+                "name": "(Windows) Launch",
+                "type": "cppvsdbg",
+                "request": "launch",                
+                "program": "${workspaceRoot}\\.vs\\bin\\MakeXPlat",
+                "symbolSearchPath" : "${workspaceRoot}\\.vs\\bin",
+                "logging": {
+                    "moduleLoad": false,
+                    "trace": true
+                },
+                "args": ["unpack", 
+                    "-d" ,"${workspaceRoot}\\test\\unpack", 
+                    "-p", "${workspaceRoot}\\test\\appx\\UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx" ],
+                "stopAtEntry": false,                
+                "cwd": "${workspaceRoot}",
+                "environment": [],
+                "externalConsole": true
+            }
+        ]
+    }

@@ -6,6 +6,7 @@
 
 #include <cassert>
 #include <algorithm>
+#include <cstring>
 
 namespace xPlat {
     InflateStream::InflateStream(
@@ -156,7 +157,7 @@ namespace xPlat {
             seekPosition = m_uncompressedSize + offset;
             break;
         }
-        
+
         // Can't seek beyond the end of the uncompressed stream
         seekPosition = std::min(seekPosition, m_uncompressedSize);
 
@@ -166,7 +167,7 @@ namespace xPlat {
             // If the caller is trying to seek back to an earlier
             // point in the inflated stream, we will need to reset
             // zlib and start inflating from the beginning of the
-            // stream; otherwise, seeking forward is fine: We will 
+            // stream; otherwise, seeking forward is fine: We will
             // catch up to the seek pointer during the ::Read operation.
             if (m_seekPosition < m_fileCurrentPosition)
             {

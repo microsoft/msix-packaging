@@ -4,9 +4,13 @@
 #include <vector>
 #include <iostream>
 #include "Exceptions.hpp"
+#define UNICODE
+#define NOMINMAX
+#include "ComHelper.hpp"
+#include "AppxPackaging.hpp"
 
 namespace xPlat {
-    class StreamBase
+    class StreamBase : public xPlat::ComClass<StreamBase, IAppxFile, IStream>
     {
     public:
         enum Reference { START = SEEK_SET, CURRENT = SEEK_CUR, END = SEEK_END };
@@ -50,6 +54,157 @@ namespace xPlat {
         }
 
         virtual void Close() {};
+
+        // IStream
+        HRESULT STDMETHODCALLTYPE Read(
+            void *pv,
+            ULONG cb,
+            ULONG *pcbRead)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE Write(
+            const void *pv,
+            ULONG cb,
+            ULONG *pcbWritten)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE Seek(
+            LARGE_INTEGER dlibMove,
+            DWORD dwOrigin,
+            ULARGE_INTEGER *plibNewPosition)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER libNewSize)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE CopyTo(
+            IStream *pstm,
+            ULARGE_INTEGER cb,
+            ULARGE_INTEGER *pcbRead,
+            ULARGE_INTEGER *pcbWritten)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE Commit(DWORD grfCommitFlags)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE Revert(void)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE LockRegion(
+            ULARGE_INTEGER libOffset,
+            ULARGE_INTEGER cb,
+            DWORD dwLockType)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE UnlockRegion(
+            ULARGE_INTEGER libOffset,
+            ULARGE_INTEGER cb,
+            DWORD dwLockType)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE Stat(
+            STATSTG *pstatstg,
+            DWORD grfStatFlag)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE Clone(IStream **ppstm)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        // IAppxFile
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION *   compressionOption)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetStream(IStream** stream)
+        {
+            return xPlat::ResultOf([&]() {
+                // TODO: Implement
+                throw Exception(Error::NotImplemented);
+            });
+        }
     };
 
     typedef std::unique_ptr<StreamBase> StreamPtr;

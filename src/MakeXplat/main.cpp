@@ -187,7 +187,7 @@ int ParseAndRun(std::map<std::string, Command>& commands, State& state, int argc
             auto option = command->second.Options.find(argv[index]);
             while (option != command->second.Options.end())
             {
-                char* parameter = "";
+                char const *parameter = "";
                 if (option->second.TakesParameter)
                 {
                     if (++index == argc) { break; }
@@ -208,6 +208,7 @@ int ParseAndRun(std::map<std::string, Command>& commands, State& state, int argc
 
     switch (state.specified)
     {
+    case UserSpecified::Help:
     case UserSpecified::Nothing:
         return Help(argv[0], commands, state);
     case UserSpecified::Pack:

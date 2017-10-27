@@ -4,6 +4,7 @@
 #include <string>
 #include <exception>
 #include <cassert>
+#include <functional>
 
 namespace xPlat {
 
@@ -18,6 +19,9 @@ namespace xPlat {
         NotSupported                = 0x80070032,
         InvalidParameter            = 0x80070057,
         NotImplemented              = 0x80070078,
+        OutOfMemory                 = 0x80000002,
+        Unexpected                  = 0x8000ffff,
+        NoInterface                 = 0x80000004,
 
         //
         // xPlat specific error codes
@@ -44,7 +48,13 @@ namespace xPlat {
         InflateCorruptData          = ERROR_FACILITY + 0x0023,
 
         // Signature errors
-        SignatureInvalid            = ERROR_FACILITY + 0x0030,
+        AppxSignatureInvalid        = ERROR_FACILITY + 0x0030,
+        // AppxPackage format errors
+        AppxMissingSignatureP7X     = ERROR_FACILITY + 0x0031,
+        AppxMissingContentTypesXML  = ERROR_FACILITY + 0x0032,
+        AppxMissingBlockMapXML      = ERROR_FACILITY + 0x0033,
+        AppxMissingAppxManifestXML  = ERROR_FACILITY + 0x0034,
+        AppxDuplicateFootprintFile  = ERROR_FACILITY + 0x0035,
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
@@ -85,8 +95,33 @@ namespace xPlat {
         std::uint32_t   m_code;
         std::string     m_message;
     };
-}
 
+    // Provides an ABI exception boundary with parameter validation
+    using Lambda = std::function<void()>;
+
+    inline unsigned int ResultOf(Lambda lambda)
+    {
+        unsigned int result = 0;
+        try
+        {
+            lambda();
+        }
+        catch (xPlat::Exception& e)
+        {
+            result = e.Code();
+        }
+        catch (std::bad_alloc&)
+        {
+            result = static_cast<unsigned int>(xPlat::Error::OutOfMemory);
+        }
+        catch (std::exception&)
+        {
+            result = static_cast<unsigned int>(xPlat::Error::Unexpected);
+        }
+
+        return result;
+    }
+}
 
 // Helper to make code more terse and more readable at the same time.
 #define ThrowErrorIfNot(c, a, m)     \
@@ -97,3 +132,6 @@ namespace xPlat {
         throw xPlat::Exception(c,m); \
     }                                \
 }
+
+#define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
+
