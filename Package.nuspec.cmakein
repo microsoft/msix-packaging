@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>Microsoft.xPlat.AppxPackaging</id>
+    <version>${VERSION}</version>
+    <authors>psmith@microsoft.com</authors>
+    <owners>Xplat-appX@service.microsoft.com</owners>
+    <projectUrl>https://aka.ms/xPlatAppx</projectUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Cross platform implementation of AppxPackaging.dll</description>
+    <releaseNotes>TODO: automate release note propogation here...</releaseNotes>
+    <copyright>Copyright (C) 2017 Microsoft</copyright>
+    <tags>xPlatAppx Appx AppxPackaging</tags>
+    <dependencies />
+  </metadata>
+</package>

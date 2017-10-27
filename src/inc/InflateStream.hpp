@@ -1,26 +1,24 @@
 
 #pragma once
 #ifdef WIN32
-#define ZLIB_WINAPI
+#include "zlib.h"
+#else
+#include <zlib.h>
 #endif
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
-#include "StreamBase.hpp"
-#ifdef PLATFORM_APPLE
-#include <zlib.h>
-#else
-#include "..\..\lib\zlib\zlib.h"
-#endif
 
+//TODO: this is annoying
 #undef max
+#undef min
 #include <string>
 #include <map>
 #include <functional>
 
 
 namespace xPlat {
-  
+
     // This represents a LZW-compressed stream
     class InflateStream : public StreamBase
     {

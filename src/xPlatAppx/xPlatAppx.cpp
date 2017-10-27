@@ -4,14 +4,15 @@
 #include "FileStream.hpp"
 #include "ZipObject.hpp"
 #include "DirectoryObject.hpp"
+#include "ComHelper.hpp"
 #include "AppxPackageObject.hpp"
+#include "AppxPackaging.hpp"
 
 #include <string>
 #include <memory>
-#include <functional>
 
-// on apple platforms, compile with -fvisibility=hidden
 #ifdef PLATFORM_APPLE
+// on apple platforms, compile with -fvisibility=hidden
 #undef XPLATAPPX_API
 #define XPLATAPPX_API __attribute__((visibility("default")))
 
@@ -29,53 +30,36 @@ static void finalizer(void) {                               // 3
 
 #endif
 
-// Provides an ABI exception boundary with parameter validation
-using Lambda = std::function<void()>;
-
-unsigned int ResultOf(char* source, char* destination, Lambda lambda)
-{
-    unsigned int result = 0;
-    try
-    {
-        ThrowIf(xPlat::Error::InvalidParameter, (source != nullptr && destination != nullptr), "Invalid parameters");
-        lambda();
-    }
-    catch (xPlat::Exception& e)
-    {
-        result = e.Code();
-    }
-
-    return result;
-}
-
-XPLATAPPX_API unsigned int UnpackAppx(
+XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION UnpackAppx(
     xPlatPackUnpackOptions packUnpackOptions,
     xPlatValidationOptions validationOptions,
     char* source,
     char* destination)
 {
-    return ResultOf(source, destination, [&]() {
+    return xPlat::ResultOf([&]() {
         // TODO: what if source and destination are something OTHER than a file paths?
+        ThrowErrorIfNot(xPlat::Error::InvalidParameter, (source != nullptr && destination != nullptr), "Invalid parameters");
         xPlat::AppxPackageObject appx(validationOptions,
             std::make_unique<xPlat::ZipObject>(
                 std::make_unique<xPlat::FileStream>(
                     source, xPlat::FileStream::Mode::READ
                     )));
-        
+
         xPlat::DirectoryObject to(destination);
         appx.Unpack(packUnpackOptions, to);
     });
 }
 
-XPLATAPPX_API unsigned int PackAppx(
+XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION PackAppx(
     xPlatPackUnpackOptions packUnpackOptions,
     xPlatValidationOptions validationOptions,
     char* source,
     char* certFile,
     char* destination)
 {
-    return ResultOf(source, destination, [&]() {
+    return xPlat::ResultOf([&]() {
         // TODO: what if source and destination are something OTHER than a file paths?
+        ThrowErrorIfNot(xPlat::Error::InvalidParameter, (source != nullptr && destination != nullptr), "Invalid parameters");
         xPlat::AppxPackageObject appx(validationOptions, std::move(
             std::make_unique<xPlat::ZipObject>(std::move(
                 std::make_unique<xPlat::FileStream>(destination, xPlat::FileStream::Mode::WRITE_UPDATE)
