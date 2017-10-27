@@ -57,6 +57,7 @@ SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/lib")
 SET(VERSION_MAJOR "0")
 SET(VERSION_MINOR "0")
 SET(VERSION_PATCH "0")
+SET(GIT_BRANCH_NAME "master")
 
 ## Git (and its revision)
 find_package(Git) # QUIET) # if we don't find git or FindGit.cmake is not on the system we ignore it.
@@ -67,18 +68,31 @@ find_package(Git) # QUIET) # if we don't find git or FindGit.cmake is not on the
 ## The Git module will trigger a reconfiguration for each pull that will bring a new revision on the local repository
 SET(VCS_REVISION "-1")
 IF(GIT_FOUND)
+    MESSAGE (STATUS "--------------------------------")
+    MESSAGE (STATUS "xPlatAppx")
+    MESSAGE (STATUS "--------------------------------")    
     include(GetGitRevisionDescription)
     get_git_head_revision(GIT_REFSPEC GIT_SHA1)
-    MESSAGE(STATUS "GIT branch ${GIT_REFSPEC}")
+    MESSAGE(STATUS "GIT refspec ${GIT_REFSPEC}")
     MESSAGE(STATUS "GIT revision ${GIT_SHA1}")
     set (VCS_REVISION ${GIT_SHA1})
 
     git_describe(GIT_DESCRIPTION)
     MESSAGE(STATUS "GIT Description '${GIT_DESCRIPTION}'" )
-    string(REGEX MATCH "v([0-9]+)\\.([0-9]+)\\-([0-9]+)" _dummy "${GIT_DESCRIPTION}")
+    string(REGEX MATCH "v([0-9]+)\\.([0-9]+)\\-([0-9]+)" _dummy1 "${GIT_DESCRIPTION}")
     SET(VERSION_MAJOR ${CMAKE_MATCH_1})
     SET(VERSION_MINOR ${CMAKE_MATCH_2})
     SET(VERSION_PATCH ${CMAKE_MATCH_3})
+
+    IF(NOT ${GIT_REFSPEC})
+        string(REGEX MATCH "refs/heads/([a-zA-Z0-9_/]+)" _dummy2 ${GIT_REFSPEC})
+        SET(GIT_BRANCH_NAME ${CMAKE_MATCH_1})
+    ELSE()
+        # VSO doesn't checkout a branch do a pull, it checks out a hash and does a pull
+        SET(GIT_BRANCH_NAME "master")
+    ENDIF()
+
+    MESSAGE(STATUS "GIT branch name '${GIT_BRANCH_NAME}'" )
 ELSE()
     MESSAGE("git not found.")
 ENDIF()
@@ -86,7 +100,12 @@ ENDIF()
 # Set the version number of your project here (format is MAJOR.MINOR.PATCHLEVEL - e.g. 1.0.0)
 SET(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 MESSAGE (STATUS "xPlatAppx version ${VERSION}")
+MESSAGE (STATUS "xPlatAppx branch name ${GIT_BRANCH_NAME}")
 
+# Configure Package.nuspec
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Package.nuspec.cmakein ${CMAKE_CURRENT_BINARY_DIR}/Package.nuspec CRLF)
+MESSAGE (STATUS "Package.Nuspec created")
+MESSAGE (STATUS "--------------------------------")
 # Mac needed variables 
 # [TODO: adapt as needed]
 SET(CMAKE_MACOSX_RPATH ON)
@@ -96,6 +115,13 @@ SET(CMAKE_MACOSX_RPATH ON)
 #SET(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_subdirectory(lib)
+MESSAGE (STATUS " ")
+MESSAGE (STATUS "--------------------------------")
+MESSAGE (STATUS "xPlatAppx")
+MESSAGE (STATUS "--------------------------------")
+MESSAGE (STATUS "libs processed")
 add_subdirectory(src)
-
+MESSAGE (STATUS "src processed")
 ADD_DEPENDENCIES(SRC LIBS)
+MESSAGE (STATUS "dependencies added")
+MESSAGE (STATUS "DONE!")

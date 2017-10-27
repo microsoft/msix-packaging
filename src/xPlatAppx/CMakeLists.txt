@@ -17,7 +17,7 @@ ELSE()
 	set (DirectoryObject PAL/FileSystem/POSIX/DirectoryObject.cpp)
 ENDIF()
 
-MESSAGE("PAL: DirectoryObject = ${DirectoryObject}")
+MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
 
 set(LIB_PUBLIC_HEADERS
     ../inc/AppxPackaging.hpp
@@ -74,7 +74,7 @@ set_target_properties(${LIBRARY_NAME} PROPERTIES
 	PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
 )
 
-MESSAGE("xPlatAppx takes a static dependency on zlib")
+MESSAGE(STATUS "xPlatAppx takes a static dependency on zlib")
 include_directories(
 	${include_directories}
 	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
