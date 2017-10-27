@@ -84,8 +84,16 @@ IF(GIT_FOUND)
     SET(VERSION_MINOR ${CMAKE_MATCH_2})
     SET(VERSION_PATCH ${CMAKE_MATCH_3})
 
+    IF(${VERSION_MAJOR} STREQUAL "")
+    MESSAGE(STATUS "GIT Description is from NEW tag")
+        string(REGEX MATCH "v([0-9]+)\\.([0-9]+)" _dummy2 "${GIT_DESCRIPTION}")
+        SET(VERSION_MAJOR ${CMAKE_MATCH_1})
+        SET(VERSION_MINOR ${CMAKE_MATCH_2})
+        SET(VERSION_PATCH "0")    
+    ENDIF()
+
     IF(NOT ${GIT_REFSPEC})
-        string(REGEX MATCH "refs/heads/([a-zA-Z0-9_/]+)" _dummy2 ${GIT_REFSPEC})
+        string(REGEX MATCH "refs/heads/([a-zA-Z0-9_/]+)" _dummy3 ${GIT_REFSPEC})
         SET(GIT_BRANCH_NAME ${CMAKE_MATCH_1})
     ELSE()
         # VSO doesn't checkout a branch do a pull, it checks out a hash and does a pull
