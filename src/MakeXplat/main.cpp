@@ -39,13 +39,13 @@ struct State
 
     bool SkipManifestValidation()
     {
-        validationOptions = static_cast<xPlatValidationOptions>(validationOptions | xPlatValidationOptions::xPlatValidationOptionSkipAppxManifestValidation);
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST);
         return true;
     }
 
     bool SkipSignatureValidation()
     {
-        validationOptions = static_cast<xPlatValidationOptions>(validationOptions | xPlatValidationOptions::xPlatValidationOptionSkipSignatureOrigin);
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATUREORIGIN);
         return true;
     }
 
@@ -74,7 +74,7 @@ struct State
     std::string certName;
     std::string directoryName;
     UserSpecified specified                  = UserSpecified::Nothing;
-    xPlatValidationOptions validationOptions = xPlatValidationOptions::xPlatValidationOptionFull;
+    APPX_VALIDATION_OPTION validationOptions = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
     xPlatPackUnpackOptions unpackOptions     = xPlatPackUnpackOptions::xPlatPackUnpackOptionsNone;
 };
 

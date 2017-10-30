@@ -53,6 +53,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/AppxBlockMapObject.hpp
     ../inc/AppxFactory.hpp
     ../inc/AppxPackageObject.hpp
+    ../inc/AppxSignature.hpp
     ../inc/ComHelper.hpp
     ../inc/DirectoryObject.hpp
     ../inc/Exceptions.hpp
@@ -71,7 +72,8 @@ set(LIB_PRIVATE_HEADERS
 set(LIB_SOURCES
 	AppxBlockMapObject.cpp
 	AppxPackageObject.cpp
-	AppxPackaging_i.cpp
+    AppxPackaging_i.cpp
+    AppxSignature.cpp
 	InflateStream.cpp
 	xPlatAppx.cpp
 	ZipFileStream.cpp

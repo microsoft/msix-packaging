@@ -19,18 +19,6 @@ namespace xPlat {
     #define APPXSIGNATURE_P7X "AppxSignature.p7x"
     #define CONTENT_TYPES_XML "[Content_Types].xml"
 
-    AppxSignatureObject::AppxSignatureObject(std::shared_ptr<StreamBase> stream) :
-        VerifierObject(std::move(stream))
-    {
-        // TODO: Implement
-    }
-
-    std::shared_ptr<StreamBase> AppxSignatureObject::GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream)
-    {
-        // TODO: Implement -- for now, just pass through.
-        return stream;
-    }
-
     AppxPackageId::AppxPackageId(
         const std::string& name,
         const std::string& version,
@@ -47,13 +35,13 @@ namespace xPlat {
         // TODO: Implement
     }
 
-    AppxPackageObject::AppxPackageObject(xPlatValidationOptions validation, std::unique_ptr<StorageObject>&& container) :
+    AppxPackageObject::AppxPackageObject(APPX_VALIDATION_OPTION validation, std::unique_ptr<StorageObject>&& container) :
         m_validation(validation),
         m_container(std::move(container))
     {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
-        m_appxSignature = std::make_unique<AppxSignatureObject>(m_container->GetFile(APPXSIGNATURE_P7X));
+        m_appxSignature = std::make_unique<AppxSignatureObject>(validation, m_container->GetFile(APPXSIGNATURE_P7X));
         ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (m_appxSignature->HasStream()), "AppxSignature.p7x not in archive!");
 
         // 2. Get content type using signature object for validation

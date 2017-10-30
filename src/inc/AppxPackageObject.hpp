@@ -15,20 +15,9 @@
 #include "XmlObject.hpp"
 #include "AppxPackaging.hpp"
 #include "AppxBlockMapObject.hpp"
+#include "AppxSignature.hpp"
 
 namespace xPlat {
-    // Object backed by AppxSignature.p7x
-    class AppxSignatureObject : public VerifierObject
-    {
-    public:
-        AppxSignatureObject(std::shared_ptr<StreamBase> stream);
-
-        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override;
-
-    protected:
-        std::map<std::string, std::vector<std::uint8_t>> m_digests;
-    };
-
     // The 5-tuple that describes the identity of a package
     struct AppxPackageId
     {
@@ -80,7 +69,7 @@ namespace xPlat {
                               public StorageObject
     {
     public:
-        AppxPackageObject(xPlatValidationOptions validation, std::unique_ptr<StorageObject>&& container);
+        AppxPackageObject(APPX_VALIDATION_OPTION validation, std::unique_ptr<StorageObject>&& container);
 
         void Pack(xPlatPackUnpackOptions options, const std::string& certFile, StorageObject& from);
         void Unpack(xPlatPackUnpackOptions options, StorageObject& to);
@@ -114,7 +103,7 @@ namespace xPlat {
 
     protected:
         std::map<std::string, std::shared_ptr<StreamBase>>  m_streams;
-        xPlatValidationOptions                  m_validation = xPlatValidationOptions::xPlatValidationOptionFull;
+        APPX_VALIDATION_OPTION                  m_validation = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
         std::unique_ptr<AppxSignatureObject>    m_appxSignature;
         std::unique_ptr<AppxBlockMapObject>     m_appxBlockMap;
         std::unique_ptr<AppxManifestObject>     m_appxManifest;

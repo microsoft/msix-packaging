@@ -144,7 +144,7 @@ unsigned int ResultOf(char* appx, xPlat::Lambda lambda)
 
 XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION UnpackAppx(
     xPlatPackUnpackOptions packUnpackOptions,
-    xPlatValidationOptions validationOptions,
+    APPX_VALIDATION_OPTION validationOptions,
     char* source,
     char* destination)
 {
@@ -164,7 +164,7 @@ XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION UnpackAppx(
 
 XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION PackAppx(
     xPlatPackUnpackOptions packUnpackOptions,
-    xPlatValidationOptions validationOptions,
+    APPX_VALIDATION_OPTION validationOptions,
     char* source,
     char* certFile,
     char* destination)

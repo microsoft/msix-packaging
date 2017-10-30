@@ -11,14 +11,6 @@
 
 #include "AppxPackaging.hpp"
 
-enum xPlatValidationOptions : unsigned long
-{
-    xPlatValidationOptionFull                       = 0x00000000,
-    xPlatValidationOptionSkipSignature              = 0x00000001,
-    xPlatValidationOptionSkipSignatureOrigin        = 0x00000002,
-    xPlatValidationOptionSkipAppxManifestValidation = 0x00000004,
-};
-
 enum xPlatPackUnpackOptions : unsigned long
 {
     xPlatPackUnpackOptionsNone                      = 0x00000000,
@@ -28,14 +20,14 @@ enum xPlatPackUnpackOptions : unsigned long
 // TODO: add #defs to cover platform-specific differences?
 XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION UnpackAppx (
     xPlatPackUnpackOptions packUnpackOptions, 
-    xPlatValidationOptions validationOptions,
+    APPX_VALIDATION_OPTION validationOptions,
     char* source,
     char* destination
 );
 
 XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION PackAppx   (
     xPlatPackUnpackOptions packUnpackOptions, 
-    xPlatValidationOptions validationOptions, 
+    APPX_VALIDATION_OPTION validationOptions, 
     char* source, 
     char* certFile, 
     char* destination);
