@@ -60,28 +60,29 @@ BCRYPT_HASH_HANDLE  hHash;
 //
 // The structure for relevant info for one hash.
 //
-typedef struct _INDIRECT_DATA_DIGEST
+struct INDIRECT_DATA_DIGEST
 {
     std::uint32_t id;
     std::uint64_t start;
     std::uint64_t size;
     std::uint8_t value[SHA_256_DIGEST_SIZE];
-} INDIRECT_DATA_DIGEST;
+} ;
 
 //
 // The structure that holds all hash data.
 // 
-typedef struct _EAPPX_INDIRECT_DATA
+struct EAPPX_INDIRECT_DATA
 {
     std::uint32_t eappxId;
     std::uint8_t digestCount;
     INDIRECT_DATA_DIGEST digests[MAX_DIGEST_COUNT];
-} EAPPX_INDIRECT_DATA;
+};
 
 #ifdef WIN32
 #include <pshpack1.h>
 #endif 
-typedef struct _BLOBHEADER
+
+struct _BLOBHEADER
 {
     std::uint32_t headerId;
     std::uint16_t headerSize;
@@ -99,7 +100,8 @@ typedef struct _BLOBHEADER
     std::uint16_t codeIntegrityCompressionType;
     std::uint32_t codeIntegrityUncompressedSize;
     std::uint32_t codeIntegrityCompressedSize;
-} BLOBHEADER, *PBLOBHEADER;
+};
+
 #ifdef WIN32
 #include <poppack.h>
 #endif
@@ -190,13 +192,13 @@ XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION ValidateAppxSignature(char* appx
         {
             xPlat::ZipObject zip(std::move(rawFile));
             auto p7xStream = zip.GetFile("AppxSignature.p7x");
-            std::vector<std::uint8_t> buffer(sizeof(BLOBHEADER));
+            std::vector<std::uint8_t> buffer(sizeof(_BLOBHEADER));
 
             std::uint8_t* start = buffer.data();
             std::size_t cbRead = p7xStream->Read(start, start + buffer.size());
-            BLOBHEADER *pblob = reinterpret_cast<BLOBHEADER*>(buffer.data());
+            _BLOBHEADER *pblob = reinterpret_cast<_BLOBHEADER*>(buffer.data());
 
-            ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, (cbRead > sizeof(BLOBHEADER) && pblob->headerId == SIGNATURE_ID), "Invalid signature");
+            ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, (cbRead > sizeof(_BLOBHEADER) && pblob->headerId == SIGNATURE_ID), "Invalid signature");
 
             //auto rangeStream = std::make_unique<xPlat::RangeStream>(p7xStream, sizeof(P7xFileId), cbStream - sizeof(P7xFileId));
             //auto tempStream = std::make_unique<xPlat::FileStream>("e:\\temp\\temp.p7x", xPlat::FileStream::WRITE);
