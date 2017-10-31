@@ -23,17 +23,12 @@ namespace xPlat {
     class InflateStream : public StreamBase
     {
     public:
-        //static std::shared_ptr<StreamBase> MakeInflateStream(std::shared_ptr<StreamBase> stream, std::uint64_t compressedSize, std::uint64_t uncompressedSize);
-
-        InflateStream(
-            std::shared_ptr<StreamBase> stream,
-            std::uint64_t uncompressedSize
-        );
+        InflateStream(std::shared_ptr<StreamBase> stream, std::uint64_t uncompressedSize);
 
         ~InflateStream() override;
 
-        void Write(std::size_t size, const std::uint8_t* bytes) override;
-        std::size_t Read(std::size_t size, const std::uint8_t* bytes) override;
+        void Write (const std::uint8_t* start, const std::uint8_t* end) override;
+        std::size_t Read(const std::uint8_t* start, const std::uint8_t* end) override;
         void Seek(std::uint64_t offset, Reference where) override;
         int Ferror() override;
         bool Feof() override;
@@ -54,12 +49,13 @@ namespace xPlat {
 
         State m_previous = State::UNINITIALIZED;
         State m_state = State::UNINITIALIZED;
-        std::map<State, std::function<std::tuple<bool, State>(std::size_t cbReadBuffer, const std::uint8_t* readBuffer)>> m_stateMachine;
+        std::map<State, std::function<std::tuple<bool, State>(const std::uint8_t* start, const std::uint8_t* end)>> m_stateMachine;
 
         std::uint64_t               m_seekPosition = 0;
         std::shared_ptr<StreamBase> m_stream;
         std::uint64_t               m_uncompressedSize;
         std::size_t                 m_bytesRead = 0;
+        const std::uint8_t*         m_startCurrentBuffer = nullptr;
 
         z_stream m_zstrm;
         int m_zret;

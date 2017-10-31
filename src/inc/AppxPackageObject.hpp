@@ -14,20 +14,9 @@
 #include "XmlObject.hpp"
 #include "AppxPackaging.hpp"
 #include "AppxBlockMapObject.hpp"
+#include "AppxSignature.hpp"
 
 namespace xPlat {
-    // Object backed by AppxSignature.p7x
-    class AppxSignatureObject : public VerifierObject
-    {
-    public:
-        AppxSignatureObject(std::shared_ptr<StreamBase> stream);
-
-        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override;
-
-    protected:
-        std::map<std::string, std::vector<std::uint8_t>> m_digests;
-    };
-
     // The 5-tuple that describes the identity of a package
     struct AppxPackageId
     {

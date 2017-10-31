@@ -233,6 +233,7 @@ int ParseAndRun(std::map<std::string, Command>& commands, State& state, int argc
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
         );
+        //return ValidateAppxSignature(const_cast<char*>(state.packageName.c_str()));
     }
     return -1; // should never end up here.
 }

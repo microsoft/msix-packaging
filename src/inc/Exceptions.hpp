@@ -47,13 +47,14 @@ namespace xPlat {
         InflateRead                 = ERROR_FACILITY + 0x0022,
         InflateCorruptData          = ERROR_FACILITY + 0x0023,
 
+        // Signature errors
+        AppxSignatureInvalid        = ERROR_FACILITY + 0x0030,
         // AppxPackage format errors
         AppxMissingSignatureP7X     = ERROR_FACILITY + 0x0031,
         AppxMissingContentTypesXML  = ERROR_FACILITY + 0x0032,
         AppxMissingBlockMapXML      = ERROR_FACILITY + 0x0033,
         AppxMissingAppxManifestXML  = ERROR_FACILITY + 0x0034,
         AppxDuplicateFootprintFile  = ERROR_FACILITY + 0x0035,
-
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!

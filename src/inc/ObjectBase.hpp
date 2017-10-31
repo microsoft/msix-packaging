@@ -118,12 +118,17 @@ namespace xPlat {
 
             virtual void Write(StreamBase* stream) override
             {
-                stream->Write(Size(), value.data());
+                std::uint8_t* start = value.data();
+                stream->Write(start, start + value.size());
             }
 
             virtual void Read(StreamBase* stream) override
             {
-                stream->Read(Size(), value.data());
+                if (value.size() != 0)
+                {
+                    std::uint8_t* start = value.data();
+                    stream->Read(start, start + value.size());
+                }
                 Validate();
             }
         };
