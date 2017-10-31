@@ -80,8 +80,8 @@ namespace xPlat {
             ULARGE_INTEGER *plibNewPosition)
         {
             return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
+                this->Seek(static_cast<std::uint64_t>(dlibMove), static_cast<Reference>(dwOrigin));
+                plibNewPosition ? plibNewPosition = static_cast<ULARGE_INTEGER>(this->Ftell()) : nullptr;
             });
         }
 
@@ -162,7 +162,7 @@ namespace xPlat {
         }
 
         // IAppxFile
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION *   compressionOption)
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption)
         {
             return xPlat::ResultOf([&]() {
                 // TODO: Implement
@@ -196,10 +196,8 @@ namespace xPlat {
 
         HRESULT STDMETHODCALLTYPE GetStream(IStream** stream)
         {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
+            UuidOfImpl<IStream> uuid;
+            return QueryInterface(uuid.iid, stream);
         }
     };
 

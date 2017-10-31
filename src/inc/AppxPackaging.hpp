@@ -1990,6 +1990,12 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     IAppxFactory** appxFactory);
 }
 
+// provided as a helper for platforms that do not have an implementation of SHCreateStreamOnFileEx
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
+    char* utf8File,
+    bool forRead,
+    IStream** stream);
+
 // Helper used for QueryInterface defines
 #define SpecializeUuidOfImpl(Type)                    \
     template<>                                        \

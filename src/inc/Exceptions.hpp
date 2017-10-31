@@ -87,6 +87,16 @@ namespace xPlat {
             m_message(message)
         {}
 
+        Exception(HRESULT error, std::string& message) :
+            m_code(error),
+            m_message(message)
+        {}
+
+        Exception(HRESULT error, const char* message) :
+            m_code(error),
+            m_message(message)
+        {}            
+
         uint32_t        Code() { return m_code; }
         std::string&    Message() { return m_message; }
 
@@ -132,3 +142,12 @@ namespace xPlat {
 }
 
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
+
+#define ThrowHrIfFailed(a)                                           \
+{                                                                    \
+    HRESULT hr = a;                                                  \
+    if (!SUCCEDED(hr))                                               \
+    {                                                                \
+        throw xPlat::Exception(hr, "COM Call: " + ##a + " failed."); \
+    }                                                                \
+}

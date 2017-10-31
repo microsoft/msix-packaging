@@ -5,7 +5,10 @@ namespace xPlat {
     class XplatAppxFactory : public xPlat::ComClass<XplatAppxFactory, IAppxFactory>
     {
     public:
-        AppxFactory() { }
+        AppxFactory(COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : m_memalloc(memalloc), m_memfree(memfree)
+        {
+            ThrowErrorIf(Error::InvalidParameter, (m_memalloc == nullptr || m_memfree == nullptr), "allocator/deallocator pair not specified.")
+        }
 
         // IAppxFactory
         HRESULT STDMETHODCALLTYPE CreatePackageWriter(
@@ -39,7 +42,6 @@ namespace xPlat {
             });
         }
 
-
         HRESULT STDMETHODCALLTYPE CreateBlockMapReader(
             IStream* inputStream,
             IAppxBlockMapReader** blockMapReader)
@@ -60,5 +62,8 @@ namespace xPlat {
                 throw Exception(Error::NotImplemented);
             });
         }
+
+        COTASKMEMALLOC* m_memalloc;
+        COTASKMEMFREE*  m_memfree;
     };
 }

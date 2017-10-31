@@ -42,11 +42,9 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
             "Invalid parameters"
         );
 
-        xPlat::AppxPackageObject appx(validationOption,
-            std::make_unique<xPlat::ZipObject>(
-                std::make_unique<xPlat::FileStream>(
-                    utf8SourcePackage, xPlat::FileStream::Mode::READ
-                    )));
+        xPlat::ComPtr<IStream> stream;
+        ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream.get()));
+        xPlat::AppxPackageObject appx(validationOption, std::make_unique<xPlat::ZipObject>(stream));
 
         xPlat::DirectoryObject to(utf8Destination);
         appx.Unpack(packUnpackOptions, to);
@@ -67,15 +65,25 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
             "Invalid parameters"
         );
 
-        xPlat::AppxPackageObject appx(validationOption, std::move(
-            std::make_unique<xPlat::ZipObject>(std::move(
-                std::make_unique<xPlat::FileStream>(utf8Destination, xPlat::FileStream::Mode::WRITE_UPDATE)
-            ))
-        ));
+        xPlat::ComPtr<IStream> stream;
+        ThrowHrIfFailed(CreateStreamOnFile(utf8Destination, false, &stream.get()));
+        xPlat::AppxPackageObject appx(validationOption, std::move(std::make_unique<xPlat::ZipObject>(std::move(stream))));
 
         xPlat::DirectoryObject from(utf8FolderToPack);
         appx.Pack(packUnpackOptions, utf8CertificatePath, from);
         appx.CommitChanges();
+    });
+}
+
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
+    char* utf8File,
+    bool forRead,
+    IStream** stream)
+{
+    return xPlat::ResultOf([&]() {
+        auto file = std::make_unique<xPlat::FileStream>(utf8File, forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE);
+        UuidOfImpl<IStream> uuid;
+        return file->QueryInterface(uuid.iid, stream);
     });
 }
 
@@ -85,7 +93,11 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     APPX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory)
 {
-
+    return xPlat::ResultOf([&]() {
+        auto factory = std::make_unique<AppxFactory>(memalloc, memfree);
+        UuidOfImpl<IAppxFactory> uuid;
+        return factory->QueryInterface(uuid.iid, appxFactory);
+    });
 }
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
@@ -93,5 +105,9 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     APPX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory)
 {
-    
+    #ifdef WIN32
+        return CoCreateAppxFactory(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);
+    #else
+        return CoCreateAppxFactory(new, delete[], validationOption, AppxFactory);
+    #endif
 }    

@@ -730,11 +730,11 @@ namespace xPlat {
 
     std::string ZipObject::GetPathSeparator() { return "/"; }
 
-    ZipObject::ZipObject(std::unique_ptr<StreamBase>&& stream) : m_stream(std::move(stream))
+    ZipObject::ZipObject(ComPtr<IStream>&& stream) : m_stream(std::move(stream))
     {
         // Confirm that the file IS the correct format
         EndCentralDirectoryRecord endCentralDirectoryRecord;
-        m_stream->Seek(-1 * endCentralDirectoryRecord.Size(), StreamBase::Reference::END);
+        ThrowHrIfFailed(m_stream->Seek(-1 * endCentralDirectoryRecord.Size(), static_cast<DWORD>(StreamBase::Reference::END), nullptr));
         endCentralDirectoryRecord.Read(m_stream.get());
 
         // find where the zip central directory exists.

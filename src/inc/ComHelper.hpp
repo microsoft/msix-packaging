@@ -38,24 +38,6 @@ namespace xPlat {
     class ComClass : public QIHelper<Interfaces...>
     {
     public:
-        typedef std::unique_ptr<Derived> XplatAppxPtr;
-
-        virtual HRESULT Initialize() { return S_OK; }
-
-        inline static HRESULT Make(Derived** result)
-        {
-            *result = nullptr;
-            HRESULT hr = S_OK;
-            XplatAppxPtr item;
-            hr = xPlat::ResultOf(item, [&]() { item = std::make_unique<Derived>(); });
-            if (SUCCEDED(hr))
-            {
-                hr = item->Initialize();
-            }
-            *result = item.release();
-            return hr;
-        }
-
         virtual ~ComClass() { }
 
         virtual ULONG STDMETHODCALLTYPE AddRef() override { return ++m_ref; }
@@ -87,5 +69,26 @@ namespace xPlat {
         std::atomic<std::uint32_t> m_ref;
 
         ComClass() : m_ref(1) {}
+    };
+
+    struct ComDeleter
+    {
+        operator()(IUnknown* unknown)
+        {
+            unknown->Release();
+        }
+    };
+    
+    template <T>
+    class ComPtr : public std::unique_ptr<T, ComDeleter>
+    {
+    public:
+        template <U>
+        HRESULT As (xPlatComPtr<U>& qi)
+        {
+            UuidOfImpl<U> uuid;
+            qi.release();
+            return this->QueryInterface(uuid.idd, &qi.get());
+        }
     };
 }
