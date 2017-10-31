@@ -2,208 +2,135 @@
 
 #include <memory>
 #include <vector>
+#include <algorithm>
 #include <iostream>
 #include "Exceptions.hpp"
 #define UNICODE
 #define NOMINMAX
 #include "ComHelper.hpp"
 #include "AppxPackaging.hpp"
+#include "AppxWindows.hpp"
 
 namespace xPlat {
     class StreamBase : public xPlat::ComClass<StreamBase, IAppxFile, IStream>
     {
     public:
+        // These are the same values as STREAM_SEEK. See 
+        // https://msdn.microsoft.com/en-us/library/windows/desktop/aa380359(v=vs.85).aspx for additional details.
         enum Reference { START = SEEK_SET, CURRENT = SEEK_CUR, END = SEEK_END };
 
         virtual ~StreamBase() {}
 
-        // This way, derived classes only have to implement what they actually need, and everything else is not implemented.
-        virtual void Write(const std::uint8_t* start, const std::uint8_t* end)       { throw Exception(Error::NotImplemented); }
-        virtual std::size_t Read(const std::uint8_t* start, const std::uint8_t* end) { throw Exception(Error::NotImplemented); }
-        virtual void Seek(std::uint64_t offset, Reference where)                     { throw Exception(Error::NotImplemented); }
-        virtual int Ferror()                                                         { throw Exception(Error::NotImplemented); }
-        virtual bool Feof()                                                          { throw Exception(Error::NotImplemented); }
-        virtual std::uint64_t Ftell()                                                { throw Exception(Error::NotImplemented); }
-        virtual void Flush()                                                         { }
-        virtual void CopyTo(StreamBase* to)
-        {
-            std::vector<std::uint8_t> buffer(1024);  // 1k at a time ought to be sufficient
-            std::size_t bytes = Read(buffer.data(), buffer.data() + buffer.size());
-            while (bytes != 0)
-            {
-                to->Write(buffer.data(), buffer.data() + bytes);
-                to->Flush();
-                bytes = Read(buffer.data(), buffer.data() + buffer.size());
-            }
-        }
+        //
+        // IStream methods
+        //
 
-        template <class T>
-        static std::size_t Read(StreamBase* stream, T* value)
-        {
-            const std::uint8_t* start = reinterpret_cast<std::uint8_t*>(const_cast<T*>(value));
-            const std::uint8_t* end = start + sizeof(T);
-            return stream->Read(start, end);
-        }
+        // Creates a new stream object with its own seek pointer that references the same bytes as the original stream.
+        virtual HRESULT Clone(IStream**) { return static_cast<HRESULT>(Error::NotSupported); }
 
-        template <class T>
-        static void Write(StreamBase* stream, T* value)
-        {
-            const std::uint8_t* start = reinterpret_cast<std::uint8_t*>(const_cast<T*>(value));
-            const std::uint8_t* end = start + sizeof(T);
-            stream->Write(start, end);
-        }
+        // Ensures that any changes made to a stream object open in transacted mode are reflected in the parent storage.
+        // If the stream object is open in direct mode, IStream::Commit has no effect other than flushing all memory buffers
+        // to the next-level storage object.
+        virtual HRESULT Commit(DWORD)    { return static_cast<HRESULT>(Error::OK); }
 
-        virtual void Close() {};
-
-        // IStream
-        HRESULT STDMETHODCALLTYPE Read(
-            void *pv,
-            ULONG cb,
-            ULONG *pcbRead)
+        // Copies a specified number of bytes from the current seek pointer in the stream to the current seek pointer in 
+        // another stream.
+        virtual HRESULT CopyTo(IStream *stream, ULARGE_INTEGER bytesCount, ULARGE_INTEGER *bytesRead, ULARGE_INTEGER *bytesWritten)
         {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
+            return ResultOf([&] {
+                if (bytesRead) { bytesRead->QuadPart = 0; }
+                if (bytesWritten) { bytesWritten->QuadPart = 0; }
+                ThrowErrorIfNot(Error::InvalidParameter, (stream), "invalid parameter.");
+
+                static const ULONGLONG size = 1024;
+                std::vector<std::int8_t> bytes(size);
+                std::int64_t read = 0;
+                std::int64_t written = 0;
+                ULONG length = 0;
+
+                while (0 < bytesCount.QuadPart)
+                {
+                    ULONGLONG chunk = std::min(bytesCount.QuadPart, size);
+                    ThrowHrIfFailed(Read(reinterpret_cast<void*>(bytes.data()), chunk, &length));
+                    if (length == 0) { break; }
+                    read += length;
+
+                    ULONG offset = 0;
+                    while (0 < length)
+                    {
+                        ULONG copy = 0;
+                        ThrowHrIfFailed(stream->Write(reinterpret_cast<void*>(&bytes[offset]), length, &copy));
+                        offset += copy;
+                        written += copy;
+                        length -= copy;
+                        bytesCount.QuadPart -= copy;
+                    }
+                }
+
+                if (bytesRead)      { bytesRead->QuadPart = read; }
+                if (bytesWritten)   { bytesWritten->QuadPart = written;}
             });
         }
 
-        HRESULT STDMETHODCALLTYPE Write(
-            const void *pv,
-            ULONG cb,
-            ULONG *pcbWritten)
+        virtual HRESULT Read(void*, ULONG, ULONG*) { return static_cast<HRESULT>(Error::NotImplemented); }
+
+        // Restricts access to a specified range of bytes in the stream. Supporting this functionality is optional since
+        // some file systems do not provide it.
+        virtual HRESULT LockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD)
         {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
+            return static_cast<HRESULT>(Error::NotSupported);
         }
 
-        HRESULT STDMETHODCALLTYPE Seek(
-            LARGE_INTEGER dlibMove,
-            DWORD dwOrigin,
-            ULARGE_INTEGER *plibNewPosition)
+        // Discards all changes that have been made to a transacted stream since the last IStream::Commit call.
+        virtual HRESULT Revert() { return static_cast<HRESULT>(Error::NotSupported); }
+
+        // Changes the seek pointer to a new location. The new location is relative to either the beginning of the
+        // stream, the end of the stream, or the current seek pointer.
+        virtual HRESULT Seek(LARGE_INTEGER, DWORD, ULARGE_INTEGER*) { return static_cast<HRESULT>(Error::NotImplemented); }
+
+        // Changes the size of the stream object.
+        virtual HRESULT SetSize(ULARGE_INTEGER) { return static_cast<HRESULT>(Error::NotSupported); }
+
+        // Retrieves the STATSTG structure for this stream.
+        virtual HRESULT Stat(STATSTG* , DWORD) { return static_cast<HRESULT>(Error::NotSupported); }
+
+        // Removes the access restriction on a range of bytes previously restricted with IStream::LockRegion.
+        virtual HRESULT UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD)
         {
-            return xPlat::ResultOf([&]() {
-                this->Seek(static_cast<std::uint64_t>(dlibMove), static_cast<Reference>(dwOrigin));
-                plibNewPosition ? plibNewPosition = static_cast<ULARGE_INTEGER>(this->Ftell()) : nullptr;
-            });
+            return static_cast<HRESULT>(Error::NotSupported);
         }
 
-        HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER libNewSize)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
+        // Writes a specified number of bytes into the stream object starting at the current seek pointer.
+        HRESULT Write(void const *,ULONG, ULONG) { return static_cast<HRESULT>(Error::NotImplemented); }
 
-        HRESULT STDMETHODCALLTYPE CopyTo(
-            IStream *pstm,
-            ULARGE_INTEGER cb,
-            ULARGE_INTEGER *pcbRead,
-            ULARGE_INTEGER *pcbWritten)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE Commit(DWORD grfCommitFlags)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE Revert(void)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE LockRegion(
-            ULARGE_INTEGER libOffset,
-            ULARGE_INTEGER cb,
-            DWORD dwLockType)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE UnlockRegion(
-            ULARGE_INTEGER libOffset,
-            ULARGE_INTEGER cb,
-            DWORD dwLockType)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE Stat(
-            STATSTG *pstatstg,
-            DWORD grfStatFlag)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE Clone(IStream **ppstm)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
-
-        // IAppxFile
+        //
+        // IAppxFile methods
+        //
         HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption)
         {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
+            if (compressionOption) { *compressionOption = APPX_COMPRESSION_OPTION_NONE; }
+            return static_cast<HRESULT>(Error::OK);
         }
 
         HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType)
         {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
+            return static_cast<HRESULT>(Error::NotImplemented);
         }
 
         HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName)
         {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
+            return static_cast<HRESULT>(Error::NotImplemented);
         }
 
         HRESULT STDMETHODCALLTYPE GetSize(UINT64* size)
         {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
+            return static_cast<HRESULT>(Error::NotImplemented);
         }
 
         HRESULT STDMETHODCALLTYPE GetStream(IStream** stream)
         {
             UuidOfImpl<IStream> uuid;
-            return QueryInterface(uuid.iid, stream);
+            return QueryInterface(uuid.iid, reinterpret_cast<void**>(stream));
         }
     };
-
-    typedef std::unique_ptr<StreamBase> StreamPtr;
 }

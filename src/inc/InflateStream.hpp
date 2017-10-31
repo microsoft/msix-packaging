@@ -8,8 +8,10 @@
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
+#include "ZipFileStream.hpp"
+#include "ComHelper.hpp"
 
-//TODO: this is annoying
+//TODO: windows.h defines max and min... 
 #undef max
 #undef min
 #include <string>
@@ -20,19 +22,23 @@
 namespace xPlat {
 
     // This represents a LZW-compressed stream
-    class InflateStream : public StreamBase
+    class InflateStream : public ZipFileStream
     {
     public:
-        InflateStream(std::shared_ptr<StreamBase> stream, std::uint64_t uncompressedSize);
+        InflateStream(ComPtr<IStream>& stream, std::uint64_t uncompressedSize);
 
-        ~InflateStream() override;
+        HRESULT Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override;
+        HRESULT Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override;
+        HRESULT Write(void const *buffer, ULONG countBytes, ULONG *bytesWritten) override
+        {
+            return static_cast<HRESULT>(Error::NotImplemented);
+        }
 
-        void Write (const std::uint8_t* start, const std::uint8_t* end) override;
-        std::size_t Read(const std::uint8_t* start, const std::uint8_t* end) override;
-        void Seek(std::uint64_t offset, Reference where) override;
-        int Ferror() override;
-        bool Feof() override;
-        std::uint64_t Ftell()  override;
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size)
+        {
+            if (size) { *size = m_uncompressedSize; }
+            return static_cast<HRESULT>(Error::OK);
+        }
 
     protected:
         void Cleanup();
@@ -49,13 +55,13 @@ namespace xPlat {
 
         State m_previous = State::UNINITIALIZED;
         State m_state = State::UNINITIALIZED;
-        std::map<State, std::function<std::tuple<bool, State>(const std::uint8_t* start, const std::uint8_t* end)>> m_stateMachine;
+        std::map<State, std::function<std::tuple<bool, State>(void* buffer, ULONG countBytes)>> m_stateMachine;
 
         std::uint64_t               m_seekPosition = 0;
         std::shared_ptr<StreamBase> m_stream;
         std::uint64_t               m_uncompressedSize;
         std::size_t                 m_bytesRead = 0;
-        const std::uint8_t*         m_startCurrentBuffer = nullptr;
+        std::uint8_t*               m_startCurrentBuffer = nullptr;
 
         z_stream m_zstrm;
         int m_zret;

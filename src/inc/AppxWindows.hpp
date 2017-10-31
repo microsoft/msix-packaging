@@ -119,6 +119,10 @@ typedef GUID CLSID;
 #define SUCCEDED(hr) hr == 0
 #endif
 
+#ifndef FAILED
+#define FAILED(hr) !SUCCEEDED(hr)
+#endif
+
 #if !defined (_SYS_GUID_OPERATORS_)
 #define _SYS_GUID_OPERATORS_
 

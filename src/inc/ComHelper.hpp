@@ -1,6 +1,7 @@
 #pragma once
 #include <memory> 
 #include <atomic>
+#include <type_traits>
 
 #include "Exceptions.hpp"
 #include "AppxPackaging.hpp"
@@ -34,11 +35,72 @@ namespace xPlat {
         }
     };
 
+    template <class T>
+    class ComPtr
+    {
+    public:
+        ComPtr() : m_ptr(nullptr) {}
+
+        ComPtr(ComPtr& right)
+        {
+            m_ptr = right.m_ptr;
+            m_ptr->AddRef();
+        }
+
+        template<class U>
+        std::enable_if<std::is_convertible<U,T>::value>::type ComPtr(U* ptr) : m_ptr(ptr) {}
+
+        ~ComPtr() { InternalRelease(); }
+
+        T* operator->() const { return m_ptr; }
+        T* Get() const { return m_ptr; }
+        void Reset() { InternalRelease(); }
+
+        T** ReleaseAndGetAddressOf()
+        {
+            InternalRelease();
+            return &m_ptr;
+        }
+
+        T* Detach()
+        {
+            T* ptr = m_ptr;
+            m_ptr = nullptr;
+            return ptr;
+        }
+
+        template <U>
+        xPlatComPtr<U> As()
+        {
+            UuidOfImpl<U> uuid;
+            xPlatComPtr<U> out;
+            ThrowHrIfFailed(this->QueryInterface(uuid.idd, &&out.m_ptr));
+            return out;
+        }
+    protected:
+        T *m_ptr = nullptr;
+
+        void InternalRelease()
+        {
+            if (m_ptr)
+            {
+                m_ptr->Release();
+                m_ptr = nullptr;
+            }
+        }
+    };
+
     template <class Derived, typename... Interfaces>
     class ComClass : public QIHelper<Interfaces...>
     {
     public:
         virtual ~ComClass() { }
+
+        //template<class T, typename... Args>
+        //static ComPtr<T> Make(Args&&... args)
+        //{
+        //    return ComPtr<T>(new Derived(std::forward<Args>(args...)));
+        //}
 
         virtual ULONG STDMETHODCALLTYPE AddRef() override { return ++m_ref; }
 
@@ -69,26 +131,5 @@ namespace xPlat {
         std::atomic<std::uint32_t> m_ref;
 
         ComClass() : m_ref(1) {}
-    };
-
-    struct ComDeleter
-    {
-        operator()(IUnknown* unknown)
-        {
-            unknown->Release();
-        }
-    };
-    
-    template <T>
-    class ComPtr : public std::unique_ptr<T, ComDeleter>
-    {
-    public:
-        template <U>
-        HRESULT As (xPlatComPtr<U>& qi)
-        {
-            UuidOfImpl<U> uuid;
-            qi.release();
-            return this->QueryInterface(uuid.idd, &qi.get());
-        }
     };
 }

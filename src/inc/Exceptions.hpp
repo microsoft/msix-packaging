@@ -5,6 +5,7 @@
 #include <exception>
 #include <cassert>
 #include <functional>
+#include "AppxWindows.hpp"
 
 namespace xPlat {
 
@@ -16,6 +17,7 @@ namespace xPlat {
         //
         // Win32 error codes
         //
+        OK                          = 0,
         NotSupported                = 0x80070032,
         InvalidParameter            = 0x80070057,
         NotImplemented              = 0x80070078,
@@ -144,11 +146,11 @@ namespace xPlat {
 
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
 
-#define ThrowHrIfFailed(a)                                           \
-{                                                                    \
-    HRESULT hr = a;                                                  \
-    if (!SUCCEDED(hr))                                               \
-    {                                                                \
-        throw xPlat::Exception(hr, "COM Call: " + ##a + " failed."); \
-    }                                                                \
+#define ThrowHrIfFailed(a)                              \
+{                                                       \
+    HRESULT hr = a;                                     \
+    if (FAILED(hr))                                     \
+    {   assert(false);                                  \
+        throw xPlat::Exception(hr, "COM Call failed");  \
+    }                                                   \
 }

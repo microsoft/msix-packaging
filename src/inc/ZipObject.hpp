@@ -22,13 +22,13 @@ namespace xPlat {
         // StorageObject methods
         std::string                 GetPathSeparator() override;
         std::vector<std::string>    GetFileNames() override;
-        std::shared_ptr<StreamBase> GetFile(const std::string& fileName) override;
+        ComPtr<IStream>             GetFile(const std::string& fileName) override;
         void                        RemoveFile(const std::string& fileName) override;
-        std::shared_ptr<StreamBase> OpenFile(const std::string& fileName, FileStream::Mode mode) override;
+        ComPtr<IStream>             OpenFile(const std::string& fileName, FileStream::Mode mode) override;
         void                        CommitChanges() override;
 
     protected:
-        ComPtr<IStream>                                     m_stream;
-        std::map<std::string, std::shared_ptr<StreamBase>>  m_streams;
+        ComPtr<IStream>                        m_stream;
+        std::map<std::string, ComPtr<IStream>> m_streams;
     };//class ZipObject
 }

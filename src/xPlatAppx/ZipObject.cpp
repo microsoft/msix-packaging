@@ -708,7 +708,7 @@ namespace xPlat {
         return result;
     }
 
-    std::shared_ptr<StreamBase> ZipObject::GetFile(const std::string& fileName)
+    ComPtr<IStream> ZipObject::GetFile(const std::string& fileName)
     {
         return m_streams[fileName];
     }
@@ -718,7 +718,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
 
-    std::shared_ptr<StreamBase> ZipObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    ComPtr<IStream> ZipObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
         throw Exception(Error::NotImplemented);
     }

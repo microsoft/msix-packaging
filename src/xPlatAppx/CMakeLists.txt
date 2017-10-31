@@ -59,6 +59,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/FileStream.hpp
     ../inc/InflateStream.hpp
     ../inc/ObjectBase.hpp
+    ../inc/RangeStream.hpp
     ../inc/StorageObject.hpp
     ../inc/StreamBase.hpp
     ../inc/VerifierObject.hpp
@@ -74,7 +75,6 @@ set(LIB_SOURCES
     AppxSignature.cpp
 	InflateStream.cpp
 	xPlatAppx.cpp
-	ZipFileStream.cpp
 	ZipObject.cpp
 	${DirectoryObject}
 )
