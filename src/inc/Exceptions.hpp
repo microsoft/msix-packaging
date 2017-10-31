@@ -96,8 +96,7 @@ namespace xPlat {
     };
 
     // Provides an ABI exception boundary with parameter validation
-    using Lambda = std::function<void()>;
-
+    template <class Lambda>
     inline unsigned int ResultOf(Lambda lambda)
     {
         unsigned int result = 0;

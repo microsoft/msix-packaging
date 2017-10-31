@@ -11,8 +11,13 @@
 // MacOS and anything compiled with GCC or Intel compilers.  On non-x86-x64 architecures, we will use the compiler default
 // See https://en.wikipedia.org/wiki/X86_calling_conventions#List_of_x86_calling_conventions for details
     #define STDMETHODCALLTYPE
+
+    #undef XPLATAPPX_API
+    #define XPLATAPPX_API extern "C" __declspec(dllexport) 
 #else
     #define STDMETHODCALLTYPE __stdcall
+
+    #define XPLATAPPX_API
 #endif
 
 #ifndef MIDL_INTERFACE

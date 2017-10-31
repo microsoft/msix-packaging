@@ -1,4 +1,3 @@
-#include "xPlatAppx.hpp"
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "FileStream.hpp"
@@ -30,44 +29,69 @@ static void finalizer(void) {                               // 3
 
 #endif
 
-XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION UnpackAppx(
-    xPlatPackUnpackOptions packUnpackOptions,
-    xPlatValidationOptions validationOptions,
-    char* source,
-    char* destination)
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
+    APPX_PACKUNPACK_OPTION packUnpackOptions,
+    APPX_VALIDATION_OPTION validationOption,
+    char* utf8SourcePackage,
+    char* utf8Destination)
 {
     return xPlat::ResultOf([&]() {
         // TODO: what if source and destination are something OTHER than a file paths?
-        ThrowErrorIfNot(xPlat::Error::InvalidParameter, (source != nullptr && destination != nullptr), "Invalid parameters");
+        ThrowErrorIfNot(xPlat::Error::InvalidParameter, 
+            (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
+            "Invalid parameters"
+        );
+
         xPlat::AppxPackageObject appx(validationOptions,
             std::make_unique<xPlat::ZipObject>(
                 std::make_unique<xPlat::FileStream>(
-                    source, xPlat::FileStream::Mode::READ
+                    utf8SourcePackage, xPlat::FileStream::Mode::READ
                     )));
 
-        xPlat::DirectoryObject to(destination);
+        xPlat::DirectoryObject to(utf8Destination);
         appx.Unpack(packUnpackOptions, to);
     });
 }
 
-XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION PackAppx(
-    xPlatPackUnpackOptions packUnpackOptions,
-    xPlatValidationOptions validationOptions,
-    char* source,
-    char* certFile,
-    char* destination)
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
+    APPX_PACKUNPACK_OPTION packUnpackOptions,
+    APPX_VALIDATION_OPTION validationOption,
+    char* utf8FolderToPack,
+    char* utf8CertificatePath,
+    char* utf8Destination)
 {
     return xPlat::ResultOf([&]() {
         // TODO: what if source and destination are something OTHER than a file paths?
-        ThrowErrorIfNot(xPlat::Error::InvalidParameter, (source != nullptr && destination != nullptr), "Invalid parameters");
-        xPlat::AppxPackageObject appx(validationOptions, std::move(
+        ThrowErrorIfNot(xPlat::Error::InvalidParameter,
+            (utf8FolderToPack != nullptr && utf8Destination != nullptr && utf8CertificatePath != nullptr), 
+            "Invalid parameters"
+        );
+
+        xPlat::AppxPackageObject appx(validationOption, std::move(
             std::make_unique<xPlat::ZipObject>(std::move(
-                std::make_unique<xPlat::FileStream>(destination, xPlat::FileStream::Mode::WRITE_UPDATE)
+                std::make_unique<xPlat::FileStream>(utf8Destination, xPlat::FileStream::Mode::WRITE_UPDATE)
             ))
         ));
 
-        xPlat::DirectoryObject from(source);
-        appx.Pack(packUnpackOptions, certFile, from);
+        xPlat::DirectoryObject from(utf8FolderToPack);
+        appx.Pack(packUnpackOptions, utf8CertificatePath, from);
         appx.CommitChanges();
     });
 }
+
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
+    COTASKMEMALLOC* memalloc,
+    COTASKMEMFREE* memfree,
+    APPX_VALIDATION_OPTION validationOption,
+    IAppxFactory** appxFactory)
+{
+
+}
+
+// Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
+    APPX_VALIDATION_OPTION validationOption,
+    IAppxFactory** appxFactory)
+{
+    
+}    
