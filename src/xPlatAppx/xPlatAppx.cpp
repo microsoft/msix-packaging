@@ -42,7 +42,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
             "Invalid parameters"
         );
 
-        xPlat::AppxPackageObject appx(validationOptions,
+        xPlat::AppxPackageObject appx(validationOption,
             std::make_unique<xPlat::ZipObject>(
                 std::make_unique<xPlat::FileStream>(
                     utf8SourcePackage, xPlat::FileStream::Mode::READ

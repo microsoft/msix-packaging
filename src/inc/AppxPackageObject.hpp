@@ -9,7 +9,6 @@
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
 #include "ZipObject.hpp"
-#include "xPlatAppx.hpp"
 #include "ComHelper.hpp"
 #include "VerifierObject.hpp"
 #include "XmlObject.hpp"
@@ -80,10 +79,10 @@ namespace xPlat {
                               public StorageObject
     {
     public:
-        AppxPackageObject(xPlatValidationOptions validation, std::unique_ptr<StorageObject>&& container);
+        AppxPackageObject(APPX_VALIDATION_OPTION validation, std::unique_ptr<StorageObject>&& container);
 
-        void Pack(xPlatPackUnpackOptions options, const std::string& certFile, StorageObject& from);
-        void Unpack(xPlatPackUnpackOptions options, StorageObject& to);
+        void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from);
+        void Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to);
 
         AppxSignatureObject*        GetAppxSignature() const { return m_appxSignature.get(); }
         AppxBlockMapObject*         GetAppxBlockMap()  const { return m_appxBlockMap.get(); }
@@ -114,7 +113,7 @@ namespace xPlat {
 
     protected:
         std::map<std::string, std::shared_ptr<StreamBase>>  m_streams;
-        xPlatValidationOptions                  m_validation = xPlatValidationOptions::xPlatValidationOptionFull;
+        APPX_VALIDATION_OPTION                  m_validation = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
         std::unique_ptr<AppxSignatureObject>    m_appxSignature;
         std::unique_ptr<AppxBlockMapObject>     m_appxBlockMap;
         std::unique_ptr<AppxManifestObject>     m_appxManifest;

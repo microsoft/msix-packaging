@@ -1,8 +1,8 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
-#include "AppxPackageObject.hpp"
 #include "AppxPackaging.hpp"
+#include "AppxPackageObject.hpp"
 #include "ComHelper.hpp"
 
 #include <string>
@@ -47,7 +47,7 @@ namespace xPlat {
         // TODO: Implement
     }
 
-    AppxPackageObject::AppxPackageObject(xPlatValidationOptions validation, std::unique_ptr<StorageObject>&& container) :
+    AppxPackageObject::AppxPackageObject(APPX_VALIDATION_OPTION validation, std::unique_ptr<StorageObject>&& container) :
         m_validation(validation),
         m_container(std::move(container))
     {
@@ -109,19 +109,19 @@ namespace xPlat {
         }
     }
 
-    void AppxPackageObject::Pack(xPlatPackUnpackOptions options, const std::string& certFile, StorageObject& from)
+    void AppxPackageObject::Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
     }
 
-    void AppxPackageObject::Unpack(xPlatPackUnpackOptions options, StorageObject& to)
+    void AppxPackageObject::Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to)
     {
         auto fileNames = GetFileNames();
         for (const auto& fileName : fileNames)
         {
             std::string targetName;
-            if (options & xPlatPackUnpackOptionsCreatePackageSubfolder)
+            if (options & APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
             {
                 targetName = GetAppxManifest()->GetPackageFullName() + to.GetPathSeparator() + fileName;
             }

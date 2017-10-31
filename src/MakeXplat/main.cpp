@@ -1,4 +1,4 @@
-#include "xPlatAppx.hpp"
+#include "AppxPackaging.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -33,19 +33,19 @@ struct State
 
     bool CreatePackageSubfolder()
     {
-        unpackOptions = static_cast<xPlatPackUnpackOptions>(unpackOptions | xPlatPackUnpackOptions::xPlatPackUnpackOptionsCreatePackageSubfolder);
+        unpackOptions = static_cast<APPX_PACKUNPACK_OPTION>(unpackOptions | APPX_PACKUNPACK_OPTION::APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
         return true;
     }
 
     bool SkipManifestValidation()
     {
-        validationOptions = static_cast<xPlatValidationOptions>(validationOptions | xPlatValidationOptions::xPlatValidationOptionSkipAppxManifestValidation);
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST);
         return true;
     }
 
     bool SkipSignatureValidation()
     {
-        validationOptions = static_cast<xPlatValidationOptions>(validationOptions | xPlatValidationOptions::xPlatValidationOptionSkipSignatureOrigin);
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATUREORIGIN);
         return true;
     }
 
@@ -74,8 +74,8 @@ struct State
     std::string certName;
     std::string directoryName;
     UserSpecified specified                  = UserSpecified::Nothing;
-    xPlatValidationOptions validationOptions = xPlatValidationOptions::xPlatValidationOptionFull;
-    xPlatPackUnpackOptions unpackOptions     = xPlatPackUnpackOptions::xPlatPackUnpackOptionsNone;
+    APPX_VALIDATION_OPTION validationOptions = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
+    APPX_PACKUNPACK_OPTION unpackOptions     = APPX_PACKUNPACK_OPTION::APPX_PACKUNPACK_OPTION_NONE;
 };
 
 // describes an option to a command that the user may specify
