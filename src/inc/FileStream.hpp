@@ -55,7 +55,7 @@ namespace xPlat {
             });
         }
 
-        HRESULT Write(void const *buffer, ULONG countBytes, ULONG *bytesWritten) override
+        HRESULT Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) override
         {
             if (bytesWritten) { *bytesWritten = 0; }
             return ResultOf([&] {

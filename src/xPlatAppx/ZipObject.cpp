@@ -708,9 +708,9 @@ namespace xPlat {
         return result;
     }
 
-    ComPtr<IStream> ZipObject::GetFile(const std::string& fileName)
+    IStream* ZipObject::GetFile(const std::string& fileName)
     {
-        return m_streams[fileName];
+        return m_streams[fileName].Get();
     }
 
     void ZipObject::RemoveFile(const std::string& fileName)
@@ -718,7 +718,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
 
-    ComPtr<IStream> ZipObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    IStream* ZipObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
         throw Exception(Error::NotImplemented);
     }

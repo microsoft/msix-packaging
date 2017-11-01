@@ -2,6 +2,7 @@
 #include <memory> 
 #include <atomic>
 #include <type_traits>
+#include <utility>
 
 #include "Exceptions.hpp"
 #include "AppxPackaging.hpp"
@@ -40,15 +41,20 @@ namespace xPlat {
     {
     public:
         ComPtr() : m_ptr(nullptr) {}
-
-        ComPtr(ComPtr& right)
+        ComPtr(ComPtr& right) : m_ptr(right.Detach()) { }
+        ComPtr(const ComPtr& right)
         {
             m_ptr = right.m_ptr;
             m_ptr->AddRef();
         }
 
-        template<class U>
-        std::enable_if<std::is_convertible<U,T>::value>::type ComPtr(U* ptr) : m_ptr(ptr) {}
+        template<
+            class U, 
+            typename = typename std::enable_if<
+                std::is_convertible<U,T>::value ||
+                std::is_same<U,T>::value
+                >::type>
+        ComPtr(U* ptr) : m_ptr(ptr) {}
 
         ~ComPtr() { InternalRelease(); }
 
@@ -56,7 +62,7 @@ namespace xPlat {
         T* Get() const { return m_ptr; }
         void Reset() { InternalRelease(); }
 
-        T** ReleaseAndGetAddressOf()
+        T** AddressOf()
         {
             InternalRelease();
             return &m_ptr;
@@ -69,22 +75,20 @@ namespace xPlat {
             return ptr;
         }
 
-        template <U>
-        xPlatComPtr<U> As()
+        template <class U>
+        ComPtr<U> As()
         {
             UuidOfImpl<U> uuid;
-            xPlatComPtr<U> out;
-            ThrowHrIfFailed(this->QueryInterface(uuid.idd, &&out.m_ptr));
+            ComPtr<U> out;
+            ThrowHrIfFailed(m_ptr->QueryInterface(uuid.iid, reinterpret_cast<void**>(out.AddressOf())));
             return out;
         }
     protected:
-        T *m_ptr = nullptr;
+        T* m_ptr = nullptr;
 
         void InternalRelease()
-        {
-            if (m_ptr)
-            {
-                m_ptr->Release();
+        {   if (m_ptr)
+            {   m_ptr->Release();
                 m_ptr = nullptr;
             }
         }

@@ -17,7 +17,7 @@ namespace xPlat {
             bool isCompressed,
             std::uint32_t offset,
             std::uint32_t size,
-            ComPtr<IStream>& stream
+            IStream* stream
         ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream)
         {
         }
@@ -28,7 +28,7 @@ namespace xPlat {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType)
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
         {
             // TODO: Implement here.
             return static_cast<HRESULT>(Error::NotImplemented);

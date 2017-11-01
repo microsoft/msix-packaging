@@ -23,7 +23,7 @@ namespace xPlat {
         virtual std::vector<std::string> GetFileNames() = 0;
 
         // Obtains a pointer to a stream representing the file that exists in the storage object
-        virtual ComPtr<IStream> GetFile(const std::string& fileName) = 0;
+        virtual IStream* GetFile(const std::string& fileName) = 0;
 
         // Remvoes a file by name from the storage object.  If the file does not exist, the operation is a no-op
         virtual void RemoveFile(const std::string& fileName) = 0;
@@ -31,7 +31,7 @@ namespace xPlat {
         // Opens a stream to a file by name in the storage object.  If the file does not exist and mode is read,
         // or read + update, then nullptr is returned.  If the file is opened with write and it does not exist, 
         // then the file is created and an empty stream to the file is handed back to the caller.
-        virtual ComPtr<IStream> OpenFile(const std::string& fileName, FileStream::Mode mode) = 0;
+        virtual IStream* OpenFile(const std::string& fileName, FileStream::Mode mode) = 0;
 
         // Some storage objects may operate under cache semantics and therefore require an explicit commit.
         // Clients should explicitly call CommitChanges after all write operations into the object are complete.

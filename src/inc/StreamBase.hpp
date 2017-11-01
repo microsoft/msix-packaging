@@ -26,16 +26,16 @@ namespace xPlat {
         //
 
         // Creates a new stream object with its own seek pointer that references the same bytes as the original stream.
-        virtual HRESULT Clone(IStream**) { return static_cast<HRESULT>(Error::NotSupported); }
+        virtual HRESULT STDMETHODCALLTYPE Clone(IStream**) override { return static_cast<HRESULT>(Error::NotSupported); }
 
         // Ensures that any changes made to a stream object open in transacted mode are reflected in the parent storage.
         // If the stream object is open in direct mode, IStream::Commit has no effect other than flushing all memory buffers
         // to the next-level storage object.
-        virtual HRESULT Commit(DWORD)    { return static_cast<HRESULT>(Error::OK); }
+        virtual HRESULT STDMETHODCALLTYPE  Commit(DWORD) override { return static_cast<HRESULT>(Error::OK); }
 
         // Copies a specified number of bytes from the current seek pointer in the stream to the current seek pointer in 
         // another stream.
-        virtual HRESULT CopyTo(IStream *stream, ULARGE_INTEGER bytesCount, ULARGE_INTEGER *bytesRead, ULARGE_INTEGER *bytesWritten)
+        virtual HRESULT STDMETHODCALLTYPE CopyTo(IStream *stream, ULARGE_INTEGER bytesCount, ULARGE_INTEGER *bytesRead, ULARGE_INTEGER *bytesWritten) override
         {
             return ResultOf([&] {
                 if (bytesRead) { bytesRead->QuadPart = 0; }
@@ -72,62 +72,62 @@ namespace xPlat {
             });
         }
 
-        virtual HRESULT Read(void*, ULONG, ULONG*) { return static_cast<HRESULT>(Error::NotImplemented); }
+        virtual HRESULT STDMETHODCALLTYPE Read(void*, ULONG, ULONG*) override { return static_cast<HRESULT>(Error::NotImplemented); }
 
         // Restricts access to a specified range of bytes in the stream. Supporting this functionality is optional since
         // some file systems do not provide it.
-        virtual HRESULT LockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD)
+        virtual HRESULT STDMETHODCALLTYPE LockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) override
         {
             return static_cast<HRESULT>(Error::NotSupported);
         }
 
         // Discards all changes that have been made to a transacted stream since the last IStream::Commit call.
-        virtual HRESULT Revert() { return static_cast<HRESULT>(Error::NotSupported); }
+        virtual HRESULT STDMETHODCALLTYPE Revert() override { return static_cast<HRESULT>(Error::NotSupported); }
 
         // Changes the seek pointer to a new location. The new location is relative to either the beginning of the
         // stream, the end of the stream, or the current seek pointer.
-        virtual HRESULT Seek(LARGE_INTEGER, DWORD, ULARGE_INTEGER*) { return static_cast<HRESULT>(Error::NotImplemented); }
+        virtual HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER, DWORD, ULARGE_INTEGER*) override { return static_cast<HRESULT>(Error::NotImplemented); }
 
         // Changes the size of the stream object.
-        virtual HRESULT SetSize(ULARGE_INTEGER) { return static_cast<HRESULT>(Error::NotSupported); }
+        virtual HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER) override { return static_cast<HRESULT>(Error::NotSupported); }
 
         // Retrieves the STATSTG structure for this stream.
-        virtual HRESULT Stat(STATSTG* , DWORD) { return static_cast<HRESULT>(Error::NotSupported); }
+        virtual HRESULT STDMETHODCALLTYPE Stat(STATSTG* , DWORD) override { return static_cast<HRESULT>(Error::NotSupported); }
 
         // Removes the access restriction on a range of bytes previously restricted with IStream::LockRegion.
-        virtual HRESULT UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD)
+        virtual HRESULT STDMETHODCALLTYPE UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) override
         {
             return static_cast<HRESULT>(Error::NotSupported);
         }
 
         // Writes a specified number of bytes into the stream object starting at the current seek pointer.
-        HRESULT Write(void const *,ULONG, ULONG) { return static_cast<HRESULT>(Error::NotImplemented); }
+        virtual HRESULT STDMETHODCALLTYPE Write(const void*, ULONG, ULONG*) override { return static_cast<HRESULT>(Error::NotImplemented); }
 
         //
         // IAppxFile methods
         //
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption)
+        virtual HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
         {
             if (compressionOption) { *compressionOption = APPX_COMPRESSION_OPTION_NONE; }
             return static_cast<HRESULT>(Error::OK);
         }
 
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType)
+        virtual HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName)
+        virtual HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size)
+        virtual HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
-        HRESULT STDMETHODCALLTYPE GetStream(IStream** stream)
+        virtual HRESULT STDMETHODCALLTYPE GetStream(IStream** stream) override
         {
             UuidOfImpl<IStream> uuid;
             return QueryInterface(uuid.iid, reinterpret_cast<void**>(stream));

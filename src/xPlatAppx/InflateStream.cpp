@@ -10,8 +10,8 @@
 
 namespace xPlat {
     InflateStream::InflateStream(
-        ComPtr<IStream>& stream, std::uint64_t uncompressedSize
-    ) : ZipFileStream(stream),
+        IStream* stream, std::uint64_t uncompressedSize
+    ) : m_stream(stream),
         m_state(State::UNINITIALIZED),
         m_uncompressedSize(uncompressedSize)
     {
@@ -38,8 +38,9 @@ namespace xPlat {
             { State::READY_TO_READ , [&](void*, ULONG)
                 {
                     ThrowErrorIfNot(Error::InflateRead,(m_zstrm.avail_in == 0), "uninflated bytes overwritten");
-                    // TODO: FIX HERE
-                    m_zstrm.avail_in = m_stream->Read(m_compressedBuffer, m_compressedBuffer + InflateStream::BUFFERSIZE);
+                    ULONG available = 0;
+                    ThrowHrIfFailed(m_stream->Read(m_compressedBuffer, InflateStream::BUFFERSIZE, &available))
+                    m_zstrm.avail_in = static_cast<uInt>(available);
                     m_zstrm.next_in = m_compressedBuffer;
                     return std::make_pair(true, State::READY_TO_INFLATE);
                 }

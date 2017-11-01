@@ -11,15 +11,15 @@ namespace xPlat {
     class VerifierObject
     {
     public:
-        VerifierObject(std::shared_ptr<StreamBase> stream) : m_stream(std::move(stream)) {}
+        VerifierObject(IStream* stream) : m_stream(stream) {}
 
-        inline bool HasStream() { return m_stream != nullptr;}
-        inline std::shared_ptr<StreamBase>& GetStream() { return m_stream; }       
+        inline bool HasStream() { return m_stream.Get() != nullptr; }
+        inline IStream* GetStream() { return m_stream.Get(); }       
         
-        virtual std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) = 0;
+        virtual IStream* GetValidationStream(const std::string& part, IStream* stream) = 0;
 
     protected:
-        std::shared_ptr<StreamBase> m_stream = nullptr;        
+        ComPtr<IStream> m_stream;        
     };
     
 } // namespace xPlat
