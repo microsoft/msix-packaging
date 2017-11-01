@@ -1973,22 +1973,25 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
     char* utf8Destination
 );
 
+// TODO: this export is temporary, remove later.
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE ValidateAppxSignature(char* appx);
+
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying 
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.
 typedef void* STDMETHODCALLTYPE COTASKMEMALLOC(size_t cb);
 typedef void STDMETHODCALLTYPE COTASKMEMFREE(void* pv);
-
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
-    COTASKMEMALLOC* memalloc,
-    COTASKMEMFREE* memfree,
-    APPX_VALIDATION_OPTION validationOption,
-    IAppxFactory** appxFactory);
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     APPX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory);
 }
+
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
+    COTASKMEMALLOC* memalloc,
+    COTASKMEMFREE* memfree,
+    APPX_VALIDATION_OPTION validationOption,
+    IAppxFactory** appxFactory);
 
 // provided as a helper for platforms that do not have an implementation of SHCreateStreamOnFileEx
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(

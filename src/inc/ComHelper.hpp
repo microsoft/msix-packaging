@@ -41,20 +41,31 @@ namespace xPlat {
     {
     public:
         ComPtr() : m_ptr(nullptr) {}
-        ComPtr(ComPtr& right) : m_ptr(right.Detach()) { }
+        //ComPtr(ComPtr& right) : m_ptr(right.Detach()) { }
         ComPtr(const ComPtr& right)
         {
+            InternalRelease();
             m_ptr = right.m_ptr;
-            m_ptr->AddRef();
+            InternalAddRef();
         }
 
         template<
-            class U, 
-            typename = typename std::enable_if<
-                std::is_convertible<U,T>::value ||
-                std::is_same<U,T>::value
-                >::type>
-        ComPtr(U* ptr) : m_ptr(ptr) {}
+            class U
+            #ifndef WIN32 
+            // WHY?!  Because VS does not correctly handle enable_if in constructors
+            // (e.g. it assumes always disabled).  LLVM and GCC appear to handle this
+            // correctly, but they might be too liberal in their interpretation of the
+            // C++ 11 spec here.
+            , typename = typename std::enable_if<
+                std::is_convertible<U,T>::value || ::is_same<U,T>::value
+            >::type
+            #endif
+        >
+        ComPtr(U* ptr)
+        {
+            InternalRelease();
+            m_ptr = ptr;
+        }
 
         ~ComPtr() { InternalRelease(); }
 
@@ -92,6 +103,8 @@ namespace xPlat {
                 m_ptr = nullptr;
             }
         }
+
+        void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
     };
 
     template <class Derived, typename... Interfaces>

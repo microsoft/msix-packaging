@@ -34,7 +34,7 @@ namespace xPlat {
             }
         }
 
-        HRESULT Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
         {
             return ResultOf([&] {
                 int rc = std::fseek(file, move.QuadPart, origin);
@@ -44,7 +44,7 @@ namespace xPlat {
             });
         }
 
-        HRESULT Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override
         {
             if (bytesRead) { *bytesRead = 0; }
             return ResultOf([&] {
@@ -55,7 +55,7 @@ namespace xPlat {
             });
         }
 
-        HRESULT Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) override
+        HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) override
         {
             if (bytesWritten) { *bytesWritten = 0; }
             return ResultOf([&] {

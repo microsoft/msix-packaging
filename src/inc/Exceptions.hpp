@@ -5,6 +5,7 @@
 #include <exception>
 #include <cassert>
 #include <functional>
+
 #include "AppxWindows.hpp"
 
 namespace xPlat {

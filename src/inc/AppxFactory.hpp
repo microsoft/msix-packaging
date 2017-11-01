@@ -2,7 +2,7 @@
 #include "AppxPackaging.hpp"
 
 namespace xPlat {
-    class XplatAppxFactory : public xPlat::ComClass<XplatAppxFactory, IAppxFactory>
+    class AppxFactory : public xPlat::ComClass<AppxFactory, IAppxFactory>
     {
     public:
         AppxFactory(COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : m_memalloc(memalloc), m_memfree(memfree)

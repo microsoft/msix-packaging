@@ -730,7 +730,7 @@ namespace xPlat {
 
     std::string ZipObject::GetPathSeparator() { return "/"; }
 
-    ZipObject::ZipObject(ComPtr<IStream>&& stream) : m_stream(std::move(stream))
+    ZipObject::ZipObject(IStream* stream) : m_stream(stream)
     {
         // Confirm that the file IS the correct format
         EndCentralDirectoryRecord endCentralDirectoryRecord;

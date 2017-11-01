@@ -9,6 +9,10 @@
 #ifdef WIN32
     #define STDMETHODCALLTYPE __stdcall
     #define XPLATAPPX_API extern "C" __declspec(dllexport) 
+    #include <windows.h>
+    // Windows.h defines max and min, which does NOT paly nice at all with std::min / std::max usage from <algorithm>
+    #undef max
+    #undef min
 #else
     // On x86-x64 non-win32 platforms, use SYSTEM V AMD64 ABI calling convention.  This should suffice for Solaris, Linux, BSD,
     // MacOS and anything compiled with GCC or Intel compilers.  On non-x86-x64 architecures, we will use the compiler default
@@ -16,7 +20,7 @@
     #define STDMETHODCALLTYPE
     #undef XPLATAPPX_API
     #define XPLATAPPX_API
-#endif
+
 
 #ifndef MIDL_INTERFACE
 #define MIDL_INTERFACE(i)
@@ -153,5 +157,7 @@ __inline bool operator!=(REFGUID guidOne, REFGUID guidOther)
 }
 #endif  // _SYS_GUID_OPERATOR_EQ_
 #endif  // _SYS_GUID_OPERATORS_
+
+#endif // #else of #ifdef WIN32
 
 #endif //__appxwindows_hpp__

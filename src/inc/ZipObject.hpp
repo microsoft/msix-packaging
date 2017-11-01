@@ -17,7 +17,7 @@ namespace xPlat {
     class ZipObject : public StorageObject
     {
     public:
-        ZipObject(ComPtr<IStream>&& stream);
+        ZipObject(IStream* stream);
 
         // StorageObject methods
         std::string                 GetPathSeparator() override;

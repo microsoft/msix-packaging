@@ -4,11 +4,13 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <limits>
 #include "Exceptions.hpp"
 #define UNICODE
 #define NOMINMAX
 #include "ComHelper.hpp"
 #include "AppxPackaging.hpp"
+
 #include "AppxWindows.hpp"
 
 namespace xPlat {
@@ -50,7 +52,7 @@ namespace xPlat {
 
                 while (0 < bytesCount.QuadPart)
                 {
-                    ULONGLONG chunk = std::min(bytesCount.QuadPart, size);
+                    ULONGLONG chunk = std::min(bytesCount.QuadPart, static_cast<ULONGLONG>(size));
                     ThrowHrIfFailed(Read(reinterpret_cast<void*>(bytes.data()), chunk, &length));
                     if (length == 0) { break; }
                     read += length;

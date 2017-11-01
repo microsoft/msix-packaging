@@ -83,31 +83,28 @@ namespace xPlat {
 
                     // now that we're within the window between current file position and seek position
                     // calculate the number of bytes to skip ahead within this window
-                    std::size_t bytesToSkipInWindow = m_seekPosition - m_fileCurrentPosition;
+                    ULONG bytesToSkipInWindow = m_seekPosition - m_fileCurrentPosition;
                     m_inflateWindowPosition += bytesToSkipInWindow;
 
                     // Calculate the difference between the beginning of the window and the seek position.
                     // if there's nothing left in the window to copy, then we need to fetch another window.
-                    std::size_t bytesRemainingInWindow = (InflateStream::BUFFERSIZE - m_zstrm.avail_out) - m_inflateWindowPosition;
+                    ULONG bytesRemainingInWindow = (InflateStream::BUFFERSIZE - m_zstrm.avail_out) - m_inflateWindowPosition;
                     if (bytesRemainingInWindow == 0)
                     {
                         return std::make_pair(true, (m_zstrm.avail_in == 0) ? State::READY_TO_READ : State::READY_TO_INFLATE);
                     }
 
-                    std::size_t bytesToCopy = std::min(static_cast<size_t>(end - start), bytesRemainingInWindow);
+                    ULONG bytesToCopy = std::min(countBytes, bytesRemainingInWindow);
                     if (bytesToCopy > 0)
                     {
-                        memcpy(
-                            static_cast<void*>(const_cast<std::uint8_t*>(start)),
-                            &(m_inflateWindow[m_inflateWindowPosition]),
-                            bytesToCopy);
+                        memcpy(buffer, &(m_inflateWindow[m_inflateWindowPosition]), bytesToCopy);
                         m_bytesRead             += bytesToCopy;
                         m_seekPosition          += bytesToCopy;
                         m_inflateWindowPosition += bytesToCopy;
                         m_fileCurrentPosition   += bytesToCopy;
                     }
 
-                    return std::make_pair(m_bytesRead != (end - m_startCurrentBuffer), State::READY_TO_COPY);
+                    return std::make_pair(m_bytesRead != countBytes, State::READY_TO_COPY);
                 }
             } // State::READY_TO_COPY
         };
@@ -138,26 +135,6 @@ namespace xPlat {
             m_startCurrentBuffer = nullptr;
             *bytesRead = m_bytesRead;
         });
-    }
-
-    std::size_t InflateStream::Read(const std::uint8_t* start, const std::uint8_t* end)
-    {
-        m_bytesRead = 0;
-        m_startCurrentBuffer = start;
-        if (m_seekPosition < m_uncompressedSize)
-        {
-            bool stayInLoop = true;
-            while (stayInLoop && ((start + m_bytesRead) != end))
-            {
-                const auto& stateHandler = m_stateMachine[m_state];
-                auto&& result = stateHandler(start + m_bytesRead, end);
-                stayInLoop = std::get<0>(result);
-                m_previous = m_state;
-                m_state = std::get<1>(result);
-            }
-        }
-        m_startCurrentBuffer = nullptr;
-        return m_bytesRead;
     }
 
     HRESULT InflateStream::Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition)

@@ -21,7 +21,7 @@ namespace xPlat {
         {
         }
 
-        HRESULT Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
         {
             return ResultOf([&] {
                 LARGE_INTEGER newPos = { 0 };
@@ -45,7 +45,7 @@ namespace xPlat {
             });
         }
 
-        HRESULT Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override
         {
             return ResultOf([&] {
                 LARGE_INTEGER offset;
