@@ -48,11 +48,16 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override
         {
             return ResultOf([&] {
-                LARGE_INTEGER offset;
+                LARGE_INTEGER offset = {0};
                 offset.QuadPart = m_relativePosition + m_offset;
                 ThrowHrIfFailed(m_stream->Seek(offset, StreamBase::START, nullptr));
                 ULONG amountToRead = std::min(countBytes, static_cast<ULONG>(m_size - m_relativePosition));
-                ThrowHrIfFailed(m_stream->Read(buffer, amountToRead, bytesRead));
+                ULONG amountRead = 0;
+                ThrowHrIfFailed(m_stream->Read(buffer, amountToRead, &amountRead));
+                ThrowErrorIf(Error::FileRead, (amountToRead != amountRead), "Did not read as much as requesteed.");
+                m_relativePosition += amountRead;
+                if (bytesRead) { *bytesRead = amountRead; }
+                ThrowErrorIf(Error::FileSeekOutOfRange, (m_relativePosition > m_size), "seek pointer out of bounds.");
             });
         }
 

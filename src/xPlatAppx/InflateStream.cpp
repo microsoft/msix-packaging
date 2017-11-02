@@ -26,6 +26,7 @@ namespace xPlat {
             }, // State::CLEANUP
             { State::UNINITIALIZED , [&](void*, ULONG)
                 {
+                    ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::START, nullptr));
                     m_zstrm = { 0 };
                     m_fileCurrentPosition = 0;
                     m_fileCurrentWindowPositionEnd = 0;
@@ -39,7 +40,8 @@ namespace xPlat {
                 {
                     ThrowErrorIfNot(Error::InflateRead,(m_zstrm.avail_in == 0), "uninflated bytes overwritten");
                     ULONG available = 0;
-                    ThrowHrIfFailed(m_stream->Read(m_compressedBuffer, InflateStream::BUFFERSIZE, &available))
+                    ThrowHrIfFailed(m_stream->Read(m_compressedBuffer, InflateStream::BUFFERSIZE, &available));
+                    ThrowErrorIf(Error::FileRead, (available == 0), "Getting nothing back is unexpected here.");
                     m_zstrm.avail_in = static_cast<uInt>(available);
                     m_zstrm.next_in = m_compressedBuffer;
                     return std::make_pair(true, State::READY_TO_INFLATE);
@@ -68,7 +70,7 @@ namespace xPlat {
             { State::READY_TO_COPY , [&](void* buffer, ULONG countBytes)
                 {
                     // Check if we're actually at the end of stream.
-                    if (0 == (m_uncompressedSize - m_fileCurrentPosition))
+                    if (m_fileCurrentPosition >= m_uncompressedSize)
                     {
                         ThrowErrorIfNot(Error::InflateCorruptData, ((m_zret == Z_STREAM_END) && (m_zstrm.avail_in == 0)), "unexpected extra data");
                         return std::make_pair(true, State::CLEANUP);
@@ -104,7 +106,7 @@ namespace xPlat {
                         m_fileCurrentPosition   += bytesToCopy;
                     }
 
-                    return std::make_pair((countBytes - bytesToCopy) != 0, State::READY_TO_COPY);
+                    return std::make_pair(countBytes != 0, State::READY_TO_COPY);
                 }
             } // State::READY_TO_COPY
         };
