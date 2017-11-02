@@ -42,7 +42,7 @@ ENDIF()
 # Enforce build type
 IF(NOT CMAKE_BUILD_TYPE)
 SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel."
+    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel.  Use the -DCMAKE_BUILD_TYPE=[option] to specify."
     FORCE)
 ENDIF()
 

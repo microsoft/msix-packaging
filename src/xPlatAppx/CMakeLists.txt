@@ -46,7 +46,6 @@ MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
 set(LIB_PUBLIC_HEADERS
     ../inc/AppxPackaging.hpp
     ../inc/AppxWindows.hpp
-    ../inc/xPlatAppx.hpp
 )
 
 set(LIB_PRIVATE_HEADERS
@@ -60,11 +59,11 @@ set(LIB_PRIVATE_HEADERS
     ../inc/FileStream.hpp
     ../inc/InflateStream.hpp
     ../inc/ObjectBase.hpp
+    ../inc/RangeStream.hpp
     ../inc/StorageObject.hpp
     ../inc/StreamBase.hpp
     ../inc/VerifierObject.hpp
     ../inc/XmlObject.hpp
-    ../inc/xPlatAppx.hpp
     ../inc/ZipFileStream.hpp
     ../inc/ZipObject.hpp
 )
@@ -76,13 +75,11 @@ set(LIB_SOURCES
     AppxSignature.cpp
 	InflateStream.cpp
 	xPlatAppx.cpp
-	ZipFileStream.cpp
 	ZipObject.cpp
 	${DirectoryObject}
 )
 
 # Copy out public headers
- configure_file(../inc/xPlatAppx.hpp     ${CMAKE_CURRENT_BINARY_DIR}/xPlatAppx.hpp    )
  configure_file(../inc/AppxWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/AppxWindows.hpp  )
  configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
 

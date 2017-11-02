@@ -12,14 +12,14 @@
 
 namespace xPlat {
 
-AppxSignatureObject::AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, std::shared_ptr<StreamBase> stream) : 
-    VerifierObject(std::move(stream)), 
+AppxSignatureObject::AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, IStream* stream) : 
+    VerifierObject(stream), 
     m_validationOptions(validationOptions)
 {
     // TODO: Implement
 }
 
-std::shared_ptr<StreamBase> AppxSignatureObject::GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream)
+IStream* AppxSignatureObject::GetValidationStream(const std::string& part, IStream* stream)
 {
     // TODO: Implement -- for now, just pass through.
     return stream;

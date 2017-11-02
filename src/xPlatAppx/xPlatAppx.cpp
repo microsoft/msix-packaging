@@ -1,4 +1,3 @@
-#include "xPlatAppx.hpp"
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "FileStream.hpp"
@@ -6,8 +5,9 @@
 #include "ZipObject.hpp"
 #include "DirectoryObject.hpp"
 #include "ComHelper.hpp"
-#include "AppxPackageObject.hpp"
 #include "AppxPackaging.hpp"
+#include "AppxPackageObject.hpp"
+#include "AppxFactory.hpp"
 
 #include <string>
 #include <memory>
@@ -126,76 +126,65 @@ static void finalizer(void) {                               // 3
 
 #endif
 
-unsigned int ResultOf(char* appx, xPlat::Lambda lambda)
-{
-    unsigned int result = 0;
-    try
-    {
-        ThrowErrorIfNot(xPlat::Error::InvalidParameter, (appx != nullptr), "Invalid parameters");
-        lambda();
-    }
-    catch (xPlat::Exception& e)
-    {
-        result = e.Code();
-    }
-
-    return result;
-}
-
-XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION UnpackAppx(
-    xPlatPackUnpackOptions packUnpackOptions,
-    APPX_VALIDATION_OPTION validationOptions,
-    char* source,
-    char* destination)
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
+    APPX_PACKUNPACK_OPTION packUnpackOptions,
+    APPX_VALIDATION_OPTION validationOption,
+    char* utf8SourcePackage,
+    char* utf8Destination)
 {
     return xPlat::ResultOf([&]() {
         // TODO: what if source and destination are something OTHER than a file paths?
-        ThrowErrorIfNot(xPlat::Error::InvalidParameter, (source != nullptr && destination != nullptr), "Invalid parameters");
-        xPlat::AppxPackageObject appx(validationOptions,
-            std::make_unique<xPlat::ZipObject>(
-                std::make_unique<xPlat::FileStream>(
-                    source, xPlat::FileStream::Mode::READ
-                    )));
+        ThrowErrorIfNot(xPlat::Error::InvalidParameter, 
+            (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
+            "Invalid parameters"
+        );
 
-        xPlat::DirectoryObject to(destination);
+        xPlat::ComPtr<IStream> stream;
+        ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
+        auto zipObject = std::make_unique<xPlat::ZipObject>(stream.Get());
+        xPlat::AppxPackageObject appx(validationOption, std::move(zipObject));
+        xPlat::DirectoryObject to(utf8Destination);
         appx.Unpack(packUnpackOptions, to);
     });
 }
 
-XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION PackAppx(
-    xPlatPackUnpackOptions packUnpackOptions,
-    APPX_VALIDATION_OPTION validationOptions,
-    char* source,
-    char* certFile,
-    char* destination)
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
+    APPX_PACKUNPACK_OPTION packUnpackOptions,
+    APPX_VALIDATION_OPTION validationOption,
+    char* utf8FolderToPack,
+    char* utf8CertificatePath,
+    char* utf8Destination)
 {
     return xPlat::ResultOf([&]() {
         // TODO: what if source and destination are something OTHER than a file paths?
-        ThrowErrorIfNot(xPlat::Error::InvalidParameter, (source != nullptr && destination != nullptr), "Invalid parameters");
-        xPlat::AppxPackageObject appx(validationOptions, std::move(
-            std::make_unique<xPlat::ZipObject>(std::move(
-                std::make_unique<xPlat::FileStream>(destination, xPlat::FileStream::Mode::WRITE_UPDATE)
-            ))
-        ));
+        ThrowErrorIfNot(xPlat::Error::InvalidParameter,
+            (utf8FolderToPack != nullptr && utf8Destination != nullptr && utf8CertificatePath != nullptr), 
+            "Invalid parameters"
+        );
 
-        xPlat::DirectoryObject from(source);
-        appx.Pack(packUnpackOptions, certFile, from);
+        xPlat::ComPtr<IStream> stream;
+        ThrowHrIfFailed(CreateStreamOnFile(utf8Destination, false, &stream));
+
+        auto zipObject = std::make_unique<xPlat::ZipObject>(stream.Get());
+        xPlat::AppxPackageObject appx(validationOption, std::move(zipObject));
+
+        xPlat::DirectoryObject from(utf8FolderToPack);
+        appx.Pack(packUnpackOptions, utf8CertificatePath, from);
         appx.CommitChanges();
     });
 }
 
-XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION ValidateAppxSignature(char* appx)
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE ValidateAppxSignature(char* appx)
 {
-    return ResultOf(appx, [&]() {
-        auto rawFile = std::make_unique<xPlat::FileStream>(appx, xPlat::FileStream::Mode::READ);
-
+    return xPlat::ResultOf([&]() {
+        xPlat::ComPtr<IStream> rawFile(new xPlat::FileStream(appx, xPlat::FileStream::Mode::READ));
         {
-            xPlat::ZipObject zip(std::move(rawFile));
+            xPlat::ZipObject zip(rawFile.Get());
             auto p7xStream = zip.GetFile("AppxSignature.p7x");
             std::vector<std::uint8_t> buffer(sizeof(_BLOBHEADER));
 
-            std::uint8_t* start = buffer.data();
-            std::size_t cbRead = p7xStream->Read(start, start + buffer.size());
+            ULONG cbRead;
+            ThrowHrIfFailed(p7xStream->Read(reinterpret_cast<void*>(buffer.data()), buffer.size(), &cbRead));
             _BLOBHEADER *pblob = reinterpret_cast<_BLOBHEADER*>(buffer.data());
 
             ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, (cbRead > sizeof(_BLOBHEADER) && pblob->headerId == SIGNATURE_ID), "Invalid signature");
@@ -207,3 +196,39 @@ XPLATAPPX_API unsigned int XPLATAPPX_CONVENTION ValidateAppxSignature(char* appx
         }
     });
 }
+
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
+    char* utf8File,
+    bool forRead,
+    IStream** stream)
+{
+    return xPlat::ResultOf([&]() {
+        xPlat::ComPtr<IStream> file(new xPlat::FileStream(utf8File, forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE));
+        *stream = file.Detach();
+    });
+}
+
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
+    COTASKMEMALLOC* memalloc,
+    COTASKMEMFREE* memfree,
+    APPX_VALIDATION_OPTION validationOption,
+    IAppxFactory** appxFactory)
+{
+    return xPlat::ResultOf([&]() {
+        xPlat::ComPtr<IAppxFactory> result(new xPlat::AppxFactory(memalloc, memfree));
+        *appxFactory = result.Detach();
+    });
+}
+
+// Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
+    APPX_VALIDATION_OPTION validationOption,
+    IAppxFactory** appxFactory)
+{
+    // #ifdef WIN32
+    //     return CoCreateAppxFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);
+    // #else
+    //     return CoCreateAppxFactoryWithHeap(new, delete[], validationOption, AppxFactory);
+    // #endif
+    return static_cast<HRESULT>(xPlat::Error::NotImplemented);
+}    

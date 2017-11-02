@@ -9,7 +9,6 @@
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
 #include "ZipObject.hpp"
-#include "xPlatAppx.hpp"
 #include "ComHelper.hpp"
 #include "VerifierObject.hpp"
 #include "XmlObject.hpp"
@@ -49,9 +48,9 @@ namespace xPlat {
     class AppxManifestObject : public VerifierObject
     {
     public:
-        AppxManifestObject(std::shared_ptr<StreamBase> stream);
+        AppxManifestObject(IStream* stream);
 
-        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override
+        IStream* GetValidationStream(const std::string& part, IStream* stream) override
         {
             throw Exception(Error::NotSupported);
         }
@@ -60,7 +59,7 @@ namespace xPlat {
         std::string GetPackageFullName()        { return m_packageId->GetPackageFullName(); }
 
     protected:
-        std::shared_ptr<StreamBase> m_stream;
+        ComPtr<IStream> m_stream;
         std::unique_ptr<AppxPackageId> m_packageId;
     };
 
@@ -71,12 +70,12 @@ namespace xPlat {
     public:
         AppxPackageObject(APPX_VALIDATION_OPTION validation, std::unique_ptr<StorageObject>&& container);
 
-        void Pack(xPlatPackUnpackOptions options, const std::string& certFile, StorageObject& from);
-        void Unpack(xPlatPackUnpackOptions options, StorageObject& to);
+        void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from);
+        void Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to);
 
-        AppxSignatureObject*        GetAppxSignature() const { return m_appxSignature.get(); }
-        AppxBlockMapObject*         GetAppxBlockMap()  const { return m_appxBlockMap.get(); }
-        AppxManifestObject*         GetAppxManifest()  const { return m_appxManifest.get(); }
+        AppxSignatureObject* GetAppxSignature() const { return m_appxSignature.get(); }
+        AppxBlockMapObject*  GetAppxBlockMap()  const { return m_appxBlockMap.get(); }
+        AppxManifestObject*  GetAppxManifest()  const { return m_appxManifest.get(); }
 
         // IAppxPackageReader
         HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override;
@@ -91,9 +90,9 @@ namespace xPlat {
         // StorageObject methods
         std::string                 GetPathSeparator() override;
         std::vector<std::string>    GetFileNames() override;
-        std::shared_ptr<StreamBase> GetFile(const std::string& fileName) override;
+        IStream*                    GetFile(const std::string& fileName) override;
         void                        RemoveFile(const std::string& fileName) override;
-        std::shared_ptr<StreamBase> OpenFile(const std::string& fileName, FileStream::Mode mode) override;
+        IStream*                    OpenFile(const std::string& fileName, FileStream::Mode mode) override;
         void                        CommitChanges() override;
 
         // IAppxFilesEnumerator
@@ -102,7 +101,7 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override;
 
     protected:
-        std::map<std::string, std::shared_ptr<StreamBase>>  m_streams;
+        std::map<std::string, ComPtr<IStream>>  m_streams;
         APPX_VALIDATION_OPTION                  m_validation = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
         std::unique_ptr<AppxSignatureObject>    m_appxSignature;
         std::unique_ptr<AppxBlockMapObject>     m_appxBlockMap;

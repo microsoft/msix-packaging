@@ -57,9 +57,9 @@ namespace xPlat {
     class AppxBlockMapObject : public VerifierObject, public xPlat::ComClass<AppxBlockMapObject, IAppxBlockMapBlocksEnumerator>
     {
     public:
-        AppxBlockMapObject(std::shared_ptr<StreamBase> stream);
+        AppxBlockMapObject(IStream* stream);
 
-        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override;
+        IStream* GetValidationStream(const std::string& part, IStream* stream) override;
 
         // IAppxBlockMapBlocksEnumerator
         HRESULT STDMETHODCALLTYPE GetCurrent(IAppxBlockMapBlock** block) override;

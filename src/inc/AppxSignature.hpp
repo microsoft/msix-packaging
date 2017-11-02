@@ -21,9 +21,9 @@ namespace xPlat {
     class AppxSignatureObject : public VerifierObject
     {
     public:        
-        AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, std::shared_ptr<StreamBase> stream);
+        AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, IStream* stream);
 
-        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override;
+        IStream* GetValidationStream(const std::string& part, IStream* stream) override;
 
         using Digest = std::vector<std::int8_t>;
 

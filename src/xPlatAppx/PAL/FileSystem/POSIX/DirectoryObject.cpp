@@ -16,7 +16,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
     
-    std::shared_ptr<StreamBase> DirectoryObject::GetFile(const std::string& fileName)
+    IStream* DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
         throw Exception(Error::NotImplemented);
@@ -47,14 +47,14 @@ namespace xPlat {
         }
     }
     
-    std::shared_ptr<StreamBase> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    IStream* DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
         std::string name = m_root + "/" + fileName;
         auto lastSlash = name.find_last_of("/");
         std::string path = name.substr(0, lastSlash);
         mkdirp(path);
-        auto result = m_streams[fileName] = std::make_unique<FileStream>(std::move(name), mode);
-        return result;
+        auto result = m_streams[fileName] = new FileStream(std::move(name), mode);
+        return result.Get();
     }
     
     void DirectoryObject::CommitChanges()

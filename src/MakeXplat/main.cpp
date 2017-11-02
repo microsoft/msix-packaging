@@ -1,4 +1,5 @@
-#include "xPlatAppx.hpp"
+#include "AppxWindows.hpp"
+#include "AppxPackaging.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -33,7 +34,7 @@ struct State
 
     bool CreatePackageSubfolder()
     {
-        unpackOptions = static_cast<xPlatPackUnpackOptions>(unpackOptions | xPlatPackUnpackOptions::xPlatPackUnpackOptionsCreatePackageSubfolder);
+        unpackOptions = static_cast<APPX_PACKUNPACK_OPTION>(unpackOptions | APPX_PACKUNPACK_OPTION::APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
         return true;
     }
 
@@ -75,7 +76,7 @@ struct State
     std::string directoryName;
     UserSpecified specified                  = UserSpecified::Nothing;
     APPX_VALIDATION_OPTION validationOptions = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
-    xPlatPackUnpackOptions unpackOptions     = xPlatPackUnpackOptions::xPlatPackUnpackOptionsNone;
+    APPX_PACKUNPACK_OPTION unpackOptions     = APPX_PACKUNPACK_OPTION::APPX_PACKUNPACK_OPTION_NONE;
 };
 
 // describes an option to a command that the user may specify

@@ -1,6 +1,8 @@
 #pragma once
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
+#include "ComHelper.hpp"
+
 #include <string>
 #include <map>
 #include <functional>
@@ -12,25 +14,65 @@ namespace xPlat {
     class RangeStream : public StreamBase
     {
     public:
-        RangeStream(
-            std::shared_ptr<StreamBase> stream,
-            std::uint64_t beginOffset,
-            std::uint64_t endOffset
-        );
+        RangeStream(std::uint32_t offset, std::uint32_t size, IStream* stream) : 
+            m_offset(offset),
+            m_size(size),
+            m_stream(stream)
+        {
+        }
 
-        ~RangeStream() override;
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
+        {
+            return ResultOf([&] {
+                LARGE_INTEGER newPos = { 0 };
+                switch (origin)
+                {
+                case Reference::CURRENT:
+                    newPos.QuadPart = m_offset + m_relativePosition + move.QuadPart;
+                    break;
+                case Reference::START:
+                    newPos.QuadPart = m_offset + move.QuadPart;
+                    break;
+                case Reference::END:
+                    newPos.QuadPart = m_offset + m_size + move.QuadPart;
+                    break;
+                }
+                //TODO: We need to constrain newPos so that it can't exceed the end of the stream
+                ULARGE_INTEGER pos = { 0 };
+                m_stream->Seek(newPos, Reference::START, &pos);
+                m_relativePosition = pos.QuadPart - m_offset;
+                if (newPosition) { newPosition->QuadPart = m_relativePosition; }
+            });
+        }
 
-        void Write(const std::uint8_t* start, const std::uint8_t* end) override;
-        std::size_t Read(const std::uint8_t* start, const std::uint8_t* end) override;
-        void Seek(std::uint64_t offset, Reference where) override;
-        int Ferror() override;
-        bool Feof() override;
-        std::uint64_t Ftell()  override;
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override
+        {
+            return ResultOf([&] {
+                LARGE_INTEGER offset = {0};
+                offset.QuadPart = m_relativePosition + m_offset;
+                ThrowHrIfFailed(m_stream->Seek(offset, StreamBase::START, nullptr));
+                ULONG amountToRead = std::min(countBytes, static_cast<ULONG>(m_size - m_relativePosition));
+                ULONG amountRead = 0;
+                ThrowHrIfFailed(m_stream->Read(buffer, amountToRead, &amountRead));
+                ThrowErrorIf(Error::FileRead, (amountToRead != amountRead), "Did not read as much as requesteed.");
+                m_relativePosition += amountRead;
+                if (bytesRead) { *bytesRead = amountRead; }
+                ThrowErrorIf(Error::FileSeekOutOfRange, (m_relativePosition > m_size), "seek pointer out of bounds.");
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
+        {
+            if (size) { *size = m_size; }
+            return static_cast<HRESULT>(Error::OK);
+        }
+
+        std::uint64_t Size() { return m_size; }
 
     protected:
-        std::shared_ptr<StreamBase> m_stream;
-        std::uint64_t m_beginOffset;
-        std::uint64_t m_cbLength;
-        std::uint64_t m_seekPosition = 0;
+        std::uint64_t m_offset;
+        std::uint64_t m_size;
+        std::uint64_t m_relativePosition = 0;
+        ComPtr<IStream> m_stream;
     };
 }
