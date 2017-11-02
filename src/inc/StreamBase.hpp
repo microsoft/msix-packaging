@@ -134,5 +134,27 @@ namespace xPlat {
             UuidOfImpl<IStream> uuid;
             return QueryInterface(uuid.iid, reinterpret_cast<void**>(stream));
         }
+
+        template <class T>
+        static ULONG Read(IStream* stream, T* value)
+        {
+            ULONG result = 0;
+            ThrowHrIfFailed(stream->Read(
+                reinterpret_cast<void*>(value),
+                static_cast<ULONG>(sizeof(T)),
+                &result                            
+            ));
+            return result;
+        }
+
+        template <class T>
+        static void Write(IStream* stream, T* value)
+        {
+            ThrowHrIfFailed(stream->Write(
+                reinterpret_cast<void*>(value),
+                static_cast<ULONG>(sizeof(T)),
+                nullptr                            
+            ));
+        }
     };
 }

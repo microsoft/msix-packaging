@@ -68,6 +68,9 @@ namespace xPlat {
         Exception(Error error) : m_code(static_cast<std::uint32_t>(error))
         {}
 
+        Exception(std::uint32_t error) : Exception(0x8007 + error)
+        {}
+
         Exception(Error error, std::string& message) :
             m_code(static_cast<std::uint32_t>(error)),
             m_message(message)
@@ -75,19 +78,6 @@ namespace xPlat {
 
         Exception(Error error, const char* message) :
             m_code(static_cast<std::uint32_t>(error)),
-            m_message(message)
-        {}
-
-        Exception(std::uint32_t error) : m_code(0x8007 + error)
-        {}
-
-        Exception(std::uint32_t error, std::string& message) :
-            m_code(0x8007 + error),
-            m_message(message)
-        {}
-
-        Exception(std::uint32_t error, const char* message) :
-            m_code(0x8007 + error),
             m_message(message)
         {}
 
@@ -107,6 +97,18 @@ namespace xPlat {
     protected:
         std::uint32_t   m_code;
         std::string     m_message;
+    };
+
+    class Win32Exception : public Exception
+    {
+    public:
+        Win32Exception(DWORD error, std::string& message) :
+            Exception(0x8007 + error, message)
+        {}
+
+        Win32Exception(DWORD error, const char* message) :
+            Exception(0x8007 + error, message)
+        {}
     };
 
     // Provides an ABI exception boundary with parameter validation
@@ -143,6 +145,15 @@ namespace xPlat {
         assert(false);               \
         throw xPlat::Exception(c,m); \
     }                                \
+}
+
+#define ThrowWin32ErrorIfNot(c, a, m)       \
+{                                           \
+    if (!(a))                               \
+    {                                       \
+        assert(false);                      \
+        throw xPlat::Win32Exception(c,m);   \
+    }                                       \
 }
 
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)

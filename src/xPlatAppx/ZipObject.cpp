@@ -182,7 +182,7 @@ namespace xPlat {
         >
     {
     public:
-        CentralDirectoryFileHeader(StreamBase* s) : m_stream(s)
+        CentralDirectoryFileHeader(IStream* s) : m_stream(s)
         {
             // 0 - central file header signature   4 bytes(0x02014b50)
             Field<0>().validation = [](std::uint32_t& v)
@@ -246,7 +246,10 @@ namespace xPlat {
             //15 - external file attributes        4 bytes
             //16 - relative offset of local header 4 bytes
             Field<16>().validation = [&](std::uint32_t& v)
-            {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v < m_stream->Ftell()), "invalid relative offset");
+            {   
+                ULARGE_INTEGER pos = {0};
+                ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
+                ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v < pos.QuadPart), "invalid relative offset");
             };
             //17 - file name(variable size)
             //18 - extra field(variable size)
@@ -320,7 +323,7 @@ namespace xPlat {
         void SetInternalFileAttributes(std::uint16_t value) { Field<14>().value = value; }
         void SetExternalFileAttributes(std::uint16_t value) { Field<15>().value = value; }
 
-        StreamBase* m_stream = nullptr;
+        IStream* m_stream = nullptr;
     };//class CentralDirectoryFileHeader
 
     class LocalFileHeader : public Meta::StructuredObject<
@@ -469,7 +472,7 @@ namespace xPlat {
         >
     {
     public:
-        Zip64EndOfCentralDirectoryRecord(StreamBase* s) : m_stream(s)
+        Zip64EndOfCentralDirectoryRecord(IStream* s) : m_stream(s)
         {
             // 0 - zip64 end of central dir signature 4 bytes(0x06064b50)
             Field<0>().validation = [](std::uint32_t& v)
@@ -515,12 +518,16 @@ namespace xPlat {
             // 8 - size of the central directory   8 bytes
             Field<8>().validation = [&](std::uint64_t& v)
             {   // TODO: tighten up this validation
-                ThrowErrorIfNot(Error::Zip64EOCDRecord, ((v != 0) && (v < m_stream->Ftell())), "invalid size of central directory");
+                ULARGE_INTEGER pos = {0};
+                ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
+                ThrowErrorIfNot(Error::Zip64EOCDRecord, ((v != 0) && (v < pos.QuadPart)), "invalid size of central directory");
             };
             // 9 - offset of start of central directory with respect to the starting disk number        8 bytes
             Field<9>().validation = [&](std::uint64_t& v)
             {   // TODO: tighten up this validation
-                ThrowErrorIfNot(Error::Zip64EOCDRecord, ((v != 0) && (v < m_stream->Ftell())), "invalid start of central directory");
+                ULARGE_INTEGER pos = {0};
+                ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
+                ThrowErrorIfNot(Error::Zip64EOCDRecord, ((v != 0) && (v < pos.QuadPart)), "invalid start of central directory");
             };
             //10 - zip64 extensible data sector(variable size)
             Field<10>().validation = [](std::vector<std::uint8_t>& data)
@@ -556,7 +563,7 @@ namespace xPlat {
         void SetVersionNeededToExtract(std::uint16_t value) { Field<3>().value = value; }
         void SetNumberOfThisDisk(std::uint32_t value)       { Field<4>().value = value; }
 
-        StreamBase* m_stream = nullptr;
+        IStream* m_stream = nullptr;
     }; //class Zip64EndOfCentralDirectoryRecord
 
     class Zip64EndOfCentralDirectoryLocator : public Meta::StructuredObject<
@@ -569,7 +576,7 @@ namespace xPlat {
         >
     {
     public:
-        Zip64EndOfCentralDirectoryLocator(StreamBase* s) : m_stream(s)
+        Zip64EndOfCentralDirectoryLocator(IStream* s) : m_stream(s)
         {
             // 0 - zip64 end of central dir locator signature 4 bytes(0x07064b50)
             Field<0>().validation = [](std::uint32_t& v)
@@ -583,7 +590,10 @@ namespace xPlat {
             };
             // 2 - relative offset of the zip64 end of central directory record 8 bytes
             Field<2>().validation = [&](std::uint64_t& v)
-            {   ThrowErrorIfNot(Error::Zip64EOCDLocator, ((v != 0) && (v < m_stream->Ftell())), "Invalid relative offset");
+            {   
+                ULARGE_INTEGER pos = {0};
+                ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
+                ThrowErrorIfNot(Error::Zip64EOCDLocator, ((v != 0) && (v < pos.QuadPart)), "Invalid relative offset");
             };
             // 3 - total number of disks           4 bytes
             Field<3>().validation = [](std::uint32_t& v)
@@ -603,7 +613,7 @@ namespace xPlat {
         void SetNumberOfDisk(std::uint32_t value)       { Field<1>().value = value; }
         void SetTotalNumberOfDisks(std::uint32_t value) { Field<3>().value = value; }
 
-        StreamBase* m_stream = nullptr;
+        IStream* m_stream = nullptr;
     }; //class Zip64EndOfCentralDirectoryLocator
 
     class EndCentralDirectoryRecord : public Meta::StructuredObject<
@@ -734,32 +744,39 @@ namespace xPlat {
     {
         // Confirm that the file IS the correct format
         EndCentralDirectoryRecord endCentralDirectoryRecord;
-        ThrowHrIfFailed(m_stream->Seek(-1 * endCentralDirectoryRecord.Size(), static_cast<DWORD>(StreamBase::Reference::END), nullptr));
-        endCentralDirectoryRecord.Read(m_stream.get());
+        LARGE_INTEGER pos = {0};
+        pos.QuadPart = -1 * endCentralDirectoryRecord.Size();
+        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
+        endCentralDirectoryRecord.Read(m_stream.Get());
 
         // find where the zip central directory exists.
-        Zip64EndOfCentralDirectoryLocator zip64Locator(m_stream.get());
-        m_stream->Seek(-1*(endCentralDirectoryRecord.Size() + zip64Locator.Size()), StreamBase::Reference::END);
-        zip64Locator.Read(m_stream.get());
+        Zip64EndOfCentralDirectoryLocator zip64Locator(m_stream.Get());
+        pos.QuadPart = -1*(endCentralDirectoryRecord.Size() + zip64Locator.Size());
+        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
+        zip64Locator.Read(m_stream.Get());
 
         // now read the zip central directory
-        Zip64EndOfCentralDirectoryRecord zip64EndOfCentralDirectory(m_stream.get());
-        m_stream->Seek(zip64Locator.GetRelativeOffset(), StreamBase::Reference::START);
-        zip64EndOfCentralDirectory.Read(m_stream.get());
+        Zip64EndOfCentralDirectoryRecord zip64EndOfCentralDirectory(m_stream.Get());
+        pos.QuadPart = zip64Locator.GetRelativeOffset();
+        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
+        zip64EndOfCentralDirectory.Read(m_stream.Get());
 
         // read the zip central directory
         std::map<std::string, std::shared_ptr<CentralDirectoryFileHeader>> centralDirectory;
-        m_stream->Seek(zip64EndOfCentralDirectory.GetOffsetfStartOfCD(), StreamBase::Reference::START);
+        pos.QuadPart = zip64EndOfCentralDirectory.GetOffsetfStartOfCD();
+        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
         for (std::uint32_t index = 0; index < zip64EndOfCentralDirectory.GetTotalNumberOfEntries(); index++)
         {
-            auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(m_stream.get());
-            centralFileHeader->Read(m_stream.get());
+            auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(m_stream.Get());
+            centralFileHeader->Read(m_stream.Get());
             // TODO: ensure that there are no collisions on name!
             centralDirectory.insert(std::make_pair(centralFileHeader->GetFileName(), centralFileHeader));
         }
 
         // We should have no data between the end of the last central directory header and the start of the EoCD
-        ThrowErrorIfNot(Error::ZipHiddenData, (m_stream->Ftell() == zip64Locator.GetRelativeOffset()), "hidden data unsupported");
+        ULARGE_INTEGER uPos = {0};
+        ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &uPos));
+        ThrowErrorIfNot(Error::ZipHiddenData, (uPos.QuadPart == zip64Locator.GetRelativeOffset()), "hidden data unsupported");
 
         // TODO: change to uint64_t when adding full zip64 support
         std::map<std::uint32_t, std::shared_ptr<LocalFileHeader>> fileRepository;
@@ -767,26 +784,27 @@ namespace xPlat {
         // Read the file repository
         for (const auto& centralFileHeader : centralDirectory)
         {
-            m_stream->Seek(centralFileHeader.second->GetRelativeOffsetOfLocalHeader(), xPlat::StreamBase::Reference::START);
+            pos.QuadPart = centralFileHeader.second->GetRelativeOffsetOfLocalHeader();
+            ThrowHrIfFailed(m_stream->Seek(pos, xPlat::StreamBase::Reference::START, nullptr));
             auto localFileHeader = std::make_shared<LocalFileHeader>(centralFileHeader.second);
-            localFileHeader->Read(m_stream.get());
+            localFileHeader->Read(m_stream.Get());
             fileRepository.insert(std::make_pair(
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader(),
                 localFileHeader));
 
-            std::shared_ptr<StreamBase> fileStream = std::make_shared<ZipFileStream>(
+            ComPtr<IStream> fileStream (new ZipFileStream(
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),
                 localFileHeader->GetCompressionType() == CompressionType::Deflate,
-                m_stream.get()
-                );
+                m_stream.Get()
+                ));
 
             if (localFileHeader->GetCompressionType() == CompressionType::Deflate)
             {
-                fileStream = std::make_shared<InflateStream>(std::move(fileStream), localFileHeader->GetUncompressedSize());
+                fileStream = new InflateStream(fileStream.Get(), localFileHeader->GetUncompressedSize());
             }
 
-            m_streams.insert(std::make_pair(centralFileHeader.second->GetFileName(), fileStream));
+            m_streams.insert(std::make_pair(centralFileHeader.second->GetFileName(), std::move(fileStream)));
         }
     } // ZipObject::ZipObject
 } // namespace xPlat

@@ -51,18 +51,16 @@ namespace xPlat {
                 return result;
             }
 
-            void Write(StreamBase* stream)
+            void Write(IStream* stream)
             {
-                offset = stream->Ftell();
                 this->for_each([&](auto& item)
                 {
                     item.Write(stream);
                 });
             }
 
-            void Read(StreamBase* stream)
+            void Read(IStream* stream)
             {
-                offset = stream->Ftell();
                 this->for_each([&](auto& item)
                 {
                     item.Read(stream);
@@ -70,9 +68,6 @@ namespace xPlat {
             }
 
             virtual void Validate() { }
-
-        protected:
-            std::uint64_t offset = 0;   // For debugging purposes!
         };
 
         // base type for individual serializable/deserializable fields
@@ -87,12 +82,12 @@ namespace xPlat {
                 validation = [](T&){};    // empty validation by-default.
             }
 
-            virtual void Write(StreamBase* stream)
+            virtual void Write(IStream* stream)
             {
                 StreamBase::Write<T>(stream, &value);
             }
 
-            virtual void Read(StreamBase* stream)
+            virtual void Read(IStream* stream)
             {
                 StreamBase::Read<T>(stream, &value);
                 Validate();
@@ -116,18 +111,24 @@ namespace xPlat {
             virtual size_t Size() override      { return value.size(); }
             virtual void Validate() override    { }
 
-            virtual void Write(StreamBase* stream) override
-            {
-                std::uint8_t* start = value.data();
-                stream->Write(start, start + value.size());
+            virtual void Write(IStream* stream) override
+            {                
+                ThrowHrIfFailed(stream->Write(
+                    reinterpret_cast<void*>(value.data()),
+                    static_cast<ULONG>(value.size()),
+                    nullptr
+                ));
             }
 
-            virtual void Read(StreamBase* stream) override
+            virtual void Read(IStream* stream) override
             {
                 if (value.size() != 0)
                 {
-                    std::uint8_t* start = value.data();
-                    stream->Read(start, start + value.size());
+                    ThrowHrIfFailed(stream->Read(
+                        reinterpret_cast<void*>(value.data()),
+                        static_cast<ULONG>(value.size()),
+                        nullptr                            
+                    ));
                 }
                 Validate();
             }

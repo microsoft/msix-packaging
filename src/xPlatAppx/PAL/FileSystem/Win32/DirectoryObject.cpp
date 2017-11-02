@@ -10,11 +10,7 @@
 #include <sstream>
 #include <locale>
 #include <codecvt>
-
-// UNICODE MUST be defined before you include Windows.h if you want the non-ascii versions of APIs (and you do)
-#define UNICODE
-#define NOMINMAX
-#include <windows.h>
+#include "AppxWindows.hpp"
 
 namespace xPlat {
 
@@ -80,7 +76,7 @@ namespace xPlat {
             {
                 return;
             }
-            ThrowErrorIfNot(lastError, false, "FindFirstFile failed.");
+            ThrowWin32ErrorIfNot(lastError, false, "FindFirstFile failed.");
         }
 
         do
@@ -116,7 +112,7 @@ namespace xPlat {
         while (FindNextFile(find.get(), &findFileData));
 
         std::uint32_t lastError = static_cast<std::uint32_t>(GetLastError());
-        ThrowErrorIfNot(lastError,
+        ThrowWin32ErrorIfNot(lastError,
             ((lastError == ERROR_NO_MORE_FILES) ||
             (lastError == ERROR_SUCCESS) ||
             (lastError == ERROR_ALREADY_EXISTS)),
@@ -193,8 +189,8 @@ namespace xPlat {
                 std::wstring utf16Name = utf8_to_utf16(path + GetPathSeparator() + directories.front());
                 if (!CreateDirectory(utf16Name.c_str(), nullptr))
                 {
-                    auto lastError = static_cast<std::uint32_t>(GetLastError());
-                    ThrowErrorIfNot(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreateDirectory");
+                    auto lastError = GetLastError();
+                    ThrowWin32ErrorIfNot(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreateDirectory");
                 }
             }
             path = path + GetPathSeparator() + PopFirst();
