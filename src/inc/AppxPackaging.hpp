@@ -1945,19 +1945,20 @@ extern "C++" {
 typedef /* [v1_enum] */
 enum APPX_VALIDATION_OPTION
     {
-        APPX_VALIDATION_OPTION_FULL    = 0x1,
-        APPX_VALIDATION_OPTION_SKIPSIGNATUREORIGIN = 0x2,
-        APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST    = 0x4
+        APPX_VALIDATION_OPTION_FULL                 = 0x0,
+        APPX_VALIDATION_OPTION_SKIPSIGNATURE        = 0x1,
+        APPX_VALIDATION_OPTION_SKIPSIGNATUREORIGIN  = 0x2,
+        APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST     = 0x4
     }   APPX_VALIDATION_OPTION;
 
 typedef /* [v1_enum] */
 enum APPX_PACKUNPACK_OPTION
     {
-        APPX_PACKUNPACK_OPTION_NONE    = 0,
+        APPX_PACKUNPACK_OPTION_NONE                    = 0x0,
         APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER  = 0x1
     }   APPX_PACKUNPACK_OPTION;
 
-HRESULT STDMETHODCALLTYPE PackAppx(
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
     APPX_PACKUNPACK_OPTION packUnpackOptions,
     APPX_VALIDATION_OPTION validationOption,
     char* utf8FolderToPack,
@@ -1965,29 +1966,38 @@ HRESULT STDMETHODCALLTYPE PackAppx(
     char* utf8Destination
 );
 
-HRESULT STDMETHODCALLTYPE UnpackAppx(
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
     APPX_PACKUNPACK_OPTION packUnpackOptions,
     APPX_VALIDATION_OPTION validationOption,
-    char* utf8TargetFolder,
+    char* utf8SourcePackage,
     char* utf8Destination
 );
+
+// TODO: this export is temporary, remove later.
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE ValidateAppxSignature(char* appx);
 
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying 
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.
 typedef void* STDMETHODCALLTYPE COTASKMEMALLOC(size_t cb);
 typedef void STDMETHODCALLTYPE COTASKMEMFREE(void* pv);
 
-HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
+// Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
+    APPX_VALIDATION_OPTION validationOption,
+    IAppxFactory** appxFactory);
+}
+
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     APPX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory);
 
-// Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
-HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
-    APPX_VALIDATION_OPTION validationOption,
-    IAppxFactory** appxFactory);
-}
+// provided as a helper for platforms that do not have an implementation of SHCreateStreamOnFileEx
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
+    char* utf8File,
+    bool forRead,
+    IStream** stream);
 
 // Helper used for QueryInterface defines
 #define SpecializeUuidOfImpl(Type)                    \

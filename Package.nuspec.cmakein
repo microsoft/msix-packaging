@@ -8,7 +8,13 @@
     <projectUrl>https://aka.ms/xPlatAppx</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>Cross platform implementation of AppxPackaging.dll</description>
-    <releaseNotes>TODO: automate release note propogation here...</releaseNotes>
+    <releaseNotes>
+0.6 -   Replace internal StramBase interface and semantics with an IStream implementation and semantics.
+        This change also requires introducing a new C-style export CoCreateAppxFactoryWithHeap which is
+        necessary as CoCreateAppxFactory was already exported with cdecl calling convention on Win32
+        platforms, meaning that you cannot overload any such exported function.  Also as a convenience
+        to non Win32 clients, CreateStreamOnFile is provided to enable easier consumption of the COM APIs.
+    </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
     <tags>xPlatAppx Appx AppxPackaging</tags>
     <dependencies />

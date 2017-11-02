@@ -85,12 +85,12 @@ namespace xPlat {
         });
     }
 
-    AppxBlockMapObject::AppxBlockMapObject(std::shared_ptr<StreamBase> stream) : VerifierObject(stream)
+    AppxBlockMapObject::AppxBlockMapObject(IStream* stream) : VerifierObject(stream)
     {
         // TODO: Implement
     }
     
-    std::shared_ptr<StreamBase>  AppxBlockMapObject::GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream)
+    IStream* AppxBlockMapObject::GetValidationStream(const std::string& part, IStream* stream)
     {
         // TODO: Implement -- for now, just pass through.
         return stream;

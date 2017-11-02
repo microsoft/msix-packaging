@@ -1,14 +1,15 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
-#include "AppxPackageObject.hpp"
 #include "AppxPackaging.hpp"
+#include "AppxPackageObject.hpp"
 #include "ComHelper.hpp"
 
 #include <string>
 #include <vector>
 #include <memory>
 #include <functional>
+#include <limits>
 
 namespace xPlat {
 
@@ -18,18 +19,6 @@ namespace xPlat {
     #define CODEINTEGRITY_CAT "AppxMetadata/CodeIntegrity.cat"
     #define APPXSIGNATURE_P7X "AppxSignature.p7x"
     #define CONTENT_TYPES_XML "[Content_Types].xml"
-
-    AppxSignatureObject::AppxSignatureObject(std::shared_ptr<StreamBase> stream) :
-        VerifierObject(std::move(stream))
-    {
-        // TODO: Implement
-    }
-
-    std::shared_ptr<StreamBase> AppxSignatureObject::GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream)
-    {
-        // TODO: Implement -- for now, just pass through.
-        return stream;
-    }
 
     AppxPackageId::AppxPackageId(
         const std::string& name,
@@ -42,18 +31,18 @@ namespace xPlat {
         // TODO: Implement validation?
     }
 
-    AppxManifestObject::AppxManifestObject(std::shared_ptr<StreamBase> stream) : VerifierObject(std::move(stream))
+    AppxManifestObject::AppxManifestObject(IStream* stream) : VerifierObject(stream)
     {
         // TODO: Implement
     }
 
-    AppxPackageObject::AppxPackageObject(xPlatValidationOptions validation, std::unique_ptr<StorageObject>&& container) :
+    AppxPackageObject::AppxPackageObject(APPX_VALIDATION_OPTION validation, std::unique_ptr<StorageObject>&& container) :
         m_validation(validation),
         m_container(std::move(container))
     {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
-        m_appxSignature = std::make_unique<AppxSignatureObject>(m_container->GetFile(APPXSIGNATURE_P7X));
+        m_appxSignature = std::make_unique<AppxSignatureObject>(validation, m_container->GetFile(APPXSIGNATURE_P7X));
         ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (m_appxSignature->HasStream()), "AppxSignature.p7x not in archive!");
 
         // 2. Get content type using signature object for validation
@@ -75,7 +64,7 @@ namespace xPlat {
 
         struct Config
         {
-            using lambda = std::function<std::shared_ptr<StreamBase>()>;
+            using lambda = std::function<IStream*()>;
             Config(lambda f) : GetValidationStream(f) {}
             lambda GetValidationStream;
         };
@@ -84,15 +73,15 @@ namespace xPlat {
             { APPXBLOCKMAP_XML,  Config([&](){ m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return m_appxBlockMap->GetStream();})  },
             { APPXMANIFEST_XML,  Config([&](){ m_footprintFiles.push_back(APPXMANIFEST_XML);  return m_appxManifest->GetStream();})  },
             { APPXSIGNATURE_P7X, Config([&](){ m_footprintFiles.push_back(APPXSIGNATURE_P7X); return m_appxSignature->GetStream();}) },
-            { CODEINTEGRITY_CAT, Config([&](){ m_footprintFiles.push_back(CODEINTEGRITY_CAT); return m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, m_container->GetFile(CODEINTEGRITY_CAT));}) },
-            { CONTENT_TYPES_XML, Config([&]()->std::shared_ptr<StreamBase>{ return nullptr;}) }, // content types is never implicitly unpacked
+            { CODEINTEGRITY_CAT, Config([&](){ m_footprintFiles.push_back(CODEINTEGRITY_CAT); return m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, std::move(m_container->GetFile(CODEINTEGRITY_CAT)));}) },
+            { CONTENT_TYPES_XML, Config([&]()->IStream*{ return nullptr;}) }, // content types is never implicitly unpacked
         };
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
         // and partition the container's file names into footprint and payload files.
         for (const auto& fileName : m_container->GetFileNames())
         {
-            std::shared_ptr<StreamBase> stream = nullptr;
+            ComPtr<IStream> stream;
 
             auto footPrintFile = footPrintFileNames.find(fileName);
             if (footPrintFile != footPrintFileNames.end())
@@ -105,23 +94,23 @@ namespace xPlat {
                 stream = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(fileName));
             }
 
-            if (stream != nullptr) { m_streams[fileName] = stream; }
+            if (stream.Get() != nullptr) { m_streams[fileName] = stream.Detach(); }
         }
     }
 
-    void AppxPackageObject::Pack(xPlatPackUnpackOptions options, const std::string& certFile, StorageObject& from)
+    void AppxPackageObject::Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
     }
 
-    void AppxPackageObject::Unpack(xPlatPackUnpackOptions options, StorageObject& to)
+    void AppxPackageObject::Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to)
     {
         auto fileNames = GetFileNames();
         for (const auto& fileName : fileNames)
         {
             std::string targetName;
-            if (options & xPlatPackUnpackOptionsCreatePackageSubfolder)
+            if (options & APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
             {
                 targetName = GetAppxManifest()->GetPackageFullName() + to.GetPathSeparator() + fileName;
             }
@@ -132,8 +121,10 @@ namespace xPlat {
 
             auto targetFile = to.OpenFile(targetName, xPlat::FileStream::Mode::WRITE_UPDATE);
             auto sourceFile = GetFile(fileName);
-            sourceFile->CopyTo(targetFile.get());
-            targetFile->Close();
+
+            ULARGE_INTEGER bytesCount = {0};
+            bytesCount.QuadPart = std::numeric_limits<std::uint64_t>::max();
+            ThrowHrIfFailed(sourceFile->CopyTo(targetFile, bytesCount, nullptr, nullptr));
         }
     }
 
@@ -146,10 +137,10 @@ namespace xPlat {
         return result;
     }
 
-    std::shared_ptr<StreamBase> AppxPackageObject::GetFile(const std::string& fileName)
+    IStream* AppxPackageObject::GetFile(const std::string& fileName)
     {
         // TODO: add input validation.
-        return m_streams[fileName];
+        return m_streams[fileName].Get();
     }
 
     void AppxPackageObject::RemoveFile(const std::string& fileName)
@@ -158,7 +149,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
 
-    std::shared_ptr<StreamBase> AppxPackageObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    IStream* AppxPackageObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
