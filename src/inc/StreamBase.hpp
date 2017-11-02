@@ -141,17 +141,20 @@ namespace xPlat {
                 static_cast<ULONG>(sizeof(T)),
                 &result                            
             ));
+            ThrowErrorIf(Error::FileRead, (result != sizeof(T)), "Entire object wasn't read!");
             return result;
         }
 
         template <class T>
         static void Write(IStream* stream, T* value)
         {
+            ULONG result = 0;
             ThrowHrIfFailed(stream->Write(
                 reinterpret_cast<void*>(value),
                 static_cast<ULONG>(sizeof(T)),
                 nullptr                            
             ));
+            ThrowErrorIf(Error::FileWrite, (result != sizeof(T)), "Entire object wasn't written!");
         }
     };
 }

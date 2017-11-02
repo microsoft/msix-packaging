@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 #include <memory> 
 #include <atomic>
 #include <type_traits>
@@ -18,10 +19,7 @@ namespace xPlat {
     {
         bool IsIIDAMatch(REFIID riid)
         {
-            if (riid == UuidOfImpl<I0>::iid)
-            {
-                return true;
-            }
+            if (riid == UuidOfImpl<I0>::iid) { return true; }
             return QIHelper<Interfaces...>::IsIIDAMatch(riid);
         }
     };
@@ -30,10 +28,7 @@ namespace xPlat {
     template <>
     struct QIHelper<>
     {
-        bool IsIIDAMatch(REFIID /*riid*/)
-        {
-            return false;
-        }
+        bool IsIIDAMatch(REFIID /*riid*/) { return false; }
     };
 
     template <class T>
@@ -50,16 +45,10 @@ namespace xPlat {
                 std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
             >::type
         >
-        ComPtr(U* ptr) : m_ptr(ptr)
-        {
-            InternalAddRef();
-        }
+        ComPtr(U* ptr) : m_ptr(ptr) { InternalAddRef(); }
 
         // copy ctor
-        ComPtr(const ComPtr& right) : m_ptr(right.m_ptr)
-        {
-            InternalAddRef();
-        }
+        ComPtr(const ComPtr& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
 
         // copy ctor that allows instantiation of class when U* is convertible to T*
         template<
@@ -68,17 +57,13 @@ namespace xPlat {
                 std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
             >::type
         >
-        ComPtr(const ComPtr<U>& right) : m_ptr(right.m_ptr)
-        {
-            InternalAddRef();
-        }
+        ComPtr(const ComPtr<U>& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
 
         // move ctor
         ComPtr(ComPtr &&right) : m_ptr(nullptr)
         {
             if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
-            {
-                Swap(right);
+            {   Swap(right);
             }
         }
 
@@ -89,13 +74,15 @@ namespace xPlat {
                 std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
             >::type
         >
-        ComPtr(ComPtr &&right) : m_ptr(right.m_ptr)
+        ComPtr(ComPtr<U> &&right) : m_ptr(nullptr)
         {
-            right.m_ptr = nullptr;
+            if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
+            {   Swap(right);
+            }
         }
 
         // Assignment operator for = nullptr
-        ComPtr& operator=(decltype(__nullptr))
+        ComPtr& operator=(std::nullptr_t)
         {
             InternalRelease();
             return *this;
@@ -104,20 +91,14 @@ namespace xPlat {
         // Assignment operator... VERY important.
         ComPtr& operator=(const ComPtr& right)
         {
-            if (m_ptr != right.m_ptr)
-            {
-                ComPtr(right).Swap(*this);
-            }          
+            if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
             return *this;
         }
 
         // Assignment operator of T*
         ComPtr& operator=(T* right)
-        {
-            if (m_ptr != right)
-            {
-                ComPtr(right).Swap(*this);
-            }
+        {   
+            if (m_ptr != right) { ComPtr(right).Swap(*this); }
             return *this;
         }
 
@@ -129,13 +110,13 @@ namespace xPlat {
             >::type
         >
         ComPtr& operator=(U* right)
-        {
+        {   
             ComPtr(right).Swap(*this);
             return *this;
         }
 
         ComPtr& operator=(ComPtr &&right)
-        {
+        {   
             ComPtr(static_cast<ComPtr&&>(right)).Swap(*this);
             return *this;
         }
@@ -144,16 +125,14 @@ namespace xPlat {
 
         inline T* operator->() const { return m_ptr; }
         inline T* Get() const { return m_ptr; }
-        inline void Reset() { InternalRelease(); }
 
-        inline T** AddressOf()
-        {
-            InternalRelease();
+        inline T** operator&()
+        {   InternalRelease();
             return &m_ptr;
         }
 
         inline T* Detach()
-        {
+        {   
             T* ptr = m_ptr;
             m_ptr = nullptr;
             return ptr;
@@ -161,16 +140,17 @@ namespace xPlat {
 
         template <class U>
         inline ComPtr<U> As()
-        {
+        {   
             ComPtr<U> out;
-            ThrowHrIfFailed(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(out.AddressOf())));
+            ThrowHrIfFailed(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(&out)));
             return out;
         }
     protected:
         T* m_ptr = nullptr;
 
         inline void InternalRelease()
-        {   T* temp = m_ptr;
+        {   
+            T* temp = m_ptr;
             if (temp)
             {   m_ptr = nullptr;
                 temp->Release();
@@ -178,7 +158,6 @@ namespace xPlat {
         }
 
         inline void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
-        inline void Swap(ComPtr&& right) { std::swap(m_ptr, right.m_ptr); }
         inline void Swap(ComPtr& right ) { std::swap(m_ptr, right.m_ptr); }
     };
 
@@ -188,19 +167,11 @@ namespace xPlat {
     public:
         virtual ~ComClass() { }
 
-        //template<class T, typename... Args>
-        //static ComPtr<T> Make(Args&&... args)
-        //{
-        //    return ComPtr<T>(new Derived(std::forward<Args>(args...)));
-        //}
-
         virtual ULONG STDMETHODCALLTYPE AddRef() override { return ++m_ref; }
-
         virtual ULONG STDMETHODCALLTYPE Release() override
-        {
+        {   
             if (--m_ref == 0)
-            {
-                delete this;
+            {   delete this;
                 return 0;
             }
             return m_ref;
@@ -221,7 +192,6 @@ namespace xPlat {
 
     protected:
         std::atomic<std::uint32_t> m_ref;
-
         ComClass() : m_ref(1) {}
     };
 }

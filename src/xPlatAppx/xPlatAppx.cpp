@@ -140,7 +140,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
         );
 
         xPlat::ComPtr<IStream> stream;
-        ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, stream.AddressOf()));
+        ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
         auto zipObject = std::make_unique<xPlat::ZipObject>(stream.Get());
         xPlat::AppxPackageObject appx(validationOption, std::move(zipObject));
         xPlat::DirectoryObject to(utf8Destination);
@@ -163,7 +163,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
         );
 
         xPlat::ComPtr<IStream> stream;
-        ThrowHrIfFailed(CreateStreamOnFile(utf8Destination, false, stream.AddressOf()));
+        ThrowHrIfFailed(CreateStreamOnFile(utf8Destination, false, &stream));
 
         auto zipObject = std::make_unique<xPlat::ZipObject>(stream.Get());
         xPlat::AppxPackageObject appx(validationOption, std::move(zipObject));
