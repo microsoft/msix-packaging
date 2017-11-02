@@ -41,10 +41,17 @@ namespace xPlat {
 
         HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
         {   // The underlying ZipFileStream object knows, so go ask it.
-            return ResultOf([&]{
-                auto appxFile = m_stream.As<IAppxFile>();
-                return appxFile->GetCompressionOption(compressionOption);
-            });
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption); });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
+        {   // The underlying ZipFileStream object knows, so go ask it.
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetName(fileName); });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
+        {   // The underlying ZipFileStream object knows, so go ask it.
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetContentType(contentType); });
         }
 
     protected:
