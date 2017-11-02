@@ -5,13 +5,11 @@
 #include <algorithm>
 #include <iostream>
 #include <limits>
-#include "Exceptions.hpp"
-#define UNICODE
-#define NOMINMAX
-#include "ComHelper.hpp"
-#include "AppxPackaging.hpp"
 
 #include "AppxWindows.hpp"
+#include "AppxPackaging.hpp"
+#include "Exceptions.hpp"
+#include "ComHelper.hpp"
 
 namespace xPlat {
     class StreamBase : public xPlat::ComClass<StreamBase, IAppxFile, IStream>
@@ -33,7 +31,7 @@ namespace xPlat {
         // Ensures that any changes made to a stream object open in transacted mode are reflected in the parent storage.
         // If the stream object is open in direct mode, IStream::Commit has no effect other than flushing all memory buffers
         // to the next-level storage object.
-        virtual HRESULT STDMETHODCALLTYPE  Commit(DWORD) override { return static_cast<HRESULT>(Error::OK); }
+        virtual HRESULT STDMETHODCALLTYPE Commit(DWORD) override { return static_cast<HRESULT>(Error::OK); }
 
         // Copies a specified number of bytes from the current seek pointer in the stream to the current seek pointer in 
         // another stream.
@@ -131,8 +129,7 @@ namespace xPlat {
 
         virtual HRESULT STDMETHODCALLTYPE GetStream(IStream** stream) override
         {
-            UuidOfImpl<IStream> uuid;
-            return QueryInterface(uuid.iid, reinterpret_cast<void**>(stream));
+            return QueryInterface(UuidOfImpl<IStream>::iid, reinterpret_cast<void**>(stream));
         }
 
         template <class T>

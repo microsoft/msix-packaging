@@ -47,7 +47,7 @@ namespace xPlat {
         template<
             class U, 
             typename = typename std::enable_if<
-                std::is_convertible<U,T>::value
+                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
             >::type
         >
         ComPtr(U* ptr) : m_ptr(ptr)
@@ -65,7 +65,7 @@ namespace xPlat {
         template<
             class U, 
             typename = typename std::enable_if<
-                std::is_convertible<U,T>::value
+                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
             >::type
         >
         ComPtr(const ComPtr<U>& right) : m_ptr(right.m_ptr)
@@ -86,7 +86,7 @@ namespace xPlat {
         template<
             class U, 
             typename = typename std::enable_if<
-                std::is_convertible<U,T>::value
+                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
             >::type
         >
         ComPtr(ComPtr &&right) : m_ptr(right.m_ptr)
@@ -125,7 +125,7 @@ namespace xPlat {
         template<
             class U, 
             typename = typename std::enable_if<
-                std::is_convertible<U,T>::value
+                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
             >::type
         >
         ComPtr& operator=(U* right)
@@ -162,9 +162,8 @@ namespace xPlat {
         template <class U>
         inline ComPtr<U> As()
         {
-            UuidOfImpl<U> uuid;
             ComPtr<U> out;
-            ThrowHrIfFailed(m_ptr->QueryInterface(uuid.iid, reinterpret_cast<void**>(out.AddressOf())));
+            ThrowHrIfFailed(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(out.AddressOf())));
             return out;
         }
     protected:

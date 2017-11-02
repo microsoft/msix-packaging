@@ -68,7 +68,7 @@ namespace xPlat {
         Exception(Error error) : m_code(static_cast<std::uint32_t>(error))
         {}
 
-        Exception(std::uint32_t error) : Exception(0x8007 + error)
+        Exception(std::uint32_t error) : m_code(0x8007 + error)
         {}
 
         Exception(Error error, std::string& message) :

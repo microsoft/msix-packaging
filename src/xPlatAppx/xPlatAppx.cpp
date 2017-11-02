@@ -177,7 +177,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE ValidateAppxSignature(char* appx)
 {
     return xPlat::ResultOf([&]() {
-        xPlat::ComPtr<IStream> rawFile (new xPlat::FileStream(appx, xPlat::FileStream::Mode::READ));
+        xPlat::ComPtr<IStream> rawFile(new xPlat::FileStream(appx, xPlat::FileStream::Mode::READ));
         {
             xPlat::ZipObject zip(rawFile.Get());
             auto p7xStream = zip.GetFile("AppxSignature.p7x");
