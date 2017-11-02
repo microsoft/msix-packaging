@@ -8,7 +8,6 @@
 #include "StreamBase.hpp"
 
 namespace xPlat {
-    // TODO: turns out we DO need some sort of abstraction over storage -- investigate using BOOST?
     class FileStream : public StreamBase
     {
     public:
@@ -26,7 +25,7 @@ namespace xPlat {
             Close();
         }
 
-        virtual void Close() override
+        void Close()
         {
             if (file)
             {   // the most we would ever do w.r.t. a failure from fclose is *maybe* log something...
@@ -35,49 +34,49 @@ namespace xPlat {
             }
         }
 
-        virtual void Seek(std::uint64_t to, StreamBase::Reference whence) override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
         {
-            int rc = std::fseek(file, to, whence);
-            ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
-            offset = Ftell();
+            return ResultOf([&] {
+                int rc = std::fseek(file, move.QuadPart, origin);
+                ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
+                offset = Ftell();
+                if (newPosition) { newPosition->QuadPart = offset; }
+            });
         }
 
-        virtual std::size_t Read(std::size_t size, const std::uint8_t* bytes) override
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override
         {
-            std::size_t bytesRead = std::fread(
-                static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
-            );
-            ThrowErrorIfNot(Error::FileRead, (bytesRead == size || Feof()), "read failed");
-            offset = Ftell();
-            return bytesRead;
+            if (bytesRead) { *bytesRead = 0; }
+            return ResultOf([&] {
+                ULONG result = static_cast<ULONG>(std::fread(buffer, sizeof(std::uint8_t), countBytes, file));
+                ThrowErrorIfNot(Error::FileRead, (result == countBytes || Feof()), "read failed");
+                offset = Ftell();
+                if (bytesRead) { *bytesRead = result; }
+            });
         }
 
-        virtual int Ferror() override
+        HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) override
         {
-            return std::ferror(file);
+            if (bytesWritten) { *bytesWritten = 0; }
+            return ResultOf([&] {
+                ULONG result = static_cast<ULONG>(std::fwrite(buffer, sizeof(std::uint8_t), countBytes, file));
+                ThrowErrorIfNot(Error::FileWrite, (result == countBytes), "write failed");
+                offset = Ftell();
+                if (bytesWritten) { *bytesWritten = result; }
+            });
         }
 
-        virtual bool Feof() override
-        {
-            return 0 != std::feof(file);
-        }
+    protected:
+        inline int Ferror() { return std::ferror(file); }
+        inline bool Feof()  { return 0 != std::feof(file); }
+        inline void Flush() { std::fflush(file); }
 
-        virtual void Write(std::size_t size, const std::uint8_t* bytes) override
-        {
-            std::size_t bytesWritten = std::fwrite(
-                static_cast<void*>(const_cast<std::uint8_t*>(bytes)), 1, size, file
-            );
-            ThrowErrorIfNot(Error::FileWrite, (bytesWritten == size), "write failed");
-            offset = Ftell();
-        }
-
-        virtual std::uint64_t Ftell() override
+        inline std::uint64_t Ftell()
         {
             auto result = ftell(file);
             return static_cast<std::uint64_t>(result);
         }
 
-    protected:
         std::uint64_t offset = 0;
         std::string name;
         FILE* file;

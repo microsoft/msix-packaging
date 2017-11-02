@@ -6,6 +6,8 @@
 #include <cassert>
 #include <functional>
 
+#include "AppxWindows.hpp"
+
 namespace xPlat {
 
     static const std::uint32_t ERROR_FACILITY = 0x8BAD0000;   // Facility 2989
@@ -16,6 +18,7 @@ namespace xPlat {
         //
         // Win32 error codes
         //
+        OK                          = 0,
         NotSupported                = 0x80070032,
         InvalidParameter            = 0x80070057,
         NotImplemented              = 0x80070078,
@@ -33,6 +36,7 @@ namespace xPlat {
         FileRead                    = ERROR_FACILITY + 0x0003,
         FileWrite                   = ERROR_FACILITY + 0x0003,
         FileCreateDirectory         = ERROR_FACILITY + 0x0004,
+        FileSeekOutOfRange          = ERROR_FACILITY + 0x0005,
 
         // Zip format errors
         ZipCentralDirectoryHeader   = ERROR_FACILITY + 0x0011,
@@ -47,13 +51,14 @@ namespace xPlat {
         InflateRead                 = ERROR_FACILITY + 0x0022,
         InflateCorruptData          = ERROR_FACILITY + 0x0023,
 
+        // Signature errors
+        AppxSignatureInvalid        = ERROR_FACILITY + 0x0030,
         // AppxPackage format errors
         AppxMissingSignatureP7X     = ERROR_FACILITY + 0x0031,
         AppxMissingContentTypesXML  = ERROR_FACILITY + 0x0032,
         AppxMissingBlockMapXML      = ERROR_FACILITY + 0x0033,
         AppxMissingAppxManifestXML  = ERROR_FACILITY + 0x0034,
         AppxDuplicateFootprintFile  = ERROR_FACILITY + 0x0035,
-
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
@@ -62,6 +67,9 @@ namespace xPlat {
     {
     public:
         Exception(Error error) : m_code(static_cast<std::uint32_t>(error))
+        {}
+
+        Exception(std::uint32_t error) : m_code(0x80070000 + error)
         {}
 
         Exception(Error error, std::string& message) :
@@ -74,18 +82,15 @@ namespace xPlat {
             m_message(message)
         {}
 
-        Exception(std::uint32_t error) : m_code(0x8007 + error)
-        {}
-
-        Exception(std::uint32_t error, std::string& message) :
-            m_code(0x8007 + error),
+        Exception(HRESULT error, std::string& message) :
+            m_code(error),
             m_message(message)
         {}
 
-        Exception(std::uint32_t error, const char* message) :
-            m_code(0x8007 + error),
+        Exception(HRESULT error, const char* message) :
+            m_code(error),
             m_message(message)
-        {}
+        {}            
 
         uint32_t        Code() { return m_code; }
         std::string&    Message() { return m_message; }
@@ -95,9 +100,20 @@ namespace xPlat {
         std::string     m_message;
     };
 
-    // Provides an ABI exception boundary with parameter validation
-    using Lambda = std::function<void()>;
+    class Win32Exception : public Exception
+    {
+    public:
+        Win32Exception(DWORD error, std::string& message) :
+            Exception(0x80070000 + error, message)
+        {}
 
+        Win32Exception(DWORD error, const char* message) :
+            Exception(0x80070000 + error, message)
+        {}
+    };
+
+    // Provides an ABI exception boundary with parameter validation
+    template <class Lambda>
     inline unsigned int ResultOf(Lambda lambda)
     {
         unsigned int result = 0;
@@ -132,4 +148,22 @@ namespace xPlat {
     }                                \
 }
 
+#define ThrowWin32ErrorIfNot(c, a, m)       \
+{                                           \
+    if (!(a))                               \
+    {                                       \
+        assert(false);                      \
+        throw xPlat::Win32Exception(c,m);   \
+    }                                       \
+}
+
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
+
+#define ThrowHrIfFailed(a)                              \
+{                                                       \
+    HRESULT hr = a;                                     \
+    if (FAILED(hr))                                     \
+    {   assert(false);                                  \
+        throw xPlat::Exception(hr, "COM Call failed");  \
+    }                                                   \
+}

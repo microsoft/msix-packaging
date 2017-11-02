@@ -10,11 +10,7 @@
 #include <sstream>
 #include <locale>
 #include <codecvt>
-
-// UNICODE MUST be defined before you include Windows.h if you want the non-ascii versions of APIs (and you do)
-#define UNICODE
-#define NOMINMAX
-#include <windows.h>
+#include "AppxWindows.hpp"
 
 namespace xPlat {
 
@@ -80,7 +76,7 @@ namespace xPlat {
             {
                 return;
             }
-            ThrowErrorIfNot(lastError, false, "FindFirstFile failed.");
+            ThrowWin32ErrorIfNot(lastError, false, "FindFirstFile failed.");
         }
 
         do
@@ -116,7 +112,7 @@ namespace xPlat {
         while (FindNextFile(find.get(), &findFileData));
 
         std::uint32_t lastError = static_cast<std::uint32_t>(GetLastError());
-        ThrowErrorIfNot(lastError,
+        ThrowWin32ErrorIfNot(lastError,
             ((lastError == ERROR_NO_MORE_FILES) ||
             (lastError == ERROR_SUCCESS) ||
             (lastError == ERROR_ALREADY_EXISTS)),
@@ -131,7 +127,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
 
-    std::shared_ptr<StreamBase> DirectoryObject::GetFile(const std::string& fileName)
+    IStream* DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
         throw Exception(Error::NotImplemented);
@@ -143,7 +139,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
 
-    std::shared_ptr<StreamBase> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    IStream* DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
         std::vector<std::string> directories;
         auto PopFirst = [&directories]()
@@ -193,16 +189,16 @@ namespace xPlat {
                 std::wstring utf16Name = utf8_to_utf16(path + GetPathSeparator() + directories.front());
                 if (!CreateDirectory(utf16Name.c_str(), nullptr))
                 {
-                    auto lastError = static_cast<std::uint32_t>(GetLastError());
-                    ThrowErrorIfNot(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreateDirectory");
+                    auto lastError = GetLastError();
+                    ThrowWin32ErrorIfNot(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreateDirectory");
                 }
             }
             path = path + GetPathSeparator() + PopFirst();
             found = false;
         }
         name = path + GetPathSeparator() + name;
-        auto result = m_streams[fileName] = std::make_unique<FileStream>(std::move(name), mode);
-        return result;
+        auto result = m_streams[fileName] = new FileStream(std::move(name), mode);
+        return result.Get();
     }
 
     void DirectoryObject::CommitChanges()

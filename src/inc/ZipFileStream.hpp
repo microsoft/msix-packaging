@@ -1,46 +1,48 @@
 #pragma once
 #include "Exceptions.hpp"
+#include "ComHelper.hpp"
 #include "StreamBase.hpp"
+#include "RangeStream.hpp"
 
 #include <string>
 
 namespace xPlat {
 
     // This represents a raw stream over a file contained in a .zip file.
-    class ZipFileStream : public StreamBase
+    class ZipFileStream : public RangeStream
     {
     public:
         // TODO: define what streams to pass in on the .ctor
         ZipFileStream(
+            bool isCompressed,
             std::uint32_t offset,
             std::uint32_t size,
-            bool isCompressed,
-            StreamBase* stream
-        ) :
-            m_offset(offset),
-            m_size(size),
-            m_isCompressed(isCompressed),
-            m_stream(stream)
+            IStream* stream
+        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream)
         {
         }
 
-        void Write(std::size_t size, const std::uint8_t* bytes) override;
-        std::size_t Read(std::size_t size, const std::uint8_t* bytes) override;
-        void Seek(std::uint64_t offset, Reference where) override;
-        int Ferror() override;
-        bool Feof() override;
-        std::uint64_t Ftell()  override;
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
+        {
+            // TODO: Implement here.
+            return static_cast<HRESULT>(Error::NotImplemented);
+        }
 
-        bool IsCompressed();
-        std::uint64_t Size();
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
+        {
+            // TODO: Implement here.
+            return static_cast<HRESULT>(Error::NotImplemented);
+        }
+
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
+        {
+            if (compressionOption) { *compressionOption = IsCompressed() ? APPX_COMPRESSION_OPTION_NORMAL : APPX_COMPRESSION_OPTION_NONE; }
+            return static_cast<HRESULT>(Error::OK);
+        }
+
+        inline bool IsCompressed() { return m_isCompressed; }
 
     protected:
-        // TODO: change to uint64_t when adding 4+GB support
-        std::uint64_t m_offset;
-        std::uint64_t m_size;
-
         bool m_isCompressed = false;
-        std::uint64_t m_relativePosition = 0;
-        StreamBase* m_stream = nullptr;
     };
 }

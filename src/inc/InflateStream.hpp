@@ -1,4 +1,3 @@
-
 #pragma once
 #ifdef WIN32
 #include "zlib.h"
@@ -8,14 +7,14 @@
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
+#include "ComHelper.hpp"
 
-//TODO: this is annoying
+// Windows.h defines max and min... 
 #undef max
 #undef min
 #include <string>
 #include <map>
 #include <functional>
-
 
 namespace xPlat {
 
@@ -23,26 +22,41 @@ namespace xPlat {
     class InflateStream : public StreamBase
     {
     public:
-        //static std::shared_ptr<StreamBase> MakeInflateStream(std::shared_ptr<StreamBase> stream, std::uint64_t compressedSize, std::uint64_t uncompressedSize);
+        InflateStream(IStream* stream, std::uint64_t uncompressedSize);
+        virtual ~InflateStream();
 
-        InflateStream(
-            std::shared_ptr<StreamBase> stream,
-            std::uint64_t uncompressedSize
-        );
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override;
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override;
+        HRESULT STDMETHODCALLTYPE Write(void const *buffer, ULONG countBytes, ULONG *bytesWritten) override
+        {
+            return static_cast<HRESULT>(Error::NotImplemented);
+        }
 
-        ~InflateStream() override;
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
+        {
+            if (size) { *size = m_uncompressedSize; }
+            return static_cast<HRESULT>(Error::OK);
+        }
 
-        void Write(std::size_t size, const std::uint8_t* bytes) override;
-        std::size_t Read(std::size_t size, const std::uint8_t* bytes) override;
-        void Seek(std::uint64_t offset, Reference where) override;
-        int Ferror() override;
-        bool Feof() override;
-        std::uint64_t Ftell()  override;
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
+        {   // The underlying ZipFileStream object knows, so go ask it.
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption); });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
+        {   // The underlying ZipFileStream object knows, so go ask it.
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetName(fileName); });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
+        {   // The underlying ZipFileStream object knows, so go ask it.
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetContentType(contentType); });
+        }
 
     protected:
         void Cleanup();
 
-        static const unsigned int BUFFERSIZE = 4096;
+        static const ULONG BUFFERSIZE = 4096;
         enum class State : std::uint8_t
         {
             UNINITIALIZED = 0,
@@ -53,21 +67,21 @@ namespace xPlat {
         };
 
         State m_previous = State::UNINITIALIZED;
-        State m_state = State::UNINITIALIZED;
-        std::map<State, std::function<std::tuple<bool, State>(std::size_t cbReadBuffer, const std::uint8_t* readBuffer)>> m_stateMachine;
+        State m_state    = State::UNINITIALIZED;
+        std::map<State, std::function<std::tuple<bool, State>(void* buffer, ULONG countBytes)>> m_stateMachine;
 
-        std::uint64_t               m_seekPosition = 0;
-        std::shared_ptr<StreamBase> m_stream;
-        std::uint64_t               m_uncompressedSize;
-        std::size_t                 m_bytesRead = 0;
+        ComPtr<IStream> m_stream;
+        ULONGLONG       m_seekPosition = 0;
+        ULONGLONG       m_uncompressedSize = 0;
+        ULONG           m_bytesRead = 0;
+        std::uint8_t*   m_startCurrentBuffer = nullptr;
+        ULONG           m_inflateWindowPosition = 0;
+        ULONGLONG       m_fileCurrentWindowPositionEnd = 0;
+        ULONGLONG       m_fileCurrentPosition = 0;
+        z_stream        m_zstrm;
+        int             m_zret;
 
-        z_stream m_zstrm;
-        int m_zret;
-        std::uint8_t  m_compressedBuffer[InflateStream::BUFFERSIZE];
-        std::uint8_t  m_inflateWindow[InflateStream::BUFFERSIZE];
-        std::size_t   m_inflateWindowPosition = 0;
-
-        std::uint64_t m_fileCurrentWindowPositionEnd = 0;
-        std::uint64_t m_fileCurrentPosition = 0;
+        std::uint8_t    m_compressedBuffer[InflateStream::BUFFERSIZE];
+        std::uint8_t    m_inflateWindow[InflateStream::BUFFERSIZE];
     };
 }

@@ -5,6 +5,10 @@
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+MESSAGE (STATUS "--------------------------------")
+MESSAGE (STATUS "xPlatAppx")
+MESSAGE (STATUS "--------------------------------")    
+
 # Set build options
 OPTION(WIN32 "Build for Win32"   OFF)
 OPTION(MACOS "Build for MacOS"   OFF)
@@ -14,10 +18,35 @@ OPTION(LINUX "Build for Linux"   OFF)
 
 # Enforce that target platform is specified.
 IF((NOT WIN32) AND (NOT MACOS) AND (NOT IOS) AND (NOT AOSP) AND (NOT LINUX))
-    MESSAGE( "You must specify one of: [WIN32|MACOS|IOS|AOSP|LINUX]" )
-    MESSAGE( "For example, use cmake -DWIN32=on .." )
+    MESSAGE (STATUS "You must specify one of: [WIN32|MACOS|IOS|AOSP|LINUX]" )
+    MESSAGE (STATUS "For example, use cmake -DWIN32=on .." )
     RETURN()
+ELSE()
+    IF (WIN32)
+        MESSAGE (STATUS "Building for WIN32")
+    ENDIF()
+    IF (MACOS)
+        MESSAGE (STATUS "Building for MacOS")
+    ENDIF()
+    IF (IOS)
+        MESSAGE (STATUS "Building for iOS")
+    ENDIF()
+    IF (AOSP)
+        MESSAGE (STATUS "Building for Android")
+    ENDIF()
+    IF (LINUX)
+        MESSAGE (STATUS "Building for Linux")
+    ENDIF()
 ENDIF()
+
+# Enforce build type
+IF(NOT CMAKE_BUILD_TYPE)
+SET(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
+    "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel.  Use the -DCMAKE_BUILD_TYPE=[option] to specify."
+    FORCE)
+ENDIF()
+
+MESSAGE (STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 IF(MACOS)
         # Incredibly, for both clang and g++, while a single compile-and-link
@@ -68,9 +97,6 @@ find_package(Git) # QUIET) # if we don't find git or FindGit.cmake is not on the
 ## The Git module will trigger a reconfiguration for each pull that will bring a new revision on the local repository
 SET(VCS_REVISION "-1")
 IF(GIT_FOUND)
-    MESSAGE (STATUS "--------------------------------")
-    MESSAGE (STATUS "xPlatAppx")
-    MESSAGE (STATUS "--------------------------------")    
     include(GetGitRevisionDescription)
     get_git_head_revision(GIT_REFSPEC GIT_SHA1)
     MESSAGE(STATUS "GIT refspec ${GIT_REFSPEC}")

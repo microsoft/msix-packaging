@@ -19,7 +19,7 @@ namespace xPlat {
     {
     public:
         // TODO: Implement actual XML validation....
-        XmlObject(std::shared_ptr<StreamBase> stream) : VerifierObject(std::move(stream)) {}
+        XmlObject(IStream* stream) : VerifierObject(stream) {}
 
         // TODO: Implement: Writes the contents of the DOM Document to the underlying stream.
         void Write()
@@ -30,13 +30,13 @@ namespace xPlat {
         // Returns a shared pointer to the DOMDocument representing the contents of this stream
         std::shared_ptr<XERCES_CPP_NAMESPACE::DOMDocument> Document()         { return m_DOMDocument;}
 
-        std::shared_ptr<StreamBase> GetValidationStream(const std::string& part, std::shared_ptr<StreamBase> stream) override
+        IStream* GetValidationStream(const std::string& part, IStream* stream) override
         {
             throw Exception(Error::NotSupported);
         }
 
     protected:
-        std::shared_ptr<StreamBase> m_stream = nullptr;
+        ComPtr<IStream> m_stream;
         std::shared_ptr<XERCES_CPP_NAMESPACE::DOMImplementation> m_DOMImplementation;
         std::shared_ptr<XERCES_CPP_NAMESPACE::DOMDocument>       m_DOMDocument;
     };

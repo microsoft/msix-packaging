@@ -6,145 +6,159 @@
 #include <string>
 #include <cstring>
 
-#ifndef WIN32
-// On x86-x64 non-win32 platforms, use SYSTEM V AMD64 ABI calling convention.  This should suffice for Solaris, Linux, BSD,
-// MacOS and anything compiled with GCC or Intel compilers.  On non-x86-x64 architecures, we will use the compiler default
-// See https://en.wikipedia.org/wiki/X86_calling_conventions#List_of_x86_calling_conventions for details
-    #define STDMETHODCALLTYPE
-#else
+#ifdef WIN32
     #define STDMETHODCALLTYPE __stdcall
-#endif
+    #define XPLATAPPX_API extern "C" __declspec(dllexport) 
 
-#ifndef MIDL_INTERFACE
-#define MIDL_INTERFACE(i)
-#endif
+    // UNICODE MUST be defined before you include Windows.h if you want the non-ascii versions of APIs (and you do)
+    #define UNICODE
+    #define NOMINMAX    
+    #include <windows.h>
+    // Windows.h defines max and min, which does NOT paly nice at all with std::min / std::max usage from <algorithm>
+    #undef max
+    #undef min
+#else
+    // On x86-x64 non-win32 platforms, use SYSTEM V AMD64 ABI calling convention.  This should suffice for Solaris, Linux, BSD,
+    // MacOS and anything compiled with GCC or Intel compilers.  On non-x86-x64 architecures, we will use the compiler default
+    // See https://en.wikipedia.org/wiki/X86_calling_conventions#List_of_x86_calling_conventions for details
+    #define STDMETHODCALLTYPE
+    #undef XPLATAPPX_API
+    #define XPLATAPPX_API
 
-#ifndef interface
-#define interface struct
-#endif
+    #ifndef MIDL_INTERFACE
+    #define MIDL_INTERFACE(i)
+    #endif
 
-typedef unsigned long HRESULT;
-typedef signed long LONG;
-typedef unsigned long ULONG;
-typedef unsigned long DWORD;
-typedef signed long long LONGLONG;
-typedef unsigned long long ULONGLONG;
-typedef unsigned short UINT16;
-typedef unsigned int UINT32;
-typedef unsigned long long UINT64;
-typedef wchar_t LPWSTR;
-typedef const wchar_t LPCWSTR;
-typedef char BYTE;
-typedef bool BOOL;
+    #ifndef interface
+    #define interface struct
+    #endif
 
-typedef union _LARGE_INTEGER {
-    struct {
-        ULONG LowPart;
-        LONG HighPart;
-    } DUMMYSTRUCTNAME;
-    struct {
-        ULONG LowPart;
-        LONG HighPart;
-    } u;
-    LONGLONG QuadPart;
-} LARGE_INTEGER;
+    typedef signed long HRESULT;
+    typedef signed long LONG;
+    typedef unsigned long ULONG;
+    typedef unsigned long DWORD;
+    typedef signed long long LONGLONG;
+    typedef unsigned long long ULONGLONG;
+    typedef unsigned short UINT16;
+    typedef unsigned int UINT32;
+    typedef unsigned long long UINT64;
+    typedef wchar_t LPWSTR;
+    typedef const wchar_t LPCWSTR;
+    typedef char BYTE;
+    typedef bool BOOL;
 
-typedef union _ULARGE_INTEGER {
-    struct {
-        ULONG LowPart;
-        ULONG HighPart;
-    } DUMMYSTRUCTNAME;
-    struct {
-        ULONG LowPart;
-        ULONG HighPart;
-    } u;
-    ULONGLONG QuadPart;
-} ULARGE_INTEGER;
+    typedef union _LARGE_INTEGER {
+        struct {
+            ULONG LowPart;
+            LONG HighPart;
+        } DUMMYSTRUCTNAME;
+        struct {
+            ULONG LowPart;
+            LONG HighPart;
+        } u;
+        LONGLONG QuadPart;
+    } LARGE_INTEGER;
 
-typedef struct tagFILETIME
-{
-    DWORD dwLowDateTime;
-    DWORD dwHighDateTime;
-} FILETIME;
+    typedef union _ULARGE_INTEGER {
+        struct {
+            ULONG LowPart;
+            ULONG HighPart;
+        } DUMMYSTRUCTNAME;
+        struct {
+            ULONG LowPart;
+            ULONG HighPart;
+        } u;
+        ULONGLONG QuadPart;
+    } ULARGE_INTEGER;
 
-#ifndef LPOLESTR
-#define LPOLESTR void*
-#endif
+    typedef struct tagFILETIME
+    {
+        DWORD dwLowDateTime;
+        DWORD dwHighDateTime;
+    } FILETIME;
 
-#ifndef IUri
-#define IUri void*
-#endif
+    #ifndef LPOLESTR
+    #define LPOLESTR void*
+    #endif
 
-#ifndef EXTERN_C
-#define EXTERN_C extern "C"
-#endif
+    #ifndef IUri
+    #define IUri void*
+    #endif
+
+    #ifndef EXTERN_C
+    #define EXTERN_C extern "C"
+    #endif
+
+    #ifndef GUID_DEFINED
+    #define GUID_DEFINED
+    typedef struct _GUID {
+        unsigned long  Data1;
+        unsigned short Data2;
+        unsigned short Data3;
+        unsigned char  Data4[8];
+    } GUID;
+    #endif
+
+    #ifndef __IID_DEFINED__
+    #define __IID_DEFINED__
+    typedef GUID IID;
+    typedef GUID CLSID;
 
 
-#ifndef GUID_DEFINED
-#define GUID_DEFINED
-typedef struct _GUID {
-    unsigned long  Data1;
-    unsigned short Data2;
-    unsigned short Data3;
-    unsigned char  Data4[8];
-} GUID;
-#endif
+    #ifndef _REFGUID_DEFINED
+    #define _REFGUID_DEFINED
+    #define REFGUID const GUID &
+    #endif
 
-#ifndef __IID_DEFINED__
-#define __IID_DEFINED__
-typedef GUID IID;
-typedef GUID CLSID;
+    #ifndef _REFIID_DEFINED
+    #define _REFIID_DEFINED
+    #define REFIID const IID &
+    #endif
 
+    #endif // !__IID_DEFINED__
 
-#ifndef _REFGUID_DEFINED
-#define _REFGUID_DEFINED
-#define REFGUID const GUID &
-#endif
+    #ifndef S_OK
+    #define S_OK 0
+    #endif
 
-#ifndef _REFIID_DEFINED
-#define _REFIID_DEFINED
-#define REFIID const IID &
-#endif
+    #ifndef SUCCEDED
+    #define SUCCEDED(hr) (((HRESULT)(hr)) >= 0)
+    #endif
 
-#endif // !__IID_DEFINED__
+    #ifndef FAILED
+    #define FAILED(hr) !SUCCEDED(hr)
+    #endif
 
-#ifndef S_OK
-#define S_OK 0
-#endif
+    #if !defined (_SYS_GUID_OPERATORS_)
+    #define _SYS_GUID_OPERATORS_
 
-#ifndef SUCCEDED
-#define SUCCEDED(hr) hr == 0
-#endif
+    // Faster (but makes code fatter) inline version...use sparingly
+    inline int IsEqualGUID(REFGUID rguid1, REFGUID rguid2)
+    {
+        return (
+            ((unsigned long *)&rguid1)[0] == ((unsigned long *)&rguid2)[0] &&
+            ((unsigned long *)&rguid1)[1] == ((unsigned long *)&rguid2)[1] &&
+            ((unsigned long *)&rguid1)[2] == ((unsigned long *)&rguid2)[2] &&
+            ((unsigned long *)&rguid1)[3] == ((unsigned long *)&rguid2)[3]);
+    }
 
-#if !defined (_SYS_GUID_OPERATORS_)
-#define _SYS_GUID_OPERATORS_
+    // Same type, different name
+    #define IsEqualIID(riid1, riid2) IsEqualGUID(riid1, riid2)
 
-// Faster (but makes code fatter) inline version...use sparingly
-inline int IsEqualGUID(REFGUID rguid1, REFGUID rguid2)
-{
-    return (
-        ((unsigned long *)&rguid1)[0] == ((unsigned long *)&rguid2)[0] &&
-        ((unsigned long *)&rguid1)[1] == ((unsigned long *)&rguid2)[1] &&
-        ((unsigned long *)&rguid1)[2] == ((unsigned long *)&rguid2)[2] &&
-        ((unsigned long *)&rguid1)[3] == ((unsigned long *)&rguid2)[3]);
-}
+    #if !defined _SYS_GUID_OPERATOR_EQ_ && !defined _NO_SYS_GUID_OPERATOR_EQ_
+    #define _SYS_GUID_OPERATOR_EQ_
+    // A couple of C++ helpers
+    __inline bool operator==(REFGUID guidOne, REFGUID guidOther)
+    {
+        return !!IsEqualGUID(guidOne, guidOther);
+    }
 
-// Same type, different name
-#define IsEqualIID(riid1, riid2) IsEqualGUID(riid1, riid2)
+    __inline bool operator!=(REFGUID guidOne, REFGUID guidOther)
+    {
+        return !(guidOne == guidOther);
+    }
+    #endif  // _SYS_GUID_OPERATOR_EQ_
+    #endif  // _SYS_GUID_OPERATORS_
 
-#if !defined _SYS_GUID_OPERATOR_EQ_ && !defined _NO_SYS_GUID_OPERATOR_EQ_
-#define _SYS_GUID_OPERATOR_EQ_
-// A couple of C++ helpers
-__inline bool operator==(REFGUID guidOne, REFGUID guidOther)
-{
-    return !!IsEqualGUID(guidOne, guidOther);
-}
-
-__inline bool operator!=(REFGUID guidOne, REFGUID guidOther)
-{
-    return !(guidOne == guidOther);
-}
-#endif  // _SYS_GUID_OPERATOR_EQ_
-#endif  // _SYS_GUID_OPERATORS_
-
+#endif // #else of #ifdef WIN32
 #endif //__appxwindows_hpp__
