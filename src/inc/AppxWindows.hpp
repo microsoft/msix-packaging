@@ -33,7 +33,7 @@
     #define interface struct
     #endif
 
-    typedef unsigned long HRESULT;
+    typedef signed long HRESULT;
     typedef signed long LONG;
     typedef unsigned long ULONG;
     typedef unsigned long DWORD;
@@ -122,7 +122,7 @@
     #endif
 
     #ifndef SUCCEDED
-    #define SUCCEDED(hr) (hr == 0)
+    #define SUCCEDED(hr) (((HRESULT)(hr)) >= 0)
     #endif
 
     #ifndef FAILED

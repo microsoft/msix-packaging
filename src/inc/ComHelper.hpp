@@ -117,7 +117,7 @@ namespace xPlat {
 
         ComPtr& operator=(ComPtr &&right)
         {   
-            ComPtr(static_cast<ComPtr&&>(right)).Swap(*this);
+            ComPtr(std::move(right)).Swap(*this);
             return *this;
         }
 

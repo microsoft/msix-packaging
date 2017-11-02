@@ -1,4 +1,3 @@
-
 #pragma once
 #ifdef WIN32
 #include "zlib.h"

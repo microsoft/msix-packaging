@@ -69,7 +69,7 @@ namespace xPlat {
         Exception(Error error) : m_code(static_cast<std::uint32_t>(error))
         {}
 
-        Exception(std::uint32_t error) : m_code(0x8007 + error)
+        Exception(std::uint32_t error) : m_code(0x80070000 + error)
         {}
 
         Exception(Error error, std::string& message) :
@@ -104,11 +104,11 @@ namespace xPlat {
     {
     public:
         Win32Exception(DWORD error, std::string& message) :
-            Exception(0x8007 + error, message)
+            Exception(0x80070000 + error, message)
         {}
 
         Win32Exception(DWORD error, const char* message) :
-            Exception(0x8007 + error, message)
+            Exception(0x80070000 + error, message)
         {}
     };
 
