@@ -125,7 +125,7 @@ namespace xPlat {
             if (m_seekPosition < m_uncompressedSize)
             {
                 bool stayInLoop = true;
-                while (stayInLoop && (m_bytesRead <= countBytes))
+                while (stayInLoop && (m_bytesRead < countBytes))
                 {
                     const auto& stateHandler = m_stateMachine[m_state];
                     auto&& result = stateHandler(m_startCurrentBuffer + m_bytesRead, countBytes - m_bytesRead);
