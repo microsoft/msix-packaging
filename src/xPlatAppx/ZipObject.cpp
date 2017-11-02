@@ -793,9 +793,9 @@ namespace xPlat {
                 localFileHeader));
 
             ComPtr<IStream> fileStream (new ZipFileStream(
-                centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
-                localFileHeader->GetCompressedSize(),
                 localFileHeader->GetCompressionType() == CompressionType::Deflate,
+                centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
+                localFileHeader->GetCompressedSize(),                
                 m_stream.Get()
                 ));
 

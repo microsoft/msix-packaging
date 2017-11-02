@@ -40,46 +40,119 @@ namespace xPlat {
     class ComPtr
     {
     public:
+        // default ctor
         ComPtr() : m_ptr(nullptr) {}
-        //ComPtr(ComPtr& right) : m_ptr(right.Detach()) { }
-        ComPtr(const ComPtr& right)
+
+        // For use via ComPtr<T> t(new Foo(...)); where Foo : public T
+        template<
+            class U, 
+            typename = typename std::enable_if<
+                std::is_convertible<U,T>::value
+            >::type
+        >
+        ComPtr(U* ptr) : m_ptr(ptr)
         {
-            InternalRelease();
-            m_ptr = right.m_ptr;
             InternalAddRef();
         }
 
+        // copy ctor
+        ComPtr(const ComPtr& right) : m_ptr(right.m_ptr)
+        {
+            InternalAddRef();
+        }
+
+        // copy ctor that allows instantiation of class when U* is convertible to T*
         template<
-            class U
-            #ifndef WIN32 
-            // WHY?!  Because VS does not correctly handle enable_if in constructors
-            // (e.g. it assumes always disabled).  LLVM and GCC appear to handle this
-            // correctly, but they might be too liberal in their interpretation of the
-            // C++ 11 spec here.
-            , typename = typename std::enable_if<
-                std::is_convertible<U,T>::value || ::is_same<U,T>::value
+            class U, 
+            typename = typename std::enable_if<
+                std::is_convertible<U,T>::value
             >::type
-            #endif
         >
-        ComPtr(U* ptr)
+        ComPtr(const ComPtr<U>& right) : m_ptr(right.m_ptr)
+        {
+            InternalAddRef();
+        }
+
+        // move ctor
+        ComPtr(ComPtr &&right) : m_ptr(nullptr)
+        {
+            if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
+            {
+                Swap(right);
+            }
+        }
+
+        // move ctor that allows instantiation of a class when U* is convertible to T*
+        template<
+            class U, 
+            typename = typename std::enable_if<
+                std::is_convertible<U,T>::value
+            >::type
+        >
+        ComPtr(ComPtr &&right) : m_ptr(right.m_ptr)
+        {
+            right.m_ptr = nullptr;
+        }
+
+        // Assignment operator for = nullptr
+        ComPtr& operator=(decltype(__nullptr))
         {
             InternalRelease();
-            m_ptr = ptr;
+            return *this;
+        }
+
+        // Assignment operator... VERY important.
+        ComPtr& operator=(const ComPtr& right)
+        {
+            if (m_ptr != right.m_ptr)
+            {
+                ComPtr(right).Swap(*this);
+            }          
+            return *this;
+        }
+
+        // Assignment operator of T*
+        ComPtr& operator=(T* right)
+        {
+            if (m_ptr != right)
+            {
+                ComPtr(right).Swap(*this);
+            }
+            return *this;
+        }
+
+        // Assignment operator when U* is convertible to T*
+        template<
+            class U, 
+            typename = typename std::enable_if<
+                std::is_convertible<U,T>::value
+            >::type
+        >
+        ComPtr& operator=(U* right)
+        {
+            ComPtr(right).Swap(*this);
+            return *this;
+        }
+
+        ComPtr& operator=(ComPtr &&right)
+        {
+            ComPtr(static_cast<ComPtr&&>(right)).Swap(*this);
+            return *this;
         }
 
         ~ComPtr() { InternalRelease(); }
 
-        T* operator->() const { return m_ptr; }
-        T* Get() const { return m_ptr; }
-        void Reset() { InternalRelease(); }
+        inline T* operator->() const { return m_ptr; }
+        inline T* Get() const { return m_ptr; }
+        inline void Reset() { InternalRelease(); }
 
-        T** AddressOf()
+        inline T** AddressOf()
         {
             InternalRelease();
             return &m_ptr;
         }
 
-        T* Detach()
+        inline T* Detach()
         {
             T* ptr = m_ptr;
             m_ptr = nullptr;
@@ -87,7 +160,7 @@ namespace xPlat {
         }
 
         template <class U>
-        ComPtr<U> As()
+        inline ComPtr<U> As()
         {
             UuidOfImpl<U> uuid;
             ComPtr<U> out;
@@ -97,14 +170,17 @@ namespace xPlat {
     protected:
         T* m_ptr = nullptr;
 
-        void InternalRelease()
-        {   if (m_ptr)
-            {   m_ptr->Release();
-                m_ptr = nullptr;
+        inline void InternalRelease()
+        {   T* temp = m_ptr;
+            if (temp)
+            {   m_ptr = nullptr;
+                temp->Release();
             }
         }
 
-        void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
+        inline void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
+        inline void Swap(ComPtr&& right) { std::swap(m_ptr, right.m_ptr); }
+        inline void Swap(ComPtr& right ) { std::swap(m_ptr, right.m_ptr); }
     };
 
     template <class Derived, typename... Interfaces>

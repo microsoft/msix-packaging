@@ -104,7 +104,7 @@ namespace xPlat {
                         m_fileCurrentPosition   += bytesToCopy;
                     }
 
-                    return std::make_pair(m_bytesRead != countBytes, State::READY_TO_COPY);
+                    return std::make_pair((countBytes - bytesToCopy) != 0, State::READY_TO_COPY);
                 }
             } // State::READY_TO_COPY
         };
