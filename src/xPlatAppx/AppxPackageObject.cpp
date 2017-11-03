@@ -36,9 +36,9 @@ namespace xPlat {
         // TODO: Implement
     }
 
-    AppxPackageObject::AppxPackageObject(APPX_VALIDATION_OPTION validation, IStorageObject* container) :
+    AppxPackageObject::AppxPackageObject(APPX_VALIDATION_OPTION validation, std::unique_ptr<StorageObject>&& container) :
         m_validation(validation),
-        m_container(container)
+        m_container(std::move(container))
     {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
@@ -104,7 +104,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
 
-    void AppxPackageObject::Unpack(IAppxPackageReader* reader, APPX_PACKUNPACK_OPTION options, IStorageObject* to)
+    void AppxPackageObject::Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to)
     {
         auto fileNames = GetFileNames();
         for (const auto& fileName : fileNames)
@@ -112,14 +112,14 @@ namespace xPlat {
             std::string targetName;
             if (options & APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
             {
-                targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
+                targetName = GetAppxManifest()->GetPackageFullName() + to.GetPathSeparator() + fileName;
             }
             else
             {
                 targetName = fileName;
             }
 
-            auto targetFile = to->OpenFile(targetName, xPlat::FileStream::Mode::WRITE_UPDATE);
+            auto targetFile = to.OpenFile(targetName, xPlat::FileStream::Mode::WRITE_UPDATE);
             auto sourceFile = GetFile(fileName);
 
             ULARGE_INTEGER bytesCount = {0};
@@ -189,16 +189,37 @@ namespace xPlat {
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFiles(IAppxFilesEnumerator** filesEnumerator)
     {
         return xPlat::ResultOf([&]() {
-            ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
-
-            ComPtr<IStorageObject> storage;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, &storage));
-            ComPtr<IAppxFilesEnumerator> result (new AppxFilesEnumerator(storage.Get()));
-            *files = result.Detach();
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
         });
     }
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxManifestReader** manifestReader)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
+    }
+
+    // IAppxFilesEnumerator
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetCurrent(IAppxFile** file)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetHasCurrent(BOOL* hasCurrent)
+    {
+        return xPlat::ResultOf([&]() {
+            // TODO: Implement
+            throw Exception(Error::NotImplemented);
+        });
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::MoveNext(BOOL* hasNext)
     {
         return xPlat::ResultOf([&]() {
             // TODO: Implement

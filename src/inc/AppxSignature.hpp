@@ -10,11 +10,11 @@ namespace xPlat {
 
     enum class SignatureOrigin
     {
-        Windows,    // chains to the Windows RCA
-        Store,      // chains to the Microsoft Store RCA
-        LOB,        // chains to either Verisign, or Authenticode
-        Unknown,    // signed, but unknown origin (e.g. self signed)
-        Unsigned    // no signature.
+        Microsoft,
+        Store,
+        LOB,
+        Unknown,
+        Unsigned
     };
 
     // Object backed by AppxSignature.p7x

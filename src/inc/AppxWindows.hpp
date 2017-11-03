@@ -42,9 +42,8 @@
     typedef unsigned short UINT16;
     typedef unsigned int UINT32;
     typedef unsigned long long UINT64;
-    typedef wchar_t WCHAR;
-    typedef WCHAR* LPWSTR;
-    typedef const WCHAR* LPCWSTR;
+    typedef wchar_t LPWSTR;
+    typedef const wchar_t LPCWSTR;
     typedef char BYTE;
     typedef bool BOOL;
 
@@ -128,14 +127,6 @@
 
     #ifndef FAILED
     #define FAILED(hr) !SUCCEDED(hr)
-    #endif
-
-    #ifndef FACILITY_WIN32
-    #define FACILITY_WIN32 7
-    #endif
-
-    #ifndef HRESULT_FROM_WIN32
-    #define HRESULT_FROM_WIN32(x) ((HRESULT)(x) <= 0 ? ((HRESULT)(x)) : ((HRESULT) (((x) & 0x0000FFFF) | (FACILITY_WIN32 << 16) | 0x80000000)))
     #endif
 
     #if !defined (_SYS_GUID_OPERATORS_)
