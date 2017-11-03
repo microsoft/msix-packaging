@@ -142,7 +142,7 @@ namespace xPlat {
         {   return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
                 ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor])).As<IAppxFile>().Detach();
+                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor])).As<IAppxFile>().Get();
             });
         }
 

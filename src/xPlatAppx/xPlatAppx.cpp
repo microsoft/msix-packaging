@@ -217,7 +217,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
 {
     return xPlat::ResultOf([&]() {
         xPlat::ComPtr<IStream> file(new xPlat::FileStream(utf8File, forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE));
-        *stream = file.Detach();
+        *stream = file.Get();
     });
 }
 
@@ -230,7 +230,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
         xPlat::ComPtr<IStream> file(new xPlat::FileStream(
             xPlat::utf16_to_utf8(utf16File),
             forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE));
-        *stream = file.Detach();
+        *stream = file.Get();
     });
 }    
 
@@ -242,7 +242,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
 {
     return xPlat::ResultOf([&]() {
         xPlat::ComPtr<IAppxFactory> result(new xPlat::AppxFactory(validationOption, memalloc, memfree));
-        *appxFactory = result.Detach();
+        *appxFactory = result.Get();
     });
 }
 

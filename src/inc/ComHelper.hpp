@@ -17,10 +17,14 @@ namespace xPlat {
     template <typename I0, typename ...Interfaces>
     struct QIHelper<I0, Interfaces...> : I0, QIHelper<Interfaces...>
     {
-        bool IsIIDAMatch(REFIID riid)
+        bool Matches(REFIID riid, void** ppvObject)
         {
-            if (riid == UuidOfImpl<I0>::iid) { return true; }
-            return QIHelper<Interfaces...>::IsIIDAMatch(riid);
+            if (riid == UuidOfImpl<I0>::iid)
+            {
+                *ppvObject = static_cast<void*>(static_cast<I0*>(this));
+                return true;
+            }
+            return QIHelper<Interfaces...>::Matches(riid, ppvObject);
         }
     };
 
@@ -28,7 +32,11 @@ namespace xPlat {
     template <>
     struct QIHelper<>
     {
-        bool IsIIDAMatch(REFIID /*riid*/) { return false; }
+        bool Matches(REFIID /*riid*/, void** ppvObject)
+        {
+            *ppvObject = nullptr;
+            return false;
+        }
     };
 
     template <class T>
@@ -131,13 +139,6 @@ namespace xPlat {
             return &m_ptr;
         }
 
-        inline T* Detach()
-        {   
-            T* ptr = m_ptr;
-            m_ptr = nullptr;
-            return ptr;
-        }
-
         template <class U>
         inline ComPtr<U> As()
         {   
@@ -179,15 +180,16 @@ namespace xPlat {
 
         virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
         {
-            *ppvObject = nullptr;
-            if (riid == UuidOfImpl<IUnknown>::iid || QIHelper<Interfaces...>::IsIIDAMatch(riid))
-            {
-                *ppvObject = static_cast<void*>(this);
-                AddRef();
-                return S_OK;
-            }
-            xPlat::Exception e = xPlat::Exception(xPlat::Error::NoInterface);
-            return e.Code();
+            return ResultOf([&]{
+                ThrowErrorIf(Error::InvalidParameter, (ppvObject == nullptr || *ppvObject != nullptr), "bad pointer");
+                *ppvObject = nullptr;
+                if (QIHelper<Interfaces...>::Matches(riid, ppvObject))
+                {
+                    AddRef();
+                    return S_OK;
+                }
+                throw xPlat::Exception(xPlat::Error::NoInterface);
+            });
         }
 
     protected:

@@ -94,7 +94,7 @@ namespace xPlat {
                 stream = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(fileName));
             }
 
-            if (stream.Get() != nullptr) { m_streams[fileName] = stream.Detach(); }
+            if (stream.Get() != nullptr) { m_streams[fileName] = stream.Get(); }
         }
     }
 
@@ -194,7 +194,7 @@ namespace xPlat {
             ComPtr<IStorageObject> storage;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, reinterpret_cast<void**>(&storage)));
             ComPtr<IAppxFilesEnumerator> result (new AppxFilesEnumerator(storage.Get()));
-            *filesEnumerator = result.Detach();
+            *filesEnumerator = result.Get();
         });
     }
 

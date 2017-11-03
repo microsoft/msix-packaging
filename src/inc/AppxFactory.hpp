@@ -23,7 +23,7 @@ namespace xPlat {
             //     ThrowErrorIf(Error::InvalidParameter, (packageWriter == nullptr || *packageWriter != nullptr), "Invalid parameter");
             //     ComPtr<IStorageObject> zip(new xPlat::ZipObject(outputStream));
             //     ComPtr<IAppxPackageWriter> result(new AppxPackageObject(m_validationOptions, zip.Get()));
-            //     *packageWriter = result.Detach();
+            //     *packageWriter = result.Get();
             // });
         }
 
@@ -35,7 +35,7 @@ namespace xPlat {
                 ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
                 ComPtr<IStorageObject> zip(new xPlat::ZipObject(inputStream));
                 ComPtr<IAppxPackageReader> result(new AppxPackageObject(m_validationOptions, zip.Get()));
-                *packageReader = result.Detach();
+                *packageReader = result.Get();
             });
         }
 
