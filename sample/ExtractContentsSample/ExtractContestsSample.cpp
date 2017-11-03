@@ -1,19 +1,210 @@
-#include <stdio.h>
-#include <windows.h>
-#include <strsafe.h>
-#include <shlwapi.h>
-#include "AppxPackaging.hpp"
-#include <wrl/client.h>
+#include <cstdlib>
+#include <cwchar> 
+#include <string>
 
-using namespace Microsoft::WRL;
+#ifndef WIN32
+// required posix-specific headers
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#endif
+
+#include "AppxPackaging.hpp"
+#include "AppxWindows.hpp"
+
+// provided for those platforms that do not already have a ComPtr class.
+template <class T>
+class ComPtr
+{
+public:
+    // default ctor
+    ComPtr() : m_ptr(nullptr) {}
+
+    // For use via ComPtr<T> t(new Foo(...)); where Foo : public T
+    template<
+        class U, 
+        typename = typename std::enable_if<
+            std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
+        >::type
+    >
+    ComPtr(U* ptr) : m_ptr(ptr) { InternalAddRef(); }
+
+    // copy ctor
+    ComPtr(const ComPtr& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
+
+    // copy ctor that allows instantiation of class when U* is convertible to T*
+    template<
+        class U, 
+        typename = typename std::enable_if<
+            std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
+        >::type
+    >
+    ComPtr(const ComPtr<U>& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
+
+    // move ctor
+    ComPtr(ComPtr &&right) : m_ptr(nullptr)
+    {
+        if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
+        {   Swap(right);
+        }
+    }
+
+    // move ctor that allows instantiation of a class when U* is convertible to T*
+    template<
+        class U, 
+        typename = typename std::enable_if<
+            std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
+        >::type
+    >
+    ComPtr(ComPtr<U> &&right) : m_ptr(nullptr)
+    {
+        if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
+        {   Swap(right);
+        }
+    }
+
+    // Assignment operator for = nullptr
+    ComPtr& operator=(std::nullptr_t)
+    {
+        InternalRelease();
+        return *this;
+    }
+
+    // Assignment operator... VERY important.
+    ComPtr& operator=(const ComPtr& right)
+    {
+        if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
+        return *this;
+    }
+
+    // Assignment operator of T*
+    ComPtr& operator=(T* right)
+    {   
+        if (m_ptr != right) { ComPtr(right).Swap(*this); }
+        return *this;
+    }
+
+    // Assignment operator when U* is convertible to T*
+    template<
+        class U, 
+        typename = typename std::enable_if<
+            std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
+        >::type
+    >
+    ComPtr& operator=(U* right)
+    {   
+        ComPtr(right).Swap(*this);
+        return *this;
+    }
+
+    ComPtr& operator=(ComPtr &&right)
+    {   
+        ComPtr(std::move(right)).Swap(*this);
+        return *this;
+    }
+
+    ~ComPtr() { InternalRelease(); }
+
+    inline T* operator->() const { return m_ptr; }
+    inline T* Get() const { return m_ptr; }
+
+    inline T** operator&()
+    {   InternalRelease();
+        return &m_ptr;
+    }
+
+protected:
+    T* m_ptr = nullptr;
+
+    inline void InternalRelease()
+    {   
+        T* temp = m_ptr;
+        if (temp)
+        {   m_ptr = nullptr;
+            temp->Release();
+        }
+    }
+
+    inline void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
+    inline void Swap(ComPtr& right ) { std::swap(m_ptr, right.m_ptr); }
+};
+
+#ifdef WIN32
+    int mkdirp(std::wstring& utf16Path)
+    {
+        for (int i = 0; i < fullFileName.size(); i++)
+        {
+            if (utf16Path[i] == L'\0')
+            {
+                break;
+            }
+            else if (utf16Path[i] == L'\\')
+            {
+                // Temporarily set string to terminate at the '\' character
+                // to obtain name of the subdirectory to create
+                utf16Path[i] = L'\0';
+
+                if (!CreateDirectory(utf16Path.c_str(), nullptr))
+                {
+                    int lastError = static_cast<int>(GetLastError());
+
+                    // It is normal for CreateDirectory to fail if the subdirectory
+                    // already exists.  Other errors should not be ignored.
+                    if (lastError != ERROR_ALREADY_EXISTS)
+                    {
+                        return lastError;
+                    }
+                }
+                // Restore original string
+                utf16Path[i] = L'\\';
+            }
+        }   
+        return 0;     
+    }
+#else     
+    std::string utf16_to_utf8(const std::wstring& utf16string)
+    {
+        auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
+        std::string result(converted.begin(), converted.end());
+        return result;
+    }
+
+    // not all POSIX implementations provide an implementation of mkdirp
+    int mkdirp(std::wstring& utf16Path)
+    {
+        std::string path = utf16_to_utf8(utf16Path);
+        char* p = const_cast<char*>(path.c_str());
+        if (*p == '/') { p++; }
+        while (*p != '\0')
+        {
+            while (*p != '\0' && *p != '/') { p++; }
+            
+            char v = *p;
+            *p = '\0';
+            if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) && errno == EEXIST)
+            {
+                return errno;
+            }
+            *p = v;
+            p++;
+        }
+        return 0;
+    }
+#endif
+
+struct FootprintFilesType
+{
+    APPX_FOOTPRINT_FILE_TYPE fileType;
+    bool isRequired;
+};
 
 // Types of footprint files in an app package
 const int FootprintFilesCount = 4;
-const APPX_FOOTPRINT_FILE_TYPE FootprintFilesType[FootprintFilesCount] = {
-    APPX_FOOTPRINT_FILE_TYPE_MANIFEST,
-    APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP,
-    APPX_FOOTPRINT_FILE_TYPE_SIGNATURE,
-    APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY
+const FootprintFilesType footprintFilesType[FootprintFilesCount] = {
+    {APPX_FOOTPRINT_FILE_TYPE_MANIFEST, true },
+    {APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP, true },
+    {APPX_FOOTPRINT_FILE_TYPE_SIGNATURE, true },
+    {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY, false }, // this is ONLY required iff there exists 1+ PEs 
 };
 const LPCWSTR FootprintFilesName[FootprintFilesCount] = {
     L"manifest",
@@ -40,61 +231,13 @@ HRESULT GetOutputStream(_In_ LPCWSTR path, _In_ LPCWSTR fileName, _Outptr_ IStre
 {
     HRESULT hr = S_OK;
     const int MaxFileNameLength = 200;
-    WCHAR fullFileName[MaxFileNameLength + 1];
+    std::wstring fullFileName = path + L"\\" + fileName;
 
-    // Create full file name by concatenating path and fileName
-    hr = StringCchCopyW(fullFileName, MaxFileNameLength, path);
-
-    if (SUCCEEDED(hr))
-    {
-        hr = StringCchCat(fullFileName, MaxFileNameLength, L"\\");
-    }
-    if (SUCCEEDED(hr))
-    {
-        hr = StringCchCat(fullFileName, MaxFileNameLength, fileName);
-    }
-
-    // Search through fullFileName for the '\' character which denotes
-    // subdirectory and create each subdirectory in order of depth.
-    for (int i = 0; SUCCEEDED(hr) && (i < MaxFileNameLength); i++)
-    {
-        if (fullFileName[i] == L'\0')
-        {
-            break;
-        }
-        else if (fullFileName[i] == L'\\')
-        {
-            // Temporarily set string to terminate at the '\' character
-            // to obtain name of the subdirectory to create
-            fullFileName[i] = L'\0';
-
-            if (!CreateDirectory(fullFileName, nullptr))
-            {
-                DWORD lastError = GetLastError();
-
-                // It is normal for CreateDirectory to fail if the subdirectory
-                // already exists.  Other errors should not be ignored.
-                if (lastError != ERROR_ALREADY_EXISTS)
-                {
-                    hr = HRESULT_FROM_WIN32(lastError);
-                }
-            }
-
-            // Restore original string
-            fullFileName[i] = L'\\';
-        }
-    }
-
+    hr = HRESULT_FROM_WIN32(mkdirp(fullFileName));
     // Create stream for writing the file
     if (SUCCEEDED(hr))
     {
-        hr = SHCreateStreamOnFileEx(
-            fullFileName,
-            STGM_CREATE | STGM_WRITE | STGM_SHARE_EXCLUSIVE,
-            0, // default file attributes
-            TRUE, // create new file if it does not exist
-            nullptr, // no template
-            stream);
+        hr = CreateStreamOnFileUTF16(fullFileName.c_str(), false, stream);
     }
     return hr;
 }
@@ -114,13 +257,21 @@ HRESULT GetPackageReader(_In_ LPWSTR inputFileName, _Outptr_ IAppxPackageReader*
     ComPtr<IAppxFactory> appxFactory;
     ComPtr<IStream> inputStream;
 
-    hr = CoCreateAppxFactory(APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST, &appxFactory);
-
-    // Create a new package reader using the factory.  For 
-    // simplicity, we don't verify the digital signature of the package.
+    hr = CreateStreamOnFileUTF16(inputFileName, true, inputStream);
     if (SUCCEEDED(hr))
     {
-        hr = appxFactory->CreatePackageReader(inputStream.Get(), package);
+        hr = CoCreateAppxFactoryWithHeap(
+            std::malloc,
+            std::free,
+            APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST,
+            &appxFactory);
+
+        // Create a new package reader using the factory.  For 
+        // simplicity, we don't verify the digital signature of the package.
+        if (SUCCEEDED(hr))
+        {
+            hr = appxFactory->CreatePackageReader(inputStream.Get(), package);
+        }
     }
 
     return hr;
@@ -131,7 +282,7 @@ HRESULT GetPackageReader(_In_ LPWSTR inputFileName, _Outptr_ IAppxPackageReader*
 //
 // Parameters:
 //   file 
-//      The IXplatAppxFile interface that represents a footprint or payload file in the package.
+//      The IAppxFile interface that represents a footprint or payload file in the package.
 //   outputPath 
 //      The path of the folder for the extracted files.
 //
@@ -159,9 +310,9 @@ HRESULT ExtractFile(_In_ IAppxFile* file, _In_ LPCWSTR outputPath)
     }
     if (SUCCEEDED(hr))
     {
-        wprintf(L"\nFile name: %s\n", fileName);
-        wprintf(L"Content type: %s\n", contentType);
-        wprintf(L"Size: %llu bytes\n", fileSize);
+        std::wprintf(L"\nFile name: %s\n" , fileName);
+        std::wprintf(L"Content type: %s\n", contentType);
+        std::wprintf(L"Size: %llu bytes\n", fileSize);
     }
 
     // Write the file to disk
@@ -178,9 +329,10 @@ HRESULT ExtractFile(_In_ IAppxFile* file, _In_ LPCWSTR outputPath)
         hr = fileStream->CopyTo(outputStream.Get(), fileSizeLargeInteger, nullptr, nullptr);
     }
 
-    // You must free string buffers obtained from the packaging APIs
-    CoTaskMemFree(fileName);
-    CoTaskMemFree(contentType);
+    // You must free string buffers obtained from the packaging APIs,
+    // the heap that you use is specified via CoCreateAppxFactoryWithHeap
+    std::free(fileName);
+    std::free(contentType);
     return hr;
 }
 
@@ -196,19 +348,23 @@ HRESULT ExtractFile(_In_ IAppxFile* file, _In_ LPCWSTR outputPath)
 HRESULT ExtractFootprintFiles(_In_ IAppxPackageReader* package, _In_ LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
-    wprintf(L"\nExtracting footprint files from the package...\n");
+    std::wprintf(L"\nExtracting footprint files from the package...\n");
 
     for (int i = 0; SUCCEEDED(hr) && (i < FootprintFilesCount); i++)
     {
         ComPtr<IAppxFile> footprintFile;
-        hr = package->GetFootprintFile(FootprintFilesType[i], &footprintFile);
-        if (footprintFile)
+        hr = package->GetFootprintFile(FootprintFilesType[i].fileType, &footprintFile);
+        if (SUCCEEDED(hr) && footprintFile)
         {
             hr = ExtractFile(footprintFile.Get(), outputPath);
         }
+        else if (FootprintFilesType[i].isRequired)
+        {
+            std::wprintf(L"\nThe package does not contain a %s.\n", FootprintFilesName[i]);
+        }
         else
         {
-            wprintf(L"\nThe package does not contain a %s.\n", FootprintFilesName[i]);
+            hr = S_OK; // the footprint file was not required.
         }
     }
     return hr;
@@ -227,7 +383,7 @@ HRESULT ExtractPayloadFiles(_In_ IAppxPackageReader* package, _In_ LPCWSTR outpu
 {
     HRESULT hr = S_OK;
     ComPtr<IAppxFilesEnumerator> files;
-    wprintf(L"\nExtracting payload files from the package...\n");
+    std::wprintf(L"\nExtracting payload files from the package...\n");
 
     // Get an enumerator of all payload files from the package reader and iterate
     // through all files.
@@ -259,34 +415,27 @@ int wmain(_In_ int argc, _In_count_(argc) wchar_t** argv)
 {
     HRESULT hr = S_OK;
 
-    // Specify the appropriate COM threading model
-    hr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+    // Create a package using the file name in argv[1] 
+    ComPtr<IAppxPackageReader> package;
+    hr = GetPackageReader(argv[1], &package);
 
+    // Print information about all footprint files, and extract them to disk
     if (SUCCEEDED(hr))
     {
-        // Create a package using the file name in argv[1] 
-        ComPtr<IAppxPackageReader> package;
-        hr = GetPackageReader(argv[1], &package);
+        hr = ExtractFootprintFiles(package.Get(), argv[2]);
+    }
 
-        // Print information about all footprint files, and extract them to disk
-        if (SUCCEEDED(hr))
-        {
-            hr = ExtractFootprintFiles(package.Get(), argv[2]);
-        }
-
-        // Print information about all payload files, and extract them to disk
-        if (SUCCEEDED(hr))
-        {
-            hr = ExtractPayloadFiles(package.Get(), argv[2]);
-        }
+    // Print information about all payload files, and extract them to disk
+    if (SUCCEEDED(hr))
+    {
+        hr = ExtractPayloadFiles(package.Get(), argv[2]);
     }
 
     if (FAILED(hr))
     {
         // TODO: Tell a more specific reason why the faiulre occurred. 
-        wprintf(L"\nAn error occurred while extracting the appx package\n");
+        std::wprintf(L"\nError %X occurred while extracting the appx package\n", hr);
     }
 
     return 0;
 }
-

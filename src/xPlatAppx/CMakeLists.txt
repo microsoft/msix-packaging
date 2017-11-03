@@ -62,6 +62,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/RangeStream.hpp
     ../inc/StorageObject.hpp
     ../inc/StreamBase.hpp
+    ../inc/UnicodeConversion.hpp
     ../inc/VerifierObject.hpp
     ../inc/XmlObject.hpp
     ../inc/ZipFileStream.hpp
@@ -69,7 +70,7 @@ set(LIB_PRIVATE_HEADERS
 )
 
 set(LIB_SOURCES
-	AppxBlockMapObject.cpp
+    AppxBlockMapObject.cpp
 	AppxPackageObject.cpp
     AppxPackaging_i.cpp
     AppxSignature.cpp
