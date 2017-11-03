@@ -63,19 +63,36 @@ namespace xPlat {
         std::unique_ptr<AppxPackageId> m_packageId;
     };
 
+    // internal interface
+    #ifndef __IxPlatAppxPackage_INTERFACE_DEFINED__
+    #define __IxPlatAppxPackage_INTERFACE_DEFINED__
+        EXTERN_C const IID IID_IxPlatAppxPackage;   
+        MIDL_INTERFACE("51b2c456-aaa9-46d6-8ec9-298220559189")
+        interface IxPlatAppxPackage : public IUnknown
+        {
+        public:
+            virtual void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from) = 0;
+            virtual void Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to) = 0;
+            virtual std::vector<std::string>& GetFootprintFiles() = 0;
+        };
+
+        SpecializeUuidOfImpl(IxPlatAppxPackage);
+    #endif
+
     // Storage object representing the entire AppxPackage
-    class AppxPackageObject : public xPlat::ComClass<AppxPackageObject, IAppxPackageReader, IAppxFilesEnumerator>,
-                              public StorageObject
+    class AppxPackageObject : public xPlat::ComClass<AppxPackageObject, 
+        IAppxPackageReader, IxPlatAppxPackage, IxPlatStorageObject, IStorageObject>
     {
     public:
-        AppxPackageObject(APPX_VALIDATION_OPTION validation, std::unique_ptr<StorageObject>&& container);
+        AppxPackageObject(APPX_VALIDATION_OPTION validation, ComPtr<IStorageObject> container);
 
-        void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from);
-        void Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to);
+        // internal IxPlatAppxPackage methods
+        void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from) override;
+        void Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to) override;
 
-        AppxSignatureObject* GetAppxSignature() const { return m_appxSignature.get(); }
-        AppxBlockMapObject*  GetAppxBlockMap()  const { return m_appxBlockMap.get(); }
-        AppxManifestObject*  GetAppxManifest()  const { return m_appxManifest.get(); }
+        AppxSignatureObject*      GetAppxSignature() const { return m_appxSignature.get(); }
+        AppxBlockMapObject*       GetAppxBlockMap()  const { return m_appxBlockMap.get(); }
+        AppxManifestObject*       GetAppxManifest()  const { return m_appxManifest.get(); }
 
         // IAppxPackageReader
         HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override;
@@ -85,20 +102,15 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) override;
 
         // returns a list of the footprint files found within this appx package.
-        std::vector<std::string>&    GetFootprintFiles() { return m_footprintFiles; }
+        std::vector<std::string>& GetFootprintFiles() { return m_footprintFiles; }
 
-        // StorageObject methods
-        std::string                 GetPathSeparator() override;
-        std::vector<std::string>    GetFileNames() override;
-        IStream*                    GetFile(const std::string& fileName) override;
-        void                        RemoveFile(const std::string& fileName) override;
-        IStream*                    OpenFile(const std::string& fileName, FileStream::Mode mode) override;
-        void                        CommitChanges() override;
-
-        // IAppxFilesEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) override;
-        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override;
-        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override;
+        // IStorageObject methods
+        std::string               GetPathSeparator() override;
+        std::vector<std::string>  GetFileNames() override;
+        IStream*                  GetFile(const std::string& fileName) override;
+        void                      RemoveFile(const std::string& fileName) override;
+        IStream*                  OpenFile(const std::string& fileName, FileStream::Mode mode) override;
+        void                      CommitChanges() override;
 
     protected:
         std::map<std::string, ComPtr<IStream>>  m_streams;
@@ -106,11 +118,51 @@ namespace xPlat {
         std::unique_ptr<AppxSignatureObject>    m_appxSignature;
         std::unique_ptr<AppxBlockMapObject>     m_appxBlockMap;
         std::unique_ptr<AppxManifestObject>     m_appxManifest;
-        std::unique_ptr<StorageObject>          m_container;
+        ComPtr<IStorageObject>                  m_container;
 
         std::vector<std::string>                m_payloadFiles;
         std::vector<std::string>                m_footprintFiles;
 
         std::unique_ptr<XmlObject>              m_contentType;
+    };
+
+    class AppxFilesEnumerator : public xPlat::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>
+    {
+    public:
+        AppxFilesEnumerator(IStorageObject* storage) :
+            m_storage(storage),
+            m_files(storage->GetFileNames())
+        {
+        }
+
+        // IAppxFilesEnumerator
+        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) override
+        {
+            return ResultOf([&]{
+                ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
+                ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
+                *file = m_storage->GetFile(m_files[m_cursor]).As<IAppxFile>().Detach();
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override
+        {
+            return ResultOf([&]{
+                ThrowErrorIfNot(Error:InvalidParameter, (hasCurrent), "bad pointer");
+                *hasCurrent = m_cursor != m_files.size() ? TRUE : FALSE;
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override;        
+        {
+            return ResultOf([&]{
+                ThrowErrorIfNot(Error:InvalidParameter, (hasNext), "bad pointer");
+                *hasNext = ++m_cursor != m_files.size() ? TRUE : FALSE;
+            });
+        }
+    protected:
+        ComPtr<IStorageObject>      m_storage;
+        std::size_t                 m_cursor = 0;
+        std::vector<std::string>    m_files;
     };
 }

@@ -11,12 +11,12 @@
 
 namespace xPlat {
 
-    // Interface over a namespace of collected file objects
-    class StorageObject
+    // internal interface
+    EXTERN_C const IID IID_IStorageObject;   
+    MIDL_INTERFACE("ec25b96e-0db1-4483-bdb1-cab1109cb741")
+    interface IStorageObject : public IUnknown
     {
-    public:
-        virtual ~StorageObject() {}
-
+    public:                   
         virtual std::string GetPathSeparator() = 0;
 
         // Obtains a vector of UTF-8 formatted string names contained in the storage object
@@ -38,4 +38,6 @@ namespace xPlat {
         // An implementation of this interface MAY be a no-op.
         virtual void CommitChanges() = 0;
     };
+
+    SpecializeUuidOfImpl(IStorageObject);
 }

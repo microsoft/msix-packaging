@@ -1999,6 +1999,11 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     bool forRead,
     IStream** stream);
 
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
+    WCHAR* utf16File,
+    bool forRead,
+    IStream** stream);
+
 // Helper used for QueryInterface defines
 #define SpecializeUuidOfImpl(Type)                    \
     template<>                                        \

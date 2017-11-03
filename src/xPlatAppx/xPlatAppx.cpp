@@ -12,6 +12,9 @@
 #include <string>
 #include <memory>
 
+#ifdef WIN32
+#include <Objbase.h>
+#endif
 
 //typedef void *BCRYPT_ALG_HANDLE;
 //typedef void *BCRYPT_HASH_HANDLE;
@@ -133,18 +136,24 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
     char* utf8Destination)
 {
     return xPlat::ResultOf([&]() {
-        // TODO: what if source and destination are something OTHER than a file paths?
         ThrowErrorIfNot(xPlat::Error::InvalidParameter, 
             (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
             "Invalid parameters"
         );
 
+        xPlat::ComPtr<IAppxFactory> factory;
+        // We don't need to use the caller's heap here because we're not marshalling any strings
+        // out to the caller.  So default to new / delete[] and be done with it!
+        ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(new, delete[], validationOption, &factory));
+
         xPlat::ComPtr<IStream> stream;
         ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
-        auto zipObject = std::make_unique<xPlat::ZipObject>(stream.Get());
-        xPlat::AppxPackageObject appx(validationOption, std::move(zipObject));
+
+        xPlat::ComPtr<IAppxPackageReader> reader;
+        ThrowHrIfFailed(factory->CreatePackageReader(stream.Get(), &reader));
+
         xPlat::DirectoryObject to(utf8Destination);
-        appx.Unpack(packUnpackOptions, to);
+        reader.As<IxPlatAppxPackage>()->Unpack(packUnpackOptions, to);
     });
 }
 
@@ -165,12 +174,11 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
         xPlat::ComPtr<IStream> stream;
         ThrowHrIfFailed(CreateStreamOnFile(utf8Destination, false, &stream));
 
-        auto zipObject = std::make_unique<xPlat::ZipObject>(stream.Get());
-        xPlat::AppxPackageObject appx(validationOption, std::move(zipObject));
+        xPlat::ComPtr<IAppxPackageWriter> writer;
+        ThrowHrIfFailed(factory->CreatePackageWriter(stream.Get(), &writer));
 
         xPlat::DirectoryObject from(utf8FolderToPack);
-        appx.Pack(packUnpackOptions, utf8CertificatePath, from);
-        appx.CommitChanges();
+        writer.As<IxPlatAppxPackage>()->Pack(packUnpackOptions, utf8CertificatePath, from);
     });
 }
 
@@ -208,6 +216,17 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     });
 }
 
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
+    WCHAR* utf16File,
+    bool forRead,
+    IStream** stream)
+{
+    return xPlat::ResultOf([&]() {
+        xPlat::ComPtr<IStream> file(new xPlat::FileStream(utf16_to_utf8(utf16File), forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE));
+        *stream = file.Detach();
+    });
+}    
+
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
@@ -225,10 +244,11 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     APPX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory)
 {
-    // #ifdef WIN32
-    //     return CoCreateAppxFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);
-    // #else
-    //     return CoCreateAppxFactoryWithHeap(new, delete[], validationOption, AppxFactory);
-    // #endif
-    return static_cast<HRESULT>(xPlat::Error::NotImplemented);
+    #ifdef WIN32
+        return CoCreateAppxFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);
+    #else
+        return static_cast<HRESULT>(xPlat::Error::NotSupported);
+        // We can't default to CoCreateAppxFactoryWithHeap(new, delete[], validationOption, AppxFactory);
+        // because we can't assume that the client is necessarily using the same heap as us!
+    #endif
 }    
