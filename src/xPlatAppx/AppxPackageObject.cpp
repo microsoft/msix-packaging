@@ -1,9 +1,9 @@
+#include "AppxPackaging.hpp"
 #include "Exceptions.hpp"
+#include "ComHelper.hpp"
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
-#include "AppxPackaging.hpp"
 #include "AppxPackageObject.hpp"
-#include "ComHelper.hpp"
 
 #include <string>
 #include <vector>
@@ -98,13 +98,13 @@ namespace xPlat {
         }
     }
 
-    void AppxPackageObject::Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from)
+    void AppxPackageObject::Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
     }
 
-    void AppxPackageObject::Unpack(IAppxPackageReader* reader, APPX_PACKUNPACK_OPTION options, IStorageObject* to)
+    void AppxPackageObject::Unpack(APPX_PACKUNPACK_OPTION options, IStorageObject* to)
     {
         auto fileNames = GetFileNames();
         for (const auto& fileName : fileNames)
@@ -149,7 +149,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
 
-    IStream* AppxPackageObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    IStream* AppxPackageObject::OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
@@ -189,12 +189,12 @@ namespace xPlat {
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFiles(IAppxFilesEnumerator** filesEnumerator)
     {
         return xPlat::ResultOf([&]() {
-            ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
+            ThrowErrorIf(Error::InvalidParameter,(filesEnumerator == nullptr || *filesEnumerator != nullptr), "bad pointer");
 
             ComPtr<IStorageObject> storage;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, &storage));
+            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, reinterpret_cast<void**>(&storage)));
             ComPtr<IAppxFilesEnumerator> result (new AppxFilesEnumerator(storage.Get()));
-            *files = result.Detach();
+            *filesEnumerator = result.Detach();
         });
     }
 

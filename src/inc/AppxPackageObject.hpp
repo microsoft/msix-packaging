@@ -5,16 +5,30 @@
 #include <map>
 #include <memory>
 
+#include "AppxPackaging.hpp"
+#include "AppxWindows.hpp"
 #include "Exceptions.hpp"
+#include "ComHelper.hpp"
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
 #include "ZipObject.hpp"
-#include "ComHelper.hpp"
 #include "VerifierObject.hpp"
 #include "XmlObject.hpp"
-#include "AppxPackaging.hpp"
 #include "AppxBlockMapObject.hpp"
 #include "AppxSignature.hpp"
+
+// internal interface
+EXTERN_C const IID IID_IAppxPackage;   
+MIDL_INTERFACE("51b2c456-aaa9-46d6-8ec9-298220559189")
+interface IAppxPackage : public IUnknown
+{
+public:
+    virtual void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from) = 0;
+    virtual void Unpack(APPX_PACKUNPACK_OPTION options, IStorageObject* to) = 0;
+    virtual std::vector<std::string>& GetFootprintFiles() = 0;
+};
+
+SpecializeUuidOfImpl(IAppxPackage);
 
 namespace xPlat {
     // The 5-tuple that describes the identity of a package
@@ -55,40 +69,23 @@ namespace xPlat {
             throw Exception(Error::NotSupported);
         }
 
-        AppxPackageId* GetPackageId()           { return m_packageId.get(); }
-        std::string GetPackageFullName()        { return m_packageId->GetPackageFullName(); }
+        AppxPackageId* GetPackageId()    { return m_packageId.get(); }
+        std::string GetPackageFullName() { return m_packageId->GetPackageFullName(); }
 
     protected:
         ComPtr<IStream> m_stream;
         std::unique_ptr<AppxPackageId> m_packageId;
     };
 
-    // internal interface
-    #ifndef __IxPlatAppxPackage_INTERFACE_DEFINED__
-    #define __IxPlatAppxPackage_INTERFACE_DEFINED__
-        EXTERN_C const IID IID_IxPlatAppxPackage;   
-        MIDL_INTERFACE("51b2c456-aaa9-46d6-8ec9-298220559189")
-        interface IxPlatAppxPackage : public IUnknown
-        {
-        public:
-            virtual void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from) = 0;
-            virtual void Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to) = 0;
-            virtual std::vector<std::string>& GetFootprintFiles() = 0;
-        };
-
-        SpecializeUuidOfImpl(IxPlatAppxPackage);
-    #endif
-
     // Storage object representing the entire AppxPackage
-    class AppxPackageObject : public xPlat::ComClass<AppxPackageObject, 
-        IAppxPackageReader, IxPlatAppxPackage, IxPlatStorageObject, IStorageObject>
+    class AppxPackageObject : public xPlat::ComClass<AppxPackageObject, IAppxPackageReader, IAppxPackage, IStorageObject>
     {
     public:
-        AppxPackageObject(APPX_VALIDATION_OPTION validation, ComPtr<IStorageObject> container);
+        AppxPackageObject(APPX_VALIDATION_OPTION validation, IStorageObject* container);
 
         // internal IxPlatAppxPackage methods
-        void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from) override;
-        void Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to) override;
+        void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from) override;
+        void Unpack(APPX_PACKUNPACK_OPTION options, IStorageObject* to) override;
 
         AppxSignatureObject*      GetAppxSignature() const { return m_appxSignature.get(); }
         AppxBlockMapObject*       GetAppxBlockMap()  const { return m_appxBlockMap.get(); }
@@ -102,14 +99,14 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) override;
 
         // returns a list of the footprint files found within this appx package.
-        std::vector<std::string>& GetFootprintFiles() { return m_footprintFiles; }
+        std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
 
         // IStorageObject methods
         std::string               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames() override;
         IStream*                  GetFile(const std::string& fileName) override;
         void                      RemoveFile(const std::string& fileName) override;
-        IStream*                  OpenFile(const std::string& fileName, FileStream::Mode mode) override;
+        IStream*                  OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode) override;
         void                      CommitChanges() override;
 
     protected:
@@ -128,41 +125,39 @@ namespace xPlat {
 
     class AppxFilesEnumerator : public xPlat::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>
     {
-    public:
-        AppxFilesEnumerator(IStorageObject* storage) :
-            m_storage(storage),
-            m_files(storage->GetFileNames())
-        {
-        }
-
-        // IAppxFilesEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) override
-        {
-            return ResultOf([&]{
-                ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
-                ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                *file = m_storage->GetFile(m_files[m_cursor]).As<IAppxFile>().Detach();
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override
-        {
-            return ResultOf([&]{
-                ThrowErrorIfNot(Error:InvalidParameter, (hasCurrent), "bad pointer");
-                *hasCurrent = m_cursor != m_files.size() ? TRUE : FALSE;
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override;        
-        {
-            return ResultOf([&]{
-                ThrowErrorIfNot(Error:InvalidParameter, (hasNext), "bad pointer");
-                *hasNext = ++m_cursor != m_files.size() ? TRUE : FALSE;
-            });
-        }
     protected:
         ComPtr<IStorageObject>      m_storage;
         std::size_t                 m_cursor = 0;
         std::vector<std::string>    m_files;
+
+    public:
+        AppxFilesEnumerator(IStorageObject* storage) : 
+            m_storage(storage)
+        {
+            m_files = storage->GetFileNames();            
+        }
+
+        // IAppxFilesEnumerator
+        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) override
+        {   return ResultOf([&]{
+                ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
+                ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
+                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor])).As<IAppxFile>().Detach();
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override
+        {   return ResultOf([&]{
+                ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
+                *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
+            });
+        }
+
+        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override      
+        {   return ResultOf([&]{
+                ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
+                *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
+            });
+        }
     };
 }

@@ -2000,7 +2000,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     IStream** stream);
 
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
-    WCHAR* utf16File,
+    LPCWSTR utf16File,
     bool forRead,
     IStream** stream);
 

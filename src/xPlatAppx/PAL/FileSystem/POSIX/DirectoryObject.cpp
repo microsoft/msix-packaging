@@ -47,7 +47,7 @@ namespace xPlat {
         }
     }
     
-    IStream* DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    IStream* DirectoryObject::OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode)
     {
         std::string name = m_root + "/" + fileName;
         auto lastSlash = name.find_last_of("/");

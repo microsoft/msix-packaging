@@ -20,7 +20,11 @@ namespace xPlat {
         There is also a similar error to this one with 'char16_t' that can be worked around using 'unsigned short'.
         <snip>
         */
+        #ifdef WIN32
         auto converted = std::wstring_convert<std::codecvt_utf8_utf16<unsigned short>, unsigned short>{}.from_bytes(utf8string.data());
+        #else
+        auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data()); 
+        #endif
         std::wstring result(converted.begin(), converted.end());
         return result;
     }

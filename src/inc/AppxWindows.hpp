@@ -46,7 +46,15 @@
     typedef WCHAR* LPWSTR;
     typedef const WCHAR* LPCWSTR;
     typedef char BYTE;
-    typedef bool BOOL;
+    typedef int BOOL;
+
+    #ifndef FALSE
+    #define FALSE 0
+    #endif
+
+    #ifndef TRUE
+    #define TRUE 1
+    #endif
 
     typedef union _LARGE_INTEGER {
         struct {
@@ -122,12 +130,12 @@
     #define S_OK 0
     #endif
 
-    #ifndef SUCCEDED
-    #define SUCCEDED(hr) (((HRESULT)(hr)) >= 0)
+    #ifndef SUCCEEDED
+    #define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
     #endif
 
     #ifndef FAILED
-    #define FAILED(hr) !SUCCEDED(hr)
+    #define FAILED(hr) !SUCCEEDED(hr)
     #endif
 
     #ifndef FACILITY_WIN32

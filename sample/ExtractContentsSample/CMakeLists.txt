@@ -14,7 +14,7 @@ include_directories(
 	)
 
 add_executable(${BINARY_NAME}
-    ExtractContentsSample.cpp
+	ExtractContentsSample.cpp
 	)
 
 # specify that this binary is to be built with C++14

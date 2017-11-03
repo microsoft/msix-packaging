@@ -144,7 +144,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
         xPlat::ComPtr<IAppxFactory> factory;
         // We don't need to use the caller's heap here because we're not marshalling any strings
         // out to the caller.  So default to new / delete[] and be done with it!
-        ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(new, delete[], validationOption, &factory));
+        ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(std::malloc, std::free, validationOption, &factory));
 
         xPlat::ComPtr<IStream> stream;
         ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
@@ -152,8 +152,8 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
         xPlat::ComPtr<IAppxPackageReader> reader;
         ThrowHrIfFailed(factory->CreatePackageReader(stream.Get(), &reader));
 
-        xPlat::DirectoryObject to(utf8Destination);
-        reader.As<IxPlatAppxPackage>()->Unpack(packUnpackOptions, to);
+        xPlat::ComPtr<IStorageObject> to(new xPlat::DirectoryObject(utf8Destination));
+        reader.As<IAppxPackage>()->Unpack(packUnpackOptions, to.Get());
     });
 }
 
@@ -174,11 +174,16 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
         xPlat::ComPtr<IStream> stream;
         ThrowHrIfFailed(CreateStreamOnFile(utf8Destination, false, &stream));
 
-        xPlat::ComPtr<IAppxPackageWriter> writer;
-        ThrowHrIfFailed(factory->CreatePackageWriter(stream.Get(), &writer));
+        xPlat::ComPtr<IAppxFactory> factory;
+        ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(std::malloc, std::free, validationOption, &factory));
 
-        xPlat::DirectoryObject from(utf8FolderToPack);
-        writer.As<IxPlatAppxPackage>()->Pack(packUnpackOptions, utf8CertificatePath, from);
+        // TODO: plumb these through
+        APPX_PACKAGE_SETTINGS option {0};
+        xPlat::ComPtr<IAppxPackageWriter> writer;
+        ThrowHrIfFailed(factory->CreatePackageWriter(stream.Get(), &option, &writer));
+
+        xPlat::ComPtr<IStorageObject> from(new xPlat::DirectoryObject(utf8FolderToPack));
+        writer.As<IAppxPackage>()->Pack(packUnpackOptions, utf8CertificatePath, from.Get());
     });
 }
 
@@ -217,12 +222,14 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
 }
 
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
-    WCHAR* utf16File,
+    LPCWSTR utf16File,
     bool forRead,
     IStream** stream)
 {
     return xPlat::ResultOf([&]() {
-        xPlat::ComPtr<IStream> file(new xPlat::FileStream(utf16_to_utf8(utf16File), forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE));
+        xPlat::ComPtr<IStream> file(new xPlat::FileStream(
+            xPlat::utf16_to_utf8(utf16File),
+            forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE));
         *stream = file.Detach();
     });
 }    
@@ -234,7 +241,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     IAppxFactory** appxFactory)
 {
     return xPlat::ResultOf([&]() {
-        xPlat::ComPtr<IAppxFactory> result(new xPlat::AppxFactory(memalloc, memfree));
+        xPlat::ComPtr<IAppxFactory> result(new xPlat::AppxFactory(validationOption, memalloc, memfree));
         *appxFactory = result.Detach();
     });
 }

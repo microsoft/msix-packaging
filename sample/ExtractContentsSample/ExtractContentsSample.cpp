@@ -1,12 +1,17 @@
 #include <cstdlib>
 #include <cwchar> 
 #include <string>
+#include <locale>
+#include <codecvt>
 
-#ifndef WIN32
-// required posix-specific headers
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
+#ifdef WIN32
+    #define UNICODE = 1
+    #include <windows.h>
+#else
+    // required posix-specific headers
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #include <unistd.h>
 #endif
 
 #include "AppxPackaging.hpp"
@@ -129,6 +134,25 @@ protected:
     inline void Swap(ComPtr& right ) { std::swap(m_ptr, right.m_ptr); }
 };
 
+std::string utf16_to_utf8(const std::wstring& utf16string)
+{
+    auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
+    std::string result(converted.begin(), converted.end());
+    return result;
+}
+
+std::wstring utf8_to_utf16(const std::string& utf8string)
+{
+    // see https://connect.microsoft.com/VisualStudio/feedback/details/1403302/unresolved-external-when-using-codecvt-utf8
+    #ifdef WIN32
+    auto converted = std::wstring_convert<std::codecvt_utf8_utf16<unsigned short>, unsigned short>{}.from_bytes(utf8string.data());
+    #else
+    auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data()); 
+    #endif
+    std::wstring result(converted.begin(), converted.end());
+    return result;
+}
+
 #ifdef WIN32
     int mkdirp(std::wstring& utf16Path)
     {
@@ -162,13 +186,6 @@ protected:
         return 0;     
     }
 #else     
-    std::string utf16_to_utf8(const std::wstring& utf16string)
-    {
-        auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
-        std::string result(converted.begin(), converted.end());
-        return result;
-    }
-
     // not all POSIX implementations provide an implementation of mkdirp
     int mkdirp(std::wstring& utf16Path)
     {
@@ -195,22 +212,17 @@ protected:
 struct FootprintFilesType
 {
     APPX_FOOTPRINT_FILE_TYPE fileType;
+    const char* description;
     bool isRequired;
 };
 
 // Types of footprint files in an app package
 const int FootprintFilesCount = 4;
 const FootprintFilesType footprintFilesType[FootprintFilesCount] = {
-    {APPX_FOOTPRINT_FILE_TYPE_MANIFEST, true },
-    {APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP, true },
-    {APPX_FOOTPRINT_FILE_TYPE_SIGNATURE, true },
-    {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY, false }, // this is ONLY required iff there exists 1+ PEs 
-};
-const LPCWSTR FootprintFilesName[FootprintFilesCount] = {
-    L"manifest",
-    L"block map",
-    L"digital signature",
-    L"CI catalog"
+    {APPX_FOOTPRINT_FILE_TYPE_MANIFEST, "manifest", true },
+    {APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP, "block map", true },
+    {APPX_FOOTPRINT_FILE_TYPE_SIGNATURE, "digital signature", true },
+    {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY, "CI catalog", false }, // this is ONLY required iff there exists 1+ PEs 
 };
 
 //
@@ -227,11 +239,11 @@ const LPCWSTR FootprintFilesName[FootprintFilesCount] = {
 // stream - Output parameter pointing to the created instance of IStream over
 //          the specified file when this function succeeds.
 //
-HRESULT GetOutputStream(_In_ LPCWSTR path, _In_ LPCWSTR fileName, _Outptr_ IStream** stream)
+HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
 {
     HRESULT hr = S_OK;
     const int MaxFileNameLength = 200;
-    std::wstring fullFileName = path + L"\\" + fileName;
+    std::wstring fullFileName = path + std::wstring(L"\\") + fileName;
 
     hr = HRESULT_FROM_WIN32(mkdirp(fullFileName));
     // Create stream for writing the file
@@ -251,13 +263,13 @@ HRESULT GetOutputStream(_In_ LPCWSTR path, _In_ LPCWSTR fileName, _Outptr_ IStre
 //   reader 
 //     On success, receives the created instance of IAppxPackageReader.
 //
-HRESULT GetPackageReader(_In_ LPWSTR inputFileName, _Outptr_ IAppxPackageReader** package)
+HRESULT GetPackageReader(LPCWSTR inputFileName, IAppxPackageReader** package)
 {
     HRESULT hr = S_OK;
     ComPtr<IAppxFactory> appxFactory;
     ComPtr<IStream> inputStream;
 
-    hr = CreateStreamOnFileUTF16(inputFileName, true, inputStream);
+    hr = CreateStreamOnFileUTF16(inputFileName, true, &inputStream);
     if (SUCCEEDED(hr))
     {
         hr = CoCreateAppxFactoryWithHeap(
@@ -286,7 +298,7 @@ HRESULT GetPackageReader(_In_ LPWSTR inputFileName, _Outptr_ IAppxPackageReader*
 //   outputPath 
 //      The path of the folder for the extracted files.
 //
-HRESULT ExtractFile(_In_ IAppxFile* file, _In_ LPCWSTR outputPath)
+HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
     LPWSTR fileName = nullptr;
@@ -310,9 +322,9 @@ HRESULT ExtractFile(_In_ IAppxFile* file, _In_ LPCWSTR outputPath)
     }
     if (SUCCEEDED(hr))
     {
-        std::wprintf(L"\nFile name: %s\n" , fileName);
-        std::wprintf(L"Content type: %s\n", contentType);
-        std::wprintf(L"Size: %llu bytes\n", fileSize);
+        std::printf("\nFile name: %s\n" , utf16_to_utf8(fileName).c_str());
+        std::printf("Content type: %s\n", utf16_to_utf8(contentType).c_str());
+        std::printf("Size: %llu bytes\n", fileSize);
     }
 
     // Write the file to disk
@@ -345,22 +357,22 @@ HRESULT ExtractFile(_In_ IAppxFile* file, _In_ LPCWSTR outputPath)
 //   outputPath 
 //      The path of the folder for the extracted footprint files.
 //
-HRESULT ExtractFootprintFiles(_In_ IAppxPackageReader* package, _In_ LPCWSTR outputPath)
+HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
-    std::wprintf(L"\nExtracting footprint files from the package...\n");
+    std::printf("\nExtracting footprint files from the package...\n");
 
     for (int i = 0; SUCCEEDED(hr) && (i < FootprintFilesCount); i++)
     {
         ComPtr<IAppxFile> footprintFile;
-        hr = package->GetFootprintFile(FootprintFilesType[i].fileType, &footprintFile);
-        if (SUCCEEDED(hr) && footprintFile)
+        hr = package->GetFootprintFile(footprintFilesType[i].fileType, &footprintFile);
+        if (SUCCEEDED(hr) && footprintFile.Get())
         {
             hr = ExtractFile(footprintFile.Get(), outputPath);
         }
-        else if (FootprintFilesType[i].isRequired)
+        else if (footprintFilesType[i].isRequired)
         {
-            std::wprintf(L"\nThe package does not contain a %s.\n", FootprintFilesName[i]);
+            std::printf("The package does not contain a %s.\n", footprintFilesType[i].description);
         }
         else
         {
@@ -379,11 +391,11 @@ HRESULT ExtractFootprintFiles(_In_ IAppxPackageReader* package, _In_ LPCWSTR out
 //   outputPath 
 //      The path of the folder for the extracted payload files.
 //
-HRESULT ExtractPayloadFiles(_In_ IAppxPackageReader* package, _In_ LPCWSTR outputPath)
+HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
     ComPtr<IAppxFilesEnumerator> files;
-    std::wprintf(L"\nExtracting payload files from the package...\n");
+    std::printf("\nExtracting payload files from the package...\n");
 
     // Get an enumerator of all payload files from the package reader and iterate
     // through all files.
@@ -411,31 +423,33 @@ HRESULT ExtractPayloadFiles(_In_ IAppxPackageReader* package, _In_ LPCWSTR outpu
     return hr;
 }
 
-int wmain(_In_ int argc, _In_count_(argc) wchar_t** argv)
+int main(int argc, char* argv[])
 {
     HRESULT hr = S_OK;
 
+    std::wstring fileName = utf8_to_utf16(argv[1]);
+    std::wstring pathName = utf8_to_utf16(argv[2]);
     // Create a package using the file name in argv[1] 
     ComPtr<IAppxPackageReader> package;
-    hr = GetPackageReader(argv[1], &package);
+    hr = GetPackageReader(fileName.c_str(), &package);
 
     // Print information about all footprint files, and extract them to disk
     if (SUCCEEDED(hr))
     {
-        hr = ExtractFootprintFiles(package.Get(), argv[2]);
+        hr = ExtractFootprintFiles(package.Get(), pathName.c_str());
     }
 
     // Print information about all payload files, and extract them to disk
     if (SUCCEEDED(hr))
     {
-        hr = ExtractPayloadFiles(package.Get(), argv[2]);
+        hr = ExtractPayloadFiles(package.Get(), pathName.c_str());
     }
 
     if (FAILED(hr))
     {
         // TODO: Tell a more specific reason why the faiulre occurred. 
-        std::wprintf(L"\nError %X occurred while extracting the appx package\n", hr);
+        std::printf("\nError %X occurred while extracting the appx package\n", static_cast<int>(hr));
     }
 
-    return 0;
+    return static_cast<int>(hr);
 }

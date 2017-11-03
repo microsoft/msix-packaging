@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Exceptions.hpp"
+#include "ComHelper.hpp"
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
 
@@ -14,7 +15,7 @@ namespace xPlat {
     class LocalFileHeader;
 
     // This represents a raw stream over a.zip file.
-    class ZipObject : public StorageObject
+    class ZipObject : public ComClass<ZipObject, IStorageObject>
     {
     public:
         ZipObject(IStream* stream);
@@ -24,7 +25,7 @@ namespace xPlat {
         std::vector<std::string>    GetFileNames() override;
         IStream*                    GetFile(const std::string& fileName) override;
         void                        RemoveFile(const std::string& fileName) override;
-        IStream*                    OpenFile(const std::string& fileName, FileStream::Mode mode) override;
+        IStream*                    OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode) override;
         void                        CommitChanges() override;
 
     protected:

@@ -728,7 +728,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
 
-    IStream* ZipObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    IStream* ZipObject::OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode)
     {
         throw Exception(Error::NotImplemented);
     }

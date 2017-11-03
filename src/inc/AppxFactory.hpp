@@ -1,5 +1,6 @@
 #include "ComHelper.hpp"
 #include "AppxPackaging.hpp"
+#include "UnicodeConversion.hpp"
 
 namespace xPlat {
     class AppxFactory : public xPlat::ComClass<AppxFactory, IAppxFactory>
@@ -15,18 +16,15 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE CreatePackageWriter(
             IStream* outputStream,
             APPX_PACKAGE_SETTINGS* ,//settings, TODO: plumb this through
-            IAppxPackageWriter**packageWriter)
+            IAppxPackageWriter** packageWriter)
         {
-            return xPlat::ResultOf([&]() {
-                return xPlat::ResultOf([&]() {
-                    ThrowErrorIfNot(Error::InvalidParameter, (packageReader), "Invalid parameter");
-                    ComPtr<IAppxPackageWriter> reader(new appx(
-                        m_validationOptions,
-                        std::move(std::make_unique<xPlat::ZipObject>(inputStream))
-                        ));
-                    *packageReader = reader.Detach();
-                });
-            });
+            return static_cast<HRESULT>(Error::NotImplemented);
+            // return xPlat::ResultOf([&]() {
+            //     ThrowErrorIf(Error::InvalidParameter, (packageWriter == nullptr || *packageWriter != nullptr), "Invalid parameter");
+            //     ComPtr<IStorageObject> zip(new xPlat::ZipObject(outputStream));
+            //     ComPtr<IAppxPackageWriter> result(new AppxPackageObject(m_validationOptions, zip.Get()));
+            //     *packageWriter = result.Detach();
+            // });
         }
 
         HRESULT STDMETHODCALLTYPE CreatePackageReader(
@@ -34,12 +32,10 @@ namespace xPlat {
             IAppxPackageReader** packageReader)
         {
             return xPlat::ResultOf([&]() {
-                ThrowErrorIfNot(Error::InvalidParameter, (packageReader), "Invalid parameter");
-                ComPtr<IAppxPackageReader> reader(new appx(
-                    m_validationOptions,
-                    std::move(std::make_unique<xPlat::ZipObject>(inputStream))
-                    ));
-                *packageReader = reader.Detach();
+                ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
+                ComPtr<IStorageObject> zip(new xPlat::ZipObject(inputStream));
+                ComPtr<IAppxPackageReader> result(new AppxPackageObject(m_validationOptions, zip.Get()));
+                *packageReader = result.Detach();
             });
         }
 
@@ -80,11 +76,11 @@ namespace xPlat {
                 ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );                
                 auto intermediate = utf8_to_utf16(internal);
                 std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
-                *result = m_memalloc(countBytes);
+                *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
                 ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");
                 std::memset(reinterpret_cast<void*>(*result), 0, countBytes);
                 std::memcpy(reinterpret_cast<void*>(*result),
-                            reinterpret_cast<void*>(intermediate.c_str()),
+                            reinterpret_cast<void*>(const_cast<wchar_t*>(intermediate.c_str())),
                             countBytes - sizeof(wchar_t));
             });
         }
