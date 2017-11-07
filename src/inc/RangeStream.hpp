@@ -63,8 +63,9 @@ namespace xPlat {
 
         HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
         {
-            if (size) { *size = m_size; }
-            return static_cast<HRESULT>(Error::OK);
+            return ResultOf([&]{
+                if (size) { *size = m_size; }
+            });
         }
 
         std::uint64_t Size() { return m_size; }

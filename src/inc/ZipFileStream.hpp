@@ -3,6 +3,7 @@
 #include "ComHelper.hpp"
 #include "StreamBase.hpp"
 #include "RangeStream.hpp"
+#include "AppxFactory.hpp"
 
 #include <string>
 
@@ -14,24 +15,25 @@ namespace xPlat {
     public:
         // TODO: define what streams to pass in on the .ctor
         ZipFileStream(
+            std::string name,
+            std::string contentType,
+            IxPlatFactory* factory,
             bool isCompressed,
             std::uint32_t offset,
             std::uint32_t size,
             IStream* stream
-        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream)
+        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream), m_name(name), m_contentType(contentType), m_factory(factory)
         {
         }
 
         HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
         {
-            // TODO: Implement here.
-            return static_cast<HRESULT>(Error::NotImplemented);
+            return m_factory->MarshalOutString(m_name, fileName);
         }
 
         HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
         {
-            // TODO: Implement here.
-            return static_cast<HRESULT>(Error::NotImplemented);
+            return m_factory->MarshalOutString(m_name, contentType);
         }
 
         HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
@@ -43,6 +45,9 @@ namespace xPlat {
         inline bool IsCompressed() { return m_isCompressed; }
 
     protected:
-        bool m_isCompressed = false;
+        ComPtr<IxPlatFactory>   m_factory;
+        std::string             m_name;
+        std::string             m_contentType;
+        bool                    m_isCompressed = false;
     };
 }

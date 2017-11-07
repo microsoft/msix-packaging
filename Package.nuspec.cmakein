@@ -16,11 +16,8 @@
         to non Win32 clients, CreateStreamOnFile is provided to enable easier consumption of the COM APIs.
 
 0.7 -   API changes:
-        * Implemented IAppxFactory's CreatePackageWriter, and CreatePackageReader methods.
-
-        * Implemented IAppxPackageReader's GetPayloadFiles
-
-        * Implemented IAppxFileEnumerator
+        * Implemented IAppxFactory's CreatePackageReader, IAppxPackageReader's GetPayloadFiles, and 
+          Implemented IAppxFileEnumerator.  Basically, everything used in ExtractContentsSample
 
         * Moved utf8/utf16 conversion functions into their own header to support marshalling
           out file Names and content types to clients through the nanoCOM layer.

@@ -4,21 +4,18 @@
 #include "ComHelper.hpp"
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
+#include "AppxFactory.hpp"
 
 #include <vector>
 #include <map>
 #include <memory>
 
 namespace xPlat {
-    // forward declarations
-    class CentralDirectoryFileHeader;
-    class LocalFileHeader;
-
     // This represents a raw stream over a.zip file.
     class ZipObject : public ComClass<ZipObject, IStorageObject>
     {
     public:
-        ZipObject(IStream* stream);
+        ZipObject(IxPlatFactory* appxFactory, IStream* stream);
 
         // StorageObject methods
         std::string                 GetPathSeparator() override;
@@ -29,6 +26,7 @@ namespace xPlat {
         void                        CommitChanges() override;
 
     protected:
+        ComPtr<IxPlatFactory>                  m_factory;
         ComPtr<IStream>                        m_stream;
         std::map<std::string, ComPtr<IStream>> m_streams;
     };//class ZipObject

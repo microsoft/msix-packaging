@@ -11,6 +11,10 @@
     #define XPLATAPPX_API extern "C" __declspec(dllexport) 
 
     // UNICODE MUST be defined before you include Windows.h if you want the non-ascii versions of APIs (and you do)
+    #ifdef UNICODE
+    #undef UNICODE
+    #endif
+
     #define UNICODE
     #define NOMINMAX    
     #include <windows.h>
@@ -47,6 +51,8 @@
     typedef const WCHAR* LPCWSTR;
     typedef char BYTE;
     typedef int BOOL;
+    typedef size_t SIZE_T;
+    typedef void* LPVOID;
 
     #ifndef FALSE
     #define FALSE 0

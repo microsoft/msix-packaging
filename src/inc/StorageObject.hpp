@@ -11,10 +11,20 @@
 
 // internal interface
 EXTERN_C const IID IID_IStorageObject;   
+#ifndef WIN32
 MIDL_INTERFACE("ec25b96e-0db1-4483-bdb1-cab1109cb741")
 interface IStorageObject : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IStorageObject : public IUnknown
+#endif
 {
-public:                   
+public:        
+    #ifdef WIN32
+    virtual ~IStorageObject() {}
+    #endif
+
     virtual std::string GetPathSeparator() = 0;
 
     // Obtains a vector of UTF-8 formatted string names contained in the storage object

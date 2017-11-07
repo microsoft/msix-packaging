@@ -19,10 +19,20 @@
 
 // internal interface
 EXTERN_C const IID IID_IAppxPackage;   
+#ifndef WIN32
 MIDL_INTERFACE("51b2c456-aaa9-46d6-8ec9-298220559189")
 interface IAppxPackage : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IAppxPackage : public IUnknown
+#endif
 {
 public:
+    #ifdef WIN32
+    virtual ~IAppxPackage() {}
+    #endif
+
     virtual void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from) = 0;
     virtual void Unpack(APPX_PACKUNPACK_OPTION options, IStorageObject* to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
@@ -142,7 +152,7 @@ namespace xPlat {
         {   return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
                 ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor])).As<IAppxFile>().Get();
+                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor])).As<IAppxFile>().Detach();
             });
         }
 

@@ -720,6 +720,7 @@ namespace xPlat {
 
     IStream* ZipObject::GetFile(const std::string& fileName)
     {
+        // TODO: Make this on-demand populate m_streams and then pull from there.
         return m_streams[fileName].Get();
     }
 
@@ -740,7 +741,7 @@ namespace xPlat {
 
     std::string ZipObject::GetPathSeparator() { return "/"; }
 
-    ZipObject::ZipObject(IStream* stream) : m_stream(stream)
+    ZipObject::ZipObject(IxPlatFactory* appxFactory, IStream* stream) : m_factory(appxFactory), m_stream(stream)
     {
         // Confirm that the file IS the correct format
         EndCentralDirectoryRecord endCentralDirectoryRecord;
@@ -781,6 +782,7 @@ namespace xPlat {
         // TODO: change to uint64_t when adding full zip64 support
         std::map<std::uint32_t, std::shared_ptr<LocalFileHeader>> fileRepository;
 
+        // TODO: change population of m_streams into cache semantics and move into ZipObject::GetFile
         // Read the file repository
         for (const auto& centralFileHeader : centralDirectory)
         {
@@ -793,6 +795,9 @@ namespace xPlat {
                 localFileHeader));
 
             ComPtr<IStream> fileStream (new ZipFileStream(
+                centralFileHeader.second->GetFileName(),
+                "TODO: Implement", // TODO: put value from content type 
+                m_factory.Get(),
                 localFileHeader->GetCompressionType() == CompressionType::Deflate,
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),                

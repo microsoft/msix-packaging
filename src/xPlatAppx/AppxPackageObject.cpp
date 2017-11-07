@@ -4,9 +4,11 @@
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
 #include "AppxPackageObject.hpp"
+#include "UnicodeConversion.hpp"
 
 #include <string>
 #include <vector>
+#include <map>
 #include <memory>
 #include <functional>
 #include <limits>
@@ -19,6 +21,14 @@ namespace xPlat {
     #define CODEINTEGRITY_CAT "AppxMetadata/CodeIntegrity.cat"
     #define APPXSIGNATURE_P7X "AppxSignature.p7x"
     #define CONTENT_TYPES_XML "[Content_Types].xml"
+
+    static const std::map<APPX_FOOTPRINT_FILE_TYPE, std::string> footprintFiles = 
+    {
+        {APPX_FOOTPRINT_FILE_TYPE_MANIFEST,         APPXMANIFEST_XML},
+        {APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP,         APPXBLOCKMAP_XML},
+        {APPX_FOOTPRINT_FILE_TYPE_SIGNATURE,        APPXSIGNATURE_P7X},
+        {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY,    CODEINTEGRITY_CAT},
+    };
 
     AppxPackageId::AppxPackageId(
         const std::string& name,
@@ -169,20 +179,29 @@ namespace xPlat {
             throw Exception(Error::NotImplemented);
         });
     }
-
+   
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file)
     {
         return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+            ThrowErrorIf(Error::InvalidParameter, (file == nullptr || *file != nullptr), "bad pointer");
+            auto footprint = footprintFiles.find(type);
+            ThrowErrorIf(Error::FileNotFound, (footprint == footprintFiles.end()), "unknown footprint file type");
+            ComPtr<IStream> stream = GetFile(footprint->second);
+            ThrowErrorIf(Error::FileNotFound, (stream.Get() == nullptr), "requested footprint file not in package")
+            auto result = stream.As<IAppxFile>();
+            *file = result.Detach();
         });
     }
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFile(LPCWSTR fileName, IAppxFile** file)
     {
         return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+            ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
+            std::string name = utf16_to_utf8(fileName);
+            ComPtr<IStream> stream = GetFile(name);
+            ThrowErrorIf(Error::FileNotFound, (stream.Get() == nullptr), "requested file not in package")
+            auto result = stream.As<IAppxFile>();
+            *file = result.Detach();
         });
     }
 

@@ -29,5 +29,5 @@ namespace xPlat {
         std::map<std::string, ComPtr<IStream>> m_streams;
         std::string m_root;
 
-    };//class ZipObject
+    };//class DirectoryObject
 }

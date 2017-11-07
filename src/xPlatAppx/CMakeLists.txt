@@ -71,10 +71,12 @@ set(LIB_PRIVATE_HEADERS
 
 set(LIB_SOURCES
     AppxBlockMapObject.cpp
+    AppxFactory.cpp
 	AppxPackageObject.cpp
     AppxPackaging_i.cpp
     AppxSignature.cpp
-	InflateStream.cpp
+    InflateStream.cpp
+    UnicodeConversion.cpp
 	xPlatAppx.cpp
 	ZipObject.cpp
 	${DirectoryObject}

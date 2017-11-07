@@ -5,7 +5,7 @@
 #include <codecvt>
 
 #ifdef WIN32
-    #define UNICODE = 1
+    #define UNICODE
     #include <windows.h>
 #else
     // required posix-specific headers
@@ -29,10 +29,13 @@ public:
     template<
         class U, 
         typename = typename std::enable_if<
-            std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
+            std::is_convertible<U*,T*>::value
         >::type
     >
-    ComPtr(U* ptr) : m_ptr(ptr) { InternalAddRef(); }
+    ComPtr(U* ptr) : m_ptr(ptr) { }
+
+    // Distinct from above, this is where ComPtr<T> t = Foo(...) where Foo returns T*
+    ComPtr(T* ptr) : m_ptr(ptr) { InternalAddRef(); }
 
     // copy ctor
     ComPtr(const ComPtr& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
@@ -41,20 +44,12 @@ public:
     template<
         class U, 
         typename = typename std::enable_if<
-            std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
+            std::is_convertible<U*,T*>::value
         >::type
     >
     ComPtr(const ComPtr<U>& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
 
-    // move ctor
-    ComPtr(ComPtr &&right) : m_ptr(nullptr)
-    {
-        if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
-        {   Swap(right);
-        }
-    }
-
-    // move ctor that allows instantiation of a class when U* is convertible to T*
+       // move ctor that allows instantiation of a class when U* is convertible to T*
     template<
         class U, 
         typename = typename std::enable_if<
@@ -75,17 +70,16 @@ public:
         return *this;
     }
 
-    // Assignment operator... VERY important.
-    ComPtr& operator=(const ComPtr& right)
-    {
-        if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
+    ComPtr& operator=(ComPtr &&right)
+    {   
+        ComPtr(std::move(right)).Swap(*this);
         return *this;
     }
 
-    // Assignment operator of T*
-    ComPtr& operator=(T* right)
-    {   
-        if (m_ptr != right) { ComPtr(right).Swap(*this); }
+    // Assignment operator...
+    ComPtr& operator=(const ComPtr& right)
+    {
+        if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
         return *this;
     }
 
@@ -98,13 +92,7 @@ public:
     >
     ComPtr& operator=(U* right)
     {   
-        ComPtr(right).Swap(*this);
-        return *this;
-    }
-
-    ComPtr& operator=(ComPtr &&right)
-    {   
-        ComPtr(std::move(right)).Swap(*this);
+        if (m_ptr != right) { ComPtr(right).Swap(*this); }
         return *this;
     }
 
@@ -112,12 +100,25 @@ public:
 
     inline T* operator->() const { return m_ptr; }
     inline T* Get() const { return m_ptr; }
+    
+    inline T* Detach() 
+    {   T* temp = m_ptr;
+        m_ptr = nullptr;
+        return temp;
+    }
 
     inline T** operator&()
     {   InternalRelease();
         return &m_ptr;
     }
 
+    template <class U>
+    inline ComPtr<U> As()
+    {   
+        ComPtr<U> out;
+        ThrowHrIfFailed(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(&out)));
+        return out;
+    }
 protected:
     T* m_ptr = nullptr;
 
@@ -156,7 +157,7 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
 #ifdef WIN32
     int mkdirp(std::wstring& utf16Path)
     {
-        for (int i = 0; i < fullFileName.size(); i++)
+        for (int i = 0; i < utf16Path.size(); i++)
         {
             if (utf16Path[i] == L'\0')
             {
@@ -228,9 +229,7 @@ const FootprintFilesType footprintFilesType[FootprintFilesCount] = {
 //
 // Helper function to create a writable IStream over a file with the specified name
 // under the specified path.  This function will also create intermediate
-// subdirectories if necessary.  For simplicity, file names including path are
-// assumed to be 200 characters or less.  A real application should be able to
-// handle longer names and allocate the necessary buffer dynamically.
+// subdirectories if necessary.  
 //
 // Parameters:
 // path - Path of the folder containing the file to be opened.  This should NOT
@@ -254,6 +253,10 @@ HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
     return hr;
 }
 
+// Or you can use what-ever allocator/deallocator is best for your platform...
+LPVOID STDMETHODCALLTYPE MyAllocate(SIZE_T cb)  { return std::malloc(cb); }
+void STDMETHODCALLTYPE MyFree(LPVOID pv)        { std::free(pv); }
+
 //
 // Creates a cross-plat app package.
 //
@@ -272,9 +275,12 @@ HRESULT GetPackageReader(LPCWSTR inputFileName, IAppxPackageReader** package)
     hr = CreateStreamOnFileUTF16(inputFileName, true, &inputStream);
     if (SUCCEEDED(hr))
     {
+        // On Win32 platforms CoCreateAppxFactory defaults to CoTaskMemAlloc/CoTaskMemFree
+        // On non-Win32 platforms CoCreateAppxFactory will return 0x80070032 (e.g. HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
+        // So on all platforms, it's always safe to call CoCreateAppxFactoryWithHeap, just be sure to bring your own heap!
         hr = CoCreateAppxFactoryWithHeap(
-            std::malloc,
-            std::free,
+            MyAllocate,
+            MyFree,
             APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST,
             &appxFactory);
 

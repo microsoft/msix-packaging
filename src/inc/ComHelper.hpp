@@ -50,10 +50,13 @@ namespace xPlat {
         template<
             class U, 
             typename = typename std::enable_if<
-                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
+                std::is_convertible<U*,T*>::value
             >::type
         >
-        ComPtr(U* ptr) : m_ptr(ptr) { InternalAddRef(); }
+        ComPtr(U* ptr) : m_ptr(ptr) { }
+
+        // Distinct from above, this is where ComPtr<T> t = Foo(...) where Foo returns T*
+        ComPtr(T* ptr) : m_ptr(ptr) { InternalAddRef(); }
 
         // copy ctor
         ComPtr(const ComPtr& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
@@ -62,20 +65,12 @@ namespace xPlat {
         template<
             class U, 
             typename = typename std::enable_if<
-                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
+                std::is_convertible<U*,T*>::value
             >::type
         >
         ComPtr(const ComPtr<U>& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
 
-        // move ctor
-        ComPtr(ComPtr &&right) : m_ptr(nullptr)
-        {
-            if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
-            {   Swap(right);
-            }
-        }
-
-        // move ctor that allows instantiation of a class when U* is convertible to T*
+           // move ctor that allows instantiation of a class when U* is convertible to T*
         template<
             class U, 
             typename = typename std::enable_if<
@@ -96,17 +91,16 @@ namespace xPlat {
             return *this;
         }
 
-        // Assignment operator... VERY important.
-        ComPtr& operator=(const ComPtr& right)
-        {
-            if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
+        ComPtr& operator=(ComPtr &&right)
+        {   
+            ComPtr(std::move(right)).Swap(*this);
             return *this;
         }
 
-        // Assignment operator of T*
-        ComPtr& operator=(T* right)
-        {   
-            if (m_ptr != right) { ComPtr(right).Swap(*this); }
+        // Assignment operator...
+        ComPtr& operator=(const ComPtr& right)
+        {
+            if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
             return *this;
         }
 
@@ -119,13 +113,7 @@ namespace xPlat {
         >
         ComPtr& operator=(U* right)
         {   
-            ComPtr(right).Swap(*this);
-            return *this;
-        }
-
-        ComPtr& operator=(ComPtr &&right)
-        {   
-            ComPtr(std::move(right)).Swap(*this);
+            if (m_ptr != right) { ComPtr(right).Swap(*this); }
             return *this;
         }
 
@@ -133,6 +121,12 @@ namespace xPlat {
 
         inline T* operator->() const { return m_ptr; }
         inline T* Get() const { return m_ptr; }
+        
+        inline T* Detach() 
+        {   T* temp = m_ptr;
+            m_ptr = nullptr;
+            return temp;
+        }
 
         inline T** operator&()
         {   InternalRelease();
