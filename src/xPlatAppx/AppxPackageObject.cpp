@@ -172,7 +172,7 @@ namespace xPlat {
     }
 
     // IAppxPackageReader
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader**  blockMapReader)
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader** blockMapReader)
     {
         return xPlat::ResultOf([&]() {
             // TODO: Implement
@@ -213,7 +213,7 @@ namespace xPlat {
             ComPtr<IStorageObject> storage;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, reinterpret_cast<void**>(&storage)));
             ComPtr<IAppxFilesEnumerator> result (new AppxFilesEnumerator(storage.Get()));
-            *filesEnumerator = result.Get();
+            *filesEnumerator = result.Detach();
         });
     }
 

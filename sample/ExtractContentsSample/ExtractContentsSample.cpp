@@ -163,7 +163,7 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
             {
                 break;
             }
-            else if (utf16Path[i] == L'\\')
+            else if (utf16Path[i] == L'/') /* TODO: paths coming in SHOULD have platform-appropriate path separators */
             {
                 // Temporarily set string to terminate at the '\' character
                 // to obtain name of the subdirectory to create
@@ -181,7 +181,7 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
                     }
                 }
                 // Restore original string
-                utf16Path[i] = L'\\';
+                utf16Path[i] = L'/'; /* TODO: paths coming in SHOULD have platform-appropriate path separators */
             }
         }   
         return 0;     
