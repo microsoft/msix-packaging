@@ -155,24 +155,33 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
 }
 
 #ifdef WIN32
+    // TODO: paths coming in SHOULD have platform-appropriate path separators
+    void replace(std::wstring& input, const wchar_t oldchar, const wchar_t newchar)
+    {
+        std::size_t found = input.find_first_of(oldchar);
+        while (found != std::string::npos)
+        {
+            input[found] = newchar;
+            found = input.find_first_of(oldchar, found+1);
+        }
+    }
+
     int mkdirp(std::wstring& utf16Path)
     {
-        auto lastSlash = utf16Path.find_last_of(L"/");
-        std::wstring path = utf16Path.substr(0, lastSlash);
-
-        for (int i = 0; i < path.size(); i++)
+        replace(utf16Path, L'/', L'\\');
+        for (std::size_t i = 0; i < utf16Path.size(); i++)
         {
-            if (path[i] == L'\0')
+            if (utf16Path[i] == L'\0')
             {
                 break;
             }
-            else if (path[i] == L'/') /* TODO: paths coming in SHOULD have platform-appropriate path separators */
+            else if (utf16Path[i] == L'\\') 
             {
                 // Temporarily set string to terminate at the '\' character
                 // to obtain name of the subdirectory to create
-                path[i] = L'\0';
+                utf16Path[i] = L'\0';
 
-                if (!CreateDirectory(path.c_str(), nullptr))
+                if (!CreateDirectory(utf16Path.c_str(), nullptr))
                 {
                     int lastError = static_cast<int>(GetLastError());
 
@@ -184,7 +193,7 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
                     }
                 }
                 // Restore original string
-                path[i] = L'/'; /* TODO: paths coming in SHOULD have platform-appropriate path separators */
+                utf16Path[i] = L'\\'; /* TODO: paths coming in SHOULD have platform-appropriate path separators */
             }
         }   
         return 0;     
