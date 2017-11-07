@@ -267,6 +267,6 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     #ifdef WIN32
         return CoCreateAppxFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);
     #else
-        return static_cast<HRESULT>(Error::NotSupported);
+        return static_cast<HRESULT>(xPlat::Error::NotSupported);
     #endif
 }    

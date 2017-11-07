@@ -89,7 +89,7 @@ namespace xPlat {
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
         // and partition the container's file names into footprint and payload files.
-        for (const auto& fileName : m_container->GetFileNames())
+        for (const auto& fileName : m_container->GetFileNames(FileNameOptions::All))
         {
             ComPtr<IStream> stream;
 
@@ -116,7 +116,7 @@ namespace xPlat {
 
     void AppxPackageObject::Unpack(APPX_PACKUNPACK_OPTION options, IStorageObject* to)
     {
-        auto fileNames = GetFileNames();
+        auto fileNames = GetFileNames(FileNameOptions::All);
         for (const auto& fileName : fileNames)
         {
             std::string targetName;
@@ -140,10 +140,18 @@ namespace xPlat {
 
     std::string AppxPackageObject::GetPathSeparator() { return "/"; }
 
-    std::vector<std::string> AppxPackageObject::GetFileNames()
+    std::vector<std::string> AppxPackageObject::GetFileNames(FileNameOptions options)
     {
-        std::vector<std::string> result(m_footprintFiles.begin(), m_footprintFiles.end());
-        result.insert(result.end(), m_payloadFiles.begin(), m_payloadFiles.end());
+        std::vector<std::string> result;
+
+        if ((options & FileNameOptions::FootPrintOnly) == FileNameOptions::FootPrintOnly)
+        {
+            result.insert(result.end(), m_footprintFiles.begin(), m_footprintFiles.end());
+        }
+        if ((options & FileNameOptions::PayloadOnly) == FileNameOptions::PayloadOnly)
+        {
+            result.insert(result.end(), m_payloadFiles.begin(), m_payloadFiles.end());
+        }
         return result;
     }
 
@@ -188,6 +196,8 @@ namespace xPlat {
             ThrowErrorIf(Error::FileNotFound, (footprint == footprintFiles.end()), "unknown footprint file type");
             ComPtr<IStream> stream = GetFile(footprint->second);
             ThrowErrorIf(Error::FileNotFound, (stream.Get() == nullptr), "requested footprint file not in package")
+            // Clients expect the stream's pointer to be at the start of the file!
+            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
             auto result = stream.As<IAppxFile>();
             *file = result.Detach();
         });
@@ -200,6 +210,8 @@ namespace xPlat {
             std::string name = utf16_to_utf8(fileName);
             ComPtr<IStream> stream = GetFile(name);
             ThrowErrorIf(Error::FileNotFound, (stream.Get() == nullptr), "requested file not in package")
+            // Clients expect the stream's pointer to be at the start of the file!
+            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
             auto result = stream.As<IAppxFile>();
             *file = result.Detach();
         });

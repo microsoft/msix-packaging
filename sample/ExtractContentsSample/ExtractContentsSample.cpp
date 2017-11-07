@@ -157,19 +157,22 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
 #ifdef WIN32
     int mkdirp(std::wstring& utf16Path)
     {
-        for (int i = 0; i < utf16Path.size(); i++)
+        auto lastSlash = utf16Path.find_last_of(L"/");
+        std::wstring path = utf16Path.substr(0, lastSlash);
+
+        for (int i = 0; i < path.size(); i++)
         {
-            if (utf16Path[i] == L'\0')
+            if (path[i] == L'\0')
             {
                 break;
             }
-            else if (utf16Path[i] == L'/') /* TODO: paths coming in SHOULD have platform-appropriate path separators */
+            else if (path[i] == L'/') /* TODO: paths coming in SHOULD have platform-appropriate path separators */
             {
                 // Temporarily set string to terminate at the '\' character
                 // to obtain name of the subdirectory to create
-                utf16Path[i] = L'\0';
+                path[i] = L'\0';
 
-                if (!CreateDirectory(utf16Path.c_str(), nullptr))
+                if (!CreateDirectory(path.c_str(), nullptr))
                 {
                     int lastError = static_cast<int>(GetLastError());
 
@@ -181,7 +184,7 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
                     }
                 }
                 // Restore original string
-                utf16Path[i] = L'/'; /* TODO: paths coming in SHOULD have platform-appropriate path separators */
+                path[i] = L'/'; /* TODO: paths coming in SHOULD have platform-appropriate path separators */
             }
         }   
         return 0;     
@@ -190,7 +193,9 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
     // not all POSIX implementations provide an implementation of mkdirp
     int mkdirp(std::wstring& utf16Path)
     {
-        std::string path = utf16_to_utf8(utf16Path);
+        std::string utf8Path = utf16_to_utf8(utf16Path);
+        auto lastSlash = utf8Path.find_last_of("/");
+        std::string path = utf8Path.substr(0, lastSlash);
         char* p = const_cast<char*>(path.c_str());
         if (*p == '/') { p++; }
         while (*p != '\0')
@@ -199,7 +204,7 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
             
             char v = *p;
             *p = '\0';
-            if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) && errno == EEXIST)
+            if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) && errno != EEXIST)
             {
                 return errno;
             }
@@ -242,7 +247,11 @@ HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
 {
     HRESULT hr = S_OK;
     const int MaxFileNameLength = 200;
+    #ifdef WIN32
     std::wstring fullFileName = path + std::wstring(L"\\") + fileName;
+    #else
+    std::wstring fullFileName = path + std::wstring(L"/") + fileName;
+    #endif
 
     hr = HRESULT_FROM_WIN32(mkdirp(fullFileName));
     // Create stream for writing the file

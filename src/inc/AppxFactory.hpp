@@ -40,7 +40,7 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE CreatePackageWriter (
             IStream* outputStream,
             APPX_PACKAGE_SETTINGS* ,//settings, TODO: plumb this through
-            IAppxPackageWriter** packageWriter);           
+            IAppxPackageWriter** packageWriter) override;           
 
         HRESULT STDMETHODCALLTYPE CreatePackageReader (IStream* inputStream, IAppxPackageReader** packageReader) override;
         HRESULT STDMETHODCALLTYPE CreateManifestReader(IStream* inputStream, IAppxManifestReader** manifestReader) override ;

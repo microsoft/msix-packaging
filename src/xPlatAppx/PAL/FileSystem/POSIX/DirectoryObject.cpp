@@ -10,7 +10,7 @@
 
 namespace xPlat {
     
-    std::vector<std::string> DirectoryObject::GetFileNames()
+    std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
         throw Exception(Error::NotImplemented);

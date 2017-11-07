@@ -9,6 +9,23 @@
 #include <vector>
 #include <memory>
 
+enum class FileNameOptions : std::uint16_t
+{
+    FootPrintOnly = 0x1,
+    PayloadOnly = 0x2,
+    All = 0x3,
+};
+
+inline constexpr FileNameOptions operator &(FileNameOptions a, FileNameOptions b)
+{
+    return static_cast<FileNameOptions>(static_cast<uint16_t>(a) & static_cast<uint16_t>(b));
+}
+
+inline constexpr FileNameOptions operator |(FileNameOptions a, FileNameOptions b)
+{
+    return static_cast<FileNameOptions>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
+}
+
 // internal interface
 EXTERN_C const IID IID_IStorageObject;   
 #ifndef WIN32
@@ -28,7 +45,7 @@ public:
     virtual std::string GetPathSeparator() = 0;
 
     // Obtains a vector of UTF-8 formatted string names contained in the storage object
-    virtual std::vector<std::string> GetFileNames() = 0;
+    virtual std::vector<std::string> GetFileNames(FileNameOptions options) = 0;
 
     // Obtains a pointer to a stream representing the file that exists in the storage object
     virtual IStream* GetFile(const std::string& fileName) = 0;

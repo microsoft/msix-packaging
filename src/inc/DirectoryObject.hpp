@@ -19,7 +19,7 @@ namespace xPlat {
 
         // StorageObject methods
         std::string              GetPathSeparator() override;
-        std::vector<std::string> GetFileNames() override;
+        std::vector<std::string> GetFileNames(FileNameOptions options) override;
         IStream*                 GetFile(const std::string& fileName) override;
         void                     RemoveFile(const std::string& fileName) override;
         IStream*                 OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode) override;

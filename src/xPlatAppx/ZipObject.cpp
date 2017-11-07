@@ -708,7 +708,7 @@ namespace xPlat {
 
     };//class EndOfCentralDirectoryRecord
 
-    std::vector<std::string> ZipObject::GetFileNames()
+    std::vector<std::string> ZipObject::GetFileNames(FileNameOptions)
     {
         std::vector<std::string> result;
         std::for_each(m_streams.begin(), m_streams.end(), [&](auto it)
