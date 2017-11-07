@@ -33,7 +33,7 @@ namespace xPlat {
 
         HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
         {
-            return m_factory->MarshalOutString(m_name, contentType);
+            return m_factory->MarshalOutString(m_contentType, contentType);
         }
 
         HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
