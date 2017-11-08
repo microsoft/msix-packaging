@@ -53,7 +53,7 @@ namespace xPlat {
         auto lastSlash = name.find_last_of("/");
         std::string path = name.substr(0, lastSlash);
         mkdirp(path);
-        auto result = m_streams[fileName] = new FileStream(std::move(name), mode);
+        auto result = m_streams[fileName] = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
         return result.Get();
     }
     

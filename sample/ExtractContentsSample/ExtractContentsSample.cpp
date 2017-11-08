@@ -17,111 +17,28 @@
 #include "AppxPackaging.hpp"
 #include "AppxWindows.hpp"
 
-// provided for those platforms that do not already have a ComPtr class.
+// Stripped down ComPtr provided for those platforms that do not already have a ComPtr class.
 template <class T>
 class ComPtr
 {
 public:
     // default ctor
-    ComPtr() : m_ptr(nullptr) {}
-
-    // For use via ComPtr<T> t(new Foo(...)); where Foo : public T
-    template<
-        class U, 
-        typename = typename std::enable_if<
-            std::is_convertible<U*,T*>::value
-        >::type
-    >
-    ComPtr(U* ptr) : m_ptr(ptr) { }
-
-    // Distinct from above, this is where ComPtr<T> t = Foo(...) where Foo returns T*
+    ComPtr() = default;
     ComPtr(T* ptr) : m_ptr(ptr) { InternalAddRef(); }
 
-    // copy ctor
-    ComPtr(const ComPtr& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
-
-    // copy ctor that allows instantiation of class when U* is convertible to T*
-    template<
-        class U, 
-        typename = typename std::enable_if<
-            std::is_convertible<U*,T*>::value
-        >::type
-    >
-    ComPtr(const ComPtr<U>& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
-
-       // move ctor that allows instantiation of a class when U* is convertible to T*
-    template<
-        class U, 
-        typename = typename std::enable_if<
-            std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
-        >::type
-    >
-    ComPtr(ComPtr<U> &&right) : m_ptr(nullptr)
-    {
-        if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
-        {   Swap(right);
-        }
-    }
-
-    // Assignment operator for = nullptr
-    ComPtr& operator=(std::nullptr_t)
-    {
-        InternalRelease();
-        return *this;
-    }
-
-    ComPtr& operator=(ComPtr &&right)
-    {   
-        ComPtr(std::move(right)).Swap(*this);
-        return *this;
-    }
-
-    // Assignment operator...
-    ComPtr& operator=(const ComPtr& right)
-    {
-        if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
-        return *this;
-    }
-
-    // Assignment operator when U* is convertible to T*
-    template<
-        class U, 
-        typename = typename std::enable_if<
-            std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
-        >::type
-    >
-    ComPtr& operator=(U* right)
-    {   
-        if (m_ptr != right) { ComPtr(right).Swap(*this); }
-        return *this;
-    }
-
     ~ComPtr() { InternalRelease(); }
-
     inline T* operator->() const { return m_ptr; }
     inline T* Get() const { return m_ptr; }
-    
-    inline T* Detach() 
-    {   T* temp = m_ptr;
-        m_ptr = nullptr;
-        return temp;
-    }
 
     inline T** operator&()
     {   InternalRelease();
         return &m_ptr;
     }
 
-    template <class U>
-    inline ComPtr<U> As()
-    {   
-        ComPtr<U> out;
-        ThrowHrIfFailed(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(&out)));
-        return out;
-    }
 protected:
     T* m_ptr = nullptr;
 
+    inline void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
     inline void InternalRelease()
     {   
         T* temp = m_ptr;
@@ -129,10 +46,7 @@ protected:
         {   m_ptr = nullptr;
             temp->Release();
         }
-    }
-
-    inline void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
-    inline void Swap(ComPtr& right ) { std::swap(m_ptr, right.m_ptr); }
+    }    
 };
 
 std::string utf16_to_utf8(const std::wstring& utf16string)

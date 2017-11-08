@@ -794,7 +794,7 @@ namespace xPlat {
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader(),
                 localFileHeader));
 
-            ComPtr<IStream> fileStream (new ZipFileStream(
+            auto fileStream = ComPtr<IStream>::Make<ZipFileStream>(
                 centralFileHeader.second->GetFileName(),
                 "TODO: Implement", // TODO: put value from content type 
                 m_factory.Get(),
@@ -802,11 +802,11 @@ namespace xPlat {
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),                
                 m_stream.Get()
-                ));
+                );
 
             if (localFileHeader->GetCompressionType() == CompressionType::Deflate)
             {
-                fileStream = new InflateStream(fileStream.Get(), localFileHeader->GetUncompressedSize());
+                fileStream = ComPtr<IStream>::Make<InflateStream>(fileStream.Get(), localFileHeader->GetUncompressedSize());
             }
 
             m_streams.insert(std::make_pair(centralFileHeader.second->GetFileName(), std::move(fileStream)));

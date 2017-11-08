@@ -159,7 +159,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
         xPlat::ComPtr<IAppxPackageReader> reader;
         ThrowHrIfFailed(factory->CreatePackageReader(stream.Get(), &reader));
 
-        xPlat::ComPtr<IStorageObject> to(new xPlat::DirectoryObject(utf8Destination));
+        auto to = xPlat::ComPtr<IStorageObject>::Make<xPlat::DirectoryObject>(utf8Destination);
         reader.As<IAppxPackage>()->Unpack(packUnpackOptions, to.Get());
     });
 }
@@ -189,7 +189,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
         xPlat::ComPtr<IAppxPackageWriter> writer;
         ThrowHrIfFailed(factory->CreatePackageWriter(stream.Get(), &option, &writer));
 
-        xPlat::ComPtr<IStorageObject> from(new xPlat::DirectoryObject(utf8FolderToPack));
+        auto from = xPlat::ComPtr<IStorageObject>::Make<xPlat::DirectoryObject>(utf8FolderToPack);
         writer.As<IAppxPackage>()->Pack(packUnpackOptions, utf8CertificatePath, from.Get());
     });
 }
@@ -197,7 +197,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE ValidateAppxSignature(char* appx)
 {
     return xPlat::ResultOf([&]() {
-        xPlat::ComPtr<IStream> rawFile(new xPlat::FileStream(appx, xPlat::FileStream::Mode::READ));
+        auto rawFile = xPlat::ComPtr<IStream>::Make<xPlat::FileStream>(appx, xPlat::FileStream::Mode::READ);
         {
             APPX_VALIDATION_OPTION validationOption = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
 
@@ -232,7 +232,8 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     IStream** stream)
 {
     return xPlat::ResultOf([&]() {
-        *stream = xPlat::ComPtr<IStream>(new xPlat::FileStream(utf8File, forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE)).Detach();
+        xPlat::FileStream::Mode mode = forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE;
+        *stream = xPlat::ComPtr<IStream>::Make<xPlat::FileStream>(utf8File, mode).Detach();
     });
 }
 
@@ -242,9 +243,8 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     IStream** stream)
 {
     return xPlat::ResultOf([&]() {
-        *stream = xPlat::ComPtr<IStream>(new xPlat::FileStream(
-            xPlat::utf16_to_utf8(utf16File),
-            forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE)).Detach();
+        xPlat::FileStream::Mode mode = forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE;
+        *stream = xPlat::ComPtr<IStream>::Make<xPlat::FileStream>(xPlat::utf16_to_utf8(utf16File), mode).Detach();
     });
 }    
 
@@ -255,7 +255,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     IAppxFactory** appxFactory)
 {
     return xPlat::ResultOf([&]() {
-        *appxFactory = xPlat::ComPtr<IAppxFactory>(new xPlat::AppxFactory(validationOption, memalloc, memfree)).Detach();
+        *appxFactory = xPlat::ComPtr<IAppxFactory>::Make<xPlat::AppxFactory>(validationOption, memalloc, memfree).Detach();
     });
 }
 

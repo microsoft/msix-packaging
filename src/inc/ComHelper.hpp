@@ -46,38 +46,28 @@ namespace xPlat {
         // default ctor
         ComPtr() : m_ptr(nullptr) {}
 
-        // For use via ComPtr<T> t(new Foo(...)); where Foo : public T
+        // For use instead of ComPtr<T> t(new Foo(...));
+        template<class U, class... Args>
+        static ComPtr<T> Make(Args&&... args)
+        {
+            ComPtr<T> result;
+            result.m_ptr = new U(std::forward<Args>(args)...);
+            return result;
+        }
+
         template<
-            class U, 
+            class U,
             typename = typename std::enable_if<
-                std::is_convertible<U*,T*>::value
+                std::is_same<U,T>::value
             >::type
         >
-        ComPtr(U* ptr) : m_ptr(ptr) { }
-
-        // Distinct from above, this is where ComPtr<T> t = Foo(...) where Foo returns T*
-        ComPtr(T* ptr) : m_ptr(ptr) { InternalAddRef(); }
+        ComPtr(U* ptr) : m_ptr(ptr) { InternalAddRef(); }
 
         // copy ctor
         ComPtr(const ComPtr& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
 
-        // copy ctor that allows instantiation of class when U* is convertible to T*
-        template<
-            class U, 
-            typename = typename std::enable_if<
-                std::is_convertible<U*,T*>::value
-            >::type
-        >
-        ComPtr(const ComPtr<U>& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
-
-           // move ctor that allows instantiation of a class when U* is convertible to T*
-        template<
-            class U, 
-            typename = typename std::enable_if<
-                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
-            >::type
-        >
-        ComPtr(ComPtr<U> &&right) : m_ptr(nullptr)
+        // move ctor
+        ComPtr(ComPtr &&right) : m_ptr(nullptr)
         {
             if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
             {   Swap(right);
@@ -101,19 +91,6 @@ namespace xPlat {
         ComPtr& operator=(const ComPtr& right)
         {
             if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
-            return *this;
-        }
-
-        // Assignment operator when U* is convertible to T*
-        template<
-            class U, 
-            typename = typename std::enable_if<
-                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
-            >::type
-        >
-        ComPtr& operator=(U* right)
-        {   
-            if (m_ptr != right) { ComPtr(right).Swap(*this); }
             return *this;
         }
 

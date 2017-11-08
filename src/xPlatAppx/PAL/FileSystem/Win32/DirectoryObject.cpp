@@ -172,7 +172,7 @@ namespace xPlat {
             found = false;
         }
         name = path + GetPathSeparator() + name;
-        auto result = m_streams[fileName] = new FileStream(std::move(name), mode);
+        auto result = m_streams[fileName] = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
         return result.Get();
     }
 

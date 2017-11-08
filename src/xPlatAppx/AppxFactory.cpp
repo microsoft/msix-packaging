@@ -22,8 +22,8 @@ namespace xPlat {
             ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
             ComPtr<IxPlatFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IxPlatFactory>::iid, reinterpret_cast<void**>(&self)));
-            ComPtr<IStorageObject> zip(new ZipObject(self.Get(), inputStream));
-            ComPtr<IAppxPackageReader> result(new AppxPackageObject(m_validationOptions, zip.Get()));
+            auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), inputStream);
+            auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(m_validationOptions, zip.Get());
             *packageReader = result.Detach();
         });
     }

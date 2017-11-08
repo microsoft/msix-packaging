@@ -224,7 +224,7 @@ namespace xPlat {
 
             ComPtr<IStorageObject> storage;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, reinterpret_cast<void**>(&storage)));
-            ComPtr<IAppxFilesEnumerator> result (new AppxFilesEnumerator(storage.Get()));
+            auto result = ComPtr<IAppxFilesEnumerator>::Make<AppxFilesEnumerator>(storage.Get());
             *filesEnumerator = result.Detach();
         });
     }
