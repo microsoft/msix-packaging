@@ -708,7 +708,7 @@ namespace xPlat {
 
     };//class EndOfCentralDirectoryRecord
 
-    std::vector<std::string> ZipObject::GetFileNames()
+    std::vector<std::string> ZipObject::GetFileNames(FileNameOptions)
     {
         std::vector<std::string> result;
         std::for_each(m_streams.begin(), m_streams.end(), [&](auto it)
@@ -720,6 +720,7 @@ namespace xPlat {
 
     IStream* ZipObject::GetFile(const std::string& fileName)
     {
+        // TODO: Make this on-demand populate m_streams and then pull from there.
         return m_streams[fileName].Get();
     }
 
@@ -728,7 +729,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
 
-    IStream* ZipObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    IStream* ZipObject::OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode)
     {
         throw Exception(Error::NotImplemented);
     }
@@ -740,7 +741,7 @@ namespace xPlat {
 
     std::string ZipObject::GetPathSeparator() { return "/"; }
 
-    ZipObject::ZipObject(IStream* stream) : m_stream(stream)
+    ZipObject::ZipObject(IxPlatFactory* appxFactory, IStream* stream) : m_factory(appxFactory), m_stream(stream)
     {
         // Confirm that the file IS the correct format
         EndCentralDirectoryRecord endCentralDirectoryRecord;
@@ -781,6 +782,7 @@ namespace xPlat {
         // TODO: change to uint64_t when adding full zip64 support
         std::map<std::uint32_t, std::shared_ptr<LocalFileHeader>> fileRepository;
 
+        // TODO: change population of m_streams into cache semantics and move into ZipObject::GetFile
         // Read the file repository
         for (const auto& centralFileHeader : centralDirectory)
         {
@@ -792,16 +794,19 @@ namespace xPlat {
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader(),
                 localFileHeader));
 
-            ComPtr<IStream> fileStream (new ZipFileStream(
+            auto fileStream = ComPtr<IStream>::Make<ZipFileStream>(
+                centralFileHeader.second->GetFileName(),
+                "TODO: Implement", // TODO: put value from content type 
+                m_factory.Get(),
                 localFileHeader->GetCompressionType() == CompressionType::Deflate,
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),                
                 m_stream.Get()
-                ));
+                );
 
             if (localFileHeader->GetCompressionType() == CompressionType::Deflate)
             {
-                fileStream = new InflateStream(fileStream.Get(), localFileHeader->GetUncompressedSize());
+                fileStream = ComPtr<IStream>::Make<InflateStream>(fileStream.Get(), localFileHeader->GetUncompressedSize());
             }
 
             m_streams.insert(std::make_pair(centralFileHeader.second->GetFileName(), std::move(fileStream)));

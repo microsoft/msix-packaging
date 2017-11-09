@@ -1,68 +1,77 @@
-#include "Exceptions.hpp"
-#include "StreamBase.hpp"
-#include "StorageObject.hpp"
-#include "AppxPackageObject.hpp"
 #include "AppxFactory.hpp"
-#include "AppxPackaging.hpp"
-#include "ComHelper.hpp"
-
-#include <string>
-#include <vector>
-#include <memory>
-#include <functional>
+#include "UnicodeConversion.hpp"
+#include "Exceptions.hpp"
+#include "ZipObject.hpp"
+#include "AppxPackageObject.hpp"
 
 namespace xPlat {
-    HRESULT STDMETHODCALLTYPE XplatAppxFactory::CreatePackageWriter(
+    // IAppxFactory
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreatePackageWriter (
         IStream* outputStream,
-        APPX_PACKAGE_SETTINGS* settings,
-        IAppxPackageWriter**packageWriter)
+        APPX_PACKAGE_SETTINGS* ,//settings, TODO: plumb this through
+        IAppxPackageWriter** packageWriter)
     {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
+        return static_cast<HRESULT>(Error::NotImplemented);
     }
 
-    HRESULT STDMETHODCALLTYPE XplatAppxFactory::CreatePackageReader(
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreatePackageReader (
         IStream* inputStream,
         IAppxPackageReader** packageReader)
     {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+        return ResultOf([&]() {
+            ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
+            ComPtr<IxPlatFactory> self;
+            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IxPlatFactory>::iid, reinterpret_cast<void**>(&self)));
+            auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), inputStream);
+            auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(m_validationOptions, zip.Get());
+            *packageReader = result.Detach();
         });
     }
 
-    HRESULT STDMETHODCALLTYPE XplatAppxFactory::CreateManifestReader(
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateManifestReader(
         IStream* inputStream,
         IAppxManifestReader** manifestReader)
     {
-        return xPlat::ResultOf([&]() {
+        return ResultOf([&]() {
             // TODO: Implement
             throw Exception(Error::NotImplemented);
         });
     }
 
-
-    HRESULT STDMETHODCALLTYPE XplatAppxFactory::CreateBlockMapReader(
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBlockMapReader (
         IStream* inputStream,
         IAppxBlockMapReader** blockMapReader)
     {
-        return xPlat::ResultOf([&]() {
+        return ResultOf([&]() {
             // TODO: Implement
             throw Exception(Error::NotImplemented);
         });
     }
 
-    HRESULT STDMETHODCALLTYPE XplatAppxFactory::CreateValidatedBlockMapReader(
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateValidatedBlockMapReader (
         IStream* blockMapStream,
         LPCWSTR signatureFileName,
         IAppxBlockMapReader** blockMapReader)
     {
-        return xPlat::ResultOf([&]() {
+        return ResultOf([&]() {
             // TODO: Implement
             throw Exception(Error::NotImplemented);
         });
     }
 
-} // namespace xPlat
+    HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result)
+    {
+        return ResultOf([&]() {
+            ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );                
+            auto intermediate = utf8_to_utf16(internal);
+            std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
+            *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
+            ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");
+            std::memset(reinterpret_cast<void*>(*result), 0, countBytes);
+            std::memcpy(reinterpret_cast<void*>(*result),
+                        reinterpret_cast<void*>(const_cast<wchar_t*>(intermediate.c_str())),
+                        countBytes - sizeof(wchar_t));
+        });
+    }
+
+} // namespace xPlat 
