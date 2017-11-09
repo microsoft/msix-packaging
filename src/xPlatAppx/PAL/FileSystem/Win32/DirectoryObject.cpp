@@ -11,34 +11,9 @@
 #include <locale>
 #include <codecvt>
 #include "AppxWindows.hpp"
+#include "UnicodeConversion.hpp"
 
 namespace xPlat {
-
-    std::wstring utf8_to_utf16(const std::string& utf8string)
-    {
-        /*
-        from: https://connect.microsoft.com/VisualStudio/feedback/details/1403302/unresolved-external-when-using-codecvt-utf8
-        Posted by Microsoft on 2/16/2016 at 11:49 AM
-        <snip>
-        A workaround is to replace 'char32_t' with 'unsigned int'. In VS2013, char32_t was a typedef of 'unsigned int'.
-        In VS2015, char32_t is a distinct type of it's own. Switching your use of 'char32_t' to 'unsigned int' will get
-        you the old behavior from earlier versions and won't trigger a missing export error.
-
-        There is also a similar error to this one with 'char16_t' that can be worked around using 'unsigned short'.
-        <snip>
-        */
-        auto converted = std::wstring_convert<std::codecvt_utf8_utf16<unsigned short>, unsigned short>{}.from_bytes(utf8string.data());
-        std::wstring result(converted.begin(), converted.end());
-        return result;
-    }
-
-    std::string utf16_to_utf8(const std::wstring& utf16string)
-    {
-        auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
-        std::string result(converted.begin(), converted.end());
-        return result;
-    }
-
     enum class WalkOptions : std::uint16_t
     {
         Files = 1,          // Enumerate files within the specified directory
@@ -121,7 +96,7 @@ namespace xPlat {
 
     std::string DirectoryObject::GetPathSeparator() { return "\\"; }
 
-    std::vector<std::string> DirectoryObject::GetFileNames()
+    std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
         throw Exception(Error::NotImplemented);
@@ -197,7 +172,7 @@ namespace xPlat {
             found = false;
         }
         name = path + GetPathSeparator() + name;
-        auto result = m_streams[fileName] = new FileStream(std::move(name), mode);
+        auto result = m_streams[fileName] = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
         return result.Get();
     }
 

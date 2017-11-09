@@ -1,12 +1,14 @@
+#include "AppxPackaging.hpp"
 #include "Exceptions.hpp"
+#include "ComHelper.hpp"
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
-#include "AppxPackaging.hpp"
 #include "AppxPackageObject.hpp"
-#include "ComHelper.hpp"
+#include "UnicodeConversion.hpp"
 
 #include <string>
 #include <vector>
+#include <map>
 #include <memory>
 #include <functional>
 #include <limits>
@@ -19,6 +21,14 @@ namespace xPlat {
     #define CODEINTEGRITY_CAT "AppxMetadata/CodeIntegrity.cat"
     #define APPXSIGNATURE_P7X "AppxSignature.p7x"
     #define CONTENT_TYPES_XML "[Content_Types].xml"
+
+    static const std::map<APPX_FOOTPRINT_FILE_TYPE, std::string> footprintFiles = 
+    {
+        {APPX_FOOTPRINT_FILE_TYPE_MANIFEST,         APPXMANIFEST_XML},
+        {APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP,         APPXBLOCKMAP_XML},
+        {APPX_FOOTPRINT_FILE_TYPE_SIGNATURE,        APPXSIGNATURE_P7X},
+        {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY,    CODEINTEGRITY_CAT},
+    };
 
     AppxPackageId::AppxPackageId(
         const std::string& name,
@@ -36,9 +46,9 @@ namespace xPlat {
         // TODO: Implement
     }
 
-    AppxPackageObject::AppxPackageObject(APPX_VALIDATION_OPTION validation, std::unique_ptr<StorageObject>&& container) :
+    AppxPackageObject::AppxPackageObject(APPX_VALIDATION_OPTION validation, IStorageObject* container) :
         m_validation(validation),
-        m_container(std::move(container))
+        m_container(container)
     {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
@@ -79,7 +89,7 @@ namespace xPlat {
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
         // and partition the container's file names into footprint and payload files.
-        for (const auto& fileName : m_container->GetFileNames())
+        for (const auto& fileName : m_container->GetFileNames(FileNameOptions::All))
         {
             ComPtr<IStream> stream;
 
@@ -94,32 +104,32 @@ namespace xPlat {
                 stream = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(fileName));
             }
 
-            if (stream.Get() != nullptr) { m_streams[fileName] = stream.Detach(); }
+            if (stream.Get() != nullptr) { m_streams[fileName] = stream.Get(); }
         }
     }
 
-    void AppxPackageObject::Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, StorageObject& from)
+    void AppxPackageObject::Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
     }
 
-    void AppxPackageObject::Unpack(APPX_PACKUNPACK_OPTION options, StorageObject& to)
+    void AppxPackageObject::Unpack(APPX_PACKUNPACK_OPTION options, IStorageObject* to)
     {
-        auto fileNames = GetFileNames();
+        auto fileNames = GetFileNames(FileNameOptions::All);
         for (const auto& fileName : fileNames)
         {
             std::string targetName;
             if (options & APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
             {
-                targetName = GetAppxManifest()->GetPackageFullName() + to.GetPathSeparator() + fileName;
+                targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
             }
             else
             {
                 targetName = fileName;
             }
 
-            auto targetFile = to.OpenFile(targetName, xPlat::FileStream::Mode::WRITE_UPDATE);
+            auto targetFile = to->OpenFile(targetName, xPlat::FileStream::Mode::WRITE_UPDATE);
             auto sourceFile = GetFile(fileName);
 
             ULARGE_INTEGER bytesCount = {0};
@@ -130,10 +140,18 @@ namespace xPlat {
 
     std::string AppxPackageObject::GetPathSeparator() { return "/"; }
 
-    std::vector<std::string> AppxPackageObject::GetFileNames()
+    std::vector<std::string> AppxPackageObject::GetFileNames(FileNameOptions options)
     {
-        std::vector<std::string> result(m_footprintFiles.begin(), m_footprintFiles.end());
-        result.insert(result.end(), m_payloadFiles.begin(), m_payloadFiles.end());
+        std::vector<std::string> result;
+
+        if ((options & FileNameOptions::FootPrintOnly) == FileNameOptions::FootPrintOnly)
+        {
+            result.insert(result.end(), m_footprintFiles.begin(), m_footprintFiles.end());
+        }
+        if ((options & FileNameOptions::PayloadOnly) == FileNameOptions::PayloadOnly)
+        {
+            result.insert(result.end(), m_payloadFiles.begin(), m_payloadFiles.end());
+        }
         return result;
     }
 
@@ -149,7 +167,7 @@ namespace xPlat {
         throw Exception(Error::NotImplemented);
     }
 
-    IStream* AppxPackageObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    IStream* AppxPackageObject::OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode)
     {
         // TODO: Implement
         throw Exception(Error::NotImplemented);
@@ -162,64 +180,56 @@ namespace xPlat {
     }
 
     // IAppxPackageReader
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader**  blockMapReader)
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader** blockMapReader)
     {
         return xPlat::ResultOf([&]() {
             // TODO: Implement
             throw Exception(Error::NotImplemented);
         });
     }
-
+   
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file)
     {
         return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+            ThrowErrorIf(Error::InvalidParameter, (file == nullptr || *file != nullptr), "bad pointer");
+            auto footprint = footprintFiles.find(type);
+            ThrowErrorIf(Error::FileNotFound, (footprint == footprintFiles.end()), "unknown footprint file type");
+            ComPtr<IStream> stream = GetFile(footprint->second);
+            ThrowErrorIf(Error::FileNotFound, (stream.Get() == nullptr), "requested footprint file not in package")
+            // Clients expect the stream's pointer to be at the start of the file!
+            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
+            auto result = stream.As<IAppxFile>();
+            *file = result.Detach();
         });
     }
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFile(LPCWSTR fileName, IAppxFile** file)
     {
         return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+            ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
+            std::string name = utf16_to_utf8(fileName);
+            ComPtr<IStream> stream = GetFile(name);
+            ThrowErrorIf(Error::FileNotFound, (stream.Get() == nullptr), "requested file not in package")
+            // Clients expect the stream's pointer to be at the start of the file!
+            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
+            auto result = stream.As<IAppxFile>();
+            *file = result.Detach();
         });
     }
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFiles(IAppxFilesEnumerator** filesEnumerator)
     {
         return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+            ThrowErrorIf(Error::InvalidParameter,(filesEnumerator == nullptr || *filesEnumerator != nullptr), "bad pointer");
+
+            ComPtr<IStorageObject> storage;
+            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, reinterpret_cast<void**>(&storage)));
+            auto result = ComPtr<IAppxFilesEnumerator>::Make<AppxFilesEnumerator>(storage.Get());
+            *filesEnumerator = result.Detach();
         });
     }
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxManifestReader** manifestReader)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    // IAppxFilesEnumerator
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetCurrent(IAppxFile** file)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetHasCurrent(BOOL* hasCurrent)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::MoveNext(BOOL* hasNext)
     {
         return xPlat::ResultOf([&]() {
             // TODO: Implement

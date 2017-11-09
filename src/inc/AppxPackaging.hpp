@@ -14,15 +14,14 @@
 // and what is requiered if the interfaces change.
 
 /* Forward Declarations */
-
 #ifndef __appxpackaging_hpp__
 #define __appxpackaging_hpp__
+
+#include "AppxWindows.hpp"
 
 #ifdef WIN32
 #include <AppxPackaging.h>
 #else
-
-#include "AppxWindows.hpp"
 
 // Interfaces
 interface IUnknown;
@@ -1978,8 +1977,8 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE ValidateAppxSignature(char* appx);
 
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying 
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.
-typedef void* STDMETHODCALLTYPE COTASKMEMALLOC(size_t cb);
-typedef void STDMETHODCALLTYPE COTASKMEMFREE(void* pv);
+typedef LPVOID STDMETHODCALLTYPE COTASKMEMALLOC(SIZE_T cb);
+typedef void STDMETHODCALLTYPE COTASKMEMFREE(LPVOID pv);
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
@@ -1996,6 +1995,11 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
 // provided as a helper for platforms that do not have an implementation of SHCreateStreamOnFileEx
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     char* utf8File,
+    bool forRead,
+    IStream** stream);
+
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
+    LPCWSTR utf16File,
     bool forRead,
     IStream** stream);
 

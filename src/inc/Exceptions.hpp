@@ -18,13 +18,14 @@ namespace xPlat {
         //
         // Win32 error codes
         //
-        OK                          = 0,
+        OK                          = 0x00000000,
+        NotImplemented              = 0x80004001,
+        NoInterface                 = 0x80004002,
+        Unexpected                  = 0x8000ffff,
+        FileNotFound                = 0x80070002,
+        OutOfMemory                 = 0x8007000E,
         NotSupported                = 0x80070032,
         InvalidParameter            = 0x80070057,
-        NotImplemented              = 0x80070078,
-        OutOfMemory                 = 0x80000002,
-        Unexpected                  = 0x8000ffff,
-        NoInterface                 = 0x80000004,
 
         //
         // xPlat specific error codes
@@ -50,15 +51,17 @@ namespace xPlat {
         InflateInitialize           = ERROR_FACILITY + 0x0021,
         InflateRead                 = ERROR_FACILITY + 0x0022,
         InflateCorruptData          = ERROR_FACILITY + 0x0023,
-
-        // Signature errors
-        AppxSignatureInvalid        = ERROR_FACILITY + 0x0030,
+      
         // AppxPackage format errors
         AppxMissingSignatureP7X     = ERROR_FACILITY + 0x0031,
         AppxMissingContentTypesXML  = ERROR_FACILITY + 0x0032,
         AppxMissingBlockMapXML      = ERROR_FACILITY + 0x0033,
         AppxMissingAppxManifestXML  = ERROR_FACILITY + 0x0034,
         AppxDuplicateFootprintFile  = ERROR_FACILITY + 0x0035,
+
+        // Signature errors
+        AppxSignatureInvalid        = ERROR_FACILITY + 0x0041,
+        
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!

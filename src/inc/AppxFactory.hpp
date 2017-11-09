@@ -1,69 +1,61 @@
-#include "ComHelper.hpp"
+#pragma once
+
 #include "AppxPackaging.hpp"
+#include "AppxWindows.hpp"
+#include "ComHelper.hpp"
+
+#include <string>
+
+// internal interface
+EXTERN_C const IID IID_IxPlatFactory;   
+#ifndef WIN32
+MIDL_INTERFACE("1f850db4-32b8-4db6-8bf4-5a897eb611f1")
+interface IxPlatFactory : public IUnknown
+#else
+#include "UnKnwn.h"
+#include "Objidl.h"
+class IxPlatFactory : public IUnknown
+#endif
+{
+public:
+    #ifdef WIN32
+    virtual ~IxPlatFactory() {}
+    #endif
+    virtual HRESULT MarshalOutString(std::string& internal, LPWSTR *result) = 0;
+};
+
+SpecializeUuidOfImpl(IxPlatFactory);
 
 namespace xPlat {
-    class AppxFactory : public xPlat::ComClass<AppxFactory, IAppxFactory>
+    class AppxFactory : public ComClass<AppxFactory, IxPlatFactory, IAppxFactory>
     {
     public:
-        AppxFactory(COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : m_memalloc(memalloc), m_memfree(memfree)
+        AppxFactory(APPX_VALIDATION_OPTION validationOptions, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
+            m_validationOptions(validationOptions), m_memalloc(memalloc), m_memfree(memfree)
         {
             ThrowErrorIf(Error::InvalidParameter, (m_memalloc == nullptr || m_memfree == nullptr), "allocator/deallocator pair not specified.")
         }
 
         // IAppxFactory
-        HRESULT STDMETHODCALLTYPE CreatePackageWriter(
+        HRESULT STDMETHODCALLTYPE CreatePackageWriter (
             IStream* outputStream,
-            APPX_PACKAGE_SETTINGS* settings,
-            IAppxPackageWriter**packageWriter)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
+            APPX_PACKAGE_SETTINGS* ,//settings, TODO: plumb this through
+            IAppxPackageWriter** packageWriter) override;           
 
-        HRESULT STDMETHODCALLTYPE CreatePackageReader(
-            IStream* inputStream,
-            IAppxPackageReader** packageReader)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
+        HRESULT STDMETHODCALLTYPE CreatePackageReader (IStream* inputStream, IAppxPackageReader** packageReader) override;
+        HRESULT STDMETHODCALLTYPE CreateManifestReader(IStream* inputStream, IAppxManifestReader** manifestReader) override ;
+        HRESULT STDMETHODCALLTYPE CreateBlockMapReader (IStream* inputStream, IAppxBlockMapReader** blockMapReader) override;
 
-        HRESULT STDMETHODCALLTYPE CreateManifestReader(
-            IStream* inputStream,
-            IAppxManifestReader** manifestReader)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE CreateBlockMapReader(
-            IStream* inputStream,
-            IAppxBlockMapReader** blockMapReader)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE CreateValidatedBlockMapReader(
+        HRESULT STDMETHODCALLTYPE CreateValidatedBlockMapReader (
             IStream* blockMapStream,
             LPCWSTR signatureFileName,
-            IAppxBlockMapReader** blockMapReader)
-        {
-            return xPlat::ResultOf([&]() {
-                // TODO: Implement
-                throw Exception(Error::NotImplemented);
-            });
-        }
+            IAppxBlockMapReader** blockMapReader) override;
+
+        // IxPlatFactory
+        HRESULT MarshalOutString(std::string& internal, LPWSTR *result) override;
 
         COTASKMEMALLOC* m_memalloc;
         COTASKMEMFREE*  m_memfree;
+        APPX_VALIDATION_OPTION m_validationOptions;
     };
 }

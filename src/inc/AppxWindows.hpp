@@ -11,6 +11,10 @@
     #define XPLATAPPX_API extern "C" __declspec(dllexport) 
 
     // UNICODE MUST be defined before you include Windows.h if you want the non-ascii versions of APIs (and you do)
+    #ifdef UNICODE
+    #undef UNICODE
+    #endif
+
     #define UNICODE
     #define NOMINMAX    
     #include <windows.h>
@@ -42,10 +46,21 @@
     typedef unsigned short UINT16;
     typedef unsigned int UINT32;
     typedef unsigned long long UINT64;
-    typedef wchar_t LPWSTR;
-    typedef const wchar_t LPCWSTR;
+    typedef wchar_t WCHAR;
+    typedef WCHAR* LPWSTR;
+    typedef const WCHAR* LPCWSTR;
     typedef char BYTE;
-    typedef bool BOOL;
+    typedef int BOOL;
+    typedef size_t SIZE_T;
+    typedef void* LPVOID;
+
+    #ifndef FALSE
+    #define FALSE 0
+    #endif
+
+    #ifndef TRUE
+    #define TRUE 1
+    #endif
 
     typedef union _LARGE_INTEGER {
         struct {
@@ -121,12 +136,20 @@
     #define S_OK 0
     #endif
 
-    #ifndef SUCCEDED
-    #define SUCCEDED(hr) (((HRESULT)(hr)) >= 0)
+    #ifndef SUCCEEDED
+    #define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
     #endif
 
     #ifndef FAILED
-    #define FAILED(hr) !SUCCEDED(hr)
+    #define FAILED(hr) !SUCCEEDED(hr)
+    #endif
+
+    #ifndef FACILITY_WIN32
+    #define FACILITY_WIN32 7
+    #endif
+
+    #ifndef HRESULT_FROM_WIN32
+    #define HRESULT_FROM_WIN32(x) ((HRESULT)(x) <= 0 ? ((HRESULT)(x)) : ((HRESULT) (((x) & 0x0000FFFF) | (FACILITY_WIN32 << 16) | 0x80000000)))
     #endif
 
     #if !defined (_SYS_GUID_OPERATORS_)

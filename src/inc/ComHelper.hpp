@@ -17,10 +17,14 @@ namespace xPlat {
     template <typename I0, typename ...Interfaces>
     struct QIHelper<I0, Interfaces...> : I0, QIHelper<Interfaces...>
     {
-        bool IsIIDAMatch(REFIID riid)
+        bool Matches(REFIID riid, void** ppvObject)
         {
-            if (riid == UuidOfImpl<I0>::iid) { return true; }
-            return QIHelper<Interfaces...>::IsIIDAMatch(riid);
+            if (riid == UuidOfImpl<I0>::iid)
+            {
+                *ppvObject = static_cast<void*>(static_cast<I0*>(this));
+                return true;
+            }
+            return QIHelper<Interfaces...>::Matches(riid, ppvObject);
         }
     };
 
@@ -28,7 +32,11 @@ namespace xPlat {
     template <>
     struct QIHelper<>
     {
-        bool IsIIDAMatch(REFIID /*riid*/) { return false; }
+        bool Matches(REFIID /*riid*/, void** ppvObject)
+        {
+            *ppvObject = nullptr;
+            return false;
+        }
     };
 
     template <class T>
@@ -38,11 +46,19 @@ namespace xPlat {
         // default ctor
         ComPtr() : m_ptr(nullptr) {}
 
-        // For use via ComPtr<T> t(new Foo(...)); where Foo : public T
+        // For use instead of ComPtr<T> t(new Foo(...));
+        template<class U, class... Args>
+        static ComPtr<T> Make(Args&&... args)
+        {
+            ComPtr<T> result;
+            result.m_ptr = new U(std::forward<Args>(args)...);
+            return result;
+        }
+
         template<
-            class U, 
+            class U,
             typename = typename std::enable_if<
-                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
+                std::is_same<U,T>::value
             >::type
         >
         ComPtr(U* ptr) : m_ptr(ptr) { InternalAddRef(); }
@@ -50,31 +66,8 @@ namespace xPlat {
         // copy ctor
         ComPtr(const ComPtr& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
 
-        // copy ctor that allows instantiation of class when U* is convertible to T*
-        template<
-            class U, 
-            typename = typename std::enable_if<
-                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
-            >::type
-        >
-        ComPtr(const ComPtr<U>& right) : m_ptr(right.m_ptr) { InternalAddRef(); }
-
         // move ctor
         ComPtr(ComPtr &&right) : m_ptr(nullptr)
-        {
-            if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
-            {   Swap(right);
-            }
-        }
-
-        // move ctor that allows instantiation of a class when U* is convertible to T*
-        template<
-            class U, 
-            typename = typename std::enable_if<
-                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
-            >::type
-        >
-        ComPtr(ComPtr<U> &&right) : m_ptr(nullptr)
         {
             if (this != reinterpret_cast<ComPtr*>(&reinterpret_cast<std::int8_t&>(right)))
             {   Swap(right);
@@ -88,36 +81,16 @@ namespace xPlat {
             return *this;
         }
 
-        // Assignment operator... VERY important.
-        ComPtr& operator=(const ComPtr& right)
-        {
-            if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
-            return *this;
-        }
-
-        // Assignment operator of T*
-        ComPtr& operator=(T* right)
-        {   
-            if (m_ptr != right) { ComPtr(right).Swap(*this); }
-            return *this;
-        }
-
-        // Assignment operator when U* is convertible to T*
-        template<
-            class U, 
-            typename = typename std::enable_if<
-                std::is_convertible<U*,T*>::value || std::is_same<U,T>::value
-            >::type
-        >
-        ComPtr& operator=(U* right)
-        {   
-            ComPtr(right).Swap(*this);
-            return *this;
-        }
-
         ComPtr& operator=(ComPtr &&right)
         {   
             ComPtr(std::move(right)).Swap(*this);
+            return *this;
+        }
+
+        // Assignment operator...
+        ComPtr& operator=(const ComPtr& right)
+        {
+            if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
             return *this;
         }
 
@@ -125,17 +98,16 @@ namespace xPlat {
 
         inline T* operator->() const { return m_ptr; }
         inline T* Get() const { return m_ptr; }
+        
+        inline T* Detach() 
+        {   T* temp = m_ptr;
+            m_ptr = nullptr;
+            return temp;
+        }
 
         inline T** operator&()
         {   InternalRelease();
             return &m_ptr;
-        }
-
-        inline T* Detach()
-        {   
-            T* ptr = m_ptr;
-            m_ptr = nullptr;
-            return ptr;
         }
 
         template <class U>
@@ -179,15 +151,16 @@ namespace xPlat {
 
         virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
         {
-            *ppvObject = nullptr;
-            if (riid == UuidOfImpl<IUnknown>::iid || QIHelper<Interfaces...>::IsIIDAMatch(riid))
-            {
-                *ppvObject = static_cast<void*>(this);
-                AddRef();
-                return S_OK;
-            }
-            xPlat::Exception e = xPlat::Exception(xPlat::Error::NoInterface);
-            return e.Code();
+            return ResultOf([&]{
+                ThrowErrorIf(Error::InvalidParameter, (ppvObject == nullptr || *ppvObject != nullptr), "bad pointer");
+                *ppvObject = nullptr;
+                if (QIHelper<Interfaces...>::Matches(riid, ppvObject))
+                {
+                    AddRef();
+                    return S_OK;
+                }
+                throw xPlat::Exception(xPlat::Error::NoInterface);
+            });
         }
 
     protected:

@@ -4,6 +4,7 @@
 #include "RangeStream.hpp"
 #include "ZipObject.hpp"
 #include "DirectoryObject.hpp"
+#include "UnicodeConversion.hpp"
 #include "ComHelper.hpp"
 #include "AppxPackaging.hpp"
 #include "AppxPackageObject.hpp"
@@ -11,7 +12,12 @@
 
 #include <string>
 #include <memory>
+#include <cstdlib>
+#include <functional>
 
+#ifdef WIN32
+#include <Objbase.h>
+#endif
 
 //typedef void *BCRYPT_ALG_HANDLE;
 //typedef void *BCRYPT_HASH_HANDLE;
@@ -126,6 +132,10 @@ static void finalizer(void) {                               // 3
 
 #endif
 
+LPVOID STDMETHODCALLTYPE InternalAllocate(SIZE_T cb)  { return std::malloc(cb); }
+void STDMETHODCALLTYPE InternalFree(LPVOID pv)        { std::free(pv); }
+
+
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
     APPX_PACKUNPACK_OPTION packUnpackOptions,
     APPX_VALIDATION_OPTION validationOption,
@@ -133,18 +143,24 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
     char* utf8Destination)
 {
     return xPlat::ResultOf([&]() {
-        // TODO: what if source and destination are something OTHER than a file paths?
         ThrowErrorIfNot(xPlat::Error::InvalidParameter, 
             (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
             "Invalid parameters"
         );
 
+        xPlat::ComPtr<IAppxFactory> factory;
+        // We don't need to use the caller's heap here because we're not marshalling any strings
+        // out to the caller.  So default to new / delete[] and be done with it!
+        ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, validationOption, &factory));
+
         xPlat::ComPtr<IStream> stream;
         ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
-        auto zipObject = std::make_unique<xPlat::ZipObject>(stream.Get());
-        xPlat::AppxPackageObject appx(validationOption, std::move(zipObject));
-        xPlat::DirectoryObject to(utf8Destination);
-        appx.Unpack(packUnpackOptions, to);
+
+        xPlat::ComPtr<IAppxPackageReader> reader;
+        ThrowHrIfFailed(factory->CreatePackageReader(stream.Get(), &reader));
+
+        auto to = xPlat::ComPtr<IStorageObject>::Make<xPlat::DirectoryObject>(utf8Destination);
+        reader.As<IAppxPackage>()->Unpack(packUnpackOptions, to.Get());
     });
 }
 
@@ -165,21 +181,34 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
         xPlat::ComPtr<IStream> stream;
         ThrowHrIfFailed(CreateStreamOnFile(utf8Destination, false, &stream));
 
-        auto zipObject = std::make_unique<xPlat::ZipObject>(stream.Get());
-        xPlat::AppxPackageObject appx(validationOption, std::move(zipObject));
+        xPlat::ComPtr<IAppxFactory> factory;
+        ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, validationOption, &factory));
 
-        xPlat::DirectoryObject from(utf8FolderToPack);
-        appx.Pack(packUnpackOptions, utf8CertificatePath, from);
-        appx.CommitChanges();
+        // TODO: plumb these through
+        APPX_PACKAGE_SETTINGS option {0};
+        xPlat::ComPtr<IAppxPackageWriter> writer;
+        ThrowHrIfFailed(factory->CreatePackageWriter(stream.Get(), &option, &writer));
+
+        auto from = xPlat::ComPtr<IStorageObject>::Make<xPlat::DirectoryObject>(utf8FolderToPack);
+        writer.As<IAppxPackage>()->Pack(packUnpackOptions, utf8CertificatePath, from.Get());
     });
 }
 
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE ValidateAppxSignature(char* appx)
 {
     return xPlat::ResultOf([&]() {
-        xPlat::ComPtr<IStream> rawFile(new xPlat::FileStream(appx, xPlat::FileStream::Mode::READ));
+        auto rawFile = xPlat::ComPtr<IStream>::Make<xPlat::FileStream>(appx, xPlat::FileStream::Mode::READ);
         {
-            xPlat::ZipObject zip(rawFile.Get());
+            APPX_VALIDATION_OPTION validationOption = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
+
+            std::function<LPVOID STDMETHODCALLTYPE(SIZE_T cb)> allocator=[](SIZE_T cb){return std::malloc(cb);};
+            std::function<void STDMETHODCALLTYPE(LPVOID pv)> deallocator=[](LPVOID pv){ std::free(pv);};
+
+            xPlat::ComPtr<IAppxFactory> factory;
+            ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, validationOption, &factory));
+
+            auto internalFactory = factory.As<IxPlatFactory>();
+            xPlat::ZipObject zip(internalFactory.Get(), rawFile.Get());
             auto p7xStream = zip.GetFile("AppxSignature.p7x");
             std::vector<std::uint8_t> buffer(sizeof(_BLOBHEADER));
 
@@ -203,10 +232,21 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     IStream** stream)
 {
     return xPlat::ResultOf([&]() {
-        xPlat::ComPtr<IStream> file(new xPlat::FileStream(utf8File, forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE));
-        *stream = file.Detach();
+        xPlat::FileStream::Mode mode = forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE;
+        *stream = xPlat::ComPtr<IStream>::Make<xPlat::FileStream>(utf8File, mode).Detach();
     });
 }
+
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
+    LPCWSTR utf16File,
+    bool forRead,
+    IStream** stream)
+{
+    return xPlat::ResultOf([&]() {
+        xPlat::FileStream::Mode mode = forRead ? xPlat::FileStream::Mode::READ : xPlat::FileStream::Mode::WRITE_UPDATE;
+        *stream = xPlat::ComPtr<IStream>::Make<xPlat::FileStream>(xPlat::utf16_to_utf8(utf16File), mode).Detach();
+    });
+}    
 
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
@@ -215,8 +255,7 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     IAppxFactory** appxFactory)
 {
     return xPlat::ResultOf([&]() {
-        xPlat::ComPtr<IAppxFactory> result(new xPlat::AppxFactory(memalloc, memfree));
-        *appxFactory = result.Detach();
+        *appxFactory = xPlat::ComPtr<IAppxFactory>::Make<xPlat::AppxFactory>(validationOption, memalloc, memfree).Detach();
     });
 }
 
@@ -225,10 +264,9 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     APPX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory)
 {
-    // #ifdef WIN32
-    //     return CoCreateAppxFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);
-    // #else
-    //     return CoCreateAppxFactoryWithHeap(new, delete[], validationOption, AppxFactory);
-    // #endif
-    return static_cast<HRESULT>(xPlat::Error::NotImplemented);
+    #ifdef WIN32
+        return CoCreateAppxFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);
+    #else
+        return static_cast<HRESULT>(xPlat::Error::NotSupported);
+    #endif
 }    
