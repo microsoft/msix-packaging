@@ -5,6 +5,7 @@
 #include "AppxPackaging.hpp"
 #include "HashStream.hpp"
 #include "ComHelper.hpp"
+#include "SignatureValidator.hpp"
 
 #include <string>
 #include <vector>
@@ -17,7 +18,7 @@ AppxSignatureObject::AppxSignatureObject(APPX_VALIDATION_OPTION validationOption
     VerifierObject(stream), 
     m_validationOptions(validationOptions)
 {
-    
+    SignatureValidator::Validate(validationOptions, stream, m_digests);
 }
 
 IStream* AppxSignatureObject::GetValidationStream(const std::string& part, IStream* stream)
