@@ -19,27 +19,32 @@ namespace xPlat {
         HashStream(IStream* stream, std::vector<byte>& expectedHash) :
             m_relativePosition(0)
         {
-            m_expectedHash.assign(expectedHash.begin(), expectedHash.end());
-            STATSTG statstg = { 0 };
-            HRESULT hr = stream->Stat(&statstg, STATFLAG_NONAME);
-
-            //TODO: validate that statstg.cbSize is reasonable here
-            if (FAILED(hr) || statstg.cbSize.LowPart == 0)
-                throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
-
+            HRESULT hr;
             ULARGE_INTEGER uli;
             LARGE_INTEGER li;
+            std::uint32_t streamSize;
+            
+            m_expectedHash.assign(expectedHash.begin(), expectedHash.end());
+            
+            li.QuadPart = 0;
+            hr = stream->Seek(li, STREAM_SEEK_END, &uli);
+
+            if (FAILED(hr) || uli.QuadPart == 0)
+                throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
+
+            streamSize = uli.LowPart;
+
             li.QuadPart = 0;
             hr = stream->Seek(li, STREAM_SEEK_SET, &uli);
 
             if (FAILED(hr) || uli.QuadPart != 0)
                 throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
 
-            m_cacheBuffer.resize(statstg.cbSize.LowPart);
+            m_cacheBuffer.resize(streamSize);
             ULONG bytesRead = 0;
             hr = stream->Read(m_cacheBuffer.data(), m_cacheBuffer.size(), &bytesRead);
 
-            if (FAILED(hr) || bytesRead != statstg.cbSize.LowPart)
+            if (FAILED(hr) || bytesRead != streamSize)
                 throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
 
             std::vector<std::uint8_t> hash;
