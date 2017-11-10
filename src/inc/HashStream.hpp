@@ -49,10 +49,10 @@ namespace xPlat {
             if (m_cacheBuffer.size() != hash.size())
                 throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
 
-            bool hashesMatch = (memcmp(m_cacheBuffer.data(), hash.data(), m_cacheBuffer.size()) == 0);
-
-            if (!hashesMatch)
-                throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
+            ThrowErrorIfNot(
+                xPlat::Error::AppxSignatureInvalid,
+                memcmp(m_cacheBuffer.data(), hash.data(), m_cacheBuffer.size()) == 0,
+                "Signature hash doesn't match digest hash"); //TODO: better exception
         }
 
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
