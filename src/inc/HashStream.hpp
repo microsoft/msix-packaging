@@ -24,8 +24,6 @@ namespace xPlat {
             LARGE_INTEGER li;
             std::uint32_t streamSize;
             
-            m_expectedHash.assign(expectedHash.begin(), expectedHash.end());
-            
             li.QuadPart = 0;
             hr = stream->Seek(li, STREAM_SEEK_END, &uli);
 
@@ -34,7 +32,6 @@ namespace xPlat {
 
             streamSize = uli.LowPart;
 
-            li.QuadPart = 0;
             hr = stream->Seek(li, STREAM_SEEK_SET, &uli);
 
             if (FAILED(hr) || uli.QuadPart != 0)
@@ -51,12 +48,12 @@ namespace xPlat {
             if (!xPlat::SHA256::ComputeHash(m_cacheBuffer.data(), m_cacheBuffer.size(), hash))
                 throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
 
-            if (m_cacheBuffer.size() != hash.size())
+            if (expectedHash.size() != hash.size())
                 throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
 
             ThrowErrorIfNot(
                 xPlat::Error::AppxSignatureInvalid,
-                memcmp(m_cacheBuffer.data(), hash.data(), m_cacheBuffer.size()) == 0,
+                memcmp(expectedHash.data(), hash.data(), hash.size()) == 0,
                 "Signature hash doesn't match digest hash"); //TODO: better exception
         }
 
@@ -101,7 +98,6 @@ namespace xPlat {
         }
       
     protected:
-        std::vector<std::uint8_t> m_expectedHash;
         std::vector<std::uint8_t> m_cacheBuffer;
         std::uint32_t m_relativePosition;
     };
