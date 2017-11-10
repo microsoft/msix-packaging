@@ -25,7 +25,7 @@ namespace xPlat {
 
         IStream* GetValidationStream(const std::string& part, IStream* stream) override;
 
-        using Digest = std::vector<std::int8_t>;
+        using Digest = std::vector<std::uint8_t>;
 
         SignatureOrigin GetSignatureOrigin() { return m_signatureOrigin; }
         Digest& GetFileRecordsDigest()       { return m_digests[DigestName::AXPC]; }
@@ -48,5 +48,6 @@ namespace xPlat {
         std::map<DigestName, Digest> m_digests;
         SignatureOrigin              m_signatureOrigin = SignatureOrigin::Unsigned; // assume unsigned until proven otherwise.
         APPX_VALIDATION_OPTION       m_validationOptions;
+        bool                         m_validatedSignature;
     };
 } // namespace xPlat

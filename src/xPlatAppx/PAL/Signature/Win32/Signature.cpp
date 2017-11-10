@@ -60,6 +60,13 @@ namespace xPlat
     typedef std::unique_ptr<void, unique_cert_store_handle_deleter> unique_cert_store_handle;
     typedef std::unique_ptr<void, unique_crypt_msg_handle_deleter> unique_crypt_msg_handle;
 
+    // Object identifier for the Windows Store certificate. We look for this
+    // identifier in the cert EKUs to determine if the cert originates from
+    // Windows Store.
+    const std::string WindowsStoreOid = "1.3.6.1.4.1.311.76.3.1";
+
+    // APPX-specific header placed in the P7X file, before the actual signature
+    const DWORD P7X_FILE_ID = 0x58434b50;
 
     static bool IsCACert(_In_ PCCERT_CONTEXT pCertContext)
     {
@@ -187,7 +194,7 @@ namespace xPlat
     
     
     
-    static bool AppxSignatureOrigin::IsStoreOrigin(byte* signatureBuffer, ULONG cbSignatureBuffer)
+    static bool IsStoreOrigin(byte* signatureBuffer, ULONG cbSignatureBuffer)
     {
         bool retValue = false;
         try
@@ -205,7 +212,7 @@ namespace xPlat
     }
 
 
-    static bool AppxSignatureOrigin::DoesSignatureCertContainStoreEKU(
+    static bool DoesSignatureCertContainStoreEKU(
         _In_ byte* rawSignatureBuffer,
         _In_ ULONG dataSize)
     {
@@ -434,55 +441,14 @@ namespace xPlat
         return (result) ? policyStatus.dwError : E_FAIL;
     }
 
-    AppxSignatureObject::AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, IStream* stream)
+    AppxSignatureObject::AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, IStream* stream) : 
+        VerifierObject(stream), 
+        m_validationOptions(validationOptions),
+        m_validatedSignature(false)
     {
-
+        // TODO: Implement
     }
 }
-
-
-
-#ifdef DISABLED
-IStream* ReadFile(char *filename)
-{
-    FILE* f;
-    fopen_s(&f, filename, "rb");
-    fseek(f, 0, SEEK_END);
-    long length = ftell(f);
-    fseek(f, 0, SEEK_SET);
-
-    HGLOBAL hglobal = (BYTE*)GlobalAlloc(GMEM_FIXED, length);
-    BYTE *buffer = (BYTE*)GlobalLock(hglobal);
-    size_t count = fread_s(buffer, length, sizeof(BYTE), length, f);
-    std::vector<byte> hash(length);
-    xPlat::AppxSignatureOrigin::GenerateSHA256Hash(hash.data(), length, hash);
-    
-    IStream *stream;
-    HRESULT hr = CreateStreamOnHGlobal(hglobal, TRUE/*deleteOnRelease*/, &stream);
-
-    fclose(f);
-    return stream;
-}
-
-
-int CALLBACK WinMain(
-    _In_ HINSTANCE hInstance,
-    _In_ HINSTANCE hPrevInstance,
-    _In_ LPSTR     lpCmdLine,
-    _In_ int       nCmdShow
-)
-{
-    IStream *stream; //TODO: USE ComPtr
-   
-    bool ret = xPlat::AppxSignatureOrigin::ValidateSignature(ReadFile("e:\\AppxSignature.p7x"));
-    ret = xPlat::AppxSignatureOrigin::ValidateSignature(ReadFile("e:\\UntrustedSignature.p7x"));
-    ret = xPlat::AppxSignatureOrigin::ValidateSignature(ReadFile("e:\\EnterpriseSignature.p7x"));
-    ret = xPlat::AppxSignatureOrigin::ValidateSignature(ReadFile("e:\\InboxSignature.p7x"));
-    ret = xPlat::AppxSignatureOrigin::ValidateSignature(ReadFile("e:\\UntrustedChain.p7x"));
-        
-    return 0;
-}
-#endif //DISABLED
 
 
 

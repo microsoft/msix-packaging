@@ -12,7 +12,8 @@ project(${LIBRARY_NAME})
 # Define PALs
 IF(WIN32)
 	set (XPLATAPPX_API=1)
-	set (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
+    set (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
+    set (SHA256 PAL/SHA256/Win32/SHA256.cpp)
 ELSE()
     # TODO: Apple deprecated OpenSSL because there isn't a stable ABI.
     # we should just build OpenSSL and statically include the library
@@ -79,7 +80,8 @@ set(LIB_SOURCES
     UnicodeConversion.cpp
 	xPlatAppx.cpp
 	ZipObject.cpp
-	${DirectoryObject}
+    ${DirectoryObject}
+    ${SHA256}
 )
 
 # Copy out public headers
@@ -116,3 +118,7 @@ IF(OPENSSL_FOUND)
     # include the libraries needed to use OpenSSL
     target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES})
 ENDIF()
+
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} bcrypt crypt32)
+endif()

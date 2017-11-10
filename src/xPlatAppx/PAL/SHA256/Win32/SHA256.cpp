@@ -1,14 +1,32 @@
-#include "Exceptions.hpp"
-#include "SHA256.hpp"
 #include <windows.h>
 #include <bcrypt.h>
+#include <winternl.h>
+//#include <ntstatus.h>
+#include <winerror.h>
+#include "Exceptions.hpp"
+#include "SHA256.hpp"
 
 #include <memory>
 #include <vector>
 
+struct unique_hash_handle_deleter {
+    void operator()(BCRYPT_HASH_HANDLE h) const {
+        BCryptDestroyHash(h);
+    };
+};
+
+struct unique_alg_handle_deleter {
+    void operator()(BCRYPT_ALG_HANDLE h) const {
+        BCryptCloseAlgorithmProvider(h, 0);
+    };
+};
+
+typedef std::unique_ptr<void, unique_alg_handle_deleter> unique_alg_handle;
+typedef std::unique_ptr<void, unique_hash_handle_deleter> unique_hash_handle;
+
 namespace xPlat {
 
-    static bool SHA256::ComputeHash(/*in*/ std::uint8_t* buffer, /*in*/ std::uint32_t cbBuffer, /*inout*/ std::vector<uint8_t>& hash)
+    bool SHA256::ComputeHash(/*in*/ std::uint8_t* buffer, /*in*/ std::uint32_t cbBuffer, /*inout*/ std::vector<uint8_t>& hash)
     {
         NTSTATUS    status;
 
