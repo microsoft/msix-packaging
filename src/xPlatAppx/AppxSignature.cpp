@@ -24,10 +24,6 @@ IStream* AppxSignatureObject::GetValidationStream(const std::string& part, IStre
 {
     if (!(m_validationOptions & APPX_VALIDATION_OPTION_SKIPSIGNATURE))
     {
-        // If we did not completion validation, it means we threw in the constructor and the caller
-        // is trying methods on a failed AppxSignatureObject. The only thing to do is throw.
-        if (m_validatedSignature)
-        {
             if (part == std::string("AppxBlockMap.xml"))
             {
                 // This stream implementation will throw if the underlying stream does not match the digest
@@ -47,9 +43,7 @@ IStream* AppxSignatureObject::GetValidationStream(const std::string& part, IStre
                 // This stream implementation will throw if the underlying stream does not match the digest
                 auto result = ComPtr<IStream>::Make<HashStream>(stream, this->GetCodeIntegrityDigest());
                 return result.Detach();
-            }
-        }
-        throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
+            }        
     }
     return stream;
 }

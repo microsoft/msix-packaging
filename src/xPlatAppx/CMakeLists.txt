@@ -14,6 +14,7 @@ IF(WIN32)
 	set (XPLATAPPX_API=1)
     set (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
     set (SHA256 PAL/SHA256/Win32/SHA256.cpp)
+    set (Signature PAL/Signature/Win32/Signature.cpp)
 ELSE()
     # TODO: Apple deprecated OpenSSL because there isn't a stable ABI.
     # we should just build OpenSSL and statically include the library
@@ -43,6 +44,8 @@ ELSE()
 ENDIF()
 
 MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
+MESSAGE (STATUS "PAL: SHA256 = ${SHA256}")
+MESSAGE (STATUS "PAL: Signature = ${Signature}")
 
 set(LIB_PUBLIC_HEADERS
     ../inc/AppxPackaging.hpp
@@ -82,6 +85,7 @@ set(LIB_SOURCES
 	ZipObject.cpp
     ${DirectoryObject}
     ${SHA256}
+    ${Signature}
 )
 
 # Copy out public headers

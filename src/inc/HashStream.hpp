@@ -17,7 +17,6 @@ namespace xPlat {
     {
     public:
         HashStream(IStream* stream, std::vector<byte>& expectedHash) :
-            m_hashesMatch(false),
             m_relativePosition(0)
         {
             m_expectedHash.assign(expectedHash.begin(), expectedHash.end());
@@ -50,38 +49,31 @@ namespace xPlat {
             if (m_cacheBuffer.size() != hash.size())
                 throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
 
-            m_hashesMatch = (memcmp(m_cacheBuffer.data(), hash.data(), m_cacheBuffer.size()) == 0);
+            bool hashesMatch = (memcmp(m_cacheBuffer.data(), hash.data(), m_cacheBuffer.size()) == 0);
 
-            if (!m_hashesMatch)
+            if (!hashesMatch)
                 throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
         }
 
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
         {
-            if (m_hashesMatch)
+            LARGE_INTEGER newPos = { 0 };
+            switch (origin)
             {
-                LARGE_INTEGER newPos = { 0 };
-                switch (origin)
-                {
-                    case Reference::CURRENT:
-                        m_relativePosition += move.LowPart;
-                        break;
-                    case Reference::START:
-                        m_relativePosition = move.LowPart;
-                        break;
-                    case Reference::END:
-                        m_relativePosition = m_cacheBuffer.size();
-                        break;
-                }
-                m_relativePosition = std::max((std::uint32_t)0, std::min(m_relativePosition, (std::uint32_t)m_cacheBuffer.size()));
-                if (newPosition)
-                {
-                    newPosition->QuadPart = (std::uint64_t)m_relativePosition;
-                }
+                case Reference::CURRENT:
+                    m_relativePosition += move.LowPart;
+                    break;
+                case Reference::START:
+                    m_relativePosition = move.LowPart;
+                    break;
+                case Reference::END:
+                    m_relativePosition = m_cacheBuffer.size();
+                    break;
             }
-            else
+            m_relativePosition = std::max((std::uint32_t)0, std::min(m_relativePosition, (std::uint32_t)m_cacheBuffer.size()));
+            if (newPosition)
             {
-                throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
+                newPosition->QuadPart = (std::uint64_t)m_relativePosition;
             }
             return S_OK;
         }
@@ -91,27 +83,19 @@ namespace xPlat {
             HRESULT hr = STG_E_INVALIDPOINTER;
             if (buffer)
             {
-                if (m_hashesMatch)
+                ULONG bytesToRead = std::min((std::uint32_t)countBytes, (std::uint32_t)m_cacheBuffer.size() - m_relativePosition);
+                if (bytesToRead)
                 {
-                    ULONG bytesToRead = std::min((std::uint32_t)countBytes, (std::uint32_t)m_cacheBuffer.size() - m_relativePosition);
-                    if (bytesToRead)
-                    {
-                        memcpy(buffer, reinterpret_cast<BYTE*>(m_cacheBuffer.data()) + m_relativePosition, bytesToRead);
-                    }
-                    if (actualRead)
-                        *actualRead = bytesToRead;
-                    hr = (countBytes = bytesToRead) ? S_OK : S_FALSE;
+                    memcpy(buffer, reinterpret_cast<BYTE*>(m_cacheBuffer.data()) + m_relativePosition, bytesToRead);
                 }
-                else
-                {
-                    throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
-                }
+                if (actualRead)
+                    *actualRead = bytesToRead;
+                hr = (countBytes = bytesToRead) ? S_OK : S_FALSE;
             }
             return hr;
         }
       
     protected:
-        bool m_hashesMatch;
         std::vector<std::uint8_t> m_expectedHash;
         std::vector<std::uint8_t> m_cacheBuffer;
         std::uint32_t m_relativePosition;
