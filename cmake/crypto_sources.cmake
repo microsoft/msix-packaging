@@ -93,37 +93,32 @@ ${CRYPTO}asn1/x_val.c
 ${CRYPTO}asn1/x_x509.c
 ${CRYPTO}asn1/x_x509a.c
 
-#${CRYPTO}bf/bf_cbc.c
-#${CRYPTO}bf/bf_cfb64.c
-#${CRYPTO}bf/bf_ecb.c
-#${CRYPTO}bf/bf_enc.c
-#${CRYPTO}bf/bf_ofb64.c
-#${CRYPTO}bf/bf_opts.c
-#${CRYPTO}bf/bf_skey.c
-#${CRYPTO}bf/bfspeed.c
-#${CRYPTO}bf/bftest.c
+${CRYPTO}bf/bf_cfb64.c
+${CRYPTO}bf/bf_ecb.c
+${CRYPTO}bf/bf_enc.c
+${CRYPTO}bf/bf_ofb64.c
+${CRYPTO}bf/bf_skey.c
 
-#${CRYPTO}bio/b_dump.c
-#${CRYPTO}bio/b_print.c
-#${CRYPTO}bio/b_sock.c
-#${CRYPTO}bio/bf_buff.c
-#${CRYPTO}bio/bf_lbuf.c
-#${CRYPTO}bio/bf_nbio.c
-#${CRYPTO}bio/bf_null.c
-#${CRYPTO}bio/bio_cb.c
-#${CRYPTO}bio/bio_err.c
-#${CRYPTO}bio/bio_lib.c
-#${CRYPTO}bio/bss_acpt.c
-#${CRYPTO}bio/bss_bio.c
-#${CRYPTO}bio/bss_conn.c
-#${CRYPTO}bio/bss_dgram.c
-#${CRYPTO}bio/bss_fd.c
-#${CRYPTO}bio/bss_file.c
-#${CRYPTO}bio/bss_log.c
-#${CRYPTO}bio/bss_mem.c
-#${CRYPTO}bio/bss_null.c
-#${CRYPTO}bio/bss_rtcp.c
-#${CRYPTO}bio/bss_sock.c
+${CRYPTO}bio/b_dump.c
+${CRYPTO}bio/b_print.c
+${CRYPTO}bio/b_sock.c
+${CRYPTO}bio/bf_buff.c
+${CRYPTO}bio/bf_lbuf.c
+${CRYPTO}bio/bf_nbio.c
+${CRYPTO}bio/bf_null.c
+${CRYPTO}bio/bio_cb.c
+${CRYPTO}bio/bio_err.c
+${CRYPTO}bio/bio_lib.c
+${CRYPTO}bio/bss_acpt.c
+${CRYPTO}bio/bss_bio.c
+${CRYPTO}bio/bss_conn.c
+${CRYPTO}bio/bss_dgram.c
+${CRYPTO}bio/bss_fd.c
+${CRYPTO}bio/bss_file.c
+${CRYPTO}bio/bss_log.c
+${CRYPTO}bio/bss_mem.c
+${CRYPTO}bio/bss_null.c
+${CRYPTO}bio/bss_sock.c
 
 #${CRYPTO}bn/asm/x86_64-gcc.c
 ${CRYPTO}bn/bn_add.c
@@ -134,7 +129,6 @@ ${CRYPTO}bn/bn_ctx.c
 ${CRYPTO}bn/bn_depr.c
 ${CRYPTO}bn/bn_div.c
 ${CRYPTO}bn/bn_err.c
-#${CRYPTO}bn/bn_exp.c <- tmdiff.h missing?!
 ${CRYPTO}bn/bn_exp2.c
 ${CRYPTO}bn/bn_gcd.c
 ${CRYPTO}bn/bn_gf2m.c
@@ -156,8 +150,6 @@ ${CRYPTO}bn/bn_word.c
 ${CRYPTO}bn/bn_x931p.c
 ${CRYPTO}bn/bnspeed.c
 ${CRYPTO}bn/bntest.c
-#${CRYPTO}bn/divtest.c <- looks broken on the face of it.
-#${CRYPTO}bn/exp.c  <- tmdiff.h missing?!
 ${CRYPTO}bn/expspeed.c
 ${CRYPTO}bn/exptest.c
 ${CRYPTO}bn/rsaz_exp.c
@@ -181,8 +173,6 @@ ${CRYPTO}cast/c_ecb.c
 ${CRYPTO}cast/c_enc.c
 ${CRYPTO}cast/c_ofb64.c
 ${CRYPTO}cast/c_skey.c
-#${CRYPTO}cast/cast_spd.c <- looks broken on the face of it.
-#${CRYPTO}cast/castopts.c <- looks broken on the face of it.
 ${CRYPTO}cast/casttest.c
 
 ${CRYPTO}cmac/cm_ameth.c
@@ -209,7 +199,6 @@ ${CRYPTO}comp/c_zlib.c
 ${CRYPTO}comp/comp_err.c
 ${CRYPTO}comp/comp_lib.c
 
-#${CRYPTO}conf/cnf_save.c <- looks broken on the face of it.
 ${CRYPTO}conf/conf_api.c
 ${CRYPTO}conf/conf_def.c
 ${CRYPTO}conf/conf_err.c
@@ -217,47 +206,38 @@ ${CRYPTO}conf/conf_lib.c
 ${CRYPTO}conf/conf_mall.c
 ${CRYPTO}conf/conf_mod.c
 ${CRYPTO}conf/conf_sap.c
-#${CRYPTO}conf/test.c <- looks broken on the face of it.
 
 ${CRYPTO}constant_time_test.c
 ${CRYPTO}cpt_err.c
 ${CRYPTO}cryptlib.c
 ${CRYPTO}cversion.c
 
-#${CRYPTO}des/cbc_cksm.c
-#${CRYPTO}des/cbc_enc.c
-#${CRYPTO}des/cbc3_enc.c
-#${CRYPTO}des/cfb_enc.c
-#${CRYPTO}des/cfb64ede.c
-#${CRYPTO}des/cfb64enc.c
-#${CRYPTO}des/des_enc.c
-#${CRYPTO}des/des_old.c
-#${CRYPTO}des/des_old2.c
-#${CRYPTO}des/des_opts.c
-#${CRYPTO}des/des.c
-#${CRYPTO}des/destest.c
-#${CRYPTO}des/ecb_enc.c
-#${CRYPTO}des/ecb3_enc.c
-#${CRYPTO}des/ede_cbcm_enc.c
-#${CRYPTO}des/enc_read.c
-#${CRYPTO}des/enc_writ.c
-#${CRYPTO}des/fcrypt_b.c
-#${CRYPTO}des/fcrypt.c
-#${CRYPTO}des/ncbc_enc.c
-#${CRYPTO}des/ofb_enc.c
-#${CRYPTO}des/ofb64ede.c
-#${CRYPTO}des/ofb64enc.c
-#${CRYPTO}des/pcbc_enc.c
-#${CRYPTO}des/qud_cksm.c
-#${CRYPTO}des/rand_key.c
-#${CRYPTO}des/read_pwd.c
-#${CRYPTO}des/read2pwd.c
-#${CRYPTO}des/rpc_enc.c
-#${CRYPTO}des/rpw.c
-#${CRYPTO}des/set_key.c
-#${CRYPTO}des/speed.c
-#${CRYPTO}des/str2key.c
-#${CRYPTO}des/xcbc_enc.c
+${CRYPTO}des/cbc_cksm.c
+${CRYPTO}des/cbc_enc.c
+${CRYPTO}des/cfb_enc.c
+${CRYPTO}des/cfb64ede.c
+${CRYPTO}des/cfb64enc.c
+${CRYPTO}des/des_enc.c
+${CRYPTO}des/des_old.c
+${CRYPTO}des/des_old2.c
+${CRYPTO}des/ecb_enc.c
+${CRYPTO}des/ecb3_enc.c
+${CRYPTO}des/ede_cbcm_enc.c
+${CRYPTO}des/enc_read.c
+${CRYPTO}des/enc_writ.c
+${CRYPTO}des/fcrypt_b.c
+${CRYPTO}des/fcrypt.c
+${CRYPTO}des/ofb_enc.c
+${CRYPTO}des/ofb64ede.c
+${CRYPTO}des/ofb64enc.c
+${CRYPTO}des/pcbc_enc.c
+${CRYPTO}des/qud_cksm.c
+${CRYPTO}des/rand_key.c
+${CRYPTO}des/read2pwd.c
+${CRYPTO}des/rpc_enc.c
+${CRYPTO}des/set_key.c
+${CRYPTO}des/str2key.c
+${CRYPTO}des/xcbc_enc.c
 
 ${CRYPTO}dh/dh_ameth.c
 ${CRYPTO}dh/dh_asn1.c
@@ -272,9 +252,6 @@ ${CRYPTO}dh/dh_pmeth.c
 ${CRYPTO}dh/dh_prn.c
 ${CRYPTO}dh/dh_rfc5114.c
 ${CRYPTO}dh/dhtest.c
-#${CRYPTO}dh/p1024.c <- looks broken on the face of it.
-#${CRYPTO}dh/p192.c  <- looks broken on the face of it.
-#${CRYPTO}dh/p512.c  <- looks broken on the face of it.
 
 ${CRYPTO}dsa/dsa_ameth.c
 ${CRYPTO}dsa/dsa_asn1.c
@@ -288,7 +265,6 @@ ${CRYPTO}dsa/dsa_pmeth.c
 ${CRYPTO}dsa/dsa_prn.c
 ${CRYPTO}dsa/dsa_sign.c
 ${CRYPTO}dsa/dsa_vrf.c
-#${CRYPTO}dsa/dsagen.c  <- looks broken on the face of it.
 ${CRYPTO}dsa/dsatest.c
 
 #${CRYPTO}dso/dso_beos.c 	<- really?!
@@ -303,33 +279,26 @@ ${CRYPTO}dso/dso_openssl.c
 
 ${CRYPTO}ebcdic.c
 
-#${CRYPTO}ec/ec_ameth.c
-#${CRYPTO}ec/ec_asn1.c
-#${CRYPTO}ec/ec_check.c
-#${CRYPTO}ec/ec_curve.c
-#${CRYPTO}ec/ec_cvt.c
-#${CRYPTO}ec/ec_err.c
-#${CRYPTO}ec/ec_key.c
-#${CRYPTO}ec/ec_lib.c
-#${CRYPTO}ec/ec_mult.c
-#${CRYPTO}ec/ec_oct.c
-#${CRYPTO}ec/ec_pmeth.c
-#${CRYPTO}ec/ec_print.c
-#${CRYPTO}ec/ec2_mult.c
-#${CRYPTO}ec/ec2_oct.c
-#${CRYPTO}ec/ec2_smpl.c
-#${CRYPTO}ec/eck_prn.c
-#${CRYPTO}ec/ecp_mont.c
-#${CRYPTO}ec/ecp_nist.c
-#${CRYPTO}ec/ecp_nistp224.c
-#${CRYPTO}ec/ecp_nistp256.c
-#${CRYPTO}ec/ecp_nistp521.c
-#${CRYPTO}ec/ecp_nistputil.c
-#${CRYPTO}ec/ecp_nistz256_table.c
-#${CRYPTO}ec/ecp_nistz256.c
-#${CRYPTO}ec/ecp_oct.c
-#${CRYPTO}ec/ecp_smpl.c
-#${CRYPTO}ec/ectest.c
+${CRYPTO}ec/ec_ameth.c
+${CRYPTO}ec/ec_asn1.c
+${CRYPTO}ec/ec_check.c
+${CRYPTO}ec/ec_curve.c
+${CRYPTO}ec/ec_cvt.c
+${CRYPTO}ec/ec_err.c
+${CRYPTO}ec/ec_key.c
+${CRYPTO}ec/ec_lib.c
+${CRYPTO}ec/ec_mult.c
+${CRYPTO}ec/ec_oct.c
+${CRYPTO}ec/ec_pmeth.c
+${CRYPTO}ec/ec_print.c
+${CRYPTO}ec/ec2_mult.c
+${CRYPTO}ec/ec2_oct.c
+${CRYPTO}ec/ec2_smpl.c
+${CRYPTO}ec/eck_prn.c
+${CRYPTO}ec/ecp_mont.c
+${CRYPTO}ec/ecp_nist.c
+${CRYPTO}ec/ecp_oct.c
+${CRYPTO}ec/ecp_smpl.c
 
 ${CRYPTO}ecdh/ecdhtest.c
 ${CRYPTO}ecdh/ech_err.c
@@ -393,7 +362,6 @@ ${CRYPTO}evp/e_camellia.c
 ${CRYPTO}evp/e_cast.c
 ${CRYPTO}evp/e_des.c
 ${CRYPTO}evp/e_des3.c
-#${CRYPTO}evp/e_dsa.c <- looks broken on the face of it.
 ${CRYPTO}evp/e_idea.c
 ${CRYPTO}evp/e_null.c
 ${CRYPTO}evp/e_old.c
@@ -455,26 +423,12 @@ ${CRYPTO}idea/i_cfb64.c
 ${CRYPTO}idea/i_ecb.c
 ${CRYPTO}idea/i_ofb64.c
 ${CRYPTO}idea/i_skey.c
-#${CRYPTO}idea/idea_spd.c <- looks broken on the face of it.
 ${CRYPTO}idea/ideatest.c
-
-# JPAKE is disabled (?) who knew...
-#${CRYPTO}jpake/jpake_err.c
-#${CRYPTO}jpake/jpake.c
-#${CRYPTO}jpake/jpaketest.c
 
 ${CRYPTO}krb5/krb5_asn.c
 
 ${CRYPTO}lhash/lh_stats.c
-#${CRYPTO}lhash/lh_test.c <- looks broken on the face of it.
 ${CRYPTO}lhash/lhash.c
-
-#${CRYPTO}LPdir_nyi.c
-#${CRYPTO}LPdir_unix.c
-#${CRYPTO}LPdir_vms.c   <- really?!
-#${CRYPTO}LPdir_win.c   <- will use PKI stack instead
-#${CRYPTO}LPdir_win32.c <- will use PKI stack instead
-#${CRYPTO}LPdir_wince.c <- will use PKI stack instead
 
 #${CRYPTO}md2/md2_dgst.c
 #${CRYPTO}md2/md2_one.c
@@ -563,7 +517,6 @@ ${CRYPTO}pkcs7/pk7_asn1.c
 ${CRYPTO}pkcs7/pk7_attr.c
 ${CRYPTO}pkcs7/pk7_dgst.c
 ${CRYPTO}pkcs7/pk7_doit.c
-#${CRYPTO}pkcs7/pk7_enc.c <- looks broken on the face of it.
 ${CRYPTO}pkcs7/pk7_lib.c
 ${CRYPTO}pkcs7/pk7_mime.c
 ${CRYPTO}pkcs7/pk7_smime.c
@@ -571,7 +524,6 @@ ${CRYPTO}pkcs7/pkcs7err.c
 
 ${CRYPTO}ppccap.c
 
-#${CRYPTO}pqueue/pq_test.c <- looks broken on the face of it.
 ${CRYPTO}pqueue/pqueue.c
 
 ${CRYPTO}rand/md_rand.c
@@ -591,22 +543,17 @@ ${CRYPTO}rc2/rc2_ecb.c
 ${CRYPTO}rc2/rc2_skey.c
 ${CRYPTO}rc2/rc2cfb64.c
 ${CRYPTO}rc2/rc2ofb64.c
-#${CRYPTO}rc2/rc2speed.c 	<- looks broken on the face of it.
 ${CRYPTO}rc2/rc2test.c
 ${CRYPTO}rc2/tab.c
 
 ${CRYPTO}rc4/rc4_enc.c
 ${CRYPTO}rc4/rc4_skey.c
 ${CRYPTO}rc4/rc4_utl.c
-#${CRYPTO}rc4/rc4.c 		<- don't need this.
-#${CRYPTO}rc4/rc4speed.c	<- don't need this.
-#${CRYPTO}rc4/rc4test.c		<- don't need this.
 ${CRYPTO}rc5/rc5_ecb.c
 ${CRYPTO}rc5/rc5_enc.c
 ${CRYPTO}rc5/rc5_skey.c
 ${CRYPTO}rc5/rc5cfb64.c
 ${CRYPTO}rc5/rc5ofb64.c
-#${CRYPTO}rc5/rc5speed.c	<- looks broken on the face of it.
 ${CRYPTO}rc5/rc5test.c
 
 ${CRYPTO}ripemd/rmd_dgst.c
@@ -664,15 +611,6 @@ ${CRYPTO}srp/srp_vfy.c
 ${CRYPTO}srp/srptest.c
 
 ${CRYPTO}stack/stack.c
-
-# store is disabled.
-#${CRYPTO}store/str_err.c
-#${CRYPTO}store/str_lib.c
-#${CRYPTO}store/str_mem.c
-#${CRYPTO}store/str_meth.c
-
-#${CRYPTO}threads/mttest.c 	<- don't need this
-#${CRYPTO}threads/th-lock.c	<- don't need this
 
 ${CRYPTO}ts/ts_asn1.c
 ${CRYPTO}ts/ts_conf.c
@@ -732,7 +670,6 @@ ${CRYPTO}x509v3/pcy_lib.c
 ${CRYPTO}x509v3/pcy_map.c
 ${CRYPTO}x509v3/pcy_node.c
 ${CRYPTO}x509v3/pcy_tree.c
-#${CRYPTO}x509v3/tabtest.c	<- looks broken on the face of it.
 ${CRYPTO}x509v3/v3_addr.c
 ${CRYPTO}x509v3/v3_akey.c
 ${CRYPTO}x509v3/v3_akeya.c
@@ -740,7 +677,6 @@ ${CRYPTO}x509v3/v3_alt.c
 ${CRYPTO}x509v3/v3_asid.c
 ${CRYPTO}x509v3/v3_bcons.c
 ${CRYPTO}x509v3/v3_bitst.c
-#${CRYPTO}x509v3/v3_conf.c	<- looks broken on the face of it.
 ${CRYPTO}x509v3/v3_cpols.c
 ${CRYPTO}x509v3/v3_crld.c
 ${CRYPTO}x509v3/v3_enum.c
@@ -763,10 +699,7 @@ ${CRYPTO}x509v3/v3_scts.c
 ${CRYPTO}x509v3/v3_skey.c
 ${CRYPTO}x509v3/v3_sxnet.c
 ${CRYPTO}x509v3/v3_utl.c
-#${CRYPTO}x509v3/v3conf.c		<- looks broken on the face of it.
 ${CRYPTO}x509v3/v3err.c
-#${CRYPTO}x509v3/v3nametest.c	<- don't need this
-#${CRYPTO}x509v3/v3prin.c		<- don't need this
 )
 
 ###########################################################################################
