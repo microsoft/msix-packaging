@@ -1,7 +1,7 @@
 # xplat\lib
 # Copyright (C) 2017 Microsoft
 # Created by Phil Smith (psmith@microsoft.com) on 10/19/2017
-cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.4.0 FATAL_ERROR)
 
 ADD_CUSTOM_TARGET(LIBS)
 
@@ -16,3 +16,35 @@ add_subdirectory(zlib)
 # Xerces
 set(DBUILD_SHARED_LIBS OFF CACHE BOOL "Only build static lib"                         FORCE)
 add_subdirectory(xerces)
+
+# OpenSSL
+IF(NOT WIN32)
+    MESSAGE(STATUS "-----------------------------")
+    MESSAGE(STATUS "OpenSLL configuration summary")
+    MESSAGE(STATUS "-----------------------------")
+
+    set(OpenSSL_SOURCE_PATH  "${CMAKE_CURRENT_SOURCE_DIR}/openssl" )
+    set(OpenSLL_BINARY_PATH  "${CMAKE_CURRENT_BINARY_DIR}" )
+    set(OpenSLL_INCLUDE_PATH "${CMAKE_CURRENT_BINARY_DIR}" )
+
+    include(GetOpenSSLRevisionDescription)
+    get_openssl_describe(OpenSSL_DESCRIPTION)
+    MESSAGE(STATUS "OpenSSL Description '${OpenSSL_DESCRIPTION}'" )
+
+    string(REGEX MATCH "OpenSSL_([0-9]*)_([0-9]*)_([0-9]*)" _dummy1 "${OpenSSL_DESCRIPTION}")
+    SET(OpenSSL_MAJOR ${CMAKE_MATCH_1})
+    SET(OpenSSL_MINOR ${CMAKE_MATCH_2})
+    SET(OpenSSL_PATCH ${CMAKE_MATCH_3})
+    SET(OpenSLL_VERSION "${OpenSSL_MAJOR}.${OpenSSL_MINOR}.${OpenSSL_PATCH}")
+
+    set(OpenSSL_COMPILER_DEFINES OPENSSL_NO_ASM)
+    # we include which means you need to use "OpenSSL_X_PATH" for your paths.
+    include( crypto )
+    set(OpenSSL_FOUND ON CACHE BOOL "OpenSSL ready for use" FORCE)
+
+    MESSAGE(STATUS "OpenSLL_VERSION      '${OpenSLL_VERSION}'" )
+    MESSAGE(STATUS "OpenSSL_SOURCE_PATH  '${OpenSSL_SOURCE_PATH}'" )
+    MESSAGE(STATUS "OpenSLL_BINARY_PATH  '${OpenSLL_BINARY_PATH}'" )
+    MESSAGE(STATUS "OpenSLL_INCLUDE_PATH '${OpenSLL_INCLUDE_PATH}'" )
+ENDIF()
+
