@@ -83,7 +83,7 @@ namespace xPlat {
 
         HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) override
         {
-            HRESULT hr = static_cast<HRESULT>(Error::STG_E_INVALIDPOINTER);
+            HRESULT hr = static_cast<HRESULT>(Error::Stg_E_Invalidpointer);
             if (buffer)
             {
                 ULONG bytesToRead = std::min((std::uint32_t)countBytes, (std::uint32_t)m_cacheBuffer.size() - m_relativePosition);

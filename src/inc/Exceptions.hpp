@@ -26,7 +26,7 @@ namespace xPlat {
         OutOfMemory                 = 0x8007000E,
         NotSupported                = 0x80070032,
         InvalidParameter            = 0x80070057,
-        STG_E_INVALIDPOINTER        = 0x80030009,
+        Stg_E_Invalidpointer        = 0x80030009,
 
         //
         // xPlat specific error codes
