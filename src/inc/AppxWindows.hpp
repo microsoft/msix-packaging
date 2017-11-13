@@ -134,6 +134,7 @@
 
     #ifndef S_OK
     #define S_OK 0
+    #define S_FALSE 1
     #endif
 
     #ifndef SUCCEEDED

@@ -22,7 +22,8 @@ ELSE()
             ${include_directories}
             ${OpenSLL_INCLUDE_PATH}
         )
-
+        set (SHA256    PAL/SHA256/OpenSSL/SHA256.cpp)
+        set (Signature PAL/Signature/OpenSSL/SignatureValidator.cpp)
     ELSE()
         # ... and were done here...  :/
         MESSAGE (STATUS "OpenSSL NOT FOUND!")
@@ -33,8 +34,8 @@ ELSE()
 ENDIF()
 
 MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
-MESSAGE (STATUS "PAL: SHA256 = ${SHA256}")
-MESSAGE (STATUS "PAL: Signature = ${Signature}")
+MESSAGE (STATUS "PAL: SHA256          = ${SHA256}")
+MESSAGE (STATUS "PAL: Signature       = ${Signature}")
 
 set(LIB_PUBLIC_HEADERS
     ../inc/AppxPackaging.hpp

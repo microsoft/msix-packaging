@@ -1,5 +1,6 @@
 #pragma once
 #define NOMINMAX /* windows.h, or more correctly windef.h, defines min as a macro... */
+#include "AppxWindows.hpp"
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "ComHelper.hpp"
@@ -16,7 +17,7 @@ namespace xPlat {
     class HashStream : public StreamBase
     {
     public:
-        HashStream(IStream* stream, std::vector<byte>& expectedHash) :
+        HashStream(IStream* stream, std::vector<std::uint8_t>& expectedHash) :
             m_relativePosition(0)
         {
             HRESULT hr;
@@ -30,7 +31,7 @@ namespace xPlat {
             if (FAILED(hr) || uli.QuadPart == 0)
                 throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
 
-            streamSize = uli.LowPart;
+            streamSize = uli.u.LowPart;
 
             hr = stream->Seek(li, STREAM_SEEK_SET, &uli);
 
@@ -63,10 +64,10 @@ namespace xPlat {
             switch (origin)
             {
                 case Reference::CURRENT:
-                    m_relativePosition += move.LowPart;
+                    m_relativePosition += move.u.LowPart;
                     break;
                 case Reference::START:
-                    m_relativePosition = move.LowPart;
+                    m_relativePosition = move.u.LowPart;
                     break;
                 case Reference::END:
                     m_relativePosition = m_cacheBuffer.size();
@@ -82,7 +83,7 @@ namespace xPlat {
 
         HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) override
         {
-            HRESULT hr = STG_E_INVALIDPOINTER;
+            HRESULT hr = static_cast<HRESULT>(Error::STG_E_INVALIDPOINTER);
             if (buffer)
             {
                 ULONG bytesToRead = std::min((std::uint32_t)countBytes, (std::uint32_t)m_cacheBuffer.size() - m_relativePosition);

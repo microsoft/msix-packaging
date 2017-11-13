@@ -1,3 +1,4 @@
+#include "AppxWindows.hpp"
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "StorageObject.hpp"
