@@ -2,9 +2,7 @@
     "configurations": [
         {
             "name": "MacOS",
-            "includePath": [
-                "${workspaceRoot}/src/inc"
-            ],
+            "includePath": [ "${workspaceRoot}/src/inc" ],
             "defines": [],
             "browse": {
                 "path": [
@@ -34,7 +32,7 @@
                 "limitSymbolsToIncludedHeaders": true,
                 "databaseFilename": ""
             },
-            "intelliSenseMode": "msvc-x64"            
+            "intelliSenseMode": "msvc-x64"
         }
     ],
     "version": 3
