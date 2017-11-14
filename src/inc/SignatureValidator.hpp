@@ -7,6 +7,20 @@
 
 namespace xPlat {
 
+    const unsigned HASH_BYTES = 32;
+
+    typedef struct DigestHash
+    {
+        xPlat::AppxSignatureObject::DigestName name;
+        std::uint8_t content[HASH_BYTES];
+    } DigestHash;
+
+    typedef struct DigestHeader
+    {
+        xPlat::AppxSignatureObject::DigestName name;
+        DigestHash hash[1];
+    } DigestHeader;
+
     class SignatureValidator
     {
     public:
@@ -16,3 +30,4 @@ namespace xPlat {
             /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests);
     };
 }
+

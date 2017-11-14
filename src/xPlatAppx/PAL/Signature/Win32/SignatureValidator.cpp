@@ -1,8 +1,10 @@
 #include <windows.h>
 #include <wincrypt.h>
+#include <wintrust.h>
 #include <bcrypt.h>
 #include <winternl.h>
 #include <strsafe.h>
+#include <softpub.h>
 #include "AppxSignature.hpp"
 #include "FileStream.hpp"
 #include "SignatureValidator.hpp"
@@ -424,9 +426,77 @@ static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuf
         return retValue;
     }
 
-    bool SignatureValidator::Validate(
-        /*in*/ APPX_VALIDATION_OPTION option, 
-        /*in*/ IStream *stream, 
+    // This is a passthrough to CryptMsgGetParam.
+    // Because the return buffer may not be large enough to receive the data,
+    // we call it once to get the size, then allocate an appropriate buffer,
+    // and call it again with the new buffer.
+    static HRESULT GetCryptMessageParam(
+        HCRYPTMSG cryptMsg,
+        DWORD messageParam,
+        DWORD paramIndex,
+        BYTE** paramData,
+        DWORD* paramBytes)
+    {
+        DWORD readBytes = 0;
+        HRESULT hr = S_OK;
+
+        // Call CryptMsgGetParam with an empty buffer, to get the size.  
+        if (!CryptMsgGetParam(
+            cryptMsg,
+            messageParam,
+            paramIndex,
+            nullptr,
+            &readBytes))
+        {
+            hr = HRESULT_FROM_WIN32(::GetLastError());
+            if (hr != __HRESULT_FROM_WIN32(ERROR_MORE_DATA))
+            {
+                goto Exit;
+            }
+            hr = S_OK;
+        }
+    
+        // We have nothing to read, so something went wrong
+        if (readBytes == 0)
+        {
+            hr = E_INVALIDARG;
+            goto Exit;
+        }
+
+        // Allocate the new array with the correct size
+        PBYTE sizedParamData = (PBYTE)malloc(readBytes);
+        //TODO: CHK_BOOL(sizedParamData != NULL, E_OUTOFMEMORY);
+
+        // Call again to actually get the parameter this time
+        if (!CryptMsgGetParam(
+            cryptMsg,
+            messageParam,
+            paramIndex,
+            sizedParamData,
+            &readBytes))
+        {
+            hr = HRESULT_FROM_WIN32(::GetLastError());
+            goto Exit;
+        }
+
+        // Copy over the new length and array
+        if (paramBytes)
+        {
+            *paramBytes = readBytes;
+        }
+
+        if (paramData)
+        {
+            *paramData = sizedParamData;
+        }
+
+    Exit:
+        return hr;
+    }
+
+bool SignatureValidator::Validate(
+        /*in*/ APPX_VALIDATION_OPTION option,
+        /*in*/ IStream *stream,
         /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests)
     {
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
@@ -436,25 +506,183 @@ static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuf
         ULARGE_INTEGER uli = {0};
         ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::END, &uli));
         ThrowErrorIf(Error::AppxSignatureInvalid, (uli.QuadPart <= sizeof(P7X_FILE_ID) || uli.QuadPart > (2 << 20)), "stream is too big");
-        ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, &uli));
+        std::vector<std::uint8_t> p7x(uli.LowPart);
 
+        ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, &uli));
+        
         std::uint32_t fileID = 0;
         ThrowHrIfFailed(stream->Read(&fileID, sizeof(fileID), nullptr));
         ThrowErrorIf(Error::AppxSignatureInvalid, (fileID != P7X_FILE_ID), "unexpected p7x header");
 
-        std::uint32_t streamSize = uli.u.LowPart - sizeof(fileID);
-        std::vector<std::uint8_t> buffer(streamSize);
         ULONG actualRead = 0;
-        ThrowHrIfFailed(stream->Read(buffer.data(), streamSize, &actualRead));
-        ThrowErrorIf(Error::AppxSignatureInvalid, (actualRead != streamSize), "read error");
+        hr = stream->Read(p7x.data(), p7x.size(), &actualRead);
+        if (FAILED(hr) || actualRead != p7x.size())
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+
+        if (*(DWORD*)p7x.data() != P7X_FILE_ID)
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+
+        BYTE *p7s = p7x.data() + sizeof(DWORD);
+        std::uint32_t p7sSize = p7x.size() - sizeof(DWORD);
+
+        // Decode the ASN.1 structure
+        CRYPT_CONTENT_INFO* contentInfo = nullptr;
+        DWORD contentInfoSize = 0;
+
+        if (!CryptDecodeObjectEx(
+            X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+            PKCS_CONTENT_INFO,
+            p7s,
+            p7sSize,
+            CRYPT_DECODE_ALLOC_FLAG,
+            nullptr,
+            &contentInfo,
+            &contentInfoSize))
+        {
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        }
+
+        HCRYPTMSG cryptMsgT = CryptMsgOpenToDecode(
+            X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+            0,
+            CMSG_SIGNED,
+            NULL,
+            nullptr,
+            nullptr);
+
+        if (cryptMsgT == nullptr)
+        {
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        }
+
+        unique_crypt_msg_handle cryptMsg(cryptMsgT);
+
+        // Get the crypographic message 
+        if (!CryptMsgUpdate(
+            cryptMsg.get(),
+            contentInfo->Content.pbData,
+            contentInfo->Content.cbData,
+            TRUE))
+        {
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        }
+
+        //  Make sure that the content inside is Indirect Data
+        DWORD innerContentTypeSize = 0;
+        PBYTE innerContentType = NULL;
+
+        hr = GetCryptMessageParam(
+            cryptMsg.get(),
+            CMSG_INNER_CONTENT_TYPE_PARAM,
+            0,
+            &innerContentType,
+            &innerContentTypeSize);
+
+        if (FAILED(hr))
+        {
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        }
+
+        size_t indirectDataObjIdLength = strlen(SPC_INDIRECT_DATA_OBJID);
+
+        // Make sure the content type is expected
+        if ((innerContentTypeSize != indirectDataObjIdLength + 1) ||
+            (strncmp((char*)innerContentType, SPC_INDIRECT_DATA_OBJID, indirectDataObjIdLength + 1) != 0))
+        {
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        }
+
+        PBYTE innerContent = NULL;
+        DWORD innerContentSize = 0;
+
+        hr = GetCryptMessageParam(
+            cryptMsg.get(),
+            CMSG_CONTENT_PARAM,
+            0,
+            &innerContent,
+            &innerContentSize);
+
+        if (FAILED(hr))
+        {
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        }
+
+        // Parse the ASN.1 to the the indirect data structure
+        SPC_INDIRECT_DATA_CONTENT* indirectContent = NULL;
+        DWORD indirectContentSize = 0;
+
+        if (!CryptDecodeObjectEx(
+            X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+            SPC_INDIRECT_DATA_CONTENT_STRUCT,
+            innerContent,
+            innerContentSize,
+            CRYPT_DECODE_ALLOC_FLAG,
+            nullptr,
+            &indirectContent,
+            &indirectContentSize))
+        {
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        }
+
+        DigestHeader *header = reinterpret_cast<DigestHeader*>(indirectContent->Digest.pbData);
+        std::uint32_t numberOfHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) / (sizeof(DWORD) + 32);
+        std::uint32_t modHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) % (sizeof(DWORD) + 32);
+
+        if (header->name != xPlat::AppxSignatureObject::DigestName::HEAD || numberOfHashes < 4 || numberOfHashes > 5 || modHashes != 0)
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+
+        for (unsigned i = 0; i < numberOfHashes; i++)
+        {
+            std::vector<std::uint8_t> hash(HASH_BYTES);
+
+            switch (header->hash[i].name)
+            {
+                case xPlat::AppxSignatureObject::DigestName::AXPC:
+                case xPlat::AppxSignatureObject::DigestName::AXCT:
+                case xPlat::AppxSignatureObject::DigestName::AXBM:
+                case xPlat::AppxSignatureObject::DigestName::AXCI:
+                case xPlat::AppxSignatureObject::DigestName::AXCD:
+                    hash.assign(&header->hash[i].content[0], &header->hash[i].content[HASH_BYTES - 1]);
+                    digests.emplace(header->hash[i].name, hash);
+                    break;
+
+                default:
+                    throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+            }
+        }
+
+        // Build wintrust data to pass to WinVerifyTrust in order to validate signature
+        GUID P7xSipGuid = { 0x5598cff1, 0x68db, 0x4340,{ 0xb5, 0x7f, 0x1c, 0xac, 0xf8, 0x8c, 0x9a, 0x51 } };
+        GUID wintrustActionVerify = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+        WINTRUST_BLOB_INFO signatureBlobInfo = { 0 };
+        WINTRUST_DATA trustData = { 0 };
+
+        signatureBlobInfo.cbStruct = sizeof(WINTRUST_BLOB_INFO);
+        signatureBlobInfo.gSubject = P7xSipGuid;
+        signatureBlobInfo.cbMemObject = p7x.size();
+        signatureBlobInfo.pbMemObject = p7x.data();
+
+        trustData.cbStruct = sizeof(WINTRUST_DATA);
+        trustData.dwUIChoice = WTD_UI_NONE;
+        trustData.fdwRevocationChecks = WTD_REVOKE_NONE;
+        trustData.dwUnionChoice = WTD_CHOICE_BLOB;
+        trustData.dwStateAction = WTD_STATEACTION_VERIFY;
+        trustData.dwProvFlags = WTD_CACHE_ONLY_URL_RETRIEVAL | WTD_REVOCATION_CHECK_NONE;
+        trustData.pBlob = &signatureBlobInfo;
+
+        if (WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData))
+        {
+            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        }
 
         //TODO: this code does not read the digests yet
-        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
-            IsStoreOrigin(buffer.data(), buffer.size()) ||
-            IsAuthenticodeOrigin(buffer.data(), buffer.size()) ||
-            (option & APPX_VALIDATION_OPTION_ALLOWUNKNOWNORIGIN)
-        ), "Signature origin check failed");
-        return true;
+        if (IsStoreOrigin(p7s, p7sSize))
+            return true;
+
+        if (IsAuthenticodeOrigin(p7s, p7sSize))
+            return true;
+
+        throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
     }
 }
 

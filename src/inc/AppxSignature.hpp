@@ -40,12 +40,12 @@ namespace xPlat {
     public:        
         enum DigestName : std::uint32_t
         {
-            HEAD = 0x41404058, // APPX
-            AXPC = 0x41585043, // file records
-            AXCD = 0x41584344, // central directory
-            AXCT = 0x41584354, // [ContentTypes].xml (uncompressed)
-            AXBM = 0x4158424D, // AppxBlockMap.xml (uncompressed)
-            AXCI = 0x41584349, // AppxMetadata/CodeIntegrity.cat (uncompressed, optional)
+            HEAD = 0x58404041, // APPX
+            AXPC = 0x43505841, // file records
+            AXCD = 0x44435841, // central directory
+            AXCT = 0x54435841, // [ContentTypes].xml (uncompressed)
+            AXBM = 0x4D425841, // AppxBlockMap.xml (uncompressed)
+            AXCI = 0x49435841, // AppxMetadata/CodeIntegrity.cat (uncompressed, optional)
         };
 
         AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, IStream* stream);

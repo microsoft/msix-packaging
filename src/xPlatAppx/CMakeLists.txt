@@ -114,5 +114,5 @@ IF(OpenSSL_FOUND)
 ENDIF()
 
 if(WIN32)
-    target_link_libraries(${PROJECT_NAME} bcrypt crypt32)
+    target_link_libraries(${PROJECT_NAME} bcrypt crypt32 wintrust)
 endif()
