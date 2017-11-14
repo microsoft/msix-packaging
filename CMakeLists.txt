@@ -36,6 +36,8 @@ ELSE()
     ENDIF()
     IF (LINUX)
         MESSAGE (STATUS "Building for Linux")
+        # Static libraries must be position independent to be linked with a shared object.
+        set(CMAKE_POSITION_INDEPENDENT_CODE ON)
     ENDIF()
 ENDIF()
 
