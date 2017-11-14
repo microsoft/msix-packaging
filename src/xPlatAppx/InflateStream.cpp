@@ -85,7 +85,7 @@ namespace xPlat {
 
                     // now that we're within the window between current file position and seek position
                     // calculate the number of bytes to skip ahead within this window
-                    ULONG bytesToSkipInWindow = m_seekPosition - m_fileCurrentPosition;
+                    ULONG bytesToSkipInWindow = (ULONG)(m_seekPosition - m_fileCurrentPosition);
                     m_inflateWindowPosition += bytesToSkipInWindow;
 
                     // Calculate the difference between the beginning of the window and the seek position.

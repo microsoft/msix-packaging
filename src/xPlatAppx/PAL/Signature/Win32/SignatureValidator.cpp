@@ -501,7 +501,8 @@ bool SignatureValidator::Validate(
     {
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
         if (option & APPX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
-
+        
+        HRESULT hr;
         LARGE_INTEGER li = {0};
         ULARGE_INTEGER uli = {0};
         ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::END, &uli));
