@@ -62,6 +62,7 @@ namespace xPlat {
         Digest& GetCodeIntegrityDigest()     { return m_digests[DigestName::AXCI]; }
 
     protected:
+        bool                         m_hasDigests;
         std::map<DigestName, Digest> m_digests;
         SignatureOrigin              m_signatureOrigin = SignatureOrigin::Unsigned; // assume unsigned until proven otherwise.
         APPX_VALIDATION_OPTION       m_validationOptions;

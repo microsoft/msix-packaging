@@ -19,33 +19,32 @@ AppxSignatureObject::AppxSignatureObject(APPX_VALIDATION_OPTION validationOption
     VerifierObject(stream), 
     m_validationOptions(validationOptions)
 {
-    SignatureValidator::Validate(validationOptions, stream, m_digests);
+    m_hasDigests = SignatureValidator::Validate(validationOptions, stream, m_digests);
 }
 
 IStream* AppxSignatureObject::GetValidationStream(const std::string& part, IStream* stream)
 {
-    if (!(m_validationOptions & APPX_VALIDATION_OPTION_SKIPSIGNATURE))
+    if (m_hasDigests)
     {
-            if (part == std::string("AppxBlockMap.xml"))
-            {
-                // This stream implementation will throw if the underlying stream does not match the digest
-                auto result = ComPtr<IStream>::Make<HashStream>(stream, this->GetAppxBlockMapDigest());
-                return result.Detach();
-            }
-            else
-            if (part == std::string("[Content_Types].xml"))
-            {
-                // This stream implementation will throw if the underlying stream does not match the digest'
-                auto result = ComPtr<IStream>::Make<HashStream>(stream, this->GetContentTypesDigest());
-                return result.Detach();
-            }
-            else
-            if (part == std::string("CodeIntegrity.cat"))
-            {
-                // This stream implementation will throw if the underlying stream does not match the digest
-                auto result = ComPtr<IStream>::Make<HashStream>(stream, this->GetCodeIntegrityDigest());
-                return result.Detach();
-            }        
+        if (part == std::string("AppxBlockMap.xml"))
+        {
+            // This stream implementation will throw if the underlying stream does not match the digest
+            auto result = ComPtr<IStream>::Make<HashStream>(stream, this->GetAppxBlockMapDigest());
+            return result.Detach();
+        }
+        else if (part == std::string("[Content_Types].xml"))
+        {
+            // This stream implementation will throw if the underlying stream does not match the digest'
+            auto result = ComPtr<IStream>::Make<HashStream>(stream, this->GetContentTypesDigest());
+            return result.Detach();
+        }
+        else if (part == std::string("CodeIntegrity.cat"))
+        {
+            // This stream implementation will throw if the underlying stream does not match the digest
+            auto result = ComPtr<IStream>::Make<HashStream>(stream, this->GetCodeIntegrityDigest());
+            return result.Detach();
+        }    
+        // TODO: unnamed stream for central directory?
     }
     return stream;
 }

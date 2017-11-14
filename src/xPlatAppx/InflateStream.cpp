@@ -135,7 +135,7 @@ namespace xPlat {
                 }
             }
             m_startCurrentBuffer = nullptr;
-            *bytesRead = m_bytesRead;
+            if (bytesRead) { *bytesRead = m_bytesRead; }
         });
     }
 
@@ -173,6 +173,7 @@ namespace xPlat {
                     Cleanup();
                 }
             }
+            if (newPosition) { newPosition->QuadPart = m_seekPosition; }
         });
     }
 

@@ -74,10 +74,7 @@ namespace xPlat {
                     break;
             }
             m_relativePosition = std::max((std::uint32_t)0, std::min(m_relativePosition, (std::uint32_t)m_cacheBuffer.size()));
-            if (newPosition)
-            {
-                newPosition->QuadPart = (std::uint64_t)m_relativePosition;
-            }
+            if (newPosition) { newPosition->QuadPart = (std::uint64_t)m_relativePosition; }
             return S_OK;
         }
 
@@ -91,8 +88,8 @@ namespace xPlat {
                 {
                     memcpy(buffer, reinterpret_cast<BYTE*>(m_cacheBuffer.data()) + m_relativePosition, bytesToRead);
                 }
-                if (actualRead)
-                    *actualRead = bytesToRead;
+                m_relativePosition += bytesToRead;
+                if (actualRead) { *actualRead = bytesToRead; }                    
                 hr = (countBytes = bytesToRead) ? S_OK : S_FALSE;
             }
             return hr;

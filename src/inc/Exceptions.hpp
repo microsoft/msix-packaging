@@ -118,27 +118,27 @@ namespace xPlat {
 
     // Provides an ABI exception boundary with parameter validation
     template <class Lambda>
-    inline unsigned int ResultOf(Lambda lambda)
+    inline HRESULT ResultOf(Lambda lambda)
     {
-        unsigned int result = 0;
+        HRESULT hr = static_cast<HRESULT>(xPlat::Error::OK);
         try
         {
             lambda();
         }
         catch (xPlat::Exception& e)
         {
-            result = e.Code();
+            hr = static_cast<HRESULT>(e.Code());
         }
-        catch (std::bad_alloc&)
+        catch (std::bad_alloc& e)
         {
-            result = static_cast<unsigned int>(xPlat::Error::OutOfMemory);
+            hr = static_cast<HRESULT>(xPlat::Error::OutOfMemory);
         }
-        catch (std::exception&)
+        catch (std::exception& e)
         {
-            result = static_cast<unsigned int>(xPlat::Error::Unexpected);
+            hr = static_cast<HRESULT>(xPlat::Error::Unexpected);
         }
 
-        return result;
+        return hr;
     }
 }
 

@@ -138,7 +138,7 @@
     #endif
 
     #ifndef SUCCEEDED
-    #define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
+    #define SUCCEEDED(hr) ((((HRESULT)(hr)) == 0) || (((HRESULT)(hr)) == 1))
     #endif
 
     #ifndef FAILED

@@ -429,48 +429,32 @@ static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuf
         /*in*/ IStream *stream, 
         /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests)
     {
-        HRESULT hr;
-        LARGE_INTEGER li;
-        ULARGE_INTEGER uli;
-
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
-        if (option & APPX_VALIDATION_OPTION_SKIPSIGNATURE)
-            return true;
+        if (option & APPX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
 
-        li.QuadPart = 0;
-        hr = stream->Seek(li, STREAM_SEEK_END, &uli);
-
-        // TODO: assess how big the stream is allowed to be
-        if (FAILED(hr) || uli.QuadPart <= sizeof(P7X_FILE_ID) || uli.QuadPart > (2 << 20))
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
-
-        std::uint32_t streamSize = uli.LowPart;
-
-        hr = stream->Seek(li, STREAM_SEEK_SET, &uli);
-        if (FAILED(hr) || uli.QuadPart != 0)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        LARGE_INTEGER li = {0};
+        ULARGE_INTEGER uli = {0};
+        ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::END, &uli));
+        ThrowErrorIf(Error::AppxSignatureInvalid, (uli.QuadPart <= sizeof(P7X_FILE_ID) || uli.QuadPart > (2 << 20)), "stream is too big");
+        ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, &uli));
 
         DWORD fileID = 0;
-        hr = stream->Read(&fileID, sizeof(fileID), nullptr);
-        if (FAILED(hr) || fileID != P7X_FILE_ID)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        ThrowHrIfFailed(stream->Read(&fileId, sizeof(fileID), nullptr));
+        ThrowErrorIf(Error::AppxSignatureInvalid, (fileID != P7X_FILE_ID), "unexpected p7x header");
 
-        streamSize -= sizeof(fileID);
-        
+        std::uint32_t streamSize = uli.u.LowPart - sizeof(fileId);
         std::vector<std::uint8_t> buffer(streamSize);
         ULONG actualRead = 0;
-        hr = stream->Read(buffer.data(), streamSize, &actualRead);
-        if (FAILED(hr) || actualRead != streamSize)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        ThrowHrIfFailed(stream->Read(buffer.data(), streamSize, &actualRead));
+        ThrowErrorIf(Error::AppxSignatureInvalid, (actualRead != streamSize), "read error");
 
         //TODO: this code does not read the digests yet
-        if (IsStoreOrigin(buffer.data(), buffer.size()))
-            return true;
-
-        if (IsAuthenticodeOrigin(buffer.data(), buffer.size()))
-            return true;
-
-        throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            IsStoreOrigin(buffer.data(), buffer.size()) ||
+            IsAuthenticodeOrigin(buffer.data(), buffer.size()) ||
+            (option & APPX_VALIDATION_OPTION_ALLOWUNKNOWNORIGIN)
+        ), "Signature origin check failed");
+        return true;
     }
 }
 
