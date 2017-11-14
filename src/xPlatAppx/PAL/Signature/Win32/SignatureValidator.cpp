@@ -438,11 +438,11 @@ static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuf
         ThrowErrorIf(Error::AppxSignatureInvalid, (uli.QuadPart <= sizeof(P7X_FILE_ID) || uli.QuadPart > (2 << 20)), "stream is too big");
         ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, &uli));
 
-        DWORD fileID = 0;
-        ThrowHrIfFailed(stream->Read(&fileId, sizeof(fileID), nullptr));
+        std::uint32_t fileID = 0;
+        ThrowHrIfFailed(stream->Read(&fileID, sizeof(fileID), nullptr));
         ThrowErrorIf(Error::AppxSignatureInvalid, (fileID != P7X_FILE_ID), "unexpected p7x header");
 
-        std::uint32_t streamSize = uli.u.LowPart - sizeof(fileId);
+        std::uint32_t streamSize = uli.u.LowPart - sizeof(fileID);
         std::vector<std::uint8_t> buffer(streamSize);
         ULONG actualRead = 0;
         ThrowHrIfFailed(stream->Read(buffer.data(), streamSize, &actualRead));

@@ -129,11 +129,11 @@ namespace xPlat {
         {
             hr = static_cast<HRESULT>(e.Code());
         }
-        catch (std::bad_alloc& e)
+        catch (std::bad_alloc&)
         {
             hr = static_cast<HRESULT>(xPlat::Error::OutOfMemory);
         }
-        catch (std::exception& e)
+        catch (std::exception&)
         {
             hr = static_cast<HRESULT>(xPlat::Error::Unexpected);
         }
