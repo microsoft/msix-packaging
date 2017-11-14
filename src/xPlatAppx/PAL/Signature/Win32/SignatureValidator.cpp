@@ -393,8 +393,9 @@ static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuf
             std::size_t count = oids.size();
             for (std::size_t i = 0; i < count; i++)
             {
-                if (oids.at(i) == std::string(WindowsStoreOid))
-                    return TRUE;
+                if (0 == oids.at(i).compare(OID::WindowsStore))
+                {   return TRUE;
+                }
             }
         }
         return FALSE;
