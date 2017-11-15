@@ -62,6 +62,7 @@ namespace xPlat {
 
         // Signature errors
         AppxSignatureInvalid        = ERROR_FACILITY + 0x0041,
+        AppxCertNotTrusted          = ERROR_FACILITY + 0x0042,
         
     };
 
