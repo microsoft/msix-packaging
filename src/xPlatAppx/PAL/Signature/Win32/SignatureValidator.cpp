@@ -497,7 +497,8 @@ static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuf
 bool SignatureValidator::Validate(
         /*in*/ APPX_VALIDATION_OPTION option,
         /*in*/ IStream *stream,
-        /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests)
+        /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
+        /*inout*/ SignatureOrigin& origin)
     {
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
         if (option & APPX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
@@ -651,38 +652,49 @@ bool SignatureValidator::Validate(
             }
         }
 
-        // Build wintrust data to pass to WinVerifyTrust in order to validate signature
-        GUID P7xSipGuid = { 0x5598cff1, 0x68db, 0x4340,{ 0xb5, 0x7f, 0x1c, 0xac, 0xf8, 0x8c, 0x9a, 0x51 } };
-        GUID wintrustActionVerify = WINTRUST_ACTION_GENERIC_VERIFY_V2;
-        WINTRUST_BLOB_INFO signatureBlobInfo = { 0 };
-        WINTRUST_DATA trustData = { 0 };
-
-        signatureBlobInfo.cbStruct = sizeof(WINTRUST_BLOB_INFO);
-        signatureBlobInfo.gSubject = P7xSipGuid;
-        signatureBlobInfo.cbMemObject = p7x.size();
-        signatureBlobInfo.pbMemObject = p7x.data();
-
-        trustData.cbStruct = sizeof(WINTRUST_DATA);
-        trustData.dwUIChoice = WTD_UI_NONE;
-        trustData.fdwRevocationChecks = WTD_REVOKE_NONE;
-        trustData.dwUnionChoice = WTD_CHOICE_BLOB;
-        trustData.dwStateAction = WTD_STATEACTION_VERIFY;
-        trustData.dwProvFlags = WTD_CACHE_ONLY_URL_RETRIEVAL | WTD_REVOCATION_CHECK_NONE;
-        trustData.pBlob = &signatureBlobInfo;
-
-        if (WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData))
+        // If the caller allows unknown origin certs, don't bother with the certificate check
+        if (!(option & APPX_VALIDATION_OPTION_ALLOWUNKNOWNORIGIN))
         {
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+            // Build wintrust data to pass to WinVerifyTrust in order to validate signature
+            GUID P7xSipGuid = { 0x5598cff1, 0x68db, 0x4340,{ 0xb5, 0x7f, 0x1c, 0xac, 0xf8, 0x8c, 0x9a, 0x51 } };
+            GUID wintrustActionVerify = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+            WINTRUST_BLOB_INFO signatureBlobInfo = { 0 };
+            WINTRUST_DATA trustData = { 0 };
+
+            signatureBlobInfo.cbStruct = sizeof(WINTRUST_BLOB_INFO);
+            signatureBlobInfo.gSubject = P7xSipGuid;
+            signatureBlobInfo.cbMemObject = p7x.size();
+            signatureBlobInfo.pbMemObject = p7x.data();
+
+            trustData.cbStruct = sizeof(WINTRUST_DATA);
+            trustData.dwUIChoice = WTD_UI_NONE;
+            trustData.fdwRevocationChecks = WTD_REVOKE_NONE;
+            trustData.dwUnionChoice = WTD_CHOICE_BLOB;
+            trustData.dwStateAction = WTD_STATEACTION_VERIFY;
+            trustData.dwProvFlags = WTD_CACHE_ONLY_URL_RETRIEVAL | WTD_REVOCATION_CHECK_NONE;
+            trustData.pBlob = &signatureBlobInfo;
+
+            // Verify whether we trust the certificate. If it fails, 
+            if (WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData))
+            {
+                throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+            }
         }
 
-        //TODO: this code does not read the digests yet
         if (IsStoreOrigin(p7s, p7sSize))
+        {
+            origin = xPlat::SignatureOrigin::Store;
             return true;
+        }
 
         if (IsAuthenticodeOrigin(p7s, p7sSize))
+        {
+            origin = xPlat::SignatureOrigin::LOB;
             return true;
+        }
 
-        throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        origin = xPlat::SignatureOrigin::Unknown;
+        return true;
     }
 }
 

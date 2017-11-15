@@ -27,7 +27,8 @@ namespace xPlat {
         static bool Validate(
             /*in*/ APPX_VALIDATION_OPTION option, 
             /*in*/ IStream *stream, 
-            /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests);
+            /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
+            /*inout*/ SignatureOrigin& origin);
     };
 }
 

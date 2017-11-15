@@ -19,7 +19,7 @@ AppxSignatureObject::AppxSignatureObject(APPX_VALIDATION_OPTION validationOption
     VerifierObject(stream), 
     m_validationOptions(validationOptions)
 {
-    m_hasDigests = SignatureValidator::Validate(validationOptions, stream, m_digests);
+    m_hasDigests = SignatureValidator::Validate(validationOptions, stream, m_digests, m_signatureOrigin);
 }
 
 IStream* AppxSignatureObject::GetValidationStream(const std::string& part, IStream* stream)
