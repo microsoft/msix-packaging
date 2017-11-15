@@ -390,3 +390,8 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
+
+# zlib CMakeList.txt deletes zconf.h and creates zconf.h.included
+# to avoid seeing deleted: ../lib/zlib/zconf.h in the working directory
+# run git update-index --assume-unchanged lib/zlib/zconf.h
+lib/zlib
