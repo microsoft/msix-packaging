@@ -511,10 +511,6 @@ bool SignatureValidator::Validate(
 
         ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, &uli));
         
-        std::uint32_t fileID = 0;
-        ThrowHrIfFailed(stream->Read(&fileID, sizeof(fileID), nullptr));
-        ThrowErrorIf(Error::AppxSignatureInvalid, (fileID != P7X_FILE_ID), "unexpected p7x header");
-
         ULONG actualRead = 0;
         hr = stream->Read(p7x.data(), p7x.size(), &actualRead);
         if (FAILED(hr) || actualRead != p7x.size())
@@ -629,8 +625,11 @@ bool SignatureValidator::Validate(
         std::uint32_t numberOfHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) / (sizeof(DWORD) + 32);
         std::uint32_t modHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) % (sizeof(DWORD) + 32);
 
-        if (header->name != xPlat::AppxSignatureObject::DigestName::HEAD || numberOfHashes < 4 || numberOfHashes > 5 || modHashes != 0)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception 
+        ThrowErrorIf(Error::AppxSignatureInvalid, (
+            (header->name != xPlat::AppxSignatureObject::DigestName::HEAD) &&
+            (numberOfHashes != 4 && numberOfHashes != 5) &&
+            (modHashes != 0)
+        ), "bad signature data");
 
         for (unsigned i = 0; i < numberOfHashes; i++)
         {
@@ -643,7 +642,7 @@ bool SignatureValidator::Validate(
                 case xPlat::AppxSignatureObject::DigestName::AXBM:
                 case xPlat::AppxSignatureObject::DigestName::AXCI:
                 case xPlat::AppxSignatureObject::DigestName::AXCD:
-                    hash.assign(&header->hash[i].content[0], &header->hash[i].content[HASH_BYTES - 1]);
+                    hash.assign(&header->hash[i].content[0], &header->hash[i].content[HASH_BYTES]);
                     digests.emplace(header->hash[i].name, hash);
                     break;
 
