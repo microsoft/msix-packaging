@@ -20,6 +20,10 @@ AppxSignatureObject::AppxSignatureObject(APPX_VALIDATION_OPTION validationOption
     m_validationOptions(validationOptions)
 {
     m_hasDigests = SignatureValidator::Validate(validationOptions, stream, m_digests, m_signatureOrigin);
+
+    // reset the source stream back to the beginning after validating it.
+    LARGE_INTEGER li{0};    
+    ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, nullptr));
 }
 
 IStream* AppxSignatureObject::GetValidationStream(const std::string& part, IStream* stream)
