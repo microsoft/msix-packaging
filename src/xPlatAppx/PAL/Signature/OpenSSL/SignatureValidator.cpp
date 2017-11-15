@@ -23,7 +23,8 @@ namespace xPlat
     bool SignatureValidator::Validate(
         /*in*/ APPX_VALIDATION_OPTION option, 
         /*in*/ IStream *stream, 
-        /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests)
+        /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
+        /*inout*/ SignatureOrigin&)
     {
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
         if (option & APPX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
