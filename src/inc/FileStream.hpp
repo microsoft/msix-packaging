@@ -16,8 +16,13 @@ namespace xPlat {
         FileStream(const std::string& path, Mode mode)
         {
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
+            #ifdef WIN32
             errno_t err = fopen_s(&file, path.c_str(), modes[mode]);
             ThrowErrorIfNot(Error::FileOpen, (err==0), path.c_str());
+            #else
+            file = std::fopen(path.c_str(), modes[mode]);
+            ThrowErrorIfNot(Error::FileOpen, (file), path.c_str());
+            #endif            
         }
 
         virtual ~FileStream() override
