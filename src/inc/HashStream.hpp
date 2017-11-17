@@ -20,37 +20,33 @@ namespace xPlat {
         HashStream(IStream* stream, const std::vector<std::uint8_t>& expectedHash) :
             m_relativePosition(0)
         {
-            HRESULT hr;
             ULARGE_INTEGER uli;
             LARGE_INTEGER li;
-            std::uint32_t streamSize;
+            std::uint64_t streamSize;
             
             li.QuadPart = 0;
-            hr = stream->Seek(li, STREAM_SEEK_END, &uli);
-
-            if (FAILED(hr) || uli.QuadPart == 0)
-                throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
-
+            ThrowHrIfFailed(stream->Seek(li, STREAM_SEEK_END, &uli));
+            
             streamSize = uli.u.LowPart;
 
-            hr = stream->Seek(li, STREAM_SEEK_SET, &uli);
-
-            if (FAILED(hr) || uli.QuadPart != 0)
-                throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
-
-            m_cacheBuffer.resize(streamSize);
+            ThrowHrIfFailed(stream->Seek(li, STREAM_SEEK_SET, &uli));
+            
+            m_cacheBuffer.resize(static_cast<std::uint32_t>(streamSize));
             ULONG bytesRead = 0;
-            hr = stream->Read(m_cacheBuffer.data(), m_cacheBuffer.size(), &bytesRead);
+            ThrowHrIfFailed(stream->Read(m_cacheBuffer.data(), m_cacheBuffer.size(), &bytesRead));
 
-            if (FAILED(hr) || bytesRead != streamSize)
-                throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
-
+            ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, 
+                bytesRead == streamSize, 
+                "Invalid signature");
+            
             std::vector<std::uint8_t> hash;
-            if (!xPlat::SHA256::ComputeHash(m_cacheBuffer.data(), m_cacheBuffer.size(), hash))
-                throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
+            ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, 
+                xPlat::SHA256::ComputeHash(m_cacheBuffer.data(), m_cacheBuffer.size(), hash), 
+                "Invalid signature");
 
-            if (expectedHash.size() != hash.size())
-                throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO: better exception
+            ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, 
+                expectedHash.size() == hash.size(), 
+                "Signature is corrupt");
 
             ThrowErrorIfNot(
                 xPlat::Error::AppxSignatureInvalid,
@@ -90,7 +86,7 @@ namespace xPlat {
                 }
                 m_relativePosition += bytesToRead;
                 if (actualRead) { *actualRead = bytesToRead; }                    
-                hr = (countBytes = bytesToRead) ? S_OK : S_FALSE;
+                hr = (countBytes == bytesToRead) ? S_OK : S_FALSE;
             }
             return hr;
         }
