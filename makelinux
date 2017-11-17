@@ -1,0 +1,10 @@
+#!/bin/bash
+# script to build on mac
+mkdir .vs
+cd .vs
+
+# clean up any old builds of xPlatAppx modules
+find . -name *xPlatAppx* -d | xargs rm -r
+
+cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLINUX=on ..
+make

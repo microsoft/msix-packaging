@@ -4,6 +4,7 @@
 #include "ZipObject.hpp"
 #include "ZipFileStream.hpp"
 #include "InflateStream.hpp"
+#include "VectorStream.hpp"
 
 #include <memory>
 #include <string>
@@ -41,15 +42,38 @@ namespace xPlat {
         Zip64FormatExtension = 45,
     };
 
+    // from AppNote.txt, section 4.5.2:
+    enum class HeaderIDs : std::uint16_t
+    {
+        Zip64ExtendedInfo = 0x0001, // Zip64 extended information extra field
+        AV                = 0x0007, // AV Info
+        RESERVED_1        = 0x0008, // Reserved for extended language encoding data (PFS) (see APPENDIX D)
+        OS2               = 0x0009, // OS/2
+        NTFS              = 0x000a, // NTFS 
+        OpenVMS           = 0x000c, // OpenVMS
+        UNIX              = 0x000d, // UNIX
+        RESERVED_2        = 0x000e, // Reserved for file stream and fork descriptors
+        PatchDescriptor   = 0x000f, // Patch Descriptor
+        UNSUPPORTED_1     = 0x0014, // PKCS#7 Store for X.509 Certificates
+        UNSUPPORTED_2     = 0x0015, // X.509 Certificate ID and Signature for individual file
+        UNSUPPORTED_3     = 0x0016, // X.509 Certificate ID for Central Directory
+        UNSUPPORTED_4     = 0x0017, // Strong Encryption Header
+        RecordManagement  = 0x0018, // Record Management Controls
+        UNSUPPORTED_5     = 0x0019, // PKCS#7 Encryption Recipient Certificate List
+        IBMS390           = 0x0065, // IBM S/390 (Z390), AS/400 (I400) attributes - uncompressed
+        IBM_Reserved      = 0x0066, // Reserved for IBM S/390 (Z390), AS/400 (I400) attributes - compressed
+        RESERVED_3        = 0x4690, // POSZIP 4690 (reserved) 
+    };
+
     // from ZIP file format specification detailed in AppNote.txt
     enum class Signatures : std::uint32_t
     {
-        LocalFileHeader = 0x04034b50,
-        DataDescriptor = 0x08074b50,
-        CentralFileHeader = 0x02014b50,
-        Zip64EndOfCD = 0x06064b50,
-        Zip64EndOfCDLocator = 0x07064b50,
-        EndOfCentralDirectory = 0x06054b50,
+        LocalFileHeader         = 0x04034b50,
+        DataDescriptor          = 0x08074b50,
+        CentralFileHeader       = 0x02014b50,
+        Zip64EndOfCD            = 0x06064b50,
+        Zip64EndOfCDLocator     = 0x07064b50,
+        EndOfCentralDirectory   = 0x06054b50,
     };
 
     enum class CompressionType : std::uint16_t
@@ -139,6 +163,79 @@ namespace xPlat {
     };//class DataDescriptor
     */
 
+    /*  FROM APPNOTE.TXT section 4.5.3:
+        If one of the size or offset fields in the Local or Central directory
+        record is too small to hold the required data, a Zip64 extended information 
+        record is created.  The order of the fields in the zip64 extended 
+        information record is fixed, but the fields MUST only appear if the 
+        corresponding Local or Central directory record field is set to 0xFFFF 
+        or 0xFFFFFFFF.
+
+        Note: all fields stored in Intel low-byte/high-byte order.
+    */
+    class Zip64ExtendedInformation : public Meta::StructuredObject<
+        Meta::Field2Bytes,  // 0 - tag for the "extra" block type               2 bytes(0x0001)
+        Meta::Field2Bytes,  // 1 - size of this "extra" block                   2 bytes
+        Meta::Field8Bytes,  // 2 - Original uncompressed file size              8 bytes
+        Meta::Field8Bytes,  // 3 - Compressed file size                         8 bytes
+        Meta::Field8Bytes   // 4 - Offset of local header record                8 bytes
+        //Meta::Field4Bytes // 5 - number of the disk on which the file starts  4 bytes -- ITS A FAAKEE!
+    >
+    {
+    public:
+        Zip64ExtendedInformation(ULARGE_INTEGER start, IStream* stream) : m_start(start), m_stream(stream)
+        {
+            Field<0>().validation = [](std::uint16_t& v)
+            {   ThrowErrorIfNot(Error::ZipBadExtendedData,
+                    (v == static_cast<std::uint16_t>(HeaderIDs::Zip64ExtendedInfo)),
+                    "Bad Zip64ExtendedInfo Signature");
+            };
+            Field<1>().validation = [&](std::uint16_t& v)
+            {   
+                // Technically, Disk Start Number is optional, so we either have 24 (0x18) or 
+                // 28 (0x1c) bytes of data to read, but the field will always be big enough, 
+                // as enforced by CentralDirectoryFileHeader's Field<18> validation.
+                ThrowErrorIf(Error::ZipBadExtendedData,(v != 24 && v != 28), "Bad Zip64ExtendedInfo Size");
+            }; 
+            // No point in validating these as it is actually possible to have a 0-byte file... Who knew.
+            // Field<2>().validation = [](std::uint64_t& v)
+            // {   ThrowErrorIf(Error::ZipBadExtendedData, (v == 0), "Bad Zip64ExtendedInfo uncompressed size");
+            // };
+            // Field<3>().validation = [](std::uint64_t& v)
+            // {   ThrowErrorIf(Error::ZipBadExtendedData, (v == 0), "Bad Zip64ExtendedInfo compressed size");
+            // };
+            Field<4>().validation = [&](std::uint64_t& v)
+            {   
+                ULARGE_INTEGER pos = {0};
+                ThrowErrorIfNot(Error::ZipBadExtendedData, ((v < m_start.QuadPart)), "invalid relative header offset"); 
+            };
+            // ITS A FAAAKE!
+            // Field<5>().validation = [&](std::uint32_t& v)
+            // {   if (Field<1>().value == 32)
+            //     {   // this value was explicitly specified by way of the length of the extended data field, 
+            //         // so this value had better be 0.
+            //         ThrowErrorIf(Error::ZipBadExtendedData, (v != 0), "Bad Zip64ExtendedInfo disk number");
+            //     } 
+            //     else 
+            //     {   Field<5>().value = 0;
+            //     }
+            // };
+        }
+
+        std::uint64_t GetUncompressedSize()         { return Field<2>().value; }
+        void SetUncompressedSize(std::uint64_t v)   { Field<2>().value = v; }
+
+        std::uint64_t GetCompressedSize()           { return Field<3>().value; }
+        void SetCompressedSize(std::uint64_t v)     { Field<3>().value = v; }
+
+        std::uint64_t GetRelativeOffset()           { return Field<4>().value; }
+        void SetRelativeOffset(std::uint64_t v)     { Field<4>().value = v; }
+
+    private:
+        ULARGE_INTEGER  m_start;
+        ComPtr<IStream> m_stream;
+    };
+
      /*  TODO: Implement large file support.
      This type currently represents a "zip32" Central Directory Header.  We need to create a new field type (offset)
      to replace the type for fields 8 & 9 whose implementation is determined by the version needed to extract (field 2)'s
@@ -182,7 +279,7 @@ namespace xPlat {
         >
     {
     public:
-        CentralDirectoryFileHeader(IStream* s) : m_stream(s)
+        CentralDirectoryFileHeader(bool isZip64, IStream* s) : m_isZip64(isZip64), m_stream(s)
         {
             // 0 - central file header signature   4 bytes(0x02014b50)
             Field<0>().validation = [](std::uint32_t& v)
@@ -228,8 +325,8 @@ namespace xPlat {
             };
             //11 - extra field length              2 bytes
             Field<11>().validation = [&](std::uint16_t& v)
-            {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported extra field size");
-                Field<18>().value.resize(v,0);
+            {   
+                if (v != 0) { Field<18>().value.resize(v,0); }
             };
             //12 - file comment length             2 bytes
             Field<12>().validation = [&](std::uint16_t& v)
@@ -249,10 +346,28 @@ namespace xPlat {
             {   
                 ULARGE_INTEGER pos = {0};
                 ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
-                ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v < pos.QuadPart), "invalid relative offset");
+                if (!GetIsZip64())
+                {   ThrowErrorIf(Error::ZipCentralDirectoryHeader, (v >= pos.QuadPart), "invalid relative header offset");
+                }
+                else
+                {   ThrowErrorIf(Error::ZipCentralDirectoryHeader, (v != 0xFFFFFFFF), "invalid zip64 local header offset");
+                }
             };
             //17 - file name(variable size)
             //18 - extra field(variable size)
+            Field<18>().validation = [&](std::vector<std::uint8_t>& bytes)
+            {
+                if (bytes.size() > 0)
+                {
+                    LARGE_INTEGER zero = {0};
+                    ULARGE_INTEGER pos = {0};
+                    ThrowHrIfFailed(m_stream->Seek(zero, StreamBase::Reference::CURRENT, &pos));
+                    auto vectorStream = ComPtr<IStream>::Make<VectorStream>(&bytes);
+                    m_extendedInfo = std::make_unique<Zip64ExtendedInformation>(pos, vectorStream.Get());
+                    ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,(bytes.size() >= m_extendedInfo->Size()),"Unexpected extended info size");
+                    m_extendedInfo->Read(vectorStream.Get());
+                }
+            };
             //19 - file comment(variable size)
             
             SetSignature(static_cast<std::uint32_t>(Signatures::CentralFileHeader));
@@ -285,14 +400,40 @@ namespace xPlat {
         std::uint32_t GetCrc32()                                 { return Field<7>().value; }
         void SetCrc(std::uint32_t value)                         { Field<7>().value = value; }
 
-        std::uint32_t GetCompressedSize()                        { return Field<8>().value; }
-        void SetCompressedSize(std::uint32_t value)              { Field<8>().value = value; }
+        std::uint64_t GetCompressedSize()
+        {
+            if (!m_extendedInfo.get()) { return static_cast<std::uint64_t>(Field<8>().value); }
+            return m_extendedInfo->GetCompressedSize();
+        }
+        void SetCompressedSize(std::uint32_t value)
+        {
+            // TODO: on-demand create m_extendedInfo?
+            Field<8>().value = value;
+        }
 
-        std::uint32_t GetUncompressedSize()                      { return Field<9>().value; }
-        void SetUncompressedSize(std::uint32_t value)            { Field<9>().value = value; }
+        std::uint64_t GetUncompressedSize()                      
+        {
+            if (!m_extendedInfo.get()) { return static_cast<std::uint64_t>(Field<9>().value); }
+            return m_extendedInfo->GetUncompressedSize();
+        }
 
-        std::uint32_t GetRelativeOffsetOfLocalHeader()           { return Field<16>().value; }
-        void SetRelativeOffsetOfLocalHeader(std::uint32_t value) { Field<16>().value = value; }
+        void SetUncompressedSize(std::uint32_t value)
+        {
+            // TODO: on-demand create m_extendedInfo?
+            Field<9>().value = value;
+        }
+
+        std::uint64_t GetRelativeOffsetOfLocalHeader()
+        {
+            if (!m_extendedInfo.get()) { return static_cast<std::uint64_t>(Field<16>().value); }
+            return m_extendedInfo->GetRelativeOffset();
+        }
+
+        void SetRelativeOffsetOfLocalHeader(std::uint32_t value)
+        {
+            // TODO: on-demand create m_extendedInfo?
+            Field<16>().value = value;
+        }
 
         std::string GetFileName()
         {
@@ -308,6 +449,8 @@ namespace xPlat {
             SetFileNameLength(static_cast<std::uint16_t>(name.size()));
         }
 
+        bool GetIsZip64() { return m_isZip64; }
+
     private:
         void SetSignature(std::uint32_t value)              { Field<0>().value = value; }
         void SetVersionMadeBy(std::uint16_t value)          { Field<1>().value = value; }
@@ -317,13 +460,18 @@ namespace xPlat {
         void SetLastModFileDate(std::uint16_t value)        { Field<6>().value = value; }
 
         void SetFileNameLength(std::uint16_t value)         { Field<10>().value = value; }
+
         void SetExtraFieldLength(std::uint16_t value)       { Field<11>().value = value; }
+        std::uint16_t GetExtraFieldLength()                 { return Field<11>().value;  }
+
         void SetFileCommentLength(std::uint16_t value)      { Field<12>().value = value; }
         void SetDiskNumberStart(std::uint16_t value)        { Field<13>().value = value; }
         void SetInternalFileAttributes(std::uint16_t value) { Field<14>().value = value; }
         void SetExternalFileAttributes(std::uint16_t value) { Field<15>().value = value; }
 
+        std::unique_ptr<Zip64ExtendedInformation> m_extendedInfo;
         IStream* m_stream = nullptr;
+        bool     m_isZip64 = false;
     };//class CentralDirectoryFileHeader
 
     class LocalFileHeader : public Meta::StructuredObject<
@@ -343,7 +491,7 @@ namespace xPlat {
     >
     {
     public:
-        LocalFileHeader(std::shared_ptr<CentralDirectoryFileHeader> directoryEntry) : m_directoryEntry(directoryEntry)
+        LocalFileHeader(std::shared_ptr<CentralDirectoryFileHeader> directoryEntry) : m_isZip64(directoryEntry->GetIsZip64()), m_directoryEntry(directoryEntry)
         {
             // 0 - local file header signature     4 bytes(0x04034b50)
             Field<0>().validation = [](std::uint32_t& v)
@@ -411,22 +559,22 @@ namespace xPlat {
 
         CompressionType GetCompressionType() { return static_cast<CompressionType>(Field<3>().value); }
 
-        std::uint32_t GetCompressedSize()
+        std::uint64_t GetCompressedSize()
         {
             if (IsGeneralPurposeBitSet())
             {
                 return m_directoryEntry->GetCompressedSize();
             }
-            return Field<7>().value;
+            return static_cast<std::uint64_t>(Field<7>().value);
         }
 
-        std::uint32_t GetUncompressedSize() 
+        std::uint64_t GetUncompressedSize() 
         {
             if (IsGeneralPurposeBitSet())
             {
                 return m_directoryEntry->GetUncompressedSize();
             }
-            return Field<8>().value;
+            return static_cast<std::uint64_t>(Field<8>().value);
         }
 
         std::uint16_t GetFileNameLength()   { return Field<9>().value;  }
@@ -452,7 +600,7 @@ namespace xPlat {
             SetFileNameLength(static_cast<std::uint16_t>(name.size()));
         }
     protected:
-
+        bool                                        m_isZip64        = false;
         std::shared_ptr<CentralDirectoryFileHeader> m_directoryEntry = nullptr;
     }; //class LocalFileHeader
 
@@ -643,37 +791,51 @@ namespace xPlat {
             };
             // 1 - number of this disk             2 bytes
             Field<1>().validation = [](std::uint16_t& v)
-            {   ThrowErrorIfNot(Error::ZipEOCDRecord, (v == 0), "unsupported disk number");
-                // TODO: 0xFFFF -> appxbundle
+            {   ThrowErrorIfNot(Error::ZipEOCDRecord, ((v == 0) || (v == 0xFFFF)), "unsupported disk number");
             };
             // 2 - number of the disk with the start of the central directory  2 bytes
-            Field<2>().validation = [](std::uint16_t& v)
-            {   ThrowErrorIfNot(Error::ZipEOCDRecord, (v == 0), "unsupported EoCDR disk number");
-                // TODO: 0xFFFF -> appxbundle
+            Field<2>().validation = [&](std::uint16_t& v)
+            {   ThrowErrorIfNot(Error::ZipEOCDRecord, ((v == 0) || (v == 0xFFFF)), "unsupported EoCDR disk number");
+                ThrowErrorIfNot(Error::ZipEOCDRecord, (
+                    v == Field<1>().value
+                ), "previous field value does not match this field");
+                m_isZip64 = (0xFFFF == v);
             };
             // 3 - total number of entries in the central directory on this disk  2 bytes
-            Field<3>().validation = [](std::uint16_t& v)
+            Field<3>().validation = [&](std::uint16_t& v)
             {   ThrowErrorIfNot(Error::ZipEOCDRecord,
-                    (v == std::numeric_limits<std::uint16_t>::max()),
+                    ((v == 0) || (v == 0xFFFF)),
                     "unsupported total number of entries on this disk");
+                // ThrowErrorIfNot(Error::ZipEOCDRecord, (
+                //     v == Field<2>().value
+                //     ), "previous field value does not match this field");                        
             };
             // 4 - total number of entries in the central directory           2 bytes
-            Field<4>().validation = [](std::uint16_t& v)
+            Field<4>().validation = [&](std::uint16_t& v)
             {   ThrowErrorIfNot(Error::ZipEOCDRecord,
-                    (v == std::numeric_limits<std::uint16_t>::max()),
+                    ((v == 0) || (v == 0xFFFF)),
                     "unsupported total number of entries");
+                ThrowErrorIfNot(Error::ZipEOCDRecord, (
+                    v == Field<3>().value
+                    ), "previous field value does not match this field");                    
             };
             // 5 - size of the central directory   4 bytes
-            Field<5>().validation = [](std::uint32_t& v)
+            Field<5>().validation = [&](std::uint32_t& v)
             {   ThrowErrorIfNot(Error::ZipEOCDRecord,
-                    (v == std::numeric_limits<std::uint32_t>::max()),
+                    ((v == 0) || (v == 0xFFFFFFFF)),
                     "unsupported size of central directory");
+                ThrowErrorIfNot(Error::ZipEOCDRecord, (
+                    v == 0 ? Field<4>().value == 0 : Field<4>().value == 0xFFFF
+                    ), "previous field value does not match this field");
             };
             // 6 - offset of start of central directory with respect to the starting disk number        4 bytes
-            Field<6>().validation = [](std::uint32_t& v)
+            Field<6>().validation = [&](std::uint32_t& v)
             {   ThrowErrorIfNot(Error::ZipEOCDRecord,
-                    (v == std::numeric_limits<std::uint32_t>::max()),
+                    ((v == 0) || (v == 0xFFFFFFFF)),
                     "unsupported offset of start of central directory");
+                ThrowErrorIfNot(Error::ZipEOCDRecord, (
+                    v == Field<5>().value
+                ), "previous field value does not match this field");
             };
             // 7 - .ZIP file comment length        2 bytes
             Field<7>().validation = [&](std::uint16_t& v)
@@ -696,6 +858,7 @@ namespace xPlat {
             SetCommentLength(0);
         }
 
+        bool GetIsZip64() { return m_isZip64; }
     private:
         void SetSignature(std::uint32_t value)                      { Field<0>().value = value; }
         void SetNumberOfDisk(std::uint16_t value)                   { Field<1>().value = value; }
@@ -704,8 +867,11 @@ namespace xPlat {
         void SetTotalEntriesInCentralDirectory(std::uint16_t value) { Field<4>().value = value; }
         void SetSizeOfCentralDirectory(std::uint32_t value)         { Field<5>().value = value; }
         void SetOffsetOfCentralDirectory(std::uint32_t value)       { Field<6>().value = value; }
+        std::uint32_t GetOffsetOfCentralDirectory()                 { return Field<6>().value;  }
+
         void SetCommentLength(std::uint16_t value)                  { Field<7>().value = value; }
 
+        bool m_isZip64 = false;
     };//class EndOfCentralDirectoryRecord
 
     std::vector<std::string> ZipObject::GetFileNames(FileNameOptions)
@@ -768,7 +934,7 @@ namespace xPlat {
         ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
         for (std::uint32_t index = 0; index < zip64EndOfCentralDirectory.GetTotalNumberOfEntries(); index++)
         {
-            auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(m_stream.Get());
+            auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(endCentralDirectoryRecord.GetIsZip64(), m_stream.Get());
             centralFileHeader->Read(m_stream.Get());
             // TODO: ensure that there are no collisions on name!
             centralDirectory.insert(std::make_pair(centralFileHeader->GetFileName(), centralFileHeader));
@@ -780,7 +946,7 @@ namespace xPlat {
         ThrowErrorIfNot(Error::ZipHiddenData, (uPos.QuadPart == zip64Locator.GetRelativeOffset()), "hidden data unsupported");
 
         // TODO: change to uint64_t when adding full zip64 support
-        std::map<std::uint32_t, std::shared_ptr<LocalFileHeader>> fileRepository;
+        std::map<std::uint64_t, std::shared_ptr<LocalFileHeader>> fileRepository;
 
         // TODO: change population of m_streams into cache semantics and move into ZipObject::GetFile
         // Read the file repository

@@ -47,6 +47,7 @@ namespace xPlat {
         Zip64EOCDLocator            = ERROR_FACILITY + 0x0014,
         ZipEOCDRecord               = ERROR_FACILITY + 0x0015,
         ZipHiddenData               = ERROR_FACILITY + 0x0016,
+        ZipBadExtendedData          = ERROR_FACILITY + 0x0017,
 
         // Inflate errors
         InflateInitialize           = ERROR_FACILITY + 0x0021,

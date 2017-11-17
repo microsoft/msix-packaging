@@ -16,14 +16,14 @@
         to non Win32 clients, CreateStreamOnFile is provided to enable easier consumption of the COM APIs.
 
 0.7 -   API changes:
-        * Implemented IAppxFactory's CreatePackageReader, IAppxPackageReader's GetPayloadFiles, and 
+        * Implemented IAppxFactory's CreatePackageReader, IAppxPackageReader's GetPayloadFiles, and
           Implemented IAppxFileEnumerator.  Basically, everything used in ExtractContentsSample
 
         * Moved utf8/utf16 conversion functions into their own header to support marshalling
           out file Names and content types to clients through the nanoCOM layer.
 
-        * Added CreateStreamOnFileUTF16 c-style export as it became clear that interoperating 
-          with UTF16 file names in a cross-platform sane manner was onerous on cross platform 
+        * Added CreateStreamOnFileUTF16 c-style export as it became clear that interoperating
+          with UTF16 file names in a cross-platform sane manner was onerous on cross platform
           clients.
 
         * Added HRESULT_FROM_WIN32 and fixed a small bug in AppxWindows.hpp.
@@ -31,9 +31,11 @@
         * Updated sample to compile on multiple platforms to prove-out external consumption of
           the nanoCOM interfaces.  Also replace VS project and sln with CMakeLists.txt files and
           included that in the  larger CMake project.
+
+        * Make Nuget Package to target the native framework.
     </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
-    <tags>xPlatAppx Appx AppxPackaging</tags>
+    <tags>xPlatAppx Appx AppxPackaging native</tags>
     <dependencies />
   </metadata>
 </package>
