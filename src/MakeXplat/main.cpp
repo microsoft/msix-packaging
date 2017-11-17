@@ -44,9 +44,9 @@ struct State
         return true;
     }
 
-    bool AllowUnknownOrigin()
+    bool AllowSignatureOriginUnknown()
     {
-        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWUNKNOWNORIGIN);
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN);
         return true;
     }
 
@@ -262,7 +262,7 @@ int main(int argc, char* argv[])
                     [&](const std::string&) { return state.SkipManifestValidation(); })
                 },
                 { "-sv", Option(false, "Allow unknown signature origin.  By default unknown signatures are rejected.",
-                    [&](const std::string&) { return state.AllowUnknownOrigin(); })
+                    [&](const std::string&) { return state.AllowSignatureOriginUnknown(); })
                 },
                 { "-?", Option(false, "Displays this help text.",
                     [&](const std::string&) { return false; })
@@ -284,7 +284,7 @@ int main(int argc, char* argv[])
                     [&](const std::string&) { return state.SkipManifestValidation(); })
                 },
                 { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
-                    [&](const std::string&) { return state.AllowUnknownOrigin(); })
+                    [&](const std::string&) { return state.AllowSignatureOriginUnknown(); })
                 },
                 { "-?", Option(false, "Displays this help text.",
                     [&](const std::string&) { return false; })

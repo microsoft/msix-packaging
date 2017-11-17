@@ -249,7 +249,6 @@ static bool GetEnhancedKeyUsage(
 
     static BOOL IsAuthenticodeTrustedChain(_In_ PCCERT_CHAIN_CONTEXT certChainContext)
     {
-        // Validate that the certificate chain is rooted in one of the well-known MS root certs
         CERT_CHAIN_POLICY_PARA policyParameters = { 0 };
         policyParameters.cbSize = sizeof(CERT_CHAIN_POLICY_PARA);
         CERT_CHAIN_POLICY_STATUS policyStatus = { 0 };
@@ -609,19 +608,18 @@ bool SignatureValidator::Validate(
         }
 
         // If the caller allows unknown origin certs, don't bother with the certificate check
-        if (!(option & APPX_VALIDATION_OPTION_ALLOWUNKNOWNORIGIN))
+        if (!(option & APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN))
         {
             // Build wintrust data to pass to WinVerifyTrust in order to validate signature
             GUID P7xSipGuid = { 0x5598cff1, 0x68db, 0x4340,{ 0xb5, 0x7f, 0x1c, 0xac, 0xf8, 0x8c, 0x9a, 0x51 } };
-            GUID wintrustActionVerify = WINTRUST_ACTION_GENERIC_VERIFY_V2;
-            WINTRUST_BLOB_INFO signatureBlobInfo = { 0 };
-            WINTRUST_DATA trustData = { 0 };
 
+            WINTRUST_BLOB_INFO signatureBlobInfo = { 0 };
             signatureBlobInfo.cbStruct = sizeof(WINTRUST_BLOB_INFO);
             signatureBlobInfo.gSubject = P7xSipGuid;
             signatureBlobInfo.cbMemObject = p7x.size();
             signatureBlobInfo.pbMemObject = p7x.data();
 
+            WINTRUST_DATA trustData = { 0 };
             trustData.cbStruct = sizeof(WINTRUST_DATA);
             trustData.dwUIChoice = WTD_UI_NONE;
             trustData.fdwRevocationChecks = WTD_REVOKE_NONE;
@@ -631,10 +629,16 @@ bool SignatureValidator::Validate(
             trustData.pBlob = &signatureBlobInfo;
 
             // Verify whether we trust the certificate. If it fails, 
+            GUID wintrustActionVerify = WINTRUST_ACTION_GENERIC_VERIFY_V2;
             if (WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData))
             {
                 throw xPlat::Exception(xPlat::Error::AppxCertNotTrusted);
             }
+
+            // Close trustData.hWVTStateData -- returned by previous WinVerifyTrust call
+            trustData.cbStruct = sizeof(WINTRUST_DATA);
+            trustData.dwStateAction = WTD_STATEACTION_CLOSE;
+            WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData);
         }
 
         if (IsStoreOrigin(p7s, p7sSize))
