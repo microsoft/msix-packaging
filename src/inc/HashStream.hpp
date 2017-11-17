@@ -17,7 +17,7 @@ namespace xPlat {
     class HashStream : public StreamBase
     {
     public:
-        HashStream(IStream* stream, std::vector<std::uint8_t>& expectedHash) :
+        HashStream(IStream* stream, const std::vector<std::uint8_t>& expectedHash) :
             m_relativePosition(0)
         {
             HRESULT hr;
@@ -73,7 +73,7 @@ namespace xPlat {
                     m_relativePosition = m_cacheBuffer.size();
                     break;
             }
-            m_relativePosition = std::max((std::uint32_t)0, std::min(m_relativePosition, (std::uint32_t)m_cacheBuffer.size()));
+            m_relativePosition = std::max((std::uint64_t)0, std::min(m_relativePosition, (std::uint64_t)m_cacheBuffer.size()));
             if (newPosition) { newPosition->QuadPart = (std::uint64_t)m_relativePosition; }
             return S_OK;
         }
@@ -83,7 +83,7 @@ namespace xPlat {
             HRESULT hr = static_cast<HRESULT>(Error::Stg_E_Invalidpointer);
             if (buffer)
             {
-                ULONG bytesToRead = std::min((std::uint32_t)countBytes, (std::uint32_t)m_cacheBuffer.size() - m_relativePosition);
+                ULONG bytesToRead = std::min((std::uint32_t)countBytes, static_cast<std::uint32_t>((std::uint64_t)m_cacheBuffer.size() - m_relativePosition));
                 if (bytesToRead)
                 {
                     memcpy(buffer, reinterpret_cast<BYTE*>(m_cacheBuffer.data()) + m_relativePosition, bytesToRead);
@@ -97,6 +97,6 @@ namespace xPlat {
       
     protected:
         std::vector<std::uint8_t> m_cacheBuffer;
-        std::uint32_t m_relativePosition;
+        std::uint64_t m_relativePosition;
     };
 }

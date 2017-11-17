@@ -14,7 +14,7 @@ namespace xPlat {
     class RangeStream : public StreamBase
     {
     public:
-        RangeStream(std::uint32_t offset, std::uint32_t size, IStream* stream) : 
+        RangeStream(std::uint64_t offset, std::uint64_t size, IStream* stream) : 
             m_offset(offset),
             m_size(size),
             m_stream(stream)

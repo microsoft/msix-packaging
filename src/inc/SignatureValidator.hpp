@@ -1,13 +1,12 @@
 #pragma once
 #include "AppxPackaging.hpp"
 #include "AppxSignature.hpp"
+#include "SHA256.hpp"
 
 #include <vector>
 #include <map>
 
 namespace xPlat {
-
-    const unsigned HASH_BYTES = 32;
 
     typedef struct DigestHash
     {

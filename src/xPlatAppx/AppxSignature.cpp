@@ -7,11 +7,13 @@
 #include "HashStream.hpp"
 #include "ComHelper.hpp"
 #include "SignatureValidator.hpp"
+#include "BlockMapStream.hpp"
 
 #include <string>
 #include <vector>
 #include <memory>
 #include <functional>
+#include <set>
 
 namespace xPlat {
 
