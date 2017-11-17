@@ -12,44 +12,30 @@
 namespace xPlat
 {
     struct unique_local_alloc_deleter {
-        void operator()(HLOCAL h) const {
-            LocalFree(h);
-        };
+        void operator()(HLOCAL h) const { LocalFree(h); };
     };
     
     struct unique_cert_context_deleter {
-        void operator()(PCCERT_CONTEXT p) const {
-            CertFreeCertificateContext(p);
-        };
+        void operator()(PCCERT_CONTEXT p) const { CertFreeCertificateContext(p); };
     };
 
     struct unique_cert_chain_deleter {
-        void operator()(PCCERT_CHAIN_CONTEXT p) const {
-            CertFreeCertificateChain(p);
-        };
+        void operator()(PCCERT_CHAIN_CONTEXT p) const { CertFreeCertificateChain(p); };
     };
     struct unique_hash_handle_deleter {
-        void operator()(BCRYPT_HASH_HANDLE h) const {
-            BCryptDestroyHash(h);
-        };
+        void operator()(BCRYPT_HASH_HANDLE h) const { BCryptDestroyHash(h); };
     };
 
     struct unique_alg_handle_deleter {
-        void operator()(BCRYPT_ALG_HANDLE h) const {
-            BCryptCloseAlgorithmProvider(h, 0);
-        };
+        void operator()(BCRYPT_ALG_HANDLE h) const { BCryptCloseAlgorithmProvider(h, 0); };
     };
 
     struct unique_cert_store_handle_deleter {
-        void operator()(HCERTSTORE h) const {
-            CertCloseStore(h, 0);
-        };
+        void operator()(HCERTSTORE h) const { CertCloseStore(h, 0); };
     };
 
     struct unique_crypt_msg_handle_deleter {
-        void operator()(HCRYPTMSG h) const {
-            CryptMsgClose(h);
-        };
+        void operator()(HCRYPTMSG h) const { CryptMsgClose(h); };
     };
     
     typedef std::unique_ptr<void, unique_local_alloc_deleter> unique_local_alloc_handle;
@@ -64,34 +50,26 @@ namespace xPlat
         _In_ byte* signatureBuffer,
         _In_ ULONG cbSignatureBuffer)
     {
-        PCCERT_CHAIN_CONTEXT certChainContext;
+        // Get the cert content
         HCERTSTORE certStoreT;
         HCRYPTMSG signedMessageT;
-        DWORD queryContentType = 0;
-        DWORD queryFormatType = 0;
-        BOOL result;
-
         CRYPT_DATA_BLOB signatureBlob = { 0 };
         signatureBlob.cbData = cbSignatureBuffer;
         signatureBlob.pbData = signatureBuffer;
-
-        // Get the cert content
-        result = CryptQueryObject(
-            CERT_QUERY_OBJECT_BLOB,
-            &signatureBlob,
-            CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED,
-            CERT_QUERY_FORMAT_FLAG_BINARY,
-            0,      // Reserved parameter
-            NULL,   // No encoding info needed
-            NULL,
-            NULL,
-            &certStoreT,
-            &signedMessageT,
-            NULL);
-
-        if (!result)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            CryptQueryObject(
+                CERT_QUERY_OBJECT_BLOB,
+                &signatureBlob,
+                CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED,
+                CERT_QUERY_FORMAT_FLAG_BINARY,
+                0,      // Reserved parameter
+                NULL,   // No encoding info needed
+                NULL,
+                NULL,
+                &certStoreT,
+                &signedMessageT,
+                NULL)
+            ), "CryptQueryObject failed.");
         unique_cert_store_handle certStore(certStoreT);
         unique_crypt_msg_handle signedMessage(signedMessageT);
 
@@ -99,145 +77,114 @@ namespace xPlat
         // The properties of the signer info will be used to uniquely identify the signing certificate in the certificate store
         CMSG_SIGNER_INFO* signerInfo = NULL;
         DWORD signerInfoSize = 0;
-        result = CryptMsgGetParam(signedMessage.get(), CMSG_SIGNER_INFO_PARAM, 0, NULL, &signerInfoSize);
-        if (!result)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            CryptMsgGetParam(signedMessage.get(), CMSG_SIGNER_INFO_PARAM, 0, NULL, &signerInfoSize)
+            ), "CryptMsgGetParam failed");
 
         // Check that the signer info size is within reasonable bounds; under the max length of a string for the issuer field
-        if (signerInfoSize == 0 || signerInfoSize >= STRSAFE_MAX_CCH)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
+        ThrowErrorIf(Error::AppxSignatureInvalid, 
+            (signerInfoSize == 0 || signerInfoSize >= STRSAFE_MAX_CCH),
+            "signer info size not within reasonable bounds");
 
         std::vector<byte> signerInfoBuffer(signerInfoSize);
-
         signerInfo = reinterpret_cast<CMSG_SIGNER_INFO*>(signerInfoBuffer.data());
-        result = CryptMsgGetParam(signedMessage.get(), CMSG_SIGNER_INFO_PARAM, 0, signerInfo, &signerInfoSize);
-        if (!result)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            CryptMsgGetParam(signedMessage.get(), CMSG_SIGNER_INFO_PARAM, 0, signerInfo, &signerInfoSize)
+            ), "CryptMsgGetParam failed");
+        
         // Get the signing certificate from the certificate store based on the issuer and serial number of the signer info
         CERT_INFO certInfo;
         certInfo.Issuer = signerInfo->Issuer;
         certInfo.SerialNumber = signerInfo->SerialNumber;
-
         unique_cert_context signingCertContext(CertGetSubjectCertificateFromStore(
             certStore.get(),
             X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
             &certInfo));
+        ThrowErrorIf(Error::AppxSignatureInvalid, (signingCertContext.get() == NULL), "failed to get signing cert context.");
 
-        if (signingCertContext.get() == NULL)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-
+        // Get the signing certificate chain context.  Do not connect online for URL 
+        // retrievals.  Note that this check does not respect the lifetime signing 
+        // EKU on the signing certificate.  
         CERT_CHAIN_PARA certChainParameters = { 0 };
         certChainParameters.cbSize = sizeof(CERT_CHAIN_PARA);
         certChainParameters.RequestedUsage.dwType = USAGE_MATCH_TYPE_AND;
-
-        // Do not connect online for URL retrievals.
-        // Note that this check does not respect the lifetime signing EKU on the signing certificate
         DWORD certChainFlags = CERT_CHAIN_CACHE_ONLY_URL_RETRIEVAL;
-
-        // Get the signing certificate chain context
-        result = CertGetCertificateChain(
-            HCCE_LOCAL_MACHINE,
-            signingCertContext.get(),
-            NULL,   // Use the current system time for CRL validation
-            certStore.get(),
-            &certChainParameters,
-            certChainFlags,
-            NULL,   // Reserved parameter; must be NULL
-            &certChainContext);
-
-        if (!result)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
+        PCCERT_CHAIN_CONTEXT certChainContext;
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            CertGetCertificateChain(
+                HCCE_LOCAL_MACHINE,
+                signingCertContext.get(),
+                NULL,   // Use the current system time for CRL validation
+                certStore.get(),
+                &certChainParameters,
+                certChainFlags,
+                NULL,   // Reserved parameter; must be NULL
+                &certChainContext)
+            ), "CertGetCertificateChain failed");
 
         return certChainContext;
     }
 
-static bool GetEnhancedKeyUsage(
-        PCCERT_CONTEXT pCertContext,
-        std::vector<std::string>& values)
-    {
-        HRESULT hr = S_OK;
-        DWORD cbExtensionUsage = 0;
-        DWORD cbPropertyUsage = 0;
-        DWORD i;
-        std::vector<byte> extensionUsage(0);
-        std::vector<byte> propertyUsage(0);
-        
-        bool result = CertGetEnhancedKeyUsage(
-            pCertContext,
-            CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG,
-            NULL,
-            &cbExtensionUsage);
+    static bool GetEnhancedKeyUsage(PCCERT_CONTEXT pCertContext, std::vector<std::string>& values)
+    {                   
+        //get OIDS from the extension or property
 
-        if (result)
+        DWORD cbExtensionUsage = 0;
+        std::vector<byte> extensionUsage(0);
+        if (!CertGetEnhancedKeyUsage(pCertContext, CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG, NULL, &cbExtensionUsage))
         {
             extensionUsage.resize(cbExtensionUsage);
-            
-            result = CertGetEnhancedKeyUsage(
-                pCertContext,
-                CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG,
-                reinterpret_cast<PCERT_ENHKEY_USAGE>(extensionUsage.data()),
-                &cbExtensionUsage);
+            ThrowErrorIf(Error::AppxSignatureInvalid, (
+                !CertGetEnhancedKeyUsage(
+                    pCertContext,
+                    CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG,
+                    reinterpret_cast<PCERT_ENHKEY_USAGE>(extensionUsage.data()),                
+                    &cbExtensionUsage) &&
+                GetLastError() != CRYPT_E_NOT_FOUND
+            ), "CertGetEnhacnedKeyUsage on extension usage failed.");
         }
-
-        if (!result && GetLastError() != CRYPT_E_NOT_FOUND)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-                
-        result = CertGetEnhancedKeyUsage(
-            pCertContext,
-            CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG,
-            NULL,
-            &cbPropertyUsage);
-        
-        if (result)
-        {
-            propertyUsage.resize(cbPropertyUsage);
-
-            result = CertGetEnhancedKeyUsage(
-                pCertContext,
-                CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG,
-                reinterpret_cast<PCERT_ENHKEY_USAGE>(propertyUsage.data()),
-                &cbPropertyUsage);
-        }
-
-        if (!result && GetLastError() != CRYPT_E_NOT_FOUND)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-
-        result = false;
-
-        //get OIDS from the extension or property
         if (extensionUsage.size() > 0)
         {
             PCERT_ENHKEY_USAGE pExtensionUsageT = reinterpret_cast<PCERT_ENHKEY_USAGE>(extensionUsage.data());
-            for (i = 0; i < pExtensionUsageT->cUsageIdentifier; i++)
-            {
-                std::string sz(pExtensionUsageT->rgpszUsageIdentifier[i]);
-                values.push_back(sz);
+            for (DWORD i = 0; i < pExtensionUsageT->cUsageIdentifier; i++)
+            {   values.push_back(std::move(std::string(pExtensionUsageT->rgpszUsageIdentifier[i])));
             }
-            result = (pExtensionUsageT->cUsageIdentifier > 0);
+            return (pExtensionUsageT->cUsageIdentifier > 0);
         }
-        else
+
+        DWORD cbPropertyUsage = 0;
+        std::vector<byte> propertyUsage(0);
+        if (!CertGetEnhancedKeyUsage(pCertContext, CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG, NULL, &cbPropertyUsage))
+        {
+            propertyUsage.resize(cbPropertyUsage);
+            ThrowErrorIf(Error::AppxSignatureInvalid, (            
+                !CertGetEnhancedKeyUsage(
+                    pCertContext,
+                    CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG,
+                    reinterpret_cast<PCERT_ENHKEY_USAGE>(propertyUsage.data()),
+                    &cbPropertyUsage) &&
+                GetLastError() != CRYPT_E_NOT_FOUND
+            ), "CertGetEnhancedKeyUsage on property usage failed.");
+        }        
         if (propertyUsage.size() > 0)
         {
             PCERT_ENHKEY_USAGE pPropertyUsageT = reinterpret_cast<PCERT_ENHKEY_USAGE>(propertyUsage.data());
-            for (i = 0; i < pPropertyUsageT->cUsageIdentifier; i++)
-            {
-                std::string sz(pPropertyUsageT->rgpszUsageIdentifier[i]);
-                values.push_back(sz);
+            for (DWORD i = 0; i < pPropertyUsageT->cUsageIdentifier; i++)
+            {   values.push_back(std::move(std::string(pPropertyUsageT->rgpszUsageIdentifier[i])));
             }
-            result = (pPropertyUsageT->cUsageIdentifier > 0);
+            return (pPropertyUsageT->cUsageIdentifier > 0);
         }
-        return result;
+
+        return false;
     }
 
-    static BOOL IsMicrosoftTrustedChain(_In_ PCCERT_CHAIN_CONTEXT certChainContext)
+    static bool IsMicrosoftTrustedChain(_In_ PCCERT_CHAIN_CONTEXT certChainContext)
     {
         // Validate that the certificate chain is rooted in one of the well-known MS root certs
         CERT_CHAIN_POLICY_PARA policyParameters = { 0 };
         policyParameters.cbSize = sizeof(CERT_CHAIN_POLICY_PARA);
         CERT_CHAIN_POLICY_STATUS policyStatus = { 0 };
         policyStatus.cbSize = sizeof(CERT_CHAIN_POLICY_STATUS);
-
         policyParameters.dwFlags = MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
 
         return CertVerifyCertificateChainPolicy(
@@ -247,7 +194,7 @@ static bool GetEnhancedKeyUsage(
             &policyStatus);      
     }
 
-    static BOOL IsAuthenticodeTrustedChain(_In_ PCCERT_CHAIN_CONTEXT certChainContext)
+    static bool IsAuthenticodeTrustedChain(_In_ PCCERT_CHAIN_CONTEXT certChainContext)
     {
         CERT_CHAIN_POLICY_PARA policyParameters = { 0 };
         policyParameters.cbSize = sizeof(CERT_CHAIN_POLICY_PARA);
@@ -255,7 +202,6 @@ static bool GetEnhancedKeyUsage(
         policyStatus.cbSize = sizeof(CERT_CHAIN_POLICY_STATUS);
 
         //policyParameters.dwFlags = MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
-
         return CertVerifyCertificateChainPolicy(
             CERT_CHAIN_POLICY_AUTHENTICODE,
             certChainContext,
@@ -263,20 +209,16 @@ static bool GetEnhancedKeyUsage(
             &policyStatus);
     }
 
-    static BOOL IsCACert(_In_ PCCERT_CONTEXT pCertContext)
+    static bool IsCACert(_In_ PCCERT_CONTEXT pCertContext)
     {
-        CERT_BASIC_CONSTRAINTS2_INFO *basicConstraintsT = NULL;
-        PCERT_EXTENSION certExtension = NULL;
-        DWORD cbDecoded = 0;
-        bool retValue = FALSE;
-
-        certExtension = CertFindExtension(
+        PCERT_EXTENSION certExtension = CertFindExtension(
             szOID_BASIC_CONSTRAINTS2,
             pCertContext->pCertInfo->cExtension,
             pCertContext->pCertInfo->rgExtension);
 
-        if (certExtension &&
-            CryptDecodeObjectEx(
+        CERT_BASIC_CONSTRAINTS2_INFO *basicConstraintsT = NULL;
+        DWORD cbDecoded = 0;            
+        if (certExtension && CryptDecodeObjectEx(
                 X509_ASN_ENCODING,
                 X509_BASIC_CONSTRAINTS2,
                 certExtension->Value.pbData,
@@ -287,92 +229,69 @@ static bool GetEnhancedKeyUsage(
                 &cbDecoded))
         {
             unique_local_alloc_handle basicConstraints(basicConstraintsT);
-            retValue = basicConstraintsT->fCA ? TRUE : FALSE;
+            return basicConstraintsT->fCA ? true : false;
         }
-        return retValue;
+        return false;
     }
 
-    static BOOL IsCertificateSelfSigned(PCCERT_CONTEXT pContext,
-        DWORD dwEncoding,
-        DWORD dwFlags)
+    static bool IsCertificateSelfSigned(PCCERT_CONTEXT pContext, DWORD dwEncoding, DWORD dwFlags)
     {
-        if (!(pContext) ||
-            (dwFlags != 0))
-        {
-            SetLastError(ERROR_INVALID_PARAMETER);
-            return(FALSE);
-        }
-
+        ThrowErrorIf(Error::InvalidParameter, (!(pContext) || (dwFlags != 0)), "Invalid args");
         if (!(CertCompareCertificateName(dwEncoding,
             &pContext->pCertInfo->Issuer,
             &pContext->pCertInfo->Subject)))
-        {
-            return(FALSE);
+        {   return(false);
         }
 
-        DWORD   dwFlag = CERT_STORE_SIGNATURE_FLAG;
+        DWORD dwFlag = CERT_STORE_SIGNATURE_FLAG;
         if (!(CertVerifySubjectCertificateContext(pContext, pContext, &dwFlag)) ||
             (dwFlag & CERT_STORE_SIGNATURE_FLAG))
-        {
-            return(FALSE);
+        {   return(false);
         }
-
-        return(TRUE);
+        return(true);
     }
 
 static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuffer)
     {
-        HRESULT hr = S_OK;
-        BOOL result;
+        //get cert context from strCertificate;
         DWORD dwExpectedContentType = CERT_QUERY_CONTENT_FLAG_CERT |
             CERT_QUERY_CONTENT_FLAG_PKCS7_SIGNED |
             CERT_QUERY_CONTENT_FLAG_PKCS7_UNSIGNED;
+
         HCERTSTORE certStoreHandleT = NULL;
         DWORD dwContentType = 0;
-
-        //get cert blob out
-        PCCERT_CONTEXT pCertContext = NULL;
         CERT_BLOB blob;
         blob.pbData = signatureBuffer;
         blob.cbData = cbSignatureBuffer;
-
-        //get cert context from strCertificate;
-        result = CryptQueryObject(
-            CERT_QUERY_OBJECT_BLOB,
-            &blob,
-            dwExpectedContentType,
-            CERT_QUERY_FORMAT_FLAG_ALL,
-            0,
-            NULL,
-            &dwContentType,
-            NULL,
-            &certStoreHandleT,
-            NULL,
-            NULL);
-
-        if (!result)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            CryptQueryObject(
+                CERT_QUERY_OBJECT_BLOB,
+                &blob,
+                dwExpectedContentType,
+                CERT_QUERY_FORMAT_FLAG_ALL,
+                0,
+                NULL,
+                &dwContentType,
+                NULL,
+                &certStoreHandleT,
+                NULL,
+                NULL)
+            ),"CryptQueryObject failed");
         unique_cert_store_handle certStoreHandle(certStoreHandleT);
 
+        PCCERT_CONTEXT pCertContext = NULL;
         if (dwContentType == CERT_QUERY_CONTENT_CERT)
-        {
-            //get the certificate context
+        {   //get the certificate context
             pCertContext = CertEnumCertificatesInStore(certStoreHandle.get(), NULL);
         }
-        else //pkcs7
-        {
-            //get the end entity
+        else 
+        {   //pkcs7 -- get the end entity
             while (NULL != (pCertContext = CertEnumCertificatesInStore(certStoreHandle.get(), pCertContext)))
-            {
-                if (IsCertificateSelfSigned(pCertContext, pCertContext->dwCertEncodingType, 0) ||
-                    IsCACert(pCertContext))
-                {
-                    continue;
+            {   if (IsCertificateSelfSigned(pCertContext, pCertContext->dwCertEncodingType, 0) || IsCACert(pCertContext))
+                { continue;
                 }
                 else
-                {
-                    //end entity cert
+                {   //end entity cert
                     break;
                 }
             }
@@ -380,52 +299,38 @@ static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuf
         return pCertContext;
     }
     
-    static BOOL DoesSignatureCertContainStoreEKU(
-        _In_ byte* rawSignatureBuffer,
-        _In_ ULONG dataSize)
+    static bool DoesSignatureCertContainStoreEKU(_In_ byte* rawSignatureBuffer, _In_ ULONG dataSize)
     {
-        unique_cert_context certificateContext(GetCertContext(rawSignatureBuffer, dataSize));
-        
+        unique_cert_context certificateContext(GetCertContext(rawSignatureBuffer, dataSize));        
         std::vector<std::string> oids;
-        bool result = GetEnhancedKeyUsage(certificateContext.get(), oids);
-
-        if (result)
-        {
-            std::size_t count = oids.size();
+        if (GetEnhancedKeyUsage(certificateContext.get(), oids))
+        {   std::size_t count = oids.size();
             for (std::size_t i = 0; i < count; i++)
-            {
-                if (0 == oids.at(i).compare(OID::WindowsStore))
-                {   return TRUE;
+            {   if (0 == oids.at(i).compare(OID::WindowsStore))
+                {   return true;
                 }
             }
         }
-        return FALSE;
-    }
-
-   // Best effort to determine whether the signature file is associated with a store cert
-     static BOOL IsStoreOrigin(byte* signatureBuffer, ULONG cbSignatureBuffer)
-    {
-        BOOL retValue = FALSE;
-        if (DoesSignatureCertContainStoreEKU(signatureBuffer, cbSignatureBuffer))
-        {
-            unique_cert_chain_context certChainContext(GetCertChainContext(signatureBuffer, cbSignatureBuffer));
-            retValue = IsMicrosoftTrustedChain(certChainContext.get());
-        }
-        return retValue;
+        return false;
     }
 
     // Best effort to determine whether the signature file is associated with a store cert
-    static BOOL IsAuthenticodeOrigin(byte* signatureBuffer, ULONG cbSignatureBuffer)
+    static bool IsStoreOrigin(byte* signatureBuffer, ULONG cbSignatureBuffer)
     {
-        BOOL retValue = FALSE;
-        {
-            unique_cert_chain_context certChainContext(GetCertChainContext(signatureBuffer, cbSignatureBuffer));
-            retValue = IsAuthenticodeTrustedChain(certChainContext.get());
+        if (DoesSignatureCertContainStoreEKU(signatureBuffer, cbSignatureBuffer))
+        {   unique_cert_chain_context certChainContext(GetCertChainContext(signatureBuffer, cbSignatureBuffer));
+            return IsMicrosoftTrustedChain(certChainContext.get());
         }
-        return retValue;
+        return false;
     }
 
-bool SignatureValidator::Validate(
+    // Best effort to determine whether the signature file is associated with a store cert
+    static bool IsAuthenticodeOrigin(byte* signatureBuffer, ULONG cbSignatureBuffer)
+    {   unique_cert_chain_context certChainContext(GetCertChainContext(signatureBuffer, cbSignatureBuffer));
+        return IsAuthenticodeTrustedChain(certChainContext.get());
+    }
+
+    bool SignatureValidator::Validate(
         /*in*/ APPX_VALIDATION_OPTION option,
         /*in*/ IStream *stream,
         /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
@@ -434,22 +339,21 @@ bool SignatureValidator::Validate(
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
         if (option & APPX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
         
-        HRESULT hr;
+        ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (stream), "AppxSignature.p7x missing");
+        
         LARGE_INTEGER li = {0};
         ULARGE_INTEGER uli = {0};
         ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::END, &uli));
         ThrowErrorIf(Error::AppxSignatureInvalid, (uli.QuadPart <= sizeof(P7X_FILE_ID) || uli.QuadPart > (2 << 20)), "stream is too big");
+
         std::vector<std::uint8_t> p7x(uli.LowPart);
-
         ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, &uli));
-        
-        ULONG actualRead = 0;
-        hr = stream->Read(p7x.data(), p7x.size(), &actualRead);
-        if (FAILED(hr) || actualRead != p7x.size())
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
 
-        if (*(DWORD*)p7x.data() != P7X_FILE_ID)
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
+        ULONG actualRead = 0;
+        ThrowHrIfFailed(stream->Read(p7x.data(), p7x.size(), &actualRead));
+        ThrowErrorIf(Error::AppxSignatureInvalid,
+            ((actualRead != p7x.size() || (*(DWORD*)p7x.data() != P7X_FILE_ID))),
+            "Failed to read p7x or p7x header mismatch");
 
         BYTE *p7s = p7x.data() + sizeof(DWORD);
         std::uint32_t p7sSize = p7x.size() - sizeof(DWORD);
@@ -457,19 +361,17 @@ bool SignatureValidator::Validate(
         // Decode the ASN.1 structure
         CRYPT_CONTENT_INFO* contentInfo = nullptr;
         DWORD contentInfoSize = 0;
-
-        if (!CryptDecodeObjectEx(
-            X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-            PKCS_CONTENT_INFO,
-            p7s,
-            p7sSize,
-            CRYPT_DECODE_ALLOC_FLAG,
-            nullptr,
-            &contentInfo,
-            &contentInfoSize))
-        {
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); 
-        }
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            CryptDecodeObjectEx(
+                X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+                PKCS_CONTENT_INFO,
+                p7s,
+                p7sSize,
+                CRYPT_DECODE_ALLOC_FLAG,
+                nullptr,
+                &contentInfo,
+                &contentInfoSize)
+            ),"CryptDecodeObjectEx failed.");
 
         HCRYPTMSG cryptMsgT = CryptMsgOpenToDecode(
             X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
@@ -478,109 +380,89 @@ bool SignatureValidator::Validate(
             NULL,
             nullptr,
             nullptr);
-
-        if (cryptMsgT == nullptr)
-        {
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-        }
-
+        ThrowErrorIf(Error::AppxSignatureInvalid, (cryptMsgT == nullptr), "CryptMsgOpenToDecode failed");
         unique_crypt_msg_handle cryptMsg(cryptMsgT);
 
         // Get the crypographic message 
-        if (!CryptMsgUpdate(
-            cryptMsg.get(),
-            contentInfo->Content.pbData,
-            contentInfo->Content.cbData,
-            TRUE))
-        {
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-        }
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            CryptMsgUpdate(
+                cryptMsg.get(),
+                contentInfo->Content.pbData,
+                contentInfo->Content.cbData,
+                TRUE)
+            ), "CryptMsgUpdate failed");
 
         // This first call to CryptMsgGetParam is expected to fail because we don't know
         // how big of a buffer that it needs to store the inner content 
-        DWORD innerContentTypeSize = 0;
-        
+        DWORD innerContentTypeSize = 0;        
         ULONG readBytes = 0;
-        if (!CryptMsgGetParam(
-            cryptMsg.get(),
-            CMSG_INNER_CONTENT_TYPE_PARAM,
-            0,
-            nullptr,
-            &innerContentTypeSize) &&
-            HRESULT_FROM_WIN32(GetLastError()) != HRESULT_FROM_WIN32(ERROR_MORE_DATA))
-        {
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-        }
+        ThrowErrorIf(Error::AppxSignatureInvalid, (
+            !CryptMsgGetParam(
+                cryptMsg.get(),
+                CMSG_INNER_CONTENT_TYPE_PARAM,
+                0,
+                nullptr,
+                &innerContentTypeSize) &&
+            HRESULT_FROM_WIN32(GetLastError()) != HRESULT_FROM_WIN32(ERROR_MORE_DATA)
+        ), "CryptMsgGetParam failed");
         
         // Allocate a temporary buffer
         std::vector<std::uint8_t> innerContentType(innerContentTypeSize);
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            CryptMsgGetParam(
+                cryptMsg.get(),
+                CMSG_INNER_CONTENT_TYPE_PARAM,
+                0,
+                innerContentType.data(),
+                &innerContentTypeSize)
+            ),"CryptMsgGetParam failed");
 
-        if (!CryptMsgGetParam(
-            cryptMsg.get(),
-            CMSG_INNER_CONTENT_TYPE_PARAM,
-            0,
-            innerContentType.data(),
-            &innerContentTypeSize))
-        {
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-        }
-        
         size_t indirectDataObjIdLength = strlen(SPC_INDIRECT_DATA_OBJID);
-
-        // Make sure the content type is expected
-        if ((innerContentTypeSize != indirectDataObjIdLength + 1) ||
-            (strncmp((char*)innerContentType.data(), SPC_INDIRECT_DATA_OBJID, indirectDataObjIdLength + 1) != 0))
-        {
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-        }
+        ThrowErrorIf(Error::AppxSignatureInvalid, (
+            (innerContentTypeSize != indirectDataObjIdLength + 1) ||
+            (strncmp((char*)innerContentType.data(), SPC_INDIRECT_DATA_OBJID, indirectDataObjIdLength + 1) != 0)
+        ), "unexpected content type");
 
         DWORD innerContentSize = 0;
-
-        if (!CryptMsgGetParam(
-            cryptMsg.get(),
-            CMSG_CONTENT_PARAM,
-            0,
-            nullptr,
-            &innerContentSize) &&
-            HRESULT_FROM_WIN32(GetLastError()) != HRESULT_FROM_WIN32(ERROR_MORE_DATA))
-        {
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-        }
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, ( 
+            CryptMsgGetParam(
+                cryptMsg.get(),
+                CMSG_CONTENT_PARAM,
+                0,
+                nullptr,
+                &innerContentSize) &&
+                HRESULT_FROM_WIN32(GetLastError()) != HRESULT_FROM_WIN32(ERROR_MORE_DATA)
+            ), "CryptMsgGetParam failed");
 
         // Allocate a temporary buffer
         std::vector<std::uint8_t> innerContent(innerContentSize);
-
-        if (!CryptMsgGetParam(
-            cryptMsg.get(),
-            CMSG_CONTENT_PARAM,
-            0,
-            innerContent.data(),
-            &innerContentSize))
-        {
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-        }
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            CryptMsgGetParam(
+                cryptMsg.get(),
+                CMSG_CONTENT_PARAM,
+                0,
+                innerContent.data(),
+                &innerContentSize)
+        ), "CryptMsgGetParam failed");
         
         // Parse the ASN.1 to the the indirect data structure
         SPC_INDIRECT_DATA_CONTENT* indirectContent = NULL;
         DWORD indirectContentSize = 0;
-
-        if (!CryptDecodeObjectEx(
-            X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
-            SPC_INDIRECT_DATA_CONTENT_STRUCT,
-            innerContent.data(),
-            innerContentSize,
-            CRYPT_DECODE_ALLOC_FLAG,
-            nullptr,
-            &indirectContent,
-            &indirectContentSize))
-        {
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); 
-        }
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            CryptDecodeObjectEx(
+                X509_ASN_ENCODING | PKCS_7_ASN_ENCODING,
+                SPC_INDIRECT_DATA_CONTENT_STRUCT,
+                innerContent.data(),
+                innerContentSize,
+                CRYPT_DECODE_ALLOC_FLAG,
+                nullptr,
+                &indirectContent,
+                &indirectContentSize)
+        ), "CryptDecodeObjectEx failed");
 
         DigestHeader *header = reinterpret_cast<DigestHeader*>(indirectContent->Digest.pbData);
         std::uint32_t numberOfHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) / (sizeof(DWORD) + 32);
         std::uint32_t modHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) % (sizeof(DWORD) + 32);
-
         ThrowErrorIf(Error::AppxSignatureInvalid, (
             (header->name != xPlat::AppxSignatureObject::DigestName::HEAD) &&
             (numberOfHashes != 4 && numberOfHashes != 5) &&
@@ -590,7 +472,6 @@ bool SignatureValidator::Validate(
         for (unsigned i = 0; i < numberOfHashes; i++)
         {
             std::vector<std::uint8_t> hash(HASH_BYTES);
-
             switch (header->hash[i].name)
             {
                 case xPlat::AppxSignatureObject::DigestName::AXPC:
@@ -611,6 +492,7 @@ bool SignatureValidator::Validate(
         if (!(option & APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN))
         {
             // Build wintrust data to pass to WinVerifyTrust in order to validate signature
+            // TODO: we cannot use SIP 5598CFF1-68DB-4340-B57F-1CACF88C9A51 on anything older than Win8!!!
             GUID P7xSipGuid = { 0x5598cff1, 0x68db, 0x4340,{ 0xb5, 0x7f, 0x1c, 0xac, 0xf8, 0x8c, 0x9a, 0x51 } };
 
             WINTRUST_BLOB_INFO signatureBlobInfo = { 0 };
@@ -630,33 +512,21 @@ bool SignatureValidator::Validate(
 
             // Verify whether we trust the certificate. If it fails, 
             GUID wintrustActionVerify = WINTRUST_ACTION_GENERIC_VERIFY_V2;
-            if (WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData))
-            {
-                throw xPlat::Exception(xPlat::Error::AppxCertNotTrusted);
-            }
+            ThrowErrorIf(Error::AppxCertNotTrusted, (
+                0 != WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData)
+                ), "WinVerifyTrust failed");
 
             // Close trustData.hWVTStateData -- returned by previous WinVerifyTrust call
             trustData.cbStruct = sizeof(WINTRUST_DATA);
             trustData.dwStateAction = WTD_STATEACTION_CLOSE;
-            WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData);
-        }
-
-        if (IsStoreOrigin(p7s, p7sSize))
-        {
-            origin = xPlat::SignatureOrigin::Store;
-            return true;
-        }
-
-        if (IsAuthenticodeOrigin(p7s, p7sSize))
-        {
-            origin = xPlat::SignatureOrigin::LOB;
-            return true;
+            ThrowErrorIf(Error::AppxCertNotTrusted, (
+                0 != WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData)
+                ), "WinVerifyTrust StateAction Close failed");
         }
 
         origin = xPlat::SignatureOrigin::Unknown;
+        if (IsStoreOrigin(p7s, p7sSize)) { origin = xPlat::SignatureOrigin::Store; }
+        else if (IsAuthenticodeOrigin(p7s, p7sSize)) { origin = xPlat::SignatureOrigin::LOB; }
         return true;
     }
-}
-
-
-
+} // namespace xPlat
