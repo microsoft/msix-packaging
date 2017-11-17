@@ -108,8 +108,7 @@ namespace xPlat {
         class FieldNBytes : public FieldBase<std::vector<std::uint8_t>>
         {
         public:
-            virtual size_t Size() override      { return value.size(); }
-            virtual void Validate() override    { }
+            virtual size_t Size() override { return value.size(); }
 
             virtual void Write(IStream* stream) override
             {                

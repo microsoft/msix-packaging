@@ -52,6 +52,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/StorageObject.hpp
     ../inc/StreamBase.hpp
     ../inc/UnicodeConversion.hpp
+    ../inc/VectorStream.hpp
     ../inc/VerifierObject.hpp
     ../inc/XmlObject.hpp
     ../inc/ZipFileStream.hpp

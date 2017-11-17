@@ -53,7 +53,10 @@ namespace xPlat {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
         m_appxSignature = std::make_unique<AppxSignatureObject>(validation, m_container->GetFile(APPXSIGNATURE_P7X));
-        ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (m_appxSignature->HasStream()), "AppxSignature.p7x not in archive!");
+
+        if ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
+        {   ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (m_appxSignature->HasStream()), "AppxSignature.p7x not in archive!");
+        }
 
         // 2. Get content type using signature object for validation
         // TODO: switch underlying type of m_contentType to something more specific.
@@ -82,7 +85,7 @@ namespace xPlat {
         std::map<std::string, Config> footPrintFileNames = {
             { APPXBLOCKMAP_XML,  Config([&](){ m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return m_appxBlockMap->GetStream();})  },
             { APPXMANIFEST_XML,  Config([&](){ m_footprintFiles.push_back(APPXMANIFEST_XML);  return m_appxManifest->GetStream();})  },
-            { APPXSIGNATURE_P7X, Config([&](){ m_footprintFiles.push_back(APPXSIGNATURE_P7X); return m_appxSignature->GetStream();}) },
+            { APPXSIGNATURE_P7X, Config([&](){ if (m_appxSignature->GetStream()){m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return m_appxSignature->GetStream();}) },
             { CODEINTEGRITY_CAT, Config([&](){ m_footprintFiles.push_back(CODEINTEGRITY_CAT); return m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, std::move(m_container->GetFile(CODEINTEGRITY_CAT)));}) },
             { CONTENT_TYPES_XML, Config([&]()->IStream*{ return nullptr;}) }, // content types is never implicitly unpacked
         };
@@ -104,7 +107,12 @@ namespace xPlat {
                 stream = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(fileName));
             }
 
-            if (stream.Get() != nullptr) { m_streams[fileName] = stream.Get(); }
+            if (stream.Get() != nullptr)
+            {
+                LARGE_INTEGER pos = {0};
+                ThrowHrIfFailed(stream->Seek(pos, StreamBase::Reference::START, nullptr));
+                m_streams[fileName] = stream.Get();
+            }
         }
     }
 

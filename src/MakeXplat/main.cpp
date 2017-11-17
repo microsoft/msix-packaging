@@ -44,6 +44,12 @@ struct State
         return true;
     }
 
+    bool SkipSignature()
+    {
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE);
+        return true;
+    }
+
     bool SkipSignatureValidation()
     {
         validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATUREORIGIN);
@@ -264,6 +270,9 @@ int main(int argc, char* argv[])
                 { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
                     [&](const std::string&) { return state.SkipSignatureValidation(); })
                 },
+                { "-ss", Option(false, "Skips enforcement of signed packages.  By default packages must be signed.",
+                    [&](const std::string&) { return state.SkipSignature(); })
+                },                
                 { "-?", Option(false, "Displays this help text.",
                     [&](const std::string&) { return false; })
                 }
@@ -283,8 +292,11 @@ int main(int argc, char* argv[])
                 { "-mv", Option(false, "Skips manifest validation.  By default manifest validation is enabled.",
                     [&](const std::string&) { return state.SkipManifestValidation(); })
                 },
-                { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
+                { "-sv", Option(false, "Skips signature origin validation.  By default signature origin validation is enabled.",
                     [&](const std::string&) { return state.SkipSignatureValidation(); })
+                },
+                { "-ss", Option(false, "Skips enforcement of signed packages.  By default packages must be signed.",
+                    [&](const std::string&) { return state.SkipSignature(); })
                 },
                 { "-?", Option(false, "Displays this help text.",
                     [&](const std::string&) { return false; })
@@ -296,5 +308,10 @@ int main(int argc, char* argv[])
         },
     };
 
-    return ParseAndRun(commands, state, argc, argv);
+    auto result = ParseAndRun(commands, state, argc, argv);
+    if (result != 0)
+    {
+        std::cout << "Error: " << std::hex << result << std::endl;
+    }
+    return result;
 }
