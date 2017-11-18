@@ -51,7 +51,7 @@ namespace xPlat {
                 while (0 < bytesCount.QuadPart)
                 {
                     ULONGLONG chunk = std::min(bytesCount.QuadPart, static_cast<ULONGLONG>(size));
-                    ThrowHrIfFailed(Read(reinterpret_cast<void*>(bytes.data()), chunk, &length));
+                    ThrowHrIfFailed(Read(reinterpret_cast<void*>(bytes.data()), (ULONG)chunk, &length));
                     if (length == 0) { break; }
                     read += length;
 

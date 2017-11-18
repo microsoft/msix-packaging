@@ -26,6 +26,7 @@ namespace xPlat {
         OutOfMemory                 = 0x8007000E,
         NotSupported                = 0x80070032,
         InvalidParameter            = 0x80070057,
+        Stg_E_Invalidpointer        = 0x80030009,
 
         //
         // xPlat specific error codes
@@ -62,6 +63,7 @@ namespace xPlat {
 
         // Signature errors
         AppxSignatureInvalid        = ERROR_FACILITY + 0x0041,
+        AppxCertNotTrusted          = ERROR_FACILITY + 0x0042,
         
     };
 

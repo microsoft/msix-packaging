@@ -12,7 +12,9 @@ project(${LIBRARY_NAME})
 # Define PALs
 IF(WIN32)
 	set (XPLATAPPX_API=1)
-	set (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
+    set (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
+    set (SHA256 PAL/SHA256/Win32/SHA256.cpp)
+    set (Signature PAL/Signature/Win32/SignatureValidator.cpp)
 ELSE()
     IF(OpenSSL_FOUND)
         MESSAGE (STATUS "Using OpenSSL ${OpenSLL_VERSION}")
@@ -20,7 +22,8 @@ ELSE()
             ${include_directories}
             ${OpenSLL_INCLUDE_PATH}
         )
-
+        set (SHA256    PAL/SHA256/OpenSSL/SHA256.cpp)
+        set (Signature PAL/Signature/OpenSSL/SignatureValidator.cpp)
     ELSE()
         # ... and were done here...  :/
         MESSAGE (STATUS "OpenSSL NOT FOUND!")
@@ -31,6 +34,8 @@ ELSE()
 ENDIF()
 
 MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
+MESSAGE (STATUS "PAL: SHA256          = ${SHA256}")
+MESSAGE (STATUS "PAL: Signature       = ${Signature}")
 
 set(LIB_PUBLIC_HEADERS
     ../inc/AppxPackaging.hpp
@@ -69,7 +74,9 @@ set(LIB_SOURCES
     UnicodeConversion.cpp
 	xPlatAppx.cpp
 	ZipObject.cpp
-	${DirectoryObject}
+    ${DirectoryObject}
+    ${SHA256}
+    ${Signature}
 )
 
 # Copy out public headers
@@ -106,3 +113,7 @@ IF(OpenSSL_FOUND)
     # include the libraries needed to use OpenSSL
     target_link_libraries(${PROJECT_NAME} crypto)
 ENDIF()
+
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} bcrypt crypt32 wintrust)
+endif()
