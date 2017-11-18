@@ -50,7 +50,7 @@ namespace xPlat
         ThrowErrorIfNot(Error::AppxSignatureInvalid, (
             IsStoreOrigin(buffer.data(), buffer.size()) ||
             IsAuthenticodeOrigin(buffer.data(), buffer.size()) ||
-            (option & APPX_VALIDATION_OPTION_ALLOWUNKNOWNORIGIN)
+            (option & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN)
         ), "Signature origin check failed");
         return true;
     }
