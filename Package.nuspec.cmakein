@@ -33,6 +33,12 @@
           included that in the  larger CMake project.
 
         * Make Nuget Package to target the native framework.
+        
+0.8 -   Implement Signature validation (AppxSignature.p7x) on Win32, and put down the foundation for
+        blockmap validation.  Code now compiles and links against OpenSSL on non-Win32 platforms.
+        Zlib was moved from a git submodule to a subtree so that we can now build on Ubuntu.  Also,
+        Zip64 support was added to the underlying OPC layer.  Also, multiple fixes to the nuget package
+        were added to address early adopter feedback.  Plus, many bug fixes along the way
     </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
     <tags>xPlatAppx Appx AppxPackaging native</tags>
