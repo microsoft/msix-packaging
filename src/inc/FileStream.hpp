@@ -16,8 +16,13 @@ namespace xPlat {
         FileStream(const std::string& path, Mode mode)
         {
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
+            #ifdef WIN32
+            errno_t err = fopen_s(&file, path.c_str(), modes[mode]);
+            ThrowErrorIfNot(Error::FileOpen, (err==0), path.c_str());
+            #else
             file = std::fopen(path.c_str(), modes[mode]);
             ThrowErrorIfNot(Error::FileOpen, (file), path.c_str());
+            #endif            
         }
 
         virtual ~FileStream() override
@@ -37,7 +42,7 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
         {
             return ResultOf([&] {
-                int rc = std::fseek(file, move.QuadPart, origin);
+                int rc = std::fseek(file, (long)move.QuadPart, origin);
                 ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
                 offset = Ftell();
                 if (newPosition) { newPosition->QuadPart = offset; }

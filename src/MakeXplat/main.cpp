@@ -44,9 +44,15 @@ struct State
         return true;
     }
 
-    bool SkipSignatureValidation()
+    bool SkipSignature()
     {
-        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATUREORIGIN);
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE);
+        return true;
+    }
+
+    bool AllowSignatureOriginUnknown()
+    {
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN);
         return true;
     }
 
@@ -261,9 +267,12 @@ int main(int argc, char* argv[])
                 {"-mv", Option(false, "Skips manifest validation.  By default manifest validation is enabled.",
                     [&](const std::string&) { return state.SkipManifestValidation(); })
                 },
-                { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
-                    [&](const std::string&) { return state.SkipSignatureValidation(); })
+                { "-sv", Option(false, "Allow unknown signature origin.  By default unknown signatures are rejected.",
+                    [&](const std::string&) { return state.AllowSignatureOriginUnknown(); })
                 },
+                { "-ss", Option(false, "Skips enforcement of signed packages.  By default packages must be signed.",
+                    [&](const std::string&) { return state.SkipSignature(); })
+                },                
                 { "-?", Option(false, "Displays this help text.",
                     [&](const std::string&) { return false; })
                 }
@@ -284,7 +293,10 @@ int main(int argc, char* argv[])
                     [&](const std::string&) { return state.SkipManifestValidation(); })
                 },
                 { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
-                    [&](const std::string&) { return state.SkipSignatureValidation(); })
+                    [&](const std::string&) { return state.AllowSignatureOriginUnknown(); })
+                },
+                { "-ss", Option(false, "Skips enforcement of signed packages.  By default packages must be signed.",
+                    [&](const std::string&) { return state.SkipSignature(); })
                 },
                 { "-?", Option(false, "Displays this help text.",
                     [&](const std::string&) { return false; })
@@ -296,5 +308,10 @@ int main(int argc, char* argv[])
         },
     };
 
-    return ParseAndRun(commands, state, argc, argv);
+    auto result = ParseAndRun(commands, state, argc, argv);
+    if (result != 0)
+    {
+        std::cout << "Error: " << std::hex << result << std::endl;
+    }
+    return result;
 }

@@ -26,6 +26,7 @@ namespace xPlat {
         OutOfMemory                 = 0x8007000E,
         NotSupported                = 0x80070032,
         InvalidParameter            = 0x80070057,
+        Stg_E_Invalidpointer        = 0x80030009,
 
         //
         // xPlat specific error codes
@@ -46,6 +47,7 @@ namespace xPlat {
         Zip64EOCDLocator            = ERROR_FACILITY + 0x0014,
         ZipEOCDRecord               = ERROR_FACILITY + 0x0015,
         ZipHiddenData               = ERROR_FACILITY + 0x0016,
+        ZipBadExtendedData          = ERROR_FACILITY + 0x0017,
 
         // Inflate errors
         InflateInitialize           = ERROR_FACILITY + 0x0021,
@@ -61,6 +63,7 @@ namespace xPlat {
 
         // Signature errors
         AppxSignatureInvalid        = ERROR_FACILITY + 0x0041,
+        AppxCertNotTrusted          = ERROR_FACILITY + 0x0042,
         
     };
 
@@ -117,27 +120,27 @@ namespace xPlat {
 
     // Provides an ABI exception boundary with parameter validation
     template <class Lambda>
-    inline unsigned int ResultOf(Lambda lambda)
+    inline HRESULT ResultOf(Lambda lambda)
     {
-        unsigned int result = 0;
+        HRESULT hr = static_cast<HRESULT>(xPlat::Error::OK);
         try
         {
             lambda();
         }
         catch (xPlat::Exception& e)
         {
-            result = e.Code();
+            hr = static_cast<HRESULT>(e.Code());
         }
         catch (std::bad_alloc&)
         {
-            result = static_cast<unsigned int>(xPlat::Error::OutOfMemory);
+            hr = static_cast<HRESULT>(xPlat::Error::OutOfMemory);
         }
         catch (std::exception&)
         {
-            result = static_cast<unsigned int>(xPlat::Error::Unexpected);
+            hr = static_cast<HRESULT>(xPlat::Error::Unexpected);
         }
 
-        return result;
+        return hr;
     }
 }
 

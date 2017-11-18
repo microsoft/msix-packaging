@@ -8,7 +8,9 @@
                 "program": "${workspaceRoot}/build/bin/MakeXPlat",
                 "args": ["unpack", 
                     "-d" ,"${workspaceRoot}/test/unpack", 
-                    "-p", "${workspaceRoot}/test/appx/StoreSigned_Desktop_x64_MoviesTV.appx" ],
+                    "-p", "${workspaceRoot}/test/appx/StoreSigned_Desktop_x64_MoviesTV.appx",
+                    "-sv"
+                ],
                 "stopAtEntry": false,
                 "cwd": "${workspaceRoot}/build/bin",
                 "environment": [],

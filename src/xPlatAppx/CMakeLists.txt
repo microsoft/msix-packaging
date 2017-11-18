@@ -12,29 +12,21 @@ project(${LIBRARY_NAME})
 # Define PALs
 IF(WIN32)
 	set (XPLATAPPX_API=1)
-	set (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
+    set (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
+    set (SHA256 PAL/SHA256/Win32/SHA256.cpp)
+    set (Signature PAL/Signature/Win32/SignatureValidator.cpp)
 ELSE()
-    # TODO: Apple deprecated OpenSSL because there isn't a stable ABI.
-    # we should just build OpenSSL and statically include the library
-    # pretty much like how everyone else uses OpenSSL. 
-
-    # TODO: remove this temporary hack to unblock Thomas after getting
-    # OpenSSL building and statically linking via the submodule dependency
-    # https://cmake.org/cmake/help/v3.0/module/FindOpenSSL.html
-    set(OPENSSL_ROOT_DIR "/usr/local/opt/openssl") # path is populated by brew
-    find_package(OpenSSL REQUIRED)
-
-    IF(OPENSSL_FOUND)
-        MESSAGE (STATUS "Using OpenSSL ${OPENSSL_VERSION}")
+    IF(OpenSSL_FOUND)
+        MESSAGE (STATUS "Using OpenSSL ${OpenSLL_VERSION}")
         include_directories(
             ${include_directories}
-            ${OPENSSL_INCLUDE_DIRS}
+            ${OpenSLL_INCLUDE_PATH}
         )
-
+        set (SHA256    PAL/SHA256/OpenSSL/SHA256.cpp)
+        set (Signature PAL/Signature/OpenSSL/SignatureValidator.cpp)
     ELSE()
         # ... and were done here...  :/
         MESSAGE (STATUS "OpenSSL NOT FOUND!")
-        MESSAGE (STATUS "on MacOS run: 'brew install openssl'")
         RETURN()
     ENDIF()
 
@@ -42,6 +34,8 @@ ELSE()
 ENDIF()
 
 MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
+MESSAGE (STATUS "PAL: SHA256          = ${SHA256}")
+MESSAGE (STATUS "PAL: Signature       = ${Signature}")
 
 set(LIB_PUBLIC_HEADERS
     ../inc/AppxPackaging.hpp
@@ -63,6 +57,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/StorageObject.hpp
     ../inc/StreamBase.hpp
     ../inc/UnicodeConversion.hpp
+    ../inc/VectorStream.hpp
     ../inc/VerifierObject.hpp
     ../inc/XmlObject.hpp
     ../inc/ZipFileStream.hpp
@@ -79,7 +74,9 @@ set(LIB_SOURCES
     UnicodeConversion.cpp
 	xPlatAppx.cpp
 	ZipObject.cpp
-	${DirectoryObject}
+    ${DirectoryObject}
+    ${SHA256}
+    ${Signature}
 )
 
 # Copy out public headers
@@ -112,7 +109,11 @@ include_directories(
 target_link_libraries(${PROJECT_NAME} zlibstatic)
 target_link_libraries(${PROJECT_NAME} xerces-c)
 
-IF(OPENSSL_FOUND)
+IF(OpenSSL_FOUND)
     # include the libraries needed to use OpenSSL
-    target_link_libraries(${PROJECT_NAME} ${OPENSSL_LIBRARIES})
+    target_link_libraries(${PROJECT_NAME} crypto)
 ENDIF()
+
+if(WIN32)
+    target_link_libraries(${PROJECT_NAME} bcrypt crypt32 wintrust)
+endif()

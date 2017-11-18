@@ -134,10 +134,11 @@
 
     #ifndef S_OK
     #define S_OK 0
+    #define S_FALSE 1
     #endif
 
     #ifndef SUCCEEDED
-    #define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
+    #define SUCCEEDED(hr) ((((HRESULT)(hr)) == 0) || (((HRESULT)(hr)) == 1))
     #endif
 
     #ifndef FAILED
