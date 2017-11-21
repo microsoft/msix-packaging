@@ -16,6 +16,7 @@
 #include "XmlObject.hpp"
 #include "AppxBlockMapObject.hpp"
 #include "AppxSignature.hpp"
+#include "AppxFactory.hpp"
 
 // internal interface
 EXTERN_C const IID IID_IAppxPackage;   
@@ -91,7 +92,7 @@ namespace xPlat {
     class AppxPackageObject : public xPlat::ComClass<AppxPackageObject, IAppxPackageReader, IAppxPackage, IStorageObject>
     {
     public:
-        AppxPackageObject(APPX_VALIDATION_OPTION validation, IStorageObject* container);
+        AppxPackageObject(IxPlatFactory* factory, APPX_VALIDATION_OPTION validation, IStorageObject* container);
 
         // internal IxPlatAppxPackage methods
         void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from) override;
@@ -120,6 +121,7 @@ namespace xPlat {
         void                      CommitChanges() override;
 
     protected:
+        ComPtr<IxPlatFactory>                   m_factory;
         std::map<std::string, ComPtr<IStream>>  m_streams;
         APPX_VALIDATION_OPTION                  m_validation = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
         std::unique_ptr<AppxSignatureObject>    m_appxSignature;

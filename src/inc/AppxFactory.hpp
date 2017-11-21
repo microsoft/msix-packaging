@@ -22,6 +22,7 @@ public:
     virtual ~IxPlatFactory() {}
     #endif
     virtual HRESULT MarshalOutString(std::string& internal, LPWSTR *result) = 0;
+    virtual HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) = 0;
 };
 
 SpecializeUuidOfImpl(IxPlatFactory);
@@ -53,6 +54,7 @@ namespace xPlat {
 
         // IxPlatFactory
         HRESULT MarshalOutString(std::string& internal, LPWSTR *result) override;
+        HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) override;
 
         COTASKMEMALLOC* m_memalloc;
         COTASKMEMFREE*  m_memfree;

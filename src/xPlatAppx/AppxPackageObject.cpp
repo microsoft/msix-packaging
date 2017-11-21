@@ -46,7 +46,8 @@ namespace xPlat {
         // TODO: Implement
     }
 
-    AppxPackageObject::AppxPackageObject(APPX_VALIDATION_OPTION validation, IStorageObject* container) :
+    AppxPackageObject::AppxPackageObject(IxPlatFactory* factory, APPX_VALIDATION_OPTION validation, IStorageObject* container) :
+        m_factory(factory),
         m_validation(validation),
         m_container(container)
     {

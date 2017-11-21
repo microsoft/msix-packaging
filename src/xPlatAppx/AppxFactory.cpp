@@ -23,7 +23,7 @@ namespace xPlat {
             ComPtr<IxPlatFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IxPlatFactory>::iid, reinterpret_cast<void**>(&self)));
             auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), inputStream);
-            auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(m_validationOptions, zip.Get());
+            auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, zip.Get());
             *packageReader = result.Detach();
         });
     }
@@ -71,6 +71,19 @@ namespace xPlat {
             std::memcpy(reinterpret_cast<void*>(*result),
                         reinterpret_cast<void*>(const_cast<wchar_t*>(intermediate.c_str())),
                         countBytes - sizeof(wchar_t));
+        });
+    }
+
+    HRESULT AppxFactory::MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer)
+    {
+        return ResultOf([&]{
+            ThrowErrorIf(Error::InvalidParameter, (size==nullptr || buffer == nullptr || *buffer != nullptr), "Bad pointer");
+            *size = static_cast<UINT32>(data.size());
+            *buffer = m_memalloc(data.size());
+            ThrowErrorIfNot(Error::OutOfMemory, (*buffer), "Allocation failed");
+            std::memcpy(reinterpret_cast<void*>(*buffer),
+                        reinterpret_cast<void*>(data.data()),
+                        data.size());
         });
     }
 

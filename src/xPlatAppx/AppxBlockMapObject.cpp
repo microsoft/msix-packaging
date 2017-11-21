@@ -1,90 +1,8 @@
 #include "AppxBlockMapObject.hpp"
+#include <algorithm>
+#include <iterator>
 
 namespace xPlat {
-
-    // IAppxBlockMapBlock 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapBlock::GetHash(UINT32* bufferSize, BYTE** buffer)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    HRESULT STDMETHODCALLTYPE AppxBlockMapBlock::GetCompressedSize(UINT32* size)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    // IAppxBlockMapFile
-    HRESULT STDMETHODCALLTYPE AppxBlockMapFile::GetBlocks(IAppxBlockMapBlocksEnumerator** blocks)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    HRESULT STDMETHODCALLTYPE AppxBlockMapFile::GetLocalFileHeaderSize(UINT32* lfhSize)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    HRESULT STDMETHODCALLTYPE AppxBlockMapFile::GetName(LPWSTR* name)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    HRESULT STDMETHODCALLTYPE AppxBlockMapFile::GetUncompressedSize(UINT64* size)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    HRESULT STDMETHODCALLTYPE AppxBlockMapFile::ValidateFileHash(IStream* fileStream, BOOL* isValid)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    // IAppxBlockMapFilesEnumerator
-    HRESULT STDMETHODCALLTYPE AppxBlockMapFile::GetCurrent(IAppxBlockMapFile** block)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-    
-    HRESULT STDMETHODCALLTYPE AppxBlockMapFile::GetHasCurrent(BOOL* hasCurrent)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
-    HRESULT STDMETHODCALLTYPE AppxBlockMapFile::MoveNext(BOOL* hasNext)
-    {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
-    }
-
     AppxBlockMapObject::AppxBlockMapObject(IStream* stream) : VerifierObject(stream)
     {
         // TODO: Implement
@@ -96,28 +14,52 @@ namespace xPlat {
         return stream;
     }
 
-    // IAppxBlockMapBlocksEnumerator
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetCurrent(IAppxBlockMapBlock** block)
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFile(LPCWSTR filename, IAppxBlockMapFile **file)
     {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+        return ResultOf([&]{
+            ThrowErrorIf(Error::InvalidParameter, (
+                filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
+            ), "bad pointer");
+            std::string name = utf16_to_utf8(filename);
+            auto index = m_blockMapfiles.find(name);
+            ThrowErrorIf(Error::FileNotFound, (index == m_blockMapFiles.end()), "named file not in blockmap");
+            *file = index->second.Get();
+            (*file)->AddRef();
         });
     }
 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetHasCurrent(BOOL* hasCurrent)
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFiles(IAppxBlockMapFilesEnumerator **enumerator)
     {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+        return ResultOf([&]{
+            ThrowErrorIf(Error::InvalidParameter, (enumerator == nullptr || *enumerator != nullptr), "bad pointer"); 
+
+            std::vector<std::string> fileNames(m_blockMapfiles.size());
+            std::transform(
+                m_blockMapfiles.begin(), 
+                m_blockMapfiles.end(),
+                std::back_inserter(fileNames),
+                [](auto keyValuePair){ return keyValuePair.first; }
+            );
+
+            ComPtr<IAppxBlockMapReader> self;
+            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IAppxBlockMapReader>::iid, reinterpret_cast<void**>(&self)));            
+
+            *enumerator = ComPtr<IAppxBlockMapFilesEnumerator>::Make<AppxBlockMapFilesEnumerator>(self.Get(), std::move(fileNames)).Detach();
         });
     }
 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::MoveNext(BOOL* hasNext)
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetHashMethod(IUri **hashMethod)
     {
-        return xPlat::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+        return ResultOf([&]{
+            // TODO: Implement...
+            throw Exception(Error:NotImplemented);
         });
     }
+
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetStream(IStream **blockMapStream)
+    {
+        return ResultOf([&]{
+
+        });
+    }    
 }
