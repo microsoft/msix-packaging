@@ -18,7 +18,7 @@
 namespace xPlat {
 
 AppxSignatureObject::AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, IStream* stream) : 
-    VerifierObject(stream), 
+    m_stream(stream), 
     m_validationOptions(validationOptions)
 {
     m_hasDigests = SignatureValidator::Validate(validationOptions, stream, m_digests, m_signatureOrigin);

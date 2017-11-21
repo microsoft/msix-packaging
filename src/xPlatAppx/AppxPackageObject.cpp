@@ -41,7 +41,7 @@ namespace xPlat {
         // TODO: Implement validation?
     }
 
-    AppxManifestObject::AppxManifestObject(IStream* stream) : VerifierObject(stream)
+    AppxManifestObject::AppxManifestObject(IStream* stream) : m_stream(stream)
     {
         // TODO: Implement
     }
@@ -53,7 +53,7 @@ namespace xPlat {
     {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
-        m_appxSignature = std::make_unique<AppxSignatureObject>(validation, m_container->GetFile(APPXSIGNATURE_P7X));
+        m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(validation, m_container->GetFile(APPXSIGNATURE_P7X));
 
         if ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
         {   ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (m_appxSignature->HasStream()), "AppxSignature.p7x not in archive!");
@@ -61,18 +61,20 @@ namespace xPlat {
 
         // 2. Get content type using signature object for validation
         // TODO: switch underlying type of m_contentType to something more specific.
-        m_contentType = std::make_unique<XmlObject>(m_appxSignature->GetValidationStream(
+        m_contentType = ComPtr<IVerifierObject>::Make<XmlObject>(m_appxSignature->GetValidationStream(
             CONTENT_TYPES_XML, m_container->GetFile(CONTENT_TYPES_XML)));
         ThrowErrorIfNot(Error::AppxMissingContentTypesXML, (m_contentType->HasStream()), "[Content_Types].xml not in archive!");
 
         // 3. Get blockmap object using signature object for validation
-        m_appxBlockMap = std::make_unique<AppxBlockMapObject>(m_appxSignature->GetValidationStream(
-            APPXBLOCKMAP_XML, m_container->GetFile(APPXBLOCKMAP_XML)));
+        m_appxBlockMap = ComPtr<IVerifierObject>::Make<AppxBlockMapObject>(
+            factory,
+            m_appxSignature->GetValidationStream(APPXBLOCKMAP_XML, m_container->GetFile(APPXBLOCKMAP_XML))
+        );
         ThrowErrorIfNot(Error::AppxMissingBlockMapXML, (m_appxBlockMap->HasStream()), "AppxBlockMap.xml not in archive!");
 
         // 4. Get manifest object using blockmap object for validation
         // TODO: pass validation flags and other necessary goodness through.
-        m_appxManifest = std::make_unique<AppxManifestObject>(m_appxBlockMap->GetValidationStream(
+        m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(m_appxBlockMap->GetValidationStream(
             APPXMANIFEST_XML, m_container->GetFile(APPXMANIFEST_XML)));
         ThrowErrorIfNot(Error::AppxMissingAppxManifestXML, (m_appxBlockMap->HasStream()), "AppxManifest.xml not in archive!");
 
@@ -131,7 +133,8 @@ namespace xPlat {
             std::string targetName;
             if (options & APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
             {
-                targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
+                throw Exception(Error::NotImplemented);
+                //targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
             }
             else
             {

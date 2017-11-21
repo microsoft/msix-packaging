@@ -26,7 +26,7 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE GetHash(UINT32* bufferSize, BYTE** buffer) override
         {
             return ResultOf([&]{
-                ThrowHrIfFailed(m_factory->MarshalOutBytes(m_digest, bufferSize, buffer));
+                ThrowHrIfFailed(m_factory->MarshalOutBytes(*m_digest, bufferSize, buffer));
             });
         }
         
@@ -69,14 +69,14 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override
         {   return ResultOf([&]{
                 ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
-                *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
+                *hasCurrent = (m_cursor != m_blocks->size()) ? TRUE : FALSE;
             });
         }
 
         HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override      
         {   return ResultOf([&]{
                 ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
-                *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
+                *hasNext = (++m_cursor != m_blocks->size()) ? TRUE : FALSE;
             });
         }      
     };
@@ -86,10 +86,10 @@ namespace xPlat {
     public:
         AppxBlockMapFile(
             IxPlatFactory* factory, 
-            std::vector<std::shared_ptr<AppxBlockMapBlock>>* blocks,
+            std::vector<ComPtr<IAppxBlockMapBlock>>* blocks,
             std::uint32_t localFileHeaderSize,
             const std::string& name,
-            std::uint64_t uncompressedSize,
+            std::uint64_t uncompressedSize
         ) : 
             m_factory(factory),
             m_blocks(blocks),
@@ -103,7 +103,7 @@ namespace xPlat {
         {
             return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter, (blocks == nullptr || *blocks != nullptr), "bad pointer.");
-                *blocks = ComPtr<IAppxBlockMapBlocksEnumerator>::Make<AppxBlockMapBlocksEnumerator>(&m_blocks).Detach();
+                *blocks = ComPtr<IAppxBlockMapBlocksEnumerator>::Make<AppxBlockMapBlocksEnumerator>(m_blocks).Detach();
             });
         }
 
@@ -115,7 +115,7 @@ namespace xPlat {
             });
         }
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR *name) override;
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR *name) override
         {
             return ResultOf([&]{
                 ThrowHrIfFailed(m_factory->MarshalOutString(m_name, name));
@@ -139,14 +139,14 @@ namespace xPlat {
         }            
 
     private:        
-        std::vector<std::shared_ptr<AppxBlockMapBlock>>* m_blocks;
+        std::vector<ComPtr<IAppxBlockMapBlock>>* m_blocks;
         ComPtr<IxPlatFactory>   m_factory;
         std::uint32_t           m_localFileHeaderSize;
         std::string             m_name;
         std::uint64_t           m_uncompressedSize;
     };
 
-    class AppxBlockMapFileEnumerator : public xPlat::ComClass<AppxBlockMapFileEnumerator, IAppxBlockMapFilesEnumerator>
+    class AppxBlockMapFilesEnumerator : public xPlat::ComClass<AppxBlockMapFilesEnumerator, IAppxBlockMapFilesEnumerator>
     {
     protected:
         ComPtr<IAppxBlockMapReader> m_reader;
@@ -154,7 +154,7 @@ namespace xPlat {
         std::size_t                 m_cursor = 0;
 
     public:
-        AppxBlockMapFileEnumerator(IAppxBlockMapReader* reader, std::vector<std::string>& files) :
+        AppxBlockMapFilesEnumerator(IAppxBlockMapReader* reader, std::vector<std::string>& files) :
             m_reader(reader),
             m_files(files)
         {}
@@ -184,11 +184,14 @@ namespace xPlat {
     };    
 
     // Object backed by AppxBlockMap.xml
-    class AppxBlockMapObject : public VerifierObject, public xPlat::ComClass<AppxBlockMapObject, IAppxBlockMapReader>
+    class AppxBlockMapObject : public xPlat::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject>
     {
     public:
-        AppxBlockMapObject(IStream* stream);
+        AppxBlockMapObject(IxPlatFactory* factory, IStream* stream);
 
+        // IVerifierObject
+        bool HasStream()     override { return m_stream.Get() != nullptr; }
+        IStream* GetStream() override { return m_stream.Get(); }
         IStream* GetValidationStream(const std::string& part, IStream* stream) override;
 
         // IAppxBlockMapReader
@@ -199,5 +202,7 @@ namespace xPlat {
 
     protected:
         std::map<std::string, ComPtr<IAppxBlockMapFile>> m_blockMapfiles;
+        ComPtr<IxPlatFactory>                            m_factory;
+        ComPtr<IStream>                                  m_stream;
     };
 }

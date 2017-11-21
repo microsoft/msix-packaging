@@ -3,7 +3,9 @@
 #include <iterator>
 
 namespace xPlat {
-    AppxBlockMapObject::AppxBlockMapObject(IStream* stream) : VerifierObject(stream)
+    AppxBlockMapObject::AppxBlockMapObject(IxPlatFactory* factory, IStream* stream) : 
+        m_factory(factory),
+        m_stream(stream)        
     {
         // TODO: Implement
     }
@@ -22,7 +24,7 @@ namespace xPlat {
             ), "bad pointer");
             std::string name = utf16_to_utf8(filename);
             auto index = m_blockMapfiles.find(name);
-            ThrowErrorIf(Error::FileNotFound, (index == m_blockMapFiles.end()), "named file not in blockmap");
+            ThrowErrorIf(Error::FileNotFound, (index == m_blockMapfiles.end()), "named file not in blockmap");
             *file = index->second.Get();
             (*file)->AddRef();
         });
@@ -52,14 +54,15 @@ namespace xPlat {
     {
         return ResultOf([&]{
             // TODO: Implement...
-            throw Exception(Error:NotImplemented);
+            throw Exception(Error::NotImplemented);
         });
     }
 
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetStream(IStream **blockMapStream)
     {
         return ResultOf([&]{
-
+            // TODO: go through and actually implement Clone on appropriate derived types...
+            ThrowHrIfFailed(m_stream->Clone(blockMapStream));
         });
     }    
 }

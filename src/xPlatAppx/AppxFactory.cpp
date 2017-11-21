@@ -43,19 +43,41 @@ namespace xPlat {
         IAppxBlockMapReader** blockMapReader)
     {
         return ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+            ThrowErrorIf(Error::InvalidParameter, (
+                inputStream == nullptr || 
+                blockMapReader == nullptr || 
+                *blockMapReader != nullptr
+            ),"bad pointer.");
+
+            ComPtr<IxPlatFactory> self;
+            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IxPlatFactory>::iid, reinterpret_cast<void**>(&self)));
+            *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), inputStream).Detach();
         });
     }
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateValidatedBlockMapReader (
-        IStream* blockMapStream,
+        IStream* inputStream,
         LPCWSTR signatureFileName,
         IAppxBlockMapReader** blockMapReader)
     {
         return ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
+            ThrowErrorIf(Error::InvalidParameter, (
+                inputStream == nullptr || 
+                signatureFileName == nullptr ||
+                *signatureFileName == '\0' ||
+                blockMapReader == nullptr || 
+                *blockMapReader != nullptr
+            ),"bad pointer.");
+
+            ComPtr<IxPlatFactory> self;
+            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IxPlatFactory>::iid, reinterpret_cast<void**>(&self)));
+            auto stream = ComPtr<IStream>::Make<FileStream>(utf16_to_utf8(signatureFileName), FileStream::Mode::READ);
+            auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self->GetValidationOptions(), stream.Get());
+
+            *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(
+                self.Get(), 
+                signature->GetValidationStream("AppxBlockMap.xml", inputStream)
+            ).Detach();
         });
     }
 
@@ -79,7 +101,7 @@ namespace xPlat {
         return ResultOf([&]{
             ThrowErrorIf(Error::InvalidParameter, (size==nullptr || buffer == nullptr || *buffer != nullptr), "Bad pointer");
             *size = static_cast<UINT32>(data.size());
-            *buffer = m_memalloc(data.size());
+            *buffer = reinterpret_cast<BYTE*>(m_memalloc(data.size()));
             ThrowErrorIfNot(Error::OutOfMemory, (*buffer), "Allocation failed");
             std::memcpy(reinterpret_cast<void*>(*buffer),
                         reinterpret_cast<void*>(data.data()),

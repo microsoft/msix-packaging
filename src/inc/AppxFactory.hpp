@@ -5,6 +5,7 @@
 #include "ComHelper.hpp"
 
 #include <string>
+#include <vector>
 
 // internal interface
 EXTERN_C const IID IID_IxPlatFactory;   
@@ -23,6 +24,7 @@ public:
     #endif
     virtual HRESULT MarshalOutString(std::string& internal, LPWSTR *result) = 0;
     virtual HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) = 0;
+    virtual APPX_VALIDATION_OPTION GetValidationOptions() = 0;
 };
 
 SpecializeUuidOfImpl(IxPlatFactory);
@@ -55,6 +57,7 @@ namespace xPlat {
         // IxPlatFactory
         HRESULT MarshalOutString(std::string& internal, LPWSTR *result) override;
         HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) override;
+        APPX_VALIDATION_OPTION GetValidationOptions() override { return m_validationOptions; }
 
         COTASKMEMALLOC* m_memalloc;
         COTASKMEMFREE*  m_memfree;
