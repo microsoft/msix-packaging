@@ -4,10 +4,10 @@
 
 namespace xPlat {
     AppxBlockMapObject::AppxBlockMapObject(IxPlatFactory* factory, IStream* stream) : 
-        m_factory(factory),
-        m_stream(stream)        
+        m_factory(factory)
     {
-        // TODO: Implement
+        m_document = ComPtr<IXmlObject>::Make<XmlObject>(stream);
+        // TODO: Implement higher-level validation
     }
     
     IStream* AppxBlockMapObject::GetValidationStream(const std::string& part, IStream* stream)
@@ -61,8 +61,12 @@ namespace xPlat {
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetStream(IStream **blockMapStream)
     {
         return ResultOf([&]{
-            // TODO: go through and actually implement Clone on appropriate derived types...
-            ThrowHrIfFailed(m_stream->Clone(blockMapStream));
+            ThrowErrorIf(Error::InvalidParameter, (blockMapStream == nullptr || *blockMapStream != nullptr), "bad pointer");
+            auto stream = GetStream();
+            LARGE_INTEGER li{0};    
+            ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, nullptr));            
+            stream->AddRef();
+            *blockMapStream = stream;
         });
     }    
 }

@@ -9,6 +9,7 @@
 #include "ComHelper.hpp"
 #include "UnicodeConversion.hpp"
 #include "AppxFactory.hpp"
+#include "XmlObject.hpp"
 
 namespace xPlat {
 
@@ -190,8 +191,16 @@ namespace xPlat {
         AppxBlockMapObject(IxPlatFactory* factory, IStream* stream);
 
         // IVerifierObject
-        bool HasStream()     override { return m_stream.Get() != nullptr; }
-        IStream* GetStream() override { return m_stream.Get(); }
+        bool HasStream()     override
+        {
+            return m_document.As<IVerifierObject>()->HasStream();
+        }
+
+        IStream* GetStream() override
+        {
+            return m_document.As<IVerifierObject>()->GetStream();
+        }
+
         IStream* GetValidationStream(const std::string& part, IStream* stream) override;
 
         // IAppxBlockMapReader
@@ -202,7 +211,7 @@ namespace xPlat {
 
     protected:
         std::map<std::string, ComPtr<IAppxBlockMapFile>> m_blockMapfiles;
-        ComPtr<IxPlatFactory>                            m_factory;
-        ComPtr<IStream>                                  m_stream;
+        ComPtr<IxPlatFactory>   m_factory;
+        ComPtr<IXmlObject>      m_document;
     };
 }
