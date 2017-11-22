@@ -34,7 +34,7 @@ namespace xPlat {
     class BlockMapStream : public StreamBase
     {
     public:
-        BlockMapStream(/*[In]*/ IStream* stream, /*[In]*/ std::vector<Block>& blocks)
+        BlockMapStream(IStream* stream, std::vector<Block>& blocks)
         {
             // Build a vector of all HashStream->RangeStream's for the blocks in the blockmap
             for (auto block = blocks.begin(); block != blocks.end(); block++)

@@ -87,34 +87,34 @@ namespace xPlat {
     public:
         AppxBlockMapFile(
             IxPlatFactory* factory,
-            std::vector<Block>&& blocks,
+            std::vector<Block>* blocks,
             std::uint32_t localFileHeaderSize,
             const std::string& name,
             std::uint64_t uncompressedSize
         ) :
             m_factory(factory),
-            m_blocks(std::move(blocks)),
+            m_blocks(blocks),
             m_localFileHeaderSize(localFileHeaderSize),
             m_name(name),
             m_uncompressedSize(uncompressedSize)
         {
-            m_blockMapBlocks.reserve(blocks.size());
-            std::transform(
-                m_blocks.begin(),
-                m_blocks.end(),
-                std::back_inserter(m_blockMapBlocks),
-                [&](auto item){
-                    return ComPtr<IAppxBlockMapBlock>::Make<AppxBlockMapBlock>(factory, &item);
-                }
-            );
         }
-
-        AppxBlockMapFile(XERCES_CPP_NAMESPACE::DOMElement* fileElement, XERCES_CPP_NAMESPACE::DOMDocument* dom);
 
         // IAppxBlockMapFile
         HRESULT STDMETHODCALLTYPE GetBlocks(IAppxBlockMapBlocksEnumerator **blocks) override
         {
             return ResultOf([&]{
+                if (m_blockMapBlocks.empty())
+                {   m_blockMapBlocks.reserve(blocks->size());
+                    std::transform(
+                        m_blocks->begin(),
+                        m_blocks->end(),
+                        std::back_inserter(m_blockMapBlocks),
+                        [&](auto item){
+                            return ComPtr<IAppxBlockMapBlock>::Make<AppxBlockMapBlock>(factory, &item);
+                        }
+                    );
+                }
                 ThrowErrorIf(Error::InvalidParameter, (blocks == nullptr || *blocks != nullptr), "bad pointer.");
                 *blocks = ComPtr<IAppxBlockMapBlocksEnumerator>::Make<AppxBlockMapBlocksEnumerator>(&m_blockMapBlocks).Detach();
             });
@@ -152,42 +152,9 @@ namespace xPlat {
         }
 
     private:
-        void SetLocalFileHeaderSize(XERCES_CPP_NAMESPACE::DOMElement* element)
-        {
-            m_localFileHeaderSize = 0;
-            XercesPtr<XMLCh> nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("LfhSize"));
-            XercesPtr<char> name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
-            std::string attributeValue(name.Get());
-            if (!attributeValue.empty())
-            {
-                m_localFileHeaderSize = std::stoul(attributeValue);
-            }
-            return;
-        }
-
-        void SetName(XERCES_CPP_NAMESPACE::DOMElement* element)
-        {
-            XercesPtr<XMLCh> nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("Name"));
-            XercesPtr<char> name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
-            std::string attributeValue(name.Get());
-            m_name = attributeValue;
-        }
-
-        void SetUncompressedSize(XERCES_CPP_NAMESPACE::DOMElement* element)
-        {
-            m_uncompressedSize = 0;
-            XercesPtr<XMLCh> nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("Size"));
-            XercesPtr<char> name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
-            std::string attributeValue(name.Get());
-            if (!attributeValue.empty())
-            {
-                m_uncompressedSize = std::stoull(attributeValue);
-            }
-            return;
-        }
 
         std::vector<ComPtr<IAppxBlockMapBlock>>* m_blocks;
-        std::vector<Block>      m_blocks;
+        std::vector<Block>*     m_blocks;
         ComPtr<IxPlatFactory>   m_factory;
         std::uint32_t           m_localFileHeaderSize;
         std::string             m_name;
@@ -238,7 +205,7 @@ namespace xPlat {
         AppxBlockMapObject(IxPlatFactory* factory, IStream* stream);
 
         // IVerifierObject
-        bool HasStream()     override
+        bool HasStream() override
         {
             return m_document.As<IVerifierObject>()->HasStream();
         }
@@ -257,10 +224,8 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE GetStream(IStream **blockMapStream) override;
 
     protected:
-        void CreateBlockMapFiles(XERCES_CPP_NAMESPACE::DOMDocument* dom);
-
+        std::map<std::string, std::vector<Block>>        m_blockMap;
         std::map<std::string, ComPtr<IAppxBlockMapFile>> m_blockMapfiles;
-        ComPtr<IxPlatFactory>   m_factory;
-        ComPtr<IXmlObject>      m_document;
+        ComPtr<IxPlatFactory> m_factory;        
     };
 }

@@ -208,5 +208,12 @@ namespace xPlat {
             XERCES_CPP_NAMESPACE::XMLString::release(&m_ptr);
             m_ptr = nullptr;
         }
+        
+        template<>
+        inline void InternalRelease<XMLByte>()
+        {
+            delete(m_ptr);
+            m_ptr = nullptr;
+        }
     };
 }

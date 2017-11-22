@@ -69,14 +69,13 @@ namespace xPlat {
         AppxSignatureInvalid        = ERROR_FACILITY + 0x0041,
         AppxCertNotTrusted          = ERROR_FACILITY + 0x0042,
 
-        // Xerces XMLException. 0x8BAD1000 + XMLException error code
-        XMLException = ERROR_FACILITY + 0x1000,
+        // Blockmap semantic errors
+        BlockMapSemanticError       = ERROR_FACILITY + 0x0051,
 
-        // Xerces DOMException. 0x8BAD2000 + Xerces DOMException error code
-        DOMException = ERROR_FACILITY + 0x2000,
-
-        // Xerces SAXParseException.
-        SAXParseException = ERROR_FACILITY + 0x3000,
+        // Parsing facilities.
+        XMLException                = ERROR_FACILITY + 0x1000, // Xerces XMLException. 0x8BAD1000 + XMLException error code        
+        DOMException                = ERROR_FACILITY + 0x2000, // Xerces DOMException. 0x8BAD2000 + Xerces DOMException error code        
+        SAXParseException           = ERROR_FACILITY + 0x3000, // Xerces SAXParseException.
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
