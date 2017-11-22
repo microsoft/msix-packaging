@@ -118,7 +118,7 @@ namespace xPlat {
             {
                 blockResult->snapshotItem(j);
                 auto blockNode = static_cast<DOMElement*>(blockResult->getNodeValue());
-                blocks.push_back(std::move(GetBlock(blockNode)));
+                blocks[j] = GetBlock(blockNode);
             }    
 
             auto name = GetName(fileNode);

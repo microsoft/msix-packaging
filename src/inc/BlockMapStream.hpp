@@ -16,12 +16,12 @@
 
 namespace xPlat {
   
-    const std::uint32_t BLOCKMAP_BLOCK_SIZE = 65535;
+    const std::uint32_t BLOCKMAP_BLOCK_SIZE = 65536; // 64KB
 
     typedef struct Block
     {
         std::uint32_t size;
-        std::uint64_t offset; // represents underlying package offset, not file offset in package
+        std::uint64_t offset; 
         std::vector<std::uint8_t> hash;
     } Block;
 
@@ -37,16 +37,18 @@ namespace xPlat {
         BlockMapStream(IStream* stream, std::vector<Block>& blocks)
         {
             // Build a vector of all HashStream->RangeStream's for the blocks in the blockmap
+            std::uint64_t offset = 0;
             for (auto block = blocks.begin(); block != blocks.end(); block++)
             {
+                offset += std::min(BLOCKMAP_BLOCK_SIZE, block->size);
                 ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, 
-                    ((block->offset % BLOCKMAP_BLOCK_SIZE == 0) && (block->size <= BLOCKMAP_BLOCK_SIZE)), 
-                    "block size must be less than 65535");
-                auto rangeStream = ComPtr<IStream>::Make<RangeStream>(block->offset, block->size, stream);
+                    (block->size <= BLOCKMAP_BLOCK_SIZE), 
+                    "block size must be less than 65536");
+                auto rangeStream = ComPtr<IStream>::Make<RangeStream>(offset, block->size, stream);
                 auto hashStream = ComPtr<IStream>::Make<HashStream>(rangeStream.Get(), block->hash);
                 
                 BlockPlusStream bs;
-                bs.offset = block->offset;
+                bs.offset = offset;
                 bs.size   = block->size;
                 bs.stream = hashStream;
                 bs.hash.assign(&block->hash[0], &block->hash[block->hash.size()]);
