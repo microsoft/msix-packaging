@@ -97,7 +97,7 @@ namespace xPlat {
                 {
                     if (block->offset <= m_relativePosition)
                     {
-                        LARGE_INTEGER li;
+                        LARGE_INTEGER li{0};
                         Seek(li, STREAM_SEEK_SET, nullptr);
                         li.QuadPart = (m_relativePosition - block->offset);
                         ThrowHrIfFailed(block->stream.Get()->Seek(li, STREAM_SEEK_SET, nullptr));

@@ -11,6 +11,7 @@
 #include "xercesc/dom/DOM.hpp"
 #include "xercesc/framework/MemBufInputSource.hpp"
 #include "xercesc/framework/XMLGrammarPoolImpl.hpp"
+#include "xercesc/parsers/AbstractDOMParser.hpp"
 #include "xercesc/parsers/XercesDOMParser.hpp"
 #include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/util/XMLString.hpp"
@@ -45,7 +46,7 @@ namespace xPlat {
     class XmlObject : public ComClass<XmlObject, IXmlObject, IVerifierObject>
     {
     public:
-        XmlObject(IStream* stream, std::map<std::string, std::string>& schemas) :  m_stream(stream) 
+        XmlObject(IStream* stream, std::map<std::string, std::string>* schemas = nullptr) :  m_stream(stream) 
         {
             // Create buffer from stream
             LARGE_INTEGER start = { 0 };
@@ -59,15 +60,18 @@ namespace xPlat {
             ThrowHrIfFailed(stream->Read(buffer.data(), streamSize, &actualRead));
             ThrowErrorIf(Error::FileRead, (actualRead != streamSize), "read error");
 
-            std::unique_ptr<MemBufInputSource> source = std::make_unique<MemBufInputSource>(
+            std::unique_ptr<XERCES_CPP_NAMESPACE::MemBufInputSource> source = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
                 reinterpret_cast<const XMLByte*>(&buffer[0]), actualRead, "XML File");
 
             // Create parser and grammar pool
-            auto grammarPool = std::make_unique<XMLGrammarPoolImpl>(XMLPlatformUtils::fgMemoryManager);
-            m_parser = std::make_unique<XercesDOMParser>(nullptr, XMLPlatformUtils::fgMemoryManager, grammarPool.get());
+            auto grammarPool = std::make_unique<XERCES_CPP_NAMESPACE::XMLGrammarPoolImpl>(XERCES_CPP_NAMESPACE::XMLPlatformUtils::fgMemoryManager);
+            m_parser = std::make_unique<XERCES_CPP_NAMESPACE::XercesDOMParser>(nullptr, XERCES_CPP_NAMESPACE::XMLPlatformUtils::fgMemoryManager, grammarPool.get());
             
-            bool HasSchemas = schemas.begin() != schemas.end();
-            m_parser->setValidationScheme(HasSchemas ? XercesDOMParser::Val_Always : XercesDOMParser::Val_None);
+            bool HasSchemas = ((schemas != nullptr) && (schemas->begin() != schemas->end()));
+            m_parser->setValidationScheme(HasSchemas ? 
+                XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Always : 
+                XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Never
+            );
             m_parser->cacheGrammarFromParse(HasSchemas);            
             m_parser->setDoSchema(HasSchemas);
             m_parser->setDoNamespaces(HasSchemas);
@@ -75,13 +79,14 @@ namespace xPlat {
             m_parser->setValidationSchemaFullChecking(HasSchemas);
 
             // Add schemas
-            for (auto index = schemas.begin(); index != schemas.end(); index++)
-            {
-                auto item = std::make_unique<MemBufInputSource>(
-                    reinterpret_cast<const XMLByte*>(index->second->c_str()),
-                    index->second->length(),
-                    index->first.c_str());
-                m_parser->loadGrammar(*item, Grammar::GrammarType::SchemaGrammarType, true);
+            if (schemas != nullptr)
+            {   for (auto index = schemas->begin(); index != schemas->end(); index++)
+                {   auto item = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
+                        reinterpret_cast<const XMLByte*>(index->second.c_str()),
+                        index->second.length(),
+                        index->first.c_str());
+                    m_parser->loadGrammar(*item, XERCES_CPP_NAMESPACE::Grammar::GrammarType::SchemaGrammarType, true);
+                }                
             }
 
             // Set the error handler for the parser
@@ -92,7 +97,7 @@ namespace xPlat {
 
         // IXmlObject
         void Write() override { throw Exception(Error::NotImplemented); }
-        XERCES_CPP_NAMESPACE::DOMDocument* Document() override { return parser->getDocument();}
+        XERCES_CPP_NAMESPACE::DOMDocument* Document() override { return m_parser->getDocument();}
 
         // IVerifierObject
         bool HasStream() override { return m_stream.Get() != nullptr; }
@@ -103,8 +108,8 @@ namespace xPlat {
         }
 
     protected:
-        std::unique_ptr<XercesDOMParser> m_parser;
-        ComPtr<IStream>                  m_stream;
+        std::unique_ptr<XERCES_CPP_NAMESPACE::XercesDOMParser> m_parser;
+        ComPtr<IStream> m_stream;
     };
 
 } // namespace xPlat

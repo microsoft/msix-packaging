@@ -34,7 +34,6 @@ namespace xPlat {
 
     static std::uint32_t GetLocalFileHeaderSize(XERCES_CPP_NAMESPACE::DOMElement* element)
     {
-        m_localFileHeaderSize = 0;
         XercesPtr<XMLCh> nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("LfhSize"));
         XercesPtr<char> name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
         std::string attributeValue(name.Get());
@@ -66,13 +65,13 @@ namespace xPlat {
     static std::vector<std::uint8_t> GetDigestData(XERCES_CPP_NAMESPACE::DOMElement* element)
     {
         XercesPtr<XMLCh> nameAttr(XMLString::transcode("Hash"));
-        XercesPtr<XMLCh> value(XMLString::transcode(element->getAttribute(nameAttr.Get())));
-
         XMLSize_t len = 0;
-        XercesPtr<XMLByte> decodedData(decodeToXMLByte(value, &len));
+        XercesPtr<XMLByte> decodedData(XERCES_CPP_NAMESPACE::Base64::decodeToXMLByte(
+            element->getAttribute(nameAttr.Get()), 
+            &len));
         std::vector<std::uint8_t> result(len);
         for(XMLSize_t index=0; index < len; index++)
-        {   result[index] = static_cast<std::uint8_t>(decodedData[index]);
+        {   result[index] = static_cast<std::uint8_t>(decodedData.Get()[index]);
         }
         return result;
     }
@@ -80,14 +79,14 @@ namespace xPlat {
     static Block GetBlock(XERCES_CPP_NAMESPACE::DOMElement* element)
     {
         Block result {0};
-        result.size = GetSize(element);
+        result.size = static_cast<std::uint32_t>(GetSize(element));
         result.hash = GetDigestData(element);
         return result;
     }
         
-    AppxBlockMapObject::AppxBlockMapObject(IxPlatFactory* factory, IStream* stream) : m_factory(factory)
+    AppxBlockMapObject::AppxBlockMapObject(IxPlatFactory* factory, IStream* stream) : m_factory(factory), m_stream(stream)
     {
-        auto dom = ComPtr<IXmlObject>::Make<XmlObject>(stream, blockMapSchema);
+        auto dom = ComPtr<IXmlObject>::Make<XmlObject>(stream, &blockMapSchema);
         // Create xPath query over blockmap file.
         XercesPtr<XMLCh> fileXPath(XMLString::transcode("/BlockMap/File"));
         XercesPtr<DOMXPathNSResolver> resolver(dom->Document()->createNSResolver(dom->Document()->getDocumentElement()));
@@ -106,7 +105,7 @@ namespace xPlat {
 
             // Get blocks elements
             XercesPtr<XMLCh> blockXPath(XMLString::transcode("./Block"));            
-            XercesPtr<DOMXPathResult> blockResult = dom->evaluate(
+            XercesPtr<DOMXPathResult> blockResult = dom->Document()->evaluate(
                 blockXPath.Get(),
                 fileNode,
                 resolver.Get(),
@@ -142,7 +141,7 @@ namespace xPlat {
         ThrowErrorIf(Error::InvalidParameter, (part.empty() || stream == nullptr), "bad input");
         auto item = m_blockMap.find(part);
         ThrowErrorIf(Error::BlockMapSemanticError, item == m_blockMap.end(), "file not tracked by blockmap");
-        return ComPtr<IStream>::Make<BlockMapStream>(stream, item->second()).Detach();
+        return ComPtr<IStream>::Make<BlockMapStream>(stream, item->second).Detach();
     }
 
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFile(LPCWSTR filename, IAppxBlockMapFile **file)

@@ -105,13 +105,13 @@ namespace xPlat {
         {
             return ResultOf([&]{
                 if (m_blockMapBlocks.empty())
-                {   m_blockMapBlocks.reserve(blocks->size());
+                {   m_blockMapBlocks.reserve(m_blocks->size());
                     std::transform(
                         m_blocks->begin(),
                         m_blocks->end(),
                         std::back_inserter(m_blockMapBlocks),
                         [&](auto item){
-                            return ComPtr<IAppxBlockMapBlock>::Make<AppxBlockMapBlock>(factory, &item);
+                            return ComPtr<IAppxBlockMapBlock>::Make<AppxBlockMapBlock>(m_factory.Get(), &item);
                         }
                     );
                 }
@@ -153,7 +153,7 @@ namespace xPlat {
 
     private:
 
-        std::vector<ComPtr<IAppxBlockMapBlock>>* m_blocks;
+        std::vector<ComPtr<IAppxBlockMapBlock>> m_blockMapBlocks;
         std::vector<Block>*     m_blocks;
         ComPtr<IxPlatFactory>   m_factory;
         std::uint32_t           m_localFileHeaderSize;
@@ -205,15 +205,8 @@ namespace xPlat {
         AppxBlockMapObject(IxPlatFactory* factory, IStream* stream);
 
         // IVerifierObject
-        bool HasStream() override
-        {
-            return m_document.As<IVerifierObject>()->HasStream();
-        }
-
-        IStream* GetStream() override
-        {
-            return m_document.As<IVerifierObject>()->GetStream();
-        }
+        bool HasStream()     override { return m_stream.Get() != nullptr; }
+        IStream* GetStream() override { return m_stream.Get(); }
 
         IStream* GetValidationStream(const std::string& part, IStream* stream) override;
 
@@ -226,6 +219,7 @@ namespace xPlat {
     protected:
         std::map<std::string, std::vector<Block>>        m_blockMap;
         std::map<std::string, ComPtr<IAppxBlockMapFile>> m_blockMapfiles;
-        ComPtr<IxPlatFactory> m_factory;        
+        ComPtr<IxPlatFactory> m_factory;      
+        ComPtr<IStream> m_stream;  
     };
 }
