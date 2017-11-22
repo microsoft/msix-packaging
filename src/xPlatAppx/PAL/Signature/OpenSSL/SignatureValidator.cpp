@@ -3,6 +3,13 @@
 #include "FileStream.hpp"
 #include "SignatureValidator.hpp"
 
+#include <openssl/err.h>
+#include <openssl/objects.h>
+#include <openssl/evp.h>
+#include <openssl/x509.h>
+#include <openssl/pkcs7.h>
+#include <openssl/pem.h>
+
 namespace xPlat
 {
 
@@ -46,6 +53,20 @@ namespace xPlat
         ThrowErrorIf(Error::AppxSignatureInvalid, (actualRead != streamSize), "read error");
 
         // TODO: read digests
+        X509_STORE *store = nullptr;
+        STACK_OF(X509) *other = nullptr;
+        STACK_OF(X509) *crls = nullptr;
+        STACK_OF(X509) *certs = nullptr;
+        int flags = PKCS7_DETACHED;
+        BIO* in = BIO_new_file("/Users/admin/Documents/temp.p7s", "r");
+        BIO* indata = nullptr;
+        BIO* out = nullptr;
+        
+        PKCS7* p7 = d2i_PKCS7_bio(in, nullptr);
+        
+        PKCS7_verify(p7, other, store, indata, out, flags);
+        STACK_OF(X509) *signers = PKCS7_get0_signers(p7, other, flags);
+
 
         ThrowErrorIfNot(Error::AppxSignatureInvalid, (
             IsStoreOrigin(buffer.data(), buffer.size()) ||
