@@ -2,6 +2,9 @@
 #include "Exceptions.hpp"
 #include "FileStream.hpp"
 #include "SignatureValidator.hpp"
+#include "AppxCerts.hpp"
+
+#include <regex>
 
 #include <openssl/err.h>
 #include <openssl/objects.h>
@@ -27,6 +30,60 @@ namespace xPlat
         return retValue;
     }
 
+    static void ConvertBase64Certificate(std::string base64Cert, std::vector<std::uint8_t>& )
+    {        
+        std::string result;
+        try
+        {
+            std::regex r("^(?!-----BEGIN CERTIFICATE-----|-----END CERTIFICATE-----)([a-zA-Z0-9+/]+)$");
+            std::smatch match;
+            if (std::regex_search(base64Cert, match, r) && match.size() > 1) 
+            {
+                result = match.str(1);
+            }
+        } 
+        catch (std::regex_error& e) 
+        {
+            // Syntax error in the regular expression
+            std::cout << "syntax error";
+        }
+
+#ifdef DISABLED
+        regex_match(input,integer);
+
+        BIO *b64 = BIO_new(BIO_f_base64());
+        BIO_set_flags(b64, BIO_FLAGS_BASE64_NO_NL);
+        BIO *mem = BIO_new(BIO_f_buffer());
+        BIO_push(b64, mem);
+        BIO_push(mem, file);
+
+        // write data
+        bool done = false;
+        int res = 0;
+        while (!done)
+        {
+            res = ;
+
+            if(BIO_write(b64, input, leni) <= 0 && BIO_should_retry(b64)){
+                    continue;
+                }
+                else // encoding failed
+                {
+                    /* Handle Error!!! */
+                }
+            }
+            else // success!
+                done = true;
+        }
+
+        BIO_flush(b64);
+        BIO_pop(b64);
+        BIO_free_all(b64);
+        return 0;
+#endif
+    }
+
+
     bool SignatureValidator::Validate(
         /*in*/ APPX_VALIDATION_OPTION option, 
         /*in*/ IStream *stream, 
@@ -51,6 +108,18 @@ namespace xPlat
         ULONG actualRead = 0;
         ThrowHrIfFailed(stream->Read(buffer.data(), streamSize, &actualRead));
         ThrowErrorIf(Error::AppxSignatureInvalid, (actualRead != streamSize), "read error");
+
+        std::map<std::string, std::string>::iterator it;
+        for ( it = appxCerts.begin(); it != appxCerts.end(); it++ )
+        {
+            std::vector<std::uint8_t> cert;
+            ConvertBase64Certificate(it->second, cert);
+
+            std::cout << it->first  // string (key)
+              << ':'
+              << it->second   // string's value 
+              << std::endl ;
+        }
 
         // TODO: read digests
         X509_STORE *store = nullptr;
