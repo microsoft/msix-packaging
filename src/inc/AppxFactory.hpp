@@ -3,6 +3,7 @@
 #include "AppxPackaging.hpp"
 #include "AppxWindows.hpp"
 #include "ComHelper.hpp"
+#include "xercesc/util/PlatformUtils.hpp"
 
 #include <string>
 #include <vector>
@@ -37,6 +38,12 @@ namespace xPlat {
             m_validationOptions(validationOptions), m_memalloc(memalloc), m_memfree(memfree)
         {
             ThrowErrorIf(Error::InvalidParameter, (m_memalloc == nullptr || m_memfree == nullptr), "allocator/deallocator pair not specified.")
+            XERCES_CPP_NAMESPACE::XMLPlatformUtils::Initialize();
+        }
+
+        ~AppxFactory()
+        {
+            XERCES_CPP_NAMESPACE::XMLPlatformUtils::Terminate();
         }
 
         // IAppxFactory

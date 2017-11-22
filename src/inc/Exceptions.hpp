@@ -7,6 +7,10 @@
 #include <functional>
 
 #include "AppxWindows.hpp"
+#include "xercesc/util/PlatformUtils.hpp"
+#include "xercesc/sax/ErrorHandler.hpp"
+#include "xercesc/sax/SAXParseException.hpp"
+#include "xercesc/dom/DOM.hpp"
 
 namespace xPlat {
 
@@ -64,12 +68,20 @@ namespace xPlat {
         // Signature errors
         AppxSignatureInvalid        = ERROR_FACILITY + 0x0041,
         AppxCertNotTrusted          = ERROR_FACILITY + 0x0042,
-        
+
+        // Xerces XMLException. 0x8BAD1000 + XMLException error code
+        XMLException = ERROR_FACILITY + 0x1000,
+
+        // Xerces DOMException. 0x8BAD2000 + Xerces DOMException error code
+        DOMException = ERROR_FACILITY + 0x2000,
+
+        // Xerces SAXParseException.
+        SAXParseException = ERROR_FACILITY + 0x3000,
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
     // Throwing xPlat::Exception will break into the debugger on chk builds to aid debugging
-    class Exception : public std::exception
+    class Exception : public std::exception /*, public XERCES_CPP_NAMESPACE::ErrorHandler*/
     {
     public:
         Exception(Error error) : m_code(static_cast<std::uint32_t>(error))
@@ -96,10 +108,34 @@ namespace xPlat {
         Exception(HRESULT error, const char* message) :
             m_code(error),
             m_message(message)
-        {}            
+        {}
 
         uint32_t        Code() { return m_code; }
         std::string&    Message() { return m_message; }
+
+        //// copy ctor
+        //Exception(Exception& right) : m_code(right.m_code), m_message(right.m_message) { }
+
+        //// User by XercesDOMParser
+        //void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+        //{
+        //    // Todo add e.getMessage(), e.getColumnNumber() and e.getLineNumber()
+        //    throw this;
+        //}
+
+        //void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+        //{
+        //    // Todo add e.getMessage(), e.getColumnNumber() and e.getLineNumber()
+        //    throw this;
+        //}
+
+        //void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exc) override
+        //{
+        //    // Todo add e.getMessage(), e.getColumnNumber() and e.getLineNumber()
+        //    throw this;
+        //}
+
+        //void resetErrors() override {}
 
     protected:
         std::uint32_t   m_code;
@@ -116,6 +152,33 @@ namespace xPlat {
         Win32Exception(DWORD error, const char* message) :
             Exception(0x80070000 + error, message)
         {}
+    };
+
+    class ParsingException : public XERCES_CPP_NAMESPACE::ErrorHandler
+    {
+    public:
+        ParsingException() {};
+        ~ParsingException() {};
+
+        void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+        {
+            // TODO: add message, line number and column
+            throw Exception(xPlat::Error::SAXParseException);
+        }
+
+        void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+        {
+            // TODO: add message, line number and column
+            throw Exception(xPlat::Error::SAXParseException);
+        }
+
+        void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+        {
+            // TODO: add message, line number and column
+            throw Exception(xPlat::Error::SAXParseException);
+        }
+
+        void resetErrors() override {}
     };
 
     // Provides an ABI exception boundary with parameter validation
@@ -138,6 +201,16 @@ namespace xPlat {
         catch (std::exception&)
         {
             hr = static_cast<HRESULT>(xPlat::Error::Unexpected);
+        }
+        catch (const XERCES_CPP_NAMESPACE::XMLException& e)
+        {
+            hr = static_cast<HRESULT>(xPlat::Error::XMLException) +
+                static_cast<HRESULT>(e.getCode());
+        }
+        catch (const XERCES_CPP_NAMESPACE::DOMException& e)
+        {
+            hr = static_cast<HRESULT>(xPlat::Error::DOMException) +
+                static_cast<HRESULT>(e.code);
         }
 
         return hr;

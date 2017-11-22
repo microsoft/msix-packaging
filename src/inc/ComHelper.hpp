@@ -7,6 +7,7 @@
 
 #include "Exceptions.hpp"
 #include "AppxPackaging.hpp"
+#include "xercesc/util/XMLString.hpp"
 
 namespace xPlat {
 
@@ -166,5 +167,46 @@ namespace xPlat {
     protected:
         std::atomic<std::uint32_t> m_ref;
         ComClass() : m_ref(1) {}
+    };
+
+    template<class T>
+    class XercesPtr
+    {
+    public:
+        XercesPtr() : m_ptr(nullptr) {}
+        XercesPtr(T* ptr) : m_ptr(ptr) {};
+
+        ~XercesPtr() { InternalRelease<T>(); };
+
+        inline T* operator->() const { return m_ptr; }
+        inline T* Get() const { return m_ptr; }
+
+    protected:
+        T* m_ptr = nullptr;
+
+        template<class T>
+        inline void InternalRelease()
+        {
+            T* temp = m_ptr;
+            if (temp)
+            {
+                m_ptr = nullptr;
+                temp->release();
+            }
+        }
+
+        template<>
+        inline void InternalRelease<char>()
+        {
+            XERCES_CPP_NAMESPACE::XMLString::release(&m_ptr);
+            m_ptr = nullptr;
+        }
+
+        template<>
+        inline void InternalRelease<XMLCh>()
+        {
+            XERCES_CPP_NAMESPACE::XMLString::release(&m_ptr);
+            m_ptr = nullptr;
+        }
     };
 }
