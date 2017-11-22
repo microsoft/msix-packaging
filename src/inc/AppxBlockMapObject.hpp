@@ -165,7 +165,7 @@ namespace xPlat {
         std::size_t                 m_cursor = 0;
 
     public:
-        AppxBlockMapFilesEnumerator(IAppxBlockMapReader* reader, std::vector<std::string>& files) :
+        AppxBlockMapFilesEnumerator(IAppxBlockMapReader* reader, std::vector<std::string>&& files) :
             m_reader(reader),
             m_files(files)
         {}
