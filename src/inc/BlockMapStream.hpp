@@ -12,7 +12,7 @@
 #include <map>
 #include <functional>
 #include <algorithm>
-#include <set>
+#include <vector>
 
 namespace xPlat {
   
@@ -20,18 +20,10 @@ namespace xPlat {
 
     typedef struct Block
     {
-        std::uint64_t size;
-        std::uint64_t offset;
+        std::uint32_t size;
+        std::uint64_t offset; // represents underlying package offset, not file offset in package
         std::vector<std::uint8_t> hash;
     } Block;
-
-    typedef struct BlockCompare 
-    {
-        bool operator()(const Block& lhs, const Block& rhs) const
-        {
-            return lhs.offset < rhs.offset;
-        }
-    } BlockCompare;
 
     typedef struct BlockPlusStream : Block
     {
@@ -42,7 +34,7 @@ namespace xPlat {
     class BlockMapStream : public StreamBase
     {
     public:
-        BlockMapStream(/*[In]*/ IStream* stream, /*[In]*/ std::set<Block, BlockCompare>& blocks)
+        BlockMapStream(/*[In]*/ IStream* stream, /*[In]*/ std::vector<Block>& blocks)
         {
             // Build a vector of all HashStream->RangeStream's for the blocks in the blockmap
             for (auto block = blocks.begin(); block != blocks.end(); block++)

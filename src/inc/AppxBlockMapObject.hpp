@@ -1,7 +1,9 @@
 #pragma once
+#include <algorithm>
 #include <string>
 #include <map>
 #include <vector>
+#include <iterator>
 
 #include "StreamBase.hpp"
 #include "VerifierObject.hpp"
@@ -10,24 +12,23 @@
 #include "UnicodeConversion.hpp"
 #include "AppxFactory.hpp"
 #include "XmlObject.hpp"
+#include "BlockMapStream.hpp"
 
 namespace xPlat {
 
     class AppxBlockMapBlock : public xPlat::ComClass<AppxBlockMapBlock, IAppxBlockMapBlock>
     {
     public:
-        AppxBlockMapBlock(IxPlatFactory* factory, std::uint64_t offset, std::uint32_t size, std::vector<std::uint8_t>* digest) :
+        AppxBlockMapBlock(IxPlatFactory* factory, Block* block) :
             m_factory(factory),
-            m_offset(offset),
-            m_size(size),
-            m_digest(digest)
+            m_block(block)
         {}
 
         // IAppxBlockMapBlock
         HRESULT STDMETHODCALLTYPE GetHash(UINT32* bufferSize, BYTE** buffer) override
         {
             return ResultOf([&]{
-                ThrowHrIfFailed(m_factory->MarshalOutBytes(*m_digest, bufferSize, buffer));
+                ThrowHrIfFailed(m_factory->MarshalOutBytes(m_block->hash, bufferSize, buffer));
             });
         }
         
@@ -35,15 +36,13 @@ namespace xPlat {
         {
             return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter, (size == nullptr), "bad pointer");
-                *size = static_cast<UINT32>(m_size);                
+                *size = static_cast<UINT32>(m_block->size);                
             });
         }
 
     private:
         ComPtr<IxPlatFactory> m_factory;
-        std::uint64_t m_offset;
-        std::uint32_t m_size; // If the block is compressed, means the compressed size of the block. Otherwise, it is the uncompressed size.
-        std::vector<std::uint8_t>* m_digest;
+        Block*                m_block;
     };
 
     class AppxBlockMapBlocksEnumerator : public xPlat::ComClass<AppxBlockMapBlocksEnumerator, IAppxBlockMapBlocksEnumerator>
@@ -87,24 +86,34 @@ namespace xPlat {
     public:
         AppxBlockMapFile(
             IxPlatFactory* factory, 
-            std::vector<ComPtr<IAppxBlockMapBlock>>* blocks,
+            std::vector<Block>&& blocks,
             std::uint32_t localFileHeaderSize,
             const std::string& name,
             std::uint64_t uncompressedSize
         ) : 
             m_factory(factory),
-            m_blocks(blocks),
+            m_blocks(std::move(blocks)),
             m_localFileHeaderSize(localFileHeaderSize),
             m_name(name),
             m_uncompressedSize(uncompressedSize)
-        {}
+        {
+            m_blockMapBlocks.reserve(blocks.size());
+            std::transform(
+                m_blocks.begin(), 
+                m_blocks.end(),
+                std::back_inserter(m_blockMapBlocks),
+                [&](auto item){ 
+                    return ComPtr<IAppxBlockMapBlock>::Make<AppxBlockMapBlock>(factory, &item);
+                }
+            );
+        }
 
         // IAppxBlockMapFile
         HRESULT STDMETHODCALLTYPE GetBlocks(IAppxBlockMapBlocksEnumerator **blocks) override
         {
             return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter, (blocks == nullptr || *blocks != nullptr), "bad pointer.");
-                *blocks = ComPtr<IAppxBlockMapBlocksEnumerator>::Make<AppxBlockMapBlocksEnumerator>(m_blocks).Detach();
+                *blocks = ComPtr<IAppxBlockMapBlocksEnumerator>::Make<AppxBlockMapBlocksEnumerator>(&m_blockMapBlocks).Detach();
             });
         }
 
@@ -140,7 +149,8 @@ namespace xPlat {
         }            
 
     private:        
-        std::vector<ComPtr<IAppxBlockMapBlock>>* m_blocks;
+        std::vector<ComPtr<IAppxBlockMapBlock>> m_blockMapBlocks;
+        std::vector<Block>      m_blocks;
         ComPtr<IxPlatFactory>   m_factory;
         std::uint32_t           m_localFileHeaderSize;
         std::string             m_name;

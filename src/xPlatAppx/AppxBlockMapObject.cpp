@@ -2,6 +2,23 @@
 #include <algorithm>
 #include <iterator>
 
+/* Example XML:
+<?xml version="1.0" encoding="UTF-8"?>
+<BlockMap HashMethod="http://www.w3.org/2001/04/xmlenc#sha256" xmlns="http://schemas.microsoft.com/appx/2010/blockmap">
+...
+<File LfhSize="65" Size="187761" Name="Assets\video_offline_demo_page1.jpg">
+	<Block Hash="NQL/PSheCSB3yZzKyZ6nHbsfzJt1EZJxOXLllMVvtEI="/>
+	<Block Hash="2Udxo8Nwie7rvy4g0T5yfz9qccDNMVWh2mfMD1YCQao="/>
+	<Block Hash="MmXnlptT/u+ilMKCIriWR49k99rBqwXKO3s60zGwZKg="/>
+</File>
+...
+<File LfhSize="57" Size="47352" Name="Resources\Fonts\SegMVR2.ttf">
+    <Block Size="27777" Hash="LGaGnk3EtFymriM9cRmeX7eZI+b2hpwOIlJIXdeE1ik="/>
+</File>
+...
+</BlockMap> 
+*/
+
 namespace xPlat {
     AppxBlockMapObject::AppxBlockMapObject(IxPlatFactory* factory, IStream* stream) : 
         m_factory(factory)
@@ -51,7 +68,7 @@ namespace xPlat {
     }
 
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetHashMethod(IUri **hashMethod)
-    {
+    {   // Ultimately, this IUri object represents the HashMethod attribute in the blockmap:       
         return ResultOf([&]{
             // TODO: Implement...
             throw Exception(Error::NotImplemented);
