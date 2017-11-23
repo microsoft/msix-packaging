@@ -34,8 +34,8 @@ namespace xPlat {
 
     static std::uint32_t GetLocalFileHeaderSize(XERCES_CPP_NAMESPACE::DOMElement* element)
     {
-        XercesPtr<XMLCh> nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("LfhSize"));
-        XercesPtr<char> name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
+        XercesXMLChPtr nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("LfhSize"));
+        XercesCharPtr name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
         std::string attributeValue(name.Get());
         bool hasValue = !attributeValue.empty();
         std::uint32_t value = 0;
@@ -45,15 +45,15 @@ namespace xPlat {
 
     static std::string GetName(XERCES_CPP_NAMESPACE::DOMElement* element)
     {
-        XercesPtr<XMLCh> nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("Name"));
-        XercesPtr<char> name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
+        XercesXMLChPtr nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("Name"));
+        XercesCharPtr name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
         return std::string (name.Get());
     }
 
     static std::uint64_t GetSize(XERCES_CPP_NAMESPACE::DOMElement* element)
     {
-        XercesPtr<XMLCh> nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("Size"));
-        XercesPtr<char> name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
+        XercesXMLChPtr nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("Size"));
+        XercesCharPtr name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
         std::string attributeValue(name.Get());
         std::uint64_t value = (64*1024); // size of block not always specified, in which case, it's 64k
         if (!attributeValue.empty())
@@ -64,9 +64,9 @@ namespace xPlat {
 
     static std::vector<std::uint8_t> GetDigestData(XERCES_CPP_NAMESPACE::DOMElement* element)
     {
-        XercesPtr<XMLCh> nameAttr(XMLString::transcode("Hash"));
+        XercesXMLChPtr nameAttr(XMLString::transcode("Hash"));
         XMLSize_t len = 0;
-        XercesPtr<XMLByte> decodedData(XERCES_CPP_NAMESPACE::Base64::decodeToXMLByte(
+        XercesXMLBytePtr decodedData(XERCES_CPP_NAMESPACE::Base64::decodeToXMLByte(
             element->getAttribute(nameAttr.Get()), 
             &len));
         std::vector<std::uint8_t> result(len);
@@ -88,14 +88,14 @@ namespace xPlat {
     {
         auto dom = ComPtr<IXmlObject>::Make<XmlObject>(stream, &blockMapSchema);
         // Create xPath query over blockmap file.
-        XercesPtr<XMLCh> fileXPath(XMLString::transcode("/BlockMap/File"));
+        XercesXMLChPtr fileXPath(XMLString::transcode("/BlockMap/File"));
         XercesPtr<DOMXPathNSResolver> resolver(dom->Document()->createNSResolver(dom->Document()->getDocumentElement()));
-        XercesPtr<DOMXPathResult> fileResult = dom->Document()->evaluate(
+        XercesPtr<DOMXPathResult> fileResult(dom->Document()->evaluate(
             fileXPath.Get(),
             dom->Document()->getDocumentElement(),
             resolver.Get(),
             DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
-            nullptr);
+            nullptr));
 
         // Create IAppxBlockMapFiles
         for (XMLSize_t i = 0; i < fileResult->getSnapshotLength(); i++)
@@ -104,7 +104,7 @@ namespace xPlat {
             auto fileNode = static_cast<DOMElement*>(fileResult->getNodeValue());
 
             // Get blocks elements
-            XercesPtr<XMLCh> blockXPath(XMLString::transcode("./Block"));            
+            XercesXMLChPtr blockXPath(XMLString::transcode("./Block"));            
             XercesPtr<DOMXPathResult> blockResult = dom->Document()->evaluate(
                 blockXPath.Get(),
                 fileNode,
