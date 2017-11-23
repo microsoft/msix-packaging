@@ -11,9 +11,10 @@
 #include <openssl/err.h>
 #include <openssl/objects.h>
 #include <openssl/evp.h>
-#include <openssl/x509.h>
+#include <openssl/x509v3.h>
 #include <openssl/pkcs7.h>
 #include <openssl/pem.h>
+#include <openssl/crypto.h>
 
 namespace xPlat
 {
@@ -25,18 +26,28 @@ namespace xPlat
         void operator()(PKCS7 *p) const { PKCS7_free(p); };
     };
 
+    struct unique_X509_deleter {
+        void operator()(X509 *x) const { X509_free(x); };
+    };
+    
     struct unique_X509_STORE_deleter {
         void operator()(X509_STORE *xs) const { X509_STORE_free(xs); };
     };
 
     struct unique_X509_STORE_CTX_deleter {
-        void operator()(X509_STORE_CTX *xsc) const { X509_STORE_CTX_cleanup(xsc); };
+        void operator()(X509_STORE_CTX *xsc) const { X509_STORE_CTX_cleanup(xsc); X509_STORE_CTX_free(xsc); };
+    };
+
+    struct unique_X509_NAME_deleter {
+        void operator()(X509_NAME *xn) const { OPENSSL_free(xn); };
     };
 
     typedef std::unique_ptr<BIO, unique_BIO_deleter> unique_BIO;
     typedef std::unique_ptr<PKCS7, unique_PKCS7_deleter> unique_PKCS7;
+    typedef std::unique_ptr<X509, unique_X509_deleter> unique_X509;
     typedef std::unique_ptr<X509_STORE, unique_X509_STORE_deleter> unique_X509_STORE;
     typedef std::unique_ptr<X509_STORE_CTX, unique_X509_STORE_CTX_deleter> unique_X509_STORE_CTX;
+    typedef std::unique_ptr<X509_NAME, unique_X509_NAME_deleter> unique_X509_NAME;
     
 
     // Best effort to determine whether the signature file is associated with a store cert
@@ -93,6 +104,12 @@ namespace xPlat
         return true;
     }
 
+    int VerifyCallback(int ok, X509_STORE_CTX *ctx)
+    {
+        //X509_V_ERR_CERT_HAS_EXPIRED
+        std::cout << ok << std::endl;
+        return 1; 
+    }
 
     bool SignatureValidator::Validate(
         /*in*/ APPX_VALIDATION_OPTION option, 
@@ -113,71 +130,81 @@ namespace xPlat
         ThrowHrIfFailed(stream->Read(&fileID, sizeof(fileID), nullptr));
         ThrowErrorIf(Error::AppxSignatureInvalid, (fileID != P7X_FILE_ID), "unexpected p7x header");
 
-        std::uint32_t streamSize = end.u.LowPart - sizeof(fileID);
-        std::vector<std::uint8_t> buffer(streamSize);
+        std::uint32_t p7sSize = end.u.LowPart - sizeof(fileID);
+        std::vector<std::uint8_t> p7s(p7sSize);
         ULONG actualRead = 0;
-        ThrowHrIfFailed(stream->Read(buffer.data(), streamSize, &actualRead));
-        ThrowErrorIf(Error::AppxSignatureInvalid, (actualRead != streamSize), "read error");
+        ThrowHrIfFailed(stream->Read(p7s.data(), p7s.size(), &actualRead));
+        ThrowErrorIf(Error::AppxSignatureInvalid, (actualRead != p7s.size()), "read error");
 
+#ifdef LINKER_ERROR
+        // This causes a linker error -- might need to add more libs
+        //OpenSSL_add_all_algorithms();
+#endif
+
+#ifdef DISABLED
+        unique_X509_STORE store(X509_STORE_new());
+        X509_STORE_load_locations(store.get(), "/Users/admin/Documents/foo.pem", nullptr);
+#endif
+
+        // Add all of the trusted certficates to our X.509 store
+        unique_X509_STORE store(X509_STORE_new());
         std::map<std::string, std::string>::iterator it;
         for ( it = appxCerts.begin(); it != appxCerts.end(); it++ )
         {
-            std::vector<std::uint8_t> cert;
-            ConvertBase64Certificate(it->second, cert);
-
-            std::cout << it->first  // string (key)
-              << ':'
-              << it->second   // string's value 
-              << std::endl ;
+            unique_BIO bcert(BIO_new_mem_buf(it->second.data(), it->second.size()));
+            unique_X509 cert(PEM_read_bio_X509(bcert.get(), nullptr, nullptr, nullptr));
+            
+            ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+                X509_STORE_add_cert(store.get(), cert.get()) == 1, 
+                "Could not add cert to keychain");
         }
 
         // TODO: read digests
-        unique_X509_STORE store(X509_STORE_new());
-        STACK_OF(X509) *other = nullptr;
-        STACK_OF(X509) *crls = nullptr;
-        STACK_OF(X509) *certs = nullptr;
-        unique_BIO in(BIO_new_file("/Users/admin/Documents/temp.p7s", "r"));
-        unique_BIO indata;
-        unique_BIO out;
-        int flags = PKCS7_DETACHED;
-        
-        unique_PKCS7 p7(d2i_PKCS7_bio(in.get(), nullptr));
-        
-        //PKCS7_verify(p7, other, store, indata, out, flags);
-        STACK_OF(X509) *signers = PKCS7_get0_signers(p7.get(), other, flags);
+        unique_BIO bmem(BIO_new_mem_buf(p7s.data(), p7s.size()));
+        unique_PKCS7 p7(d2i_PKCS7_bio(bmem.get(), nullptr));
 
-#ifdef DISABLED
-        BIO* sig_BIO = BIO_new_mem_buf(sig, sig_length)
-        PKCS7* sig_pkcs7 = d2i_PKCS7_bio(sig_BIO, NULL);
-
-        BIO* data_BIO = BIO_new_mem_buf(data, data_length)
-        BIO* data_pkcs7_BIO = PKCS7_dataInit(sig_pkcs7, data_BIO);
-
-        // Goto this place in the BIO. Why? No idea!
-        char unneeded[1024*4];
-        while (BIO_read(dataPKCS7_BIO, unneeded, sizeof(buffer)) > 0);
-
-        int result;
-        X509_STORE *certificateStore = X509_STORE_new();
-        X509_STORE_CTX certificateContext;
-        STACK_OF(PKCS7_SIGNER_INFO) *signerStack = PKCS7_get_signer_info(sig_pkcs7);
+#ifdef DISABLED        
+        STACK_OF(PKCS7_SIGNER_INFO) *signerStack = PKCS7_get_signer_info(p7.get());
         int numSignerInfo = sk_PKCS7_SIGNER_INFO_num(signerStack);
-        for (int i=0; i<numSignerInfo; ++i) {
+        for (int i = 0; i < numSignerInfo; i++) 
+        {
             PKCS7_SIGNER_INFO *signerInfo = sk_PKCS7_SIGNER_INFO_value(signerStack, i);
-            result = PKCS7_dataVerify(certificateStore, &certificateContext, data_pkcs7_BIO, sig_pkcs7, signerInfo);
-        }
 
-        X509_STORE_CTX_cleanup(&certificateContext);
-        BIO_free(sig_BIO);
-        BIO_free(data_BIO);
-        BIO_free(data_pkcs7_BIO);
-        PKCS7_free(sig_pkcs7);
-        X509_STORE_free(certificateStore);
+            X509_STORE_CTX* certContextT = nullptr;
+            //unique_X509_STORE_CTX certContext;
+            //result = PKCS7_dataVerify(certStore.get(), &certContext, nullptr, nullptr, nullptr);
+        }
+        //PKCS7_verify(p7, other, store, indata, out, flags);
+        //STACK_OF(X509) *certStack = PKCS7_get0_signers(p7.get(), nullptr, 0);
 #endif
 
+        unique_BIO content(BIO_new(BIO_s_mem()));
+        //X509_VERIFY_PARAM* param = X509_STORE_get0_param(store.get());
+        //X509_VERIFY_PARAM_set_flags(param, X509_V_FLAG_CB_ISSUER_CHECK);
+        X509_STORE_set_verify_cb(store.get(), &VerifyCallback);
+        X509_STORE_set_purpose(store.get(), X509_PURPOSE_ANY);
+        
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+            PKCS7_verify(p7.get(), nullptr, store.get(), content.get()/*indata*/, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
+            "Could not verify package signature");
+
+        STACK_OF(X509) *certStack = p7.get()->d.sign->cert;
+        for (int i = 0; i < sk_X509_num(certStack); i++)
+        {
+            unique_X509 cert(sk_X509_value(certStack, i));
+            unique_X509_STORE_CTX context(X509_STORE_CTX_new());
+            X509_STORE_CTX_init(context.get(), store.get(), cert.get(), nullptr);
+
+            X509_verify_cert(context.get());
+
+            ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+                X509_verify_cert(context.get()) == 1, 
+                "Could not verify cert");
+        }
+
         ThrowErrorIfNot(Error::AppxSignatureInvalid, (
-            IsStoreOrigin(buffer.data(), buffer.size()) ||
-            IsAuthenticodeOrigin(buffer.data(), buffer.size()) ||
+            IsStoreOrigin(p7s.data(), p7s.size()) ||
+            IsAuthenticodeOrigin(p7s.data(), p7s.size()) ||
             (option & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN)
         ), "Signature origin check failed");
         return true;
