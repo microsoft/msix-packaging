@@ -37,7 +37,7 @@ namespace xPlat {
         {
             return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter, (size == nullptr), "bad pointer");
-                *size = static_cast<UINT32>(m_block->size);
+                *size = static_cast<UINT32>(m_block->compressedSize);
             });
         }
 

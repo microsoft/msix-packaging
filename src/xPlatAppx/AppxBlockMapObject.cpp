@@ -79,7 +79,7 @@ namespace xPlat {
     static Block GetBlock(XERCES_CPP_NAMESPACE::DOMElement* element)
     {
         Block result {0};
-        result.size = static_cast<std::uint32_t>(GetSize(element));
+        result.compressedSize = GetSize(element);
         result.hash = GetDigestData(element);
         return result;
     }

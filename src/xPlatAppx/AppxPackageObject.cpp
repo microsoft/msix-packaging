@@ -107,7 +107,10 @@ namespace xPlat {
             else
             {
                 m_payloadFiles.push_back(fileName);
-                stream = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(fileName));
+                // TODO: this is a temporary solution until we get around to a better mechanism for standarizing file path handling across all platforms.
+                std::string windowsFileName(fileName);
+                std::replace(windowsFileName.begin(), windowsFileName.end(), '/', '\\');
+                stream = m_appxBlockMap->GetValidationStream(windowsFileName, m_container->GetFile(fileName));
             }
 
             if (stream.Get() != nullptr)
