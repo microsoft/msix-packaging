@@ -136,10 +136,8 @@ namespace xPlat
         ThrowHrIfFailed(stream->Read(p7s.data(), p7s.size(), &actualRead));
         ThrowErrorIf(Error::AppxSignatureInvalid, (actualRead != p7s.size()), "read error");
 
-#ifdef LINKER_ERROR
         // This causes a linker error -- might need to add more libs
-        //OpenSSL_add_all_algorithms();
-#endif
+        OpenSSL_add_all_algorithms();
 
 #ifdef DISABLED
         // This is just experimental logic for loading all of the certs from a single file.

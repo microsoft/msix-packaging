@@ -443,9 +443,9 @@ ${CRYPTO}md5/md5_dgst.c
 ${CRYPTO}md5/md5_one.c
 ${CRYPTO}md5/md5.c
 #${CRYPTO}md5/md5test.c
-#${CRYPTO}mdc2/mdc2_one.c
-#${CRYPTO}mdc2/mdc2dgst.c
-#${CRYPTO}mdc2/mdc2test.c
+${CRYPTO}mdc2/mdc2_one.c
+${CRYPTO}mdc2/mdc2dgst.c
+${CRYPTO}mdc2/mdc2test.c
 
 ${CRYPTO}mem_clr.c
 ${CRYPTO}mem_dbg.c
