@@ -111,6 +111,66 @@ namespace xPlat
         return 1; 
     }
 
+    void PrintExtensions(X509* cert)
+    {
+        STACK_OF(X509_EXTENSION) *exts = cert->cert_info->extensions;
+
+        int num_of_exts;
+        if (exts) {
+            num_of_exts = sk_X509_EXTENSION_num(exts);
+        } else {
+            num_of_exts = 0
+        }
+
+        IFNEG_FAIL(num_of_exts, "error parsing number of X509v3 extensions.");
+
+        for (int i=0; i < num_of_exts; i++) {
+
+            X509_EXTENSION *ex = sk_X509_EXTENSION_value(exts, i);
+            IFNULL_FAIL(ex, "unable to extract extension from stack");
+            ASN1_OBJECT *obj = X509_EXTENSION_get_object(ex);
+            IFNULL_FAIL(obj, "unable to extract ASN1 object from extension");
+
+            BIO *ext_bio = BIO_new(BIO_s_mem());
+            IFNULL_FAIL(ext_bio, "unable to allocate memory for extension value BIO");
+            if (!X509V3_EXT_print(ext_bio, ex, 0, 0)) {
+                M_ASN1_OCTET_STRING_print(ext_bio, ex->value);
+            }
+
+            BUF_MEM *bptr;
+            BIO_get_mem_ptr(ext_bio, &bptr);
+            BIO_set_close(ext_bio, BIO_NOCLOSE);
+
+            // remove newlines
+            int lastchar = bptr->length;
+            if (lastchar > 1 && (bptr->data[lastchar-1] == '\n' || bptr->data[lastchar-1] == '\r')) {
+                bptr->data[lastchar-1] = (char) 0;
+            }
+            if (lastchar > 0 && (bptr->data[lastchar] == '\n' || bptr->data[lastchar] == '\r')) {
+                bptr->data[lastchar] = (char) 0;
+            }
+
+            BIO_free(ext_bio);
+
+            unsigned nid = OBJ_obj2nid(obj);
+            if (nid == NID_undef) {
+                // no lookup found for the provided OID so nid came back as undefined.
+                char extname[EXTNAME_LEN];
+                OBJ_obj2txt(extname, EXTNAME_LEN, (const ASN1_OBJECT *) obj, 1);
+                printf("extension name is %s\n", extname);
+            } else {
+                // the OID translated to a NID which implies that the OID has a known sn/ln
+                const char *c_ext_name = OBJ_nid2ln(nid);
+                IFNULL_FAIL(c_ext_name, "invalid X509v3 extension name");
+                printf("extension name is %s\n", c_ext_name);
+            }
+
+            printf("extension length is %u\n", bptr->length)
+            printf("extension value is %s\n", bptr->data)
+        }
+    }
+    
+
     bool SignatureValidator::Validate(
         /*in*/ APPX_VALIDATION_OPTION option, 
         /*in*/ IStream *stream, 
@@ -159,7 +219,9 @@ namespace xPlat
             unique_BIO bcert(BIO_new_mem_buf(it->second.data(), it->second.size()));
             // Create a cert from the memory buffer
             unique_X509 cert(PEM_read_bio_X509(bcert.get(), nullptr, nullptr, nullptr));
-            
+
+            PrintExtensions(cert.get());
+
             ThrowErrorIfNot(Error::AppxSignatureInvalid, 
                 X509_STORE_add_cert(store.get(), cert.get()) == 1, 
                 "Could not add cert to keychain");
