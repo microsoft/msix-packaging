@@ -185,7 +185,7 @@ namespace xPlat
         X509_STORE_set_purpose(store.get(), X509_PURPOSE_ANY);
         
         ThrowErrorIfNot(Error::AppxSignatureInvalid, 
-            PKCS7_verify(p7.get(), nullptr, store.get(), content.get()/*indata*/, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
+            PKCS7_verify(p7.get(), nullptr, store.get(), nullptr/*indata*/, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
             "Could not verify package signature");
 
         STACK_OF(X509) *certStack = p7.get()->d.sign->cert;
