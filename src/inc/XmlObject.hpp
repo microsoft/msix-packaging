@@ -78,6 +78,13 @@ namespace xPlat {
             m_parser->setHandleMultipleImports(HasSchemas); // TODO: do we need to handle the case where there aren't multiple schemas with the same namespace?
             m_parser->setValidationSchemaFullChecking(HasSchemas);
 
+            if (HasSchemas)
+            {   // Disable DTD and prevent XXE attacks.  See https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#libxerces-c for additional details.
+                m_parser->setIgnoreCachedDTD(true);
+                m_parser->setSkipDTDValidation(true);
+                m_parser->setCreateEntityReferenceNodes(false);
+            }
+
             // Add schemas
             if (schemas != nullptr)
             {   for (auto index = schemas->begin(); index != schemas->end(); index++)

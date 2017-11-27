@@ -80,7 +80,7 @@ namespace xPlat {
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
     // Throwing xPlat::Exception will break into the debugger on chk builds to aid debugging
-    class Exception : public std::exception /*, public XERCES_CPP_NAMESPACE::ErrorHandler*/
+    class Exception : public std::exception
     {
     public:
         Exception(Error error) : m_code(static_cast<std::uint32_t>(error))

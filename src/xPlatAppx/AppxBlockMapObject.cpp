@@ -55,7 +55,7 @@ namespace xPlat {
         XercesXMLChPtr nameAttr(XERCES_CPP_NAMESPACE::XMLString::transcode("Size"));
         XercesCharPtr name(XERCES_CPP_NAMESPACE::XMLString::transcode(element->getAttribute(nameAttr.Get())));
         std::string attributeValue(name.Get());
-        std::uint64_t value = (64*1024); // size of block not always specified, in which case, it's 64k
+        std::uint64_t value = (BLOCKMAP_BLOCK_SIZE); // size of block not always specified, in which case, it's 64k
         if (!attributeValue.empty())
         {   value = static_cast<std::uint64_t>(std::stoull(attributeValue));
         }

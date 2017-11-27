@@ -52,23 +52,21 @@ namespace xPlat {
             // Build a vector of all HashStream->RangeStream's for the blocks in the blockmap
             std::uint64_t offset = 0;
             std::uint64_t sizeRemaining = m_streamSize;
-            for (auto block = blocks.begin(); block != blocks.end(); block++)
+            for (auto block = blocks.begin(); ((sizeRemaining != 0) && (block != blocks.end())); block++)
             {
                 auto rangeStream = ComPtr<IStream>::Make<RangeStream>(offset, std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE), stream);                
                 auto hashStream = ComPtr<IStream>::Make<HashStream>(rangeStream.Get(), block->hash);
-                
+                std::uint64_t blockSize = std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE);
+
                 BlockPlusStream bs;
                 bs.offset = offset;
-                bs.size   = std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE);
+                bs.size   = blockSize;
                 bs.stream = hashStream;
-                bs.hash.reserve(block->hash.size());
-                std::copy(bs.hash.begin(), bs.hash.end(), block->hash.begin());
-
-                ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, (bs.size <= BLOCKMAP_BLOCK_SIZE), "block size must be less than 65536");
-                m_blockStreams.push_back(bs);
-
-                sizeRemaining = std::max(sizeRemaining - BLOCKMAP_BLOCK_SIZE, sizeRemaining);
-                offset += std::min(BLOCKMAP_BLOCK_SIZE, sizeRemaining);
+                bs.hash   = block->hash;
+                m_blockStreams.emplace_back(std::move(bs));
+                
+                offset          += blockSize;
+                sizeRemaining   -= blockSize;
             }
 
             // Reset seek position to beginning
@@ -112,11 +110,12 @@ namespace xPlat {
                     }
                     else if (m_currentBlock->offset <= m_relativePosition)
                     {
+                        std::uint64_t positionInBlock = m_relativePosition - m_currentBlock->offset;
                         LARGE_INTEGER li{0};
-                        li.QuadPart = (m_relativePosition - m_currentBlock->offset);
+                        li.QuadPart = positionInBlock;
                         ThrowHrIfFailed(m_currentBlock->stream->Seek(li, STREAM_SEEK_SET, nullptr));
 
-                        std::uint32_t count = std::min(bytesToRead, static_cast<std::uint32_t>(m_currentBlock->size - (m_relativePosition - m_currentBlock->offset)));
+                        std::uint32_t count = std::min(bytesToRead, static_cast<std::uint32_t>(m_currentBlock->size - positionInBlock));
                         ULONG actual = 0;
                         ThrowHrIfFailed(m_currentBlock->stream->Read(buffer, count, &actual));
 
