@@ -142,16 +142,22 @@ namespace xPlat
 #endif
 
 #ifdef DISABLED
+        // This is just experimental logic for loading all of the certs from a single file.
+        // I saw a report that adding the certs individually to a store didn't work BUT this would.
+        // I gave it a try, and found that, in fact, it didn't work at all. Not ready to completely
+        // jettison the logic.
         unique_X509_STORE store(X509_STORE_new());
         X509_STORE_load_locations(store.get(), "/Users/admin/Documents/foo.pem", nullptr);
 #endif
 
-        // Add all of the trusted certficates to our X.509 store
+        // Add all of the trusted certficates individually to our X.509 store
         unique_X509_STORE store(X509_STORE_new());
         std::map<std::string, std::string>::iterator it;
         for ( it = appxCerts.begin(); it != appxCerts.end(); it++ )
         {
+            // Load the cert into memory
             unique_BIO bcert(BIO_new_mem_buf(it->second.data(), it->second.size()));
+            // Create a cert from the memory buffer
             unique_X509 cert(PEM_read_bio_X509(bcert.get(), nullptr, nullptr, nullptr));
             
             ThrowErrorIfNot(Error::AppxSignatureInvalid, 
