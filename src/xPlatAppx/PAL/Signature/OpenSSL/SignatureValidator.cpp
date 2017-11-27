@@ -49,6 +49,8 @@ namespace xPlat
     typedef std::unique_ptr<X509_STORE_CTX, unique_X509_STORE_CTX_deleter> unique_X509_STORE_CTX;
     typedef std::unique_ptr<X509_NAME, unique_X509_NAME_deleter> unique_X509_NAME;
     
+    #define IFNEG_FAIL(a, b) {if (a < 0) {printf(b); return;}}
+    #define IFNULL_FAIL(a, b) {if (!a) {printf(b); return;}}
 
     // Best effort to determine whether the signature file is associated with a store cert
     static bool IsStoreOrigin(std::uint8_t* signatureBuffer, std::uint32_t cbSignatureBuffer)
@@ -113,13 +115,14 @@ namespace xPlat
 
     void PrintExtensions(X509* cert)
     {
+        #define EXTNAME_LEN 256
         STACK_OF(X509_EXTENSION) *exts = cert->cert_info->extensions;
 
         int num_of_exts;
         if (exts) {
             num_of_exts = sk_X509_EXTENSION_num(exts);
         } else {
-            num_of_exts = 0
+            num_of_exts = 0;
         }
 
         IFNEG_FAIL(num_of_exts, "error parsing number of X509v3 extensions.");
@@ -165,8 +168,8 @@ namespace xPlat
                 printf("extension name is %s\n", c_ext_name);
             }
 
-            printf("extension length is %u\n", bptr->length)
-            printf("extension value is %s\n", bptr->data)
+            printf("extension length is %u\n", (unsigned)bptr->length);
+            printf("extension value is %s\n", bptr->data);
         }
     }
     
