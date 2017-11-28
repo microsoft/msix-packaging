@@ -150,11 +150,8 @@ namespace xPlat {
             ThrowErrorIf(Error::InvalidParameter, (
                 filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
             ), "bad pointer");
-            std::string name = utf16_to_utf8(filename);
-            auto index = m_blockMapfiles.find(name);
-            ThrowErrorIf(Error::FileNotFound, (index == m_blockMapfiles.end()), "named file not in blockmap");
-            *file = index->second.Get();
-            (*file)->AddRef();
+            ComPtr<IStream> stream = GetFile(utf16_to_utf8(filename));
+            *file = stream.As<IAppxBlockMapFile>().Detach();
         });
     }
 
@@ -162,19 +159,11 @@ namespace xPlat {
     {
         return ResultOf([&]{
             ThrowErrorIf(Error::InvalidParameter, (enumerator == nullptr || *enumerator != nullptr), "bad pointer");
-
-            std::vector<std::string> fileNames(m_blockMapfiles.size());
-            std::transform(
-                m_blockMapfiles.begin(),
-                m_blockMapfiles.end(),
-                std::back_inserter(fileNames),
-                [](auto keyValuePair){ return keyValuePair.first; }
-            );
-
             ComPtr<IAppxBlockMapReader> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IAppxBlockMapReader>::iid, reinterpret_cast<void**>(&self)));
-
-            *enumerator = ComPtr<IAppxBlockMapFilesEnumerator>::Make<AppxBlockMapFilesEnumerator>(self.Get(), std::move(fileNames)).Detach();
+            *enumerator = ComPtr<IAppxBlockMapFilesEnumerator>::Make<AppxBlockMapFilesEnumerator>(
+                self.Get(), 
+                std::move(GetFileNames(FileNameOptions::All))).Detach();
         });
     }
 
@@ -197,4 +186,29 @@ namespace xPlat {
             *blockMapStream = stream;
         });
     }
+
+    // IStorageObject methods
+    std::string AppxBlockMapObject::GetPathSeparator() { return "\\"; }
+    std::vector<std::string> AppxBlockMapObject::GetFileNames(FileNameOptions)
+    {
+        std::vector<std::string> fileNames;
+        std::transform(
+            m_blockMapfiles.begin(),
+            m_blockMapfiles.end(),
+            std::back_inserter(fileNames),
+            [](auto keyValuePair){ return keyValuePair.first; }
+        );
+        return fileNames;
+    }
+
+    IStream* AppxBlockMapObject::GetFile(const std::string& fileName)
+    {
+        auto index = m_blockMapfiles.find(fileName);
+        ThrowErrorIf(Error::FileNotFound, (index == m_blockMapfiles.end()), "named file not in blockmap");
+        return index->second.As<IStream>().Detach();
+    }
+
+    void AppxBlockMapObject::RemoveFile(const std::string& )                           { throw Exception(Error::NotImplemented); }
+    IStream* AppxBlockMapObject::OpenFile(const std::string& ,xPlat::FileStream::Mode) { throw Exception(Error::NotImplemented); }
+    void AppxBlockMapObject::CommitChanges()                                           { throw Exception(Error::NotImplemented); }
 }

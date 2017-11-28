@@ -30,6 +30,83 @@ namespace xPlat {
         {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY,    CODEINTEGRITY_CAT},
     };
 
+    static const std::uint8_t PercentangeEncodingTableSize = 0x5E;
+    static const std::vector<std::string> PercentangeEncoding = {
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "%20", "%21", "", "%23", "%24", "%25", "%26", "%27", // [space] ! # $ % & '
+        "%28", "%29", "", "%2B", "%2C", "", "", "", // ( ) + ,
+        "", "", "", "", "", "", "", "",
+        "", "", "", "%3B",   "", "%3D", "", "",   // ; =
+        "%40",   "", "", "", "", "", "", "", // @
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "%5B", "", "%5D" // [ ]
+    };
+
+    static const std::map<std::string, char> EncodingToChar = 
+    {
+        {"20", ' '}, {"21", '!'}, {"23", '#'},  {"24", '$'},
+        {"25", '%'}, {"26", '&'}, {"27", '\''}, {"28", '('},
+        {"29", ')'}, {"25", '+'}, {"2B", '%'},  {"2C", ','},
+        {"3B", ';'}, {"3D", '='}, {"40", '@'},  {"5B", '['},
+        {"5D", ']'}
+    };
+
+    static std::string EncodeFileName(std::string fileName)
+    {
+        std::string result;
+        for (std::uint32_t position = 0; position < fileName.length(); ++position)
+        {
+            std::uint8_t index = static_cast<std::uint8_t>(fileName[position]);
+            if(fileName[position] < PercentangeEncodingTableSize && index < PercentangeEncoding.size() && !PercentangeEncoding[index].empty())
+            {
+                result += PercentangeEncoding[index];
+            }
+            else if (fileName[position] == '\\') // Remove Windows file name
+            {
+                result += '/';
+            }
+            else
+            {
+                result += fileName[position];
+            }
+        }
+        return result;
+    }
+
+    static std::string DecodeFileName(std::string fileName)
+    {
+        std::string result;
+        for (std::uint32_t i = 0; i < fileName.length(); ++i)
+        {
+            if(fileName[i] == '%')
+            {
+                auto found = EncodingToChar.find(fileName.substr(i+1, 2));
+                if (found != EncodingToChar.end())
+                { 
+                    result += found->second;
+                }
+                else
+                {
+                    throw Exception(Error::AppxUnknownFileNameEncoding, fileName);
+                }
+                i += 2;
+            }
+            else if (fileName[i] == '/') // Windows file name
+            {
+                result += '\\';
+            }
+            else
+            {
+                result += fileName[i];
+            }
+        }
+        return result;
+    }
+
     AppxPackageId::AppxPackageId(
         const std::string& name,
         const std::string& version,
@@ -53,7 +130,9 @@ namespace xPlat {
     {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
-        m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(validation, m_container->GetFile(APPXSIGNATURE_P7X));
+        m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(validation, 
+            ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0) ? m_container->GetFile(APPXSIGNATURE_P7X) : nullptr
+        );
 
         if ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
         {   ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (m_appxSignature->HasStream()), "AppxSignature.p7x not in archive!");
@@ -94,30 +173,22 @@ namespace xPlat {
         };
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
-        // and partition the container's file names into footprint and payload files.
-        for (const auto& fileName : m_container->GetFileNames(FileNameOptions::All))
-        {
-            ComPtr<IStream> stream;
-
-            auto footPrintFile = footPrintFileNames.find(fileName);
+        // and partition the container's file names into footprint and payload files.  First by going through
+        // the footprint files, and then by going through the payload files.
+        for (const auto& fileName : m_container->GetFileNames(FileNameOptions::FootPrintOnly))
+        {   auto footPrintFile = footPrintFileNames.find(fileName);
             if (footPrintFile != footPrintFileNames.end())
-            {
-                stream = footPrintFile->second.GetValidationStream();
+            {   m_streams[fileName] = footPrintFile->second.GetValidationStream();
             }
-            else
-            {
-                m_payloadFiles.push_back(fileName);
-                // TODO: this is a temporary solution until we get around to a better mechanism for standarizing file path handling across all platforms.
-                std::string windowsFileName(fileName);
-                std::replace(windowsFileName.begin(), windowsFileName.end(), '/', '\\');
-                stream = m_appxBlockMap->GetValidationStream(windowsFileName, m_container->GetFile(fileName));
-            }
+        }
 
-            if (stream.Get() != nullptr)
-            {
-                LARGE_INTEGER pos = {0};
-                ThrowHrIfFailed(stream->Seek(pos, StreamBase::Reference::START, nullptr));
-                m_streams[fileName] = stream;
+        auto blockMapStorage = m_appxBlockMap.As<IStorageObject>();
+        for (const auto& fileName : blockMapStorage->GetFileNames(FileNameOptions::PayloadOnly))
+        {   auto footPrintFile = footPrintFileNames.find(fileName);
+            if (footPrintFile == footPrintFileNames.end())
+            {   std::string containerFileName = EncodeFileName(fileName);
+                m_payloadFiles.push_back(containerFileName);
+                m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(containerFileName));
             }
         }
     }
