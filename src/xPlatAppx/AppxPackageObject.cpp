@@ -60,9 +60,10 @@ namespace xPlat {
         std::string result;
         for (std::uint32_t position = 0; position < fileName.length(); ++position)
         {
-            if(fileName[position] < PercentangeEncodingTableSize && !PercentangeEncoding[position].empty())
+            std::uint8_t index = static_cast<std::uint8_t>(fileName[position]);
+            if(fileName[position] < PercentangeEncodingTableSize && index < PercentangeEncoding.size() && !PercentangeEncoding[index].empty())
             {
-                result += PercentangeEncoding[position];
+                result += PercentangeEncoding[index];
             }
             else if (fileName[position] == '\\') // Remove Windows file name
             {
@@ -170,7 +171,8 @@ namespace xPlat {
         };
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
-        // and partition the container's file names into footprint and payload files.
+        // and partition the container's file names into footprint and payload files.  First by going through
+        // the footprint files, and then by going through the payload files.
         for (const auto& fileName : m_container->GetFileNames(FileNameOptions::FootPrintOnly))
         {   auto footPrintFile = footPrintFileNames.find(fileName);
             if (footPrintFile != footPrintFileNames.end())
@@ -182,9 +184,7 @@ namespace xPlat {
         for (const auto& fileName : blockMapStorage->GetFileNames(FileNameOptions::PayloadOnly))
         {   auto footPrintFile = footPrintFileNames.find(fileName);
             if (footPrintFile == footPrintFileNames.end())
-            {
-                // TODO: this is a temporary solution until we get around to a better mechanism for standarizing file path handling across all platforms.
-                std::string containerFileName = DecodeFileName(fileName);
+            {   std::string containerFileName = EncodeFileName(fileName);
                 m_payloadFiles.push_back(containerFileName);
                 m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(containerFileName));
             }
