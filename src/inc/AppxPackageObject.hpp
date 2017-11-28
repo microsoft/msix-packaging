@@ -16,6 +16,7 @@
 #include "XmlObject.hpp"
 #include "AppxBlockMapObject.hpp"
 #include "AppxSignature.hpp"
+#include "AppxFactory.hpp"
 
 // internal interface
 EXTERN_C const IID IID_IAppxPackage;   
@@ -69,11 +70,14 @@ namespace xPlat {
     };
 
     // Object backed by AppxManifest.xml
-    class AppxManifestObject : public VerifierObject
+    class AppxManifestObject : public ComClass<AppxManifestObject, IVerifierObject>
     {
     public:
         AppxManifestObject(IStream* stream);
 
+        // IVerifierObject
+        bool HasStream()     override { return m_stream.Get() != nullptr; }
+        IStream* GetStream() override { return m_stream.Get(); }
         IStream* GetValidationStream(const std::string& part, IStream* stream) override
         {
             throw Exception(Error::NotSupported);
@@ -88,18 +92,15 @@ namespace xPlat {
     };
 
     // Storage object representing the entire AppxPackage
-    class AppxPackageObject : public xPlat::ComClass<AppxPackageObject, IAppxPackageReader, IAppxPackage, IStorageObject>
+    class AppxPackageObject : public ComClass<AppxPackageObject, IAppxPackageReader, IAppxPackage, IStorageObject>
     {
     public:
-        AppxPackageObject(APPX_VALIDATION_OPTION validation, IStorageObject* container);
+        AppxPackageObject(IxPlatFactory* factory, APPX_VALIDATION_OPTION validation, IStorageObject* container);
+        ~AppxPackageObject() {}
 
         // internal IxPlatAppxPackage methods
         void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from) override;
         void Unpack(APPX_PACKUNPACK_OPTION options, IStorageObject* to) override;
-
-        AppxSignatureObject*      GetAppxSignature() const { return m_appxSignature.get(); }
-        AppxBlockMapObject*       GetAppxBlockMap()  const { return m_appxBlockMap.get(); }
-        AppxManifestObject*       GetAppxManifest()  const { return m_appxManifest.get(); }
 
         // IAppxPackageReader
         HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override;
@@ -120,17 +121,18 @@ namespace xPlat {
         void                      CommitChanges() override;
 
     protected:
-        std::map<std::string, ComPtr<IStream>>  m_streams;
-        APPX_VALIDATION_OPTION                  m_validation = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
-        std::unique_ptr<AppxSignatureObject>    m_appxSignature;
-        std::unique_ptr<AppxBlockMapObject>     m_appxBlockMap;
-        std::unique_ptr<AppxManifestObject>     m_appxManifest;
-        ComPtr<IStorageObject>                  m_container;
+        std::map<std::string, ComPtr<IStream>>  m_streams;   
 
-        std::vector<std::string>                m_payloadFiles;
-        std::vector<std::string>                m_footprintFiles;
-
-        std::unique_ptr<XmlObject>              m_contentType;
+        APPX_VALIDATION_OPTION      m_validation = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
+        ComPtr<IxPlatFactory>       m_factory;
+        ComPtr<IVerifierObject>     m_appxSignature;
+        ComPtr<IVerifierObject>     m_appxBlockMap;
+        ComPtr<IVerifierObject>     m_appxManifest;
+        ComPtr<IVerifierObject>     m_contentType;        
+        ComPtr<IStorageObject>      m_container;
+        
+        std::vector<std::string>    m_payloadFiles;
+        std::vector<std::string>    m_footprintFiles;
     };
 
     class AppxFilesEnumerator : public xPlat::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>

@@ -887,7 +887,9 @@ namespace xPlat {
     IStream* ZipObject::GetFile(const std::string& fileName)
     {
         // TODO: Make this on-demand populate m_streams and then pull from there.
-        return m_streams[fileName].Get();
+        auto result = m_streams.find(fileName);
+        ThrowErrorIf(Error::FileNotFound, (result == m_streams.end()), "file not in archive");
+        return result->second.Get();
     }
 
     void ZipObject::RemoveFile(const std::string& fileName)
@@ -963,7 +965,7 @@ namespace xPlat {
             auto fileStream = ComPtr<IStream>::Make<ZipFileStream>(
                 centralFileHeader.second->GetFileName(),
                 "TODO: Implement", // TODO: put value from content type 
-                m_factory.Get(),
+                m_factory,
                 localFileHeader->GetCompressionType() == CompressionType::Deflate,
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),                
