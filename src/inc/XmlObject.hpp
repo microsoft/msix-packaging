@@ -60,6 +60,9 @@ namespace xPlat {
             ThrowHrIfFailed(stream->Read(buffer.data(), streamSize, &actualRead));
             ThrowErrorIf(Error::FileRead, (actualRead != streamSize), "read error");
 
+            // move the underlying stream back to the begginning.
+            ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
+
             std::unique_ptr<XERCES_CPP_NAMESPACE::MemBufInputSource> source = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
                 reinterpret_cast<const XMLByte*>(&buffer[0]), actualRead, "XML File");
 

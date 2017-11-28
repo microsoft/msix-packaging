@@ -130,7 +130,9 @@ namespace xPlat {
     {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
-        m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(validation, m_container->GetFile(APPXSIGNATURE_P7X));
+        m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(validation, 
+            ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0) ? m_container->GetFile(APPXSIGNATURE_P7X) : nullptr
+        );
 
         if ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
         {   ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (m_appxSignature->HasStream()), "AppxSignature.p7x not in archive!");
