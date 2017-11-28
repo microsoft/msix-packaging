@@ -963,7 +963,7 @@ namespace xPlat {
             auto fileStream = ComPtr<IStream>::Make<ZipFileStream>(
                 centralFileHeader.second->GetFileName(),
                 "TODO: Implement", // TODO: put value from content type 
-                m_factory.Get(),
+                m_factory,
                 localFileHeader->GetCompressionType() == CompressionType::Deflate,
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),                

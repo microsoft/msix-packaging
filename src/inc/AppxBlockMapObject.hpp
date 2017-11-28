@@ -42,8 +42,8 @@ namespace xPlat {
         }
 
     private:
-        ComPtr<IxPlatFactory> m_factory;
-        Block*                m_block;
+        IxPlatFactory*  m_factory;
+        Block*          m_block;
     };
 
     class AppxBlockMapBlocksEnumerator : public xPlat::ComClass<AppxBlockMapBlocksEnumerator, IAppxBlockMapBlocksEnumerator>
@@ -111,7 +111,7 @@ namespace xPlat {
                         m_blocks->end(),
                         std::back_inserter(m_blockMapBlocks),
                         [&](auto item){
-                            return ComPtr<IAppxBlockMapBlock>::Make<AppxBlockMapBlock>(m_factory.Get(), &item);
+                            return ComPtr<IAppxBlockMapBlock>::Make<AppxBlockMapBlock>(m_factory, &item);
                         }
                     );
                 }
@@ -154,11 +154,11 @@ namespace xPlat {
     private:
 
         std::vector<ComPtr<IAppxBlockMapBlock>> m_blockMapBlocks;
-        std::vector<Block>*     m_blocks;
-        ComPtr<IxPlatFactory>   m_factory;
-        std::uint32_t           m_localFileHeaderSize;
-        std::string             m_name;
-        std::uint64_t           m_uncompressedSize;
+        std::vector<Block>* m_blocks;
+        IxPlatFactory*      m_factory;
+        std::uint32_t       m_localFileHeaderSize;
+        std::string         m_name;
+        std::uint64_t       m_uncompressedSize;
     };
 
     class AppxBlockMapFilesEnumerator : public xPlat::ComClass<AppxBlockMapFilesEnumerator, IAppxBlockMapFilesEnumerator>
@@ -219,7 +219,7 @@ namespace xPlat {
     protected:
         std::map<std::string, std::vector<Block>>        m_blockMap;
         std::map<std::string, ComPtr<IAppxBlockMapFile>> m_blockMapfiles;
-        ComPtr<IxPlatFactory> m_factory;      
+        IxPlatFactory*  m_factory;      
         ComPtr<IStream> m_stream;  
     };
 }

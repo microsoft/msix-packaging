@@ -26,7 +26,7 @@ namespace xPlat {
         void                        CommitChanges() override;
 
     protected:
-        ComPtr<IxPlatFactory>                  m_factory;
+        IxPlatFactory*                         m_factory;
         ComPtr<IStream>                        m_stream;
         std::map<std::string, ComPtr<IStream>> m_streams;
     };//class ZipObject
