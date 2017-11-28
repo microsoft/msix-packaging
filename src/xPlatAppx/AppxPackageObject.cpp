@@ -117,7 +117,7 @@ namespace xPlat {
             {
                 LARGE_INTEGER pos = {0};
                 ThrowHrIfFailed(stream->Seek(pos, StreamBase::Reference::START, nullptr));
-                m_streams[fileName] = stream.Get();
+                m_streams[fileName] = stream;
             }
         }
     }

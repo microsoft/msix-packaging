@@ -96,6 +96,7 @@ namespace xPlat {
     {
     public:
         AppxPackageObject(IxPlatFactory* factory, APPX_VALIDATION_OPTION validation, IStorageObject* container);
+        ~AppxPackageObject() {}
 
         // internal IxPlatAppxPackage methods
         void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from) override;
