@@ -19,27 +19,27 @@
 namespace xPlat
 {
     struct unique_BIO_deleter {
-        void operator()(BIO *b) const { BIO_free(b); };
+        void operator()(BIO *b) const { if (b) BIO_free(b); };
     };
     
     struct unique_PKCS7_deleter {
-        void operator()(PKCS7 *p) const { PKCS7_free(p); };
+        void operator()(PKCS7 *p) const { if (p) PKCS7_free(p); };
     };
 
     struct unique_X509_deleter {
-        void operator()(X509 *x) const { X509_free(x); };
+        void operator()(X509 *x) const { if (x) X509_free(x); };
     };
     
     struct unique_X509_STORE_deleter {
-        void operator()(X509_STORE *xs) const { X509_STORE_free(xs); };
+        void operator()(X509_STORE *xs) const { if (xs) X509_STORE_free(xs); };
     };
 
     struct unique_X509_STORE_CTX_deleter {
-        void operator()(X509_STORE_CTX *xsc) const { X509_STORE_CTX_cleanup(xsc); X509_STORE_CTX_free(xsc); };
+        void operator()(X509_STORE_CTX *xsc) const { if (xsc) {X509_STORE_CTX_cleanup(xsc); X509_STORE_CTX_free(xsc);} };
     };
 
     struct unique_X509_NAME_deleter {
-        void operator()(X509_NAME *xn) const { OPENSSL_free(xn); };
+        void operator()(X509_NAME *xn) const { if (xn) OPENSSL_free(xn); };
     };
 
     typedef std::unique_ptr<BIO, unique_BIO_deleter> unique_BIO;
@@ -55,8 +55,40 @@ namespace xPlat
     // Best effort to determine whether the signature file is associated with a store cert
     static bool IsStoreOrigin(std::uint8_t* signatureBuffer, std::uint32_t cbSignatureBuffer)
     {
-        bool retValue = false;
-        return retValue;
+        unique_BIO bmem(BIO_new_mem_buf(signatureBuffer, cbSignatureBuffer));
+        unique_PKCS7 p7(d2i_PKCS7_bio(bmem.get(), nullptr));
+
+        STACK_OF(X509) *certStack = p7.get()->d.sign->cert;
+        for (int i = 0; i < sk_X509_num(certStack); i++)
+        {
+            X509* cert = sk_X509_value(certStack, i);
+            STACK_OF(X509_EXTENSION) *exts = cert->cert_info->extensions;
+            for (int i = 0; i < sk_X509_EXTENSION_num(exts); i++) 
+            {
+                X509_EXTENSION *ext = sk_X509_EXTENSION_value(exts, i);
+                if (ext)
+                {
+                    if (X509_EXTENSION_get_object(ext))
+                    {
+                        unique_BIO extbio(BIO_new(BIO_s_mem()));
+                        if (!X509V3_EXT_print(extbio.get(), ext, 0, 0)) {
+                            M_ASN1_OCTET_STRING_print(extbio.get(), ext->value);
+                        }
+
+                        BUF_MEM *bptr = nullptr;
+                        BIO_get_mem_ptr(extbio.get(), &bptr);
+                        
+                        if (bptr && bptr->data && 
+                            std::string((char*)bptr->data).find(std::string(OID::WindowsStore)) != std::string::npos)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                
+            }
+        }
+        return false;
     }
 
     // Best effort to determine whether the signature file is associated with a store cert
@@ -113,7 +145,7 @@ namespace xPlat
         return 1; 
     }
 
-    void PrintExtensions(X509* cert)
+    void PrintCertExtensions(X509* cert)
     {
         #define EXTNAME_LEN 256
         STACK_OF(X509_EXTENSION) *exts = cert->cert_info->extensions;
@@ -129,6 +161,7 @@ namespace xPlat
 
         for (int i=0; i < num_of_exts; i++) {
 
+            printf("-----------------------------------------\n");
             X509_EXTENSION *ex = sk_X509_EXTENSION_value(exts, i);
             IFNULL_FAIL(ex, "unable to extract extension from stack");
             ASN1_OBJECT *obj = X509_EXTENSION_get_object(ex);
@@ -220,9 +253,7 @@ namespace xPlat
             unique_BIO bcert(BIO_new_mem_buf(it->second.data(), it->second.size()));
             // Create a cert from the memory buffer
             unique_X509 cert(PEM_read_bio_X509(bcert.get(), nullptr, nullptr, nullptr));
-
-            PrintExtensions(cert.get());
-
+            
             ThrowErrorIfNot(Error::AppxSignatureInvalid, 
                 X509_STORE_add_cert(store.get(), cert.get()) == 1, 
                 "Could not add cert to keychain");
@@ -253,22 +284,24 @@ namespace xPlat
         X509_STORE_set_verify_cb(store.get(), &VerifyCallback);
         X509_STORE_set_purpose(store.get(), X509_PURPOSE_ANY);
         
-        ThrowErrorIfNot(Error::AppxSignatureInvalid, 
-            PKCS7_verify(p7.get(), nullptr, store.get(), nullptr/*indata*/, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
-            "Could not verify package signature");
+        //ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+        //    PKCS7_verify(p7.get(), nullptr, store.get(), nullptr/*indata*/, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
+        //    "Could not verify package signature");
 
         STACK_OF(X509) *certStack = p7.get()->d.sign->cert;
         for (int i = 0; i < sk_X509_num(certStack); i++)
         {
-            unique_X509 cert(sk_X509_value(certStack, i));
+            X509* cert = sk_X509_value(certStack, i);
             unique_X509_STORE_CTX context(X509_STORE_CTX_new());
-            X509_STORE_CTX_init(context.get(), store.get(), cert.get(), nullptr);
+            X509_STORE_CTX_init(context.get(), store.get(), cert, nullptr);
 
-            X509_verify_cert(context.get());
+            PrintCertExtensions(cert);
 
-            ThrowErrorIfNot(Error::AppxSignatureInvalid, 
-                X509_verify_cert(context.get()) == 1, 
-                "Could not verify cert");
+            //X509_verify_cert(context.get());
+
+            //ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+            //    X509_verify_cert(context.get()) == 1, 
+            //    "Could not verify cert");
         }
 
         ThrowErrorIfNot(Error::AppxSignatureInvalid, (
