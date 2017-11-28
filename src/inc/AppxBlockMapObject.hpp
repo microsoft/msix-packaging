@@ -6,6 +6,7 @@
 #include <iterator>
 
 #include "StreamBase.hpp"
+#include "StorageObject.hpp"
 #include "VerifierObject.hpp"
 #include "AppxPackaging.hpp"
 #include "ComHelper.hpp"
@@ -199,7 +200,7 @@ namespace xPlat {
     };
 
     // Object backed by AppxBlockMap.xml
-    class AppxBlockMapObject : public xPlat::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject>
+    class AppxBlockMapObject : public xPlat::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IStorageObject>
     {
     public:
         AppxBlockMapObject(IxPlatFactory* factory, IStream* stream);
@@ -215,6 +216,14 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE GetFiles(IAppxBlockMapFilesEnumerator **enumerator) override;
         HRESULT STDMETHODCALLTYPE GetHashMethod(IUri **hashMethod) override;
         HRESULT STDMETHODCALLTYPE GetStream(IStream **blockMapStream) override;
+
+        // IStorageObject methods
+        std::string               GetPathSeparator() override;
+        std::vector<std::string>  GetFileNames(FileNameOptions options) override;
+        IStream*                  GetFile(const std::string& fileName) override;
+        void                      RemoveFile(const std::string& fileName) override;
+        IStream*                  OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode) override;
+        void                      CommitChanges() override;        
 
     protected:
         std::map<std::string, std::vector<Block>>        m_blockMap;

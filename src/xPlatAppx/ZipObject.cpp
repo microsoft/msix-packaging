@@ -887,7 +887,9 @@ namespace xPlat {
     IStream* ZipObject::GetFile(const std::string& fileName)
     {
         // TODO: Make this on-demand populate m_streams and then pull from there.
-        return m_streams[fileName].Get();
+        auto result = m_streams.find(fileName);
+        ThrowErrorIf(Error::FileNotFound, (result == m_streams.end()), "file not in archive");
+        return result->second.Get();
     }
 
     void ZipObject::RemoveFile(const std::string& fileName)
