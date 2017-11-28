@@ -30,6 +30,82 @@ namespace xPlat {
         {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY,    CODEINTEGRITY_CAT},
     };
 
+    static const std::uint8_t PercentangeEncodingTableSize = 0x5E;
+    static const std::vector<std::string> PercentangeEncoding = {
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "%20", "%21", "", "%23", "%24", "%25", "%26", "%27", // [space] ! # $ % & '
+        "%28", "%29", "", "%2B", "%2C", "", "", "", // ( ) + ,
+        "", "", "", "", "", "", "", "",
+        "", "", "", "%3B",   "", "%3D", "", "",   // ; =
+        "%40",   "", "", "", "", "", "", "", // @
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "%5B", "", "%5D" // [ ]
+    };
+
+    static const std::map<std::string, char> EncodingToChar = 
+    {
+        {"20", ' '}, {"21", '!'}, {"23", '#'},  {"24", '$'},
+        {"25", '%'}, {"26", '&'}, {"27", '\''}, {"28", '('},
+        {"29", ')'}, {"25", '+'}, {"2B", '%'},  {"2C", ','},
+        {"3B", ';'}, {"3D", '='}, {"40", '@'},  {"5B", '['},
+        {"5D", ']'}
+    };
+
+    static std::string EncodeFileName(std::string fileName)
+    {
+        std::string result;
+        for (std::uint32_t position = 0; position < fileName.length(); ++position)
+        {
+            if(fileName[position] < PercentangeEncodingTableSize && !PercentangeEncoding[position].empty())
+            {
+                result += PercentangeEncoding[position];
+            }
+            else if (fileName[position] == '\\') // Remove Windows file name
+            {
+                result += '/';
+            }
+            else
+            {
+                result += fileName[position];
+            }
+        }
+        return result;
+    }
+
+    static std::string DecodeFileName(std::string fileName)
+    {
+        std::string result;
+        for (std::uint32_t i = 0; i < fileName.length(); ++i)
+        {
+            if(fileName[i] == '%')
+            {
+                auto found = EncodingToChar.find(fileName.substr(i+1, 2));
+                if (found != EncodingToChar.end())
+                { 
+                    result += found->second;
+                }
+                else
+                {
+                    throw Exception(Error::AppxUnknownFileNameEncoding, fileName);
+                }
+                i += 2;
+            }
+            else if (fileName[i] == '/') // Windows file name
+            {
+                result += '\\';
+            }
+            else
+            {
+                result += fileName[i];
+            }
+        }
+        return result;
+    }
+
     AppxPackageId::AppxPackageId(
         const std::string& name,
         const std::string& version,
@@ -106,11 +182,11 @@ namespace xPlat {
             }
             else
             {
-                m_payloadFiles.push_back(fileName);
-                // TODO: this is a temporary solution until we get around to a better mechanism for standarizing file path handling across all platforms.
-                std::string windowsFileName(fileName);
-                std::replace(windowsFileName.begin(), windowsFileName.end(), '/', '\\');
-                stream = m_appxBlockMap->GetValidationStream(windowsFileName, m_container->GetFile(fileName));
+                // The file names from the container can be percentage encoded.
+                std::string newFileName = DecodeFileName(fileName);
+                m_payloadFiles.push_back(newFileName);
+                // Make sure to pass the encoded file name to the container.
+                stream = m_appxBlockMap->GetValidationStream(newFileName, m_container->GetFile(fileName));
             }
 
             if (stream.Get() != nullptr)

@@ -64,6 +64,7 @@ namespace xPlat {
         AppxMissingBlockMapXML      = ERROR_FACILITY + 0x0033,
         AppxMissingAppxManifestXML  = ERROR_FACILITY + 0x0034,
         AppxDuplicateFootprintFile  = ERROR_FACILITY + 0x0035,
+        AppxUnknownFileNameEncoding = ERROR_FACILITY + 0x0036,
 
         // Signature errors
         AppxSignatureInvalid        = ERROR_FACILITY + 0x0041,
