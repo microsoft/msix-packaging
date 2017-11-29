@@ -73,10 +73,10 @@ namespace xPlat
                     if (X509_EXTENSION_get_object(ext))
                     {
                         unique_BIO extbio(BIO_new(BIO_s_mem()));
-                        if (!X509V3_EXT_print(extbio.get(), ext, 0, 0)) {
+                        if (!X509V3_EXT_print(extbio.get(), ext, 0, 0)) 
+                        {
                             M_ASN1_OCTET_STRING_print(extbio.get(), ext->value);
                         }
-
                         BUF_MEM *bptr = nullptr;
                         BIO_get_mem_ptr(extbio.get(), &bptr);
                         
@@ -87,7 +87,6 @@ namespace xPlat
                         }
                     }
                 }
-                
             }
         }
         return false;
@@ -140,82 +139,38 @@ namespace xPlat
         return true;
     }
 
+#ifdef DISABLED
+    // This function removes extensions from a cert that aren't recognized by OpenSSL.
+    // My intention here was to look for specific Microsoft extensions that OpenSSL 
+    // doesn't understand, and remove them here. This works, but there are other critical
+    // extensions that are present. Not sure how to handle them. This code is disabled for now.
+    void FixupCert(X509* cert)
+    {
+        STACK_OF(X509_EXTENSION) *exts = cert->cert_info->extensions;
+        for (int i = 0; i < sk_X509_EXTENSION_num(exts); ) 
+        {
+            X509_EXTENSION *ext = sk_X509_EXTENSION_value(exts, i);
+            if (ext->critical > 0) 
+            {
+                sk_X509_EXTENSION_delete(exts, i);
+            }
+            else
+            {
+                i++;
+            }
+        }    
+    }
+#endif //DISABLED
+
     int VerifyCallback(int ok, X509_STORE_CTX *ctx)
     {
-        if (!ok)
+        // If we encounter an expired cert error or a critical extension, just return success
+        if (!ok && (ctx->error == X509_V_ERR_CERT_HAS_EXPIRED || 
+                    ctx->error == X509_V_ERR_UNHANDLED_CRITICAL_EXTENSION))
         {
-            X509 *currentCert = X509_STORE_CTX_get_current_cert(ctx);
-            int certError = X509_STORE_CTX_get_error(ctx);
-            int depth = X509_STORE_CTX_get_error_depth(ctx);
-            //printCert(currentCert);
-            printf("Error depth %d, certError %d", depth, certError);
+            ok = true;
         }
         return ok; 
-    }
-
-
-    void PrintCertExtensions(X509* cert)
-    {
-        #define EXTNAME_LEN 256
-        #define IFNEG_FAIL(a, b) {if (a < 0) {printf(b); return;}}
-        #define IFNULL_FAIL(a, b) {if (!a) {printf(b); return;}}
-
-        STACK_OF(X509_EXTENSION) *exts = cert->cert_info->extensions;
-
-        int num_of_exts;
-        if (exts) {
-            num_of_exts = sk_X509_EXTENSION_num(exts);
-        } else {
-            num_of_exts = 0;
-        }
-
-        IFNEG_FAIL(num_of_exts, "error parsing number of X509v3 extensions.");
-
-        for (int i=0; i < num_of_exts; i++) {
-
-            printf("-----------------------------------------\n");
-            X509_EXTENSION *ex = sk_X509_EXTENSION_value(exts, i);
-            IFNULL_FAIL(ex, "unable to extract extension from stack");
-            ASN1_OBJECT *obj = X509_EXTENSION_get_object(ex);
-            IFNULL_FAIL(obj, "unable to extract ASN1 object from extension");
-
-            BIO *ext_bio = BIO_new(BIO_s_mem());
-            IFNULL_FAIL(ext_bio, "unable to allocate memory for extension value BIO");
-            if (!X509V3_EXT_print(ext_bio, ex, 0, 0)) {
-                M_ASN1_OCTET_STRING_print(ext_bio, ex->value);
-            }
-
-            BUF_MEM *bptr;
-            BIO_get_mem_ptr(ext_bio, &bptr);
-            BIO_set_close(ext_bio, BIO_NOCLOSE);
-
-            // remove newlines
-            int lastchar = bptr->length;
-            if (lastchar > 1 && (bptr->data[lastchar-1] == '\n' || bptr->data[lastchar-1] == '\r')) {
-                bptr->data[lastchar-1] = (char) 0;
-            }
-            if (lastchar > 0 && (bptr->data[lastchar] == '\n' || bptr->data[lastchar] == '\r')) {
-                bptr->data[lastchar] = (char) 0;
-            }
-
-            BIO_free(ext_bio);
-
-            unsigned nid = OBJ_obj2nid(obj);
-            if (nid == NID_undef) {
-                // no lookup found for the provided OID so nid came back as undefined.
-                char extname[EXTNAME_LEN];
-                OBJ_obj2txt(extname, EXTNAME_LEN, (const ASN1_OBJECT *) obj, 1);
-                printf("extension name is %s\n", extname);
-            } else {
-                // the OID translated to a NID which implies that the OID has a known sn/ln
-                const char *c_ext_name = OBJ_nid2ln(nid);
-                IFNULL_FAIL(c_ext_name, "invalid X509v3 extension name");
-                printf("extension name is %s\n", c_ext_name);
-            }
-
-            printf("extension length is %u\n", (unsigned)bptr->length);
-            printf("extension value is %s\n", bptr->data);
-        }
     }
 
     bool SignatureValidator::Validate(
@@ -243,14 +198,23 @@ namespace xPlat
         ThrowHrIfFailed(stream->Read(p7s.data(), p7s.size(), &actualRead));
         ThrowErrorIf(Error::AppxSignatureInvalid, (actualRead != p7s.size()), "read error");
 
+        // Load the p7s into a BIO buffer
+        unique_BIO bmem(BIO_new_mem_buf(p7s.data(), p7s.size()));
+        // Initialize the PKCS7 object from the BIO buffer
+        unique_PKCS7 p7(d2i_PKCS7_bio(bmem.get(), nullptr));
+
         // Tell OpenSSL to use all available algorithms when evaluating certs
         OpenSSL_add_all_algorithms();
 
         // Create a trusted cert store
         unique_X509_STORE store(X509_STORE_new());
-        unique_STACK_X509 trustedChain(sk_X509_new_null());
+        // Set a verify callback to evaluate errors
+        X509_STORE_set_verify_cb(store.get(), &VerifyCallback);
+        // We have to tell OpenSSL why we are using the store -- in this case, closest is ANY.
+        X509_STORE_set_purpose(store.get(), X509_PURPOSE_ANY);
         
         // Loop through our trusted PEM certs, create X509 objects from them, and add to trusted store
+        unique_STACK_X509 trustedChain(sk_X509_new_null());
         for ( std::string s : appxCerts )
         {
             // Load the cert into memory
@@ -268,23 +232,8 @@ namespace xPlat
         }
 
         // TODO: read digests
-        unique_BIO bmem(BIO_new_mem_buf(p7s.data(), p7s.size()));
-        unique_PKCS7 p7(d2i_PKCS7_bio(bmem.get(), nullptr));
-
-        //unique_BIO content(BIO_new(BIO_s_mem()));
-        X509_STORE_set_verify_cb(store.get(), &VerifyCallback);
-        X509_STORE_set_purpose(store.get(), X509_PURPOSE_ANY);
         
-        //ThrowErrorIfNot(Error::AppxSignatureInvalid, 
-        //    PKCS7_verify(p7.get(), nullptr, store.get(), nullptr/*indata*/, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
-        //    "Could not verify package signature");
-
-        //You need to create a certificate store using X509_STORE_CTX_new. 
-        //Then add certificate chain using X509_STORE_CTX_set_chain. 
-        //Add trusted root certificate using X509_STORE_CTX_trusted_stack. 
-        //Finally add certificate to be verified using X509_STORE_CTX_set_cert.
-        
-        
+        // Loop through the untrusted certs and verify them
         STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
         for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
         {
@@ -297,14 +246,21 @@ namespace xPlat
             X509_STORE_CTX_set_cert(context.get(), cert);
 
             X509_VERIFY_PARAM* param = X509_STORE_CTX_get0_param(context.get());
-            X509_VERIFY_PARAM_set_flags(param, X509_V_FLAG_CB_ISSUER_CHECK|X509_V_FLAG_TRUSTED_FIRST);
+            X509_VERIFY_PARAM_set_flags(param, 
+                X509_V_FLAG_CB_ISSUER_CHECK | X509_V_FLAG_TRUSTED_FIRST | X509_V_FLAG_IGNORE_CRITICAL);
 
-            //PrintCertExtensions(cert);
+            // This function prints the contents of a certificate
+            //X509_print_fp(stdout, cert);
 
             ThrowErrorIfNot(Error::AppxSignatureInvalid, 
                 X509_verify_cert(context.get()) == 1, 
                 "Could not verify cert");
         }
+
+        // This fails -- still evaluating
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+            PKCS7_verify(p7.get(), untrustedCerts, store.get(), nullptr/*indata*/, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
+            "Could not verify package signature");
 
         ThrowErrorIfNot(Error::AppxSignatureInvalid, (
             IsStoreOrigin(p7s.data(), p7s.size()) ||
