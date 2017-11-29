@@ -23,7 +23,7 @@ namespace xPlat {
     {
     public:
         InflateStream(IStream* stream, std::uint64_t uncompressedSize);
-        virtual ~InflateStream();
+        ~InflateStream();
 
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override;
         HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override;

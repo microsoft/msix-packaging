@@ -30,6 +30,83 @@ namespace xPlat {
         {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY,    CODEINTEGRITY_CAT},
     };
 
+    static const std::uint8_t PercentangeEncodingTableSize = 0x5E;
+    static const std::vector<std::string> PercentangeEncoding = {
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "%20", "%21", "", "%23", "%24", "%25", "%26", "%27", // [space] ! # $ % & '
+        "%28", "%29", "", "%2B", "%2C", "", "", "", // ( ) + ,
+        "", "", "", "", "", "", "", "",
+        "", "", "", "%3B",   "", "%3D", "", "",   // ; =
+        "%40",   "", "", "", "", "", "", "", // @
+        "", "", "", "", "", "", "", "",
+        "", "", "", "", "", "", "", "",
+        "", "", "", "%5B", "", "%5D" // [ ]
+    };
+
+    static const std::map<std::string, char> EncodingToChar = 
+    {
+        {"20", ' '}, {"21", '!'}, {"23", '#'},  {"24", '$'},
+        {"25", '%'}, {"26", '&'}, {"27", '\''}, {"28", '('},
+        {"29", ')'}, {"25", '+'}, {"2B", '%'},  {"2C", ','},
+        {"3B", ';'}, {"3D", '='}, {"40", '@'},  {"5B", '['},
+        {"5D", ']'}
+    };
+
+    static std::string EncodeFileName(std::string fileName)
+    {
+        std::string result;
+        for (std::uint32_t position = 0; position < fileName.length(); ++position)
+        {
+            std::uint8_t index = static_cast<std::uint8_t>(fileName[position]);
+            if(fileName[position] < PercentangeEncodingTableSize && index < PercentangeEncoding.size() && !PercentangeEncoding[index].empty())
+            {
+                result += PercentangeEncoding[index];
+            }
+            else if (fileName[position] == '\\') // Remove Windows file name
+            {
+                result += '/';
+            }
+            else
+            {
+                result += fileName[position];
+            }
+        }
+        return result;
+    }
+
+    static std::string DecodeFileName(std::string fileName)
+    {
+        std::string result;
+        for (std::uint32_t i = 0; i < fileName.length(); ++i)
+        {
+            if(fileName[i] == '%')
+            {
+                auto found = EncodingToChar.find(fileName.substr(i+1, 2));
+                if (found != EncodingToChar.end())
+                { 
+                    result += found->second;
+                }
+                else
+                {
+                    throw Exception(Error::AppxUnknownFileNameEncoding, fileName);
+                }
+                i += 2;
+            }
+            else if (fileName[i] == '/') // Windows file name
+            {
+                result += '\\';
+            }
+            else
+            {
+                result += fileName[i];
+            }
+        }
+        return result;
+    }
+
     AppxPackageId::AppxPackageId(
         const std::string& name,
         const std::string& version,
@@ -41,18 +118,21 @@ namespace xPlat {
         // TODO: Implement validation?
     }
 
-    AppxManifestObject::AppxManifestObject(IStream* stream) : VerifierObject(stream)
+    AppxManifestObject::AppxManifestObject(IStream* stream) : m_stream(stream)
     {
         // TODO: Implement
     }
 
-    AppxPackageObject::AppxPackageObject(APPX_VALIDATION_OPTION validation, IStorageObject* container) :
+    AppxPackageObject::AppxPackageObject(IxPlatFactory* factory, APPX_VALIDATION_OPTION validation, IStorageObject* container) :
+        m_factory(factory),
         m_validation(validation),
         m_container(container)
     {
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
-        m_appxSignature = std::make_unique<AppxSignatureObject>(validation, m_container->GetFile(APPXSIGNATURE_P7X));
+        m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(validation, 
+            ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0) ? m_container->GetFile(APPXSIGNATURE_P7X) : nullptr
+        );
 
         if ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
         {   ThrowErrorIfNot(Error::AppxMissingSignatureP7X, (m_appxSignature->HasStream()), "AppxSignature.p7x not in archive!");
@@ -60,18 +140,20 @@ namespace xPlat {
 
         // 2. Get content type using signature object for validation
         // TODO: switch underlying type of m_contentType to something more specific.
-        m_contentType = std::make_unique<XmlObject>(m_appxSignature->GetValidationStream(
+        m_contentType = ComPtr<IVerifierObject>::Make<XmlObject>(m_appxSignature->GetValidationStream(
             CONTENT_TYPES_XML, m_container->GetFile(CONTENT_TYPES_XML)));
         ThrowErrorIfNot(Error::AppxMissingContentTypesXML, (m_contentType->HasStream()), "[Content_Types].xml not in archive!");
 
         // 3. Get blockmap object using signature object for validation
-        m_appxBlockMap = std::make_unique<AppxBlockMapObject>(m_appxSignature->GetValidationStream(
-            APPXBLOCKMAP_XML, m_container->GetFile(APPXBLOCKMAP_XML)));
+        m_appxBlockMap = ComPtr<IVerifierObject>::Make<AppxBlockMapObject>(
+            factory,
+            m_appxSignature->GetValidationStream(APPXBLOCKMAP_XML, m_container->GetFile(APPXBLOCKMAP_XML))
+        );
         ThrowErrorIfNot(Error::AppxMissingBlockMapXML, (m_appxBlockMap->HasStream()), "AppxBlockMap.xml not in archive!");
 
         // 4. Get manifest object using blockmap object for validation
         // TODO: pass validation flags and other necessary goodness through.
-        m_appxManifest = std::make_unique<AppxManifestObject>(m_appxBlockMap->GetValidationStream(
+        m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(m_appxBlockMap->GetValidationStream(
             APPXMANIFEST_XML, m_container->GetFile(APPXMANIFEST_XML)));
         ThrowErrorIfNot(Error::AppxMissingAppxManifestXML, (m_appxBlockMap->HasStream()), "AppxManifest.xml not in archive!");
 
@@ -91,27 +173,22 @@ namespace xPlat {
         };
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
-        // and partition the container's file names into footprint and payload files.
-        for (const auto& fileName : m_container->GetFileNames(FileNameOptions::All))
-        {
-            ComPtr<IStream> stream;
-
-            auto footPrintFile = footPrintFileNames.find(fileName);
+        // and partition the container's file names into footprint and payload files.  First by going through
+        // the footprint files, and then by going through the payload files.
+        for (const auto& fileName : m_container->GetFileNames(FileNameOptions::FootPrintOnly))
+        {   auto footPrintFile = footPrintFileNames.find(fileName);
             if (footPrintFile != footPrintFileNames.end())
-            {
-                stream = footPrintFile->second.GetValidationStream();
+            {   m_streams[fileName] = footPrintFile->second.GetValidationStream();
             }
-            else
-            {
-                m_payloadFiles.push_back(fileName);
-                stream = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(fileName));
-            }
+        }
 
-            if (stream.Get() != nullptr)
-            {
-                LARGE_INTEGER pos = {0};
-                ThrowHrIfFailed(stream->Seek(pos, StreamBase::Reference::START, nullptr));
-                m_streams[fileName] = stream.Get();
+        auto blockMapStorage = m_appxBlockMap.As<IStorageObject>();
+        for (const auto& fileName : blockMapStorage->GetFileNames(FileNameOptions::PayloadOnly))
+        {   auto footPrintFile = footPrintFileNames.find(fileName);
+            if (footPrintFile == footPrintFileNames.end())
+            {   std::string containerFileName = EncodeFileName(fileName);
+                m_payloadFiles.push_back(containerFileName);
+                m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(containerFileName));
             }
         }
     }
@@ -130,7 +207,8 @@ namespace xPlat {
             std::string targetName;
             if (options & APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
             {
-                targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
+                throw Exception(Error::NotImplemented);
+                //targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
             }
             else
             {

@@ -106,6 +106,11 @@ namespace xPlat {
                         m_fileCurrentPosition   += bytesToCopy;
                     }
 
+                    if (m_fileCurrentPosition == m_uncompressedSize)
+                    {
+                        Cleanup();
+                        return std::make_pair(false, State::UNINITIALIZED);
+                    }
                     return std::make_pair(countBytes != 0, State::READY_TO_COPY);
                 }
             } // State::READY_TO_COPY

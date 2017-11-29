@@ -35,7 +35,7 @@ namespace xPlat {
     const DWORD P7X_FILE_ID = 0x58434b50;
 
     // Object backed by AppxSignature.p7x
-    class AppxSignatureObject : public VerifierObject
+    class AppxSignatureObject : public ComClass<AppxSignatureObject, IVerifierObject>
     {
     public:        
         enum DigestName : std::uint32_t
@@ -50,6 +50,9 @@ namespace xPlat {
 
         AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, IStream* stream);
 
+        // IVerifierObject
+        bool HasStream()     override { return m_stream.Get() != nullptr; }
+        IStream* GetStream() override { return m_stream.Get(); }        
         IStream* GetValidationStream(const std::string& part, IStream* stream) override;
 
         using Digest = std::vector<std::uint8_t>;
@@ -66,5 +69,6 @@ namespace xPlat {
         std::map<DigestName, Digest> m_digests;
         SignatureOrigin              m_signatureOrigin = SignatureOrigin::Unsigned; // assume unsigned until proven otherwise.
         APPX_VALIDATION_OPTION       m_validationOptions;
+        ComPtr<IStream>              m_stream;
     };
 } // namespace xPlat
