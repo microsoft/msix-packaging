@@ -42,16 +42,18 @@ namespace xPlat
         void operator()(X509_NAME *xn) const { if (xn) OPENSSL_free(xn); };
     };
 
+    struct unique_STACK_X509_deleter {
+        void operator()(STACK_OF(X509) *sx) const { if (sx) sk_X509_free(sx); };
+    };
+
     typedef std::unique_ptr<BIO, unique_BIO_deleter> unique_BIO;
     typedef std::unique_ptr<PKCS7, unique_PKCS7_deleter> unique_PKCS7;
     typedef std::unique_ptr<X509, unique_X509_deleter> unique_X509;
     typedef std::unique_ptr<X509_STORE, unique_X509_STORE_deleter> unique_X509_STORE;
     typedef std::unique_ptr<X509_STORE_CTX, unique_X509_STORE_CTX_deleter> unique_X509_STORE_CTX;
     typedef std::unique_ptr<X509_NAME, unique_X509_NAME_deleter> unique_X509_NAME;
+    typedef std::unique_ptr<STACK_OF(X509), unique_STACK_X509_deleter> unique_STACK_X509;
     
-    #define IFNEG_FAIL(a, b) {if (a < 0) {printf(b); return;}}
-    #define IFNULL_FAIL(a, b) {if (!a) {printf(b); return;}}
-
     // Best effort to determine whether the signature file is associated with a store cert
     static bool IsStoreOrigin(std::uint8_t* signatureBuffer, std::uint32_t cbSignatureBuffer)
     {
@@ -140,14 +142,24 @@ namespace xPlat
 
     int VerifyCallback(int ok, X509_STORE_CTX *ctx)
     {
-        //X509_V_ERR_CERT_HAS_EXPIRED
-        std::cout << ok << std::endl;
-        return 1; 
+        if (!ok)
+        {
+            X509 *currentCert = X509_STORE_CTX_get_current_cert(ctx);
+            int certError = X509_STORE_CTX_get_error(ctx);
+            int depth = X509_STORE_CTX_get_error_depth(ctx);
+            //printCert(currentCert);
+            printf("Error depth %d, certError %d", depth, certError);
+        }
+        return ok; 
     }
+
 
     void PrintCertExtensions(X509* cert)
     {
         #define EXTNAME_LEN 256
+        #define IFNEG_FAIL(a, b) {if (a < 0) {printf(b); return;}}
+        #define IFNULL_FAIL(a, b) {if (!a) {printf(b); return;}}
+
         STACK_OF(X509_EXTENSION) *exts = cert->cert_info->extensions;
 
         int num_of_exts;
@@ -205,7 +217,6 @@ namespace xPlat
             printf("extension value is %s\n", bptr->data);
         }
     }
-    
 
     bool SignatureValidator::Validate(
         /*in*/ APPX_VALIDATION_OPTION option, 
@@ -232,55 +243,35 @@ namespace xPlat
         ThrowHrIfFailed(stream->Read(p7s.data(), p7s.size(), &actualRead));
         ThrowErrorIf(Error::AppxSignatureInvalid, (actualRead != p7s.size()), "read error");
 
-        // This causes a linker error -- might need to add more libs
+        // Tell OpenSSL to use all available algorithms when evaluating certs
         OpenSSL_add_all_algorithms();
 
-#ifdef DISABLED
-        // This is just experimental logic for loading all of the certs from a single file.
-        // I saw a report that adding the certs individually to a store didn't work BUT this would.
-        // I gave it a try, and found that, in fact, it didn't work at all. Not ready to completely
-        // jettison the logic.
+        // Create a trusted cert store
         unique_X509_STORE store(X509_STORE_new());
-        X509_STORE_load_locations(store.get(), "/Users/admin/Documents/foo.pem", nullptr);
-#endif
-
-        // Add all of the trusted certficates individually to our X.509 store
-        unique_X509_STORE store(X509_STORE_new());
-        std::map<std::string, std::string>::iterator it;
-        for ( it = appxCerts.begin(); it != appxCerts.end(); it++ )
+        unique_STACK_X509 trustedChain(sk_X509_new_null());
+        
+        // Loop through our trusted PEM certs, create X509 objects from them, and add to trusted store
+        for ( std::string s : appxCerts )
         {
             // Load the cert into memory
-            unique_BIO bcert(BIO_new_mem_buf(it->second.data(), it->second.size()));
+            unique_BIO bcert(BIO_new_mem_buf(s.data(), s.size()));
+
             // Create a cert from the memory buffer
             unique_X509 cert(PEM_read_bio_X509(bcert.get(), nullptr, nullptr, nullptr));
             
+            // Add the cert to the trusted store
             ThrowErrorIfNot(Error::AppxSignatureInvalid, 
                 X509_STORE_add_cert(store.get(), cert.get()) == 1, 
                 "Could not add cert to keychain");
+            
+            sk_X509_push(trustedChain.get(), cert.get());
         }
 
         // TODO: read digests
         unique_BIO bmem(BIO_new_mem_buf(p7s.data(), p7s.size()));
         unique_PKCS7 p7(d2i_PKCS7_bio(bmem.get(), nullptr));
 
-#ifdef DISABLED        
-        STACK_OF(PKCS7_SIGNER_INFO) *signerStack = PKCS7_get_signer_info(p7.get());
-        int numSignerInfo = sk_PKCS7_SIGNER_INFO_num(signerStack);
-        for (int i = 0; i < numSignerInfo; i++) 
-        {
-            PKCS7_SIGNER_INFO *signerInfo = sk_PKCS7_SIGNER_INFO_value(signerStack, i);
-
-            X509_STORE_CTX* certContextT = nullptr;
-            //unique_X509_STORE_CTX certContext;
-            //result = PKCS7_dataVerify(certStore.get(), &certContext, nullptr, nullptr, nullptr);
-        }
-        //PKCS7_verify(p7, other, store, indata, out, flags);
-        //STACK_OF(X509) *certStack = PKCS7_get0_signers(p7.get(), nullptr, 0);
-#endif
-
-        unique_BIO content(BIO_new(BIO_s_mem()));
-        //X509_VERIFY_PARAM* param = X509_STORE_get0_param(store.get());
-        //X509_VERIFY_PARAM_set_flags(param, X509_V_FLAG_CB_ISSUER_CHECK);
+        //unique_BIO content(BIO_new(BIO_s_mem()));
         X509_STORE_set_verify_cb(store.get(), &VerifyCallback);
         X509_STORE_set_purpose(store.get(), X509_PURPOSE_ANY);
         
@@ -288,20 +279,31 @@ namespace xPlat
         //    PKCS7_verify(p7.get(), nullptr, store.get(), nullptr/*indata*/, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
         //    "Could not verify package signature");
 
-        STACK_OF(X509) *certStack = p7.get()->d.sign->cert;
-        for (int i = 0; i < sk_X509_num(certStack); i++)
+        //You need to create a certificate store using X509_STORE_CTX_new. 
+        //Then add certificate chain using X509_STORE_CTX_set_chain. 
+        //Add trusted root certificate using X509_STORE_CTX_trusted_stack. 
+        //Finally add certificate to be verified using X509_STORE_CTX_set_cert.
+        
+        
+        STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
+        for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
         {
-            X509* cert = sk_X509_value(certStack, i);
+            X509* cert = sk_X509_value(untrustedCerts, i);
             unique_X509_STORE_CTX context(X509_STORE_CTX_new());
-            X509_STORE_CTX_init(context.get(), store.get(), cert, nullptr);
+            X509_STORE_CTX_init(context.get(), store.get(), nullptr, nullptr);
 
-            PrintCertExtensions(cert);
+            X509_STORE_CTX_set_chain(context.get(), untrustedCerts);
+            X509_STORE_CTX_trusted_stack(context.get(), trustedChain.get());
+            X509_STORE_CTX_set_cert(context.get(), cert);
 
-            //X509_verify_cert(context.get());
+            X509_VERIFY_PARAM* param = X509_STORE_CTX_get0_param(context.get());
+            X509_VERIFY_PARAM_set_flags(param, X509_V_FLAG_CB_ISSUER_CHECK|X509_V_FLAG_TRUSTED_FIRST);
 
-            //ThrowErrorIfNot(Error::AppxSignatureInvalid, 
-            //    X509_verify_cert(context.get()) == 1, 
-            //    "Could not verify cert");
+            //PrintCertExtensions(cert);
+
+            ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+                X509_verify_cert(context.get()) == 1, 
+                "Could not verify cert");
         }
 
         ThrowErrorIfNot(Error::AppxSignatureInvalid, (
