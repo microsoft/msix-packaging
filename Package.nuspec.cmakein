@@ -39,6 +39,16 @@
         Zlib was moved from a git submodule to a subtree so that we can now build on Ubuntu.  Also,
         Zip64 support was added to the underlying OPC layer.  Also, multiple fixes to the nuget package
         were added to address early adopter feedback.  Plus, many bug fixes along the way
+
+0.9 -   Implement BlockMap validation and fix a number of various memory leaks.  Added additional test
+        collateral to cover negative cases for blockmap validation.  Payload file names now come from 
+        the appxblockmap.xml file instead of from the underlying zip central directory.  Xerces is now
+        fully integrated as the XML parser, which we use to do XML parsing, XSD semantic validation, and
+        Base64 decoding of manifested digest data.  We also use Xerces to validate that the content type
+        XML file is well-formed XML.  We also implemented a number of the AppxBlockMap related interfaces
+        that correspond to the new functionality provided in this version.  Finally, we incorportated the
+        latest Windows XSDs for appxblockmap.xml.
+
     </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
     <tags>xPlatAppx Appx AppxPackaging native</tags>
