@@ -56,24 +56,6 @@ namespace xPlat
     typedef std::unique_ptr<X509_NAME, unique_X509_NAME_deleter> unique_X509_NAME;
     typedef std::unique_ptr<STACK_OF(X509), unique_STACK_X509_deleter> unique_STACK_X509;
 
-    typedef struct DigestInfo
-    {
-        X509_ALGOR *digestAlgorithm;
-        ASN1_OCTET_STRING *digest;
-    } DigestInfo;
-
-    typedef struct SPCAttributeTypeAndOptionalValue
-    {
-        ASN1_OBJECT *type;
-        ASN1_TYPE *value;  // SPCInfoValue
-    } SPCAttributeTypeAndOptionalValue;
-
-    typedef struct SPCIndirectDataContent
-    {
-        SPCAttributeTypeAndOptionalValue *data;
-        DigestInfo *messageDigest;
-    } SPCIndirectDataContent;
-
     // Best effort to determine whether the signature file is associated with a store cert
     static bool IsStoreOrigin(std::uint8_t* signatureBuffer, std::uint32_t cbSignatureBuffer)
     {
