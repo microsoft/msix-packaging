@@ -101,48 +101,7 @@ namespace xPlat
         return retValue;
     }
 
-    static bool ConvertBase64Certificate(std::string base64CertWithDelimiters, std::vector<std::uint8_t>& decodedCert)
-    {   
-        std::istringstream stringStream(base64CertWithDelimiters);
-        std::string base64Cert;     
-        std::string line;
-        while (std::getline(stringStream, line)) 
-        {
-            if (line.find("-----BEGIN CERTIFICATE-----") == std::string::npos &&
-                line.find("-----END CERTIFICATE-----") == std::string::npos) {
-                base64Cert += line; }
-        }
-
-        // Load a BIO filter with the base64Cert
-        unique_BIO bsrc(BIO_new_mem_buf(base64Cert.data(), base64Cert.size()));
-
-        // Put a Base64 decoder on the front of it
-        unique_BIO b64(BIO_push(BIO_new(BIO_f_base64()), bsrc.get()));
-        // Ignore new lines
-	    BIO_set_flags(b64.get(), BIO_FLAGS_BASE64_NO_NL);
-
-        // Calculate how big the decode buffer needs to be
-        int length = base64Cert.size();
-        int padding = 0;
-        char *base64CertT = (char*)base64Cert.data();
-        if (base64CertT[length-1] == '=')
-            padding++;
-        if (base64CertT[length-2] == '=')
-            padding++;
-        
-        // Resize the decoder buffer to the calculated length
-        decodedCert.resize(((length * 3)/4) - padding);
-        
-        // Read the Base64 certificate thru the Base64 decoder into decodedCert 
-        ThrowErrorIf(Error::AppxSignatureInvalid, 
-            (BIO_read(b64.get(), (void*)decodedCert.data(), decodedCert.size()) != length),
-            "Certificate is invalid");
-
-        return true;
-    }
-
-    bool ReadDigestHashes(/*[in]*/ PKCS7* p7, 
-        /*[inout]*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests)
+    bool ReadDigestHashes(/*[in]*/ PKCS7* p7, /*[inout]*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests)
     {
         ThrowErrorIf(Error::AppxSignatureInvalid,
             !(p7 && 
@@ -173,9 +132,7 @@ namespace xPlat
             spcIndirectDataContentSize--;
         }
 
-        ThrowErrorIf(Error::AppxSignatureInvalid,
-            (!found),
-            "Could not find the digest hashes in the signature");
+        ThrowErrorIf(Error::AppxSignatureInvalid, (!found), "Could not find the digest hashes in the signature");
 
         // If we found the APPX header, validate the contents
         DigestHeader *header = reinterpret_cast<DigestHeader*>(spcIndirectDataContent);
@@ -224,7 +181,7 @@ namespace xPlat
         if (!ok && (ctx->error == X509_V_ERR_CERT_HAS_EXPIRED || 
                     ctx->error == X509_V_ERR_UNHANDLED_CRITICAL_EXTENSION))
         {
-            ok = true;
+            ok = static_cast<int>(true);
         }
         return ok; 
     }
@@ -331,5 +288,4 @@ namespace xPlat
         ), "Signature origin check failed");
         return true;
     }
-
 } // namespace xPlat
