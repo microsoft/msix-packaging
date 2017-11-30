@@ -18,6 +18,8 @@
 
 namespace xPlat
 {
+    const char* SPC_INDIRECT_DATA_OBJID = {"1.3.6.1.4.1.311.2.1.4"};
+
     struct unique_BIO_deleter {
         void operator()(BIO *b) const { if (b) BIO_free(b); };
     };
@@ -53,7 +55,25 @@ namespace xPlat
     typedef std::unique_ptr<X509_STORE_CTX, unique_X509_STORE_CTX_deleter> unique_X509_STORE_CTX;
     typedef std::unique_ptr<X509_NAME, unique_X509_NAME_deleter> unique_X509_NAME;
     typedef std::unique_ptr<STACK_OF(X509), unique_STACK_X509_deleter> unique_STACK_X509;
-    
+
+    typedef struct DigestInfo
+    {
+        X509_ALGOR *digestAlgorithm;
+        ASN1_OCTET_STRING *digest;
+    } DigestInfo;
+
+    typedef struct SPCAttributeTypeAndOptionalValue
+    {
+        ASN1_OBJECT *type;
+        ASN1_TYPE *value;  // SPCInfoValue
+    } SPCAttributeTypeAndOptionalValue;
+
+    typedef struct SPCIndirectDataContent
+    {
+        SPCAttributeTypeAndOptionalValue *data;
+        DigestInfo *messageDigest;
+    } SPCIndirectDataContent;
+
     // Best effort to determine whether the signature file is associated with a store cert
     static bool IsStoreOrigin(std::uint8_t* signatureBuffer, std::uint32_t cbSignatureBuffer)
     {
@@ -139,29 +159,64 @@ namespace xPlat
         return true;
     }
 
-#ifdef DISABLED
-    // This function removes extensions from a cert that aren't recognized by OpenSSL.
-    // My intention here was to look for specific Microsoft extensions that OpenSSL 
-    // doesn't understand, and remove them here. This works, but there are other critical
-    // extensions that are present. Not sure how to handle them. This code is disabled for now.
-    void FixupCert(X509* cert)
+    void ReadDigestHashes(PKCS7* p7, 
+        std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests)
     {
-        STACK_OF(X509_EXTENSION) *exts = cert->cert_info->extensions;
-        for (int i = 0; i < sk_X509_EXTENSION_num(exts); ) 
+        if (p7 && 
+            PKCS7_type_is_signed(p7) && 
+            p7->d.sign->contents->d.other->type == V_ASN1_SEQUENCE) 
         {
-            X509_EXTENSION *ext = sk_X509_EXTENSION_value(exts, i);
-            if (ext->critical > 0) 
+            std::uint8_t *spcIndirectDataContent = p7->d.sign->contents->d.other->value.asn1_string->data;
+            std::uint32_t spcIndirectDataContentSize = p7->d.sign->contents->d.other->value.asn1_string->length;
+            std::uint8_t* spcIndirectDataContentEnd = spcIndirectDataContent + spcIndirectDataContentSize - (sizeof(std::uint32_t) + HASH_BYTES);
+            
+            // Scan through the spcIndirectData for the APPX header
+            bool found = false;
+            while (spcIndirectDataContent < spcIndirectDataContentEnd && !found)
             {
-                sk_X509_EXTENSION_delete(exts, i);
+                if (*(std::uint32_t*)spcIndirectDataContent == xPlat::AppxSignatureObject::DigestName::HEAD)
+                {
+                    found = true;
+                    break;
+                }
+                spcIndirectDataContent++;
+                spcIndirectDataContentSize--;
             }
-            else
-            {
-                i++;
-            }
-        }    
-    }
-#endif //DISABLED
 
+            // If we found the APPX header, validate the contents
+            if (found)
+            {
+                DigestHeader *header = reinterpret_cast<DigestHeader*>(spcIndirectDataContent);
+                std::uint32_t numberOfHashes = (spcIndirectDataContentSize - sizeof(std::uint32_t)) / (sizeof(std::uint32_t) + HASH_BYTES);
+                std::uint32_t modHashes = (spcIndirectDataContentSize - sizeof(std::uint32_t)) % (sizeof(std::uint32_t) + HASH_BYTES);
+                ThrowErrorIf(Error::AppxSignatureInvalid, (
+                    (header->name != xPlat::AppxSignatureObject::DigestName::HEAD) &&
+                    (numberOfHashes != 4 && numberOfHashes != 5) &&
+                    (modHashes != 0)
+                ), "bad signature data");
+
+                for (unsigned i = 0; i < numberOfHashes; i++)
+                {
+                    std::vector<std::uint8_t> hash(HASH_BYTES);
+                    switch (header->hash[i].name)
+                    {
+                        case xPlat::AppxSignatureObject::DigestName::AXPC:
+                        case xPlat::AppxSignatureObject::DigestName::AXCT:
+                        case xPlat::AppxSignatureObject::DigestName::AXBM:
+                        case xPlat::AppxSignatureObject::DigestName::AXCI:
+                        case xPlat::AppxSignatureObject::DigestName::AXCD:
+                            hash.assign(&header->hash[i].content[0], &header->hash[i].content[HASH_BYTES]);
+                            digests.emplace(header->hash[i].name, hash);
+                            break;
+
+                        default:
+                            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
+                    }
+                }
+            }
+        }
+	}
+	
     int VerifyCallback(int ok, X509_STORE_CTX *ctx)
     {
         // If we encounter an expired cert error or a critical extension, just return success
@@ -231,7 +286,7 @@ namespace xPlat
             sk_X509_push(trustedChain.get(), cert.get());
         }
 
-        // TODO: read digests
+        ReadDigestHashes(p7.get(), digests);
         
         // Loop through the untrusted certs and verify them
         STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
@@ -258,9 +313,9 @@ namespace xPlat
         }
 
         // This fails -- still evaluating
-        ThrowErrorIfNot(Error::AppxSignatureInvalid, 
-            PKCS7_verify(p7.get(), untrustedCerts, store.get(), nullptr/*indata*/, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
-            "Could not verify package signature");
+        //ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+        //    PKCS7_verify(p7.get(), untrustedCerts, store.get(), spcIndirectDataContent, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
+        //    "Could not verify package signature");
 
         ThrowErrorIfNot(Error::AppxSignatureInvalid, (
             IsStoreOrigin(p7s.data(), p7s.size()) ||

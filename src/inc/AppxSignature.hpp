@@ -40,7 +40,7 @@ namespace xPlat {
     public:        
         enum DigestName : std::uint32_t
         {
-            HEAD = 0x58404041, // APPX
+            HEAD = 0x58505041, // APPX
             AXPC = 0x43505841, // file records
             AXCD = 0x44435841, // central directory
             AXCT = 0x54435841, // [ContentTypes].xml (uncompressed)

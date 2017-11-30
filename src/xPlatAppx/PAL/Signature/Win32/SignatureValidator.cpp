@@ -461,8 +461,8 @@ static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuf
         ), "CryptDecodeObjectEx failed");
 
         DigestHeader *header = reinterpret_cast<DigestHeader*>(indirectContent->Digest.pbData);
-        std::uint32_t numberOfHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) / (sizeof(DWORD) + 32);
-        std::uint32_t modHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) % (sizeof(DWORD) + 32);
+        std::uint32_t numberOfHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) / (sizeof(DWORD) + HASH_BYTES);
+        std::uint32_t modHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) % (sizeof(DWORD) + HASH_BYTES);
         ThrowErrorIf(Error::AppxSignatureInvalid, (
             (header->name != xPlat::AppxSignatureObject::DigestName::HEAD) &&
             (numberOfHashes != 4 && numberOfHashes != 5) &&
