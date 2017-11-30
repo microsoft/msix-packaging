@@ -201,7 +201,6 @@ namespace xPlat
         CERT_CHAIN_POLICY_STATUS policyStatus = { 0 };
         policyStatus.cbSize = sizeof(CERT_CHAIN_POLICY_STATUS);
 
-        //policyParameters.dwFlags = MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
         return CertVerifyCertificateChainPolicy(
             CERT_CHAIN_POLICY_AUTHENTICODE,
             certChainContext,
