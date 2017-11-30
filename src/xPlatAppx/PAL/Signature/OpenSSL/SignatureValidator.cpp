@@ -233,7 +233,7 @@ namespace xPlat
         /*in*/ APPX_VALIDATION_OPTION option, 
         /*in*/ IStream *stream, 
         /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
-        /*inout*/ SignatureOrigin&)
+        /*inout*/ SignatureOrigin& origin)
     {
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
         if (option & APPX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
@@ -320,9 +320,13 @@ namespace xPlat
         //    PKCS7_verify(p7.get(), untrustedCerts, store.get(), spcIndirectDataContent, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
         //    "Could not verify package signature");
 
+        origin = xPlat::SignatureOrigin::Unknown;
+        if (IsStoreOrigin(p7s.data(), p7s.size())) { origin = xPlat::SignatureOrigin::Store; }
+        else if (IsAuthenticodeOrigin(p7s.data(), p7s.size())) { origin = xPlat::SignatureOrigin::LOB; }
+
         ThrowErrorIfNot(Error::AppxSignatureInvalid, (
-            IsStoreOrigin(p7s.data(), p7s.size()) ||
-            IsAuthenticodeOrigin(p7s.data(), p7s.size()) ||
+            xPlat::SignatureOrigin::Store == origin ||
+            xPlat::SignatureOrigin::LOB == origin ||
             (option & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN)
         ), "Signature origin check failed");
         return true;
