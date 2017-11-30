@@ -48,6 +48,10 @@ namespace xPlat
         void operator()(STACK_OF(X509) *sx) const { if (sx) sk_X509_free(sx); };
     };
 
+    struct shared_BIO_deleter {
+        void operator()(BIO *b) const { if (b) BIO_free(b); };
+    };
+
     typedef std::unique_ptr<BIO, unique_BIO_deleter> unique_BIO;
     typedef std::unique_ptr<PKCS7, unique_PKCS7_deleter> unique_PKCS7;
     typedef std::unique_ptr<X509, unique_X509_deleter> unique_X509;
@@ -55,6 +59,25 @@ namespace xPlat
     typedef std::unique_ptr<X509_STORE_CTX, unique_X509_STORE_CTX_deleter> unique_X509_STORE_CTX;
     typedef std::unique_ptr<X509_NAME, unique_X509_NAME_deleter> unique_X509_NAME;
     typedef std::unique_ptr<STACK_OF(X509), unique_STACK_X509_deleter> unique_STACK_X509;
+
+    typedef struct Asn1Sequence
+    {
+        std::uint8_t tag;
+        std::uint8_t encoding;
+        union 
+        {   
+            struct {
+                std::uint8_t length;
+                std::uint8_t content;
+            } rle8;
+            struct {
+                std::uint8_t lengthHigh;
+                std::uint8_t lengthLow;
+                std::uint8_t content;
+            } rle16;
+            std::uint8_t content;
+        };
+    } Asn1Sequence;
 
     // Best effort to determine whether the signature file is associated with a store cert
     static bool IsStoreOrigin(std::uint8_t* signatureBuffer, std::uint32_t cbSignatureBuffer)
@@ -101,7 +124,9 @@ namespace xPlat
         return retValue;
     }
 
-    bool ReadDigestHashes(/*[in]*/ PKCS7* p7, /*[inout]*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests)
+    bool ReadDigestHashes(/*[in]*/ PKCS7* p7, 
+        /*[inout]*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
+        /*[inout]*/ unique_BIO& signatureDigest)
     {
         ThrowErrorIf(Error::AppxSignatureInvalid,
             !(p7 && 
@@ -115,9 +140,37 @@ namespace xPlat
             p7->d.sign->contents->d.other->value.asn1_string->length > sizeof(DigestHash)),
             "Signature origin check failed");
 
-        std::uint8_t *spcIndirectDataContent = p7->d.sign->contents->d.other->value.asn1_string->data;
-        std::uint32_t spcIndirectDataContentSize = p7->d.sign->contents->d.other->value.asn1_string->length;
+        Asn1Sequence *asn1Sequence = reinterpret_cast<Asn1Sequence*>(p7->d.sign->contents->d.other->value.asn1_string->data);
+        std::uint8_t* spcIndirectDataContent = nullptr;
+        std::uint16_t spcIndirectDataContentSize = 0;
+       
+        if ((asn1Sequence->encoding & 0x80) == 0)
+        {
+            spcIndirectDataContent = &asn1Sequence->content;
+            spcIndirectDataContentSize = (asn1Sequence->encoding & 0x7F);          
+        }
+        else
+        if ((asn1Sequence->encoding & 0x81) == 0x81) 
+        {
+            spcIndirectDataContent = &asn1Sequence->rle8.content;
+            spcIndirectDataContentSize = static_cast<std::uint16_t>(asn1Sequence->rle8.length);
+        }
+        else
+        if ((asn1Sequence->encoding & 0x82) == 0x82)
+        {
+            spcIndirectDataContent = &asn1Sequence->rle16.content;
+            spcIndirectDataContentSize = (asn1Sequence->rle16.lengthHigh << 8) + (asn1Sequence->rle16.lengthLow);
+        }
+
+        ThrowErrorIf(Error::AppxSignatureInvalid,
+            (spcIndirectDataContent == nullptr || spcIndirectDataContentSize == 0),
+            "bad signature data");
+
         std::uint8_t* spcIndirectDataContentEnd = spcIndirectDataContent + spcIndirectDataContentSize - sizeof(std::uint32_t);
+
+        // Create a BIO structure from the spcIndirectDataContent -- it will be needed when we verify the entire signature via PKCS7_verify.
+        unique_BIO bioMem(BIO_new_mem_buf(spcIndirectDataContent, spcIndirectDataContentSize));
+        signatureDigest.swap(bioMem);
         
         // Scan through the spcIndirectData for the APPX header
         bool found = false;
@@ -244,9 +297,8 @@ namespace xPlat
             sk_X509_push(trustedChain.get(), cert.get());
         }
 
-        ThrowErrorIfNot(Error::AppxSignatureInvalid,
-                ReadDigestHashes(p7.get(), digests) == true,
-                "bad signature data");
+        unique_BIO signatureDigest(nullptr);
+        ReadDigestHashes(p7.get(), digests, signatureDigest);
         
         // Loop through the untrusted certs and verify them
         STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
@@ -272,10 +324,9 @@ namespace xPlat
                 "Could not verify cert");
         }
 
-        // This fails -- still evaluating
-        //ThrowErrorIfNot(Error::AppxSignatureInvalid, 
-        //    PKCS7_verify(p7.get(), untrustedCerts, store.get(), spcIndirectDataContent, nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
-        //    "Could not verify package signature");
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+            PKCS7_verify(p7.get(), trustedChain.get(), store.get(), signatureDigest.get(), nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
+            "Could not verify package signature");
 
         origin = xPlat::SignatureOrigin::Unknown;
         if (IsStoreOrigin(p7s.data(), p7s.size())) { origin = xPlat::SignatureOrigin::Store; }
