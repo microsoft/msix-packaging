@@ -141,67 +141,86 @@ namespace xPlat
         return true;
     }
 
-    void ReadDigestHashes(PKCS7* p7, 
-        std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests)
+    bool ReadDigestHashes(/*[in]*/ PKCS7* p7, 
+        /*[inout]*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests)
     {
-        if (p7 && 
+        ThrowErrorIf(Error::AppxSignatureInvalid,
+            !(p7 && 
             PKCS7_type_is_signed(p7) && 
-            p7->d.sign->contents->d.other->type == V_ASN1_SEQUENCE) 
+            p7->d.sign && 
+            p7->d.sign->contents && 
+            p7->d.sign->contents->d.other &&
+            p7->d.sign->contents->d.other->type == V_ASN1_SEQUENCE &&
+            p7->d.sign->contents->d.other->value.asn1_string &&
+            p7->d.sign->contents->d.other->value.asn1_string->data &&
+            p7->d.sign->contents->d.other->value.asn1_string->length > sizeof(DigestHash)),
+            "Signature origin check failed");
+
+        std::uint8_t *spcIndirectDataContent = p7->d.sign->contents->d.other->value.asn1_string->data;
+        std::uint32_t spcIndirectDataContentSize = p7->d.sign->contents->d.other->value.asn1_string->length;
+        std::uint8_t* spcIndirectDataContentEnd = spcIndirectDataContent + spcIndirectDataContentSize - sizeof(std::uint32_t);
+        
+        // Scan through the spcIndirectData for the APPX header
+        bool found = false;
+        while (spcIndirectDataContent < spcIndirectDataContentEnd && !found)
         {
-            std::uint8_t *spcIndirectDataContent = p7->d.sign->contents->d.other->value.asn1_string->data;
-            std::uint32_t spcIndirectDataContentSize = p7->d.sign->contents->d.other->value.asn1_string->length;
-            std::uint8_t* spcIndirectDataContentEnd = spcIndirectDataContent + spcIndirectDataContentSize - (sizeof(std::uint32_t) + HASH_BYTES);
-            
-            // Scan through the spcIndirectData for the APPX header
-            bool found = false;
-            while (spcIndirectDataContent < spcIndirectDataContentEnd && !found)
+            if (*(std::uint32_t*)spcIndirectDataContent == xPlat::AppxSignatureObject::DigestName::HEAD)
             {
-                if (*(std::uint32_t*)spcIndirectDataContent == xPlat::AppxSignatureObject::DigestName::HEAD)
-                {
-                    found = true;
-                    break;
-                }
-                spcIndirectDataContent++;
-                spcIndirectDataContentSize--;
+                found = true;
+                break;
             }
+            spcIndirectDataContent++;
+            spcIndirectDataContentSize--;
+        }
 
-            // If we found the APPX header, validate the contents
-            if (found)
+        ThrowErrorIf(Error::AppxSignatureInvalid,
+            (!found),
+            "Could not find the digest hashes in the signature");
+
+        // If we found the APPX header, validate the contents
+        DigestHeader *header = reinterpret_cast<DigestHeader*>(spcIndirectDataContent);
+        std::uint32_t numberOfHashes = 
+            (spcIndirectDataContentSize - sizeof(xPlat::AppxSignatureObject::DigestName)) / sizeof(DigestHash);
+        std::uint32_t modHashes = 
+            (spcIndirectDataContentSize - sizeof(xPlat::AppxSignatureObject::DigestName)) % sizeof(DigestHash);
+        ThrowErrorIf(Error::AppxSignatureInvalid, (
+            (header->name != xPlat::AppxSignatureObject::DigestName::HEAD) &&
+            (numberOfHashes != 4 && numberOfHashes != 5) &&
+            (modHashes != 0)
+        ), "bad signature data");
+
+        for (unsigned i = 0; i < numberOfHashes; i++)
+        {
+            std::vector<std::uint8_t> hash(HASH_BYTES);
+            switch (header->hash[i].name)
             {
-                DigestHeader *header = reinterpret_cast<DigestHeader*>(spcIndirectDataContent);
-                std::uint32_t numberOfHashes = (spcIndirectDataContentSize - sizeof(std::uint32_t)) / (sizeof(std::uint32_t) + HASH_BYTES);
-                std::uint32_t modHashes = (spcIndirectDataContentSize - sizeof(std::uint32_t)) % (sizeof(std::uint32_t) + HASH_BYTES);
-                ThrowErrorIf(Error::AppxSignatureInvalid, (
-                    (header->name != xPlat::AppxSignatureObject::DigestName::HEAD) &&
-                    (numberOfHashes != 4 && numberOfHashes != 5) &&
-                    (modHashes != 0)
-                ), "bad signature data");
+                case xPlat::AppxSignatureObject::DigestName::AXPC:
+                case xPlat::AppxSignatureObject::DigestName::AXCT:
+                case xPlat::AppxSignatureObject::DigestName::AXBM:
+                case xPlat::AppxSignatureObject::DigestName::AXCI:
+                case xPlat::AppxSignatureObject::DigestName::AXCD:
+                    hash.assign(&header->hash[i].content[0], &header->hash[i].content[HASH_BYTES]);
+                    digests.emplace(header->hash[i].name, hash);
+                    break;
 
-                for (unsigned i = 0; i < numberOfHashes; i++)
-                {
-                    std::vector<std::uint8_t> hash(HASH_BYTES);
-                    switch (header->hash[i].name)
-                    {
-                        case xPlat::AppxSignatureObject::DigestName::AXPC:
-                        case xPlat::AppxSignatureObject::DigestName::AXCT:
-                        case xPlat::AppxSignatureObject::DigestName::AXBM:
-                        case xPlat::AppxSignatureObject::DigestName::AXCI:
-                        case xPlat::AppxSignatureObject::DigestName::AXCD:
-                            hash.assign(&header->hash[i].content[0], &header->hash[i].content[HASH_BYTES]);
-                            digests.emplace(header->hash[i].name, hash);
-                            break;
-
-                        default:
-                            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
-                    }
-                }
+                default:
+                    throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid);
             }
         }
+
+        ThrowErrorIf(Error::AppxSignatureInvalid,
+            (digests.size() != 4 && digests.size() != 5),
+            "Digest hashes missing entries");
+
+        return true;
 	}
 	
+    // This callback will be invoked during certificate verification
     int VerifyCallback(int ok, X509_STORE_CTX *ctx)
     {
-        // If we encounter an expired cert error or a critical extension, just return success
+        // If we encounter an expired cert error (which is fine) or a critical extension (most MS
+        // certs contain MS-specific extensions that OpenSSL doesn't know how to evaluate), 
+        // just return success
         if (!ok && (ctx->error == X509_V_ERR_CERT_HAS_EXPIRED || 
                     ctx->error == X509_V_ERR_UNHANDLED_CRITICAL_EXTENSION))
         {
@@ -268,7 +287,9 @@ namespace xPlat
             sk_X509_push(trustedChain.get(), cert.get());
         }
 
-        ReadDigestHashes(p7.get(), digests);
+        ThrowErrorIfNot(Error::AppxSignatureInvalid,
+                ReadDigestHashes(p7.get(), digests) == true,
+                "bad signature data");
         
         // Loop through the untrusted certs and verify them
         STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
