@@ -300,33 +300,33 @@ namespace xPlat
         unique_BIO signatureDigest(nullptr);
         ReadDigestHashes(p7.get(), digests, signatureDigest);
         
-        // Loop through the untrusted certs and verify them
-        STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
-        for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
+        // Loop through the untrusted certs and verify them if we're going to treat
+        if (APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN != (option & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN))
         {
-            X509* cert = sk_X509_value(untrustedCerts, i);
-            unique_X509_STORE_CTX context(X509_STORE_CTX_new());
-            X509_STORE_CTX_init(context.get(), store.get(), nullptr, nullptr);
+            STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
+            for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
+            {
+                X509* cert = sk_X509_value(untrustedCerts, i);
+                unique_X509_STORE_CTX context(X509_STORE_CTX_new());
+                X509_STORE_CTX_init(context.get(), store.get(), nullptr, nullptr);
 
-            X509_STORE_CTX_set_chain(context.get(), untrustedCerts);
-            X509_STORE_CTX_trusted_stack(context.get(), trustedChain.get());
-            X509_STORE_CTX_set_cert(context.get(), cert);
+                X509_STORE_CTX_set_chain(context.get(), untrustedCerts);
+                X509_STORE_CTX_trusted_stack(context.get(), trustedChain.get());
+                X509_STORE_CTX_set_cert(context.get(), cert);
 
-            X509_VERIFY_PARAM* param = X509_STORE_CTX_get0_param(context.get());
-            X509_VERIFY_PARAM_set_flags(param, 
-                X509_V_FLAG_CB_ISSUER_CHECK | X509_V_FLAG_TRUSTED_FIRST | X509_V_FLAG_IGNORE_CRITICAL);
+                X509_VERIFY_PARAM* param = X509_STORE_CTX_get0_param(context.get());
+                X509_VERIFY_PARAM_set_flags(param, 
+                    X509_V_FLAG_CB_ISSUER_CHECK | X509_V_FLAG_TRUSTED_FIRST | X509_V_FLAG_IGNORE_CRITICAL);
 
-            // This function prints the contents of a certificate
-            //X509_print_fp(stdout, cert);
+                    ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+                        X509_verify_cert(context.get()) == 1, 
+                        "Could not verify cert");
+            }
 
             ThrowErrorIfNot(Error::AppxSignatureInvalid, 
-                X509_verify_cert(context.get()) == 1, 
-                "Could not verify cert");
+                PKCS7_verify(p7.get(), trustedChain.get(), store.get(), signatureDigest.get(), nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
+                "Could not verify package signature");
         }
-
-        ThrowErrorIfNot(Error::AppxSignatureInvalid, 
-            PKCS7_verify(p7.get(), trustedChain.get(), store.get(), signatureDigest.get(), nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
-            "Could not verify package signature");
 
         origin = xPlat::SignatureOrigin::Unknown;
         if (IsStoreOrigin(p7s.data(), p7s.size())) { origin = xPlat::SignatureOrigin::Store; }
