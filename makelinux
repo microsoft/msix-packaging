@@ -6,5 +6,5 @@ cd .vs
 # clean up any old builds of xPlatAppx modules
 find . -name *xPlatAppx* -d | xargs rm -r
 
-cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DLINUX=on ..
+cmake -DCMAKE_BUILD_TYPE=Release -DLINUX=on ..
 make
