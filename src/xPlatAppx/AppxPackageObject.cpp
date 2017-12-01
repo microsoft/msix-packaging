@@ -118,7 +118,7 @@ namespace xPlat {
         // TODO: Implement validation?
     }
 
-    AppxManifestObject::AppxManifestObject(IStream* stream) : m_stream(stream)
+    AppxManifestObject::AppxManifestObject(ComPtr<IStream>& stream) : m_stream(stream)
     {
         // TODO: Implement
     }
@@ -140,26 +140,24 @@ namespace xPlat {
 
         // 2. Get content type using signature object for validation
         // TODO: switch underlying type of m_contentType to something more specific.
-        m_contentType = ComPtr<IVerifierObject>::Make<XmlObject>(m_appxSignature->GetValidationStream(
-            CONTENT_TYPES_XML, m_container->GetFile(CONTENT_TYPES_XML)));
+        auto temp = m_appxSignature->GetValidationStream(CONTENT_TYPES_XML, m_container->GetFile(CONTENT_TYPES_XML));
+        m_contentType = ComPtr<IVerifierObject>::Make<XmlObject>(temp);
         ThrowErrorIfNot(Error::AppxMissingContentTypesXML, (m_contentType->HasStream()), "[Content_Types].xml not in archive!");
 
         // 3. Get blockmap object using signature object for validation
-        m_appxBlockMap = ComPtr<IVerifierObject>::Make<AppxBlockMapObject>(
-            factory,
-            m_appxSignature->GetValidationStream(APPXBLOCKMAP_XML, m_container->GetFile(APPXBLOCKMAP_XML))
-        );
+        temp = m_appxSignature->GetValidationStream(APPXBLOCKMAP_XML, m_container->GetFile(APPXBLOCKMAP_XML));
+        m_appxBlockMap = ComPtr<IVerifierObject>::Make<AppxBlockMapObject>(factory, temp);
         ThrowErrorIfNot(Error::AppxMissingBlockMapXML, (m_appxBlockMap->HasStream()), "AppxBlockMap.xml not in archive!");
 
         // 4. Get manifest object using blockmap object for validation
         // TODO: pass validation flags and other necessary goodness through.
-        m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(m_appxBlockMap->GetValidationStream(
-            APPXMANIFEST_XML, m_container->GetFile(APPXMANIFEST_XML)));
+        temp = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, m_container->GetFile(APPXMANIFEST_XML));
+        m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(temp);
         ThrowErrorIfNot(Error::AppxMissingAppxManifestXML, (m_appxBlockMap->HasStream()), "AppxManifest.xml not in archive!");
 
         struct Config
         {
-            using lambda = std::function<IStream*()>;
+            using lambda = std::function<xPlat::ComPtr<IStream>()>;
             Config(lambda f) : GetValidationStream(f) {}
             lambda GetValidationStream;
         };
@@ -167,7 +165,7 @@ namespace xPlat {
         std::map<std::string, Config> footPrintFileNames = {
             { APPXBLOCKMAP_XML,  Config([&](){ m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return m_appxBlockMap->GetStream();})  },
             { APPXMANIFEST_XML,  Config([&](){ m_footprintFiles.push_back(APPXMANIFEST_XML);  return m_appxManifest->GetStream();})  },
-            { APPXSIGNATURE_P7X, Config([&](){ if (m_appxSignature->GetStream()){m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return m_appxSignature->GetStream();}) },
+            { APPXSIGNATURE_P7X, Config([&](){ if (m_appxSignature->GetStream().Get()){m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return m_appxSignature->GetStream();}) },
             { CODEINTEGRITY_CAT, Config([&](){ m_footprintFiles.push_back(CODEINTEGRITY_CAT); return m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, std::move(m_container->GetFile(CODEINTEGRITY_CAT)));}) },
             { CONTENT_TYPES_XML, Config([&]()->IStream*{ return nullptr;}) }, // content types is never implicitly unpacked
         };

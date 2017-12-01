@@ -29,10 +29,6 @@ class IXmlObject : public IUnknown
 // An internal interface for XML
 {
 public:
-    #ifdef WIN32
-    virtual ~IXmlObject() {}
-    #endif
-
     virtual void Write() = 0;
     virtual XERCES_CPP_NAMESPACE::DOMDocument* Document() = 0;
 };
@@ -46,7 +42,7 @@ namespace xPlat {
     class XmlObject : public ComClass<XmlObject, IXmlObject, IVerifierObject>
     {
     public:
-        XmlObject(IStream* stream, std::map<std::string, std::string>* schemas = nullptr) :  m_stream(stream) 
+        XmlObject(ComPtr<IStream>& stream, std::map<std::string, std::string>* schemas = nullptr) :  m_stream(stream)
         {
             // Create buffer from stream
             LARGE_INTEGER start = { 0 };
@@ -111,8 +107,8 @@ namespace xPlat {
 
         // IVerifierObject
         bool HasStream() override { return m_stream.Get() != nullptr; }
-        IStream* GetStream() override { return m_stream.Get(); }
-        IStream* GetValidationStream(const std::string& part, IStream* stream) override
+        xPlat::ComPtr<IStream> GetStream() override { return m_stream; }
+        xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override
         {
             throw Exception(Error::NotSupported);
         }

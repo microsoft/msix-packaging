@@ -30,10 +30,6 @@ class IAppxPackage : public IUnknown
 #endif
 {
 public:
-    #ifdef WIN32
-    virtual ~IAppxPackage() {}
-    #endif
-
     virtual void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from) = 0;
     virtual void Unpack(APPX_PACKUNPACK_OPTION options, IStorageObject* to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
@@ -73,12 +69,12 @@ namespace xPlat {
     class AppxManifestObject : public ComClass<AppxManifestObject, IVerifierObject>
     {
     public:
-        AppxManifestObject(IStream* stream);
+        AppxManifestObject(ComPtr<IStream>& stream);
 
         // IVerifierObject
-        bool HasStream()     override { return m_stream.Get() != nullptr; }
-        IStream* GetStream() override { return m_stream.Get(); }
-        IStream* GetValidationStream(const std::string& part, IStream* stream) override
+        bool HasStream() override { return m_stream.Get() != nullptr; }
+        xPlat::ComPtr<IStream> GetStream() override { return m_stream; }
+        xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override
         {
             throw Exception(Error::NotSupported);
         }
@@ -121,7 +117,7 @@ namespace xPlat {
         void                      CommitChanges() override;
 
     protected:
-        std::map<std::string, ComPtr<IStream>>  m_streams;   
+        std::map<std::string, ComPtr<IStream>>  m_streams;
 
         APPX_VALIDATION_OPTION      m_validation = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
         ComPtr<IxPlatFactory>       m_factory;

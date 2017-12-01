@@ -38,10 +38,6 @@ class IStorageObject : public IUnknown
 #endif
 {
 public:        
-    #ifdef WIN32
-    virtual ~IStorageObject() {}
-    #endif
-
     virtual std::string GetPathSeparator() = 0;
 
     // Obtains a vector of UTF-8 formatted string names contained in the storage object

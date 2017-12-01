@@ -203,13 +203,12 @@ namespace xPlat {
     class AppxBlockMapObject : public xPlat::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IStorageObject>
     {
     public:
-        AppxBlockMapObject(IxPlatFactory* factory, IStream* stream);
+        AppxBlockMapObject(IxPlatFactory* factory, ComPtr<IStream>& stream);
 
         // IVerifierObject
-        bool HasStream()     override { return m_stream.Get() != nullptr; }
-        IStream* GetStream() override { return m_stream.Get(); }
-
-        IStream* GetValidationStream(const std::string& part, IStream* stream) override;
+        bool HasStream() override { return m_stream.Get() != nullptr; }
+        xPlat::ComPtr<IStream> GetStream() override { return m_stream; }
+        xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override;
 
         // IAppxBlockMapReader
         HRESULT STDMETHODCALLTYPE GetFile(LPCWSTR filename, IAppxBlockMapFile **file) override;
@@ -223,12 +222,12 @@ namespace xPlat {
         IStream*                  GetFile(const std::string& fileName) override;
         void                      RemoveFile(const std::string& fileName) override;
         IStream*                  OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode) override;
-        void                      CommitChanges() override;        
+        void                      CommitChanges() override;
 
     protected:
         std::map<std::string, std::vector<Block>>        m_blockMap;
         std::map<std::string, ComPtr<IAppxBlockMapFile>> m_blockMapfiles;
-        IxPlatFactory*  m_factory;      
-        ComPtr<IStream> m_stream;  
+        IxPlatFactory*  m_factory;
+        ComPtr<IStream> m_stream;
     };
 }
