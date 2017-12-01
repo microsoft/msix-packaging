@@ -110,6 +110,14 @@ ENDIF()
 
 MESSAGE (STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
+IF ((CMAKE_BUILD_TYPE MATCHES RelWithDebInfo) OR (CMAKE_BUILD_TYPE MATCHES Release) OR (CMAKE_BUILD_TYPE MATCHES MinSizeRel))
+    ADD_DEFINITIONS(-DNDEBUG)
+    MESSAGE (STATUS "NDEBUG defined, assert should be turned-off" )
+ELSE()
+    MESSAGE (STATUS "NDEBUG NOT defined, assert should be turned-on" )
+ENDIF()
+
+
 IF(MACOS)
         # Incredibly, for both clang and g++, while a single compile-and-link
         # invocation will create an executable.dSYM/ dir with debug info,
