@@ -7,10 +7,17 @@
 #include <functional>
 
 #include "AppxWindows.hpp"
+#include "xercesc/util/PlatformUtils.hpp"
+#include "xercesc/sax/ErrorHandler.hpp"
+#include "xercesc/sax/SAXParseException.hpp"
+#include "xercesc/dom/DOM.hpp"
 
 namespace xPlat {
 
-    static const std::uint32_t ERROR_FACILITY = 0x8BAD0000;   // Facility 2989
+    static const std::uint32_t ERROR_FACILITY       = 0x8BAD0000;              // Facility 2989
+    static const std::uint32_t XERCES_SAX_FACILITY  = ERROR_FACILITY + 0x1000; // Xerces XMLException. 0x8BAD1000 + XMLException error code
+    static const std::uint32_t XERCES_XML_FACILITY  = ERROR_FACILITY + 0x2000;
+    static const std::uint32_t XERCES_DOM_FACILITY  = ERROR_FACILITY + 0x3000;
 
     // defines error codes
     enum class Error : std::uint32_t
@@ -60,11 +67,19 @@ namespace xPlat {
         AppxMissingBlockMapXML      = ERROR_FACILITY + 0x0033,
         AppxMissingAppxManifestXML  = ERROR_FACILITY + 0x0034,
         AppxDuplicateFootprintFile  = ERROR_FACILITY + 0x0035,
+        AppxUnknownFileNameEncoding = ERROR_FACILITY + 0x0036,
 
         // Signature errors
         AppxSignatureInvalid        = ERROR_FACILITY + 0x0041,
         AppxCertNotTrusted          = ERROR_FACILITY + 0x0042,
-        
+
+        // Blockmap semantic errors
+        BlockMapSemanticError       = ERROR_FACILITY + 0x0051,
+
+        // XML parsing errors        
+        XercesWarning               = XERCES_SAX_FACILITY + 0x0001,
+        XercesError                 = XERCES_SAX_FACILITY + 0x0002,
+        XercesFatal                 = XERCES_SAX_FACILITY + 0x0003,
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
@@ -96,7 +111,7 @@ namespace xPlat {
         Exception(HRESULT error, const char* message) :
             m_code(error),
             m_message(message)
-        {}            
+        {}
 
         uint32_t        Code() { return m_code; }
         std::string&    Message() { return m_message; }
@@ -116,6 +131,36 @@ namespace xPlat {
         Win32Exception(DWORD error, const char* message) :
             Exception(0x80070000 + error, message)
         {}
+    };
+
+    class ParsingException : public XERCES_CPP_NAMESPACE::ErrorHandler
+    {
+    public:
+        ParsingException() {};
+        ~ParsingException() {};
+
+        void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+        {
+            // TODO: add message, line number and column
+            assert(false);
+            throw Exception(xPlat::Error::XercesWarning);
+        }
+
+        void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+        {
+            // TODO: add message, line number and column
+            assert(false);
+            throw Exception(xPlat::Error::XercesError);
+        }
+
+        void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+        {
+            // TODO: add message, line number and column
+            assert(false);
+            throw Exception(xPlat::Error::XercesFatal);
+        }
+
+        void resetErrors() override {}
     };
 
     // Provides an ABI exception boundary with parameter validation
@@ -138,6 +183,16 @@ namespace xPlat {
         catch (std::exception&)
         {
             hr = static_cast<HRESULT>(xPlat::Error::Unexpected);
+        }
+        catch (const XERCES_CPP_NAMESPACE::XMLException& e)
+        {
+            hr = static_cast<HRESULT>(xPlat::XERCES_XML_FACILITY) +
+                static_cast<HRESULT>(e.getCode());
+        }
+        catch (const XERCES_CPP_NAMESPACE::DOMException& e)
+        {
+            hr = static_cast<HRESULT>(xPlat::XERCES_DOM_FACILITY) +
+                static_cast<HRESULT>(e.code);
         }
 
         return hr;

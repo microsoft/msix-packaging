@@ -287,19 +287,21 @@ namespace xPlat {
                     (v == static_cast<std::uint32_t>(Signatures::CentralFileHeader)),
                     "CDFH Signature");
             };
-            // 1 - version made by                 2 bytes
-            Field<1>().validation = [](std::uint16_t& v)
-            {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
-                    (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
-                    "unsupported version made by");
-            };
-            // 2 - version needed to extract       2 bytes
-            Field<2>().validation = [](std::uint16_t& v)
-            {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
-                    ((v == static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) ||
-                    (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))),
-                    "unsupported version needed to extract");
-            };
+            // we actually do not base any decisions on these values, and OPC and Appx both do not
+            // consider the values in these fields to be all that interesting either apparently.
+            // // 1 - version made by                 2 bytes
+            // Field<1>().validation = [](std::uint16_t& v)
+            // {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
+            //         (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
+            //         "unsupported version made by");
+            // };
+            // // 2 - version needed to extract       2 bytes
+            // Field<2>().validation = [](std::uint16_t& v)
+            // {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
+            //         ((v == static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) ||
+            //         (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))),
+            //         "unsupported version needed to extract");
+            // };
             // 3 - general purpose bit flag        2 bytes
             Field<3>().validation = [](std::uint16_t& v)
             {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
@@ -336,10 +338,10 @@ namespace xPlat {
             Field<13>().validation = [](std::uint16_t& v)
             {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported disk number start");
             };
-            //14 - internal file attributes        2 bytes
-            Field<14>().validation = [](std::uint16_t& v)
-            {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported internal file attributes");
-            };
+            // //14 - internal file attributes        2 bytes
+            // Field<14>().validation = [](std::uint16_t& v)
+            // {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported internal file attributes");
+            // };
             //15 - external file attributes        4 bytes
             //16 - relative offset of local header 4 bytes
             Field<16>().validation = [&](std::uint32_t& v)
@@ -701,7 +703,7 @@ namespace xPlat {
 
         std::uint64_t GetSizeOfCD()                     { return Field<8>().value; }
         void SetSizeOfCD(std::uint64_t value)           { Field<8>().value = value; }
-        std::uint64_t GetOffsetfStartOfCD()             { return Field<9>().value; }
+        std::uint64_t GetOffsetStartOfCD()              { return Field<9>().value; }
         void SetOffsetfStartOfCD(std::uint64_t value)   { Field<9>().value = value; }
 
     private:
@@ -803,39 +805,26 @@ namespace xPlat {
             };
             // 3 - total number of entries in the central directory on this disk  2 bytes
             Field<3>().validation = [&](std::uint16_t& v)
-            {   ThrowErrorIfNot(Error::ZipEOCDRecord,
-                    ((v == 0) || (v == 0xFFFF)),
-                    "unsupported total number of entries on this disk");
-                // ThrowErrorIfNot(Error::ZipEOCDRecord, (
-                //     v == Field<2>().value
-                //     ), "previous field value does not match this field");                        
+            {   
+                if (v != 0 && v != 0xFFFF) { m_archiveHasZip64Locator = false; }
             };
             // 4 - total number of entries in the central directory           2 bytes
             Field<4>().validation = [&](std::uint16_t& v)
-            {   ThrowErrorIfNot(Error::ZipEOCDRecord,
-                    ((v == 0) || (v == 0xFFFF)),
-                    "unsupported total number of entries");
-                ThrowErrorIfNot(Error::ZipEOCDRecord, (
+            {   ThrowErrorIfNot(Error::ZipEOCDRecord, (
                     v == Field<3>().value
                     ), "previous field value does not match this field");                    
             };
             // 5 - size of the central directory   4 bytes
             Field<5>().validation = [&](std::uint32_t& v)
-            {   ThrowErrorIfNot(Error::ZipEOCDRecord,
-                    ((v == 0) || (v == 0xFFFFFFFF)),
+            {   ThrowErrorIf(Error::ZipEOCDRecord,
+                    (m_archiveHasZip64Locator && (v != 0) && (v != 0xFFFFFFFF)),
                     "unsupported size of central directory");
-                ThrowErrorIfNot(Error::ZipEOCDRecord, (
-                    v == 0 ? Field<4>().value == 0 : Field<4>().value == 0xFFFF
-                    ), "previous field value does not match this field");
             };
             // 6 - offset of start of central directory with respect to the starting disk number        4 bytes
             Field<6>().validation = [&](std::uint32_t& v)
-            {   ThrowErrorIfNot(Error::ZipEOCDRecord,
-                    ((v == 0) || (v == 0xFFFFFFFF)),
+            {   ThrowErrorIf(Error::ZipEOCDRecord,
+                    (m_archiveHasZip64Locator && (v != 0) && (v != 0xFFFFFFFF)),
                     "unsupported offset of start of central directory");
-                ThrowErrorIfNot(Error::ZipEOCDRecord, (
-                    v == Field<5>().value
-                ), "previous field value does not match this field");
             };
             // 7 - .ZIP file comment length        2 bytes
             Field<7>().validation = [&](std::uint16_t& v)
@@ -849,7 +838,7 @@ namespace xPlat {
             SetSignature(static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory));
             SetNumberOfDisk(0);
             SetDiskStart(0);
-            // next 12 bytes need to be: FFFF FFFF  FFFF FFFF  FFFF FFFF
+            // by default, the next 12 bytes need to be: FFFF FFFF  FFFF FFFF  FFFF FFFF
             SetTotalNumberOfEntries          (std::numeric_limits<std::uint16_t>::max());
             SetTotalEntriesInCentralDirectory(std::numeric_limits<std::uint16_t>::max());
             SetSizeOfCentralDirectory        (std::numeric_limits<std::uint32_t>::max());
@@ -858,7 +847,12 @@ namespace xPlat {
             SetCommentLength(0);
         }
 
-        bool GetIsZip64() { return m_isZip64; }
+        bool GetArchiveHasZip64Locator() { return m_archiveHasZip64Locator; }
+        bool GetIsZip64()                { return m_isZip64; }
+
+        std::uint64_t GetNumberOfCentralDirectoryEntries()          { return static_cast<std::uint64_t>(Field<3>().value); }
+        std::uint64_t GetStartOfCentralDirectory()                  { return static_cast<std::uint64_t>(Field<6>().value); }
+
     private:
         void SetSignature(std::uint32_t value)                      { Field<0>().value = value; }
         void SetNumberOfDisk(std::uint16_t value)                   { Field<1>().value = value; }
@@ -872,6 +866,7 @@ namespace xPlat {
         void SetCommentLength(std::uint16_t value)                  { Field<7>().value = value; }
 
         bool m_isZip64 = false;
+        bool m_archiveHasZip64Locator = true;
     };//class EndOfCentralDirectoryRecord
 
     std::vector<std::string> ZipObject::GetFileNames(FileNameOptions)
@@ -887,7 +882,9 @@ namespace xPlat {
     IStream* ZipObject::GetFile(const std::string& fileName)
     {
         // TODO: Make this on-demand populate m_streams and then pull from there.
-        return m_streams[fileName].Get();
+        auto result = m_streams.find(fileName);
+        ThrowErrorIf(Error::FileNotFound, (result == m_streams.end()), "file not in archive");
+        return result->second.Get();
     }
 
     void ZipObject::RemoveFile(const std::string& fileName)
@@ -917,22 +914,34 @@ namespace xPlat {
         endCentralDirectoryRecord.Read(m_stream.Get());
 
         // find where the zip central directory exists.
-        Zip64EndOfCentralDirectoryLocator zip64Locator(m_stream.Get());
-        pos.QuadPart = -1*(endCentralDirectoryRecord.Size() + zip64Locator.Size());
-        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
-        zip64Locator.Read(m_stream.Get());
+        std::uint64_t offsetStartOfCD = 0;
+        std::uint64_t totalNumberOfEntries = 0;
+        Zip64EndOfCentralDirectoryLocator zip64Locator(m_stream.Get());        
+        if (!endCentralDirectoryRecord.GetArchiveHasZip64Locator())
+        {
+            offsetStartOfCD      = endCentralDirectoryRecord.GetStartOfCentralDirectory();
+            totalNumberOfEntries = endCentralDirectoryRecord.GetNumberOfCentralDirectoryEntries();
+        }
+        else
+        {   // Make sure that we have a zip64 end of central directory locator            
+            pos.QuadPart = -1*(endCentralDirectoryRecord.Size() + zip64Locator.Size());
+            ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
+            zip64Locator.Read(m_stream.Get());
 
-        // now read the zip central directory
-        Zip64EndOfCentralDirectoryRecord zip64EndOfCentralDirectory(m_stream.Get());
-        pos.QuadPart = zip64Locator.GetRelativeOffset();
-        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
-        zip64EndOfCentralDirectory.Read(m_stream.Get());
+            // now read the end of zip central directory record
+            Zip64EndOfCentralDirectoryRecord zip64EndOfCentralDirectory(m_stream.Get());
+            pos.QuadPart = zip64Locator.GetRelativeOffset();
+            ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
+            zip64EndOfCentralDirectory.Read(m_stream.Get());            
+            offsetStartOfCD = zip64EndOfCentralDirectory.GetOffsetStartOfCD();
+            totalNumberOfEntries = zip64EndOfCentralDirectory.GetTotalNumberOfEntries();
+        }
 
         // read the zip central directory
         std::map<std::string, std::shared_ptr<CentralDirectoryFileHeader>> centralDirectory;
-        pos.QuadPart = zip64EndOfCentralDirectory.GetOffsetfStartOfCD();
+        pos.QuadPart = offsetStartOfCD;
         ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
-        for (std::uint32_t index = 0; index < zip64EndOfCentralDirectory.GetTotalNumberOfEntries(); index++)
+        for (std::uint32_t index = 0; index < totalNumberOfEntries; index++)
         {
             auto centralFileHeader = std::make_shared<CentralDirectoryFileHeader>(endCentralDirectoryRecord.GetIsZip64(), m_stream.Get());
             centralFileHeader->Read(m_stream.Get());
@@ -940,14 +949,14 @@ namespace xPlat {
             centralDirectory.insert(std::make_pair(centralFileHeader->GetFileName(), centralFileHeader));
         }
 
-        // We should have no data between the end of the last central directory header and the start of the EoCD
-        ULARGE_INTEGER uPos = {0};
-        ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &uPos));
-        ThrowErrorIfNot(Error::ZipHiddenData, (uPos.QuadPart == zip64Locator.GetRelativeOffset()), "hidden data unsupported");
+        if (endCentralDirectoryRecord.GetArchiveHasZip64Locator())
+        {   // We should have no data between the end of the last central directory header and the start of the EoCD
+            ULARGE_INTEGER uPos = {0};
+            ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &uPos));
+            ThrowErrorIfNot(Error::ZipHiddenData, (uPos.QuadPart == zip64Locator.GetRelativeOffset()), "hidden data unsupported");
+        }
 
-        // TODO: change to uint64_t when adding full zip64 support
         std::map<std::uint64_t, std::shared_ptr<LocalFileHeader>> fileRepository;
-
         // TODO: change population of m_streams into cache semantics and move into ZipObject::GetFile
         // Read the file repository
         for (const auto& centralFileHeader : centralDirectory)
@@ -963,7 +972,7 @@ namespace xPlat {
             auto fileStream = ComPtr<IStream>::Make<ZipFileStream>(
                 centralFileHeader.second->GetFileName(),
                 "TODO: Implement", // TODO: put value from content type 
-                m_factory.Get(),
+                m_factory,
                 localFileHeader->GetCompressionType() == CompressionType::Deflate,
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),                

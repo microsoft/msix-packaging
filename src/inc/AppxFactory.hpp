@@ -3,8 +3,10 @@
 #include "AppxPackaging.hpp"
 #include "AppxWindows.hpp"
 #include "ComHelper.hpp"
+#include "xercesc/util/PlatformUtils.hpp"
 
 #include <string>
+#include <vector>
 
 // internal interface
 EXTERN_C const IID IID_IxPlatFactory;   
@@ -18,10 +20,9 @@ class IxPlatFactory : public IUnknown
 #endif
 {
 public:
-    #ifdef WIN32
-    virtual ~IxPlatFactory() {}
-    #endif
     virtual HRESULT MarshalOutString(std::string& internal, LPWSTR *result) = 0;
+    virtual HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) = 0;
+    virtual APPX_VALIDATION_OPTION GetValidationOptions() = 0;
 };
 
 SpecializeUuidOfImpl(IxPlatFactory);
@@ -34,6 +35,12 @@ namespace xPlat {
             m_validationOptions(validationOptions), m_memalloc(memalloc), m_memfree(memfree)
         {
             ThrowErrorIf(Error::InvalidParameter, (m_memalloc == nullptr || m_memfree == nullptr), "allocator/deallocator pair not specified.")
+            XERCES_CPP_NAMESPACE::XMLPlatformUtils::Initialize();
+        }
+
+        ~AppxFactory()
+        {
+            XERCES_CPP_NAMESPACE::XMLPlatformUtils::Terminate();
         }
 
         // IAppxFactory
@@ -53,6 +60,8 @@ namespace xPlat {
 
         // IxPlatFactory
         HRESULT MarshalOutString(std::string& internal, LPWSTR *result) override;
+        HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) override;
+        APPX_VALIDATION_OPTION GetValidationOptions() override { return m_validationOptions; }
 
         COTASKMEMALLOC* m_memalloc;
         COTASKMEMFREE*  m_memfree;
