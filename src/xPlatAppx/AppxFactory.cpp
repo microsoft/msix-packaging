@@ -51,7 +51,8 @@ namespace xPlat {
 
             ComPtr<IxPlatFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IxPlatFactory>::iid, reinterpret_cast<void**>(&self)));
-            *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), inputStream).Detach();
+            ComPtr<IStream> stream(inputStream);
+            *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), stream).Detach();
         });
     }
 
@@ -73,18 +74,15 @@ namespace xPlat {
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IxPlatFactory>::iid, reinterpret_cast<void**>(&self)));
             auto stream = ComPtr<IStream>::Make<FileStream>(utf16_to_utf8(signatureFileName), FileStream::Mode::READ);
             auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self->GetValidationOptions(), stream.Get());
-
-            *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(
-                self.Get(), 
-                signature->GetValidationStream("AppxBlockMap.xml", inputStream)
-            ).Detach();
+            auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", inputStream);
+            *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), validatedStream).Detach();
         });
     }
 
     HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result)
     {
         return ResultOf([&]() {
-            ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );                
+            ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
             auto intermediate = utf8_to_utf16(internal);
             std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
             *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));

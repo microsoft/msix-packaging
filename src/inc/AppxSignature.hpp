@@ -51,9 +51,9 @@ namespace xPlat {
         AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, IStream* stream);
 
         // IVerifierObject
-        bool HasStream()     override { return m_stream.Get() != nullptr; }
-        IStream* GetStream() override { return m_stream.Get(); }        
-        IStream* GetValidationStream(const std::string& part, IStream* stream) override;
+        bool HasStream() override { return m_stream.Get() != nullptr; }
+        xPlat::ComPtr<IStream> GetStream() override { return m_stream; }
+        xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override;
 
         using Digest = std::vector<std::uint8_t>;
 

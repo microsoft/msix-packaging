@@ -91,7 +91,7 @@ namespace xPlat {
         // Assignment operator...
         ComPtr& operator=(const ComPtr& right)
         {
-            if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }          
+            if (m_ptr != right.m_ptr) { ComPtr(right).Swap(*this); }
             return *this;
         }
 

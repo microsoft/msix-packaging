@@ -84,7 +84,7 @@ namespace xPlat {
         return result;
     }
         
-    AppxBlockMapObject::AppxBlockMapObject(IxPlatFactory* factory, IStream* stream) : m_factory(factory), m_stream(stream)
+    AppxBlockMapObject::AppxBlockMapObject(IxPlatFactory* factory, ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
     {
         auto dom = ComPtr<IXmlObject>::Make<XmlObject>(stream, &blockMapSchema);
         // Create xPath query over blockmap file.
@@ -136,12 +136,12 @@ namespace xPlat {
         }        
     }
 
-    IStream* AppxBlockMapObject::GetValidationStream(const std::string& part, IStream* stream)
+    xPlat::ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, IStream* stream)
     {
         ThrowErrorIf(Error::InvalidParameter, (part.empty() || stream == nullptr), "bad input");
         auto item = m_blockMap.find(part);
         ThrowErrorIf(Error::BlockMapSemanticError, item == m_blockMap.end(), "file not tracked by blockmap");
-        return ComPtr<IStream>::Make<BlockMapStream>(stream, item->second).Detach();
+        return ComPtr<IStream>::Make<BlockMapStream>(stream, item->second);
     }
 
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFile(LPCWSTR filename, IAppxBlockMapFile **file)
@@ -182,8 +182,7 @@ namespace xPlat {
             auto stream = GetStream();
             LARGE_INTEGER li{0};
             ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, nullptr));
-            stream->AddRef();
-            *blockMapStream = stream;
+            *blockMapStream = stream.Detach();
         });
     }
 

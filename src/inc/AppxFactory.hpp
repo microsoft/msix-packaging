@@ -20,9 +20,6 @@ class IxPlatFactory : public IUnknown
 #endif
 {
 public:
-    #ifdef WIN32
-    virtual ~IxPlatFactory() {}
-    #endif
     virtual HRESULT MarshalOutString(std::string& internal, LPWSTR *result) = 0;
     virtual HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) = 0;
     virtual APPX_VALIDATION_OPTION GetValidationOptions() = 0;
