@@ -176,7 +176,7 @@ namespace xPlat
         bool found = false;
         while (spcIndirectDataContent < spcIndirectDataContentEnd && !found)
         {
-            if (*(std::uint32_t*)spcIndirectDataContent == xPlat::AppxSignatureObject::DigestName::HEAD)
+            if (*(xPlat::AppxSignatureObject::DigestName *)spcIndirectDataContent == xPlat::AppxSignatureObject::DigestName::HEAD)
             {
                 found = true;
                 break;
