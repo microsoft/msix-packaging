@@ -131,18 +131,17 @@ namespace xPlat
 
         DWORD cbExtensionUsage = 0;
         std::vector<byte> extensionUsage(0);
-        if (!CertGetEnhancedKeyUsage(pCertContext, CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG, NULL, &cbExtensionUsage))
-        {
-            extensionUsage.resize(cbExtensionUsage);
-            ThrowErrorIf(Error::AppxSignatureInvalid, (
-                !CertGetEnhancedKeyUsage(
-                    pCertContext,
-                    CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG,
-                    reinterpret_cast<PCERT_ENHKEY_USAGE>(extensionUsage.data()),                
-                    &cbExtensionUsage) &&
-                GetLastError() != CRYPT_E_NOT_FOUND
-            ), "CertGetEnhacnedKeyUsage on extension usage failed.");
-        }
+        CertGetEnhancedKeyUsage(pCertContext, CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG, NULL, &cbExtensionUsage);
+        extensionUsage.resize(cbExtensionUsage);
+        ThrowErrorIf(Error::AppxSignatureInvalid, (
+            !CertGetEnhancedKeyUsage(
+                pCertContext,
+                CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG,
+                reinterpret_cast<PCERT_ENHKEY_USAGE>(extensionUsage.data()),                
+                &cbExtensionUsage) &&
+            GetLastError() != CRYPT_E_NOT_FOUND
+        ), "CertGetEnhacnedKeyUsage on extension usage failed.");
+
         if (extensionUsage.size() > 0)
         {
             PCERT_ENHKEY_USAGE pExtensionUsageT = reinterpret_cast<PCERT_ENHKEY_USAGE>(extensionUsage.data());
@@ -154,18 +153,17 @@ namespace xPlat
 
         DWORD cbPropertyUsage = 0;
         std::vector<byte> propertyUsage(0);
-        if (!CertGetEnhancedKeyUsage(pCertContext, CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG, NULL, &cbPropertyUsage))
-        {
-            propertyUsage.resize(cbPropertyUsage);
-            ThrowErrorIf(Error::AppxSignatureInvalid, (            
-                !CertGetEnhancedKeyUsage(
-                    pCertContext,
-                    CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG,
-                    reinterpret_cast<PCERT_ENHKEY_USAGE>(propertyUsage.data()),
-                    &cbPropertyUsage) &&
-                GetLastError() != CRYPT_E_NOT_FOUND
-            ), "CertGetEnhancedKeyUsage on property usage failed.");
-        }        
+        CertGetEnhancedKeyUsage(pCertContext, CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG, NULL, &cbPropertyUsage);
+        propertyUsage.resize(cbPropertyUsage);
+        ThrowErrorIf(Error::AppxSignatureInvalid, (            
+            !CertGetEnhancedKeyUsage(
+                pCertContext,
+                CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG,
+                reinterpret_cast<PCERT_ENHKEY_USAGE>(propertyUsage.data()),
+                &cbPropertyUsage) &&
+            GetLastError() != CRYPT_E_NOT_FOUND
+        ), "CertGetEnhancedKeyUsage on property usage failed.");
+
         if (propertyUsage.size() > 0)
         {
             PCERT_ENHKEY_USAGE pPropertyUsageT = reinterpret_cast<PCERT_ENHKEY_USAGE>(propertyUsage.data());
@@ -187,11 +185,15 @@ namespace xPlat
         policyStatus.cbSize = sizeof(CERT_CHAIN_POLICY_STATUS);
         policyParameters.dwFlags = MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
 
-        return CertVerifyCertificateChainPolicy(
-            CERT_CHAIN_POLICY_MICROSOFT_ROOT,
-            certChainContext,
-            &policyParameters,
-            &policyStatus);      
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+            CertVerifyCertificateChainPolicy(
+                CERT_CHAIN_POLICY_MICROSOFT_ROOT,
+                certChainContext,
+                &policyParameters,
+                &policyStatus),
+            "CertVerifyCertificateChainPolicy failed");    
+        
+        return ERROR_SUCCESS == policyStatus.dwError;
     }
 
     static bool IsAuthenticodeTrustedChain(_In_ PCCERT_CHAIN_CONTEXT certChainContext)
@@ -202,11 +204,30 @@ namespace xPlat
         policyStatus.cbSize = sizeof(CERT_CHAIN_POLICY_STATUS);
 
         //policyParameters.dwFlags = MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
-        return CertVerifyCertificateChainPolicy(
-            CERT_CHAIN_POLICY_AUTHENTICODE,
-            certChainContext,
-            &policyParameters,
-            &policyStatus);
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+            CertVerifyCertificateChainPolicy(
+                CERT_CHAIN_POLICY_AUTHENTICODE,
+                certChainContext,
+                &policyParameters,
+                &policyStatus),
+            "CertVerifyCertificateChainPolicy failed");
+
+        bool isAuthenticode = (ERROR_SUCCESS == policyStatus.dwError);
+
+        policyParameters = { 0 };
+        policyParameters.cbSize = sizeof(CERT_CHAIN_POLICY_PARA);            
+        policyStatus = {0};
+        policyStatus.cbSize = sizeof(CERT_CHAIN_POLICY_STATUS);
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+            CertVerifyCertificateChainPolicy(
+                CERT_CHAIN_POLICY_BASE,
+                certChainContext,
+                &policyParameters,
+                &policyStatus),
+            "CertVerifyCertificateChainPolicy failed");
+        
+        bool chainsToTrustedRoot = (ERROR_SUCCESS == policyStatus.dwError);
+        return isAuthenticode && chainsToTrustedRoot;
     }
 
     static bool IsCACert(_In_ PCCERT_CONTEXT pCertContext)
@@ -251,7 +272,7 @@ namespace xPlat
         return(true);
     }
 
-static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuffer)
+    static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuffer)
     {
         //get cert context from strCertificate;
         DWORD dwExpectedContentType = CERT_QUERY_CONTENT_FLAG_CERT |
@@ -488,45 +509,15 @@ static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuf
             }
         }
 
-        // If the caller allows unknown origin certs, don't bother with the certificate check
-        if (!(option & APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN))
-        {
-            // Build wintrust data to pass to WinVerifyTrust in order to validate signature
-            // TODO: we cannot use SIP 5598CFF1-68DB-4340-B57F-1CACF88C9A51 on anything older than Win8!!!
-            GUID P7xSipGuid = { 0x5598cff1, 0x68db, 0x4340,{ 0xb5, 0x7f, 0x1c, 0xac, 0xf8, 0x8c, 0x9a, 0x51 } };
-
-            WINTRUST_BLOB_INFO signatureBlobInfo = { 0 };
-            signatureBlobInfo.cbStruct = sizeof(WINTRUST_BLOB_INFO);
-            signatureBlobInfo.gSubject = P7xSipGuid;
-            signatureBlobInfo.cbMemObject = p7x.size();
-            signatureBlobInfo.pbMemObject = p7x.data();
-
-            WINTRUST_DATA trustData = { 0 };
-            trustData.cbStruct = sizeof(WINTRUST_DATA);
-            trustData.dwUIChoice = WTD_UI_NONE;
-            trustData.fdwRevocationChecks = WTD_REVOKE_NONE;
-            trustData.dwUnionChoice = WTD_CHOICE_BLOB;
-            trustData.dwStateAction = WTD_STATEACTION_VERIFY;
-            trustData.dwProvFlags = WTD_CACHE_ONLY_URL_RETRIEVAL | WTD_REVOCATION_CHECK_NONE;
-            trustData.pBlob = &signatureBlobInfo;
-
-            // Verify whether we trust the certificate. If it fails, 
-            GUID wintrustActionVerify = WINTRUST_ACTION_GENERIC_VERIFY_V2;
-            ThrowErrorIf(Error::AppxCertNotTrusted, (
-                0 != WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData)
-                ), "WinVerifyTrust failed");
-
-            // Close trustData.hWVTStateData -- returned by previous WinVerifyTrust call
-            trustData.cbStruct = sizeof(WINTRUST_DATA);
-            trustData.dwStateAction = WTD_STATEACTION_CLOSE;
-            ThrowErrorIf(Error::AppxCertNotTrusted, (
-                0 != WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &wintrustActionVerify, &trustData)
-                ), "WinVerifyTrust StateAction Close failed");
-        }
-
         origin = xPlat::SignatureOrigin::Unknown;
         if (IsStoreOrigin(p7s, p7sSize)) { origin = xPlat::SignatureOrigin::Store; }
         else if (IsAuthenticodeOrigin(p7s, p7sSize)) { origin = xPlat::SignatureOrigin::LOB; }
+
+        bool SignatureOriginUnknownAllowed = (option & APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN) == APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
+        ThrowErrorIf(Error::AppxCertNotTrusted, 
+            ((xPlat::SignatureOrigin::Unknown == origin) && !SignatureOriginUnknownAllowed),
+            "Unknown signature origin");
+
         return true;
     }
 } // namespace xPlat
