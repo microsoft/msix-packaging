@@ -49,6 +49,15 @@
         that correspond to the new functionality provided in this version.  Finally, we incorportated the
         latest Windows XSDs for appxblockmap.xml.
 
+0.10 -  The first feature complete release!  OpenSSL implementation of Signature validation, plus a number of bug fixes: 
+        * 14265946 - MakeXPlat shows assert on retail build.
+        * 14894942 - AppxBlockMap.xml without a payload file from the container should fail
+        * 14879794 - Validation in the OPC layer is too strict in various cases
+        * 14877146 - Put release builds on the slimfast diet
+        * 14728194 - we cannot use SIP 5598CFF1-68DB-4340-B57F-1CACF88C9A51 to validate the authenticode signature on anything older than Win8
+        * 14914290 - ExtractContentsSample.cpp fails with E_NOTIMPL
+        * 13953396 - AppxSignature/p7x Reader
+
     </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
     <tags>xPlatAppx Appx AppxPackaging native</tags>
