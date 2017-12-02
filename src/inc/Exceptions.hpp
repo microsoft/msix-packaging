@@ -14,7 +14,10 @@
 
 namespace xPlat {
 
-    static const std::uint32_t ERROR_FACILITY = 0x8BAD0000;   // Facility 2989
+    static const std::uint32_t ERROR_FACILITY       = 0x8BAD0000;              // Facility 2989
+    static const std::uint32_t XERCES_SAX_FACILITY  = ERROR_FACILITY + 0x1000; // Xerces XMLException. 0x8BAD1000 + XMLException error code
+    static const std::uint32_t XERCES_XML_FACILITY  = ERROR_FACILITY + 0x2000;
+    static const std::uint32_t XERCES_DOM_FACILITY  = ERROR_FACILITY + 0x3000;
 
     // defines error codes
     enum class Error : std::uint32_t
@@ -73,10 +76,10 @@ namespace xPlat {
         // Blockmap semantic errors
         BlockMapSemanticError       = ERROR_FACILITY + 0x0051,
 
-        // Parsing facilities.
-        XMLException                = ERROR_FACILITY + 0x1000, // Xerces XMLException. 0x8BAD1000 + XMLException error code        
-        DOMException                = ERROR_FACILITY + 0x2000, // Xerces DOMException. 0x8BAD2000 + Xerces DOMException error code        
-        SAXParseException           = ERROR_FACILITY + 0x3000, // Xerces SAXParseException.
+        // XML parsing errors        
+        XercesWarning               = XERCES_SAX_FACILITY + 0x0001,
+        XercesError                 = XERCES_SAX_FACILITY + 0x0002,
+        XercesFatal                 = XERCES_SAX_FACILITY + 0x0003,
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
@@ -113,30 +116,6 @@ namespace xPlat {
         uint32_t        Code() { return m_code; }
         std::string&    Message() { return m_message; }
 
-        //// copy ctor
-        //Exception(Exception& right) : m_code(right.m_code), m_message(right.m_message) { }
-
-        //// User by XercesDOMParser
-        //void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
-        //{
-        //    // Todo add e.getMessage(), e.getColumnNumber() and e.getLineNumber()
-        //    throw this;
-        //}
-
-        //void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
-        //{
-        //    // Todo add e.getMessage(), e.getColumnNumber() and e.getLineNumber()
-        //    throw this;
-        //}
-
-        //void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exc) override
-        //{
-        //    // Todo add e.getMessage(), e.getColumnNumber() and e.getLineNumber()
-        //    throw this;
-        //}
-
-        //void resetErrors() override {}
-
     protected:
         std::uint32_t   m_code;
         std::string     m_message;
@@ -163,19 +142,22 @@ namespace xPlat {
         void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
         {
             // TODO: add message, line number and column
-            throw Exception(xPlat::Error::SAXParseException);
+            assert(false);
+            throw Exception(xPlat::Error::XercesWarning);
         }
 
         void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
         {
             // TODO: add message, line number and column
-            throw Exception(xPlat::Error::SAXParseException);
+            assert(false);
+            throw Exception(xPlat::Error::XercesError);
         }
 
         void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
         {
             // TODO: add message, line number and column
-            throw Exception(xPlat::Error::SAXParseException);
+            assert(false);
+            throw Exception(xPlat::Error::XercesFatal);
         }
 
         void resetErrors() override {}
@@ -204,12 +186,12 @@ namespace xPlat {
         }
         catch (const XERCES_CPP_NAMESPACE::XMLException& e)
         {
-            hr = static_cast<HRESULT>(xPlat::Error::XMLException) +
+            hr = static_cast<HRESULT>(xPlat::XERCES_XML_FACILITY) +
                 static_cast<HRESULT>(e.getCode());
         }
         catch (const XERCES_CPP_NAMESPACE::DOMException& e)
         {
-            hr = static_cast<HRESULT>(xPlat::Error::DOMException) +
+            hr = static_cast<HRESULT>(xPlat::XERCES_DOM_FACILITY) +
                 static_cast<HRESULT>(e.code);
         }
 

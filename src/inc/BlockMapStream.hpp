@@ -35,7 +35,7 @@ namespace xPlat {
     class BlockMapStream : public StreamBase
     {
     public:
-        BlockMapStream(IStream* stream, std::vector<Block>& blocks)
+        BlockMapStream(IStream* stream, std::vector<Block>& blocks) : m_stream(stream)
         {
             // Determine overall stream size
             ULARGE_INTEGER uli;
@@ -133,11 +133,32 @@ namespace xPlat {
             if (actualRead) { *actualRead = bytesRead; }
             return (countBytes == bytesRead) ? S_OK : S_FALSE;
         }
+
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
+        {
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption); });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
+        {
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetName(fileName); });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
+        {
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetContentType(contentType); });
+        }
+        
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
+        {
+            return ResultOf([&]{ if (size) { *size = m_streamSize; }});
+        }
       
     protected:
         std::vector<BlockPlusStream>::iterator m_currentBlock;
         std::vector<BlockPlusStream> m_blockStreams;
         std::uint64_t m_relativePosition;
         std::uint64_t m_streamSize;
+        ComPtr<IStream> m_stream;
     };
 }

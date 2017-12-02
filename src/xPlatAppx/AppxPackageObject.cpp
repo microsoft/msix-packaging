@@ -173,13 +173,15 @@ namespace xPlat {
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
         // and partition the container's file names into footprint and payload files.  First by going through
         // the footprint files, and then by going through the payload files.
+        auto filesToProcess = m_container->GetFileNames(FileNameOptions::All);
         for (const auto& fileName : m_container->GetFileNames(FileNameOptions::FootPrintOnly))
         {   auto footPrintFile = footPrintFileNames.find(fileName);
             if (footPrintFile != footPrintFileNames.end())
             {   m_streams[fileName] = footPrintFile->second.GetValidationStream();
+                filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
             }
         }
-
+        
         auto blockMapStorage = m_appxBlockMap.As<IStorageObject>();
         for (const auto& fileName : blockMapStorage->GetFileNames(FileNameOptions::PayloadOnly))
         {   auto footPrintFile = footPrintFileNames.find(fileName);
@@ -187,8 +189,12 @@ namespace xPlat {
             {   std::string containerFileName = EncodeFileName(fileName);
                 m_payloadFiles.push_back(containerFileName);
                 m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, m_container->GetFile(containerFileName));
+                filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
             }
         }
+        // If the map is not empty, there's a file in the container that didn't go to the footprint or payload
+        // files. (eg. payload file missing in the AppxBlockMap.xml)
+        ThrowErrorIfNot(Error::BlockMapSemanticError, (filesToProcess.empty()), "Package not valid!");
     }
 
     void AppxPackageObject::Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from)
