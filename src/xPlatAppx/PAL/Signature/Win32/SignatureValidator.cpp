@@ -482,8 +482,8 @@ namespace xPlat
         ), "CryptDecodeObjectEx failed");
 
         DigestHeader *header = reinterpret_cast<DigestHeader*>(indirectContent->Digest.pbData);
-        std::uint32_t numberOfHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) / (sizeof(DWORD) + 32);
-        std::uint32_t modHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) % (sizeof(DWORD) + 32);
+        std::uint32_t numberOfHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) / sizeof(DigestHash);
+        std::uint32_t modHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) % sizeof(DigestHash);
         ThrowErrorIf(Error::AppxSignatureInvalid, (
             (header->name != xPlat::AppxSignatureObject::DigestName::HEAD) &&
             (numberOfHashes != 4 && numberOfHashes != 5) &&
