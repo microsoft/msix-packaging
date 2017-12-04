@@ -9,12 +9,12 @@
 
 
 namespace xPlat {
-  
+
     // This represents a subset of a Stream
     class RangeStream : public StreamBase
     {
     public:
-        RangeStream(std::uint64_t offset, std::uint64_t size, IStream* stream) : 
+        RangeStream(std::uint64_t offset, std::uint64_t size, IStream* stream) :
             m_offset(offset),
             m_size(size),
             m_stream(stream)
@@ -40,7 +40,7 @@ namespace xPlat {
                 //TODO: We need to constrain newPos so that it can't exceed the end of the stream
                 ULARGE_INTEGER pos = { 0 };
                 m_stream->Seek(newPos, Reference::START, &pos);
-                m_relativePosition = std::min((pos.QuadPart - m_offset), m_size);
+                m_relativePosition = std::min(static_cast<std::uint64_t>(pos.QuadPart - m_offset), m_size);
                 if (newPosition) { newPosition->QuadPart = m_relativePosition; }
             });
         }
