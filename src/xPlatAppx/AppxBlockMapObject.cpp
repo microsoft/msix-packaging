@@ -103,6 +103,11 @@ namespace xPlat {
             fileResult->snapshotItem(i);
             auto fileNode = static_cast<DOMElement*>(fileResult->getNodeValue());
 
+            auto name = GetName(fileNode);
+            ThrowErrorIf(Error::BlockMapSemanticError, (name == "[Content_Types].xml"), "[Content_Types].xml cannot be in the AppxBlockMap.xml file");
+            auto existing = m_blockMap.find(name);
+            ThrowErrorIf(Error::BlockMapSemanticError, (existing != m_blockMap.end()), "duplicate file name specified.");
+
             // Get blocks elements
             XercesXMLChPtr blockXPath(XMLString::transcode("./Block"));            
             XercesPtr<DOMXPathResult> blockResult = dom->Document()->evaluate(
@@ -121,11 +126,7 @@ namespace xPlat {
                 blocks[j] = GetBlock(blockNode);
             }    
 
-            auto name = GetName(fileNode);
-            auto existing = m_blockMap.find(name);
-            ThrowErrorIf(Error::BlockMapSemanticError, (existing != m_blockMap.end()), "duplicate file name specified.");
             m_blockMap.insert(std::make_pair(name, std::move(blocks)));
-
             m_blockMapfiles.insert(std::make_pair(name,
                 ComPtr<IAppxBlockMapFile>::Make<AppxBlockMapFile>(
                     factory,
