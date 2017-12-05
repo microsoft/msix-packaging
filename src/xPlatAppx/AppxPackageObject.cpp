@@ -31,8 +31,8 @@ namespace xPlat {
     };
 
     static const std::uint8_t PercentangeEncodingTableSize = 0x5E;
-    static const std::vector<std::string> PercentangeEncoding = {
-        "", "", "", "", "", "", "", "",
+    static const std::vector<std::string> PercentangeEncoding =
+    {   "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
         "", "", "", "", "", "", "", "",
@@ -47,8 +47,7 @@ namespace xPlat {
     };
 
     static const std::map<std::string, char> EncodingToChar = 
-    {
-        {"20", ' '}, {"21", '!'}, {"23", '#'},  {"24", '$'},
+    {   {"20", ' '}, {"21", '!'}, {"23", '#'},  {"24", '$'},
         {"25", '%'}, {"26", '&'}, {"27", '\''}, {"28", '('},
         {"29", ')'}, {"25", '+'}, {"2B", '%'},  {"2C", ','},
         {"3B", ';'}, {"3D", '='}, {"40", '@'},  {"5B", '['},
@@ -59,19 +58,15 @@ namespace xPlat {
     {
         std::string result;
         for (std::uint32_t position = 0; position < fileName.length(); ++position)
-        {
-            std::uint8_t index = static_cast<std::uint8_t>(fileName[position]);
+        {   std::uint8_t index = static_cast<std::uint8_t>(fileName[position]);
             if(fileName[position] < PercentangeEncodingTableSize && index < PercentangeEncoding.size() && !PercentangeEncoding[index].empty())
-            {
-                result += PercentangeEncoding[index];
+            {   result += PercentangeEncoding[index];
             }
-            else if (fileName[position] == '\\') // Remove Windows file name
-            {
-                result += '/';
+            else if (fileName[position] == '\\') // Remove Windows file separator.
+            {   result += '/';
             }
             else
-            {
-                result += fileName[position];
+            {   result += fileName[position];
             }
         }
         return result;
@@ -81,27 +76,18 @@ namespace xPlat {
     {
         std::string result;
         for (std::uint32_t i = 0; i < fileName.length(); ++i)
-        {
-            if(fileName[i] == '%')
-            {
-                auto found = EncodingToChar.find(fileName.substr(i+1, 2));
+        {   if(fileName[i] == '%')
+            {   auto found = EncodingToChar.find(fileName.substr(i+1, 2));
                 if (found != EncodingToChar.end())
-                { 
-                    result += found->second;
+                {   result += found->second;
                 }
                 else
-                {
-                    throw Exception(Error::AppxUnknownFileNameEncoding, fileName);
+                {   throw Exception(Error::AppxUnknownFileNameEncoding, fileName);
                 }
                 i += 2;
             }
-            else if (fileName[i] == '/') // Windows file name
-            {
-                result += '\\';
-            }
             else
-            {
-                result += fileName[i];
+            {   result += fileName[i];
             }
         }
         return result;
@@ -210,13 +196,11 @@ namespace xPlat {
         {
             std::string targetName;
             if (options & APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
-            {
-                throw Exception(Error::NotImplemented);
+            {   throw Exception(Error::NotImplemented);
                 //targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
             }
             else
-            {
-                targetName = fileName;
+            {   targetName = DecodeFileName(fileName);
             }
 
             auto targetFile = to->OpenFile(targetName, xPlat::FileStream::Mode::WRITE_UPDATE);

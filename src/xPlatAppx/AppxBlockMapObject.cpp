@@ -40,7 +40,7 @@ namespace xPlat {
         bool hasValue = !attributeValue.empty();
         std::uint32_t value = 0;
         if (hasValue) { value = static_cast<std::uint32_t>(std::stoul(attributeValue)); }
-        return value;        
+        return value;
     }
 
     static std::string GetName(XERCES_CPP_NAMESPACE::DOMElement* element)
@@ -67,7 +67,7 @@ namespace xPlat {
         XercesXMLChPtr nameAttr(XMLString::transcode("Hash"));
         XMLSize_t len = 0;
         XercesXMLBytePtr decodedData(XERCES_CPP_NAMESPACE::Base64::decodeToXMLByte(
-            element->getAttribute(nameAttr.Get()), 
+            element->getAttribute(nameAttr.Get()),
             &len));
         std::vector<std::uint8_t> result(len);
         for(XMLSize_t index=0; index < len; index++)
@@ -83,7 +83,7 @@ namespace xPlat {
         result.hash = GetDigestData(element);
         return result;
     }
-        
+
     AppxBlockMapObject::AppxBlockMapObject(IxPlatFactory* factory, ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
     {
         auto dom = ComPtr<IXmlObject>::Make<XmlObject>(stream, &blockMapSchema);
@@ -109,7 +109,7 @@ namespace xPlat {
             ThrowErrorIf(Error::BlockMapSemanticError, (existing != m_blockMap.end()), "duplicate file name specified.");
 
             // Get blocks elements
-            XercesXMLChPtr blockXPath(XMLString::transcode("./Block"));            
+            XercesXMLChPtr blockXPath(XMLString::transcode("./Block"));
             XercesPtr<DOMXPathResult> blockResult = dom->Document()->evaluate(
                 blockXPath.Get(),
                 fileNode,
@@ -118,13 +118,13 @@ namespace xPlat {
                 nullptr);
 
             // get all the blocks for the file.
-            std::vector<Block> blocks(blockResult->getSnapshotLength());                
+            std::vector<Block> blocks(blockResult->getSnapshotLength());
             for (XMLSize_t j = 0; j < blockResult->getSnapshotLength(); j++)
             {
                 blockResult->snapshotItem(j);
                 auto blockNode = static_cast<DOMElement*>(blockResult->getNodeValue());
                 blocks[j] = GetBlock(blockNode);
-            }    
+            }
 
             m_blockMap.insert(std::make_pair(name, std::move(blocks)));
             m_blockMapfiles.insert(std::make_pair(name,
@@ -134,7 +134,7 @@ namespace xPlat {
                     GetLocalFileHeaderSize(fileNode),
                     name,
                     GetSize(fileNode))));
-        }        
+        }
     }
 
     xPlat::ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, IStream* stream)
@@ -142,7 +142,7 @@ namespace xPlat {
         ThrowErrorIf(Error::InvalidParameter, (part.empty() || stream == nullptr), "bad input");
         auto item = m_blockMap.find(part);
         ThrowErrorIf(Error::BlockMapSemanticError, item == m_blockMap.end(), "file not tracked by blockmap");
-        return ComPtr<IStream>::Make<BlockMapStream>(stream, item->second);
+        return ComPtr<IStream>::Make<BlockMapStream>(m_factory, part, stream, item->second);
     }
 
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFile(LPCWSTR filename, IAppxBlockMapFile **file)
@@ -163,7 +163,7 @@ namespace xPlat {
             ComPtr<IAppxBlockMapReader> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IAppxBlockMapReader>::iid, reinterpret_cast<void**>(&self)));
             *enumerator = ComPtr<IAppxBlockMapFilesEnumerator>::Make<AppxBlockMapFilesEnumerator>(
-                self.Get(), 
+                self.Get(),
                 std::move(GetFileNames(FileNameOptions::All))).Detach();
         });
     }
