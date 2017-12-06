@@ -239,6 +239,74 @@ namespace xPlat
         return ok; 
     }
 
+    bool GetPublisherName(/*in*/ unique_PKCS7& p7, /*inout*/ std::string& publisher)
+    {
+        X509* cert = nullptr;
+        STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
+        // If there's only one cert, it's a self-signed package; just return its subject
+        if (sk_X509_num(untrustedCerts) == 1)
+        {
+            cert = sk_X509_value(untrustedCerts, 0);
+        }
+        else
+        {
+            std::map<std::string/*issuer*/, int/*refcount*/> issuers;
+            for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
+            {
+                X509* certT = sk_X509_value(untrustedCerts, i);
+                unique_OPENSSL_string issuer(X509_NAME_oneline(X509_get_issuer_name(certT), NULL, 0));
+                try 
+                {
+                    // This will throw if the issuer isn't in the map
+                    int count = issuers.at(issuer.get());
+                    // This issuer is already in the map, increment its refcount
+                    issuers[issuer.get()] = count + 1;
+                } 
+                catch(std::out_of_range& e)
+                {
+                    // The issuer is not in the map; add it and set refcount to 1
+                    issuers[issuer.get()] = 1;
+                }
+            }
+
+            // Now, loop through the certs and find out which one isn't an issuer            
+            for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
+            {
+                X509* certT = sk_X509_value(untrustedCerts, i);
+                unique_OPENSSL_string subject(X509_NAME_oneline(X509_get_subject_name(certT), NULL, 0));
+                try 
+                {
+                    // This will throw if the subject isn't in the map
+                    issuers.at(subject.get());
+                } 
+                catch(std::out_of_range& e)
+                {
+                    // The subject is not in the map -- so it's the last cert in the untrusted chain
+                    cert = certT;
+                    break;
+                }
+            }
+        }
+
+        // We should have found a certificate
+        if (cert)
+        {
+            // Create a BIO memory buffer, and print the subject name to it.
+            unique_BIO bio(BIO_new(BIO_s_mem()));
+            X509_NAME_print_ex(bio.get(), 
+                X509_get_subject_name(cert), 
+                0, 
+                XN_FLAG_SEP_CPLUS_SPC | XN_FLAG_DN_REV);
+
+            // Now extract the publisher from the BIO print buffer
+            char *memBuffer = nullptr;
+            BIO_get_mem_data(bio.get(), &memBuffer);
+            publisher = std::string(memBuffer);
+            return true;
+        }
+        return false;
+    }
+
     bool SignatureValidator::Validate(
         /*in*/ APPX_VALIDATION_OPTION option, 
         /*in*/ IStream *stream, 
@@ -339,53 +407,10 @@ namespace xPlat
             (option & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN)
         ), "Signature origin check failed");
 
-        STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
-        // If there's only one cert, it's a self-signed package; just return its subject
-        if (sk_X509_num(untrustedCerts) == 1)
-        {
-            X509* cert = sk_X509_value(untrustedCerts, 0);
-            unique_OPENSSL_string subject(X509_NAME_oneline(X509_get_subject_name(cert), NULL, 0));
-            publisher = subject.get();
-        }
-        else
-        {
-            std::map<std::string/*issuer*/, int/*refcount*/> issuers;
-            for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
-            {
-                X509* cert = sk_X509_value(untrustedCerts, i);
-                unique_OPENSSL_string issuer(X509_NAME_oneline(X509_get_issuer_name(cert), NULL, 0));
-                try 
-                {
-                    // This will throw if the issuer isn't in the map
-                    int count = issuers.at(issuer.get());
-                    // This issuer is already in the map, increment its refcount
-                    issuers[issuer.get()] = count + 1;
-                } 
-                catch(std::out_of_range& e)
-                {
-                    // The issuer is not in the map; add it and set refcount to 1
-                    issuers[issuer.get()] = 1;
-                }
-            }
-
-            // Now, loop through the certs and find out which one isn't an issuer            
-            for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
-            {
-                X509* cert = sk_X509_value(untrustedCerts, i);
-                unique_OPENSSL_string subject(X509_NAME_oneline(X509_get_subject_name(cert), NULL, 0));
-                try 
-                {
-                    // This will throw if the subject isn't in the map
-                    issuers.at(subject.get());
-                } 
-                catch(std::out_of_range& e)
-                {
-                    // The subject is not in the map -- so it's the last cert in the untrusted chain
-                    publisher = subject.get();
-                    break;
-                }
-            }
-        }
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            GetPublisherName(p7, publisher) == true
+        ), "Signature origin check failed");
+        
         return true;
     }
 } // namespace xPlat
