@@ -358,7 +358,7 @@ namespace xPlat
         int requiredLength = CertNameToStrA(
             X509_ASN_ENCODING,
             &certificateContext.get()->pCertInfo->Subject,
-            CERT_X500_NAME_STR,
+            CERT_X500_NAME_STR | CERT_NAME_STR_REVERSE_FLAG,
             nullptr,
             0);
 
@@ -368,7 +368,7 @@ namespace xPlat
         if (CertNameToStrA(
             X509_ASN_ENCODING,
             &certificateContext.get()->pCertInfo->Subject,
-            CERT_X500_NAME_STR,
+            CERT_X500_NAME_STR | CERT_NAME_STR_REVERSE_FLAG,
             publisherT.data(),
             requiredLength) > 0)
         {

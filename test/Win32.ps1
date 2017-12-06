@@ -33,26 +33,24 @@ function CleanupUnpackFolder {
 
 function RunTest([string] $UNPACKFOLDER, [int] $SUCCESSCODE) {
     CleanupUnpackFolder
-    write-host  "------------------------------------------------------" >> Win32.log
+    write-host  "------------------------------------------------------"
     write-host  $UNPACKFOLDER >> Win32.log
-    #$BINDIR\MakeXplat unpack -d .\unpack -p $UNPACKFOLDER >> Win32.log
+    #$BINDIR\MakeXplat unpack -d .\unpack -p $UNPACKFOLDER
 	Start-Process "$BINDIR\MakeXplat.exe" -ArgumentList ("unpack", "-d", ".\unpack", "-p", $UNPACKFOLDER) -Wait
     $ERRORCODE=$?
     if ( $ERRORCODE -eq $SUCCESSCODE ) 
     {
-        write-host  "Succeeded: $SUCCESSCODE" >> Win32.log
+        write-host  "Succeeded: $SUCCESSCODE"
     }
     else
     {
-        write-host  "Expected: $SUCCESSCODE" >> Win32.log
-        write-host  "Failed: $ERRORCODE" >> Win32.log
+        write-host  "Expected: $SUCCESSCODE"
+        write-host  "Failed: $ERRORCODE"
         $global:TESTFAILED=1    
     }
 }
 
 FindBinFolder
-
-Remove-Item "Win32.log"
 
 RunTest .\appx\CentennialCoffee.appx 134
 RunTest .\appx\Empty.appx 134
