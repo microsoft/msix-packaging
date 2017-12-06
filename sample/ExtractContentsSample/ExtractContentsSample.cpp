@@ -3,6 +3,10 @@
 #include <string>
 #include <locale>
 #include <codecvt>
+#include <iostream>
+#include <iomanip>
+#include <functional>
+#include <map>
 
 #ifdef WIN32
     #define UNICODE
@@ -66,6 +70,98 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
     #endif
     std::wstring result(converted.begin(), converted.end());
     return result;
+}
+
+// describes an option to a command that the user may specify
+struct Option
+{
+    using CBF = std::function<bool(const std::string& value)>;
+
+    Option(bool param, const std::string& help, CBF callback): Help(help), Callback(callback), TakesParameter(param)
+    {}
+
+    bool        TakesParameter;
+    std::string Name;
+    std::string Help;
+    CBF         Callback;
+};
+
+// Tracks the state of the current parse operation as well as implements input validation
+struct State
+{
+    bool CreatePackageSubfolder()
+    {
+        unpackOptions = static_cast<APPX_PACKUNPACK_OPTION>(unpackOptions | APPX_PACKUNPACK_OPTION::APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
+        return true;
+    }
+
+    bool SkipManifestValidation()
+    {
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST);
+        return true;
+    }
+
+    bool SkipSignature()
+    {
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE);
+        return true;
+    }
+
+    bool AllowSignatureOriginUnknown()
+    {
+        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN);
+        return true;
+    }
+
+    bool SetPackageName(const std::string& name)
+    {
+        if (!packageName.empty() || name.empty()) { return false; }
+        packageName = utf8_to_utf16(name);
+        return true;
+    }
+
+    bool SetDirectoryName(const std::string& name)
+    {
+        if (!directoryName.empty() || name.empty()) { return false; }
+        directoryName = utf8_to_utf16(name);
+        return true;
+    }
+
+    std::wstring packageName;
+    std::wstring directoryName;
+    APPX_VALIDATION_OPTION validationOptions = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
+    APPX_PACKUNPACK_OPTION unpackOptions     = APPX_PACKUNPACK_OPTION::APPX_PACKUNPACK_OPTION_NONE;
+};
+
+// Displays contextual formatted help to the user.
+int Help(char* toolName, std::map<std::string, Option>& options)
+{
+    std::cout << std::endl;
+    std::cout << "Usage:" << std::endl;
+    std::cout << "------" << std::endl;
+    std::cout << "\t" << toolName << " -p <package> -d <directory> [options] " << std::endl;
+    std::cout << std::endl;
+    std::cout << "Description:" << std::endl;
+    std::cout << "------------" << std::endl;
+    std::cout << "\tExtracts all files within an app package at the input <package> name to the" << std::endl;
+    std::cout << "\tspecified output <directory>.  The output has the same directory structure " << std::endl;
+    std::cout << "\tas the package." << std::endl;
+    std::cout << std::endl;
+    std::cout << "Options:" << std::endl;
+    std::cout << "--------" << std::endl;
+
+    for (const auto& option : options)
+    {
+        std::cout << "\t" << std::left << std::setfill(' ') << std::setw(5) <<
+            option.first << ": " << option.second.Help << std::endl;
+    }
+    return 0;
+}
+
+// error text if the user provided underspecified input
+void Error(char* toolName)
+{
+    std::cout << toolName << ": error : Missing required options.  Use '-?' for more details." << std::endl;
 }
 
 #ifdef WIN32
@@ -147,7 +243,7 @@ struct FootprintFilesType
 
 // Types of footprint files in an app package
 const int FootprintFilesCount = 4;
-const FootprintFilesType footprintFilesType[FootprintFilesCount] = {
+FootprintFilesType footprintFilesType[FootprintFilesCount] = {
     {APPX_FOOTPRINT_FILE_TYPE_MANIFEST, "manifest", true },
     {APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP, "block map", true },
     {APPX_FOOTPRINT_FILE_TYPE_SIGNATURE, "digital signature", true },
@@ -198,13 +294,13 @@ void STDMETHODCALLTYPE MyFree(LPVOID pv)        { std::free(pv); }
 //   reader 
 //     On success, receives the created instance of IAppxPackageReader.
 //
-HRESULT GetPackageReader(LPCWSTR inputFileName, IAppxPackageReader** package)
+HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
 {
     HRESULT hr = S_OK;
     ComPtr<IAppxFactory> appxFactory;
     ComPtr<IStream> inputStream;
 
-    hr = CreateStreamOnFileUTF16(inputFileName, true, &inputStream);
+    hr = CreateStreamOnFileUTF16(state.packageName.c_str(), true, &inputStream);
     if (SUCCEEDED(hr))
     {
         // On Win32 platforms CoCreateAppxFactory defaults to CoTaskMemAlloc/CoTaskMemFree
@@ -213,7 +309,7 @@ HRESULT GetPackageReader(LPCWSTR inputFileName, IAppxPackageReader** package)
         hr = CoCreateAppxFactoryWithHeap(
             MyAllocate,
             MyFree,
-            APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST,
+            state.validationOptions,
             &appxFactory);
 
         // Create a new package reader using the factory.  For 
@@ -361,33 +457,88 @@ HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
     return hr;
 }
 
-int main(int argc, char* argv[])
+// Parses argc/argv input via commands into state, and extract the package.
+int ParseAndRun(std::map<std::string, Option>& options, State& state, int argc, char* argv[])
 {
-    HRESULT hr = S_OK;
+    auto ParseInput = [&]()->bool {
+        int index = 1;
+        while (index < argc)
+        {
+            auto option = options.find(argv[index]);
+            if (option == options.end()) { return false; }
+            char const *parameter = "";
+            if (option->second.TakesParameter)
+            {
+                if (++index == argc) { break; }
+                parameter = argv[index];
+            }
+            if (!option->second.Callback(parameter)) { return false; }
+            ++index;
+        }
+        return true;
+    };
 
-    std::wstring fileName = utf8_to_utf16(argv[1]);
-    std::wstring pathName = utf8_to_utf16(argv[2]);
+    if (!ParseInput()) { return Help(argv[0], options); }
+    if (state.packageName.empty() || state.directoryName.empty())
+    {   Error(argv[0]);
+        return -1;
+    }
+
+    HRESULT hr = S_OK;
     // Create a package using the file name in argv[1] 
     ComPtr<IAppxPackageReader> package;
-    hr = GetPackageReader(fileName.c_str(), &package);
+    hr = GetPackageReader(state, &package);
 
     // Print information about all footprint files, and extract them to disk
     if (SUCCEEDED(hr))
     {
-        hr = ExtractFootprintFiles(package.Get(), pathName.c_str());
+        hr = ExtractFootprintFiles(package.Get(), state.directoryName.c_str());
     }
 
     // Print information about all payload files, and extract them to disk
     if (SUCCEEDED(hr))
     {
-        hr = ExtractPayloadFiles(package.Get(), pathName.c_str());
+        hr = ExtractPayloadFiles(package.Get(), state.directoryName.c_str());
     }
-
-    if (FAILED(hr))
-    {
-        // TODO: Tell a more specific reason why the faiulre occurred. 
-        std::printf("\nError %X occurred while extracting the appx package\n", static_cast<int>(hr));
-    }
-
     return static_cast<int>(hr);
+}
+
+int main(int argc, char* argv[])
+{
+    HRESULT hr = S_OK;
+
+    State state;
+    std::map<std::string, Option> options = {
+        { "-p", Option(true, "REQUIRED, specify input package name.",
+        [&](const std::string& name) { return state.SetPackageName(name); })
+        },
+        { "-d", Option(true, "REQUIRED, specify output directory name.",
+            [&](const std::string& name) { return state.SetDirectoryName(name); })
+        },
+        { "-pfn", Option(false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
+            [&](const std::string&) { return state.CreatePackageSubfolder(); })
+        },
+        { "-mv", Option(false, "Skips manifest validation.  By default manifest validation is enabled.",
+            [&](const std::string&) { return state.SkipManifestValidation(); })
+        },
+        { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
+            [&](const std::string&) { return state.AllowSignatureOriginUnknown(); })
+        },
+        { "-ss", Option(false, "Skips enforcement of signed packages.  By default packages must be signed.",
+            [&](const std::string&) 
+            {   footprintFilesType[2].isRequired = false;
+                return state.SkipSignature();
+            })
+        },
+        { "-?", Option(false, "Displays this help text.",
+            [&](const std::string&) { return false; })
+        }
+    };
+
+    auto result = ParseAndRun(options, state, argc, argv);
+    if (result != 0)
+    {
+        std::cout << "Error: " << std::hex << result << " while extracting the appx package" <<std::endl;
+    }
+    return result;
 }

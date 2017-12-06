@@ -121,5 +121,25 @@ namespace xPlat {
                 }
             });            
         }
+
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
+        {
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption); });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
+        {
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetName(fileName); });
+        }
+
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
+        {
+            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetContentType(contentType); });
+        }
+        
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
+        {
+            return ResultOf([&]{ if (size) { *size = m_streamSize; }});
+        }
     };
 }
