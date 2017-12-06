@@ -351,6 +351,34 @@ namespace xPlat
         return IsAuthenticodeTrustedChain(certChainContext.get());
     }
 
+    static bool GetPublisherName(/*in*/byte* signatureBuffer, /*in*/ ULONG cbSignatureBuffer, /*inout*/ std::string& publisher)
+    {
+        unique_cert_context certificateContext(GetCertContext(signatureBuffer, cbSignatureBuffer));
+        
+        int requiredLength = CertNameToStrA(
+            X509_ASN_ENCODING,
+            &certificateContext.get()->pCertInfo->Subject,
+            CERT_X500_NAME_STR,
+            nullptr,
+            0);
+
+        std::vector<char> publisherT;
+        publisherT.reserve(requiredLength + 1);
+        
+        if (CertNameToStrA(
+            X509_ASN_ENCODING,
+            &certificateContext.get()->pCertInfo->Subject,
+            CERT_X500_NAME_STR,
+            publisherT.data(),
+            requiredLength) > 0)
+        {
+            publisher = std::string(publisherT.data());
+            return true;
+        }
+        return false;
+    }
+
+
     bool SignatureValidator::Validate(
         /*in*/ APPX_VALIDATION_OPTION option,
         /*in*/ IStream *stream,
@@ -519,9 +547,10 @@ namespace xPlat
             ((xPlat::SignatureOrigin::Unknown == origin) && !SignatureOriginUnknownAllowed),
             "Unknown signature origin");
 
-        // TODO: fix this
-        publisher = "foo";
-
+        ThrowErrorIfNot(Error::AppxSignatureInvalid,
+            GetPublisherName(p7s, p7sSize, publisher) == true,
+            "Could not retrieve publisher name");
+                
         return true;
     }
 } // namespace xPlat
