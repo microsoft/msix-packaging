@@ -2,9 +2,8 @@
 $global:TESTFAILED=0
 $global:BINDIR=""
 
-function FindBinFolder 
-{
-    if (Test-Path "..\.vs\bin\MakeXplat.exe" ]
+function FindBinFolder {
+    if (Test-Path "..\.vs\bin\MakeXplat.exe" )
     {
         $global:BINDIR="..\.vs\bin"
     }
@@ -23,9 +22,8 @@ function FindBinFolder
     }
 }
 
-function CleanupUnpackFolder 
-{
-    Remove-Item –path ".\unpack\*" -recurse
+function CleanupUnpackFolder {
+    Remove-Item ".\unpack\*" -recurse
     if (Test-Path ".\unpack\*" )
     {
         write-host "ERROR: Could not cleanup .\unpack directory"
@@ -33,20 +31,20 @@ function CleanupUnpackFolder
     }
 }
 
-function RunTest($UNPACKFOLDER, $SUCCESS) 
-{
+function RunTest([string] $UNPACKFOLDER, [int] $SUCCESSCODE) {
     CleanupUnpackFolder
     write-host  "------------------------------------------------------" >> Win32.log
     write-host  $UNPACKFOLDER >> Win32.log
-    $BINDIR\MakeXplat unpack -d .\unpack -p $UNPACKFOLDER >> Win32.log
+    #$BINDIR\MakeXplat unpack -d .\unpack -p $UNPACKFOLDER >> Win32.log
+	Start-Process "$BINDIR\MakeXplat.exe" -ArgumentList ("unpack", "-d", ".\unpack", "-p", $UNPACKFOLDER) -Wait
     $ERRORCODE=$?
-    if ( $ERRORCODE -eq $SUCCESS ) 
+    if ( $ERRORCODE -eq $SUCCESSCODE ) 
     {
-        write-host  "Succeeded: $SUCCESS" >> Win32.log
+        write-host  "Succeeded: $SUCCESSCODE" >> Win32.log
     }
     else
     {
-        write-host  "Expected: $SUCCESS" >> Win32.log
+        write-host  "Expected: $SUCCESSCODE" >> Win32.log
         write-host  "Failed: $ERRORCODE" >> Win32.log
         $global:TESTFAILED=1    
     }
@@ -54,7 +52,7 @@ function RunTest($UNPACKFOLDER, $SUCCESS)
 
 FindBinFolder
 
-Remove-Item –path ".\Win32.log"
+Remove-Item "Win32.log"
 
 RunTest .\appx\CentennialCoffee.appx 134
 RunTest .\appx\Empty.appx 134
@@ -83,9 +81,10 @@ RunTest .\appx\BlockMap\No_blockmap.appx 134
 RunTest .\appx\BlockMap\Bad_Namespace_Blockmap.appx 134
 RunTest .\appx\BlockMap\Duplicate_file_in_blockmap.appx 134
 
+CleanupUnpackFolder
+
 if ( $global:TESTFAILED -eq 1 )
 {
-
     exit 134
 }
 else
