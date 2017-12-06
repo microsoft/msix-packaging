@@ -355,7 +355,8 @@ namespace xPlat
         /*in*/ APPX_VALIDATION_OPTION option,
         /*in*/ IStream *stream,
         /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
-        /*inout*/ SignatureOrigin& origin)
+        /*inout*/ SignatureOrigin& origin,
+        /*inout*/ std::string& publisher)
     {
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
         if (option & APPX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
@@ -517,6 +518,9 @@ namespace xPlat
         ThrowErrorIf(Error::AppxCertNotTrusted, 
             ((xPlat::SignatureOrigin::Unknown == origin) && !SignatureOriginUnknownAllowed),
             "Unknown signature origin");
+
+        // TODO: fix this
+        publisher = "foo";
 
         return true;
     }

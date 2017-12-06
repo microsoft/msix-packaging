@@ -21,7 +21,8 @@ AppxSignatureObject::AppxSignatureObject(APPX_VALIDATION_OPTION validationOption
     m_stream(stream), 
     m_validationOptions(validationOptions)
 {
-    m_hasDigests = SignatureValidator::Validate(validationOptions, stream, m_digests, m_signatureOrigin);
+    std::string publisher;
+    m_hasDigests = SignatureValidator::Validate(validationOptions, stream, m_digests, m_signatureOrigin, publisher);
 
     if (0 == (validationOptions & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE))
     {   // reset the source stream back to the beginning after validating it.

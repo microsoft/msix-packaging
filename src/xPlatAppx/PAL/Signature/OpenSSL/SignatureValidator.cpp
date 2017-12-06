@@ -40,8 +40,8 @@ namespace xPlat
         void operator()(X509_STORE_CTX *xsc) const { if (xsc) {X509_STORE_CTX_cleanup(xsc); X509_STORE_CTX_free(xsc);} };
     };
 
-    struct unique_X509_NAME_deleter {
-        void operator()(X509_NAME *xn) const { if (xn) OPENSSL_free(xn); };
+    struct unique_OPENSSL_string_deleter {
+        void operator()(char *os) const { if (os) OPENSSL_free(os); };
     };
 
     struct unique_STACK_X509_deleter {
@@ -57,9 +57,9 @@ namespace xPlat
     typedef std::unique_ptr<X509, unique_X509_deleter> unique_X509;
     typedef std::unique_ptr<X509_STORE, unique_X509_STORE_deleter> unique_X509_STORE;
     typedef std::unique_ptr<X509_STORE_CTX, unique_X509_STORE_CTX_deleter> unique_X509_STORE_CTX;
-    typedef std::unique_ptr<X509_NAME, unique_X509_NAME_deleter> unique_X509_NAME;
+    typedef std::unique_ptr<char, unique_OPENSSL_string_deleter> unique_OPENSSL_string;
     typedef std::unique_ptr<STACK_OF(X509), unique_STACK_X509_deleter> unique_STACK_X509;
-
+    
     typedef struct Asn1Sequence
     {
         std::uint8_t tag;
@@ -243,7 +243,8 @@ namespace xPlat
         /*in*/ APPX_VALIDATION_OPTION option, 
         /*in*/ IStream *stream, 
         /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
-        /*inout*/ SignatureOrigin& origin)
+        /*inout*/ SignatureOrigin& origin,
+        /*inout*/ std::string& publisher)
     {
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
         if (option & APPX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
@@ -337,6 +338,54 @@ namespace xPlat
             xPlat::SignatureOrigin::LOB == origin ||
             (option & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN)
         ), "Signature origin check failed");
+
+        STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
+        // If there's only one cert, it's a self-signed package; just return its subject
+        if (sk_X509_num(untrustedCerts) == 1)
+        {
+            X509* cert = sk_X509_value(untrustedCerts, 0);
+            unique_OPENSSL_string subject(X509_NAME_oneline(X509_get_subject_name(cert), NULL, 0));
+            publisher = subject.get();
+        }
+        else
+        {
+            std::map<std::string/*issuer*/, int/*refcount*/> issuers;
+            for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
+            {
+                X509* cert = sk_X509_value(untrustedCerts, i);
+                unique_OPENSSL_string issuer(X509_NAME_oneline(X509_get_issuer_name(cert), NULL, 0));
+                try 
+                {
+                    // This will throw if the issuer isn't in the map
+                    int count = issuers.at(issuer.get());
+                    // This issuer is already in the map, increment its refcount
+                    issuers[issuer.get()] = count + 1;
+                } 
+                catch(std::out_of_range& e)
+                {
+                    // The issuer is not in the map; add it and set refcount to 1
+                    issuers[issuer.get()] = 1;
+                }
+            }
+
+            // Now, loop through the certs and find out which one isn't an issuer            
+            for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
+            {
+                X509* cert = sk_X509_value(untrustedCerts, i);
+                unique_OPENSSL_string subject(X509_NAME_oneline(X509_get_subject_name(cert), NULL, 0));
+                try 
+                {
+                    // This will throw if the subject isn't in the map
+                    issuers.at(subject.get());
+                } 
+                catch(std::out_of_range& e)
+                {
+                    // The subject is not in the map -- so it's the last cert in the untrusted chain
+                    publisher = subject.get();
+                    break;
+                }
+            }
+        }
         return true;
     }
 } // namespace xPlat
