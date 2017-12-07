@@ -255,17 +255,17 @@ namespace xPlat
             {
                 X509* certT = sk_X509_value(untrustedCerts, i);
                 unique_OPENSSL_string issuer(X509_NAME_oneline(X509_get_issuer_name(certT), NULL, 0));
-                try 
+                auto search = issuers.find(issuer.get());
+                // If the issuer is not in the map, add it and set refcount to 1
+                if (search == issuers.end()) 
                 {
-                    // This will throw if the issuer isn't in the map
-                    int count = issuers.at(issuer.get());
-                    // This issuer is already in the map, increment its refcount
-                    issuers[issuer.get()] = count + 1;
-                } 
-                catch(std::out_of_range& e)
-                {
-                    // The issuer is not in the map; add it and set refcount to 1
                     issuers[issuer.get()] = 1;
+                }
+                else
+                {
+                    // This issuer is in the map, increment its refcount
+                    int count = search->second;
+                    issuers[issuer.get()] = count + 1; 
                 }
             }
 
@@ -274,14 +274,10 @@ namespace xPlat
             {
                 X509* certT = sk_X509_value(untrustedCerts, i);
                 unique_OPENSSL_string subject(X509_NAME_oneline(X509_get_subject_name(certT), NULL, 0));
-                try 
+                auto search = issuers.find(subject.get());
+                // If the subject is not in the map, we have found our cert
+                if (search == issuers.end()) 
                 {
-                    // This will throw if the subject isn't in the map
-                    issuers.at(subject.get());
-                } 
-                catch(std::out_of_range& e)
-                {
-                    // The subject is not in the map -- so it's the last cert in the untrusted chain
                     cert = certT;
                     break;
                 }
