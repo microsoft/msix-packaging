@@ -42,7 +42,7 @@
 
   <xs:simpleType name="ST_ResourceReference">
     <xs:restriction base="ST_NonEmptyString">
-      <xs:pattern value="\bms-resource:.{1,256}"/>
+      <xs:pattern value="ms-resource:.{1,256}"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -127,7 +127,7 @@
       <xs:pattern value=".+\.([Dd][Ll][Ll])"/>
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="ST_ImageFile">
     <xs:restriction base="ST_FileName">
       <xs:pattern value=".+\.((jpg)|(png)|(jpeg))"/>
@@ -306,7 +306,7 @@
       <xs:enumeration value="x86a64"/>
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="ST_ArchitectureUnrestricted">
     <xs:restriction base="ST_AsciiIdentifier">
       <xs:maxLength value="7"/>
@@ -547,7 +547,7 @@
       <xs:enumeration value="windows.comInterface"/>
     </xs:restriction>
   </xs:simpleType>
-  
+
   <xs:simpleType name="ST_PackageExtensionCategory_Foundation">
     <xs:restriction base="xs:string">
       <xs:enumeration value="windows.activatableClass.inProcessServer"/>

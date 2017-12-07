@@ -206,7 +206,7 @@
             <xs:element name="GameExplorer" type="CT_GameExplorer"/>
             <!--Certificates DEH-->
             <xs:element name="Certificates" type="CT_Certificates"/>
-            <!-- @@BEGIN_SDKSPLIT 
+            <!-- @@BEGIN_SDKSPLIT
               [Add your DEH here]
             @@END_SDKSPLIT -->
           </xs:choice>
@@ -274,7 +274,7 @@
           <xs:selector xpath="m:Extensions/m:Extension/m:AutoPlayDevice/m:LaunchAction"/>
           <xs:field xpath="@Verb"/>
         </xs:unique>
-        <!-- @@BEGIN_SDKSPLIT 
+        <!-- @@BEGIN_SDKSPLIT
           [Add your DEH here (Uniqueness checks)]
         @@END_SDKSPLIT -->
       </xs:element>
@@ -286,7 +286,7 @@
       <xs:maxLength value="256"/>
     </xs:restriction>
   </xs:simpleType>
-  
+
   <!-- VISUAL ELEMENTS SCHEMA -->
   <xs:complexType name="CT_VisualElements">
     <xs:all>
@@ -403,7 +403,7 @@
             <xs:element name="FileSavePicker" type="CT_FilePicker"/>
             <!--Background Tasks DEH-->
             <xs:element name="BackgroundTasks" type="CT_BackgroundTasks"/>
-            <!-- @@BEGIN_SDKSPLIT 
+            <!-- @@BEGIN_SDKSPLIT
               [Add your DEH here]
             @@END_SDKSPLIT -->
           </xs:choice>
@@ -471,14 +471,14 @@
 
   <xs:simpleType name="ST_DisplayName">
     <xs:restriction base="ST_NonEmptyString">
-      <xs:pattern value="\bms-resource:.{1,256}"/>
+      <xs:pattern value="ms-resource:.{1,256}"/>
       <xs:pattern value=".{1,256}"/>
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="ST_ShortDisplayName">
     <xs:restriction base="ST_NonEmptyString">
-      <xs:pattern value="\bms-resource:.{1,256}"/>
+      <xs:pattern value="ms-resource:.{1,256}"/>
       <xs:pattern value=".{1,40}"/>
     </xs:restriction>
   </xs:simpleType>
@@ -606,7 +606,7 @@
     </xs:restriction>
   </xs:simpleType>
 
-  <!-- @@BEGIN_SDKSPLIT 
+  <!-- @@BEGIN_SDKSPLIT
     [Add your DEH here]
   @@END_SDKSPLIT -->
   <!--DEPLOYMENT EXTENSION HANDLERS (DEH) SCHEMAS-->
@@ -894,7 +894,7 @@
     <xs:attribute name="GameDefinitionContainer" type="ST_FileName" use="required"/>
   </xs:complexType>
 
-  <!-- @@BEGIN_SDKSPLIT 
+  <!-- @@BEGIN_SDKSPLIT
     [Add your DEH schema here]
   @@END_SDKSPLIT -->
 </xs:schema>
