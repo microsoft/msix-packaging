@@ -5,6 +5,7 @@
 #include "StorageObject.hpp"
 #include "AppxPackageObject.hpp"
 #include "UnicodeConversion.hpp"
+#include "ContentTypesSchemas.hpp"
 
 #include <string>
 #include <vector>
@@ -127,7 +128,7 @@ namespace xPlat {
         // 2. Get content type using signature object for validation
         // TODO: switch underlying type of m_contentType to something more specific.
         auto temp = m_appxSignature->GetValidationStream(CONTENT_TYPES_XML, m_container->GetFile(CONTENT_TYPES_XML));
-        m_contentType = ComPtr<IVerifierObject>::Make<XmlObject>(temp);
+        m_contentType = ComPtr<IVerifierObject>::Make<XmlObject>(temp, &contentTypesSchema);
         ThrowErrorIfNot(Error::AppxMissingContentTypesXML, (m_contentType->HasStream()), "[Content_Types].xml not in archive!");
 
         // 3. Get blockmap object using signature object for validation
