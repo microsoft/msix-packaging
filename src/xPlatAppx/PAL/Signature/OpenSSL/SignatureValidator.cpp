@@ -40,8 +40,8 @@ namespace xPlat
         void operator()(X509_STORE_CTX *xsc) const { if (xsc) {X509_STORE_CTX_cleanup(xsc); X509_STORE_CTX_free(xsc);} };
     };
 
-    struct unique_X509_NAME_deleter {
-        void operator()(X509_NAME *xn) const { if (xn) OPENSSL_free(xn); };
+    struct unique_OPENSSL_string_deleter {
+        void operator()(char *os) const { if (os) OPENSSL_free(os); };
     };
 
     struct unique_STACK_X509_deleter {
@@ -57,9 +57,9 @@ namespace xPlat
     typedef std::unique_ptr<X509, unique_X509_deleter> unique_X509;
     typedef std::unique_ptr<X509_STORE, unique_X509_STORE_deleter> unique_X509_STORE;
     typedef std::unique_ptr<X509_STORE_CTX, unique_X509_STORE_CTX_deleter> unique_X509_STORE_CTX;
-    typedef std::unique_ptr<X509_NAME, unique_X509_NAME_deleter> unique_X509_NAME;
+    typedef std::unique_ptr<char, unique_OPENSSL_string_deleter> unique_OPENSSL_string;
     typedef std::unique_ptr<STACK_OF(X509), unique_STACK_X509_deleter> unique_STACK_X509;
-
+    
     typedef struct Asn1Sequence
     {
         std::uint8_t tag;
@@ -239,11 +239,76 @@ namespace xPlat
         return ok; 
     }
 
+    bool GetPublisherName(/*in*/ unique_PKCS7& p7, /*inout*/ std::string& publisher)
+    {
+        X509* cert = nullptr;
+        STACK_OF(X509) *untrustedCerts = p7.get()->d.sign->cert;
+        // If there's only one cert, it's a self-signed package; just return its subject
+        if (sk_X509_num(untrustedCerts) == 1)
+        {
+            cert = sk_X509_value(untrustedCerts, 0);
+        }
+        else
+        {
+            std::map<std::string/*issuer*/, int/*refcount*/> issuers;
+            for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
+            {
+                X509* certT = sk_X509_value(untrustedCerts, i);
+                unique_OPENSSL_string issuer(X509_NAME_oneline(X509_get_issuer_name(certT), NULL, 0));
+                auto search = issuers.find(issuer.get());
+                // If the issuer is not in the map, add it and set refcount to 1
+                if (search == issuers.end()) 
+                {
+                    issuers[issuer.get()] = 1;
+                }
+                else
+                {
+                    // This issuer is in the map, increment its refcount
+                    int count = search->second;
+                    issuers[issuer.get()] = count + 1; 
+                }
+            }
+
+            // Now, loop through the certs and find out which one isn't an issuer            
+            for (int i = 0; i < sk_X509_num(untrustedCerts); i++)
+            {
+                X509* certT = sk_X509_value(untrustedCerts, i);
+                unique_OPENSSL_string subject(X509_NAME_oneline(X509_get_subject_name(certT), NULL, 0));
+                auto search = issuers.find(subject.get());
+                // If the subject is not in the map, we have found our cert
+                if (search == issuers.end()) 
+                {
+                    cert = certT;
+                    break;
+                }
+            }
+        }
+
+        // We should have found a certificate
+        if (cert)
+        {
+            // Create a BIO memory buffer, and print the subject name to it.
+            unique_BIO bio(BIO_new(BIO_s_mem()));
+            X509_NAME_print_ex(bio.get(), 
+                X509_get_subject_name(cert), 
+                0, 
+                XN_FLAG_SEP_CPLUS_SPC | XN_FLAG_DN_REV);
+
+            // Now extract the publisher from the BIO print buffer
+            char *memBuffer = nullptr;
+            BIO_get_mem_data(bio.get(), &memBuffer);
+            publisher = std::string(memBuffer);
+            return true;
+        }
+        return false;
+    }
+
     bool SignatureValidator::Validate(
         /*in*/ APPX_VALIDATION_OPTION option, 
         /*in*/ IStream *stream, 
         /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
-        /*inout*/ SignatureOrigin& origin)
+        /*inout*/ SignatureOrigin& origin,
+        /*inout*/ std::string& publisher)
     {
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
         if (option & APPX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
@@ -337,6 +402,11 @@ namespace xPlat
             xPlat::SignatureOrigin::LOB == origin ||
             (option & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN)
         ), "Signature origin check failed");
+
+        ThrowErrorIfNot(Error::AppxSignatureInvalid, (
+            GetPublisherName(p7, publisher) == true
+        ), "Signature origin check failed");
+        
         return true;
     }
 } // namespace xPlat
