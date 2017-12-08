@@ -82,6 +82,11 @@ PREREQUISITES
 
     See: https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode for additional details
 
+    Android NDK:
+    ------------
+
+    https://developer.android.com/ndk/downloads/index.html
+
 BUILD
 -----
     On Windows using Visual Studio 2017 nmake:
