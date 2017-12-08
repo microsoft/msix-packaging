@@ -84,8 +84,11 @@ PREREQUISITES
 
     Android NDK:
     ------------
-
     https://developer.android.com/ndk/downloads/index.html
+
+    Clang/LLVM:
+    -----------
+    http://releases.llvm.org/download.html
 
 BUILD
 -----
