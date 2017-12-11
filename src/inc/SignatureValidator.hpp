@@ -27,7 +27,8 @@ namespace xPlat {
             /*in*/ APPX_VALIDATION_OPTION option, 
             /*in*/ IStream *stream, 
             /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
-            /*inout*/ SignatureOrigin& origin);
+            /*inout*/ SignatureOrigin& origin,
+            /*inout*/ std::string& publisher);
     };
 }
 

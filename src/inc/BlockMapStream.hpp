@@ -7,6 +7,7 @@
 #include "HashStream.hpp"
 #include "ComHelper.hpp"
 #include "SHA256.hpp"
+#include "AppxFactory.hpp"
 
 #include <string>
 #include <map>
@@ -35,7 +36,8 @@ namespace xPlat {
     class BlockMapStream : public StreamBase
     {
     public:
-        BlockMapStream(IStream* stream, std::vector<Block>& blocks) : m_stream(stream)
+        BlockMapStream(IxPlatFactory* factory, std::string decodedName, IStream* stream, std::vector<Block>& blocks)
+            : m_factory(factory), m_decodedName(decodedName), m_stream(stream)
         {
             // Determine overall stream size
             ULARGE_INTEGER uli;
@@ -141,7 +143,7 @@ namespace xPlat {
 
         HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
         {
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetName(fileName); });
+            return m_factory->MarshalOutString(m_decodedName, fileName);
         }
 
         HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
@@ -159,6 +161,8 @@ namespace xPlat {
         std::vector<BlockPlusStream> m_blockStreams;
         std::uint64_t m_relativePosition;
         std::uint64_t m_streamSize;
+        std::string m_decodedName;
         ComPtr<IStream> m_stream;
+        IxPlatFactory*  m_factory;
     };
 }

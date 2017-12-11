@@ -19,8 +19,8 @@
 
   Please contact 'manifest' alias if you need to request an addition
   or edit to the schema.
-  
-  When modifying this file, please keep it consistent with the 
+
+  When modifying this file, please keep it consistent with the
   Schema\WindowsSDK\AppxManifestSchema2010_v2.xsd file
 
 @@END_SDKSPLIT -->
@@ -235,7 +235,7 @@
             <xs:element name="ProxyStub" type="CT_ProxyStub"/>
             <!--Certificates DEH-->
             <xs:element name="Certificates" type="CT_Certificates"/>
-            <!-- @@BEGIN_SDKSPLIT 
+            <!-- @@BEGIN_SDKSPLIT
               [Add your DEH here]
             @@END_SDKSPLIT -->
           </xs:choice>
@@ -302,7 +302,7 @@
           <xs:selector xpath="m:Extensions/m:Extension/m:AutoPlayDevice/m:LaunchAction"/>
           <xs:field xpath="@Verb"/>
         </xs:unique>
-        <!-- @@BEGIN_SDKSPLIT 
+        <!-- @@BEGIN_SDKSPLIT
           [Add your DEH here (Uniqueness checks)]
         @@END_SDKSPLIT -->
       </xs:element>
@@ -314,7 +314,7 @@
       <xs:maxLength value="256"/>
     </xs:restriction>
   </xs:simpleType>
-  
+
   <!-- VISUAL ELEMENTS SCHEMA -->
   <xs:attributeGroup name="VisualElementsBaseAttributes">
     <xs:attribute name="DisplayName" type="ST_DisplayName" use="required"/>
@@ -441,7 +441,7 @@
       <xs:element name="FileSavePicker" type="CT_FilePicker"/>
       <!--Background Tasks DEH-->
       <xs:element name="BackgroundTasks" type="CT_BackgroundTasks"/>
-      <!-- @@BEGIN_SDKSPLIT 
+      <!-- @@BEGIN_SDKSPLIT
               [Add your DEH here]
             @@END_SDKSPLIT -->
     </xs:choice>
@@ -514,14 +514,14 @@
 
   <xs:simpleType name="ST_DisplayName">
     <xs:restriction base="ST_NonEmptyString">
-      <xs:pattern value="\bms-resource:.{1,256}"/>
+      <xs:pattern value="ms-resource:.{1,256}"/>
       <xs:pattern value=".{1,256}"/>
     </xs:restriction>
   </xs:simpleType>
 
   <xs:simpleType name="ST_ShortDisplayName">
     <xs:restriction base="ST_NonEmptyString">
-      <xs:pattern value="\bms-resource:.{1,256}"/>
+      <xs:pattern value="ms-resource:.{1,256}"/>
       <xs:pattern value=".{1,40}"/>
     </xs:restriction>
   </xs:simpleType>
@@ -649,7 +649,7 @@
     </xs:restriction>
   </xs:simpleType>
 
-  <!-- @@BEGIN_SDKSPLIT 
+  <!-- @@BEGIN_SDKSPLIT
     [Add your DEH here]
   @@END_SDKSPLIT -->
   <!--DEPLOYMENT EXTENSION HANDLERS (DEH) SCHEMAS-->
@@ -938,7 +938,7 @@
     </xs:restriction>
   </xs:simpleType>
 
-  <!-- @@BEGIN_SDKSPLIT 
+  <!-- @@BEGIN_SDKSPLIT
     [Add your DEH schema here]
   @@END_SDKSPLIT -->
 </xs:schema>
