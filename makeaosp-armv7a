@@ -12,5 +12,5 @@ cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a \
     -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
     -DCMAKE_ANDROID_STL_TYPE=c++_static \
-    -DCMAKE_BUILD_TYPE=Release -DAOSP=on ..
+    -DCMAKE_BUILD_TYPE=MinSizeRel -DAOSP=on ..
 make
