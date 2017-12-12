@@ -82,6 +82,32 @@ PREREQUISITES
 
     See: https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode for additional details
 
+    Make Android on Windows:
+    ------------------------
+    Unpack the latest Android NDK to c:\android-ndk
+    Unpack Ninja-build to c:\ninja
+    Add c:\ninja to the path environment variable
+    Create a folder under the root of the enlistment called "android", cd into that folder, then run the following command to create ninja build files:
+
+    cmake -DCMAKE_ANDROID_NDK=c:/android-ndk ^
+        -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang ^
+        -DCMAKE_SYSTEM_NAME=Android ^
+        -DCMAKE_SYSTEM_VERSION=27 ^
+        -DCMAKE_ANDROID_ARCH_ABI=x86 ^
+        -DCMAKE_ANDROID_STL_TYPE=c++_static ^
+        -DCMAKE_BUILD_TYPE=Release ^
+        -DAOSP=on ^
+        -G"Ninja" ..
+
+    To compile, run the following command from the android folder:
+
+    ninja
+
+
+    Ninja-build:
+    ------------
+    https://github.com/ninja-build/ninja/releases
+
     Android NDK:
     ------------
     https://developer.android.com/ndk/downloads/index.html
