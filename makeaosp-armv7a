@@ -1,0 +1,16 @@
+#!/bin/bash
+# script to build on mac
+mkdir .vs
+cd .vs
+
+# clean up any old builds of xPlatAppx modules
+find . -name *xPlatAppx* -d | xargs rm -r
+
+cmake -DCMAKE_SYSTEM_NAME=Android \
+    -DCMAKE_ANDROID_NDK=/home/xplatappxuser/android-ndk-r16b \
+    -DCMAKE_SYSTEM_VERSION=27 \
+    -DCMAKE_ANDROID_ARCH_ABI=armeabi-v7a \
+    -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
+    -DCMAKE_ANDROID_STL_TYPE=c++_static \
+    -DCMAKE_BUILD_TYPE=Release -DAOSP=on ..
+make
