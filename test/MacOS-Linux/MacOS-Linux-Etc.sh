@@ -2,15 +2,15 @@
 TESTFAILED=0
 function FindBinFolder {
     #look in .vs/bin first
-    if [ -e "../.vs/bin/MakeXplat" ]
+    if [ -e "../../.vs/bin/MakeXplat" ]
     then
-        BINDIR="../.vs/bin"
-    elif [ -e "../.vscode/bin/MakeXplat" ]
+        BINDIR="../../.vs/bin"
+    elif [ -e "../../.vscode/bin/MakeXplat" ]
     then
-        BINDIR="../.vscode/bin"
-    elif [ -e "../build/bin/MakeXplat" ]
+        BINDIR="../../.vscode/bin"
+    elif [ -e "../../build/bin/MakeXplat" ]
     then
-        BINDIR="../build/bin"
+        BINDIR="../../build/bin"
     else 
         echo "ERROR: Could not find build binaries"
         exit
@@ -18,10 +18,10 @@ function FindBinFolder {
 }
 
 function CleanupUnpackFolder {
-    rm -f -r ./unpack/*
-    if [ -e "./unpack/*" ]
+    rm -f -r ./../unpack/*
+    if [ -e "./../unpack/*" ]
     then
-        echo "ERROR: Could not cleanup ./unpack directory"
+        echo "ERROR: Could not cleanup ./../unpack directory"
         exit
     fi
 }
@@ -32,9 +32,9 @@ function RunTest {
     local UNPACKFOLDER="$2"
     local ARGS="$3"
     echo "------------------------------------------------------"
-    echo $BINDIR/MakeXplat unpack -d ./unpack -p $UNPACKFOLDER $ARGS
+    echo $BINDIR/MakeXplat unpack -d ./../unpack -p $UNPACKFOLDER $ARGS
     echo "------------------------------------------------------"
-    $BINDIR/MakeXplat unpack -d ./unpack -p $UNPACKFOLDER $ARGS
+    $BINDIR/MakeXplat unpack -d ./../unpack -p $UNPACKFOLDER $ARGS
     local RESULT=$?
     echo "expect: "$SUCCESS", got: "$RESULT
     if [ $RESULT -eq $SUCCESS ]
@@ -51,20 +51,32 @@ FindBinFolder
 # common codes:
 # AppxSignatureInvalid        = ERROR_FACILITY + 0x0041 == 65
 
-RunTest 2 ./appx/Empty.appx -sv
-RunTest 0 ./appx/HelloWorld.appx -ss
-RunTest 65 ./appx/SignatureNotLastPart-ERROR_BAD_FORMAT.appx
-#RunTest 0x134 ./appx/SignedMismatchedPublisherName-ERROR_BAD_FORMAT.appx
-RunTest 65 ./appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
-RunTest 65 ./appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx -sv
-RunTest 65 ./appx/SignedTamperedCD-TRUST_E_BAD_DIGEST.appx
-RunTest 65 ./appx/SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx
-RunTest 65 ./appx/SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx
-RunTest 65 ./appx/SignedUntrustedCert-CERT_E_CHAINING.appx
-RunTest 0 ./appx/StoreSigned_Desktop_x64_MoviesTV.appx
-RunTest 65 ./appx/TestAppxPackage_Win32.appx
-RunTest 65 ./appx/TestAppxPackage_x64.appx
-RunTest 18 ./appx/UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
+RunTest 2  ./../appx/Empty.appx -sv
+RunTest 0  ./../appx/HelloWorld.appx -ss
+RunTest 65 ./../appx/SignatureNotLastPart-ERROR_BAD_FORMAT.appx
+#RunTest 0x134 ./../appx/SignedMismatchedPublisherName-ERROR_BAD_FORMAT.appx
+RunTest 65 ./../appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
+RunTest 65 ./../appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx -sv
+RunTest 65 ./../appx/SignedTamperedCD-TRUST_E_BAD_DIGEST.appx
+RunTest 65 ./../appx/SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx
+RunTest 65 ./../appx/SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx
+RunTest 65 ./../appx/SignedUntrustedCert-CERT_E_CHAINING.appx
+RunTest 0  ./../appx/StoreSigned_Desktop_x64_MoviesTV.appx
+RunTest 65 ./../appx/TestAppxPackage_Win32.appx
+RunTest 65 ./../appx/TestAppxPackage_x64.appx
+RunTest 18 ./../appx/UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
+RunTest 65 ./../appx/BlockMap/TODAVIANO/Signature_in_BlockMap.appx
+RunTest 65 ./../appx/BlockMap/TODAVIANO/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
+RunTest 65 ./../appx/BlockMap/Missing_Manifest_in_blockmap.appx
+RunTest 65 ./../appx/BlockMap/ContentTypes_in_blockmap.appx
+RunTest 65 ./../appx/BlockMap/Invalid_Bad_Block.appx
+RunTest 65 ./../appx/BlockMap/Size_wrong_uncompressed.appx
+RunTest 65 ./../appx/BlockMap/HelloWorld.appx
+RunTest 65 ./../appx/BlockMap/Extra_file_in_blockmap.appx
+RunTest 65 ./../appx/BlockMap/File_missing_from_blockmap.appx
+RunTest 65 ./../appx/BlockMap/No_blockmap.appx
+RunTest 65 ./../appx/BlockMap/Bad_Namespace_Blockmap.appx
+RunTest 65 ./../appx/BlockMap/Duplicate_file_in_blockmap.appx
 
     echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if [ $TESTFAILED -ne 0 ]
