@@ -1,6 +1,7 @@
 #!/bin/bash
 TESTFAILED=0
 function FindBinFolder {
+    echo "Searching under" $PWD
     #look in .vs/bin first
     if [ -e "../../.vs/bin/MakeXplat" ]
     then
@@ -13,7 +14,7 @@ function FindBinFolder {
         BINDIR="../../build/bin"
     else 
         echo "ERROR: Could not find build binaries"
-        exit
+        exit 2
     fi
 }
 

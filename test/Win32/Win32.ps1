@@ -3,6 +3,7 @@ $global:TESTFAILED=0
 $global:BINDIR=""
 
 function FindBinFolder {
+    write-host "Searching under" (Get-Item -Path ".\" -Verbose).FullName
     if (Test-Path "..\..\.vs\bin\MakeXplat.exe" )
     {
         $global:BINDIR="..\..\.vs\bin"
@@ -18,7 +19,7 @@ function FindBinFolder {
     else
     {
         write-host "ERROR: Could not find build binaries"
-        exit
+        exit 2
     }
 }
 
