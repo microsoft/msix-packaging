@@ -26,14 +26,14 @@ function FindBinFolder {
 }
 
 function CleanupUnpackFolder {
-    if (Test-Path ".\..\unpack\*" )
+    if (Test-Path ".\..\unpack")
     {
         Remove-Item ".\..\unpack\*" -recurse
-    }
-    elseif (Test-Path ".\..\unpack")
+    }    
+    else
     {
         write-host "creating .\..\unpack"
-        New-Item -ItemType Directory -Force ".\..\unpack"
+        New-Item -ItemType Directory -Force ".\..\unpack"        
     }
     if (Test-Path ".\..\unpack\*" )
     {
