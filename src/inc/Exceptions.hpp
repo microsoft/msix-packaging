@@ -60,7 +60,7 @@ namespace xPlat {
         InflateInitialize           = ERROR_FACILITY + 0x0021,
         InflateRead                 = ERROR_FACILITY + 0x0022,
         InflateCorruptData          = ERROR_FACILITY + 0x0023,
-      
+
         // AppxPackage format errors
         AppxMissingSignatureP7X     = ERROR_FACILITY + 0x0031,
         AppxMissingContentTypesXML  = ERROR_FACILITY + 0x0032,
@@ -76,7 +76,10 @@ namespace xPlat {
         // Blockmap semantic errors
         BlockMapSemanticError       = ERROR_FACILITY + 0x0051,
 
-        // XML parsing errors        
+        // AppxManifest semanti errors
+        AppxManifestSemanticError       = ERROR_FACILITY + 0x0061,
+
+        // XML parsing errors
         XercesWarning               = XERCES_SAX_FACILITY + 0x0001,
         XercesError                 = XERCES_SAX_FACILITY + 0x0002,
         XercesFatal                 = XERCES_SAX_FACILITY + 0x0003,
