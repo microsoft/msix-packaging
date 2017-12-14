@@ -51,6 +51,7 @@ namespace xPlat {
         AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, IStream* stream);
 
         // IVerifierObject
+        const std::string& GetPublisher() override { return m_publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
         xPlat::ComPtr<IStream> GetStream() override { return m_stream; }
         xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override;
@@ -70,5 +71,6 @@ namespace xPlat {
         SignatureOrigin              m_signatureOrigin = SignatureOrigin::Unsigned; // assume unsigned until proven otherwise.
         APPX_VALIDATION_OPTION       m_validationOptions;
         ComPtr<IStream>              m_stream;
+        std::string                  m_publisher;
     };
 } // namespace xPlat

@@ -113,11 +113,13 @@ namespace xPlat {
         const std::string& resourceId,
         const std::string& architecture,
         const std::string& publisher) :
-        Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), PublisherHash(publisher)
+        Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), Publisher(publisher)
     {
         // This should go away once the schema validation is on
         // Only name, publisher and version are required
-        ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty() || PublisherHash.empty()), "Invalid Identity element");
+        ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty() || Publisher.empty()), "Invalid Identity element");
+
+        // TODO: calculate the publisher hash from the publisher value.
     }
 
     AppxManifestObject::AppxManifestObject(ComPtr<IStream>& stream) : m_stream(stream)
@@ -179,6 +181,12 @@ namespace xPlat {
         temp = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, m_container->GetFile(APPXMANIFEST_XML));
         m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(temp);
         ThrowErrorIfNot(Error::AppxMissingAppxManifestXML, (m_appxBlockMap->HasStream()), "AppxManifest.xml not in archive!");
+        if ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
+        {
+            ThrowErrorIfNot(Error::AppxPublisherMismatch,
+                (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())),
+                "Publisher mismatch");
+        }
 
         struct Config
         {
