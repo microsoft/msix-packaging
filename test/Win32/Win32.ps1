@@ -21,10 +21,20 @@ function FindBinFolder {
         write-host "ERROR: Could not find build binaries"
         exit 2
     }
+
+    write-host "found $global:BINDIR"
 }
 
 function CleanupUnpackFolder {
-    Remove-Item ".\..\unpack\*" -recurse
+    if (Test-Path ".\..\unpack\*" )
+    {
+        write-host "cleaning up .\..\unpack"
+        Remove-Item ".\..\unpack\*" -recurse
+    }
+    else {
+        write-host "creating .\..\unpack"
+        New-Item -ItemType Directory -Force ".\..\unpack"
+    }
     if (Test-Path ".\..\unpack\*" )
     {
         write-host "ERROR: Could not cleanup .\..\unpack directory"
