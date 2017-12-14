@@ -66,18 +66,17 @@ RunTest 0  ./../appx/StoreSigned_Desktop_x64_MoviesTV.appx
 RunTest 65 ./../appx/TestAppxPackage_Win32.appx
 RunTest 65 ./../appx/TestAppxPackage_x64.appx
 RunTest 18 ./../appx/UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
-RunTest 65 ./../appx/BlockMap/TODAVIANO/Signature_in_BlockMap.appx
-RunTest 65 ./../appx/BlockMap/TODAVIANO/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
-RunTest 65 ./../appx/BlockMap/Missing_Manifest_in_blockmap.appx
-RunTest 65 ./../appx/BlockMap/ContentTypes_in_blockmap.appx
-RunTest 65 ./../appx/BlockMap/Invalid_Bad_Block.appx
-RunTest 65 ./../appx/BlockMap/Size_wrong_uncompressed.appx
-RunTest 65 ./../appx/BlockMap/HelloWorld.appx
-RunTest 65 ./../appx/BlockMap/Extra_file_in_blockmap.appx
-RunTest 65 ./../appx/BlockMap/File_missing_from_blockmap.appx
-RunTest 65 ./../appx/BlockMap/No_blockmap.appx
-RunTest 65 ./../appx/BlockMap/Bad_Namespace_Blockmap.appx
-RunTest 65 ./../appx/BlockMap/Duplicate_file_in_blockmap.appx
+RunTest 1 ./../appx/FileDoesNotExist.appx
+RunTest 81 ./../appx/BlockMap/Missing_Manifest_in_blockmap.appx -ss
+RunTest 81 ./../appx/BlockMap/ContentTypes_in_blockmap.appx -ss
+RunTest 65 ./../appx/BlockMap/Invalid_Bad_Block.appx -ss
+RunTest 0 ./../appx/BlockMap/Size_wrong_uncompressed.appx -ss
+RunTest 0 ./../appx/BlockMap/HelloWorld.appx -ss
+RunTest 2 ./../appx/BlockMap/Extra_file_in_blockmap.appx -ss
+RunTest 81 ./../appx/BlockMap/File_missing_from_blockmap.appx -ss
+RunTest 2 ./../appx/BlockMap/No_blockmap.appx -ss
+RunTest 3 ./../appx/BlockMap/Bad_Namespace_Blockmap.appx -ss
+RunTest 81 ./../appx/BlockMap/Duplicate_file_in_blockmap.appx -ss
 
     echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if [ $TESTFAILED -ne 0 ]
