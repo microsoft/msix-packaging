@@ -28,10 +28,10 @@ function FindBinFolder {
 function CleanupUnpackFolder {
     if (Test-Path ".\..\unpack\*" )
     {
-        write-host "cleaning up .\..\unpack"
         Remove-Item ".\..\unpack\*" -recurse
     }
-    else {
+    elseif (Test-Path ".\..\unpack")
+    {
         write-host "creating .\..\unpack"
         New-Item -ItemType Directory -Force ".\..\unpack"
     }
@@ -66,11 +66,11 @@ function RunTest([int] $SUCCESSCODE, [string] $PACKAGE, [string] $OPT) {
     }
 }
 
-#RunTest 0x134 .\appx\SignedMismatchedPublisherName-ERROR_BAD_FORMAT.appx
 FindBinFolder
 RunTest 0x8bad0002 .\..\appx\Empty.appx "-sv"
 RunTest 0x00000000 .\..\appx\HelloWorld.appx "-ss"
 RunTest 0x8bad0042 .\..\appx\SignatureNotLastPart-ERROR_BAD_FORMAT.appx
+#RunTest 0x134 .\appx\SignedMismatchedPublisherName-ERROR_BAD_FORMAT.appx
 RunTest 0x8bad0042 .\..\appx\SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
 RunTest 0x8bad0041 .\..\appx\SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx "-sv"
 RunTest 0x8bad0042 .\..\appx\SignedTamperedCD-TRUST_E_BAD_DIGEST.appx
@@ -81,7 +81,7 @@ RunTest 0x00000000 .\..\appx\StoreSigned_Desktop_x64_MoviesTV.appx
 RunTest 0x00000000 .\..\appx\TestAppxPackage_Win32.appx "-ss"
 RunTest 0x00000000 .\..\appx\TestAppxPackage_x64.appx "-ss"
 RunTest 0x8bad0012 .\..\appx\UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
-RunTest 0x8bad0001 .\..\appx\BlockMap\FileDoesNotExist.appx "-ss"
+RunTest 0x8bad0001 .\..\appx\FileDoesNotExist.appx "-ss"
 RunTest 0x8bad0051 .\..\appx\BlockMap\Missing_Manifest_in_blockmap.appx "-ss"
 RunTest 0x8bad0051 .\..\appx\BlockMap\ContentTypes_in_blockmap.appx "-ss"
 RunTest 0x8bad0041 .\..\appx\BlockMap\Invalid_Bad_Block.appx "-ss"
