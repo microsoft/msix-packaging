@@ -239,6 +239,17 @@ namespace xPlat
         return ok; 
     }
 
+    void replaceAll( std::string &s, const std::string &search, const std::string &replace ) {
+        for(size_t pos = 0; ; pos += replace.length() ) {
+            // Locate the substring to replace
+            pos = s.find( search, pos );
+            if(pos == std::string::npos) { break; }
+            // Replace by erasing and inserting
+            s.erase( pos, search.length() );
+            s.insert( pos, replace );
+        }
+    }
+
     bool GetPublisherName(/*in*/ unique_PKCS7& p7, /*inout*/ std::string& publisher)
     {
         X509* cert = nullptr;
@@ -292,12 +303,19 @@ namespace xPlat
             X509_NAME_print_ex(bio.get(), 
                 X509_get_subject_name(cert), 
                 0, 
-                XN_FLAG_SEP_CPLUS_SPC | XN_FLAG_DN_REV);
+                XN_FLAG_FN_SN | XN_FLAG_SEP_CPLUS_SPC | XN_FLAG_DN_REV);
 
             // Now extract the publisher from the BIO print buffer
             char *memBuffer = nullptr;
             BIO_get_mem_data(bio.get(), &memBuffer);
             publisher = std::string(memBuffer);
+            
+            // CertNameToStr complies with RFC 1779, with the variation that the RDN 'ST' is printed as 'S'. No explanation is given.  
+            // See https://msdn.microsoft.com/en-us/library/windows/desktop/aa376556(v=vs.85).aspx for additional details
+            // OpenSSL's X509_NAME_print_ex complies with RFC 2253 (with no variation).
+            // See https://wiki.openssl.org/index.php/Manual:ASN1_STRING_print_ex(3) for additional details.  
+            // So we obviously need to convert at least the stateOrProvinceName RDN short name into the mutant stateOrProvinceName RDN short name.
+            replaceAll(publisher, ", ST=", ", S=");
             return true;
         }
         return false;
