@@ -185,7 +185,7 @@ namespace xPlat {
         {
             ThrowErrorIfNot(Error::AppxPublisherMismatch,
                 (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())),
-                "Publisher mismatch");
+                "Publisher mismatch: " + m_appxManifest->GetPublisher() + " != " + m_appxSignature->GetPublisher());
         }
 
         struct Config

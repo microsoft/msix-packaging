@@ -528,7 +528,7 @@ namespace xPlat {
             // 5 - last mod file date              2 bytes
             // 6 - crc - 32                        4 bytes
             Field<6>().validation = [&](std::uint32_t& v)
-            {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid CRC");
+            {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid Zip CRC");
             };
             // 7 - compressed size                 4 bytes
             Field<7>().validation = [&](std::uint32_t& v)

@@ -6,6 +6,7 @@
 #include <cassert>
 #include <functional>
 
+#include "Log.hpp"
 #include "AppxWindows.hpp"
 #include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/sax/ErrorHandler.hpp"
@@ -78,7 +79,7 @@ namespace xPlat {
         BlockMapSemanticError       = ERROR_FACILITY + 0x0051,
 
         // AppxManifest semanti errors
-        AppxManifestSemanticError       = ERROR_FACILITY + 0x0061,
+        AppxManifestSemanticError   = ERROR_FACILITY + 0x0061,
 
         // XML parsing errors
         XercesWarning               = XERCES_SAX_FACILITY + 0x0001,
@@ -100,25 +101,33 @@ namespace xPlat {
         Exception(Error error, std::string& message) :
             m_code(static_cast<std::uint32_t>(error)),
             m_message(message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
 
         Exception(Error error, const char* message) :
             m_code(static_cast<std::uint32_t>(error)),
             m_message(message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
 
         Exception(HRESULT error, std::string& message) :
             m_code(error),
             m_message(message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
 
         Exception(HRESULT error, const char* message) :
             m_code(error),
             m_message(message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
 
-        uint32_t        Code() { return m_code; }
-        std::string&    Message() { return m_message; }
+        uint32_t            Code() { return m_code; }
+        const std::string&  Message() { return m_message; }
 
     protected:
         std::uint32_t   m_code;
@@ -130,11 +139,15 @@ namespace xPlat {
     public:
         Win32Exception(DWORD error, std::string& message) :
             Exception(0x80070000 + error, message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
 
         Win32Exception(DWORD error, const char* message) :
             Exception(0x80070000 + error, message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
     };
 
     class ParsingException : public XERCES_CPP_NAMESPACE::ErrorHandler
