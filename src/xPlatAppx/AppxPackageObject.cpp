@@ -183,9 +183,9 @@ namespace xPlat {
         ThrowErrorIfNot(Error::AppxMissingAppxManifestXML, (m_appxBlockMap->HasStream()), "AppxManifest.xml not in archive!");
         if ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
         {
+            std::string reason = "Publisher mismatch: " + m_appxManifest->GetPublisher() + " != " + m_appxSignature->GetPublisher();
             ThrowErrorIfNot(Error::AppxPublisherMismatch,
-                (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())),
-                "Publisher mismatch: " + m_appxManifest->GetPublisher() + " != " + m_appxSignature->GetPublisher());
+                (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())), reason);
         }
 
         struct Config
