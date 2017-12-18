@@ -6,6 +6,7 @@
 #include <cassert>
 #include <functional>
 
+#include "Log.hpp"
 #include "AppxWindows.hpp"
 #include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/sax/ErrorHandler.hpp"
@@ -60,7 +61,7 @@ namespace xPlat {
         InflateInitialize           = ERROR_FACILITY + 0x0021,
         InflateRead                 = ERROR_FACILITY + 0x0022,
         InflateCorruptData          = ERROR_FACILITY + 0x0023,
-      
+
         // AppxPackage format errors
         AppxMissingSignatureP7X     = ERROR_FACILITY + 0x0031,
         AppxMissingContentTypesXML  = ERROR_FACILITY + 0x0032,
@@ -72,11 +73,15 @@ namespace xPlat {
         // Signature errors
         AppxSignatureInvalid        = ERROR_FACILITY + 0x0041,
         AppxCertNotTrusted          = ERROR_FACILITY + 0x0042,
+        AppxPublisherMismatch       = ERROR_FACILITY + 0x0043,
 
         // Blockmap semantic errors
         BlockMapSemanticError       = ERROR_FACILITY + 0x0051,
 
-        // XML parsing errors        
+        // AppxManifest semanti errors
+        AppxManifestSemanticError   = ERROR_FACILITY + 0x0061,
+
+        // XML parsing errors
         XercesWarning               = XERCES_SAX_FACILITY + 0x0001,
         XercesError                 = XERCES_SAX_FACILITY + 0x0002,
         XercesFatal                 = XERCES_SAX_FACILITY + 0x0003,
@@ -96,25 +101,33 @@ namespace xPlat {
         Exception(Error error, std::string& message) :
             m_code(static_cast<std::uint32_t>(error)),
             m_message(message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
 
         Exception(Error error, const char* message) :
             m_code(static_cast<std::uint32_t>(error)),
             m_message(message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
 
         Exception(HRESULT error, std::string& message) :
             m_code(error),
             m_message(message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
 
         Exception(HRESULT error, const char* message) :
             m_code(error),
             m_message(message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
 
-        uint32_t        Code() { return m_code; }
-        std::string&    Message() { return m_message; }
+        uint32_t            Code() { return m_code; }
+        const std::string&  Message() { return m_message; }
 
     protected:
         std::uint32_t   m_code;
@@ -126,11 +139,15 @@ namespace xPlat {
     public:
         Win32Exception(DWORD error, std::string& message) :
             Exception(0x80070000 + error, message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
 
         Win32Exception(DWORD error, const char* message) :
             Exception(0x80070000 + error, message)
-        {}
+        {
+            Global::Log::Append(Message());
+        }
     };
 
     class ParsingException : public XERCES_CPP_NAMESPACE::ErrorHandler

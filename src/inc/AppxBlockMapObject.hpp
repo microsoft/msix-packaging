@@ -206,6 +206,7 @@ namespace xPlat {
         AppxBlockMapObject(IxPlatFactory* factory, ComPtr<IStream>& stream);
 
         // IVerifierObject
+        const std::string& GetPublisher() override { throw Exception(Error::NotSupported); }
         bool HasStream() override { return m_stream.Get() != nullptr; }
         xPlat::ComPtr<IStream> GetStream() override { return m_stream; }
         xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override;

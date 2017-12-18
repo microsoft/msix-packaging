@@ -78,6 +78,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/Exceptions.hpp
     ../inc/FileStream.hpp
     ../inc/InflateStream.hpp
+    ../inc/Log.hpp
     ../inc/ObjectBase.hpp
     ../inc/RangeStream.hpp
     ../inc/StorageObject.hpp
@@ -93,13 +94,14 @@ set(LIB_PRIVATE_HEADERS
 set(LIB_SOURCES
     AppxBlockMapObject.cpp
     AppxFactory.cpp
-	AppxPackageObject.cpp
+    AppxPackageObject.cpp
     AppxPackaging_i.cpp
     AppxSignature.cpp
     InflateStream.cpp
+    Log.cpp
     UnicodeConversion.cpp
-	xPlatAppx.cpp
-	ZipObject.cpp
+    xPlatAppx.cpp
+    ZipObject.cpp    
     ${DirectoryObject}
     ${SHA256}
     ${Signature}

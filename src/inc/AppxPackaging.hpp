@@ -1972,19 +1972,17 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
     char* utf8Destination
 );
 
-// TODO: this export is temporary, remove later.
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE ValidateAppxSignature(char* appx);
-
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying 
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.
 typedef LPVOID STDMETHODCALLTYPE COTASKMEMALLOC(SIZE_T cb);
 typedef void STDMETHODCALLTYPE COTASKMEMFREE(LPVOID pv);
 
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText);
+
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     APPX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory);
-}
 
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
@@ -2002,6 +2000,8 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     LPCWSTR utf16File,
     bool forRead,
     IStream** stream);
+
+} // extern "C++" 
 
 // Helper used for QueryInterface defines
 #define SpecializeUuidOfImpl(Type)                    \
