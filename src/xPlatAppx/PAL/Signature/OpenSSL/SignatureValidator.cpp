@@ -9,6 +9,7 @@
 #include <iostream>
 
 #include <openssl/err.h>
+#include <openssl/bio.h>
 #include <openssl/objects.h>
 #include <openssl/evp.h>
 #include <openssl/x509v3.h>
@@ -300,6 +301,7 @@ namespace xPlat
         {
             // Create a BIO memory buffer, and print the subject name to it.
             unique_BIO bio(BIO_new(BIO_s_mem()));
+
             X509_NAME_print_ex(bio.get(), 
                 X509_get_subject_name(cert), 
                 0, 
@@ -307,8 +309,8 @@ namespace xPlat
 
             // Now extract the publisher from the BIO print buffer
             char *memBuffer = nullptr;
-            BIO_get_mem_data(bio.get(), &memBuffer);
-            publisher = std::string(memBuffer);
+            auto countBytes = BIO_get_mem_data(bio.get(), &memBuffer);
+            publisher = std::string(memBuffer, countBytes);
             
             // CertNameToStr complies with RFC 1779, with the variation that the RDN 'ST' is printed as 'S'. No explanation is given.  
             // See https://msdn.microsoft.com/en-us/library/windows/desktop/aa376556(v=vs.85).aspx for additional details
