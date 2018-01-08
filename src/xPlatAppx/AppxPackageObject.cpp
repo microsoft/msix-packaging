@@ -7,12 +7,17 @@
 #include "UnicodeConversion.hpp"
 #include "ContentTypesSchemas.hpp"
 
+#include "xercesc/util/XMLString.hpp"
+#include "xercesc/parsers/XercesDOMParser.hpp"
+
 #include <string>
 #include <vector>
 #include <map>
 #include <memory>
 #include <functional>
 #include <limits>
+
+XERCES_CPP_NAMESPACE_USE
 
 namespace xPlat {
 
@@ -94,20 +99,55 @@ namespace xPlat {
         return result;
     }
 
+    static std::string GetAttributeValue(DOMElement* element, std::string attributeName)
+    {
+        XercesXMLChPtr nameAttr(XMLString::transcode(attributeName.c_str()));
+        XercesCharPtr value(XMLString::transcode(element->getAttribute(nameAttr.Get())));
+        return std::string(value.Get());
+    }
+
+
     AppxPackageId::AppxPackageId(
         const std::string& name,
         const std::string& version,
         const std::string& resourceId,
         const std::string& architecture,
         const std::string& publisher) :
-        Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), PublisherHash(publisher)
+        Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), Publisher(publisher)
     {
-        // TODO: Implement validation?
+        // This should go away once the schema validation is on
+        // Only name, publisher and version are required
+        ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty() || Publisher.empty()), "Invalid Identity element");
+
+        // TODO: calculate the publisher hash from the publisher value.
     }
 
     AppxManifestObject::AppxManifestObject(ComPtr<IStream>& stream) : m_stream(stream)
     {
-        // TODO: Implement
+        // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
+        auto dom = ComPtr<IXmlObject>::Make<XmlObject>(stream);
+
+        // Get Identity
+        XercesXMLChPtr identityXPath(XMLString::transcode("/Package/Identity"));
+        XercesPtr<DOMXPathNSResolver> resolver(dom->Document()->createNSResolver(dom->Document()->getDocumentElement()));
+        XercesPtr<DOMXPathResult> identityResult(dom->Document()->evaluate(
+            identityXPath.Get(),
+            dom->Document()->getDocumentElement(),
+            resolver.Get(),
+            DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
+            nullptr));
+
+        // This should go away once the schema validation is on
+        ThrowErrorIf(Error::AppxManifestSemanticError, (identityResult->getSnapshotLength() == 0), "No Identity element in AppxManifest.xml");
+        ThrowErrorIf(Error::AppxManifestSemanticError, (identityResult->getSnapshotLength() > 1), "There must be only one Identity element at most in AppxManifest.xml");
+
+        auto identityNode = static_cast<DOMElement*>(identityResult->getNodeValue());
+        auto name = GetAttributeValue(identityNode, "Name");
+        auto architecture = GetAttributeValue(identityNode, "ProcessorArchitecture");
+        auto publisher = GetAttributeValue(identityNode, "Publisher");
+        auto version = GetAttributeValue(identityNode, "Version");
+        auto resourceId = GetAttributeValue(identityNode, "ResourceId");
+        m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisher);
     }
 
     AppxPackageObject::AppxPackageObject(IxPlatFactory* factory, APPX_VALIDATION_OPTION validation, IStorageObject* container) :
@@ -141,6 +181,12 @@ namespace xPlat {
         temp = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, m_container->GetFile(APPXMANIFEST_XML));
         m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(temp);
         ThrowErrorIfNot(Error::AppxMissingAppxManifestXML, (m_appxBlockMap->HasStream()), "AppxManifest.xml not in archive!");
+        if ((validation & APPX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
+        {
+            std::string reason = "Publisher mismatch: '" + m_appxManifest->GetPublisher() + "' != '" + m_appxSignature->GetPublisher() + "'";
+            ThrowErrorIfNot(Error::AppxPublisherMismatch,
+                (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())), reason);
+        }
 
         struct Config
         {

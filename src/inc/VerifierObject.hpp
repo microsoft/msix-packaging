@@ -19,6 +19,7 @@ class IVerifierObject : public IUnknown
 // An internal interface for objects that are used to verify structured data represented by an underlying stream.
 {
 public:
+    virtual const std::string& GetPublisher() = 0;
     virtual bool HasStream() = 0;
     virtual xPlat::ComPtr<IStream> GetStream() = 0;
     virtual xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) = 0;

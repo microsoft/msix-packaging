@@ -240,10 +240,22 @@ int ParseAndRun(std::map<std::string, Command>& commands, State& state, int argc
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
         );
-        //return ValidateAppxSignature(const_cast<char*>(state.packageName.c_str()));
     }
     return -1; // should never end up here.
 }
+
+LPVOID STDMETHODCALLTYPE MyAllocate(SIZE_T cb)  { return std::malloc(cb); }
+
+class Text
+{
+public:
+    char** operator&() { return &content; }
+    ~Text() { Cleanup(); }
+
+    char* content = nullptr;
+    protected:    
+    void Cleanup() { if (content) { std::free(content); content = nullptr; } }
+};
 
 // Defines the grammar of commands and each command's associated options,
 int main(int argc, char* argv[])
@@ -310,8 +322,18 @@ int main(int argc, char* argv[])
 
     auto result = ParseAndRun(commands, state, argc, argv);
     if (result != 0)
-    {
+    {        
         std::cout << "Error: " << std::hex << result << std::endl;
+        Text text;
+        auto logResult = GetLogTextUTF8(MyAllocate, &text);
+        if (0 == logResult)
+        {
+            std::cout << "LOG:" << std::endl << text.content << std::endl;
+        }
+        else 
+        {
+            std::cout << "UNABLE TO GET LOG WITH HR=" << std::hex << logResult << std::endl;
+        }
     }
     return result;
 }

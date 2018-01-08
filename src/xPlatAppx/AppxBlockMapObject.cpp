@@ -1,7 +1,5 @@
 #include "AppxBlockMapObject.hpp"
 #include "AppxBlockMapSchemas.hpp"
-#include "xercesc/framework/MemBufInputSource.hpp"
-#include "xercesc/framework/XMLGrammarPoolImpl.hpp"
 #include "xercesc/parsers/XercesDOMParser.hpp"
 #include "xercesc/util/Base64.hpp"
 #include "xercesc/util/XMLString.hpp"

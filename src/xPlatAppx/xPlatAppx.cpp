@@ -9,6 +9,7 @@
 #include "AppxPackaging.hpp"
 #include "AppxPackageObject.hpp"
 #include "AppxFactory.hpp"
+#include "Log.hpp"
 
 #include <string>
 #include <memory>
@@ -194,35 +195,17 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
     });
 }
 
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE ValidateAppxSignature(char* appx)
+XPLATAPPX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText)
 {
-    return xPlat::ResultOf([&]() {
-        auto rawFile = xPlat::ComPtr<IStream>::Make<xPlat::FileStream>(appx, xPlat::FileStream::Mode::READ);
-        {
-            APPX_VALIDATION_OPTION validationOption = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
-
-            std::function<LPVOID STDMETHODCALLTYPE(SIZE_T cb)> allocator=[](SIZE_T cb){return std::malloc(cb);};
-            std::function<void STDMETHODCALLTYPE(LPVOID pv)> deallocator=[](LPVOID pv){ std::free(pv);};
-
-            xPlat::ComPtr<IAppxFactory> factory;
-            ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, validationOption, &factory));
-
-            auto internalFactory = factory.As<IxPlatFactory>();
-            xPlat::ZipObject zip(internalFactory.Get(), rawFile.Get());
-            auto p7xStream = zip.GetFile("AppxSignature.p7x");
-            std::vector<std::uint8_t> buffer(sizeof(_BLOBHEADER));
-
-            ULONG cbRead;
-            ThrowHrIfFailed(p7xStream->Read(reinterpret_cast<void*>(buffer.data()), buffer.size(), &cbRead));
-            _BLOBHEADER *pblob = reinterpret_cast<_BLOBHEADER*>(buffer.data());
-
-            ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, (cbRead > sizeof(_BLOBHEADER) && pblob->headerId == SIGNATURE_ID), "Invalid signature");
-
-            //auto rangeStream = std::make_unique<xPlat::RangeStream>(p7xStream, sizeof(P7xFileId), cbStream - sizeof(P7xFileId));
-            //auto tempStream = std::make_unique<xPlat::FileStream>("e:\\temp\\temp.p7x", xPlat::FileStream::WRITE);
-            //rangeStream->CopyTo(tempStream.get());
-            //tempStream->Close();
-        }
+    return xPlat::ResultOf([&](){        
+        ThrowErrorIf(xPlat::Error::InvalidParameter, (logText == nullptr || *logText != nullptr), "bad pointer" );
+        std::size_t countBytes = sizeof(char)*(xPlat::Global::Log::Text().size()+1);
+        *logText = reinterpret_cast<char*>(memalloc(countBytes));
+        ThrowErrorIfNot(xPlat::Error::OutOfMemory, (*logText), "Allocation failed!");
+        std::memset(reinterpret_cast<void*>(*logText), 0, countBytes);
+        std::memcpy(reinterpret_cast<void*>(*logText),
+                    reinterpret_cast<void*>(const_cast<char*>(xPlat::Global::Log::Text().c_str())),
+                    countBytes - sizeof(char));        
     });
 }
 
