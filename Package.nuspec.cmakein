@@ -58,6 +58,8 @@
         * 14914290 - ExtractContentsSample.cpp fails with E_NOTIMPL
         * 13953396 - AppxSignature/p7x Reader
 
+0.11 -  Implement identity enforcement during signature validation, add logging mechanism specifically to
+        reduce the cost associated with diagnosing BVT failures, plus various BVT test fixes and cleanup.
     </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
     <tags>xPlatAppx Appx AppxPackaging native</tags>
