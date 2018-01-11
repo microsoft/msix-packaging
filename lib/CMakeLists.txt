@@ -16,6 +16,7 @@ add_subdirectory(zlib)
 # Xerces
 set(BUILD_SHARED_LIBS OFF CACHE BOOL "Only build static lib"                         FORCE)
 set(network           OFF CACHE BOOL "Disable network support"                       FORCE)
+set(XERCES_TESTS      OFF CACHE BOOL "Don't build test or samples"                   FORCE)
 add_subdirectory(xerces)
 
 # OpenSSL

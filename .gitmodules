@@ -1,9 +1,6 @@
 [submodule "lib/openssl"]
 	path = lib/openssl
 	url = https://github.com/openssl/openssl.git
-[submodule "lib/xerces"]
-	path = lib/xerces
-	url = https://github.com/apache/xerces-c.git
 [submodule "lib/xalan"]
 	path = lib/xalan
 	url = https://github.com/apache/xalan-c.git

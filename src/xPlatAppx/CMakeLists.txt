@@ -137,6 +137,10 @@ include_directories(
 target_link_libraries(${PROJECT_NAME} zlibstatic)
 target_link_libraries(${PROJECT_NAME} xerces-c)
 
+IF(AOSP)
+    target_link_libraries(${PROJECT_NAME} -latomic)
+ENDIF()
+
 IF(OpenSSL_FOUND)
     # include the libraries needed to use OpenSSL
     target_link_libraries(${PROJECT_NAME} crypto)
