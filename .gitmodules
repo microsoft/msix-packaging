@@ -1,9 +1,3 @@
 [submodule "lib/openssl"]
 	path = lib/openssl
 	url = https://github.com/openssl/openssl.git
-[submodule "lib/xalan"]
-	path = lib/xalan
-	url = https://github.com/apache/xalan-c.git
-[submodule "sample/fb-util-for-appx"]
-	path = sample/fb-util-for-appx
-	url = https://github.com/facebook/fb-util-for-appx.git
