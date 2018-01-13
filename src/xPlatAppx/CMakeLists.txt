@@ -16,6 +16,11 @@ IF(WIN32)
     set (SHA256 PAL/SHA256/Win32/SHA256.cpp)
     set (Signature PAL/Signature/Win32/SignatureValidator.cpp)
 ELSE()
+    # Visibility variables for non-win32 platforms
+    set(CMAKE_VISIBILITY_INLINES_HIDDEN     1)
+    set(CMAKE_C_VISIBILITY_PRESET           hidden)    
+    set(CMAKE_CXX_VISIBILITY_PRESET         hidden)
+
     IF(OpenSSL_FOUND)
         MESSAGE (STATUS "Using OpenSSL ${OpenSLL_VERSION}")
         include_directories(

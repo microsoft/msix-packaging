@@ -111,24 +111,21 @@ struct _BLOBHEADER
 
 #ifdef WIN32
 #include <poppack.h>
-#endif
-
-// on apple platforms, compile with -fvisibility=hidden
-#ifdef PLATFORM_APPLE
-// on apple platforms, compile with -fvisibility=hidden
+#else
+// on non-win32 platforms, compile with -fvisibility=hidden
 #undef XPLATAPPX_API
 #define XPLATAPPX_API __attribute__((visibility("default")))
 
 // Initializer.
 __attribute__((constructor))
-static void initializer(void) {                             // 2
-    printf("[%s] initializer()\n", __FILE__);
+static void initializer(void) {
+//    printf("[%s] initializer()\n", __FILE__);
 }
 
 // Finalizer.
 __attribute__((destructor))
-static void finalizer(void) {                               // 3
-    printf("[%s] finalizer()\n", __FILE__);
+static void finalizer(void) {
+//    printf("[%s] finalizer()\n", __FILE__);
 }
 
 #endif
