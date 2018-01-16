@@ -20,6 +20,8 @@ ELSE()
     set(CMAKE_VISIBILITY_INLINES_HIDDEN     1)
     set(CMAKE_C_VISIBILITY_PRESET           hidden)    
     set(CMAKE_CXX_VISIBILITY_PRESET         hidden)
+    set(DEFINE_EXPORTS                      "-exported_symbols_list ${CMAKE_PROJECT_ROOT}/src/xPlatAppx/exports.def")    
+    set(CMAKE_SHARED_LINKER_FLAGS           "${CMAKE_SHARED_LINKER_FLAGS} ${DEFINE_EXPORTS}")
 
     IF(OpenSSL_FOUND)
         MESSAGE (STATUS "Using OpenSSL ${OpenSLL_VERSION}")
