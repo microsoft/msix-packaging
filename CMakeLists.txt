@@ -76,6 +76,27 @@ configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Microsoft.xPlat.AppxPackaging.targets
 MESSAGE (STATUS "Package.Nuspec created")
 MESSAGE (STATUS "--------------------------------")
 
+# Configure license txt
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/LICENSE ${CMAKE_BINARY_DIR}/build/LICENSE)
+MESSAGE (STATUS "LICENSE created")
+MESSAGE (STATUS "--------------------------------")    
+
+# Configure certificates
+# list each certificate by name that is to be published in the nuget package
+LIST(APPEND CERTS_TO_PUBLISH
+    base64_MSFT_RCA_2010.cer
+    base64_MSFT_RCA_2011.cer
+    base64_STORE_PCA_2011.cer
+    base64_Windows_Production_PCA_2011.cer
+    base64_Windows_Production.cer
+    Microsoft_MarketPlace_PCA_2011.cer
+)
+FOREACH(CERT_TO_PUBLISH ${CERTS_TO_PUBLISH})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/certs/${CERT_TO_PUBLISH} ${CMAKE_BINARY_DIR}/build/certs/${CERT_TO_PUBLISH})
+ENDFOREACH()
+MESSAGE (STATUS "Certificates published")
+MESSAGE (STATUS "--------------------------------")    
+
 # Enforce that target platform is specified.
 IF((NOT WIN32) AND (NOT MACOS) AND (NOT IOS) AND (NOT AOSP) AND (NOT LINUX))
     MESSAGE (STATUS "You must specify one of: [WIN32|MACOS|IOS|AOSP|LINUX]" )
