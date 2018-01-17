@@ -70,14 +70,14 @@ JNICALL
 Java_com_microsoft_xplatappxandroid_MainActivity_RunTests(JNIEnv* env, jobject /* this */,
                                                           jobject assetManager, jstring jFilePath)
 {
-    std::string output = "hi";
+    std::string output = "Test failure";
     std::string filePath = GetStringPathFromJString(env, jFilePath);
     CopyFilesFromAssets(env, assetManager, filePath, "");
     CopyFilesFromAssets(env, assetManager, filePath, "BlockMap");
     HRESULT hr = RunTests(filePath);
     if(hr == S_OK)
     {
-        output = "Test succeeded";
+        output = "Finished running tests";
     }
     return env->NewStringUTF(output.c_str());
 }
