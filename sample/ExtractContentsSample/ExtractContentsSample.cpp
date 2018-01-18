@@ -7,6 +7,7 @@
 #include <iomanip>
 #include <functional>
 #include <map>
+#include <algorithm>
 
 #ifdef WIN32
     #define UNICODE
@@ -270,6 +271,7 @@ HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
     std::wstring fullFileName = path + std::wstring(L"\\") + fileName;
     #else
     std::wstring fullFileName = path + std::wstring(L"/") + fileName;
+    std::replace(fullFileName.begin(), fullFileName.end(), '\\', '/' );
     #endif
 
     hr = HRESULT_FROM_WIN32(mkdirp(fullFileName));

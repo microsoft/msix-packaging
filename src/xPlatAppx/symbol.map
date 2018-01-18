@@ -1,0 +1,12 @@
+{
+    global:
+        CoCreateAppxFactory;
+        CoCreateAppxFactoryWithHeap;
+        CreateStreamOnFile;
+        CreateStreamOnFileUTF16;
+        GetLogTextUTF8;
+        PackAppx;
+        UnpackAppx;
+    local: 
+        *;
+};

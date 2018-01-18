@@ -1,0 +1,59 @@
+# Possible test configurations for comprehensive feature coverage:
+#
+# Unix
+# ----
+# 1) -Dnetwork:BOOL=ON -Dnetwork-accessor=curl -Dmessage-loader=icu -Dtranscoder=iconv
+# 2) -Dnetwork:BOOL=ON -Dnetwork-accessor=socket -Dmessage-loader=inmemory -Dtranscoder=icu
+# 3) -Dnetwork:BOOL=ON -Dmessage-loader=iconv
+# 4) -Dnetwork:BOOL=OFF
+# 5) (none)
+
+language: c
+
+sudo: false
+dist: trusty
+
+cache:
+  directories:
+    - download
+
+addons:
+  apt_packages:
+    - libicu-dev
+    - libcurl4-openssl-dev
+    - autoconf
+    - automake
+    - libtool
+
+os:
+  - linux
+  - osx
+
+env:
+  matrix:
+    - BUILD=autoconf TYPE=Release NETWORK=ON NETACCESSOR=curl MSGLOADER=inmemory TRANSCODER=iconv
+    - BUILD=cmake TOOL="Unix Makefiles" TYPE=Debug NETWORK=ON NETACCESSOR=curl MSGLOADER=icu TRANSCODER=iconv
+    - BUILD=cmake TOOL="Ninja" TYPE=Release NETWORK=ON NETACCESSOR=socket MSGLOADER=inmemory TRANSCODER=icu
+    - BUILD=autoconf TYPE=Debug NETWORK=ON MSGLOADER=iconv
+    - BUILD=cmake TOOL="Unix Makefiles" TYPE=Release NETWORK=ON
+    - BUILD=cmake TOOL="Ninja" TYPE=Debug
+    - BUILD=cmake TOOL="Ninja" TYPE=Debug NETACCESSOR=cfurl TRANSCODER=macosunicodeconverter
+
+matrix:
+  fast_finish: true
+  exclude:
+    - os: linux
+      env: BUILD=cmake TOOL="Ninja" TYPE=Debug NETACCESSOR=cfurl TRANSCODER=macosunicodeconverter
+    - os: osx
+      env: BUILD=cmake TOOL="Unix Makefiles" TYPE=Debug NETWORK=ON NETACCESSOR=curl MSGLOADER=icu TRANSCODER=iconv
+    - os: osx
+      env: BUILD=cmake TOOL="Ninja" TYPE=Release NETWORK=ON NETACCESSOR=socket MSGLOADER=inmemory TRANSCODER=icu
+    - os: osx
+      env: BUILD=autoconf TYPE=Debug NETWORK=ON MSGLOADER=iconv
+    - os: osx
+      env: BUILD=cmake TOOL="Unix Makefiles" TYPE=Release NETWORK=ON
+    - os: osx
+      env: BUILD=cmake TOOL="Ninja" TYPE=Debug
+
+script:
+  - ./scripts/ci-travis "$BUILD" "$TOOL" "$TYPE" "$NETWORK" "$NETACCESSOR" "$MSGLOADER" "$TRANSCODER"
