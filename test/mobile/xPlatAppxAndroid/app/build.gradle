@@ -15,6 +15,9 @@ android {
                 cppFlags ""
             }
         }
+        ndk {
+            abiFilters "x86"
+        }
     }
     buildTypes {
         release {

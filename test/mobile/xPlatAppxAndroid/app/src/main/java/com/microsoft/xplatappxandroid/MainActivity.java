@@ -27,6 +27,9 @@ public class MainActivity extends AppCompatActivity {
         // getFilesDir creates a files directory if not present.
         // This seems fine to cleaner on where we copy the appxs
         tv.setText(RunTests(mgr, this.getFilesDir().toString()));
+
+        // Terminate app
+        this.finishAffinity();
     }
 
     /**
