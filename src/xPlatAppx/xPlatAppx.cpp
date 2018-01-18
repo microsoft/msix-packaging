@@ -202,7 +202,8 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc,
         std::memset(reinterpret_cast<void*>(*logText), 0, countBytes);
         std::memcpy(reinterpret_cast<void*>(*logText),
                     reinterpret_cast<void*>(const_cast<char*>(xPlat::Global::Log::Text().c_str())),
-                    countBytes - sizeof(char));        
+                    countBytes - sizeof(char));
+        xPlat::Global::Log::Clear();
     });
 }
 
