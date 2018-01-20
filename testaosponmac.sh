@@ -59,7 +59,7 @@ function RunTest {
 	# Start app
 	RunCommand "adb shell am start -n 'com.microsoft.xplatappxandroid/com.microsoft.xplatappxandroid.MainActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER"
 	# The apps terminates when is done
-	sleep 10
+	sleep 30
 	# Get Results
 	RunCommand "adb pull /data/data/com.microsoft.xplatappxandroid/files/testResults.txt"
 }
