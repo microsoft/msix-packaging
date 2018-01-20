@@ -35,6 +35,7 @@ function CreateApp {
 	cp -R $xplatappxdir/test/appx/* app/src/main/assets
 	mkdir -p app/src/main/jniLibs/x86
 	cp $xplatappxdir/android/lib/libxPlatAppx.so app/src/main/jniLibs/x86
+	JAVA_HOME="/Applications/Android Studio.app/Contents/jre/jdk/Contents/Home"
 	sh ./gradlew
 }
 
@@ -70,6 +71,7 @@ function ParseResult {
 StartEmulator
 # Clean up
 adb shell rm -r /data/data/com.microsoft.xplatappxandroid/files
+rm $xplatappxdir/test/mobile/xPlatAppxAndroid/testResults.txt
 
 CreateApp
 RunTest
