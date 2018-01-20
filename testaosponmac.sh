@@ -36,7 +36,7 @@ function StartEmulator {
 	RunCommandWithTimeout "adb shell getprop dev.bootcomplete"
 	RunCommandWithTimeout "adb shell getprop init.svc.bootanim"
 	# At this time the device booted, but give some time to stabilize
-	sleep 30 
+	sleep 10 
 	echo "Android emulator started"
 }
 
@@ -48,7 +48,8 @@ function CreateApp {
 	mkdir -p app/src/main/jniLibs/x86
 	cp $xplatappxdir/android/lib/libxPlatAppx.so app/src/main/jniLibs/x86
 	JAVA_HOME="/Applications/Android Studio.app/Contents/jre/jdk/Contents/Home"
-	sh ./gradlew
+	rm -r build
+	sh ./gradlew assembleDebug
 }
 
 function RunTest {
@@ -58,7 +59,7 @@ function RunTest {
 	# Start app
 	RunCommand "adb shell am start -n 'com.microsoft.xplatappxandroid/com.microsoft.xplatappxandroid.MainActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER"
 	# The apps terminates when is done
-	sleep 5
+	sleep 10
 	# Get Results
 	RunCommand "adb pull /data/data/com.microsoft.xplatappxandroid/files/testResults.txt"
 }
