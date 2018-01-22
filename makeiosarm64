@@ -6,5 +6,5 @@ cd .vs
 # clean up any old builds of xPlatAppx modules
 find . -name *xPlatAppx* -d | xargs rm -r
 
-cmake -DCMAKE_BUILD_TYPE=MinSizeRel -DIOS=on -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake -DCMAKE_OSX_ARCHITECTURES=x86_64 ..
+cmake -DCMAKE_BUILD_TYPE=MinSizeRel -DIOS=on -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake -DCMAKE_OSX_ARCHITECTURES=arm64 ..
 make
