@@ -6,6 +6,7 @@ namespace xPlat {
         namespace Log {
             void Append(const std::string& comment);
             const std::string& Text();
+            void Clear();
         }
     }
 }

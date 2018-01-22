@@ -22,4 +22,9 @@ const std::string& Text()
     return g_content;
 }
 
+void Clear()
+{
+    g_content.clear();
+}
+
 } /* log */ } /* Global */ } /* xPlat */
