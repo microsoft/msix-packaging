@@ -26,6 +26,7 @@ function RunCommand {
 	if [ $result -ne 0 ]
 	then
 		echo "Setup failure"
+		adb emu kill
 		exit 1
 	fi
 }
@@ -68,15 +69,17 @@ function ParseResult {
 	if [ ! -f testResults.txt ]
 	then
 		echo "testResults.txt not found!"
+		adb emu kill
 		exit 1
 	fi
+	cat testResults.txt 
 	if grep -q "passed" testResults.txt
 	then
 		echo "Android tests passed"
 		exit 0
 	else
 		echo "Android tests failed."
-		less testResults.txt 
+		adb emu kill
 		exit 1
 	fi
 }
