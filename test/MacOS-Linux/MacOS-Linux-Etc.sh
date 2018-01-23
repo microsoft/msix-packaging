@@ -54,19 +54,18 @@ FindBinFolder
 
 RunTest 2  ./../appx/Empty.appx -sv
 RunTest 0  ./../appx/HelloWorld.appx -ss
-RunTest 65 ./../appx/SignatureNotLastPart-ERROR_BAD_FORMAT.appx
-#RunTest 0x134 ./../appx/SignedMismatchedPublisherName-ERROR_BAD_FORMAT.appx
-RunTest 65 ./../appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
+RunTest 66 ./../appx/SignatureNotLastPart-ERROR_BAD_FORMAT.appx
+RunTest 66 ./../appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
 RunTest 65 ./../appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx -sv
-RunTest 65 ./../appx/SignedTamperedCD-TRUST_E_BAD_DIGEST.appx
-RunTest 65 ./../appx/SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx
-RunTest 65 ./../appx/SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx
-RunTest 65 ./../appx/SignedUntrustedCert-CERT_E_CHAINING.appx
+RunTest 66 ./../appx/SignedTamperedCD-TRUST_E_BAD_DIGEST.appx
+RunTest 66 ./../appx/SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx
+RunTest 66 ./../appx/SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx
+RunTest 66 ./../appx/SignedUntrustedCert-CERT_E_CHAINING.appx
 RunTest 0  ./../appx/StoreSigned_Desktop_x64_MoviesTV.appx
-RunTest 65 ./../appx/TestAppxPackage_Win32.appx
-RunTest 65 ./../appx/TestAppxPackage_x64.appx
+RunTest 0 ./../appx/TestAppxPackage_Win32.appx -ss
+RunTest 0 ./../appx/TestAppxPackage_x64.appx -ss
 RunTest 18 ./../appx/UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
-RunTest 1 ./../appx/FileDoesNotExist.appx
+RunTest 1 ./../appx/FileDoesNotExist.appx -ss
 RunTest 81 ./../appx/BlockMap/Missing_Manifest_in_blockmap.appx -ss
 RunTest 81 ./../appx/BlockMap/ContentTypes_in_blockmap.appx -ss
 RunTest 65 ./../appx/BlockMap/Invalid_Bad_Block.appx -ss

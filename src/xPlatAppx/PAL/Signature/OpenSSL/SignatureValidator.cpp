@@ -403,7 +403,7 @@ namespace xPlat
                 X509_VERIFY_PARAM_set_flags(param, 
                     X509_V_FLAG_CB_ISSUER_CHECK | X509_V_FLAG_TRUSTED_FIRST | X509_V_FLAG_IGNORE_CRITICAL);
 
-                    ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+                    ThrowErrorIfNot(Error::AppxCertNotTrusted, 
                         X509_verify_cert(context.get()) == 1, 
                         "Could not verify cert");
             }
@@ -417,10 +417,15 @@ namespace xPlat
         if (IsStoreOrigin(p7s.data(), p7s.size())) { origin = xPlat::SignatureOrigin::Store; }
         else if (IsAuthenticodeOrigin(p7s.data(), p7s.size())) { origin = xPlat::SignatureOrigin::LOB; }
 
+        bool SignatureOriginUnknownAllowed = (option & APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN) == APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
+        ThrowErrorIf(Error::AppxCertNotTrusted, 
+            ((xPlat::SignatureOrigin::Unknown == origin) && !SignatureOriginUnknownAllowed),
+            "Unknown signature origin");
+
         ThrowErrorIfNot(Error::AppxSignatureInvalid, (
             xPlat::SignatureOrigin::Store == origin ||
             xPlat::SignatureOrigin::LOB == origin ||
-            (option & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN)
+            SignatureOriginUnknownAllowed
         ), "Signature origin check failed");
 
         ThrowErrorIfNot(Error::AppxSignatureInvalid, (

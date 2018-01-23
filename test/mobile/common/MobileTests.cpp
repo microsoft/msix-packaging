@@ -270,7 +270,7 @@ HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
     return hr;
 }
 
-HRESULT RunTest(std::string packageName, std::string unpackFolder, APPX_VALIDATION_OPTION flags, HRESULT expectedResult)
+HRESULT RunTest(std::string packageName, std::string unpackFolder, APPX_VALIDATION_OPTION flags, int expectedResult)
 {
     HRESULT hr = S_OK;
     State state;
@@ -310,13 +310,14 @@ HRESULT RunTest(std::string packageName, std::string unpackFolder, APPX_VALIDATI
         }
     }
 
-    std::cout << "Expected: " << std::hex << expectedResult << ", Got: " << std::hex << hr << std::endl;
-    if(expectedResult == hr)
+    short result = static_cast<short>(hr);
+    std::cout << "Expected: " << std::dec << expectedResult << ", Got: " << result << std::endl;
+    if(expectedResult == result)
     {   std::cout << "Succeeded" << std::endl;
     }
     else
     {   std::cout << "Failed" << std::endl;
-        g_TestFailed = false;
+        g_TestFailed = true;
     }
 
     // Clean up
@@ -341,33 +342,37 @@ HRESULT RunTests(std::string path)
     auto oldcout = std::cout.rdbuf(results.rdbuf());
 
     // Reference from other tests
-    // -sv = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN
-    // -ss = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE
+    APPX_VALIDATION_OPTION sv = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
+    APPX_VALIDATION_OPTION ss = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE;
+    APPX_VALIDATION_OPTION full = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
 
-    hr = RunTest(path + "Empty.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN, 0x8bad0002);
-    hr = RunTest(path + "HelloWorld.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, S_OK);
-    hr = RunTest(path + "SignatureNotLastPart-ERROR_BAD_FORMAT.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL, 0x8bad0042);
-    hr = RunTest(path + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL, 0x8bad0042);
-    hr = RunTest(path + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN, 0x8bad0041);
-    hr = RunTest(path + "SignedTamperedCD-TRUST_E_BAD_DIGEST.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL, 0x8bad0042);
-    hr = RunTest(path + "SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL, 0x8bad0042);
-    hr = RunTest(path + "SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL, 0x8bad0042);
-    hr = RunTest(path + "SignedUntrustedCert-CERT_E_CHAINING.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL, 0x8bad0042);
-    hr = RunTest(path + "StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL, S_OK);
-    hr = RunTest(path + "TestAppxPackage_Win32.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, S_OK);
-    hr = RunTest(path + "TestAppxPackage_x64.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, S_OK);
-    hr = RunTest(path + "UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL, 0x8bad0012);
-    hr = RunTest(path + "FileDoesNotExist.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, 0x8bad0001);
-    hr = RunTest(path + "BlockMap/Missing_Manifest_in_blockmap.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, 0x8bad0051);
-    hr = RunTest(path + "BlockMap/ContentTypes_in_blockmap.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, 0x8bad0051);
-    hr = RunTest(path + "BlockMap/Invalid_Bad_Block.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, 0x8bad0041);
-    hr = RunTest(path + "BlockMap/Size_wrong_uncompressed.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, S_OK);
-    hr = RunTest(path + "BlockMap/HelloWorld.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, S_OK);
-    hr = RunTest(path + "BlockMap/Extra_file_in_blockmap.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, 0x80070002);
-    hr = RunTest(path + "BlockMap/File_missing_from_blockmap.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, 0x8bad0051);
-    hr = RunTest(path + "BlockMap/No_blockmap.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, 0x80070002);
-    hr = RunTest(path + "BlockMap/Bad_Namespace_Blockmap.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, 0x8bad1003);
-    hr = RunTest(path + "BlockMap/Duplicate_file_in_blockmap.appx", unpackFolder, APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE, 0x8bad0051);
+    // expected result last four digits, but in decimal, not hex.  e.g. 0x8bad0002 == 2, 0x8bad0041 == 65, etc...
+    // common codes:
+    // AppxSignatureInvalid        = ERROR_FACILITY + 0x0041 == 65
+    hr = RunTest(path + "Empty.appx", unpackFolder, sv, 2);
+    hr = RunTest(path + "HelloWorld.appx", unpackFolder, ss, 0);
+    hr = RunTest(path + "SignatureNotLastPart-ERROR_BAD_FORMAT.appx", unpackFolder, full, 66);
+    hr = RunTest(path + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    hr = RunTest(path + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, sv, 65);
+    hr = RunTest(path + "SignedTamperedCD-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    hr = RunTest(path + "SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    hr = RunTest(path + "SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    hr = RunTest(path + "SignedUntrustedCert-CERT_E_CHAINING.appx", unpackFolder, full, 66);
+    hr = RunTest(path + "StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, full, 0);
+    hr = RunTest(path + "TestAppxPackage_Win32.appx", unpackFolder, ss, 0);
+    hr = RunTest(path + "TestAppxPackage_x64.appx", unpackFolder, ss, 0);
+    hr = RunTest(path + "UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx", unpackFolder, full, 18);
+    hr = RunTest(path + "FileDoesNotExist.appx", unpackFolder, ss, 1);
+    hr = RunTest(path + "BlockMap/Missing_Manifest_in_blockmap.appx", unpackFolder, ss, 81);
+    hr = RunTest(path + "BlockMap/ContentTypes_in_blockmap.appx", unpackFolder, ss, 81);
+    hr = RunTest(path + "BlockMap/Invalid_Bad_Block.appx", unpackFolder, ss, 65);
+    hr = RunTest(path + "BlockMap/Size_wrong_uncompressed.appx", unpackFolder, ss, 0);
+    hr = RunTest(path + "BlockMap/HelloWorld.appx", unpackFolder, ss, 0);
+    hr = RunTest(path + "BlockMap/Extra_file_in_blockmap.appx", unpackFolder, ss, 2);
+    hr = RunTest(path + "BlockMap/File_missing_from_blockmap.appx", unpackFolder, ss, 81);
+    hr = RunTest(path + "BlockMap/No_blockmap.appx", unpackFolder, ss, 2);
+    hr = RunTest(path + "BlockMap/Bad_Namespace_Blockmap.appx", unpackFolder, ss, 4099);
+    hr = RunTest(path + "BlockMap/Duplicate_file_in_blockmap.appx", unpackFolder, ss, 81);
 
     std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" << std::endl;
     if(g_TestFailed)
