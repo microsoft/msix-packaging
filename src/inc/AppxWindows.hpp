@@ -39,6 +39,7 @@
 
     typedef signed long HRESULT;
     typedef signed long LONG;
+    typedef LONG NTSTATUS;
     typedef unsigned long ULONG;
     typedef unsigned long DWORD;
     typedef signed long long LONGLONG;
