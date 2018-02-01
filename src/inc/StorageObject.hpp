@@ -29,7 +29,7 @@ inline constexpr FileNameOptions operator |(FileNameOptions a, FileNameOptions b
 // internal interface
 EXTERN_C const IID IID_IStorageObject;   
 #ifndef WIN32
-MIDL_INTERFACE("ec25b96e-0db1-4483-bdb1-cab1109cb741")
+// {ec25b96e-0db1-4483-bdb1-cab1109cb741}
 interface IStorageObject : public IUnknown
 #else
 #include "Unknwn.h"

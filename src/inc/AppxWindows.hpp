@@ -18,42 +18,111 @@
     #define UNICODE
     #define NOMINMAX    
     #include <windows.h>
-    // Windows.h defines max and min, which does NOT paly nice at all with std::min / std::max usage from <algorithm>
+    // Windows.h defines max and min, which does NOT play nice at all with std::min / std::max usage from <algorithm>
     #undef max
     #undef min
 #else
     // On x86-x64 non-win32 platforms, use SYSTEM V AMD64 ABI calling convention.  This should suffice for Solaris, Linux, BSD,
     // MacOS and anything compiled with GCC or Intel compilers.  On non-x86-x64 architecures, we will use the compiler default
     // See https://en.wikipedia.org/wiki/X86_calling_conventions#List_of_x86_calling_conventions for details
+    #ifndef STDMETHODCALLTYPE
     #define STDMETHODCALLTYPE
+    #endif
+    
     #undef XPLATAPPX_API
     #define XPLATAPPX_API extern "C"
-
-    #ifndef MIDL_INTERFACE
-    #define MIDL_INTERFACE(i)
-    #endif
 
     #ifndef interface
     #define interface struct
     #endif
 
+    #ifndef _WINDOWS_TYPES
+    #define _WINDOWS_TYPES
+    
+    #ifndef _HRESULT_DEFINED
+    #define _HRESULT_DEFINED
     typedef signed long HRESULT;
+    #endif
+
+    #ifndef _LONG_DEFINED
+    #define _LONG_DEFINED
     typedef signed long LONG;
+    #endif
+
+    #ifndef _NTSTATUS_DEFINED
+    #define _NTSTATUS_DEFINED
     typedef LONG NTSTATUS;
+    #endif
+
+    #ifndef _ULONG_DEFINED
+    #define _ULONG_DEFINED
     typedef unsigned long ULONG;
+    #endif
+
+    #ifndef _DWORD_DEFINED
+    #define _DWORD_DEFINED
     typedef unsigned long DWORD;
+    #endif
+
+    #ifndef _LONGLONG_DEFINED
+    #define _LONGLONG_DEFINED
     typedef signed long long LONGLONG;
+    #endif
+
+    #ifndef _ULONGLONG_DEFINED
+    #define _ULONGLONG_DEFINED
     typedef unsigned long long ULONGLONG;
+    #endif
+
+    #ifndef _UINT16_DEFINED
+    #define _UINT16_DEFINED
     typedef unsigned short UINT16;
+    #endif
+
+    #ifndef _UINT32_DEFINED
+    #define _UINT32_DEFINED
     typedef unsigned int UINT32;
+    #endif
+
+    #ifndef _UINT64_DEFINED
+    #define _UINT64_DEFINED
     typedef unsigned long long UINT64;
+    #endif
+
+    #ifndef _WCHAR_DEFINED
+    #define _WCHAR_DEFINED
     typedef wchar_t WCHAR;
+    #endif
+
+    #ifndef _LPWSTR_DEFINED
+    #define _LPWSTR_DEFINED
     typedef WCHAR* LPWSTR;
+    #endif
+
+    #ifndef _LPCWSTR_DEFINED
+    #define _LPCWSTR_DEFINED
     typedef const WCHAR* LPCWSTR;
+    #endif
+
+    #ifndef _BYTE_DEFINED
+    #define _BYTE_DEFINED
     typedef char BYTE;
+    #endif
+
+    #ifndef _BOOL_DEFINED
+    #define _BOOL_DEFINED
     typedef int BOOL;
+    #endif
+
+    #ifndef _SIZE_T_DEFINED
+    #define _SIZE_T_DEFINED
     typedef size_t SIZE_T;
+    #endif
+
+    #ifndef _LPVOID_DEFINED
+    #define _LPVOID_DEFINED
     typedef void* LPVOID;
+    #endif
 
     #ifndef FALSE
     #define FALSE 0
@@ -63,6 +132,8 @@
     #define TRUE 1
     #endif
 
+    #ifndef _LARGE_INTEGER_DEFINED
+    #define _LARGE_INTEGER_DEFINED
     typedef union _LARGE_INTEGER {
         struct {
             ULONG LowPart;
@@ -74,7 +145,10 @@
         } u;
         LONGLONG QuadPart;
     } LARGE_INTEGER;
+    #endif
 
+    #ifndef _ULARGE_INTEGER_DEFINED
+    #define _ULARGE_INTEGER_DEFINED
     typedef union _ULARGE_INTEGER {
         struct {
             ULONG LowPart;
@@ -86,12 +160,18 @@
         } u;
         ULONGLONG QuadPart;
     } ULARGE_INTEGER;
+    #endif
 
+    #ifndef _TAGFILETIME_DEFINED
+    #define _TAGFILETIME_DEFINED
     typedef struct tagFILETIME
     {
         DWORD dwLowDateTime;
         DWORD dwHighDateTime;
     } FILETIME;
+    #endif
+
+    #endif // _WINDOWS_TYPES
 
     #ifndef LPOLESTR
     #define LPOLESTR void*

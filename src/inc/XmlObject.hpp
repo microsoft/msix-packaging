@@ -19,7 +19,7 @@
 // internal interface
 EXTERN_C const IID IID_IXmlObject;
 #ifndef WIN32
-MIDL_INTERFACE("0e7a446e-baf7-44c1-b38a-216bfa18a1a8")
+// {0e7a446e-baf7-44c1-b38a-216bfa18a1a8}
 interface IXmlObject : public IUnknown
 #else
 #include "Unknwn.h"
