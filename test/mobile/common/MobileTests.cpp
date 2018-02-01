@@ -1,3 +1,5 @@
+#include "AppxPackaging.hpp"
+#include "AppxWindows.hpp"
 #include <cstdlib>
 #include <string>
 #include <codecvt>
@@ -13,14 +15,14 @@
 // Used for test results
 bool g_TestFailed = false;
 
-std::string utf16_to_utf8(const std::wstring& utf16string)
+static std::string utf16_to_utf8(const std::wstring& utf16string)
 {
     auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
     std::string result(converted.begin(), converted.end());
     return result;
 }
 
-std::wstring utf8_to_utf16(const std::string& utf8string)
+static std::wstring utf8_to_utf16(const std::string& utf8string)
 {
     auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data());
     std::wstring result(converted.begin(), converted.end());
@@ -28,7 +30,7 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
 }
 
 // not all POSIX implementations provide an implementation of mkdirp
-int mkdirp(std::wstring& utf16Path)
+static int mkdirp(std::wstring& utf16Path)
 {
 	std::string utf8Path = utf16_to_utf8(utf16Path);
 	auto lastSlash = utf8Path.find_last_of("/");
@@ -116,7 +118,7 @@ protected:
 };
 
 // Cleans a directory
-void RemoveContent(std::string subPath)
+static void RemoveContent(std::string subPath)
 {
     DIR *dir;
     if ((dir = opendir(subPath.data())))
@@ -148,7 +150,7 @@ FootprintFilesType footprintFilesType[FootprintFilesCount] = {
     {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY, "CI catalog", false }, // this is ONLY required iff there exists 1+ PEs 
 };
 
-HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
+static HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
 {
     HRESULT hr = S_OK;
     const int MaxFileNameLength = 200;
@@ -163,7 +165,7 @@ HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
     return hr;
 }
 
-HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
+static HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
     LPWSTR fileName = nullptr;
@@ -200,7 +202,7 @@ HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
     return hr;
 }
 
-HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
+static HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
     for (int i = 0; SUCCEEDED(hr) && (i < FootprintFilesCount); i++)
@@ -216,7 +218,7 @@ HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
     return hr;
 }
 
-HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
+static HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
     ComPtr<IAppxFilesEnumerator> files;
@@ -253,7 +255,7 @@ protected:
     void Cleanup() { if (content) { std::free(content); content = nullptr; } }
 };
 
-HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
+static HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
 {
     HRESULT hr = S_OK;
     ComPtr<IAppxFactory> appxFactory;
@@ -270,7 +272,7 @@ HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
     return hr;
 }
 
-HRESULT RunTest(std::string packageName, std::string unpackFolder, APPX_VALIDATION_OPTION flags, int expectedResult)
+static HRESULT RunTest(std::string packageName, std::string unpackFolder, APPX_VALIDATION_OPTION flags, int expectedResult)
 {
     HRESULT hr = S_OK;
     State state;
@@ -328,20 +330,21 @@ HRESULT RunTest(std::string packageName, std::string unpackFolder, APPX_VALIDATI
     return hr;
 }
 
-HRESULT RunTests(std::string path)
+static HRESULT RunTestsInternal(std::string source, std::string target)
 {
     HRESULT hr = S_OK;
 
     // Create output directory
-    std::string unpackFolder = path + "unpack";
+    std::string unpackFolder = target + "unpack";
     if (-1 == mkdir(unpackFolder.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) && errno != EEXIST)
     {   return HRESULT_FROM_WIN32(errno);
     }
 
-    std::ofstream results(path + "testResults.txt");
+    std::ofstream results(target + "testResults.txt");
     auto oldcout = std::cout.rdbuf(results.rdbuf());
 
     // Reference from other tests
+
     APPX_VALIDATION_OPTION sv = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
     APPX_VALIDATION_OPTION ss = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE;
     APPX_VALIDATION_OPTION full = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
@@ -349,30 +352,30 @@ HRESULT RunTests(std::string path)
     // expected result last four digits, but in decimal, not hex.  e.g. 0x8bad0002 == 2, 0x8bad0041 == 65, etc...
     // common codes:
     // AppxSignatureInvalid        = ERROR_FACILITY + 0x0041 == 65
-    hr = RunTest(path + "Empty.appx", unpackFolder, sv, 2);
-    hr = RunTest(path + "HelloWorld.appx", unpackFolder, ss, 0);
-    hr = RunTest(path + "SignatureNotLastPart-ERROR_BAD_FORMAT.appx", unpackFolder, full, 66);
-    hr = RunTest(path + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
-    hr = RunTest(path + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, sv, 65);
-    hr = RunTest(path + "SignedTamperedCD-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
-    hr = RunTest(path + "SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
-    hr = RunTest(path + "SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
-    hr = RunTest(path + "SignedUntrustedCert-CERT_E_CHAINING.appx", unpackFolder, full, 66);
-    hr = RunTest(path + "StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, full, 0);
-    hr = RunTest(path + "TestAppxPackage_Win32.appx", unpackFolder, ss, 0);
-    hr = RunTest(path + "TestAppxPackage_x64.appx", unpackFolder, ss, 0);
-    hr = RunTest(path + "UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx", unpackFolder, full, 18);
-    hr = RunTest(path + "FileDoesNotExist.appx", unpackFolder, ss, 1);
-    hr = RunTest(path + "BlockMap/Missing_Manifest_in_blockmap.appx", unpackFolder, ss, 81);
-    hr = RunTest(path + "BlockMap/ContentTypes_in_blockmap.appx", unpackFolder, ss, 81);
-    hr = RunTest(path + "BlockMap/Invalid_Bad_Block.appx", unpackFolder, ss, 65);
-    hr = RunTest(path + "BlockMap/Size_wrong_uncompressed.appx", unpackFolder, ss, 0);
-    hr = RunTest(path + "BlockMap/HelloWorld.appx", unpackFolder, ss, 0);
-    hr = RunTest(path + "BlockMap/Extra_file_in_blockmap.appx", unpackFolder, ss, 2);
-    hr = RunTest(path + "BlockMap/File_missing_from_blockmap.appx", unpackFolder, ss, 81);
-    hr = RunTest(path + "BlockMap/No_blockmap.appx", unpackFolder, ss, 2);
-    hr = RunTest(path + "BlockMap/Bad_Namespace_Blockmap.appx", unpackFolder, ss, 4099);
-    hr = RunTest(path + "BlockMap/Duplicate_file_in_blockmap.appx", unpackFolder, ss, 81);
+    hr = RunTest(source + "Empty.appx", unpackFolder, sv, 2);
+    hr = RunTest(source + "HelloWorld.appx", unpackFolder, ss, 0);
+    hr = RunTest(source + "SignatureNotLastPart-ERROR_BAD_FORMAT.appx", unpackFolder, full, 66);
+    hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, sv, 65);
+    hr = RunTest(source + "SignedTamperedCD-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    hr = RunTest(source + "SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    hr = RunTest(source + "SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    hr = RunTest(source + "SignedUntrustedCert-CERT_E_CHAINING.appx", unpackFolder, full, 66);
+    hr = RunTest(source + "StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, full, 0);
+    hr = RunTest(source + "TestAppxPackage_Win32.appx", unpackFolder, ss, 0);
+    hr = RunTest(source + "TestAppxPackage_x64.appx", unpackFolder, ss, 0);
+    hr = RunTest(source + "UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx", unpackFolder, full, 18);
+    hr = RunTest(source + "FileDoesNotExist.appx", unpackFolder, ss, 1);
+    hr = RunTest(source + "BlockMap/Missing_Manifest_in_blockmap.appx", unpackFolder, ss, 81);
+    hr = RunTest(source + "BlockMap/ContentTypes_in_blockmap.appx", unpackFolder, ss, 81);
+    hr = RunTest(source + "BlockMap/Invalid_Bad_Block.appx", unpackFolder, ss, 65);
+    hr = RunTest(source + "BlockMap/Size_wrong_uncompressed.appx", unpackFolder, ss, 0);
+    hr = RunTest(source + "BlockMap/HelloWorld.appx", unpackFolder, ss, 0);
+    hr = RunTest(source + "BlockMap/Extra_file_in_blockmap.appx", unpackFolder, ss, 2);
+    hr = RunTest(source + "BlockMap/File_missing_from_blockmap.appx", unpackFolder, ss, 81);
+    hr = RunTest(source + "BlockMap/No_blockmap.appx", unpackFolder, ss, 2);
+    hr = RunTest(source + "BlockMap/Bad_Namespace_Blockmap.appx", unpackFolder, ss, 4099);
+    hr = RunTest(source + "BlockMap/Duplicate_file_in_blockmap.appx", unpackFolder, ss, 81);
 
     std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" << std::endl;
     if(g_TestFailed)
@@ -385,4 +388,9 @@ HRESULT RunTests(std::string path)
     std::cout.rdbuf(oldcout);
 
     return S_OK;
+}
+
+__attribute__((visibility("default"))) signed long RunTests(char* source, char* target)
+{
+    return static_cast<signed long>(RunTestsInternal(source, target));
 }

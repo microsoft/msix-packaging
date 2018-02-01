@@ -1,5 +1,6 @@
 #!/bin/bash
 # script to build on mac
+
 mkdir .vs
 cd .vs
 

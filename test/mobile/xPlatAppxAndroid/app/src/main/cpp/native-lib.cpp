@@ -74,8 +74,8 @@ Java_com_microsoft_xplatappxandroid_MainActivity_RunTests(JNIEnv* env, jobject /
     std::string filePath = GetStringPathFromJString(env, jFilePath);
     CopyFilesFromAssets(env, assetManager, filePath, "");
     CopyFilesFromAssets(env, assetManager, filePath, "BlockMap");
-    HRESULT hr = RunTests(filePath);
-    if(hr == S_OK)
+    signed long hr = RunTests(const_cast<char*>(filePath.c_str()), const_cast<char*>(filePath.c_str()));
+    if(hr == 0)
     {
         output = "Finished running tests";
     }
