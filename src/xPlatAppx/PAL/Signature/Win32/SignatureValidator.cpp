@@ -37,7 +37,27 @@ namespace xPlat
     struct unique_crypt_msg_handle_deleter {
         void operator()(HCRYPTMSG h) const { CryptMsgClose(h); };
     };
-    
+
+    //+-------------------------------------------------------------------------
+    //  SHA256 Key Identifier (only PublicKey) of the Microsoft application roots
+    //--------------------------------------------------------------------------
+    const BYTE MicrosoftApplicationRootList[HASH_BYTES] = {
+        // The following is the SHA256 of PublicKey for the Microsoft Application
+        // Root:
+        //      CN=Microsoft Root Certificate Authority 2011
+        //      O=Microsoft Corporation
+        //      L=Redmond
+        //      S=Washington
+        //      C=US
+        //
+        //  NotBefore:: Tue Mar 22 15:05:28 2011
+        //  NotAfter:: Sat Mar 22 15:13:04 2036
+        0x4A, 0xBB, 0x05, 0x94, 0xD3, 0x03, 0xEF, 0x70, 0x77, 0x13,
+        0x88, 0x34, 0xAB, 0x31, 0x5E, 0x94, 0x1E, 0x96, 0x30, 0x93,
+        0xE0, 0x5B, 0x4B, 0x14, 0xAF, 0x5D, 0xCB, 0x52, 0x77, 0x12,
+        0xC0, 0x0A
+    };
+
     typedef std::unique_ptr<void, unique_local_alloc_deleter> unique_local_alloc_handle;
     typedef std::unique_ptr<const CERT_CONTEXT, unique_cert_context_deleter> unique_cert_context;
     typedef std::unique_ptr<const CERT_CHAIN_CONTEXT, unique_cert_chain_deleter> unique_cert_chain_context;
@@ -46,7 +66,7 @@ namespace xPlat
     typedef std::unique_ptr<void, unique_cert_store_handle_deleter> unique_cert_store_handle;
     typedef std::unique_ptr<void, unique_crypt_msg_handle_deleter> unique_crypt_msg_handle;
 
- static PCCERT_CHAIN_CONTEXT GetCertChainContext(
+    static PCCERT_CHAIN_CONTEXT GetCertChainContext(
         _In_ byte* signatureBuffer,
         _In_ ULONG cbSignatureBuffer)
     {
@@ -176,6 +196,28 @@ namespace xPlat
         return false;
     }
 
+    // Check that the top level certificate contains the public key for the Microsoft root on Win7.
+    static bool IsMicrosoftTrustedChainForLegacySystems(PCCERT_CHAIN_CONTEXT certChainContext)
+    {
+        PCERT_SIMPLE_CHAIN chain = certChainContext->rgpChain[0];
+        DWORD chainElement = chain->cElement;;
+        PCCERT_CONTEXT cert = chain->rgpElement[chainElement - 1]->pCertContext;
+        BYTE keyId[HASH_BYTES];
+        DWORD keyIdLength = HASH_BYTES;
+
+        ThrowErrorIfNot(Error::AppxSignatureInvalid,
+            (CryptHashCertificate2(
+                BCRYPT_SHA256_ALGORITHM,
+                0,                  // dwFlags
+                nullptr,            // pvReserved
+                cert->pCertInfo->SubjectPublicKeyInfo.PublicKey.pbData,
+                cert->pCertInfo->SubjectPublicKeyInfo.PublicKey.cbData,
+                keyId,
+                &keyIdLength) || HASH_BYTES != keyIdLength),
+            "CryptHashCertificate2 failed");
+        return (0 == memcmp(MicrosoftApplicationRootList, keyId, HASH_BYTES));
+    }
+
     static bool IsMicrosoftTrustedChain(_In_ PCCERT_CHAIN_CONTEXT certChainContext)
     {
         // Validate that the certificate chain is rooted in one of the well-known MS root certs
@@ -185,15 +227,20 @@ namespace xPlat
         policyStatus.cbSize = sizeof(CERT_CHAIN_POLICY_STATUS);
         policyParameters.dwFlags = MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
 
-        ThrowErrorIfNot(Error::AppxSignatureInvalid, 
+        ThrowErrorIfNot(Error::AppxSignatureInvalid,
             CertVerifyCertificateChainPolicy(
                 CERT_CHAIN_POLICY_MICROSOFT_ROOT,
                 certChainContext,
                 &policyParameters,
                 &policyStatus),
-            "CertVerifyCertificateChainPolicy failed");    
-        
-        return ERROR_SUCCESS == policyStatus.dwError;
+            "CertVerifyCertificateChainPolicy failed");
+
+        bool chainsToTrustedRoot = (policyStatus.dwError == ERROR_SUCCESS);
+        if (!chainsToTrustedRoot && policyStatus.dwError == CERT_E_UNTRUSTEDROOT)    
+        {   // CertVerifyCertificateChainPolicy fails with CERT_E_UNTRUSTEDROOT on Win7.
+            chainsToTrustedRoot = IsMicrosoftTrustedChainForLegacySystems(certChainContext);
+        }
+        return chainsToTrustedRoot;
     }
 
     static bool IsAuthenticodeTrustedChain(_In_ PCCERT_CHAIN_CONTEXT certChainContext)
