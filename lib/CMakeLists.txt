@@ -8,9 +8,11 @@ ADD_CUSTOM_TARGET(LIBS)
 # ZLIB
 #   set(AMD64             OFF CACHE BOOL "Disable building i686 assembly implementation"  FORCE)
 #   set(ASM686            OFF CACHE BOOL "Disable building amd64 assembly implementation" FORCE)
-set(MINGW             OFF CACHE BOOL "Only build the static lib"                      FORCE)
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Only build the static lib"                      FORCE)
-set(HAVE_OFF64_T      OFF CACHE BOOL "no need to build zlib tests as part of build"   FORCE)
+set(MINGW               OFF CACHE BOOL "Only build the static lib"                      FORCE)
+set(BUILD_SHARED_LIBS   OFF CACHE BOOL "Only build the static lib"                      FORCE)
+set(HAVE_OFF64_T        OFF CACHE BOOL "no need to build zlib tests as part of build"   FORCE)
+set(SKIP_INSTALL_SHARED ON  CACHE BOOL "Don't install zlib.dll"                         FORCE)
+set(ZLIB_TESTS          OFF CACHE BOOL "Don't build zlib tests/examples"                FORCE)
 add_subdirectory(zlib)
 
 # Xerces
