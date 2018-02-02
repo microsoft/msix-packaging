@@ -78,7 +78,7 @@ namespace xPlat {
         // Blockmap semantic errors
         BlockMapSemanticError       = ERROR_FACILITY + 0x0051,
 
-        // AppxManifest semanti errors
+        // AppxManifest semantic errors
         AppxManifestSemanticError   = ERROR_FACILITY + 0x0061,
 
         // XML parsing errors
@@ -145,6 +145,22 @@ namespace xPlat {
 
         Win32Exception(DWORD error, const char* message) :
             Exception(0x80070000 + error, message)
+        {
+            Global::Log::Append(Message());
+        }
+    };
+
+    class NtStatusException : public Exception
+    {
+    public:
+        NtStatusException(NTSTATUS error, std::string& message) :
+            Exception(static_cast<std::uint32_t>(error), message)
+        {
+            Global::Log::Append(Message());
+        }
+
+        NtStatusException(NTSTATUS error, const char* message) :
+            Exception(static_cast<std::uint32_t>(error), message)
         {
             Global::Log::Append(Message());
         }

@@ -400,3 +400,5 @@ lib/zlib
 src/inc/AppxCerts.hpp
 src/inc/AppxBlockMapSchemas.hpp
 src/inc/ContentTypesSchemas.hpp
+
+.vscode/

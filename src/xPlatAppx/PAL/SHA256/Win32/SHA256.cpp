@@ -1,7 +1,8 @@
+#include "ntstatus.h"
+#define WIN32_NO_STATUS
 #include <windows.h>
 #include <bcrypt.h>
 #include <winternl.h>
-//#include <ntstatus.h>
 #include <winerror.h>
 #include "Exceptions.hpp"
 #include "SHA256.hpp"
@@ -26,26 +27,25 @@ typedef std::unique_ptr<void, unique_hash_handle_deleter> unique_hash_handle;
 
 namespace xPlat {
 
-    bool SHA256::ComputeHash(/*in*/ std::uint8_t* buffer, /*in*/ std::uint32_t cbBuffer, /*inout*/ std::vector<uint8_t>& hash)
+    bool SHA256::ComputeHash(std::uint8_t* buffer, std::uint32_t cbBuffer, std::vector<uint8_t>& hash)
     {
-        NTSTATUS    status;
-
+        NTSTATUS status = STATUS_SUCCESS;
         BCRYPT_HASH_HANDLE hashHandleT;
         BCRYPT_ALG_HANDLE algHandleT;
-
-        DWORD   hashLength = 0;
-        DWORD   resultLength = 0;
+        DWORD hashLength = 0;
+        DWORD resultLength = 0;
 
         // Open an algorithm handle
         // This code passes BCRYPT_HASH_REUSABLE_FLAG with BCryptAlgorithmProvider(...) to load a provider which supports reusable hash
         status = BCryptOpenAlgorithmProvider(
             &algHandleT,                // Alg Handle pointer
             BCRYPT_SHA256_ALGORITHM,    // Cryptographic Algorithm name (null terminated unicode string)
-            NULL,                       // Provider name; if null, the default provider is loaded
-            BCRYPT_HASH_REUSABLE_FLAG); // Flags; Loads a provider which supports reusable hash
+            nullptr,                    // Provider name; if null, the default provider is loaded
+            0);                         // Flags; Loads a provider which supports reusable hash
 
         if (!NT_SUCCESS(status))
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO
+        {   throw xPlat::NtStatusException(status, "failed computing SHA256 hash");
+        }
 
         unique_alg_handle algHandle(algHandleT);
 
@@ -59,7 +59,8 @@ namespace xPlat {
             0);                         // Flags
 
         if (!NT_SUCCESS(status) || resultLength != sizeof(hashLength))
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO
+        {   throw xPlat::NtStatusException(status, "failed computing SHA256 hash");
+        }
 
         // Size the hash buffer appropriately
         hash.resize(hashLength);
@@ -68,14 +69,15 @@ namespace xPlat {
         status = BCryptCreateHash(
             algHandle.get(),            // Handle to an algorithm provider                 
             &hashHandleT,               // A pointer to a hash handle - can be a hash or hmac object
-            NULL,                       // Pointer to the buffer that recieves the hash/hmac object
+            nullptr,                    // Pointer to the buffer that recieves the hash/hmac object
             0,                          // Size of the buffer in bytes
-            NULL,                       // A pointer to a key to use for the hash or MAC
+            nullptr,                    // A pointer to a key to use for the hash or MAC
             0,                          // Size of the key in bytes
             0);                         // Flags
 
         if (!NT_SUCCESS(status))
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO
+        {   throw xPlat::NtStatusException(status, "failed computing SHA256 hash");
+        }
 
         unique_hash_handle hashHandle(hashHandleT);
 
@@ -83,11 +85,12 @@ namespace xPlat {
         status = BCryptHashData(
             hashHandle.get(),           // Handle to the hash or MAC object
             (PBYTE)buffer,              // A pointer to a buffer that contains the data to hash
-            cbBuffer,               // Size of the buffer in bytes
+            cbBuffer,                   // Size of the buffer in bytes
             0);                         // Flags
 
         if (!NT_SUCCESS(status))
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO
+        {   throw xPlat::NtStatusException(status, "failed computing SHA256 hash");
+        }
 
         // Obtain the hash of the message(s) into the hash buffer
         status = BCryptFinishHash(
@@ -97,7 +100,8 @@ namespace xPlat {
             0);                         // Flags
 
         if (!NT_SUCCESS(status))
-            throw xPlat::Exception(xPlat::Error::AppxSignatureInvalid); //TODO
+        {   throw xPlat::NtStatusException(status, "failed computing SHA256 hash");
+        }
 
         return true;
     }

@@ -21,7 +21,7 @@
 // internal interface
 EXTERN_C const IID IID_IAppxPackage;   
 #ifndef WIN32
-MIDL_INTERFACE("51b2c456-aaa9-46d6-8ec9-298220559189")
+// {51b2c456-aaa9-46d6-8ec9-298220559189}
 interface IAppxPackage : public IUnknown
 #else
 #include "Unknwn.h"

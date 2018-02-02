@@ -11,7 +11,7 @@
 // internal interface
 EXTERN_C const IID IID_IxPlatFactory;   
 #ifndef WIN32
-MIDL_INTERFACE("1f850db4-32b8-4db6-8bf4-5a897eb611f1")
+// {1f850db4-32b8-4db6-8bf4-5a897eb611f1}
 interface IxPlatFactory : public IUnknown
 #else
 #include "UnKnwn.h"

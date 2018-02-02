@@ -1,19 +1,14 @@
- /* File based on the header created by MIDL compiler version 8.01.0622 of AppxPackaging.idl */
+/* File based on the header created by MIDL compiler version 8.01.0622 of AppxPackaging.idl */
 
-/* Compiler settings for Source.idl:
-    Oicf, W1, Zp8, env=Win32 (32b run), target_arch=X86 8.01.0622
-    protocol : dce , ms_ext, c_ext, robust
-    error checks: allocation ref bounds_check enum stub_data
-    VC __declspec() decoration level:
-         __declspec(uuid()), __declspec(selectany), __declspec(novtable)
-         DECLSPEC_UUID(), MIDL_INTERFACE()
-*/
-/* @@MIDL_FILE_HEADING(  ) */
+// Changes made to the original AppxPackaging.h file:
+//  - Remove pragma warning
+//  - Remove Windows specific headers
+//  - Remove C style interfaces declaration
+//  - Remove MIDL_INTERFACE MACRO
+//  - Add IUnknown, ISequentialStream and IStream interfaces
+//  - Add xPlatAppx specific funcions and helpers (See bottom of file)
+//  - See more changes in AppxPackaging_i.cpp
 
-// TODO: add details on what parts of the midl generated header were remove, what was added and what is
-// and what is requiered if the interfaces change.
-
-/* Forward Declarations */
 #ifndef __appxpackaging_hpp__
 #define __appxpackaging_hpp__
 
@@ -69,6 +64,7 @@ interface IAppxBundleFactory;
 interface IAppxBundleWriter;
 interface IAppxBundleWriter2;
 //interface IAppxBundleWriter3;
+//interface IAppxBundleWriter4;
 interface IAppxBundleReader;
 interface IAppxBundleManifestReader;
 interface IAppxBundleManifestReader2;
@@ -91,6 +87,7 @@ interface IAppxEncryptedPackageWriter;
 //interface IAppxEncryptedPackageWriter2;
 interface IAppxEncryptedBundleWriter;
 interface IAppxEncryptedBundleWriter2;
+//interface IAppxEncryptedBundleWriter3;
 //interface IAppxPackageEditor;
 
 extern "C"{
@@ -102,7 +99,7 @@ extern "C"{
 /* [unique][uuid][object][local] */
 EXTERN_C const IID IID_IUnknown;
 
-    MIDL_INTERFACE("00000000-0000-0000-C000-000000000046")
+    // {00000000-0000-0000-C000-000000000046}
     interface IUnknown
     {
     public:
@@ -121,7 +118,7 @@ EXTERN_C const IID IID_IUnknown;
 /* [unique][uuid][object] */
 EXTERN_C const IID IID_ISequentialStream;
 
-    MIDL_INTERFACE("0c733a30-2a1c-11ce-ade5-00aa0044773d")
+    // {0c733a30-2a1c-11ce-ade5-00aa0044773d}
     interface ISequentialStream : public IUnknown
     {
     public:
@@ -185,7 +182,7 @@ enum tagLOCKTYPE
         LOCK_ONLYONCE   = 4
     }   LOCKTYPE;
 
-    MIDL_INTERFACE("0000000c-0000-0000-C000-000000000046")
+    // {0000000c-0000-0000-C000-000000000046}
     interface IStream : public ISequentialStream
     {
     public:
@@ -345,7 +342,7 @@ enum tagLOCKTYPE
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxFactory;
 
-    MIDL_INTERFACE("beb94909-e451-438b-b5a7-d79e767b75d8")
+    // {beb94909-e451-438b-b5a7-d79e767b75d8}
     interface IAppxFactory : public IUnknown
     {
     public:
@@ -374,7 +371,6 @@ EXTERN_C const IID IID_IAppxFactory;
     };
 #endif  /* __IAppxFactory_INTERFACE_DEFINED__ */
 
-
 #ifndef __IAppxFactory2_INTERFACE_DEFINED__
 #define __IAppxFactory2_INTERFACE_DEFINED__
 
@@ -382,7 +378,7 @@ EXTERN_C const IID IID_IAppxFactory;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxFactory2;
 
-    MIDL_INTERFACE("f1346df2-c282-4e22-b918-743a929a8d55")
+    // {f1346df2-c282-4e22-b918-743a929a8d55}
     interface IAppxFactory2 : public IUnknown
     {
     public:
@@ -401,7 +397,6 @@ EXTERN_C const IID IID_IAppxFactory2;
     };
 #endif 	/* __IAppxFactory2_INTERFACE_DEFINED__ */
 
-
 #ifndef __IAppxPackageReader_INTERFACE_DEFINED__
 #define __IAppxPackageReader_INTERFACE_DEFINED__
 
@@ -409,7 +404,7 @@ EXTERN_C const IID IID_IAppxFactory2;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxPackageReader;
 
-    MIDL_INTERFACE("b5c49650-99bc-481c-9a34-3d53a4106708")
+    // {b5c49650-99bc-481c-9a34-3d53a4106708}
     interface IAppxPackageReader : public IUnknown
     {
     public:
@@ -433,7 +428,6 @@ EXTERN_C const IID IID_IAppxPackageReader;
     };
 #endif 	/* __IAppxPackageReader_INTERFACE_DEFINED__ */
 
-
 #ifndef __IAppxPackageReader2_INTERFACE_DEFINED__
 #define __IAppxPackageReader2_INTERFACE_DEFINED__
 
@@ -441,7 +435,7 @@ EXTERN_C const IID IID_IAppxPackageReader;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxPackageReader2;
 
-    MIDL_INTERFACE("37e8d3d5-1aea-4204-9c50-ff715932c249")
+    // {37e8d3d5-1aea-4204-9c50-ff715932c249}
     interface IAppxPackageReader2 : public IAppxPackageReader
     {
     public:
@@ -457,7 +451,8 @@ EXTERN_C const IID IID_IAppxPackageReader2;
 /* interface IAppxPackageWriter */
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxPackageWriter;
-    MIDL_INTERFACE("9099e33b-246f-41e4-881a-008eb613f858")
+
+    // {9099e33b-246f-41e4-881a-008eb613f858}
     interface IAppxPackageWriter : public IUnknown
     {
     public:
@@ -480,7 +475,7 @@ EXTERN_C const IID IID_IAppxPackageWriter;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxPackageWriter2;
 
-    MIDL_INTERFACE("2cf5c4fd-e54c-4ea5-ba4e-f8c4b105a8c8")
+    // {2cf5c4fd-e54c-4ea5-ba4e-f8c4b105a8c8}
     interface IAppxPackageWriter2 : public IUnknown
     {
     public:
@@ -517,7 +512,7 @@ EXTERN_C const IID IID_IAppxPackageWriter2;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxFile;
 
-    MIDL_INTERFACE("91df827b-94fd-468f-827b-57f41b2f6f2e")
+    // {91df827b-94fd-468f-827b-57f41b2f6f2e}
     interface IAppxFile : public IUnknown
     {
     public:
@@ -546,7 +541,7 @@ EXTERN_C const IID IID_IAppxFile;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxFilesEnumerator;
 
-    MIDL_INTERFACE("f007eeaf-9831-411c-9847-917cdc62d1fe")
+    // {f007eeaf-9831-411c-9847-917cdc62d1fe}
     interface IAppxFilesEnumerator : public IUnknown
     {
     public:
@@ -569,7 +564,7 @@ EXTERN_C const IID IID_IAppxFilesEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBlockMapReader;
 
-    MIDL_INTERFACE("5efec991-bca3-42d1-9ec2-e92d609ec22a")
+    // {5efec991-bca3-42d1-9ec2-e92d609ec22a}
     interface IAppxBlockMapReader : public IUnknown
     {
     public:
@@ -596,7 +591,7 @@ EXTERN_C const IID IID_IAppxBlockMapReader;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBlockMapFile;
 
-    MIDL_INTERFACE("277672ac-4f63-42c1-8abc-beae3600eb59")
+    // {277672ac-4f63-42c1-8abc-beae3600eb59}
     interface IAppxBlockMapFile : public IUnknown
     {
     public:
@@ -626,7 +621,7 @@ EXTERN_C const IID IID_IAppxBlockMapFile;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBlockMapFilesEnumerator;
 
-    MIDL_INTERFACE("02b856a2-4262-4070-bacb-1a8cbbc42305")
+    // {02b856a2-4262-4070-bacb-1a8cbbc42305}
     interface IAppxBlockMapFilesEnumerator : public IUnknown
     {
     public:
@@ -649,7 +644,7 @@ EXTERN_C const IID IID_IAppxBlockMapFilesEnumerator;
 /* [unique][uuid][object] */
 EXTERN_C const IID IID_IAppxBlockMapBlock;
 
-    MIDL_INTERFACE("75cf3930-3244-4fe0-a8c8-e0bcb270b889")
+    // {75cf3930-3244-4fe0-a8c8-e0bcb270b889}
     interface IAppxBlockMapBlock : public IUnknown
     {
     public:
@@ -670,7 +665,7 @@ EXTERN_C const IID IID_IAppxBlockMapBlock;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBlockMapBlocksEnumerator;
 
-    MIDL_INTERFACE("6b429b5b-36ef-479e-b9eb-0c1482b49e16")
+    // {6b429b5b-36ef-479e-b9eb-0c1482b49e16}
     interface IAppxBlockMapBlocksEnumerator : public IUnknown
     {
     public:
@@ -693,7 +688,7 @@ EXTERN_C const IID IID_IAppxBlockMapBlocksEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestReader;
 
-    MIDL_INTERFACE("4e1bd148-55a0-4480-a3d1-15544710637c")
+    // {4e1bd148-55a0-4480-a3d1-15544710637c}
     interface IAppxManifestReader : public IUnknown
     {
     public:
@@ -735,7 +730,7 @@ EXTERN_C const IID IID_IAppxManifestReader;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestReader2;
 
-    MIDL_INTERFACE("d06f67bc-b31d-4eba-a8af-638e73e77b4d")
+    // {d06f67bc-b31d-4eba-a8af-638e73e77b4d}
     interface IAppxManifestReader2 : public IAppxManifestReader
     {
     public:
@@ -752,7 +747,7 @@ EXTERN_C const IID IID_IAppxManifestReader2;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestReader3;
 
-    MIDL_INTERFACE("C43825AB-69B7-400A-9709-CC37F5A72D24")
+    // {c43825ab-69b7-400a-9709-cc37f5a72d24}
     interface IAppxManifestReader3 : public IAppxManifestReader2
     {
     public:
@@ -773,7 +768,7 @@ EXTERN_C const IID IID_IAppxManifestReader3;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestReader4;
 
-    MIDL_INTERFACE("4579BB7C-741D-4161-B5A1-47BD3B78AD9B")
+    // {4579bb7c-741d-4161-b5a1-47bd3b78ad9b}
     interface IAppxManifestReader4 : public IAppxManifestReader3
     {
     public:
@@ -790,7 +785,7 @@ EXTERN_C const IID IID_IAppxManifestReader4;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestReader5;
 
-    MIDL_INTERFACE("8D7AE132-A690-4C00-B75A-6AAE1FEAAC80")
+    // {8d7ae132-a690-4c00-b75a-6aae1feaac80}
     interface IAppxManifestReader5 : public IUnknown
     {
     public:
@@ -824,7 +819,7 @@ EXTERN_C const IID IID_IAppxManifestReader5;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestOptionalPackageInfo;
 
-    MIDL_INTERFACE("2634847D-5B5D-4FE5-A243-002FF95EDC7E")
+    // {2634847d-5b5d-4fe5-a243-002ff95edc7e}
     interface IAppxManifestOptionalPackageInfo : public IUnknown
     {
     public:
@@ -844,7 +839,7 @@ EXTERN_C const IID IID_IAppxManifestOptionalPackageInfo;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestMainPackageDependenciesEnumerator;
 
-    MIDL_INTERFACE("A99C4F00-51D2-4F0F-BA46-7ED5255EBDFF")
+    // {a99c4f00-51d2-4f0f-ba46-7ed5255ebdff}
     interface IAppxManifestMainPackageDependenciesEnumerator : public IUnknown
     {
     public:
@@ -867,7 +862,7 @@ EXTERN_C const IID IID_IAppxManifestMainPackageDependenciesEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestMainPackageDependency;
 
-    MIDL_INTERFACE("05D0611C-BC29-46D5-97E2-84B9C79BD8AE")
+    // {05d0611c-bc29-46d5-97e2-84b9c79bd8ae}
     interface IAppxManifestMainPackageDependency : public IUnknown
     {
     public:
@@ -890,7 +885,7 @@ EXTERN_C const IID IID_IAppxManifestMainPackageDependency;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestPackageId;
 
-    MIDL_INTERFACE("283ce2d7-7153-4a91-9649-7a0f7240945f")
+    // {283ce2d7-7153-4a91-9649-7a0f7240945f}
     interface IAppxManifestPackageId : public IUnknown
     {
     public:
@@ -922,7 +917,6 @@ EXTERN_C const IID IID_IAppxManifestPackageId;
     };
 #endif 	/* __IAppxManifestPackageId_INTERFACE_DEFINED__ */
 
-
 //#ifndef __IAppxManifestPackageId2_INTERFACE_DEFINED__
 //#define __IAppxManifestPackageId2_INTERFACE_DEFINED__
 //
@@ -947,7 +941,7 @@ EXTERN_C const IID IID_IAppxManifestPackageId;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestProperties;
 
-    MIDL_INTERFACE("03faf64d-f26f-4b2c-aaf7-8fe7789b8bca")
+    // {03faf64d-f26f-4b2c-aaf7-8fe7789b8bca}
     interface IAppxManifestProperties : public IUnknown
     {
     public:
@@ -962,7 +956,6 @@ EXTERN_C const IID IID_IAppxManifestProperties;
     };
 #endif 	/* __IAppxManifestProperties_INTERFACE_DEFINED__ */
 
-
 #ifndef __IAppxManifestTargetDeviceFamiliesEnumerator_INTERFACE_DEFINED__
 #define __IAppxManifestTargetDeviceFamiliesEnumerator_INTERFACE_DEFINED__
 
@@ -970,7 +963,7 @@ EXTERN_C const IID IID_IAppxManifestProperties;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestTargetDeviceFamiliesEnumerator;
 
-    MIDL_INTERFACE("36537F36-27A4-4788-88C0-733819575017")
+    // {36537f36-27a4-4788-88c0-733819575017}
     interface IAppxManifestTargetDeviceFamiliesEnumerator : public IUnknown
     {
     public:
@@ -993,7 +986,7 @@ EXTERN_C const IID IID_IAppxManifestTargetDeviceFamiliesEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestTargetDeviceFamily;
 
-    MIDL_INTERFACE("9091B09B-C8D5-4F31-8687-A338259FAEFB")
+    // {9091b09b-c8d5-4f31-8687-a338259faefb}
     interface IAppxManifestTargetDeviceFamily : public IUnknown
     {
     public:
@@ -1016,7 +1009,7 @@ EXTERN_C const IID IID_IAppxManifestTargetDeviceFamily;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestPackageDependenciesEnumerator;
 
-    MIDL_INTERFACE("b43bbcf9-65a6-42dd-bac0-8c6741e7f5a4")
+    // {b43bbcf9-65a6-42dd-bac0-8c6741e7f5a4}
     interface IAppxManifestPackageDependenciesEnumerator : public IUnknown
     {
     public:
@@ -1039,7 +1032,7 @@ EXTERN_C const IID IID_IAppxManifestPackageDependenciesEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestPackageDependency;
 
-    MIDL_INTERFACE("e4946b59-733e-43f0-a724-3bde4c1285a0")
+    // {e4946b59-733e-43f0-a724-3bde4c1285a0}
     interface IAppxManifestPackageDependency : public IUnknown
     {
     public:
@@ -1062,7 +1055,7 @@ EXTERN_C const IID IID_IAppxManifestPackageDependency;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestPackageDependency2;
 
-    MIDL_INTERFACE("DDA0B713-F3FF-49D3-898A-2786780C5D98")
+    // {dda0b713-f3ff-49d3-898a-2786780c5d98}
     interface IAppxManifestPackageDependency2 : public IAppxManifestPackageDependency
     {
     public:
@@ -1079,7 +1072,7 @@ EXTERN_C const IID IID_IAppxManifestPackageDependency2;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestResourcesEnumerator;
 
-    MIDL_INTERFACE("de4dfbbd-881a-48bb-858c-d6f2baeae6ed")
+    // {de4dfbbd-881a-48bb-858c-d6f2baeae6ed}
     interface IAppxManifestResourcesEnumerator : public IUnknown
     {
     public:
@@ -1102,7 +1095,7 @@ EXTERN_C const IID IID_IAppxManifestResourcesEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestDeviceCapabilitiesEnumerator;
 
-    MIDL_INTERFACE("30204541-427b-4a1c-bacf-655bf463a540")
+    // {30204541-427b-4a1c-bacf-655bf463a540}
     interface IAppxManifestDeviceCapabilitiesEnumerator : public IUnknown
     {
     public:
@@ -1125,7 +1118,7 @@ EXTERN_C const IID IID_IAppxManifestDeviceCapabilitiesEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestCapabilitiesEnumerator;
 
-    MIDL_INTERFACE("11D22258-F470-42C1-B291-8361C5437E41")
+    // {11d22258-f470-42c1-b291-8361c5437e41}
     interface IAppxManifestCapabilitiesEnumerator : public IUnknown
     {
     public:
@@ -1148,7 +1141,7 @@ EXTERN_C const IID IID_IAppxManifestCapabilitiesEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestApplicationsEnumerator;
 
-    MIDL_INTERFACE("9eb8a55a-f04b-4d0d-808d-686185d4847a")
+    // {9eb8a55a-f04b-4d0d-808d-686185d4847a}
     interface IAppxManifestApplicationsEnumerator : public IUnknown
     {
     public:
@@ -1171,7 +1164,7 @@ EXTERN_C const IID IID_IAppxManifestApplicationsEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestApplication;
 
-    MIDL_INTERFACE("5da89bf4-3773-46be-b650-7e744863b7e8")
+    // {5da89bf4-3773-46be-b650-7e744863b7e8}
     interface IAppxManifestApplication : public IUnknown
     {
     public:
@@ -1192,7 +1185,7 @@ EXTERN_C const IID IID_IAppxManifestApplication;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestQualifiedResourcesEnumerator;
 
-    MIDL_INTERFACE("8ef6adfe-3762-4a8f-9373-2fc5d444c8d2")
+    // {8ef6adfe-3762-4a8f-9373-2fc5d444c8d2}
     interface IAppxManifestQualifiedResourcesEnumerator : public IUnknown
     {
     public:
@@ -1215,7 +1208,7 @@ EXTERN_C const IID IID_IAppxManifestQualifiedResourcesEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxManifestQualifiedResource;
 
-    MIDL_INTERFACE("3b53a497-3c5c-48d1-9ea3-bb7eac8cd7d4")
+    // {3b53a497-3c5c-48d1-9ea3-bb7eac8cd7d4}
     interface IAppxManifestQualifiedResource : public IUnknown
     {
     public:
@@ -1238,7 +1231,7 @@ EXTERN_C const IID IID_IAppxManifestQualifiedResource;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBundleFactory;
 
-    MIDL_INTERFACE("BBA65864-965F-4A5F-855F-F074BDBF3A7B")
+    // {bba65864-965f-4a5f-855f-f074bdbf3a7b}
     interface IAppxBundleFactory : public IUnknown
     {
     public:
@@ -1265,7 +1258,7 @@ EXTERN_C const IID IID_IAppxBundleFactory;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBundleWriter;
 
-    MIDL_INTERFACE("EC446FE8-BFEC-4C64-AB4F-49F038F0C6D2")
+    // {ec446fe8-bfec-4c64-ab4f-49f038f0c6d2}
     interface IAppxBundleWriter : public IUnknown
     {
     public:
@@ -1285,7 +1278,7 @@ EXTERN_C const IID IID_IAppxBundleWriter;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBundleWriter2;
 
-    MIDL_INTERFACE("6D8FE971-01CC-49A0-B685-233851279962")
+    // {6d8fe971-01cc-49a0-b685-233851279962}
     interface IAppxBundleWriter2 : public IUnknown
     {
     public:
@@ -1317,6 +1310,35 @@ EXTERN_C const IID IID_IAppxBundleWriter2;
 //    };
 //#endif 	/* __IAppxBundleWriter3_INTERFACE_DEFINED__ */
 
+// #ifndef __IAppxBundleWriter4_INTERFACE_DEFINED__
+// #define __IAppxBundleWriter4_INTERFACE_DEFINED__
+//
+// /* interface IAppxBundleWriter4 */
+// /* [ref][uuid][object] */ 
+// EXTERN_C const IID IID_IAppxBundleWriter4;
+//
+//     // {9CD9D523-5009-4C01-9882-DC029FBD47A3}
+//     interface IAppxBundleWriter4 : public IUnknown
+//     {
+//     public:
+//         virtual HRESULT STDMETHODCALLTYPE AddPayloadPackage( 
+//             /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+//             /* [in] */ __RPC__in_opt IStream *packageStream,
+//             /* [in] */ BOOL isDefaultApplicablePackage) = 0;
+//           
+//         virtual HRESULT STDMETHODCALLTYPE AddPackageReference( 
+//             /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+//             /* [in] */ __RPC__in_opt IStream *inputStream,
+//             /* [in] */ BOOL isDefaultApplicablePackage) = 0;
+//            
+//         virtual HRESULT STDMETHODCALLTYPE AddExternalPackageReference( 
+//             /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+//             /* [in] */ __RPC__in_opt IStream *inputStream,
+//             /* [in] */ BOOL isDefaultApplicablePackage) = 0;
+//            
+//     };
+// #endif 	/* __IAppxBundleWriter4_INTERFACE_DEFINED__ */
+
 #ifndef __IAppxBundleReader_INTERFACE_DEFINED__
 #define __IAppxBundleReader_INTERFACE_DEFINED__
 
@@ -1324,7 +1346,7 @@ EXTERN_C const IID IID_IAppxBundleWriter2;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBundleReader;
 
-    MIDL_INTERFACE("DD75B8C0-BA76-43B0-AE0F-68656A1DC5C8")
+    // {dd75b8c0-ba76-43b0-ae0f-68656a1dc5c8}
     interface IAppxBundleReader : public IUnknown
     {
     public:
@@ -1355,7 +1377,7 @@ EXTERN_C const IID IID_IAppxBundleReader;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBundleManifestReader;
 
-    MIDL_INTERFACE("CF0EBBC1-CC99-4106-91EB-E67462E04FB0")
+    // {cf0ebbc1-cc99-4106-91eb-e67462e04fb0}
     interface IAppxBundleManifestReader : public IUnknown
     {
     public:
@@ -1378,7 +1400,7 @@ EXTERN_C const IID IID_IAppxBundleManifestReader;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBundleManifestReader2;
 
-    MIDL_INTERFACE("5517DF70-033F-4AF2-8213-87D766805C02")
+    // {5517df70-033f-4af2-8213-87d766805c02}
     interface IAppxBundleManifestReader2 : public IUnknown
     {
     public:
@@ -1395,7 +1417,7 @@ EXTERN_C const IID IID_IAppxBundleManifestReader2;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBundleManifestPackageInfoEnumerator;
 
-    MIDL_INTERFACE("F9B856EE-49A6-4E19-B2B0-6A2406D63A32")
+    // {f9b856ee-49a6-4e19-b2b0-6a2406d63a32}
     interface IAppxBundleManifestPackageInfoEnumerator : public IUnknown
     {
     public:
@@ -1418,7 +1440,7 @@ EXTERN_C const IID IID_IAppxBundleManifestPackageInfoEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBundleManifestPackageInfo;
 
-    MIDL_INTERFACE("54CD06C1-268F-40BB-8ED2-757A9EBAEC8D")
+    // {54cd06c1-268f-40bb-8ed2-757a9ebaec8d}
     interface IAppxBundleManifestPackageInfo : public IUnknown
     {
     public:
@@ -1450,7 +1472,7 @@ EXTERN_C const IID IID_IAppxBundleManifestPackageInfo;
 ///* [ref][uuid][object] */
 //EXTERN_C const IID IID_IAppxBundleManifestPackageInfo2;
 //
-//    MIDL_INTERFACE("44C2ACBC-B2CF-4CCB-BBDB-9C6DA8C3BC9E")
+//    //{44C2ACBC-B2CF-4CCB-BBDB-9C6DA8C3BC9E}
 //    interface IAppxBundleManifestPackageInfo2 : public IUnknown
 //    {
 //    public:
@@ -1473,7 +1495,7 @@ EXTERN_C const IID IID_IAppxBundleManifestPackageInfo;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBundleManifestOptionalBundleInfoEnumerator;
 
-    MIDL_INTERFACE("9A178793-F97E-46AC-AACA-DD5BA4C177C8")
+    // {9a178793-f97e-46ac-aaca-dd5ba4c177c8}
     interface IAppxBundleManifestOptionalBundleInfoEnumerator : public IUnknown
     {
     public:
@@ -1496,7 +1518,7 @@ EXTERN_C const IID IID_IAppxBundleManifestOptionalBundleInfoEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxBundleManifestOptionalBundleInfo;
 
-    MIDL_INTERFACE("515BF2E8-BCB0-4D69-8C48-E383147B6E12")
+    // {515bf2e8-bcb0-4d69-8c48-e383147b6e12}
     interface IAppxBundleManifestOptionalBundleInfo : public IUnknown
     {
     public:
@@ -1519,7 +1541,7 @@ EXTERN_C const IID IID_IAppxBundleManifestOptionalBundleInfo;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxContentGroupFilesEnumerator;
 
-    MIDL_INTERFACE("1a09a2fd-7440-44eb-8c84-848205a6a1cc")
+    // {1a09a2fd-7440-44eb-8c84-848205a6a1cc}
     interface IAppxContentGroupFilesEnumerator : public IUnknown
     {
     public:
@@ -1542,7 +1564,7 @@ EXTERN_C const IID IID_IAppxContentGroupFilesEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxContentGroup;
 
-    MIDL_INTERFACE("328f6468-c04f-4e3c-b6fa-6b8d27f3003a")
+    // {328f6468-c04f-4e3c-b6fa-6b8d27f3003a}
     interface IAppxContentGroup : public IUnknown
     {
     public:
@@ -1562,7 +1584,7 @@ EXTERN_C const IID IID_IAppxContentGroup;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxContentGroupsEnumerator;
 
-    MIDL_INTERFACE("3264e477-16d1-4d63-823e-7d2984696634")
+    // {3264e477-16d1-4d63-823e-7d2984696634}
     interface IAppxContentGroupsEnumerator : public IUnknown
     {
     public:
@@ -1585,7 +1607,7 @@ EXTERN_C const IID IID_IAppxContentGroupsEnumerator;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxContentGroupMapReader;
 
-    MIDL_INTERFACE("418726d8-dd99-4f5d-9886-157add20de01")
+    // {418726d8-dd99-4f5d-9886-157add20de01}
     interface IAppxContentGroupMapReader : public IUnknown
     {
     public:
@@ -1605,7 +1627,7 @@ EXTERN_C const IID IID_IAppxContentGroupMapReader;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxSourceContentGroupMapReader;
 
-    MIDL_INTERFACE("f329791d-540b-4a9f-bc75-3282b7d73193")
+    // {f329791d-540b-4a9f-bc75-3282b7d73193}
     interface IAppxSourceContentGroupMapReader : public IUnknown
     {
     public:
@@ -1625,7 +1647,7 @@ EXTERN_C const IID IID_IAppxSourceContentGroupMapReader;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxContentGroupMapWriter;
 
-    MIDL_INTERFACE("d07ab776-a9de-4798-8c14-3db31e687c78")
+    // {d07ab776-a9de-4798-8c14-3db31e687c78}
     interface IAppxContentGroupMapWriter : public IUnknown
     {
     public:
@@ -1685,7 +1707,7 @@ typedef struct APPX_ENCRYPTED_EXEMPTIONS
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxEncryptionFactory;
 
-    MIDL_INTERFACE("80E8E04D-8C88-44AE-A011-7CADF6FB2E72")
+    // {80e8e04d-8c88-44ae-a011-7cadf6fb2e72}
     interface IAppxEncryptionFactory : public IUnknown
     {
     public:
@@ -1749,7 +1771,7 @@ EXTERN_C const IID IID_IAppxEncryptionFactory;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxEncryptionFactory2;
 
-    MIDL_INTERFACE("c1b11eee-c4ba-4ab2-a55d-d015fe8ff64f")
+    // {c1b11eee-c4ba-4ab2-a55d-d015fe8ff64f}
     interface IAppxEncryptionFactory2 : public IUnknown
     {
     public:
@@ -1772,7 +1794,7 @@ EXTERN_C const IID IID_IAppxEncryptionFactory2;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxEncryptionFactory3;
 
-    MIDL_INTERFACE("09edca37-cd64-47d6-b7e8-1cb11d4f7e05")
+    // {09edca37-cd64-47d6-b7e8-1cb11d4f7e05}
     interface IAppxEncryptionFactory3 : public IUnknown
     {
     public:
@@ -1817,7 +1839,7 @@ EXTERN_C const IID IID_IAppxEncryptionFactory3;
 ///* [ref][uuid][object] */
 //EXTERN_C const IID IID_IAppxEncryptionFactory4;
 //
-//    MIDL_INTERFACE("A879611F-12FD-41fe-85D5-06AE779BBAF5")
+//    //{A879611F-12FD-41fe-85D5-06AE779BBAF5}
 //    interface IAppxEncryptionFactory4 : public IUnknown
 //    {
 //    public:
@@ -1839,7 +1861,7 @@ EXTERN_C const IID IID_IAppxEncryptionFactory3;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxEncryptedPackageWriter;
 
-    MIDL_INTERFACE("F43D0B0B-1379-40E2-9B29-682EA2BF42AF")
+    // {f43d0b0b-1379-40e2-9b29-682ea2bf42af}
     interface IAppxEncryptedPackageWriter : public IUnknown
     {
     public:
@@ -1860,7 +1882,7 @@ EXTERN_C const IID IID_IAppxEncryptedPackageWriter;
 ///* [ref][uuid][object] */
 //EXTERN_C const IID IID_IAppxEncryptedPackageWriter2;
 //
-//    MIDL_INTERFACE("3E475447-3A25-40b5-8AD2-F953AE50C92D")
+//    //{3E475447-3A25-40b5-8AD2-F953AE50C92D}
 //    interface IAppxEncryptedPackageWriter2 : public IUnknown
 //    {
 //    public:
@@ -1879,7 +1901,7 @@ EXTERN_C const IID IID_IAppxEncryptedPackageWriter;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxEncryptedBundleWriter;
 
-    MIDL_INTERFACE("80B0902F-7BF0-4117-B8C6-4279EF81EE77")
+    // {80b0902f-7bf0-4117-b8c6-4279ef81ee77}
     interface IAppxEncryptedBundleWriter : public IUnknown
     {
     public:
@@ -1899,7 +1921,7 @@ EXTERN_C const IID IID_IAppxEncryptedBundleWriter;
 /* [ref][uuid][object] */
 EXTERN_C const IID IID_IAppxEncryptedBundleWriter2;
 
-    MIDL_INTERFACE("E644BE82-F0FA-42B8-A956-8D1CB48EE379")
+    // {e644be82-f0fa-42b8-a956-8d1cb48ee379}
     interface IAppxEncryptedBundleWriter2 : public IUnknown
     {
     public:
@@ -1910,6 +1932,30 @@ EXTERN_C const IID IID_IAppxEncryptedBundleWriter2;
     };
 #endif 	/* __IAppxEncryptedBundleWriter2_INTERFACE_DEFINED__ */
 
+//#ifndef __IAppxEncryptedBundleWriter3_INTERFACE_DEFINED__
+//#define __IAppxEncryptedBundleWriter3_INTERFACE_DEFINED__
+//
+/* interface IAppxEncryptedBundleWriter3 */
+/* [ref][uuid][object] */ 
+//EXTERN_C const IID IID_IAppxEncryptedBundleWriter3;
+//
+//      //{0D34DEB3-5CAE-4DD3-977C-504932A51D31}
+//      interface IAppxEncryptedBundleWriter3 : public IUnknown
+//      {
+//      public:
+//          virtual HRESULT STDMETHODCALLTYPE AddPayloadPackageEncrypted( 
+//             /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+//             /* [in] */ __RPC__in_opt IStream *packageStream,
+//             /* [in] */ BOOL isDefaultApplicablePackage) = 0;
+//        
+//          virtual HRESULT STDMETHODCALLTYPE AddExternalPackageReference( 
+//             /* [string][in] */ __RPC__in_string LPCWSTR fileName,
+//             /* [in] */ __RPC__in_opt IStream *inputStream,
+//             /* [in] */ BOOL isDefaultApplicablePackage) = 0;
+//        
+//     };
+//#endif 	/* __IAppxEncryptedBundleWriter3_INTERFACE_DEFINED__ */
+
 //#ifndef __IAppxPackageEditor_INTERFACE_DEFINED__
 //#define __IAppxPackageEditor_INTERFACE_DEFINED__
 //
@@ -1917,7 +1963,7 @@ EXTERN_C const IID IID_IAppxEncryptedBundleWriter2;
 ///* [ref][uuid][object] */
 //EXTERN_C const IID IID_IAppxPackageEditor;
 //
-//    MIDL_INTERFACE("E2ADB6DC-5E71-4416-86B6-86E5F5291A6B")
+//    //{E2ADB6DC-5E71-4416-86B6-86E5F5291A6B}
 //    interface IAppxPackageEditor : public IUnknown
 //    {
 //    public:
@@ -1937,8 +1983,8 @@ EXTERN_C const IID IID_IAppxEncryptedBundleWriter2;
 //    };
 //#endif 	/* __IAppxPackageEditor_INTERFACE_DEFINED__ */
 
-}
-#endif
+} // extern "C"
+#endif // #ifdef WIN32
 
 extern "C++" {
 typedef /* [v1_enum] */
@@ -1956,6 +2002,8 @@ enum APPX_PACKUNPACK_OPTION
         APPX_PACKUNPACK_OPTION_NONE                    = 0x0,
         APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER  = 0x1
     }   APPX_PACKUNPACK_OPTION;
+
+// xPlatAppx specific
 
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
     APPX_PACKUNPACK_OPTION packUnpackOptions,
@@ -2032,7 +2080,6 @@ SpecializeUuidOfImpl(IAppxPackageReader);
 SpecializeUuidOfImpl(IAppxPackageReader2);
 SpecializeUuidOfImpl(IAppxPackageWriter);
 SpecializeUuidOfImpl(IAppxPackageWriter2);
-//SpecializeUuidOfImpl(IAppxPackageWriter3);
 SpecializeUuidOfImpl(IAppxFile);
 SpecializeUuidOfImpl(IAppxFilesEnumerator);
 SpecializeUuidOfImpl(IAppxBlockMapReader);
@@ -2045,12 +2092,10 @@ SpecializeUuidOfImpl(IAppxManifestReader2);
 SpecializeUuidOfImpl(IAppxManifestReader3);
 SpecializeUuidOfImpl(IAppxManifestReader4);
 SpecializeUuidOfImpl(IAppxManifestReader5);
-//SpecializeUuidOfImpl(IAppxManifestReader6);
 SpecializeUuidOfImpl(IAppxManifestOptionalPackageInfo);
 SpecializeUuidOfImpl(IAppxManifestMainPackageDependenciesEnumerator);
 SpecializeUuidOfImpl(IAppxManifestMainPackageDependency);
 SpecializeUuidOfImpl(IAppxManifestPackageId);
-//SpecializeUuidOfImpl(IAppxManifestPackageId2);
 SpecializeUuidOfImpl(IAppxManifestProperties);
 SpecializeUuidOfImpl(IAppxManifestTargetDeviceFamiliesEnumerator);
 SpecializeUuidOfImpl(IAppxManifestTargetDeviceFamily);
@@ -2067,13 +2112,11 @@ SpecializeUuidOfImpl(IAppxManifestQualifiedResource);
 SpecializeUuidOfImpl(IAppxBundleFactory);
 SpecializeUuidOfImpl(IAppxBundleWriter);
 SpecializeUuidOfImpl(IAppxBundleWriter2);
-//SpecializeUuidOfImpl(IAppxBundleWriter3);
 SpecializeUuidOfImpl(IAppxBundleReader);
 SpecializeUuidOfImpl(IAppxBundleManifestReader);
 SpecializeUuidOfImpl(IAppxBundleManifestReader2);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoEnumerator);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfo);
-//SpecializeUuidOfImpl(IAppxBundleManifestPackageInfo2);
 SpecializeUuidOfImpl(IAppxBundleManifestOptionalBundleInfoEnumerator);
 SpecializeUuidOfImpl(IAppxBundleManifestOptionalBundleInfo);
 SpecializeUuidOfImpl(IAppxContentGroupFilesEnumerator);
@@ -2085,11 +2128,8 @@ SpecializeUuidOfImpl(IAppxContentGroupMapWriter);
 SpecializeUuidOfImpl(IAppxEncryptionFactory);
 SpecializeUuidOfImpl(IAppxEncryptionFactory2);
 SpecializeUuidOfImpl(IAppxEncryptionFactory3);
-//SpecializeUuidOfImpl(IAppxEncryptionFactory4);
 SpecializeUuidOfImpl(IAppxEncryptedPackageWriter);
-//SpecializeUuidOfImpl(IAppxEncryptedPackageWriter2);
 SpecializeUuidOfImpl(IAppxEncryptedBundleWriter);
 SpecializeUuidOfImpl(IAppxEncryptedBundleWriter2);
-//SpecializeUuidOfImpl(IAppxPackageEditor);
 
 #endif //__appxpackaging_hpp__

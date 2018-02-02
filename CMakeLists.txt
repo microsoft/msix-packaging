@@ -144,10 +144,12 @@ ELSE()
 ENDIF()
 
 
-IF(MACOS)
+IF((MACOS) OR (IOS))
         if ((CMAKE_BUILD_TYPE MATCHES Release) OR (CMAKE_BUILD_TYPE MATCHES MinSizeRel))
+            MESSAGE (STATUS "optimized build, symbol generation turned-OFF" )
             # on optimized builds, do NOT turn-on symbol generation.
         else()
+            MESSAGE (STATUS "non-optimized build, symbol generation turned-ON" )
             # Incredibly, for both clang and g++, while a single compile-and-link
             # invocation will create an executable.dSYM/ dir with debug info,
             # with separate compilation the final link does NOT create the
@@ -202,4 +204,6 @@ ADD_DEPENDENCIES(SRC LIBS)
 MESSAGE (STATUS "dependencies added")
 add_subdirectory(sample)
 MESSAGE (STATUS "sample processed")
+add_subdirectory(test)
+MESSAGE (STATUS "tests processed")
 MESSAGE (STATUS "DONE!")
