@@ -43,13 +43,12 @@ function StartEmulator {
 
 function CreateApp {
 	# Prepare package and compile
-	cd $xplatappxdir/test/mobile/xPlatAppxAndroid
+	cd $xplatappxdir/../mobile/xPlatAppxAndroid
 	mkdir app/src/main/assets
-	cp -R $xplatappxdir/test/appx/* app/src/main/assets
+	cp -R $xplatappxdir/../appx/* app/src/main/assets
 	mkdir -p app/src/main/jniLibs/x86
-	cp $xplatappxdir/android/lib/libxPlatAppx.so app/src/main/jniLibs/x86
-	JAVA_HOME="/Applications/Android Studio.app/Contents/jre/jdk/Contents/Home"
-	rm -r build
+	cp $xplatappxdir/../../.vs/lib/libxPlatAppx.so app/src/main/jniLibs/x86
+	rm -r build app/build
 	sh ./gradlew assembleDebug
 }
 
@@ -87,7 +86,7 @@ function ParseResult {
 StartEmulator
 # Clean up. This commands might fail, but is not an error
 adb shell rm -r /data/data/com.microsoft.xplatappxandroid/files
-rm $xplatappxdir/test/mobile/xPlatAppxAndroid/testResults.txt
+rm $xplatappxdir/../mobile/xPlatAppxAndroid/testResults.txt
 
 CreateApp
 RunTest
