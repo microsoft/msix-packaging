@@ -2005,14 +2005,6 @@ enum APPX_PACKUNPACK_OPTION
 
 // xPlatAppx specific
 
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
-    APPX_PACKUNPACK_OPTION packUnpackOptions,
-    APPX_VALIDATION_OPTION validationOption,
-    char* utf8FolderToPack,
-    char* utf8CertificatePath,
-    char* utf8Destination
-);
-
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
     APPX_PACKUNPACK_OPTION packUnpackOptions,
     APPX_VALIDATION_OPTION validationOption,

@@ -9,5 +9,4 @@ _CoCreateAppxFactoryWithHeap
 _CreateStreamOnFile
 _CreateStreamOnFileUTF16
 _GetLogTextUTF8
-_PackAppx
 _UnpackAppx

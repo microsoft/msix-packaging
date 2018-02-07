@@ -162,36 +162,6 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
     });
 }
 
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE PackAppx(
-    APPX_PACKUNPACK_OPTION packUnpackOptions,
-    APPX_VALIDATION_OPTION validationOption,
-    char* utf8FolderToPack,
-    char* utf8CertificatePath,
-    char* utf8Destination)
-{
-    return xPlat::ResultOf([&]() {
-        // TODO: what if source and destination are something OTHER than a file paths?
-        ThrowErrorIfNot(xPlat::Error::InvalidParameter,
-            (utf8FolderToPack != nullptr && utf8Destination != nullptr && utf8CertificatePath != nullptr), 
-            "Invalid parameters"
-        );
-
-        xPlat::ComPtr<IStream> stream;
-        ThrowHrIfFailed(CreateStreamOnFile(utf8Destination, false, &stream));
-
-        xPlat::ComPtr<IAppxFactory> factory;
-        ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, validationOption, &factory));
-
-        // TODO: plumb these through
-        APPX_PACKAGE_SETTINGS option {0};
-        xPlat::ComPtr<IAppxPackageWriter> writer;
-        ThrowHrIfFailed(factory->CreatePackageWriter(stream.Get(), &option, &writer));
-
-        auto from = xPlat::ComPtr<IStorageObject>::Make<xPlat::DirectoryObject>(utf8FolderToPack);
-        writer.As<IAppxPackage>()->Pack(packUnpackOptions, utf8CertificatePath, from.Get());
-    });
-}
-
 XPLATAPPX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText)
 {
     return xPlat::ResultOf([&](){        

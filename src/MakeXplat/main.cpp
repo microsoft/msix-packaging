@@ -14,7 +14,6 @@ enum class UserSpecified
 {
     Nothing,
     Help,
-    Pack,
     Unpack
 };
 
@@ -60,13 +59,6 @@ struct State
     {
         if (!packageName.empty() || name.empty()) { return false; }
         packageName = name;
-        return true;
-    }
-
-    bool SetCertificateName(const std::string& name)
-    {
-        if (!certName.empty() || name.empty()) { return false; }
-        certName = name;
         return true;
     }
 
@@ -138,18 +130,6 @@ int Help(char* toolName, std::map<std::string, Command>& commands, State& state)
         std::cout << std::endl;
         std::cout << "For help with a specific command, enter " << toolName << " <command> -?" << std::endl;
         return 0;
-    case UserSpecified::Pack:
-        command = commands.find("pack");
-        std::cout << "    " << toolName << " pack -p <package> -c <certificate> -d <directory> [options] " << std::endl;
-        std::cout << std::endl;
-        std::cout << "Description:" << std::endl;
-        std::cout << "------------" << std::endl;
-        std::cout << "    Creates an appx package at output <package> name by adding all files from" << std::endl;
-        std::cout << "    content <directory> (including subfolders), and signs the package using  " << std::endl;
-        std::cout << "    the specified <certificate>.  You must include a valid app package manifest " << std::endl;
-        std::cout << "    named AppxManifest.xml in the content directory if you do not specify the " << std::endl;
-        std::cout << "    -mv option." << std::endl;
-        break;
     case UserSpecified::Unpack:
         command = commands.find("unpack");
         std::cout << "    " << toolName << " upack -p <package> -d <directory> [options] " << std::endl;
@@ -218,17 +198,6 @@ int ParseAndRun(std::map<std::string, Command>& commands, State& state, int argc
     case UserSpecified::Help:
     case UserSpecified::Nothing:
         return Help(argv[0], commands, state);
-    case UserSpecified::Pack:
-        if (state.packageName.empty() || state.certName.empty() || state.directoryName.empty())
-        {
-            Error(argv[0]);
-            return -1;
-        }
-        return PackAppx(state.unpackOptions, state.validationOptions,
-            const_cast<char*>(state.packageName.c_str()),
-            const_cast<char*>(state.certName.c_str()),
-            const_cast<char*>(state.directoryName.c_str())
-        );
 
     case UserSpecified::Unpack:
         if (state.packageName.empty() || state.directoryName.empty())
@@ -265,31 +234,6 @@ int main(int argc, char* argv[])
 
     State state;
     std::map<std::string, Command> commands = {
-        { "pack", Command("Create a new package from files on disk", [&]() { return state.Specify(UserSpecified::Pack); },
-            {
-                { "-p", Option(true, "REQUIRED, specify output package file name.",
-                [&](const std::string& name) { return state.SetPackageName(name); })
-                },
-                { "-c", Option(true, "REQUIRED, specify input certificate name.",
-                    [&](const std::string& name) { return state.SetCertificateName(name); })
-                },
-                { "-d", Option(true, "REQUIRED, specify input directory name.",
-                    [&](const std::string& name) { return state.SetDirectoryName(name); })
-                },
-                {"-mv", Option(false, "Skips manifest validation.  By default manifest validation is enabled.",
-                    [&](const std::string&) { return state.SkipManifestValidation(); })
-                },
-                { "-sv", Option(false, "Allow unknown signature origin.  By default unknown signatures are rejected.",
-                    [&](const std::string&) { return state.AllowSignatureOriginUnknown(); })
-                },
-                { "-ss", Option(false, "Skips enforcement of signed packages.  By default packages must be signed.",
-                    [&](const std::string&) { return state.SkipSignature(); })
-                },                
-                { "-?", Option(false, "Displays this help text.",
-                    [&](const std::string&) { return false; })
-                }
-            })
-        },
         { "unpack", Command("Create a new package from files on disk", [&]() { return state.Specify(UserSpecified::Unpack); },
             {
                 { "-p", Option(true, "REQUIRED, specify input package name.",
