@@ -6,7 +6,7 @@ cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 MESSAGE (STATUS "--------------------------------")
-MESSAGE (STATUS "xPlatAppx")
+MESSAGE (STATUS "MSIX Packaging SDK")
 MESSAGE (STATUS "--------------------------------")
 
 # Set build options
@@ -67,12 +67,12 @@ ENDIF()
 
 # Set the version number of your project here (format is MAJOR.MINOR.PATCHLEVEL - e.g. 1.0.0)
 SET(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
-MESSAGE (STATUS "xPlatAppx version ${VERSION}")
-MESSAGE (STATUS "xPlatAppx branch name ${GIT_BRANCH_NAME}")
+MESSAGE (STATUS "MSIX Packaging SDK version ${VERSION}")
+MESSAGE (STATUS "MSIX Packaging SDK branch name ${GIT_BRANCH_NAME}")
 
 # Configure Package.nuspec
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Package.nuspec.cmakein ${CMAKE_CURRENT_BINARY_DIR}/Package.nuspec CRLF)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Microsoft.xPlat.AppxPackaging.targets ${CMAKE_BINARY_DIR}/build/native/Microsoft.xPlat.AppxPackaging.targets)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Microsoft.MSIX.Packaging.targets ${CMAKE_BINARY_DIR}/build/native/Microsoft.MSIX.Packaging.targets)
 MESSAGE (STATUS "Package.Nuspec created")
 MESSAGE (STATUS "--------------------------------")
 
@@ -195,7 +195,7 @@ SET(CMAKE_MACOSX_RPATH ON)
 add_subdirectory(lib)
 MESSAGE (STATUS " ")
 MESSAGE (STATUS "--------------------------------")
-MESSAGE (STATUS "xPlatAppx")
+MESSAGE (STATUS "MSIX Packaging SDK")
 MESSAGE (STATUS "--------------------------------")
 MESSAGE (STATUS "libs processed")
 add_subdirectory(src)

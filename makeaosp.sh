@@ -59,8 +59,8 @@ printsetup
 mkdir .vs
 cd .vs
 
-# clean up any old builds of xPlatAppx modules
-find . -name *xPlatAppx* -d | xargs rm -r
+# clean up any old builds of msix modules
+find . -name *msix* -d | xargs rm -r
 
 cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK="$ndk" \

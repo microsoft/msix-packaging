@@ -7,7 +7,7 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 
-namespace xPlat {
+namespace MSIX {
     class FileStream : public StreamBase
     {
     public:

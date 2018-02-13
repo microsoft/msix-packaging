@@ -16,7 +16,7 @@
 #include <map>
 #include <functional>
 
-namespace xPlat {
+namespace MSIX {
 
     // This represents a LZW-compressed stream
     class InflateStream : public StreamBase

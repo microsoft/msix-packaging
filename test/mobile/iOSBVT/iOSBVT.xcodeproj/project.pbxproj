@@ -13,10 +13,6 @@
 		EEE4055820225CDF007B25CE /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EEE4055720225CDF007B25CE /* Assets.xcassets */; };
 		EEE4055B20225CDF007B25CE /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEE4055920225CDF007B25CE /* LaunchScreen.storyboard */; };
 		EEE4055E20225CDF007B25CE /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4055D20225CDF007B25CE /* main.m */; };
-		EEE4056620225E04007B25CE /* libxPlatAppx.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE4056420225E04007B25CE /* libxPlatAppx.0.0.0.dylib */; };
-		EEE4056720225E04007B25CE /* libxPlatAppxTestCommon.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE4056520225E04007B25CE /* libxPlatAppxTestCommon.0.0.0.dylib */; };
-		EEE4056920225E20007B25CE /* libxPlatAppx.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4056420225E04007B25CE /* libxPlatAppx.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		EEE4056A20225E20007B25CE /* libxPlatAppxTestCommon.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4056520225E04007B25CE /* libxPlatAppxTestCommon.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		EEE4058820225EF5007B25CE /* Bad_Namespace_Blockmap.appx in Resources */ = {isa = PBXBuildFile; fileRef = EEE4056D20225EF5007B25CE /* Bad_Namespace_Blockmap.appx */; };
 		EEE4058920225EF5007B25CE /* ContentTypes_in_blockmap.appx in Resources */ = {isa = PBXBuildFile; fileRef = EEE4056E20225EF5007B25CE /* ContentTypes_in_blockmap.appx */; };
 		EEE4058A20225EF5007B25CE /* Duplicate_file_in_blockmap.appx in Resources */ = {isa = PBXBuildFile; fileRef = EEE4056F20225EF5007B25CE /* Duplicate_file_in_blockmap.appx */; };
@@ -71,6 +67,10 @@
 		EEE405BD20227ED8007B25CE /* Missing_Manifest_in_blockmap.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057420225EF5007B25CE /* Missing_Manifest_in_blockmap.appx */; };
 		EEE405BE20227ED8007B25CE /* No_blockmap.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057520225EF5007B25CE /* No_blockmap.appx */; };
 		EEE405BF20227ED8007B25CE /* Size_wrong_uncompressed.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057620225EF5007B25CE /* Size_wrong_uncompressed.appx */; };
+		EEE405C2202E53A7007B25CE /* libmsix.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE405C0202E53A7007B25CE /* libmsix.0.0.0.dylib */; };
+		EEE405C3202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE405C1202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib */; };
+		EEE405C4202E53D9007B25CE /* libmsix.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE405C0202E53A7007B25CE /* libmsix.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		EEE405C5202E53D9007B25CE /* libmsixtestcommon.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE405C1202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -80,8 +80,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				EEE4056920225E20007B25CE /* libxPlatAppx.0.0.0.dylib in CopyFiles */,
-				EEE4056A20225E20007B25CE /* libxPlatAppxTestCommon.0.0.0.dylib in CopyFiles */,
+				EEE405C4202E53D9007B25CE /* libmsix.0.0.0.dylib in CopyFiles */,
+				EEE405C5202E53D9007B25CE /* libmsixtestcommon.0.0.0.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -143,8 +143,6 @@
 		EEE4055A20225CDF007B25CE /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		EEE4055C20225CDF007B25CE /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		EEE4055D20225CDF007B25CE /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		EEE4056420225E04007B25CE /* libxPlatAppx.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxPlatAppx.0.0.0.dylib; path = ../../../build/lib/libxPlatAppx.0.0.0.dylib; sourceTree = "<group>"; };
-		EEE4056520225E04007B25CE /* libxPlatAppxTestCommon.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libxPlatAppxTestCommon.0.0.0.dylib; path = ../../../build/lib/libxPlatAppxTestCommon.0.0.0.dylib; sourceTree = "<group>"; };
 		EEE4056D20225EF5007B25CE /* Bad_Namespace_Blockmap.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Bad_Namespace_Blockmap.appx; sourceTree = "<group>"; };
 		EEE4056E20225EF5007B25CE /* ContentTypes_in_blockmap.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = ContentTypes_in_blockmap.appx; sourceTree = "<group>"; };
 		EEE4056F20225EF5007B25CE /* Duplicate_file_in_blockmap.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Duplicate_file_in_blockmap.appx; sourceTree = "<group>"; };
@@ -172,6 +170,8 @@
 		EEE4058520225EF5007B25CE /* TestAppxPackage_Win32.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = TestAppxPackage_Win32.appx; sourceTree = "<group>"; };
 		EEE4058620225EF5007B25CE /* TestAppxPackage_x64.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = TestAppxPackage_x64.appx; sourceTree = "<group>"; };
 		EEE4058720225EF5007B25CE /* UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx"; sourceTree = "<group>"; };
+		EEE405C0202E53A7007B25CE /* libmsix.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsix.0.0.0.dylib; path = ../../../build/lib/libmsix.0.0.0.dylib; sourceTree = "<group>"; };
+		EEE405C1202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsixtestcommon.0.0.0.dylib; path = ../../../build/lib/libmsixtestcommon.0.0.0.dylib; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -179,8 +179,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				EEE4056720225E04007B25CE /* libxPlatAppxTestCommon.0.0.0.dylib in Frameworks */,
-				EEE4056620225E04007B25CE /* libxPlatAppx.0.0.0.dylib in Frameworks */,
+				EEE405C3202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib in Frameworks */,
+				EEE405C2202E53A7007B25CE /* libmsix.0.0.0.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -192,8 +192,8 @@
 			children = (
 				EEE4054D20225CDF007B25CE /* iOSBVT */,
 				EEE4054C20225CDF007B25CE /* Products */,
-				EEE4056420225E04007B25CE /* libxPlatAppx.0.0.0.dylib */,
-				EEE4056520225E04007B25CE /* libxPlatAppxTestCommon.0.0.0.dylib */,
+				EEE405C0202E53A7007B25CE /* libmsix.0.0.0.dylib */,
+				EEE405C1202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib */,
 				EEE4056B20225EF5007B25CE /* appx */,
 			);
 			sourceTree = "<group>";

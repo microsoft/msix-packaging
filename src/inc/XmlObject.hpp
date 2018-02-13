@@ -35,7 +35,7 @@ public:
 
 SpecializeUuidOfImpl(IXmlObject);
 
-namespace xPlat {
+namespace MSIX {
 
     // XML de-serialization happens during construction, of this object.
     // XML serialization happens through the Write method
@@ -108,8 +108,8 @@ namespace xPlat {
         // IVerifierObject
         const std::string& GetPublisher() override { throw Exception(Error::NotSupported); }
         bool HasStream() override { return m_stream.Get() != nullptr; }
-        xPlat::ComPtr<IStream> GetStream() override { return m_stream; }
-        xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override
+        MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
+        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override
         {
             throw Exception(Error::NotSupported);
         }
@@ -119,4 +119,4 @@ namespace xPlat {
         ComPtr<IStream> m_stream;
     };
 
-} // namespace xPlat
+} // namespace MSIX

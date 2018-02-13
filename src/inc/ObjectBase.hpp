@@ -10,7 +10,7 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 
-namespace xPlat {
+namespace MSIX {
     namespace Meta {
 
         // Represents a heterogeneous collection of types that can be operated on as a compile-time vector

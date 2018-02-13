@@ -6,13 +6,13 @@
 //  - Remove C style interfaces declaration
 //  - Remove MIDL_INTERFACE MACRO
 //  - Add IUnknown, ISequentialStream and IStream interfaces
-//  - Add xPlatAppx specific funcions and helpers (See bottom of file)
+//  - Add MSIX specific funcions and helpers (See bottom of file)
 //  - See more changes in AppxPackaging_i.cpp
 
 #ifndef __appxpackaging_hpp__
 #define __appxpackaging_hpp__
 
-#include "AppxWindows.hpp"
+#include "MSIXWindows.hpp"
 
 #ifdef WIN32
 #include <AppxPackaging.h>
@@ -1986,28 +1986,28 @@ EXTERN_C const IID IID_IAppxEncryptedBundleWriter2;
 } // extern "C"
 #endif // #ifdef WIN32
 
+// MSIX specific
+
 extern "C++" {
 typedef /* [v1_enum] */
-enum APPX_VALIDATION_OPTION
+enum MSIX_VALIDATION_OPTION
     {
-        APPX_VALIDATION_OPTION_FULL                        = 0x0,
-        APPX_VALIDATION_OPTION_SKIPSIGNATURE               = 0x1,
-        APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN = 0x2,
-        APPX_VALIDATION_OPTION_SKIPAPPXMANIFEST            = 0x4
-    }   APPX_VALIDATION_OPTION;
+        MSIX_VALIDATION_OPTION_FULL                        = 0x0,
+        MSIX_VALIDATION_OPTION_SKIPSIGNATURE               = 0x1,
+        MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN = 0x2,
+        MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST            = 0x4
+    }   MSIX_VALIDATION_OPTION;
 
 typedef /* [v1_enum] */
-enum APPX_PACKUNPACK_OPTION
+enum MSIX_PACKUNPACK_OPTION
     {
-        APPX_PACKUNPACK_OPTION_NONE                    = 0x0,
-        APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER  = 0x1
-    }   APPX_PACKUNPACK_OPTION;
+        MSIX_PACKUNPACK_OPTION_NONE                    = 0x0,
+        MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER  = 0x1
+    }   MSIX_PACKUNPACK_OPTION;
 
-// xPlatAppx specific
-
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
-    APPX_PACKUNPACK_OPTION packUnpackOptions,
-    APPX_VALIDATION_OPTION validationOption,
+MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    MSIX_VALIDATION_OPTION validationOption,
     char* utf8SourcePackage,
     char* utf8Destination
 );
@@ -2017,26 +2017,26 @@ XPLATAPPX_API HRESULT STDMETHODCALLTYPE UnpackAppx(
 typedef LPVOID STDMETHODCALLTYPE COTASKMEMALLOC(SIZE_T cb);
 typedef void STDMETHODCALLTYPE COTASKMEMFREE(LPVOID pv);
 
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText);
+MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText);
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
-    APPX_VALIDATION_OPTION validationOption,
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
+    MSIX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory);
 
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
-    APPX_VALIDATION_OPTION validationOption,
+    MSIX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory);
 
 // provided as a helper for platforms that do not have an implementation of SHCreateStreamOnFileEx
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
+MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     char* utf8File,
     bool forRead,
     IStream** stream);
 
-XPLATAPPX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
+MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     LPCWSTR utf16File,
     bool forRead,
     IStream** stream);

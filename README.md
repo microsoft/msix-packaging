@@ -1,11 +1,11 @@
-xPlatAppx 
+MSIX Packaging SDK 
 ---------
     Copyright (c) 2017 Microsoft Corp. 
     All rights reserved.
 
 DESCRIPTION
 -----------
-    The xPlatAppx project is an effort to enable developers on a variety of platforms to package and unpackage 
+    The MSIX Packaging SDK project is an effort to enable developers on a variety of platforms to package and unpackage 
     application packages for the purposes of distribution from either the Microsoft Windows Apps Store, or 
     2nd/3rd party stores.  To that end, the file format of these packages need to be in a format that is easily 
     digestible to through the Microsoft Windows Apps Store back-end ingestion processes; which means that the 
@@ -14,15 +14,14 @@ DESCRIPTION
 
 OVERVIEW
 --------
-The xPlatAppx project includes:
-1. Cross platform API support for unpacakge of .appx package 
-2. Developer tooling to build .appx package on Windows, MacOS and Linux. 
+The MSIX Packaging SDK project includes:
+1. Cross platform API support for unpacakge of .appx package
 
 The scheduling of the highlevel work listed above will be determined with respect to the relative priorities. 
 
-    The xPlatAppx project includes:
+    The MSIX Packaging SDK project includes:
 
-        xPlatAppx       - A shared library (DLL on Win32, dylib on MacOs, SO on Linux) that exports a subset
+        msix            - A shared library (DLL on Win32, dylib on MacOs, SO on Linux and Android) that exports a subset
                           of the functionality contained within appxpackaging.dll on Windows.  See:
                           https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx
                           for additional details.
@@ -31,12 +30,11 @@ The scheduling of the highlevel work listed above will be determined with respec
                           CoCreating IAppxFactory, a c-style export: CoCreateAppxFactory is provided instead.
                           See sample folder at root of package for cross platform consumption examples
 
-                          Finally, there are two additional exports: 'Pack' and 'Unpack' that provide
-                          simplified package and unpackage implementations respectively.
+                          Finally, there is one exports 'Unpack' that provides an simplified unpackage implementations.
                           
-        MakeXplatAppx   - A command line wrapper over the Pack and Unpack implementations.  This tool exists
-                          primarily as a means of validating the implementation of xPlatAppx internal routines
-                          and is compiled for Win32, MacOS, and Linux platforms.
+        makemsix        - A command line wrapper over the Unpack implementation.  This tool exists
+                          primarily as a means of validating the implementation of the MSIX Packaging SDK internal
+                          routines and is compiled for Win32, MacOS, and Linux platforms.
 
 SETUP INSTRUCTIONS
 ------------------
@@ -92,9 +90,9 @@ PREREQUISITES
     cmake -DCMAKE_ANDROID_NDK=c:/android-ndk ^
         -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang ^
         -DCMAKE_SYSTEM_NAME=Android ^
-        -DCMAKE_SYSTEM_VERSION=27 ^
+        -DCMAKE_SYSTEM_VERSION=19 ^
         -DCMAKE_ANDROID_ARCH_ABI=x86 ^
-        -DCMAKE_ANDROID_STL_TYPE=c++_static ^
+        -DCMAKE_ANDROID_STL_TYPE=c++_shared ^
         -DCMAKE_BUILD_TYPE=Release ^
         -DAOSP=on ^
         -G"Ninja" ..
@@ -123,12 +121,18 @@ BUILD
 
     On Mac using make: 
         ./makemac
+        ./makeios
+    
+    On Linux using make:
+        ./makelinux
+        ./makeaosp
+    
     
 
 SUPPORT
 -------
     TODO: write stuffs here
 
-HOW TO CONTRIBUTE TO xPlatAppx
+HOW TO CONTRIBUTE TO MSIX Packaging SDK
 ------------------------------
     TODO: write stuffs here

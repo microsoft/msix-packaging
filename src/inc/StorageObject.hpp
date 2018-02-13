@@ -52,7 +52,7 @@ public:
     // Opens a stream to a file by name in the storage object.  If the file does not exist and mode is read,
     // or read + update, then nullptr is returned.  If the file is opened with write and it does not exist, 
     // then the file is created and an empty stream to the file is handed back to the caller.
-    virtual IStream* OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode) = 0;
+    virtual IStream* OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) = 0;
 
     // Some storage objects may operate under cache semantics and therefore require an explicit commit.
     // Clients should explicitly call CommitChanges after all write operations into the object are complete.

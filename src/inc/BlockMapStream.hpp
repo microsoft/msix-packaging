@@ -1,6 +1,6 @@
 #pragma once
 #define NOMINMAX /* windows.h, or more correctly windef.h, defines min as a macro... */
-#include "AppxWindows.hpp"
+#include "MSIXWindows.hpp"
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "RangeStream.hpp"
@@ -15,7 +15,7 @@
 #include <algorithm>
 #include <vector>
 
-namespace xPlat {
+namespace MSIX {
   
     const std::uint64_t BLOCKMAP_BLOCK_SIZE = 65536; // 64KB
 
@@ -36,7 +36,7 @@ namespace xPlat {
     class BlockMapStream : public StreamBase
     {
     public:
-        BlockMapStream(IxPlatFactory* factory, std::string decodedName, IStream* stream, std::vector<Block>& blocks)
+        BlockMapStream(IMSIXFactory* factory, std::string decodedName, IStream* stream, std::vector<Block>& blocks)
             : m_factory(factory), m_decodedName(decodedName), m_stream(stream)
         {
             // Determine overall stream size
@@ -163,6 +163,6 @@ namespace xPlat {
         std::uint64_t m_streamSize;
         std::string m_decodedName;
         ComPtr<IStream> m_stream;
-        IxPlatFactory*  m_factory;
+        IMSIXFactory* m_factory;
     };
 }

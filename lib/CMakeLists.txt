@@ -1,4 +1,4 @@
-# xplat\lib
+# MSIX\lib
 # Copyright (C) 2017 Microsoft
 # Created by Phil Smith (psmith@microsoft.com) on 10/19/2017
 cmake_minimum_required(VERSION 3.4.0 FATAL_ERROR)

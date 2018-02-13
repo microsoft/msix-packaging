@@ -1,6 +1,6 @@
 #!/bin/bash
 testfailed=0
-xplatappxdir=`pwd`
+projectdir=`pwd`
 
 function RunCommandWithTimeout {
 	local result=1
@@ -43,25 +43,25 @@ function StartEmulator {
 
 function CreateApp {
 	# Prepare package and compile
-	cd $xplatappxdir/../mobile/xPlatAppxAndroid
+	cd $projectdir/../mobile/AndroidBVT
 	mkdir app/src/main/assets
-	cp -R $xplatappxdir/../appx/* app/src/main/assets
+	cp -R $projectdir/../appx/* app/src/main/assets
 	mkdir -p app/src/main/jniLibs/x86
-	cp $xplatappxdir/../../.vs/lib/libxPlatAppx.so app/src/main/jniLibs/x86
+	cp $projectdir/../../.vs/lib/libmsix.so app/src/main/jniLibs/x86
 	rm -r build app/build
 	sh ./gradlew assembleDebug
 }
 
 function RunTest {
 	# Install app
-	RunCommand "adb push app/build/outputs/apk/debug/app-debug.apk /data/local/tmp/com.microsoft.xplatappxandroid"
-	RunCommand "adb shell pm install -t -r '/data/local/tmp/com.microsoft.xplatappxandroid'"
+	RunCommand "adb push app/build/outputs/apk/debug/app-debug.apk /data/local/tmp/com.microsoft.androidbvt"
+	RunCommand "adb shell pm install -t -r '/data/local/tmp/com.microsoft.androidbvt'"
 	# Start app
-	RunCommand "adb shell am start -n 'com.microsoft.xplatappxandroid/com.microsoft.xplatappxandroid.MainActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER"
+	RunCommand "adb shell am start -n 'com.microsoft.androidbvt/com.microsoft.androidbvt.MainActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER"
 	# The apps terminates when is done
 	sleep 30
 	# Get Results
-	RunCommand "adb pull /data/data/com.microsoft.xplatappxandroid/files/testResults.txt"
+	RunCommand "adb pull /data/data/com.microsoft.androidbvt/files/testResults.txt"
 }
 
 function ParseResult {
@@ -85,8 +85,8 @@ function ParseResult {
 
 StartEmulator
 # Clean up. This commands might fail, but is not an error
-adb shell rm -r /data/data/com.microsoft.xplatappxandroid/files
-rm $xplatappxdir/../mobile/xPlatAppxAndroid/testResults.txt
+adb shell rm -r /data/data/com.microsoft.androidbvt/files
+rm $projectdir/../mobile/androidbvt/testResults.txt
 
 CreateApp
 RunTest

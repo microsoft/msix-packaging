@@ -10,7 +10,7 @@
 #include "StorageObject.hpp"
 #include "ComHelper.hpp"
 
-namespace xPlat {
+namespace MSIX {
 
     class DirectoryObject : public ComClass<DirectoryObject, IStorageObject>
     {
@@ -22,7 +22,7 @@ namespace xPlat {
         std::vector<std::string> GetFileNames(FileNameOptions options) override;
         IStream*                 GetFile(const std::string& fileName) override;
         void                     RemoveFile(const std::string& fileName) override;
-        IStream*                 OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode) override;
+        IStream*                 OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         void                     CommitChanges() override;
 
     protected:
