@@ -3,13 +3,13 @@ TESTFAILED=0
 function FindBinFolder {
     echo "Searching under" $PWD
     #look in .vs/bin first
-    if [ -e "../../.vs/bin/MakeXplat" ]
+    if [ -e "../../.vs/bin/makemsix" ]
     then
         BINDIR="../../.vs/bin"
-    elif [ -e "../../.vscode/bin/MakeXplat" ]
+    elif [ -e "../../.vscode/bin/makemsix" ]
     then
         BINDIR="../../.vscode/bin"
-    elif [ -e "../../build/bin/MakeXplat" ]
+    elif [ -e "../../build/bin/makemsix" ]
     then
         BINDIR="../../build/bin"
     else 
@@ -33,9 +33,9 @@ function RunTest {
     local UNPACKFOLDER="$2"
     local ARGS="$3"
     echo "------------------------------------------------------"
-    echo $BINDIR/MakeXplat unpack -d ./../unpack -p $UNPACKFOLDER $ARGS
+    echo $BINDIR/makemsix unpack -d ./../unpack -p $UNPACKFOLDER $ARGS
     echo "------------------------------------------------------"
-    $BINDIR/MakeXplat unpack -d ./../unpack -p $UNPACKFOLDER $ARGS
+    $BINDIR/makemsix unpack -d ./../unpack -p $UNPACKFOLDER $ARGS
     local RESULT=$?
     echo "expect: "$SUCCESS", got: "$RESULT
     if [ $RESULT -eq $SUCCESS ]
@@ -50,7 +50,7 @@ function RunTest {
 FindBinFolder
 # return code is last two digits, but in decimal, not hex.  e.g. 0x8bad0002 == 2, 0x8bad0041 == 65, etc...
 # common codes:
-# AppxSignatureInvalid        = ERROR_FACILITY + 0x0041 == 65
+# SignatureInvalid        = ERROR_FACILITY + 0x0041 == 65
 
 RunTest 2  ./../appx/Empty.appx -sv
 RunTest 0  ./../appx/HelloWorld.appx -ss

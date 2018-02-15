@@ -9,7 +9,7 @@
 #include "AppxPackaging.hpp"
 #include "xercesc/util/XMLString.hpp"
 
-namespace xPlat {
+namespace MSIX {
 
     template <typename ...Interfaces>
     struct QIHelper;
@@ -160,7 +160,7 @@ namespace xPlat {
                     AddRef();
                     return S_OK;
                 }
-                throw xPlat::Exception(xPlat::Error::NoInterface);
+                throw MSIX::Exception(MSIX::Error::NoInterface);
             });
         }
 

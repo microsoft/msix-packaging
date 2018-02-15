@@ -1,4 +1,4 @@
-# xplat\src
+# MSIX\src
 # Copyright (C) 2017 Microsoft
 # Created by Phil Smith (psmith@microsoft.com) on 10/19/2017
 
@@ -9,4 +9,4 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
 add_subdirectory(ExtractContentsSample)
 
-ADD_DEPENDENCIES(ExtractContentsSample xPlatAppx)
+ADD_DEPENDENCIES(ExtractContentsSample msix)

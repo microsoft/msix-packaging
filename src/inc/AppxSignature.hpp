@@ -7,7 +7,7 @@
 #include <vector>
 #include <map>
 
-namespace xPlat {
+namespace MSIX {
 
     enum class SignatureOrigin
     {
@@ -48,13 +48,13 @@ namespace xPlat {
             AXCI = 0x49435841, // AppxMetadata/CodeIntegrity.cat (uncompressed, optional)
         };
 
-        AppxSignatureObject(APPX_VALIDATION_OPTION validationOptions, IStream* stream);
+        AppxSignatureObject(MSIX_VALIDATION_OPTION validationOptions, IStream* stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override { return m_publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
-        xPlat::ComPtr<IStream> GetStream() override { return m_stream; }
-        xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override;
+        MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
+        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override;
 
         using Digest = std::vector<std::uint8_t>;
 
@@ -69,8 +69,8 @@ namespace xPlat {
         bool                         m_hasDigests;
         std::map<DigestName, Digest> m_digests;
         SignatureOrigin              m_signatureOrigin = SignatureOrigin::Unsigned; // assume unsigned until proven otherwise.
-        APPX_VALIDATION_OPTION       m_validationOptions;
+        MSIX_VALIDATION_OPTION       m_validationOptions;
         ComPtr<IStream>              m_stream;
         std::string                  m_publisher;
     };
-} // namespace xPlat
+} // namespace MSIX

@@ -7,13 +7,13 @@
 #include <functional>
 
 #include "Log.hpp"
-#include "AppxWindows.hpp"
+#include "MSIXWindows.hpp"
 #include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/sax/ErrorHandler.hpp"
 #include "xercesc/sax/SAXParseException.hpp"
 #include "xercesc/dom/DOM.hpp"
 
-namespace xPlat {
+namespace MSIX {
 
     static const std::uint32_t ERROR_FACILITY       = 0x8BAD0000;              // Facility 2989
     static const std::uint32_t XERCES_SAX_FACILITY  = ERROR_FACILITY + 0x1000; // Xerces XMLException. 0x8BAD1000 + XMLException error code
@@ -37,7 +37,7 @@ namespace xPlat {
         Stg_E_Invalidpointer        = 0x80030009,
 
         //
-        // xPlat specific error codes
+        // msix specific error codes
         //
 
         // Basic file errors
@@ -62,18 +62,18 @@ namespace xPlat {
         InflateRead                 = ERROR_FACILITY + 0x0022,
         InflateCorruptData          = ERROR_FACILITY + 0x0023,
 
-        // AppxPackage format errors
-        AppxMissingSignatureP7X     = ERROR_FACILITY + 0x0031,
-        AppxMissingContentTypesXML  = ERROR_FACILITY + 0x0032,
-        AppxMissingBlockMapXML      = ERROR_FACILITY + 0x0033,
-        AppxMissingAppxManifestXML  = ERROR_FACILITY + 0x0034,
-        AppxDuplicateFootprintFile  = ERROR_FACILITY + 0x0035,
-        AppxUnknownFileNameEncoding = ERROR_FACILITY + 0x0036,
+        // Package format errors
+        MissingAppxSignatureP7X     = ERROR_FACILITY + 0x0031,
+        MissingContentTypesXML      = ERROR_FACILITY + 0x0032,
+        MissingAppxBlockMapXML      = ERROR_FACILITY + 0x0033,
+        MissingAppxManifestXML      = ERROR_FACILITY + 0x0034,
+        DuplicateFootprintFile      = ERROR_FACILITY + 0x0035,
+        UnknownFileNameEncoding     = ERROR_FACILITY + 0x0036,
 
         // Signature errors
-        AppxSignatureInvalid        = ERROR_FACILITY + 0x0041,
-        AppxCertNotTrusted          = ERROR_FACILITY + 0x0042,
-        AppxPublisherMismatch       = ERROR_FACILITY + 0x0043,
+        SignatureInvalid            = ERROR_FACILITY + 0x0041,
+        CertNotTrusted              = ERROR_FACILITY + 0x0042,
+        PublisherMismatch           = ERROR_FACILITY + 0x0043,
 
         // Blockmap semantic errors
         BlockMapSemanticError       = ERROR_FACILITY + 0x0051,
@@ -88,7 +88,7 @@ namespace xPlat {
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
-    // Throwing xPlat::Exception will break into the debugger on chk builds to aid debugging
+    // Throwing MSIX::Exception will break into the debugger on chk builds to aid debugging
     class Exception : public std::exception
     {
     public:
@@ -176,21 +176,21 @@ namespace xPlat {
         {
             // TODO: add message, line number and column
             assert(false);
-            throw Exception(xPlat::Error::XercesWarning);
+            throw Exception(MSIX::Error::XercesWarning);
         }
 
         void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
         {
             // TODO: add message, line number and column
             assert(false);
-            throw Exception(xPlat::Error::XercesError);
+            throw Exception(MSIX::Error::XercesError);
         }
 
         void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
         {
             // TODO: add message, line number and column
             assert(false);
-            throw Exception(xPlat::Error::XercesFatal);
+            throw Exception(MSIX::Error::XercesFatal);
         }
 
         void resetErrors() override {}
@@ -200,31 +200,31 @@ namespace xPlat {
     template <class Lambda>
     inline HRESULT ResultOf(Lambda lambda)
     {
-        HRESULT hr = static_cast<HRESULT>(xPlat::Error::OK);
+        HRESULT hr = static_cast<HRESULT>(MSIX::Error::OK);
         try
         {
             lambda();
         }
-        catch (xPlat::Exception& e)
+        catch (MSIX::Exception& e)
         {
             hr = static_cast<HRESULT>(e.Code());
         }
         catch (std::bad_alloc&)
         {
-            hr = static_cast<HRESULT>(xPlat::Error::OutOfMemory);
+            hr = static_cast<HRESULT>(MSIX::Error::OutOfMemory);
         }
         catch (std::exception&)
         {
-            hr = static_cast<HRESULT>(xPlat::Error::Unexpected);
+            hr = static_cast<HRESULT>(MSIX::Error::Unexpected);
         }
         catch (const XERCES_CPP_NAMESPACE::XMLException& e)
         {
-            hr = static_cast<HRESULT>(xPlat::XERCES_XML_FACILITY) +
+            hr = static_cast<HRESULT>(MSIX::XERCES_XML_FACILITY) +
                 static_cast<HRESULT>(e.getCode());
         }
         catch (const XERCES_CPP_NAMESPACE::DOMException& e)
         {
-            hr = static_cast<HRESULT>(xPlat::XERCES_DOM_FACILITY) +
+            hr = static_cast<HRESULT>(MSIX::XERCES_DOM_FACILITY) +
                 static_cast<HRESULT>(e.code);
         }
 
@@ -238,7 +238,7 @@ namespace xPlat {
     if (!(a))                        \
     {                                \
         assert(false);               \
-        throw xPlat::Exception(c,m); \
+        throw MSIX::Exception(c,m);  \
     }                                \
 }
 
@@ -247,7 +247,7 @@ namespace xPlat {
     if (!(a))                               \
     {                                       \
         assert(false);                      \
-        throw xPlat::Win32Exception(c,m);   \
+        throw MSIX::Win32Exception(c,m);    \
     }                                       \
 }
 
@@ -258,6 +258,6 @@ namespace xPlat {
     HRESULT hr = a;                                     \
     if (FAILED(hr))                                     \
     {   assert(false);                                  \
-        throw xPlat::Exception(hr, "COM Call failed");  \
+        throw MSIX::Exception(hr, "COM Call failed");   \
     }                                                   \
 }

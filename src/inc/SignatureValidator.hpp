@@ -6,17 +6,17 @@
 #include <vector>
 #include <map>
 
-namespace xPlat {
+namespace MSIX {
 
     typedef struct DigestHash
     {
-        xPlat::AppxSignatureObject::DigestName name;
+        MSIX::AppxSignatureObject::DigestName name;
         std::uint8_t content[HASH_BYTES];
     } DigestHash;
 
     typedef struct DigestHeader
     {
-        xPlat::AppxSignatureObject::DigestName name;
+        MSIX::AppxSignatureObject::DigestName name;
         DigestHash hash[1];
     } DigestHeader;
 
@@ -24,11 +24,11 @@ namespace xPlat {
     {
     public:
         static bool Validate(
-            /*in*/ APPX_VALIDATION_OPTION option, 
-            /*in*/ IStream *stream, 
-            /*inout*/ std::map<xPlat::AppxSignatureObject::DigestName, xPlat::AppxSignatureObject::Digest>& digests,
-            /*inout*/ SignatureOrigin& origin,
-            /*inout*/ std::string& publisher);
+            MSIX_VALIDATION_OPTION option, 
+            IStream *stream, 
+            std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,
+            SignatureOrigin& origin,
+            std::string& publisher);
     };
 }
 

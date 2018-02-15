@@ -1,9 +1,9 @@
-# xplat\test\mobile\common
+# MSIX\test\mobile\common
 # Copyright (C) 2017 Microsoft
 # Created by Phil Smith (psmith@microsoft.com) on 01/29/2018
 cmake_minimum_required(VERSION 3.4.0 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../../cmake) # main (top) cmake dir
-set(LIBRARY_NAME xPlatAppxTestCommon)
+set(LIBRARY_NAME msixtestcommon)
 project(${LIBRARY_NAME})
 
 # Visibility variables for non-win32 platforms
@@ -42,5 +42,5 @@ include_directories(
     ${CMAKE_PROJECT_ROOT}/src/inc
 )
 
-target_link_libraries(${PROJECT_NAME} PRIVATE xPlatAppx)
+target_link_libraries(${PROJECT_NAME} PRIVATE msix)
 

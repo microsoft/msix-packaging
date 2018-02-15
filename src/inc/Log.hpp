@@ -1,7 +1,7 @@
 #pragma once
 #include <string>
 
-namespace xPlat {
+namespace MSIX {
     namespace Global { 
         namespace Log {
             void Append(const std::string& comment);

@@ -8,7 +8,7 @@
 #include <functional>
 
 
-namespace xPlat {
+namespace MSIX {
 
     // This represents a subset of a Stream
     class RangeStream : public StreamBase

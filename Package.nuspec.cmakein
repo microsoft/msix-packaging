@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Microsoft.xPlat.AppxPackaging</id>
+    <id>Microsoft.MSIX.Packaging</id>
     <version>${VERSION}</version>
     <authors>psmith@microsoft.com</authors>
     <owners>Xplat-appX@service.microsoft.com</owners>
@@ -30,7 +30,7 @@
         * 15424167 - Enable iOS build
     </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
-    <tags>xPlatAppx Appx AppxPackaging native</tags>
+    <tags>MSIX Appx AppxPackaging native</tags>
     <dependencies />
   </metadata>
 </package>

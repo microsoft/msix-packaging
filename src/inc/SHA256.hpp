@@ -2,7 +2,7 @@
 
 #include <vector>
 
-namespace xPlat {
+namespace MSIX {
 
     const unsigned HASH_BYTES = 32;
 

@@ -1,5 +1,5 @@
 #include "AppxPackaging.hpp"
-#include "AppxWindows.hpp"
+#include "MSIXWindows.hpp"
 #include <cstdlib>
 #include <string>
 #include <codecvt>
@@ -55,13 +55,13 @@ struct State
 {
     bool CreatePackageSubfolder()
     {
-        unpackOptions = static_cast<APPX_PACKUNPACK_OPTION>(unpackOptions | APPX_PACKUNPACK_OPTION::APPX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
+        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
         return true;
     }
 
-    bool SetValidationOptions(APPX_VALIDATION_OPTION flags)
+    bool SetValidationOptions(MSIX_VALIDATION_OPTION flags)
     {
-        validationOptions = static_cast<APPX_VALIDATION_OPTION>(validationOptions | flags);
+        validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | flags);
         return true;
     }
     
@@ -81,8 +81,8 @@ struct State
 
     std::wstring packageName;
     std::wstring directoryName;
-    APPX_VALIDATION_OPTION validationOptions = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
-    APPX_PACKUNPACK_OPTION unpackOptions     = APPX_PACKUNPACK_OPTION::APPX_PACKUNPACK_OPTION_NONE;
+    MSIX_VALIDATION_OPTION validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
+    MSIX_PACKUNPACK_OPTION unpackOptions     = MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE;
 };
 
 // Stripped down ComPtr provided for those platforms that do not already have a ComPtr class.
@@ -272,7 +272,7 @@ static HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
     return hr;
 }
 
-static HRESULT RunTest(std::string packageName, std::string unpackFolder, APPX_VALIDATION_OPTION flags, int expectedResult)
+static HRESULT RunTest(std::string packageName, std::string unpackFolder, MSIX_VALIDATION_OPTION flags, int expectedResult)
 {
     HRESULT hr = S_OK;
     State state;
@@ -282,7 +282,7 @@ static HRESULT RunTest(std::string packageName, std::string unpackFolder, APPX_V
     RemoveContent(unpackFolder);
 
     // Signature is not required for this test
-    if(flags & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE)
+    if(flags & MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE)
     {   footprintFilesType[2].isRequired = false;
     }
 
@@ -323,7 +323,7 @@ static HRESULT RunTest(std::string packageName, std::string unpackFolder, APPX_V
     }
 
     // Clean up
-    if(flags & APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE)
+    if(flags & MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE)
     {   footprintFilesType[2].isRequired = true;
     }
 
@@ -345,13 +345,13 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
 
     // Reference from other tests
 
-    APPX_VALIDATION_OPTION sv = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
-    APPX_VALIDATION_OPTION ss = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_SKIPSIGNATURE;
-    APPX_VALIDATION_OPTION full = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
+    MSIX_VALIDATION_OPTION sv = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
+    MSIX_VALIDATION_OPTION ss = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE;
+    MSIX_VALIDATION_OPTION full = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
 
     // expected result last four digits, but in decimal, not hex.  e.g. 0x8bad0002 == 2, 0x8bad0041 == 65, etc...
     // common codes:
-    // AppxSignatureInvalid        = ERROR_FACILITY + 0x0041 == 65
+    // SignatureInvalid        = ERROR_FACILITY + 0x0041 == 65
     hr = RunTest(source + "Empty.appx", unpackFolder, sv, 2);
     hr = RunTest(source + "HelloWorld.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "SignatureNotLastPart-ERROR_BAD_FORMAT.appx", unpackFolder, full, 66);

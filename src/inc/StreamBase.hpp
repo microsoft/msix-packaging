@@ -6,13 +6,13 @@
 #include <iostream>
 #include <limits>
 
-#include "AppxWindows.hpp"
+#include "MSIXWindows.hpp"
 #include "AppxPackaging.hpp"
 #include "Exceptions.hpp"
 #include "ComHelper.hpp"
 
-namespace xPlat {
-    class StreamBase : public xPlat::ComClass<StreamBase, IAppxFile, IStream>
+namespace MSIX {
+    class StreamBase : public MSIX::ComClass<StreamBase, IAppxFile, IStream>
     {
     public:
         // These are the same values as STREAM_SEEK. See 

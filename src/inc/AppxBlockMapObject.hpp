@@ -16,12 +16,12 @@
 #include "BlockMapStream.hpp"
 #include "xercesc/util/XMLString.hpp"
 
-namespace xPlat {
+namespace MSIX {
 
-    class AppxBlockMapBlock : public xPlat::ComClass<AppxBlockMapBlock, IAppxBlockMapBlock>
+    class AppxBlockMapBlock : public MSIX::ComClass<AppxBlockMapBlock, IAppxBlockMapBlock>
     {
     public:
-        AppxBlockMapBlock(IxPlatFactory* factory, Block* block) :
+        AppxBlockMapBlock(IMSIXFactory* factory, Block* block) :
             m_factory(factory),
             m_block(block)
         {}
@@ -43,11 +43,11 @@ namespace xPlat {
         }
 
     private:
-        IxPlatFactory*  m_factory;
+        IMSIXFactory*   m_factory;
         Block*          m_block;
     };
 
-    class AppxBlockMapBlocksEnumerator : public xPlat::ComClass<AppxBlockMapBlocksEnumerator, IAppxBlockMapBlocksEnumerator>
+    class AppxBlockMapBlocksEnumerator : public MSIX::ComClass<AppxBlockMapBlocksEnumerator, IAppxBlockMapBlocksEnumerator>
     {
     protected:
         std::vector<ComPtr<IAppxBlockMapBlock>>* m_blocks;
@@ -83,11 +83,11 @@ namespace xPlat {
         }
     };
 
-    class AppxBlockMapFile : public xPlat::ComClass<AppxBlockMapFile, IAppxBlockMapFile>
+    class AppxBlockMapFile : public MSIX::ComClass<AppxBlockMapFile, IAppxBlockMapFile>
     {
     public:
         AppxBlockMapFile(
-            IxPlatFactory* factory,
+            IMSIXFactory* factory,
             std::vector<Block>* blocks,
             std::uint32_t localFileHeaderSize,
             const std::string& name,
@@ -156,13 +156,13 @@ namespace xPlat {
 
         std::vector<ComPtr<IAppxBlockMapBlock>> m_blockMapBlocks;
         std::vector<Block>* m_blocks;
-        IxPlatFactory*      m_factory;
+        IMSIXFactory*       m_factory;
         std::uint32_t       m_localFileHeaderSize;
         std::string         m_name;
         std::uint64_t       m_uncompressedSize;
     };
 
-    class AppxBlockMapFilesEnumerator : public xPlat::ComClass<AppxBlockMapFilesEnumerator, IAppxBlockMapFilesEnumerator>
+    class AppxBlockMapFilesEnumerator : public MSIX::ComClass<AppxBlockMapFilesEnumerator, IAppxBlockMapFilesEnumerator>
     {
     protected:
         ComPtr<IAppxBlockMapReader> m_reader;
@@ -200,16 +200,16 @@ namespace xPlat {
     };
 
     // Object backed by AppxBlockMap.xml
-    class AppxBlockMapObject : public xPlat::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IStorageObject>
+    class AppxBlockMapObject : public MSIX::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IStorageObject>
     {
     public:
-        AppxBlockMapObject(IxPlatFactory* factory, ComPtr<IStream>& stream);
+        AppxBlockMapObject(IMSIXFactory* factory, ComPtr<IStream>& stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override { throw Exception(Error::NotSupported); }
         bool HasStream() override { return m_stream.Get() != nullptr; }
-        xPlat::ComPtr<IStream> GetStream() override { return m_stream; }
-        xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override;
+        MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
+        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override;
 
         // IAppxBlockMapReader
         HRESULT STDMETHODCALLTYPE GetFile(LPCWSTR filename, IAppxBlockMapFile **file) override;
@@ -222,13 +222,13 @@ namespace xPlat {
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
         IStream*                  GetFile(const std::string& fileName) override;
         void                      RemoveFile(const std::string& fileName) override;
-        IStream*                  OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode) override;
+        IStream*                  OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         void                      CommitChanges() override;
 
     protected:
         std::map<std::string, std::vector<Block>>        m_blockMap;
         std::map<std::string, ComPtr<IAppxBlockMapFile>> m_blockMapfiles;
-        IxPlatFactory*  m_factory;
+        IMSIXFactory*   m_factory;
         ComPtr<IStream> m_stream;
     };
 }

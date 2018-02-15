@@ -6,7 +6,7 @@
 #include <memory>
 
 #include "AppxPackaging.hpp"
-#include "AppxWindows.hpp"
+#include "MSIXWindows.hpp"
 #include "Exceptions.hpp"
 #include "ComHelper.hpp"
 #include "StreamBase.hpp"
@@ -19,25 +19,24 @@
 #include "AppxFactory.hpp"
 
 // internal interface
-EXTERN_C const IID IID_IAppxPackage;   
+EXTERN_C const IID IID_IPackage;   
 #ifndef WIN32
 // {51b2c456-aaa9-46d6-8ec9-298220559189}
-interface IAppxPackage : public IUnknown
+interface IPackage : public IUnknown
 #else
 #include "Unknwn.h"
 #include "Objidl.h"
-class IAppxPackage : public IUnknown
+class IPackage : public IUnknown
 #endif
 {
 public:
-    virtual void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from) = 0;
-    virtual void Unpack(APPX_PACKUNPACK_OPTION options, IStorageObject* to) = 0;
+    virtual void Unpack(MSIX_PACKUNPACK_OPTION options, IStorageObject* to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
 };
 
-SpecializeUuidOfImpl(IAppxPackage);
+SpecializeUuidOfImpl(IPackage);
 
-namespace xPlat {
+namespace MSIX {
     // The 5-tuple that describes the identity of a package
     struct AppxPackageId
     {
@@ -75,8 +74,8 @@ namespace xPlat {
         // IVerifierObject
         const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
-        xPlat::ComPtr<IStream> GetStream() override { return m_stream; }
-        xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override
+        MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
+        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override
         {
             throw Exception(Error::NotSupported);
         }
@@ -90,15 +89,14 @@ namespace xPlat {
     };
 
     // Storage object representing the entire AppxPackage
-    class AppxPackageObject : public ComClass<AppxPackageObject, IAppxPackageReader, IAppxPackage, IStorageObject>
+    class AppxPackageObject : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject>
     {
     public:
-        AppxPackageObject(IxPlatFactory* factory, APPX_VALIDATION_OPTION validation, IStorageObject* container);
+        AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, IStorageObject* container);
         ~AppxPackageObject() {}
 
-        // internal IxPlatAppxPackage methods
-        void Pack(APPX_PACKUNPACK_OPTION options, const std::string& certFile, IStorageObject* from) override;
-        void Unpack(APPX_PACKUNPACK_OPTION options, IStorageObject* to) override;
+        // internal IPackage methods
+        void Unpack(MSIX_PACKUNPACK_OPTION options, IStorageObject* to) override;
 
         // IAppxPackageReader
         HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override;
@@ -107,7 +105,7 @@ namespace xPlat {
         HRESULT STDMETHODCALLTYPE GetPayloadFiles(IAppxFilesEnumerator**  filesEnumerator) override;
         HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) override;
 
-        // returns a list of the footprint files found within this appx package.
+        // returns a list of the footprint files found within this package.
         std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
 
         // IStorageObject methods
@@ -115,14 +113,14 @@ namespace xPlat {
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
         IStream*                  GetFile(const std::string& fileName) override;
         void                      RemoveFile(const std::string& fileName) override;
-        IStream*                  OpenFile(const std::string& fileName, xPlat::FileStream::Mode mode) override;
+        IStream*                  OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         void                      CommitChanges() override;
 
     protected:
         std::map<std::string, ComPtr<IStream>>  m_streams;
 
-        APPX_VALIDATION_OPTION      m_validation = APPX_VALIDATION_OPTION::APPX_VALIDATION_OPTION_FULL;
-        ComPtr<IxPlatFactory>       m_factory;
+        MSIX_VALIDATION_OPTION      m_validation = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
+        ComPtr<IMSIXFactory>        m_factory;
         ComPtr<IVerifierObject>     m_appxSignature;
         ComPtr<IVerifierObject>     m_appxBlockMap;
         ComPtr<IVerifierObject>     m_appxManifest;
@@ -133,7 +131,7 @@ namespace xPlat {
         std::vector<std::string>    m_footprintFiles;
     };
 
-    class AppxFilesEnumerator : public xPlat::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>
+    class AppxFilesEnumerator : public MSIX::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>
     {
     protected:
         ComPtr<IStorageObject>      m_storage;

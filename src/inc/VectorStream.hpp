@@ -5,7 +5,7 @@
 #include <vector>
 #include <algorithm>
 
-namespace xPlat {
+namespace MSIX {
 
     class VectorStream : public StreamBase
     {
@@ -47,4 +47,4 @@ namespace xPlat {
         ULONG m_offset = 0;
         std::vector<std::uint8_t>* m_data;
     };
-} // namespace xPlat
+} // namespace MSIX

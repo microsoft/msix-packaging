@@ -1,7 +1,7 @@
 #pragma once
 
 #include "AppxPackaging.hpp"
-#include "AppxWindows.hpp"
+#include "MSIXWindows.hpp"
 #include "ComHelper.hpp"
 #include "xercesc/util/PlatformUtils.hpp"
 
@@ -9,29 +9,29 @@
 #include <vector>
 
 // internal interface
-EXTERN_C const IID IID_IxPlatFactory;   
+EXTERN_C const IID IID_IMSIXFactory;   
 #ifndef WIN32
 // {1f850db4-32b8-4db6-8bf4-5a897eb611f1}
-interface IxPlatFactory : public IUnknown
+interface IMSIXFactory : public IUnknown
 #else
 #include "UnKnwn.h"
 #include "Objidl.h"
-class IxPlatFactory : public IUnknown
+class IMSIXFactory : public IUnknown
 #endif
 {
 public:
     virtual HRESULT MarshalOutString(std::string& internal, LPWSTR *result) = 0;
     virtual HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) = 0;
-    virtual APPX_VALIDATION_OPTION GetValidationOptions() = 0;
+    virtual MSIX_VALIDATION_OPTION GetValidationOptions() = 0;
 };
 
-SpecializeUuidOfImpl(IxPlatFactory);
+SpecializeUuidOfImpl(IMSIXFactory);
 
-namespace xPlat {
-    class AppxFactory : public ComClass<AppxFactory, IxPlatFactory, IAppxFactory>
+namespace MSIX {
+    class AppxFactory : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory>
     {
     public:
-        AppxFactory(APPX_VALIDATION_OPTION validationOptions, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
+        AppxFactory(MSIX_VALIDATION_OPTION validationOptions, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
             m_validationOptions(validationOptions), m_memalloc(memalloc), m_memfree(memfree)
         {
             ThrowErrorIf(Error::InvalidParameter, (m_memalloc == nullptr || m_memfree == nullptr), "allocator/deallocator pair not specified.")
@@ -58,13 +58,13 @@ namespace xPlat {
             LPCWSTR signatureFileName,
             IAppxBlockMapReader** blockMapReader) override;
 
-        // IxPlatFactory
+        // IMSIXFactory
         HRESULT MarshalOutString(std::string& internal, LPWSTR *result) override;
         HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) override;
-        APPX_VALIDATION_OPTION GetValidationOptions() override { return m_validationOptions; }
+        MSIX_VALIDATION_OPTION GetValidationOptions() override { return m_validationOptions; }
 
         COTASKMEMALLOC* m_memalloc;
         COTASKMEMFREE*  m_memfree;
-        APPX_VALIDATION_OPTION m_validationOptions;
+        MSIX_VALIDATION_OPTION m_validationOptions;
     };
 }

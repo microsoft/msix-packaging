@@ -1,6 +1,6 @@
 #pragma once
 #define NOMINMAX /* windows.h, or more correctly windef.h, defines min as a macro... */
-#include "AppxWindows.hpp"
+#include "MSIXWindows.hpp"
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "ComHelper.hpp"
@@ -11,7 +11,7 @@
 #include <functional>
 #include <algorithm>
 
-namespace xPlat {
+namespace MSIX {
   
     // This represents a subset of a Stream
     class HashStream : public StreamBase
@@ -49,16 +49,16 @@ namespace xPlat {
             m_cacheBuffer = std::make_unique<std::vector<std::uint8_t>>(m_streamSize);            
             ULONG bytesRead = 0;
             ThrowHrIfFailed(m_stream->Read(m_cacheBuffer->data(), m_cacheBuffer->size(), &bytesRead));
-            ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, bytesRead == m_streamSize, "read failed");
+            ThrowErrorIfNot(MSIX::Error::SignatureInvalid, bytesRead == m_streamSize, "read failed");
             
             // compute digest and compare against expected digest
             std::vector<std::uint8_t> hash;
-            ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, 
-                xPlat::SHA256::ComputeHash(m_cacheBuffer->data(), m_cacheBuffer->size(), hash), 
+            ThrowErrorIfNot(MSIX::Error::SignatureInvalid, 
+                MSIX::SHA256::ComputeHash(m_cacheBuffer->data(), m_cacheBuffer->size(), hash), 
                 "Invalid signature");
-            ThrowErrorIfNot(xPlat::Error::AppxSignatureInvalid, m_expectedHash.size() == hash.size(), "Signature is corrupt");
+            ThrowErrorIfNot(MSIX::Error::SignatureInvalid, m_expectedHash.size() == hash.size(), "Signature is corrupt");
             ThrowErrorIfNot(
-                xPlat::Error::AppxSignatureInvalid,
+                MSIX::Error::SignatureInvalid,
                 memcmp(m_expectedHash.data(), hash.data(), hash.size()) == 0,
                 "Signature hash doesn't match digest hash"); //TODO: better exception
 

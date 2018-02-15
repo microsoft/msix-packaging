@@ -1,0 +1,13 @@
+# exports.def
+# written 1/16/2018 by Phil Smith (psmith@microsoft.com)
+# This file defines the list of c-style exports for msix shared library 
+# do not remove, reorder, or overload, these exported functions as doing so
+# will break the ABI contract with clients.
+# ---------------------------------------------------------------------------
+_CoCreateAppxFactory
+_CoCreateAppxFactoryWithHeap
+_CreateStreamOnFile
+_CreateStreamOnFileUTF16
+_GetLogTextUTF8
+_UnpackPackage
+

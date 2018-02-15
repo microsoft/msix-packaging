@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace xPlat {
+namespace MSIX {
 
     // This represents a raw stream over a file contained in a .zip file.
     class ZipFileStream : public RangeStream
@@ -17,7 +17,7 @@ namespace xPlat {
         ZipFileStream(
             std::string name,
             std::string contentType,
-            IxPlatFactory* factory,
+            IMSIXFactory* factory,
             bool isCompressed,
             std::uint64_t offset,
             std::uint64_t size,
@@ -45,7 +45,7 @@ namespace xPlat {
         inline bool IsCompressed() { return m_isCompressed; }
 
     protected:
-        IxPlatFactory*  m_factory;
+        IMSIXFactory*  m_factory;
         std::string     m_name;
         std::string     m_contentType;
         bool            m_isCompressed = false;

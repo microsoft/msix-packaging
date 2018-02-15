@@ -21,8 +21,8 @@ class IVerifierObject : public IUnknown
 public:
     virtual const std::string& GetPublisher() = 0;
     virtual bool HasStream() = 0;
-    virtual xPlat::ComPtr<IStream> GetStream() = 0;
-    virtual xPlat::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) = 0;
+    virtual MSIX::ComPtr<IStream> GetStream() = 0;
+    virtual MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) = 0;
 };
 
 SpecializeUuidOfImpl(IVerifierObject);
