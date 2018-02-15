@@ -28,6 +28,8 @@
         * 15427176 - Publish updated license.txt in nuget package
         * 13953197 - Complete OSS policy request for Xerces
         * 15424167 - Enable iOS build
+
+1.0  -  API rename, and small cleanup
     </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
     <tags>MSIX Appx AppxPackaging native</tags>
