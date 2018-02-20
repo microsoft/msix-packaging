@@ -3,7 +3,7 @@
   <metadata>
     <id>Microsoft.MSIX.Packaging</id>
     <version>${VERSION}</version>
-    <authors>psmith@microsoft.com</authors>
+    <authors>psmith@microsoft.com, rubengu@microsoft.com</authors>
     <owners>Xplat-appX@service.microsoft.com</owners>
     <projectUrl>https://aka.ms/xPlatAppx</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
