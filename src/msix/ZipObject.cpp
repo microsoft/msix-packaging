@@ -879,12 +879,15 @@ namespace MSIX {
         return result;
     }
 
-    IStream* ZipObject::GetFile(const std::string& fileName)
+    std::pair<bool,IStream*> ZipObject::GetFile(const std::string& fileName)
     {
         // TODO: Make this on-demand populate m_streams and then pull from there.
         auto result = m_streams.find(fileName);
-        ThrowErrorIf(Error::FileNotFound, (result == m_streams.end()), "file not in archive");
-        return result->second.Get();
+        if (result == m_streams.end())
+        {
+            return std::make_pair(false, nullptr);
+        }        
+        return std::make_pair(true, result->second.Get());
     }
 
     void ZipObject::RemoveFile(const std::string& fileName)

@@ -16,7 +16,7 @@ namespace MSIX {
         throw Exception(Error::NotImplemented);
     }
     
-    IStream* DirectoryObject::GetFile(const std::string& fileName)
+    std::pair<bool,IStream*> DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
         throw Exception(Error::NotImplemented);

@@ -10,6 +10,7 @@ set(LIBRARY_NAME msix)
 project(${LIBRARY_NAME})
 
 # Define PALs
+    set (XmlParser PAL/XML/xerces-c/XmlObject.cpp)
 IF(WIN32)
 	set (MSIX_API=1)
     set (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
@@ -51,6 +52,7 @@ ENDIF()
 MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
 MESSAGE (STATUS "PAL: SHA256          = ${SHA256}")
 MESSAGE (STATUS "PAL: Signature       = ${Signature}")
+MESSAGE (STATUS "PAL: XML             = ${XmlParser}")
 
 # Create header for BlockMap schemas
 file(READ "${CMAKE_PROJECT_ROOT}/AppxPackaging/BlockMap/schema/BlockMapSchema.xsd"     BLOCKMAP_SCHEMA)
@@ -101,7 +103,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/UnicodeConversion.hpp
     ../inc/VectorStream.hpp
     ../inc/VerifierObject.hpp
-    ../inc/XmlObject.hpp
+    ../inc/IXml.hpp
     ../inc/ZipFileStream.hpp
     ../inc/ZipObject.hpp
 )
@@ -120,6 +122,7 @@ set(LIB_SOURCES
     ${DirectoryObject}
     ${SHA256}
     ${Signature}
+    ${XmlParser}
 )
 
 # Copy out public headers

@@ -13,7 +13,7 @@
 #include "StorageObject.hpp"
 #include "ZipObject.hpp"
 #include "VerifierObject.hpp"
-#include "XmlObject.hpp"
+#include "IXml.hpp"
 #include "AppxBlockMapObject.hpp"
 #include "AppxSignature.hpp"
 #include "AppxFactory.hpp"
@@ -111,7 +111,7 @@ namespace MSIX {
         // IStorageObject methods
         std::string               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
-        IStream*                  GetFile(const std::string& fileName) override;
+        std::pair<bool,IStream*>  GetFile(const std::string& fileName) override;
         void                      RemoveFile(const std::string& fileName) override;
         IStream*                  OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         void                      CommitChanges() override;
@@ -124,7 +124,6 @@ namespace MSIX {
         ComPtr<IVerifierObject>     m_appxSignature;
         ComPtr<IVerifierObject>     m_appxBlockMap;
         ComPtr<IVerifierObject>     m_appxManifest;
-        ComPtr<IVerifierObject>     m_contentType;        
         ComPtr<IStorageObject>      m_container;
         
         std::vector<std::string>    m_payloadFiles;
@@ -150,7 +149,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
                 ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor])).As<IAppxFile>().Detach();
+                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor]).second).As<IAppxFile>().Detach();
             });
         }
 
