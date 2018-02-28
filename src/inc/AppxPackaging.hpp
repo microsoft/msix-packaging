@@ -1,3 +1,8 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
+
 /* File based on the header created by MIDL compiler version 8.01.0622 of AppxPackaging.idl */
 
 // Changes made to the original AppxPackaging.h file:
