@@ -3,7 +3,7 @@
   <metadata>
     <id>Microsoft.MSIX.Packaging</id>
     <version>${VERSION}</version>
-    <authors>psmith@microsoft.com</authors>
+    <authors>psmith@microsoft.com, rubengu@microsoft.com</authors>
     <owners>Xplat-appX@service.microsoft.com</owners>
     <projectUrl>https://aka.ms/xPlatAppx</projectUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -28,6 +28,8 @@
         * 15427176 - Publish updated license.txt in nuget package
         * 13953197 - Complete OSS policy request for Xerces
         * 15424167 - Enable iOS build
+
+1.0  -  API rename, and small cleanup
     </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
     <tags>MSIX Appx AppxPackaging native</tags>
