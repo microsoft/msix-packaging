@@ -1,3 +1,7 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 // ONLY build on platforms other than Win32
 #ifdef WIN32
 #include "Exceptions.hpp"

@@ -2,9 +2,9 @@
 //  ViewController.h
 //  iOSBVT
 //
-//  Created by Phil Smith on 1/31/18.
-//  Copyright © 2018 Microsoft. All rights reserved.
-//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 
 #import <UIKit/UIKit.h>
 

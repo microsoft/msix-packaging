@@ -1,6 +1,5 @@
-# Top level make project
-# Copyright (C) 2017 Microsoft
-# Created by Phil Smith (psmith@microsoft.com) on 10/19/2017
+# Copyright (C) 2017 Microsoft.  All rights reserved.
+# See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)

@@ -1,3 +1,7 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 /* link this file in with the server and any clients */
 /* File based on the header created by MIDL compiler version 8.01.0622 of AppxPackaging.idl */
 /* @@MIDL_FILE_HEADING(  ) */
