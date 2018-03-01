@@ -46,11 +46,12 @@ The MSIX Packaging SDK project includes cross platform API support for unpacking
 
 # ISSUES
 --------
-    If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset, then 1st:
+    If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset:
         step 1: Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
-        step 2: start -> visual studio installer -> Visual Studio Build Tools 2017 -> Modify the 2014 toolset -> individual components 
-        step 3: make sure that VC++ 2015.3 v140 toolset for desktop is selected and then unselect VC++ 2017 141 toolset
-        step 4: close, then re-open the solution.
+        step 2: Start -> visual studio installer -> Visual Studio Build Tools 2017 -> 
+                Modify the 2014 toolset -> individual components 
+        step 3: Make sure that VC++ 2015.3 v140 toolset for desktop is selected and then unselect VC++ 2017 141 toolset
+        step 4: Close, then re-open the solution.
 
 # PREREQUISITES
 ---------------
@@ -110,7 +111,8 @@ The MSIX Packaging SDK project includes cross platform API support for unpacking
     Unpack the latest Android NDK to c:\android-ndk
     Unpack Ninja-build to c:\ninja
     Add c:\ninja to the path environment variable
-    Create a folder under the root of the enlistment called "android", cd into that folder, then run the following command to create ninja build files:
+    Create a folder under the root of the enlistment called "android", cd into that folder, 
+    then run the following command to create ninja build files:
 
     cmake -DCMAKE_ANDROID_NDK=c:/android-ndk ^
         -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang ^
@@ -135,8 +137,10 @@ The MSIX Packaging SDK project includes cross platform API support for unpacking
 
     When you submit a pull request, a CLA-bot will automatically determine whether you need
     to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the
-    instructions provided by the bot. You will only need to do this once across all repositories using our CLA.
+    instructions provided by the bot. You will only need to do this once across all repositories 
+    using our CLA.
 
     This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
     For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
-    or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+    or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional 
+    questions or comments.
