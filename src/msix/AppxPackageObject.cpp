@@ -149,18 +149,21 @@ namespace MSIX {
         // 2. Get content type using signature object for validation
         file = m_container->GetFile(CONTENT_TYPES_XML);
         ThrowErrorIfNot(Error::MissingContentTypesXML, (file.first), "[Content_Types].xml not in archive!");
-        auto contentType = CreateDomFromStream(XmlContentType::ContentTypeXml, m_appxSignature->GetValidationStream(CONTENT_TYPES_XML, file.second));
+        MSIX::ComPtr<IStream> stream = m_appxSignature->GetValidationStream(CONTENT_TYPES_XML, file.second);
+        auto contentType = CreateDomFromStream(XmlContentType::ContentTypeXml, stream);
 
         // 3. Get blockmap object using signature object for validation        
         file = m_container->GetFile(APPXBLOCKMAP_XML);
         ThrowErrorIfNot(Error::MissingAppxBlockMapXML, (file.first), "AppxBlockMap.xml not in archive!");
-        m_appxBlockMap = ComPtr<IVerifierObject>::Make<AppxBlockMapObject>(factory, m_appxSignature->GetValidationStream(APPXBLOCKMAP_XML, file.second));
+        stream = m_appxSignature->GetValidationStream(APPXBLOCKMAP_XML, file.second);
+        m_appxBlockMap = ComPtr<IVerifierObject>::Make<AppxBlockMapObject>(factory, stream);
 
         // 4. Get manifest object using blockmap object for validation
         // TODO: pass validation flags and other necessary goodness through.
         file = m_container->GetFile(APPXMANIFEST_XML);
         ThrowErrorIfNot(Error::MissingAppxManifestXML, (file.second), "AppxManifest.xml not in archive!");
-        m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, file.second));
+        stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, file.second);
+        m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(stream);
         
         if ((validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
         {
