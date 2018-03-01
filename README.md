@@ -1,9 +1,9 @@
-MSIX Packaging SDK 
----------
+# MSIX Packaging SDK 
+--------------------
     Copyright (c) 2017 Microsoft Corp.  All rights reserved.
 
-DESCRIPTION
------------
+# DESCRIPTION
+-------------
     The MSIX Packaging format is an evolution of the Windows 8 era AppX package format as detailed at: 
     https://blogs.msdn.microsoft.com/windowsappdev/2012/12/04/designing-a-simple-and-secure-app-package-appx/.  
 
@@ -15,8 +15,8 @@ DESCRIPTION
     ./sample/ExtractContentsSample/ExtratContentsSample.cpp for additional details.
 
 
-OVERVIEW
---------
+# OVERVIEW
+----------
 The MSIX Packaging SDK project includes cross platform API support for unpacking of .msix/.appx packages
 
     The MSIX Packaging SDK project includes:
@@ -35,8 +35,8 @@ The MSIX Packaging SDK project includes cross platform API support for unpacking
                           primarily as a means of validating the implementation of the MSIX Packaging SDK internal
                           routines and is compiled for Win32, MacOS, and Linux platforms.
 
-SETUP INSTRUCTIONS
-------------------
+# SETUP INSTRUCTIONS
+--------------------
     Step 1: Clone the repository:
         git clone [URL]
         
@@ -44,16 +44,16 @@ SETUP INSTRUCTIONS
         git submodule init
         git submodule update
 
-ISSUES
-------
+# ISSUES
+--------
     If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset, then 1st:
         step 1: Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
         step 2: start -> visual studio installer -> Visual Studio Build Tools 2017 -> Modify the 2014 toolset -> individual components 
         step 3: make sure that VC++ 2015.3 v140 toolset for desktop is selected and then unselect VC++ 2017 141 toolset
         step 4: close, then re-open the solution.
 
-PREREQUISITES
--------------
+# PREREQUISITES
+---------------
     Make sure that you have CMAKE installed on your machine 
 
     * https://cmake.org/download/
@@ -89,8 +89,8 @@ PREREQUISITES
 
     See: https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode for additional details
 
-BUILD
------
+# BUILD
+-------
     On Windows using Visual Studio 2017 nmake:
     ------------------------------------------
         makewin32.cmd
@@ -125,3 +125,18 @@ BUILD
     To compile, run the following command from the android folder:
 
     ninja    
+
+# Contributing
+--------------
+    This project welcomes contributions and suggestions. Most contributions require you to
+    agree to a Contributor License Agreement (CLA) declaring that you have the right to,
+    and actually do, grant us the rights to use your contribution. For details, visit
+    https://cla.microsoft.com.
+
+    When you submit a pull request, a CLA-bot will automatically determine whether you need
+    to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the
+    instructions provided by the bot. You will only need to do this once across all repositories using our CLA.
+
+    This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+    For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
+    or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
