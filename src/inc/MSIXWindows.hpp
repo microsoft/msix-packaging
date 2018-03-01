@@ -1,3 +1,7 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 // This header defines the types used by Windows that are not defined in other platforms
 #ifndef __appxwindows_hpp__
 #define __appxwindows_hpp__
