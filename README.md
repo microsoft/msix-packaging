@@ -7,11 +7,11 @@
    The MSIX Packaging SDK project is an effort to enable developers on a variety of platforms to package and unpackage 
    application packages for the purposes of distribution from either the Microsoft Store, or 2nd/3rd party stores.  
     
-   The MSIX Packaging format is an evolution of the Windows 8 era AppX package format as detailed at: 
-   https://blogs.msdn.microsoft.com/windowsappdev/2012/12/04/designing-a-simple-and-secure-app-package-appx/. 
+   The MSIX Packaging format is an evolution of the Windows 8 era AppX package format as detailed [here]( 
+   https://blogs.msdn.microsoft.com/windowsappdev/2012/12/04/designing-a-simple-and-secure-app-package-appx/). 
     
    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
-   documented here: https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx.  See 
+   documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx.)  See 
    ./sample/ExtractContentsSample/ExtratContentsSample.cpp for additional details.
 
 
