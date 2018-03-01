@@ -4,15 +4,15 @@
 
 # DESCRIPTION
 -------------
-    The MSIX Packaging format is an evolution of the Windows 8 era AppX package format as detailed at: 
-    https://blogs.msdn.microsoft.com/windowsappdev/2012/12/04/designing-a-simple-and-secure-app-package-appx/.  
-
-    The MSIX Packaging SDK project is an effort to enable developers on a variety of platforms to package and unpackage 
-    application packages for the purposes of distribution from either the Microsoft Store, or 2nd/3rd party stores.  
+   The MSIX Packaging SDK project is an effort to enable developers on a variety of platforms to package and unpackage 
+   application packages for the purposes of distribution from either the Microsoft Store, or 2nd/3rd party stores.  
     
-    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
-    documented here: https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx.  See 
-    ./sample/ExtractContentsSample/ExtratContentsSample.cpp for additional details.
+   The MSIX Packaging format is an evolution of the Windows 8 era AppX package format as detailed [here]( 
+   https://blogs.msdn.microsoft.com/windowsappdev/2012/12/04/designing-a-simple-and-secure-app-package-appx/). 
+    
+   The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
+   documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).  See 
+   ./sample/ExtractContentsSample/ExtratContentsSample.cpp for additional details.
 
 
 # OVERVIEW
@@ -46,11 +46,12 @@ The MSIX Packaging SDK project includes cross platform API support for unpacking
 
 # ISSUES
 --------
-    If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset, then 1st:
+    If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset:
         step 1: Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
-        step 2: start -> visual studio installer -> Visual Studio Build Tools 2017 -> Modify the 2014 toolset -> individual components 
-        step 3: make sure that VC++ 2015.3 v140 toolset for desktop is selected and then unselect VC++ 2017 141 toolset
-        step 4: close, then re-open the solution.
+        step 2: Start -> visual studio installer -> Visual Studio Build Tools 2017 -> 
+                Modify the 2014 toolset -> individual components 
+        step 3: Make sure that VC++ 2015.3 v140 toolset for desktop is selected and then unselect VC++ 2017 141 toolset
+        step 4: Close, then re-open the solution.
 
 # PREREQUISITES
 ---------------
@@ -110,7 +111,8 @@ The MSIX Packaging SDK project includes cross platform API support for unpacking
     Unpack the latest Android NDK to c:\android-ndk
     Unpack Ninja-build to c:\ninja
     Add c:\ninja to the path environment variable
-    Create a folder under the root of the enlistment called "android", cd into that folder, then run the following command to create ninja build files:
+    Create a folder under the root of the enlistment called "android", cd into that folder, 
+    then run the following command to create ninja build files:
 
     cmake -DCMAKE_ANDROID_NDK=c:/android-ndk ^
         -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang ^
@@ -125,18 +127,30 @@ The MSIX Packaging SDK project includes cross platform API support for unpacking
     To compile, run the following command from the android folder:
 
     ninja    
+    
+The following native platforms are in development now:
+
+|Platform|Build|Docs|Status|
+|---|---|---|---|
+| Windows | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/19151/badge) |
+| iOS | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/19151/badge) |
+| Android | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/19151/badge) |
+| MacOS | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/19151/badge) |
+| Linux | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/19151/badge) |
 
 # Contributing
 --------------
-    This project welcomes contributions and suggestions. Most contributions require you to
-    agree to a Contributor License Agreement (CLA) declaring that you have the right to,
-    and actually do, grant us the rights to use your contribution. For details, visit
-    https://cla.microsoft.com.
+This project welcomes contributions and suggestions. Most contributions require you to
+agree to a Contributor License Agreement (CLA) declaring that you have the right to,
+and actually do, grant us the rights to use your contribution. For details, visit
+https://cla.microsoft.com.
 
-    When you submit a pull request, a CLA-bot will automatically determine whether you need
-    to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the
-    instructions provided by the bot. You will only need to do this once across all repositories using our CLA.
+When you submit a pull request, a CLA-bot will automatically determine whether you need
+to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the
+instructions provided by the bot. You will only need to do this once across all repositories 
+using our CLA.
 
-    This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
-    For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
-    or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
+or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional 
+questions or comments.
