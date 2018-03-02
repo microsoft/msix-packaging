@@ -156,11 +156,11 @@ First build the project, then:
 Testing on mobile platforms:
 
   On iOS (currently manual process):
-  First build the project for iOS, then launch xCode and load test/mobild/iOSBVT.xcworkspace, compile the test app,
+  First build the project for iOS, then launch xCode and load test/mobile/iOSBVT.xcworkspace, compile the test app,
   and then launch the iPhone simulator.
 
   On Android:
-  TODO: Ruben to add instructions here.
+  From within bash, navigate to test/MacOS-Linux, and run "./testaosponmac.sh". The test assumes there's an Android emulator named Nexus_5X_API_19_x86.
 
 ## Releasing
 ------------
