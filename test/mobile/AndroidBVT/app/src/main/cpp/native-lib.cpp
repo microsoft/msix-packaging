@@ -78,6 +78,7 @@ Java_com_microsoft_androidbvt_MainActivity_RunTests(JNIEnv* env, jobject /* this
     std::string filePath = GetStringPathFromJString(env, jFilePath);
     CopyFilesFromAssets(env, assetManager, filePath, "");
     CopyFilesFromAssets(env, assetManager, filePath, "BlockMap");
+    CopyFilesFromAssets(env, assetManager, filePath, "sdx");
     signed long hr = RunTests(const_cast<char*>(filePath.c_str()), const_cast<char*>(filePath.c_str()));
     if(hr == 0)
     {

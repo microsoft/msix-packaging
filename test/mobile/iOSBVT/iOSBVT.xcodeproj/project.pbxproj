@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C11C9D12048C7C700F6BE01 /* en-us_win32.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4C11C9D02048C7C700F6BE01 /* en-us_win32.appx */; };
+		4C11C9D22048C7F700F6BE01 /* en-us_win32.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C11C9D02048C7C700F6BE01 /* en-us_win32.appx */; };
 		EEE4055020225CDF007B25CE /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4054F20225CDF007B25CE /* AppDelegate.m */; };
 		EEE4055320225CDF007B25CE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4055220225CDF007B25CE /* ViewController.m */; };
 		EEE4055620225CDF007B25CE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEE4055420225CDF007B25CE /* Main.storyboard */; };
@@ -57,16 +59,16 @@
 		EEE405B220227EC1007B25CE /* TestAppxPackage_Win32.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4058520225EF5007B25CE /* TestAppxPackage_Win32.appx */; };
 		EEE405B320227EC1007B25CE /* TestAppxPackage_x64.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4058620225EF5007B25CE /* TestAppxPackage_x64.appx */; };
 		EEE405B420227EC1007B25CE /* UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4058720225EF5007B25CE /* UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx */; };
-		EEE405B620227ED8007B25CE /* Bad_Namespace_Blockmap.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4056D20225EF5007B25CE /* Bad_Namespace_Blockmap.appx */; };
-		EEE405B720227ED8007B25CE /* ContentTypes_in_blockmap.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4056E20225EF5007B25CE /* ContentTypes_in_blockmap.appx */; };
-		EEE405B820227ED8007B25CE /* Duplicate_file_in_blockmap.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4056F20225EF5007B25CE /* Duplicate_file_in_blockmap.appx */; };
-		EEE405B920227ED8007B25CE /* Extra_file_in_blockmap.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057020225EF5007B25CE /* Extra_file_in_blockmap.appx */; };
-		EEE405BA20227ED8007B25CE /* File_missing_from_blockmap.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057120225EF5007B25CE /* File_missing_from_blockmap.appx */; };
-		EEE405BB20227ED8007B25CE /* HelloWorld.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057220225EF5007B25CE /* HelloWorld.appx */; };
-		EEE405BC20227ED8007B25CE /* Invalid_Bad_Block.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057320225EF5007B25CE /* Invalid_Bad_Block.appx */; };
-		EEE405BD20227ED8007B25CE /* Missing_Manifest_in_blockmap.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057420225EF5007B25CE /* Missing_Manifest_in_blockmap.appx */; };
-		EEE405BE20227ED8007B25CE /* No_blockmap.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057520225EF5007B25CE /* No_blockmap.appx */; };
-		EEE405BF20227ED8007B25CE /* Size_wrong_uncompressed.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057620225EF5007B25CE /* Size_wrong_uncompressed.appx */; };
+		EEE405B620227ED8007B25CE /* Bad_Namespace_Blockmap.appx in Copy Files */ = {isa = PBXBuildFile; fileRef = EEE4056D20225EF5007B25CE /* Bad_Namespace_Blockmap.appx */; };
+		EEE405B720227ED8007B25CE /* ContentTypes_in_blockmap.appx in Copy Files */ = {isa = PBXBuildFile; fileRef = EEE4056E20225EF5007B25CE /* ContentTypes_in_blockmap.appx */; };
+		EEE405B820227ED8007B25CE /* Duplicate_file_in_blockmap.appx in Copy Files */ = {isa = PBXBuildFile; fileRef = EEE4056F20225EF5007B25CE /* Duplicate_file_in_blockmap.appx */; };
+		EEE405B920227ED8007B25CE /* Extra_file_in_blockmap.appx in Copy Files */ = {isa = PBXBuildFile; fileRef = EEE4057020225EF5007B25CE /* Extra_file_in_blockmap.appx */; };
+		EEE405BA20227ED8007B25CE /* File_missing_from_blockmap.appx in Copy Files */ = {isa = PBXBuildFile; fileRef = EEE4057120225EF5007B25CE /* File_missing_from_blockmap.appx */; };
+		EEE405BB20227ED8007B25CE /* HelloWorld.appx in Copy Files */ = {isa = PBXBuildFile; fileRef = EEE4057220225EF5007B25CE /* HelloWorld.appx */; };
+		EEE405BC20227ED8007B25CE /* Invalid_Bad_Block.appx in Copy Files */ = {isa = PBXBuildFile; fileRef = EEE4057320225EF5007B25CE /* Invalid_Bad_Block.appx */; };
+		EEE405BD20227ED8007B25CE /* Missing_Manifest_in_blockmap.appx in Copy Files */ = {isa = PBXBuildFile; fileRef = EEE4057420225EF5007B25CE /* Missing_Manifest_in_blockmap.appx */; };
+		EEE405BE20227ED8007B25CE /* No_blockmap.appx in Copy Files */ = {isa = PBXBuildFile; fileRef = EEE4057520225EF5007B25CE /* No_blockmap.appx */; };
+		EEE405BF20227ED8007B25CE /* Size_wrong_uncompressed.appx in Copy Files */ = {isa = PBXBuildFile; fileRef = EEE4057620225EF5007B25CE /* Size_wrong_uncompressed.appx */; };
 		EEE405C2202E53A7007B25CE /* libmsix.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE405C0202E53A7007B25CE /* libmsix.0.0.0.dylib */; };
 		EEE405C3202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE405C1202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib */; };
 		EEE405C4202E53D9007B25CE /* libmsix.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE405C0202E53A7007B25CE /* libmsix.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -74,6 +76,16 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		4C11C9CB2048C60500F6BE01 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = sdx;
+			dstSubfolderSpec = 7;
+			files = (
+				4C11C9D22048C7F700F6BE01 /* en-us_win32.appx in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EEE4056820225E11007B25CE /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -111,28 +123,30 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		EEE405B520227ECB007B25CE /* CopyFiles */ = {
+		EEE405B520227ECB007B25CE /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = BlockMap;
 			dstSubfolderSpec = 7;
 			files = (
-				EEE405B620227ED8007B25CE /* Bad_Namespace_Blockmap.appx in CopyFiles */,
-				EEE405B720227ED8007B25CE /* ContentTypes_in_blockmap.appx in CopyFiles */,
-				EEE405B820227ED8007B25CE /* Duplicate_file_in_blockmap.appx in CopyFiles */,
-				EEE405B920227ED8007B25CE /* Extra_file_in_blockmap.appx in CopyFiles */,
-				EEE405BA20227ED8007B25CE /* File_missing_from_blockmap.appx in CopyFiles */,
-				EEE405BB20227ED8007B25CE /* HelloWorld.appx in CopyFiles */,
-				EEE405BC20227ED8007B25CE /* Invalid_Bad_Block.appx in CopyFiles */,
-				EEE405BD20227ED8007B25CE /* Missing_Manifest_in_blockmap.appx in CopyFiles */,
-				EEE405BE20227ED8007B25CE /* No_blockmap.appx in CopyFiles */,
-				EEE405BF20227ED8007B25CE /* Size_wrong_uncompressed.appx in CopyFiles */,
+				EEE405B620227ED8007B25CE /* Bad_Namespace_Blockmap.appx in Copy Files */,
+				EEE405B720227ED8007B25CE /* ContentTypes_in_blockmap.appx in Copy Files */,
+				EEE405B820227ED8007B25CE /* Duplicate_file_in_blockmap.appx in Copy Files */,
+				EEE405B920227ED8007B25CE /* Extra_file_in_blockmap.appx in Copy Files */,
+				EEE405BA20227ED8007B25CE /* File_missing_from_blockmap.appx in Copy Files */,
+				EEE405BB20227ED8007B25CE /* HelloWorld.appx in Copy Files */,
+				EEE405BC20227ED8007B25CE /* Invalid_Bad_Block.appx in Copy Files */,
+				EEE405BD20227ED8007B25CE /* Missing_Manifest_in_blockmap.appx in Copy Files */,
+				EEE405BE20227ED8007B25CE /* No_blockmap.appx in Copy Files */,
+				EEE405BF20227ED8007B25CE /* Size_wrong_uncompressed.appx in Copy Files */,
 			);
+			name = "Copy Files";
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4C11C9D02048C7C700F6BE01 /* en-us_win32.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "en-us_win32.appx"; sourceTree = "<group>"; };
 		EEE4054B20225CDF007B25CE /* iOSBVT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSBVT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EEE4054E20225CDF007B25CE /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		EEE4054F20225CDF007B25CE /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -187,6 +201,14 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4C11C9CF2048C7C700F6BE01 /* sdx */ = {
+			isa = PBXGroup;
+			children = (
+				4C11C9D02048C7C700F6BE01 /* en-us_win32.appx */,
+			);
+			path = sdx;
+			sourceTree = "<group>";
+		};
 		EEE4054220225CDE007B25CE = {
 			isa = PBXGroup;
 			children = (
@@ -225,6 +247,7 @@
 		EEE4056B20225EF5007B25CE /* appx */ = {
 			isa = PBXGroup;
 			children = (
+				4C11C9CF2048C7C700F6BE01 /* sdx */,
 				EEE4056C20225EF5007B25CE /* BlockMap */,
 				EEE4057720225EF5007B25CE /* CentennialCoffee.appx */,
 				EEE4057820225EF5007B25CE /* Empty.appx */,
@@ -277,7 +300,8 @@
 				EEE4054920225CDF007B25CE /* Resources */,
 				EEE4056820225E11007B25CE /* CopyFiles */,
 				EEE405A320227E6D007B25CE /* CopyFiles */,
-				EEE405B520227ECB007B25CE /* CopyFiles */,
+				EEE405B520227ECB007B25CE /* Copy Files */,
+				4C11C9CB2048C60500F6BE01 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -355,6 +379,7 @@
 				EEE4059E20225EF5007B25CE /* SignedUntrustedCert-CERT_E_CHAINING.appx in Resources */,
 				EEE4059220225EF5007B25CE /* CentennialCoffee.appx in Resources */,
 				EEE4058E20225EF5007B25CE /* Invalid_Bad_Block.appx in Resources */,
+				4C11C9D12048C7C700F6BE01 /* en-us_win32.appx in Resources */,
 				EEE4055620225CDF007B25CE /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -507,7 +532,7 @@
 				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = iOSBVT/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = /Users/philsmith/Documents/projects/xPlatAppx/build/lib;
+				LIBRARY_SEARCH_PATHS = ../../../build/lib;
 				PRODUCT_BUNDLE_IDENTIFIER = Microsoft.iOSBVT;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -523,7 +548,7 @@
 				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = iOSBVT/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = /Users/philsmith/Documents/projects/xPlatAppx/build/lib;
+				LIBRARY_SEARCH_PATHS = ../../../build/lib;
 				PRODUCT_BUNDLE_IDENTIFIER = Microsoft.iOSBVT;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
