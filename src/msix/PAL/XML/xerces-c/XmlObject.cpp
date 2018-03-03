@@ -330,18 +330,35 @@ protected:
     ComPtr<IStream> m_stream;    
 };
 
-ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream)
+class XercesFactory : public ComClass<XercesFactory, IXmlFactory>
 {
-    switch (footPrintType)
+public:
+    XercesFactory()
     {
-        case XmlContentType::AppxBlockMapXml:
-            return ComPtr<IXmlDom>::Make<XercesDom>(stream, &blockMapSchema);
-        case XmlContentType::AppxManifestXml:
-            // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
-            return ComPtr<IXmlDom>::Make<XercesDom>(stream);
-        case XmlContentType::ContentTypeXml:
-            return ComPtr<IXmlDom>::Make<XercesDom>(stream, &contentTypesSchema);
+        XERCES_CPP_NAMESPACE::XMLPlatformUtils::Initialize();
     }
-    throw Exception(Error::InvalidParameter);    
-}    
+
+    ~XercesFactory()
+    {
+        XERCES_CPP_NAMESPACE::XMLPlatformUtils::Terminate();
+    }
+
+    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream) override
+    {
+        switch (footPrintType)
+        {
+            case XmlContentType::AppxBlockMapXml:
+                return ComPtr<IXmlDom>::Make<XercesDom>(stream, &blockMapSchema);
+            case XmlContentType::AppxManifestXml:
+                // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
+                return ComPtr<IXmlDom>::Make<XercesDom>(stream);
+            case XmlContentType::ContentTypeXml:
+                return ComPtr<IXmlDom>::Make<XercesDom>(stream, &contentTypesSchema);
+        }
+        throw Exception(Error::InvalidParameter);    
+    }    
+};
+
+ComPtr<IXmlFactory> CreateXmlFactory() { return ComPtr<IXmlFactory>::Make<XercesFactory>(); }
+
 } // namespace MSIX

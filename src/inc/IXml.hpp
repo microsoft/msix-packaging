@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Exceptions.hpp"
+#include "ComHelper.hpp"
 #include "StreamBase.hpp"
 
 // XML file content types/schemas
@@ -39,6 +40,7 @@ enum class XmlAttributeName : std::uint8_t
 
 EXTERN_C const IID IID_IXmlElement;
 EXTERN_C const IID IID_IXmlDom;
+EXTERN_C const IID IID_IXmlFactory;
 
 #ifndef WIN32
 // {ac94449e-442d-4bed-8fca-83770c0f7ee9}
@@ -72,11 +74,22 @@ public:
     ) = 0;
 };
 
+#ifndef WIN32
+// {f82a60ec-fbfc-4cb9-bc04-1a0fe2b4d5be}
+interface IXmlFactory : public IUnknown
+#else
+class IXmlFactory : public IUnknown
+#endif
+// An internal interface for creating an IXmlDom object as well as managing XML services lifetime
+{
+public:
+    virtual MSIX::ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, MSIX::ComPtr<IStream>& stream) = 0;
+};
+
 SpecializeUuidOfImpl(IXmlElement);
 SpecializeUuidOfImpl(IXmlDom);
+SpecializeUuidOfImpl(IXmlFactory);
 
 namespace MSIX {
-    // Abstract factory for clients to create IXmlDom for a given type from a given stream.
-    // Each XML PAL MUST implement this function.
-    MSIX::ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream);
+    MSIX::ComPtr<IXmlFactory> CreateXmlFactory();
 }

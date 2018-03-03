@@ -109,10 +109,10 @@ namespace MSIX {
         // TODO: calculate the publisher hash from the publisher value.
     }
 
-    AppxManifestObject::AppxManifestObject(ComPtr<IStream>& stream) : m_stream(stream)
+    AppxManifestObject::AppxManifestObject(IXmlFactory* factory, ComPtr<IStream>& stream) : m_stream(stream)
     {
         size_t identitiesFound = 0;
-        auto dom = CreateDomFromStream(XmlContentType::AppxManifestXml, stream);
+        auto dom = factory->CreateDomFromStream(XmlContentType::AppxManifestXml, stream);
         dom->ForEachElementIn(dom->GetDocument().Get(), XmlQueryName::Package_Identity,
             [&](IXmlElement* identityNode){
                 identitiesFound++;
@@ -137,6 +137,9 @@ namespace MSIX {
         m_validation(validation),
         m_container(container)
     {
+        ComPtr<IXmlFactory> xmlFactory;
+        ThrowHrIfFailed(factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));        
+
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
         auto file = m_container->GetFile(APPXSIGNATURE_P7X);
@@ -149,8 +152,8 @@ namespace MSIX {
         // 2. Get content type using signature object for validation
         file = m_container->GetFile(CONTENT_TYPES_XML);
         ThrowErrorIfNot(Error::MissingContentTypesXML, (file.first), "[Content_Types].xml not in archive!");
-        MSIX::ComPtr<IStream> stream = m_appxSignature->GetValidationStream(CONTENT_TYPES_XML, file.second);
-        auto contentType = CreateDomFromStream(XmlContentType::ContentTypeXml, stream);
+        MSIX::ComPtr<IStream> stream = m_appxSignature->GetValidationStream(CONTENT_TYPES_XML, file.second);        
+        auto contentType = xmlFactory->CreateDomFromStream(XmlContentType::ContentTypeXml, stream);
 
         // 3. Get blockmap object using signature object for validation        
         file = m_container->GetFile(APPXBLOCKMAP_XML);
@@ -163,7 +166,7 @@ namespace MSIX {
         file = m_container->GetFile(APPXMANIFEST_XML);
         ThrowErrorIfNot(Error::MissingAppxManifestXML, (file.second), "AppxManifest.xml not in archive!");
         stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, file.second);
-        m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(stream);
+        m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(xmlFactory.Get(), stream);
         
         if ((validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
         {

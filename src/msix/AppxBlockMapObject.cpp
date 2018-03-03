@@ -47,7 +47,9 @@ namespace MSIX {
 
     AppxBlockMapObject::AppxBlockMapObject(IMSIXFactory* factory, ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
     {
-        auto dom = CreateDomFromStream(XmlContentType::AppxBlockMapXml, stream);
+        ComPtr<IXmlFactory> xmlFactory;
+        ThrowHrIfFailed(factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));        
+        auto dom = xmlFactory->CreateDomFromStream(XmlContentType::AppxBlockMapXml, stream);        
         dom->ForEachElementIn(dom->GetDocument().Get(), XmlQueryName::BlockMap_File, [&](IXmlElement* fileNode)
         {
             auto name = fileNode->GetAttributeValue(XmlAttributeName::BlockMap_File_Name);

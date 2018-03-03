@@ -3,7 +3,7 @@
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
 #include "ComHelper.hpp"
-#include "xercesc/util/PlatformUtils.hpp"
+#include "IXml.hpp"
 
 #include <string>
 #include <vector>
@@ -28,20 +28,16 @@ public:
 SpecializeUuidOfImpl(IMSIXFactory);
 
 namespace MSIX {
-    class AppxFactory : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory>
+    class AppxFactory : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory>
     {
     public:
         AppxFactory(MSIX_VALIDATION_OPTION validationOptions, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
-            m_validationOptions(validationOptions), m_memalloc(memalloc), m_memfree(memfree)
+            m_validationOptions(validationOptions), m_memalloc(memalloc), m_memfree(memfree), m_xmlFactory(CreateXmlFactory())
         {
-            ThrowErrorIf(Error::InvalidParameter, (m_memalloc == nullptr || m_memfree == nullptr), "allocator/deallocator pair not specified.")
-            XERCES_CPP_NAMESPACE::XMLPlatformUtils::Initialize();
+            ThrowErrorIf(Error::InvalidParameter, (m_memalloc == nullptr || m_memfree == nullptr), "allocator/deallocator pair not specified.")            
         }
 
-        ~AppxFactory()
-        {
-            XERCES_CPP_NAMESPACE::XMLPlatformUtils::Terminate();
-        }
+        ~AppxFactory() {}
 
         // IAppxFactory
         HRESULT STDMETHODCALLTYPE CreatePackageWriter (
@@ -63,6 +59,13 @@ namespace MSIX {
         HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) override;
         MSIX_VALIDATION_OPTION GetValidationOptions() override { return m_validationOptions; }
 
+        // IXmlFactory
+        MSIX::ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream) override
+        {   
+            return m_xmlFactory->CreateDomFromStream(footPrintType, stream);
+        }
+
+        ComPtr<IXmlFactory> m_xmlFactory;
         COTASKMEMALLOC* m_memalloc;
         COTASKMEMFREE*  m_memfree;
         MSIX_VALIDATION_OPTION m_validationOptions;

@@ -69,7 +69,7 @@ namespace MSIX {
     class AppxManifestObject : public ComClass<AppxManifestObject, IVerifierObject>
     {
     public:
-        AppxManifestObject(ComPtr<IStream>& stream);
+        AppxManifestObject(IXmlFactory* factory, ComPtr<IStream>& stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
