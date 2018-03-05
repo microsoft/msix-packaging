@@ -39,6 +39,24 @@ The MSIX Packaging SDK project includes cross platform API support for unpacking
         step 3: Make sure that VC++ 2015.3 v140 toolset for desktop is selected and then unselect VC++ 2017 141 toolset
         step 4: Close, then re-open the solution.
 
+## Dependencies
+---------------
+    Depending on the platform for which the MSIX shared library (MSIX.DLL | libmsix.dylib | libmsix.so) is compiled, one or 
+    more of the following dependencies may be statically linked into the binary:
+
+    * [ZLib](https://github.com/madler/zlib)
+    * [Xerces-C](https://github.com/apache/xerces-c)
+    * [OpenSSL](https://github.com/openssl/openssl)
+    * [Android NDK](https://developer.android.com/ndk)
+
+    For convinience, Zlib and Xerces-C are git-subtrees that are mapped in under the lib folder of this project.  Edits on top
+    of these subtrees for build related optimizations are tracked within this repository.
+
+    OpenSSL is mapped in under the lib folder as a git-submodule.  For a variety of reasons, the MSIX project only uses OpenSSL on
+    non-Windows platforms, and only (at the time of creation) the latest version of the 1.0.2 release (specifically as tracked via tag "OpenSSL_1_0_2m").
+
+    The Android NDK is only required for targeting the Android platform.
+
 ## Prerequisites
 ----------------
 Make sure that you have CMAKE installed on your machine 
@@ -120,6 +138,36 @@ The following native platforms are in development now:
 | MacOS | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/23627/badge) |
 | Linux | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/23627/badge) |
 
+## Testing
+----------
+Unit tests should be run on builds that have the "Release" or "RelWithDebug" CMAKE switch. 
+
+First build the project, then:
+
+  On Windows:
+  From within powershell, navigate to test\Win32, and run ".\Win32.ps1"
+
+  On Mac & Linux:
+  From within bash, navigate to test/MacOS-Linux, and run "./MacOS-Linux-Etc.sh
+
+Testing on mobile platforms:
+
+  On iOS (currently manual process):
+  First build the project for iOS, then launch xCode and load test/mobile/iOSBVT.xcworkspace, compile the test app,
+  and then launch the iPhone simulator.
+
+  On Android:
+  From within bash, navigate to test/MacOS-Linux, and run "./testaosponmac.sh". The test assumes there's an Android emulator named Nexus_5X_API_19_x86.
+
+## Releasing
+------------
+If you are the current maintainer of this project:
+
+  1. Pull latest payload to release in master
+  2. Confirm that all platforms/architectures/flavors build and all BVTs pass
+  3. From a windows cmd prompt: release_master.cmd
+  4. Confirm that new branch called "release_v1.xxx" where "xxx" is the next incremental version is created
+  
 ## Contributing
 ---------------
 This project welcomes contributions and suggestions. Most contributions require you to
@@ -138,3 +186,27 @@ This project has adopted the [Microsoft Open Source Code of Conduct](https://ope
 For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
 or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional 
 questions or comments.
+
+## Report a Computer Security Vulnerability
+-------------------------------------------
+If you are a security researcher and believe you have found a security vulnerability that meets
+the [definition of a security vulnerability](https://technet.microsoft.com/library/cc751383.aspx) that is not resolved by the [10 Immutable Laws of Security](https://technet.microsoft.com/library/cc722487.aspx),
+please send e-mail to us at secure@microsoft.com. To help us to better understand the nature and
+scope of the possible issue, please include as much of the below information as possible.
+
+  * Type of issue (buffer overflow, SQL injection, cross-site scripting, etc.)
+  * Product and version that contains the bug, or URL if for an online service
+  * Service packs, security updates, or other updates for the product you have installed
+  * Any special configuration required to reproduce the issue
+  * Step-by-step instructions to reproduce the issue on a fresh install
+  * Proof-of-concept or exploit code
+  * Impact of the issue, including how an attacker could exploit the issue
+
+Microsoft follows [Coordinated Vulnerability Disclosure](https://technet.microsoft.com/security/dn467923.aspx) (CVD) and, to protect the ecosystem, we 
+request that those reporting to us do the same.  To encrypt your message to our PGP key, please
+download it from the [Microsoft Security Response Center PGP Key](https://aka.ms/msrcpgp). You should receive a response
+within 24 hours. If for some reason you do not, please follow up with us to ensure we received
+your original message. For further information, please visit the Microsoft Security Response 
+Policy and Practices page and read the [Acknowledgment Policy for Microsoft Security Bulletins](https://www.microsoft.com/technet/security/bulletin/policy.mspx).
+
+For additional details, see [Report a Computer Security Vulnerability](https://technet.microsoft.com/en-us/security/ff852094.aspx) on Technet
