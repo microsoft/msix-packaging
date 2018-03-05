@@ -8,10 +8,11 @@
 
 #include "Log.hpp"
 #include "MSIXWindows.hpp"
-#include "xercesc/util/PlatformUtils.hpp"
-#include "xercesc/sax/ErrorHandler.hpp"
-#include "xercesc/sax/SAXParseException.hpp"
-#include "xercesc/dom/DOM.hpp"
+
+#ifdef USING_XERCES
+    #include "xercesc/util/XMLException.hpp"
+    #include "xercesc/dom/DOMException.hpp"
+#endif
 
 namespace MSIX {
 
@@ -166,36 +167,6 @@ namespace MSIX {
         }
     };
 
-    class ParsingException : public XERCES_CPP_NAMESPACE::ErrorHandler
-    {
-    public:
-        ParsingException() {};
-        ~ParsingException() {};
-
-        void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
-        {
-            // TODO: add message, line number and column
-            assert(false);
-            throw Exception(MSIX::Error::XercesWarning);
-        }
-
-        void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
-        {
-            // TODO: add message, line number and column
-            assert(false);
-            throw Exception(MSIX::Error::XercesError);
-        }
-
-        void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
-        {
-            // TODO: add message, line number and column
-            assert(false);
-            throw Exception(MSIX::Error::XercesFatal);
-        }
-
-        void resetErrors() override {}
-    };
-
     // Provides an ABI exception boundary with parameter validation
     template <class Lambda>
     inline HRESULT ResultOf(Lambda lambda)
@@ -205,6 +176,18 @@ namespace MSIX {
         {
             lambda();
         }
+#ifdef USING_XERCES        
+        catch (const XERCES_CPP_NAMESPACE::XMLException& e)
+        {
+            hr = static_cast<HRESULT>(MSIX::XERCES_XML_FACILITY) +
+                static_cast<HRESULT>(e.getCode());
+        }
+        catch (const XERCES_CPP_NAMESPACE::DOMException& e)
+        {
+            hr = static_cast<HRESULT>(MSIX::XERCES_DOM_FACILITY) +
+                static_cast<HRESULT>(e.code);
+        }
+#endif        
         catch (MSIX::Exception& e)
         {
             hr = static_cast<HRESULT>(e.Code());
@@ -217,17 +200,6 @@ namespace MSIX {
         {
             hr = static_cast<HRESULT>(MSIX::Error::Unexpected);
         }
-        catch (const XERCES_CPP_NAMESPACE::XMLException& e)
-        {
-            hr = static_cast<HRESULT>(MSIX::XERCES_XML_FACILITY) +
-                static_cast<HRESULT>(e.getCode());
-        }
-        catch (const XERCES_CPP_NAMESPACE::DOMException& e)
-        {
-            hr = static_cast<HRESULT>(MSIX::XERCES_DOM_FACILITY) +
-                static_cast<HRESULT>(e.code);
-        }
-
         return hr;
     }
 }
@@ -258,6 +230,6 @@ namespace MSIX {
     HRESULT hr = a;                                     \
     if (FAILED(hr))                                     \
     {   assert(false);                                  \
-        throw MSIX::Exception(hr, "COM Call failed");   \
+        throw MSIX::Exception(hr, "Call failed");       \
     }                                                   \
 }

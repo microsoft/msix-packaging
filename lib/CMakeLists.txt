@@ -16,10 +16,13 @@ set(ZLIB_TESTS          OFF CACHE BOOL "Don't build zlib tests/examples"        
 add_subdirectory(zlib)
 
 # Xerces
-set(BUILD_SHARED_LIBS OFF CACHE BOOL "Only build static lib"                         FORCE)
-set(network           OFF CACHE BOOL "Disable network support"                       FORCE)
-set(XERCES_TESTS      OFF CACHE BOOL "Don't build test or samples"                   FORCE)
-add_subdirectory(xerces)
+IF(XML_PARSER MATCHES xerces)
+    MESSAGE (STATUS "XML_PARSER defined.  Configuring XERCES-C parser for inclusion as static library." )
+    set(BUILD_SHARED_LIBS OFF CACHE BOOL "Only build static lib"                         FORCE)
+    set(network           OFF CACHE BOOL "Disable network support"                       FORCE)
+    set(XERCES_TESTS      OFF CACHE BOOL "Don't build test or samples"                   FORCE)
+    add_subdirectory(xerces)
+ENDIF()
 
 # OpenSSL
 IF(NOT WIN32)

@@ -14,6 +14,7 @@
 #include "xercesc/framework/XMLGrammarPoolImpl.hpp"
 #include "xercesc/parsers/AbstractDOMParser.hpp"
 #include "xercesc/parsers/XercesDOMParser.hpp"
+#include "xercesc/sax/ErrorHandler.hpp"
 #include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/util/XMLString.hpp"
 #include "xercesc/util/Base64.hpp"
@@ -61,6 +62,36 @@ static std::map<XmlAttributeName, std::string> attributeNames = {
     {XmlAttributeName::BlockMap_File_LocalFileHeaderSize        ,"LfhSize"},
     {XmlAttributeName::BlockMap_File_Block_Size                 ,"Size"},
     {XmlAttributeName::BlockMap_File_Block_Hash                 ,"Hash"},
+};
+
+class ParsingException : public XERCES_CPP_NAMESPACE::ErrorHandler
+{
+public:
+    ParsingException() {};
+    ~ParsingException() {};
+
+    void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+    {
+        // TODO: add message, line number and column
+        assert(false);
+        throw Exception(MSIX::Error::XercesWarning);
+    }
+
+    void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+    {
+        // TODO: add message, line number and column
+        assert(false);
+        throw Exception(MSIX::Error::XercesError);
+    }
+
+    void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
+    {
+        // TODO: add message, line number and column
+        assert(false);
+        throw Exception(MSIX::Error::XercesFatal);
+    }
+
+    void resetErrors() override {}
 };
 
 template<class T>

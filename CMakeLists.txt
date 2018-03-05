@@ -127,6 +127,13 @@ ELSE()
     ENDIF()
 ENDIF()
 
+# Enforce parser PAL
+IF(NOT XML_PARSER)
+SET(XML_PARSER xerces CACHE STRING
+    "Choose the type of parser, options are: [xerces].  Use the -DXML_PARSER=[option] to specify."
+    FORCE)
+ENDIF()
+
 # Enforce build type
 IF(NOT CMAKE_BUILD_TYPE)
 SET(CMAKE_BUILD_TYPE Debug CACHE STRING
