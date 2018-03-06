@@ -7,7 +7,6 @@
 
 #include "Exceptions.hpp"
 #include "AppxPackaging.hpp"
-#include "xercesc/util/XMLString.hpp"
 
 namespace MSIX {
 

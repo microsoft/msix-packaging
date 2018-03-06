@@ -14,7 +14,6 @@
 #include "AppxFactory.hpp"
 #include "IXml.hpp"
 #include "BlockMapStream.hpp"
-#include "xercesc/util/XMLString.hpp"
 
 namespace MSIX {
 

@@ -23,8 +23,6 @@
 </BlockMap>
 */
 
-XERCES_CPP_NAMESPACE_USE
-
 namespace MSIX {
 
     template <class T>

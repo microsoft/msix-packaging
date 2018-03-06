@@ -129,9 +129,15 @@ ENDIF()
 
 # Enforce parser PAL
 IF(NOT XML_PARSER)
-SET(XML_PARSER xerces CACHE STRING
-    "Choose the type of parser, options are: [xerces].  Use the -DXML_PARSER=[option] to specify."
-    FORCE)
+    MESSAGE (STATUS "Choose the type of parser, options are: [xerces, msxml6].  Use the -DXML_PARSER=[option] to specify.")
+    INCLUDE(CheckIncludeFileCXX)
+    CHECK_INCLUDE_FILE_CXX(msxml6.h HAVE_MSXML6)
+
+    IF (HAVE_MSXML6)
+        SET(XML_PARSER msxml6 CACHE STRING "Using msxml6." FORCE)
+    ELSE()
+        SET(XML_PARSER xerces CACHE STRING "Using xerces" FORCE)
+    ENDIF()
 ENDIF()
 
 # Enforce build type

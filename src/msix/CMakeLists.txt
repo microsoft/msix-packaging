@@ -16,6 +16,13 @@ IF (XML_PARSER MATCHES xerces)
     SET (USING_XERCES=1)
 ENDIF()
 
+IF (XML_PARSER MATCHES msxml6)
+    MESSAGE (STATUS "XML_PARSER defined.  Using MSXML6 XML parser." )
+    SET (XmlParser PAL/XML/msxml6/XmlObject.cpp)
+    SET (USING_MSXML=1)
+ENDIF()
+
+
 IF(WIN32)
     SET (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.CPP)
     SET (SHA256 PAL/SHA256/Win32/SHA256.CPP)
@@ -148,17 +155,23 @@ SET_TARGET_PROPERTIES(${LIBRARY_NAME} PROPERTIES
 	PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
 )
 
-MESSAGE(STATUS "MSIX takes a static dependency on zlib and xerces")
+MESSAGE(STATUS "MSIX takes a static dependency on zlib")
 INCLUDE_DIRECTORIES(
 	${include_directories}
 	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
 	${CMAKE_PROJECT_ROOT}/lib/zlib
-	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
-	${CMAKE_PROJECT_ROOT}/lib/xerces/src
 )
-
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zlibstatic)
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE xerces-c)
+
+IF (XML_PARSER MATCHES xerces)
+    MESSAGE(STATUS "MSIX takes a static dependency on xerces")
+    INCLUDE_DIRECTORIES(
+        ${include_directories}
+        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
+        ${CMAKE_PROJECT_ROOT}/lib/xerces/src
+    )
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE xerces-c)
+ENDIF()
 
 IF(AOSP)
     TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE -latomic)
