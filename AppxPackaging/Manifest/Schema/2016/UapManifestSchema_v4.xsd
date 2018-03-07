@@ -23,6 +23,7 @@
            xmlns:wincap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"
            xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
            xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+           xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
@@ -30,6 +31,7 @@
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"/>
 
   <xs:element name="MainPackageDependency" substitutionGroup="f:MainPackageDependencyChoice2">
     <xs:complexType>
@@ -176,6 +178,7 @@
   <xs:complexType name="CT_MediaCodecInput">
     <xs:attribute name="SubType" type="t:ST_MediaCodecSubType" use="required" />
     <xs:attribute ref="uap5:MkvCodecId" use="optional" />
+    <xs:attribute ref="uap6:CodecMimeType" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="CT_MediaCodecOutput">
