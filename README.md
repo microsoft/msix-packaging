@@ -23,39 +23,38 @@ The MSIX Packaging SDK project includes cross platform API support for unpacking
 
 ## Setup Instructions
 ---------------------
-    Step 1: Clone the repository:
-        git clone [URL]
+1. Clone the repository:
+        ```git clone [URL]```
         
-    Step 2: Initialize git submodules:
-        git submodule init
-        git submodule update
+2. Initialize git submodules:
+        ```git submodule init
+        git submodule update```
 
 ## Issues
 ---------
-    If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset:
-        step 1: Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
-        step 2: Start -> visual studio installer -> Visual Studio Build Tools 2017 -> 
-                Modify the 2014 toolset -> individual components 
-        step 3: Make sure that VC++ 2015.3 v140 toolset for desktop is selected and then unselect VC++ 2017 141 toolset
-        step 4: Close, then re-open the solution.
+If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset:
+1. Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
+2. Start -> visual studio installer -> Visual Studio Build Tools 2017 -> Modify the 2014 toolset -> individual components 
+3. Make sure that VC++ 2015.3 v140 toolset for desktop is selected and then unselect VC++ 2017 141 toolset
+4. Close, then re-open the solution.
 
 ## Dependencies
 ---------------
-    Depending on the platform for which the MSIX shared library (MSIX.DLL | libmsix.dylib | libmsix.so) is compiled, one or 
-    more of the following dependencies may be statically linked into the binary:
+Depending on the platform for which the MSIX shared library (MSIX.DLL | libmsix.dylib | libmsix.so) is compiled, one or 
+more of the following dependencies may be statically linked into the binary:
 
-    * [ZLib](https://github.com/madler/zlib)
-    * [Xerces-C](https://github.com/apache/xerces-c)
-    * [OpenSSL](https://github.com/openssl/openssl)
-    * [Android NDK](https://developer.android.com/ndk)
+* [ZLib](https://github.com/madler/zlib)
+* [Xerces-C](https://github.com/apache/xerces-c)
+* [OpenSSL](https://github.com/openssl/openssl)
+* [Android NDK](https://developer.android.com/ndk)
 
-    For convinience, Zlib and Xerces-C are git-subtrees that are mapped in under the lib folder of this project.  Edits on top
-    of these subtrees for build related optimizations are tracked within this repository.
+For convinience, Zlib and Xerces-C are git-subtrees that are mapped in under the lib folder of this project.  Edits on top
+of these subtrees for build related optimizations are tracked within this repository.
 
-    OpenSSL is mapped in under the lib folder as a git-submodule.  For a variety of reasons, the MSIX project only uses OpenSSL on
-    non-Windows platforms, and only (at the time of creation) the latest version of the 1.0.2 release (specifically as tracked via tag "OpenSSL_1_0_2m").
+OpenSSL is mapped in under the lib folder as a git-submodule.  For a variety of reasons, the MSIX project only uses OpenSSL on
+non-Windows platforms, and only (at the time of creation) the latest version of the 1.0.2 release (specifically as tracked via tag "OpenSSL_1_0_2m").
 
-    The Android NDK is only required for targeting the Android platform.
+The Android NDK is only required for targeting the Android platform.
 
 ## Prerequisites
 ----------------
@@ -63,57 +62,57 @@ Make sure that you have CMAKE installed on your machine
 
    * https://cmake.org/download/
 
-   One or more of the following prerequisites may also be required on your machine:
+One or more of the following prerequisites may also be required on your machine:
 
-   ##### Ninja-build:
-   https://github.com/ninja-build/ninja/releases
+##### Ninja-build:
+https://github.com/ninja-build/ninja/releases
 
-   ##### Android NDK:
-   https://developer.android.com/ndk/downloads/index.html
+##### Android NDK:
+https://developer.android.com/ndk/downloads/index.html
 
-   ##### Clang/LLVM:
-   http://releases.llvm.org/download.html
+##### Clang/LLVM:
+http://releases.llvm.org/download.html
     
-   ##### VS 2017 clients:    
-    
-    Open Visual Studio 2017
-    File->Open Folder->navigate to project root and select "CMakeLists.txt"
-    
-   See [cmake-support-vs](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/) for details regarding how to configure your environment.
+##### VS 2017 clients:
+Open Visual Studio 2017
+File->Open Folder->navigate to project root and select "CMakeLists.txt"
 
-   ##### Xcode clients: 
+See [cmake-support-vs](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/) for details regarding how to configure your environment.
+
+##### Xcode clients: 
    
-    open terminal, from project root:
-    mkdir build && cd build && cmake -DMACOS=on -G"Xcode" ..
-    open xcode
-    File->Open->navigate to project root/build and select "Project.xcodeproj"
+open terminal, from project root:
+mkdir build && cd build && cmake -DMACOS=on -G"Xcode" ..
+open xcode
+File->Open->navigate to project root/build and select "Project.xcodeproj"
 
-   See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode) for additional details
+See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode) for additional details
 
 ## Build
---------
-    On Windows using Visual Studio 2017 nmake:
-    ------------------------------------------
-        makewin32.cmd
+### On Windows using Visual Studio 2017 nmake:
+```
+   makewin32.cmd
+```
 
-    On Mac using make: 
-    ------------------
-        ./makemac
-        ./makeios
-    
-    On Linux using make:
-    --------------------
+### On Mac using make:
+```
+   ./makemac
+   ./makeios
+```
+
+### On Linux using make:
+```
         ./makelinux
         ./makeaosp
-    
-    How to compile for Android on Windows:
-    --------------------------------------
-    Unpack the latest Android NDK to c:\android-ndk
-    Unpack Ninja-build to c:\ninja
-    Add c:\ninja to the path environment variable
-    Create a folder under the root of the enlistment called "android", cd into that folder, 
-    then run the following command to create ninja build files:
+``` 
 
+### How to compile for Android on Windows:
+
+- Unpack the latest Android NDK to c:\android-ndk
+- Unpack Ninja-build to c:\ninja
+- Add c:\ninja to the path environment variable
+- Create a folder under the root of the enlistment called "android", cd into that folder, then run the following command to create ninja build files:
+```
     cmake -DCMAKE_ANDROID_NDK=c:/android-ndk ^
         -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang ^
         -DCMAKE_SYSTEM_NAME=Android ^
@@ -123,11 +122,11 @@ Make sure that you have CMAKE installed on your machine
         -DCMAKE_BUILD_TYPE=Release ^
         -DAOSP=on ^
         -G"Ninja" ..
-
-    To compile, run the following command from the android folder:
-
+```
+To compile, run the following command from the android folder:
+```
     ninja    
-    
+```
 The following native platforms are in development now:
 
 |Platform|Build|Docs|Status|
