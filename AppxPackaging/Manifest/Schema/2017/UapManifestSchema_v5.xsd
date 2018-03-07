@@ -23,6 +23,8 @@
            xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
            xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"
            xmlns:wincap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"
+           xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+           xmlns:iot2="http://schemas.microsoft.com/appx/manifest/iot/windows10/2"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
@@ -30,6 +32,8 @@
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/iot/windows10/2"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"/>
 
   <xs:element name="Extension" substitutionGroup="f:ApplicationExtensionChoice">
     <xs:complexType>
@@ -60,6 +64,9 @@
 
   <xs:element name="MixedRealityModel">
     <xs:complexType>
+      <xs:all>
+        <xs:element ref="uap6:SpatialBoundingBox" minOccurs="0" maxOccurs="1"/>
+      </xs:all>
       <xs:attribute name="Path" type="t:ST_FileName" use="required"/>
     </xs:complexType>
   </xs:element>
@@ -173,7 +180,8 @@
         </xs:complexType>
       </xs:element>
     </xs:sequence>
-    <xs:attribute ref="uap6:Subsystem" use="optional"/>
+    <xs:attribute ref="desktop4:Subsystem" use="optional"/>
+    <xs:attribute ref="iot2:Subsystem" use="optional"/>
   </xs:complexType>
 
   <xs:element name="DriverDependency">

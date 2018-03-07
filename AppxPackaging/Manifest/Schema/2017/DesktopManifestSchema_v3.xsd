@@ -22,10 +22,12 @@
            xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
            xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
            xmlns:desktop3="http://schemas.microsoft.com/appx/manifest/desktop/windows10/3"
+           xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"/>
 
   <xs:element name="Extension" substitutionGroup="f:ApplicationExtensionChoice">
     <xs:complexType>
@@ -44,7 +46,9 @@
       <xs:element name="ThumbnailProviderHandler" type="CT_CloudFilesHandler" />
       <xs:element name="ExtendedPropertyHandler" type="CT_CloudFilesHandler" />
       <xs:element name="BannersHandler" type="CT_CloudFilesHandler" />
+      <xs:element ref="desktop4:ContentUriSource" minOccurs="0"/>
       <xs:element name="CloudFilesContextMenus" type="CT_CloudFilesContextMenus" />
+      <xs:element ref="desktop4:DesktopIconOverlayHandlers" minOccurs="0"/>
     </xs:all>
     <xs:attribute name="IconResource" type="t:ST_ImageFile"/>
   </xs:complexType>
