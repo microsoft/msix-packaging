@@ -51,3 +51,8 @@ R\"(${BASE64_WINDOWS_PRODUCTION})\",
 
 }")
 file(WRITE "${CMAKE_PROJECT_ROOT}/src/inc/AppxCerts.hpp" "${APPX_CERTS}")
+
+# use execute_process to run the command while CMake is procesing. 
+execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar cfv "${CMAKE_BINARY_DIR}/resources.zip" --format=zip -- "AppxPackaging" "certs"
+    WORKING_DIRECTORY "${CMAKE_PROJECT_ROOT}/resources")
