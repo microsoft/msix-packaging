@@ -363,7 +363,7 @@ namespace MSIX {
             //18 - extra field(variable size)
             Field<18>().validation = [&](std::vector<std::uint8_t>& bytes)
             {
-                if (bytes.size() > 0)
+                if (bytes.size() > 2 && bytes[0] == 0x00 && bytes[1] == 0x01)
                 {
                     LARGE_INTEGER zero = {0};
                     ULARGE_INTEGER pos = {0};
@@ -539,19 +539,12 @@ namespace MSIX {
             {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid compressed size");
             };
             // 8 - uncompressed size               4 bytes
-            Field<8>().validation = [&](std::uint32_t& v)
-            {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid uncompressed size");
-            };
             // 9 - file name length                2 bytes
             Field<9>().validation = [&](std::uint16_t& v)
             {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (v != 0), "unsupported file name size");
                 Field<11>().value.resize(GetFileNameLength(), 0);
             };
             // 10- extra field length              2 bytes
-            Field<10>().validation = [&](std::uint16_t& v)
-            {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (v == 0), "unsupported extra field size");
-                Field<12>().value.resize(GetExtraFieldLength(), 0);
-            };
             // 11- file name (variable size)
             // 12- extra field (variable size)
         }
