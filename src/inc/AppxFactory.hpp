@@ -8,6 +8,7 @@
 #include "MSIXWindows.hpp"
 #include "ComHelper.hpp"
 #include "IXml.hpp"
+#include "StorageObject.hpp"
 
 #include <string>
 #include <vector>
@@ -27,6 +28,7 @@ public:
     virtual HRESULT MarshalOutString(std::string& internal, LPWSTR *result) = 0;
     virtual HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) = 0;
     virtual MSIX_VALIDATION_OPTION GetValidationOptions() = 0;
+    virtual IStream* GetResource(const std::string& resource) = 0;
 };
 
 SpecializeUuidOfImpl(IMSIXFactory);
@@ -62,6 +64,7 @@ namespace MSIX {
         HRESULT MarshalOutString(std::string& internal, LPWSTR *result) override;
         HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) override;
         MSIX_VALIDATION_OPTION GetValidationOptions() override { return m_validationOptions; }
+        IStream* GetResource(const std::string& resource) override;
 
         // IXmlFactory
         MSIX::ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream) override
@@ -73,5 +76,6 @@ namespace MSIX {
         COTASKMEMALLOC* m_memalloc;
         COTASKMEMFREE*  m_memfree;
         MSIX_VALIDATION_OPTION m_validationOptions;
+        ComPtr<IStorageObject> m_resourcezip; 
     };
 }

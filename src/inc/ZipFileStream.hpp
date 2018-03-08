@@ -49,7 +49,7 @@ namespace MSIX {
         inline bool IsCompressed() { return m_isCompressed; }
 
     protected:
-        IMSIXFactory*  m_factory;
+        IMSIXFactory*   m_factory;
         std::string     m_name;
         std::string     m_contentType;
         bool            m_isCompressed = false;
