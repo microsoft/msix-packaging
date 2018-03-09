@@ -1,6 +1,7 @@
 #pragma once
 #include <memory>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <map>
 
@@ -35,10 +36,22 @@ SpecializeUuidOfImpl(IMSXMLElement);
 
 namespace MSIX {
 
+//              content type ->              alias  <-> uri
+static std::map<XmlContentType, std::vector<std::pair<std::wstring, std::wstring>>> xmlNamespaces = {
+     {XmlContentType::ContentTypeXml,    {}},
+     {XmlContentType::AppxBlockMapXml,   {
+         {L"a", L"http://schemas.microsoft.com/appx/2010/blockmap"},
+         {L"b", L"http://schemas.microsoft.com/appx/2015/blockmap"},
+         {L"c", L"http://schemas.microsoft.com/appx/2017/blockmap"},
+     }},
+     {XmlContentType::AppxManifestXml,   {
+     }}
+ };
+
 static std::map<XmlQueryName, std::wstring> xPaths = {
-    {XmlQueryName::Package_Identity                             ,L"/Package/Identity"},
-    {XmlQueryName::BlockMap_File                                ,L"/BlockMap/File"},
-    {XmlQueryName::BlockMap_File_Block                          ,L"./Block"},
+    {XmlQueryName::Package_Identity                             ,L"Package/Identity"},
+    {XmlQueryName::BlockMap_File                                ,L"/*[local-name()='BlockMap']/*[local-name()='File']"},
+    {XmlQueryName::BlockMap_File_Block                          ,L"*[local-name()='Block']"},
 };    
 
 static std::map<XmlAttributeName, std::wstring> attributeNames = {
@@ -170,7 +183,7 @@ protected:
 class MSXMLDom : public ComClass<MSXMLDom, IXmlDom>
 {
 public:
-    MSXMLDom(ComPtr<IStream>& stream)
+    MSXMLDom(ComPtr<IStream>& stream, std::vector<std::pair<std::wstring, std::wstring>>& namespaces)
     {
         ThrowHrIfFailed(CoCreateInstance(__uuidof(DOMDocument60), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&xmlDocument)));
         ThrowHrIfFailed(xmlDocument->put_async(VARIANT_FALSE));
@@ -188,7 +201,7 @@ public:
 
         VARIANT_BOOL success(VARIANT_FALSE);
         ThrowHrIfFailed(xmlDocument->load(var, &success));
-        if (success == VARIANT_FALSE)
+        if (VARIANT_FALSE == success)
         {
             ComPtr<IXMLDOMParseError> error;            
             ThrowHrIfFailed(xmlDocument->get_parseError(&error));
@@ -200,8 +213,28 @@ public:
 
             Bstr reason;
             ThrowHrIfFailed(error->get_reason(reason.AddressOf()));
-            //std::string message = "Error: " + std::string(errorCode) + " on [" + std::string(lineNumber) + ":" + std::string(columnNumber) + "]: " + utf16_to_utf8(static_cast<wchar*>(reason.get()));
-            //ThrowErrorIf(Error::Unexpected, (success == VARIANT_FALSE), message);
+            std::ostringstream message;
+            message << "Error: " << errorCode << " on [" << lineNumber << ":" << columnNumber << "]: " << utf16_to_utf8(static_cast<wchar_t*>(reason.Get()));
+            ThrowErrorIf(Error::Unexpected, (success == VARIANT_FALSE), message.str());
+        }
+        
+        size_t countNamespaces = 0;
+        std::wostringstream value;
+        for(auto& item : namespaces)
+        {               
+            if (0 != countNamespaces) { value << L" "; } // namespaces are space-delimited
+            value << L"xmlns:" << item.first << LR"(=")" << item.second << LR"(")";
+            countNamespaces++;
+        }
+
+        if (countNamespaces != 0)
+        {
+            Bstr selectionProperty(L"SelectionNamespaces");
+            Bstr selectionValue(value.str());
+            VARIANT var;
+            var.vt = VT_BSTR;
+            var.bstrVal = selectionValue.Get();
+            ThrowHrIfFailed(xmlDocument->setProperty(selectionProperty, var));
         }
     }
 
@@ -260,11 +293,11 @@ public:
         switch (footPrintType)
         {   // TODO: pass schemas for validation.
             case XmlContentType::AppxBlockMapXml:
-                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream);
+                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType]);
             case XmlContentType::AppxManifestXml:
-                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream);
+                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType]);
             case XmlContentType::ContentTypeXml:
-                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream);
+                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType]);
         }
         throw Exception(Error::InvalidParameter);    
     }
