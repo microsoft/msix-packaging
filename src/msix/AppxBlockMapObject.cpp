@@ -7,6 +7,7 @@
 #include <iterator>
 #include "IXml.hpp"
 #include "BlockMapStream.hpp"
+#include "MSIXResource.hpp"
 
 /* Example XML:
 <?xml version="1.0" encoding="UTF-8"?>

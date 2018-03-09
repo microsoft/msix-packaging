@@ -88,6 +88,7 @@ SET(LIB_PRIVATE_HEADERS
     ../inc/RangeStream.hpp
     ../inc/StorageObject.hpp
     ../inc/StreamBase.hpp
+    ../inc/StreamHelper.hpp
     ../inc/UnicodeConversion.hpp
     ../inc/VectorStream.hpp
     ../inc/VerifierObject.hpp
