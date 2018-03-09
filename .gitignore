@@ -401,6 +401,5 @@ src/inc/AppxCerts.hpp
 src/inc/AppxBlockMapSchemas.hpp
 src/inc/ContentTypesSchemas.hpp
 src/inc/MSIXResource.hpp
-src/msix/MSIXResource.cpp
 
 .vscode/
