@@ -7,6 +7,7 @@
 #include "FileStream.hpp"
 #include "SignatureValidator.hpp"
 #include "MSIXResource.hpp"
+#include "StreamHelper.hpp"
 
 #include <string>
 #include <sstream>
