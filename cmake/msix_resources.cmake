@@ -32,7 +32,7 @@ file(WRITE "${CMAKE_PROJECT_ROOT}/src/inc/AppxCerts.hpp" "${APPX_CERTS}")
 
 # Create zip file. Use execute_process to run the command while CMake is procesing. 
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar cfv "${CMAKE_BINARY_DIR}/resources.zip" --format=zip -- "AppxPackaging" "certs"
+    COMMAND ${CMAKE_COMMAND} -E tar cvf "${CMAKE_BINARY_DIR}/resources.zip" --format=zip -- "AppxPackaging" "certs"
     WORKING_DIRECTORY "${CMAKE_PROJECT_ROOT}/resources"
 )
 

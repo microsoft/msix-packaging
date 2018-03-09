@@ -363,7 +363,8 @@ namespace MSIX {
             //18 - extra field(variable size)
             Field<18>().validation = [&](std::vector<std::uint8_t>& bytes)
             {
-                if (bytes.size() > 2 && bytes[0] == 0x00 && bytes[1] == 0x01)
+                // Only process for Zip64ExtendedInformation
+                if (bytes.size() > 2 && bytes[0] == 0x01 && bytes[1] == 0x00)
                 {
                     LARGE_INTEGER zero = {0};
                     ULARGE_INTEGER pos = {0};
@@ -545,6 +546,10 @@ namespace MSIX {
                 Field<11>().value.resize(GetFileNameLength(), 0);
             };
             // 10- extra field length              2 bytes
+            Field<10>().validation = [&](std::uint16_t& v)
+            {   // Even if we don't validate them, we need to read the extra field
+                if (v != 0) { Field<12>().value.resize(v,0); }
+            };
             // 11- file name (variable size)
             // 12- extra field (variable size)
         }
@@ -585,7 +590,7 @@ namespace MSIX {
         void SetFileNameLength(std::uint16_t value)         { Field<9>().value = value;  }
         void SetExtraFieldLength(std::uint16_t value)       { Field<10>().value = value; }
 
-        std::string   GetFileName()
+        std::string GetFileName()
         {
             auto data = Field<11>().value;
             return std::string(data.begin(), data.end());
@@ -956,7 +961,6 @@ namespace MSIX {
             ThrowErrorIfNot(Error::ZipHiddenData, (uPos.QuadPart == zip64Locator.GetRelativeOffset()), "hidden data unsupported");
         }
 
-        std::map<std::uint64_t, std::shared_ptr<LocalFileHeader>> fileRepository;
         // TODO: change population of m_streams into cache semantics and move into ZipObject::GetFile
         // Read the file repository
         for (const auto& centralFileHeader : centralDirectory)
@@ -965,9 +969,6 @@ namespace MSIX {
             ThrowHrIfFailed(m_stream->Seek(pos, MSIX::StreamBase::Reference::START, nullptr));
             auto localFileHeader = std::make_shared<LocalFileHeader>(centralFileHeader.second);
             localFileHeader->Read(m_stream.Get());
-            fileRepository.insert(std::make_pair(
-                centralFileHeader.second->GetRelativeOffsetOfLocalHeader(),
-                localFileHeader));
 
             auto fileStream = ComPtr<IStream>::Make<ZipFileStream>(
                 centralFileHeader.second->GetFileName(),
