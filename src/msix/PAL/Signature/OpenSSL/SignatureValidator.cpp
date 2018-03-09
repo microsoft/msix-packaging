@@ -375,8 +375,8 @@ namespace MSIX
         
         // Get certificates from our resources
         auto appxCerts = GetResources(factory, Resource::Certificates);
-        for ( auto& cert : appxCerts )
-        {   auto certBuffer = Helper::CreateBufferFromStream(cert);
+        for ( auto& appxCert : appxCerts )
+        {   auto certBuffer = Helper::CreateBufferFromStream(appxCert);
             // Load the cert into memory
             unique_BIO bcert(BIO_new_mem_buf(certBuffer.data(), certBuffer.size()));
 
