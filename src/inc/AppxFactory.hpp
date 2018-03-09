@@ -76,6 +76,7 @@ namespace MSIX {
         COTASKMEMALLOC* m_memalloc;
         COTASKMEMFREE*  m_memfree;
         MSIX_VALIDATION_OPTION m_validationOptions;
-        ComPtr<IStorageObject> m_resourcezip; 
+        ComPtr<IStorageObject> m_resourcezip;
+        std::vector<std::uint8_t> m_resourcesVector;
     };
 }

@@ -121,7 +121,8 @@ namespace MSIX {
             ComPtr<IMSIXFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
             // Get stream of the resource zip file generated at CMake processing.
-            auto resourceStream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&MSIX::Resource::resourceByte);
+            m_resourcesVector = std::vector<std::uint8_t>(MSIX::Resource::resourceByte, MSIX::Resource::resourceByte + MSIX::Resource::resourceLenght);
+            auto resourceStream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&m_resourcesVector);
             m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), resourceStream.Get());
         }
         return m_resourcezip->GetFile(resource);
