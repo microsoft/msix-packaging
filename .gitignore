@@ -400,7 +400,7 @@ lib/zlib
 src/inc/AppxCerts.hpp
 src/inc/AppxBlockMapSchemas.hpp
 src/inc/ContentTypesSchemas.hpp
-src/inc/resource.hpp
-src/msix/resource.cpp
+src/inc/MSIXResource.hpp
+src/msix/MSIXResource.cpp
 
 .vscode/

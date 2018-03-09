@@ -7,7 +7,7 @@
 #include "Exceptions.hpp"
 #include "ZipObject.hpp"
 #include "AppxPackageObject.hpp"
-#include "resource.hpp"
+#include "MSIXResource.hpp"
 #include "VectorStream.hpp"
 
 namespace MSIX {
@@ -79,7 +79,7 @@ namespace MSIX {
             ComPtr<IMSIXFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
             auto stream = ComPtr<IStream>::Make<FileStream>(utf16_to_utf8(signatureFileName), FileStream::Mode::READ);
-            auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self->GetValidationOptions(), stream.Get());
+            auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream.Get());
             auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", inputStream);
             *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), validatedStream).Detach();
         });
@@ -121,7 +121,7 @@ namespace MSIX {
             ComPtr<IMSIXFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
             // Get stream of the resource zip file generated at CMake processing.
-            auto resourceStream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&MSIX::Resources::resourceByte);
+            auto resourceStream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&MSIX::Resource::resourceByte);
             m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), resourceStream.Get());
         }
         return m_resourcezip->GetFile(resource);

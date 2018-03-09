@@ -6,7 +6,7 @@
 #include "Exceptions.hpp"
 #include "FileStream.hpp"
 #include "SignatureValidator.hpp"
-#include "AppxCerts.hpp"
+#include "MSIXResource.hpp"
 
 #include <string>
 #include <sstream>
@@ -328,7 +328,8 @@ namespace MSIX
     }
 
     bool SignatureValidator::Validate(
-        MSIX_VALIDATION_OPTION option, 
+        IMSIXFactory* factory,
+        MSIX_VALIDATION_OPTION option,
         IStream *stream, 
         std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,
         SignatureOrigin& origin,
@@ -370,10 +371,13 @@ namespace MSIX
         
         // Loop through our trusted PEM certs, create X509 objects from them, and add to trusted store
         unique_STACK_X509 trustedChain(sk_X509_new_null());
-        for ( std::string s : appxCerts )
-        {
+        
+        // Get certificates from our resources
+        auto appxCerts = GetResources(factory, Resource::Certificates);
+        for ( auto& cert : appxCerts )
+        {   auto certBuffer = Helper::CreateBufferFromStream(cert);
             // Load the cert into memory
-            unique_BIO bcert(BIO_new_mem_buf(s.data(), s.size()));
+            unique_BIO bcert(BIO_new_mem_buf(certBuffer.data(), certBuffer.size()));
 
             // Create a cert from the memory buffer
             unique_X509 cert(PEM_read_bio_X509(bcert.get(), nullptr, nullptr, nullptr));
