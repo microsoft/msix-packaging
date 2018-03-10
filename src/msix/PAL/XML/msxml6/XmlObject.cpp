@@ -12,10 +12,6 @@
 
 #include <msxml6.h>
 
-// schemas
-#include "AppxBlockMapSchemas.hpp"
-#include "ContentTypesSchemas.hpp"
-
 EXTERN_C const IID IID_IMSXMLElement;
 
 #ifndef WIN32

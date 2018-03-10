@@ -125,6 +125,8 @@ namespace MSIX {
             auto resourceStream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&m_resourcesVector);
             m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), resourceStream.Get());
         }
-        return m_resourcezip->GetFile(resource);
+        auto file = m_resourcezip->GetFile(resource);
+        ThrowErrorIfNot(Error::FileNotFound, (file.first), "File:"+resource+" not found in resources");
+        return file.second;
     }
 } // namespace MSIX 
