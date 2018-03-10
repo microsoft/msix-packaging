@@ -7,6 +7,7 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "IXml.hpp"
+#include "StreamHelper.hpp"
 
 // Mandatory for using any feature of Xerces.
 #include "xercesc/dom/DOM.hpp"
@@ -18,10 +19,6 @@
 #include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/util/XMLString.hpp"
 #include "xercesc/util/Base64.hpp"
-
-// schemas
-#include "AppxBlockMapSchemas.hpp"
-#include "ContentTypesSchemas.hpp"
 
 XERCES_CPP_NAMESPACE_USE
 
@@ -265,23 +262,9 @@ class XercesDom : public ComClass<XercesDom, IXmlDom>
 public:
     XercesDom(ComPtr<IStream>& stream, std::map<std::string, std::string>* schemas = nullptr) :  m_stream(stream)
     {
-        // Create buffer from stream
-        LARGE_INTEGER start = { 0 };
-        ULARGE_INTEGER end = { 0 };
-        ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::END, &end));
-        ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
-
-        std::uint32_t streamSize = end.u.LowPart;
-        std::vector<std::uint8_t> buffer(streamSize);
-        ULONG actualRead = 0;
-        ThrowHrIfFailed(stream->Read(buffer.data(), streamSize, &actualRead));
-        ThrowErrorIf(Error::FileRead, (actualRead != streamSize), "read error");
-
-        // move the underlying stream back to the begginning.
-        ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
-
+        auto buffer = Helper::CreateBufferFromStream(stream);
         std::unique_ptr<XERCES_CPP_NAMESPACE::MemBufInputSource> source = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
-            reinterpret_cast<const XMLByte*>(&buffer[0]), actualRead, "XML File");
+            reinterpret_cast<const XMLByte*>(&buffer[0]), buffer.size(), "XML File");
 
         // Create parser and grammar pool
         auto grammarPool = std::make_unique<XERCES_CPP_NAMESPACE::XMLGrammarPoolImpl>(XERCES_CPP_NAMESPACE::XMLPlatformUtils::fgMemoryManager);
@@ -379,12 +362,12 @@ public:
         switch (footPrintType)
         {
             case XmlContentType::AppxBlockMapXml:
-                return ComPtr<IXmlDom>::Make<XercesDom>(stream, &blockMapSchema);
+                return ComPtr<IXmlDom>::Make<XercesDom>(stream/*, &blockMapSchema*/);
             case XmlContentType::AppxManifestXml:
                 // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
                 return ComPtr<IXmlDom>::Make<XercesDom>(stream);
             case XmlContentType::ContentTypeXml:
-                return ComPtr<IXmlDom>::Make<XercesDom>(stream, &contentTypesSchema);
+                return ComPtr<IXmlDom>::Make<XercesDom>(stream/*, &contentTypesSchema*/);
         }
         throw Exception(Error::InvalidParameter);    
     }    
