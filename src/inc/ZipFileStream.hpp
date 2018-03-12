@@ -1,3 +1,7 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 #pragma once
 #include "Exceptions.hpp"
 #include "ComHelper.hpp"
@@ -45,7 +49,7 @@ namespace MSIX {
         inline bool IsCompressed() { return m_isCompressed; }
 
     protected:
-        IMSIXFactory*  m_factory;
+        IMSIXFactory*   m_factory;
         std::string     m_name;
         std::string     m_contentType;
         bool            m_isCompressed = false;

@@ -1,8 +1,13 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 #include "AppxSignature.hpp"
 #include "Exceptions.hpp"
 #include "FileStream.hpp"
 #include "SignatureValidator.hpp"
-#include "AppxCerts.hpp"
+#include "MSIXResource.hpp"
+#include "StreamHelper.hpp"
 
 #include <string>
 #include <sstream>
@@ -324,7 +329,8 @@ namespace MSIX
     }
 
     bool SignatureValidator::Validate(
-        MSIX_VALIDATION_OPTION option, 
+        IMSIXFactory* factory,
+        MSIX_VALIDATION_OPTION option,
         IStream *stream, 
         std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,
         SignatureOrigin& origin,
@@ -366,10 +372,13 @@ namespace MSIX
         
         // Loop through our trusted PEM certs, create X509 objects from them, and add to trusted store
         unique_STACK_X509 trustedChain(sk_X509_new_null());
-        for ( std::string s : appxCerts )
-        {
+        
+        // Get certificates from our resources
+        auto appxCerts = GetResources(factory, Resource::Certificates);
+        for ( auto& appxCert : appxCerts )
+        {   auto certBuffer = Helper::CreateBufferFromStream(appxCert);
             // Load the cert into memory
-            unique_BIO bcert(BIO_new_mem_buf(s.data(), s.size()));
+            unique_BIO bcert(BIO_new_mem_buf(certBuffer.data(), certBuffer.size()));
 
             // Create a cert from the memory buffer
             unique_X509 cert(PEM_read_bio_X509(bcert.get(), nullptr, nullptr, nullptr));

@@ -1,6 +1,5 @@
-# Top level make project
-# Copyright (C) 2017 Microsoft
-# Created by Phil Smith (psmith@microsoft.com) on 10/19/2017
+# Copyright (C) 2017 Microsoft.  All rights reserved.
+# See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
 SET(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
@@ -92,7 +91,7 @@ LIST(APPEND CERTS_TO_PUBLISH
     Microsoft_MarketPlace_PCA_2011.cer
 )
 FOREACH(CERT_TO_PUBLISH ${CERTS_TO_PUBLISH})
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/certs/${CERT_TO_PUBLISH} ${CMAKE_BINARY_DIR}/build/certs/${CERT_TO_PUBLISH})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/certs/${CERT_TO_PUBLISH} ${CMAKE_BINARY_DIR}/build/certs/${CERT_TO_PUBLISH})
 ENDFOREACH()
 MESSAGE (STATUS "Certificates published")
 MESSAGE (STATUS "--------------------------------")    

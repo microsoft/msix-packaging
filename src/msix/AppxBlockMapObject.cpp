@@ -1,8 +1,13 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 #include "AppxBlockMapObject.hpp"
 #include <algorithm>
 #include <iterator>
 #include "IXml.hpp"
 #include "BlockMapStream.hpp"
+#include "MSIXResource.hpp"
 
 /* Example XML:
 <?xml version="1.0" encoding="UTF-8"?>

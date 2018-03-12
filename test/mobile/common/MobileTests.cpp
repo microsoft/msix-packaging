@@ -1,3 +1,7 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
 #include <cstdlib>
@@ -376,6 +380,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "BlockMap/No_blockmap.appx", unpackFolder, ss, 51);
     hr = RunTest(source + "BlockMap/Bad_Namespace_Blockmap.appx", unpackFolder, ss, 4099);
     hr = RunTest(source + "BlockMap/Duplicate_file_in_blockmap.appx", unpackFolder, ss, 81);
+    hr = RunTest(source + "sdx/en-us_win32.appx", unpackFolder, full, 0);
 
     std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" << std::endl;
     if(g_TestFailed)

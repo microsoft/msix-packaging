@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @@BEGIN_SDKSPLIT
+
+  RS4 RESTRICTED CAPABILITIES MANIFEST SCHEMA
+
+  This is the Schema that defines elements and attributes for the Universal App
+  Platform features in RS4. These types are imported into the Foundation
+  schema and included in products that support UAP.
+
+  !!!WARNING!!!
+
+  Don't make any changes to this schema.  Changes will affect a wide range of
+  partners and can potentially break product and test code, as well as existing
+  .appx packages and manifests. Please follow https://microsoft.sharepoint.com/teams/appxmanifest/SitePages/Home.aspx
+  if you need to request any addition or modification.
+
+@@END_SDKSPLIT -->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/4"
+           xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/4"
+           xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
+           xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+           >
+
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
+
+  <xs:element name="Extension" substitutionGroup="f:ExtensionChoice">
+    <xs:complexType>
+      <xs:choice minOccurs="0">
+        <xs:element name="PrimaryInteropAssemblies" type="CT_PrimaryInteropAssemblies"/>
+        <xs:element name="ClassicAppCompatKeys" type="CT_ClassicAppCompatKeys"/>
+      </xs:choice>
+      <xs:attribute name="Category" type="t:ST_PackageExtensionCategory_Restricted4" use="required"/>
+      <xs:attributeGroup ref="t:ExtensionBaseAttributes"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="CT_PrimaryInteropAssemblies">
+    <xs:sequence minOccurs="0" maxOccurs="10000">
+      <xs:element name="Redirect" minOccurs="0" maxOccurs="10000">
+        <xs:complexType>
+           <xs:attribute name="Version" type="t:ST_VersionDuoOrTrio" use="required"/>
+           <xs:attribute name="AssemblyVersion" type="t:ST_VersionQuad" use="required"/>
+           <xs:attribute name="PublicKey" type="ST_PublicKey" use="required"/>
+           <xs:attribute name="MachineType" type="t:ST_Architecture" use="required"/>
+           <xs:attribute name="TargetClrVersion" type="t:ST_VersionDuoOrTrio" use="required"/>
+           <xs:attribute name="FolderPath" type="t:ST_FileName" use="required"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+    <xs:attribute name="AssemblyName" type="t:ST_NonEmptyString" use="required"/>
+    <xs:attribute name="AssemblyVersion" type="t:ST_VersionQuad" use="required"/>
+    <xs:attribute name="PublicKey" type="ST_PublicKey" use="required"/>
+    <xs:attribute name="MachineType" type="t:ST_Architecture" use="required"/>
+    <xs:attribute name="TargetClrVersion" type="t:ST_VersionDuoOrTrio" use="required"/>
+    <xs:attribute name="Path" type="t:ST_FileName" use="required"/>
+  </xs:complexType>
+  
+  <xs:simpleType name="ST_PublicKey">
+    <xs:restriction base="t:ST_NonEmptyString">
+      <xs:pattern value="[0-9a-fA-F]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:complexType name="CT_ClassicAppCompatKeys">
+    <xs:sequence minOccurs="0" maxOccurs="10000">
+      <xs:element name="ClassicAppCompatKey" minOccurs="0" maxOccurs="10000">
+        <xs:complexType>
+           <xs:attribute name="Name" type="ST_RegistryPath" use="required"/>
+           <xs:attribute name="ValueName" type="xs:string"/>
+           <xs:attribute name="ValueType" type="ST_ValueType"/>
+           <xs:attribute name="Value" type="xs:string"/>
+        </xs:complexType>
+      </xs:element>
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:simpleType name="ST_RegistryPath">
+    <xs:restriction base="t:ST_NonEmptyString">
+      <xs:pattern value="[hH][kK][eE][yY]_[cC][uU][rR][rR][eE][nN][tT]_[uU][sS][eE][rR]\\.+"/>
+      <xs:pattern value="[hH][kK][eE][yY]_[lL][oO][cC][aA][lL]_[mM][aA][cC][hH][iI][nN][eE]\\[sS][oO][fF][tT][wW][aA][rR][eE]\\.+"/>
+      <xs:pattern value="[hH][kK][eE][yY]_[uU][sS][eE][rR][sS]\\[sS][oO][fF][tT][wW][aA][rR][eE]\\.+"/>
+      <xs:pattern value="[hH][kK][eE][yY]_[cC][uU][rR][rR][eE][nN][tT]_[cC][oO][nN][fF][iI][gG]\\[sS][oO][fF][tT][wW][aA][rR][eE]\\.+"/>
+      <xs:pattern value="[hH][kK][cC][uU]\\.+"/>
+      <xs:pattern value="[hH][kK][lL][mM]\\[sS][oO][fF][tT][wW][aA][rR][eE]\\.+"/>
+      <xs:pattern value="[hH][kK][uU]\\[sS][oO][fF][tT][wW][aA][rR][eE]\\.+"/>
+      <xs:pattern value="[hH][kK][cC][cC]\\[sS][oO][fF][tT][wW][aA][rR][eE]\\.+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ST_ValueType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="REG_SZ"/>
+      <xs:enumeration value="REG_BINARY"/>
+      <xs:enumeration value="REG_DWORD"/>
+      <xs:enumeration value="REG_QWORD"/>
+      <xs:enumeration value="REG_MULTI_SZ"/>
+      <xs:enumeration value="REG_EXPAND_SZ"/>
+    </xs:restriction>
+  </xs:simpleType>
+  
+</xs:schema>

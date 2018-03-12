@@ -1,3 +1,7 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 #include "AppxPackaging.hpp"
 #include "Exceptions.hpp"
 #include "ComHelper.hpp"
@@ -6,6 +10,7 @@
 #include "AppxPackageObject.hpp"
 #include "UnicodeConversion.hpp"
 #include "IXml.hpp"
+#include "MSIXResource.hpp"
 
 #include <string>
 #include <vector>
@@ -147,7 +152,7 @@ namespace MSIX {
         {   ThrowErrorIfNot(Error::MissingAppxSignatureP7X, (file.first), "AppxSignature.p7x not in archive!");
         }
 
-        m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(validation, file.second);
+        m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(factory, validation, file.second);
 
         // 2. Get content type using signature object for validation
         file = m_container->GetFile(CONTENT_TYPES_XML);

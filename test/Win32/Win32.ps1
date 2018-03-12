@@ -92,6 +92,7 @@ RunTest 0x8bad0051 .\..\appx\BlockMap\File_missing_from_blockmap.appx "-ss"
 RunTest 0x8bad0033 .\..\appx\BlockMap\No_blockmap.appx "-ss"
 RunTest 0x8bad1003 .\..\appx\BlockMap\Bad_Namespace_Blockmap.appx "-ss"
 RunTest 0x8bad0051 .\..\appx\BlockMap\Duplicate_file_in_blockmap.appx "-ss"
+RunTest 0x00000000 .\..\appx\sdx\en-us_win32.appx
 
 CleanupUnpackFolder
 

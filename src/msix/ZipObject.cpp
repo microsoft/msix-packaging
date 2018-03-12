@@ -1,3 +1,7 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "ObjectBase.hpp"
@@ -359,7 +363,8 @@ namespace MSIX {
             //18 - extra field(variable size)
             Field<18>().validation = [&](std::vector<std::uint8_t>& bytes)
             {
-                if (bytes.size() > 0)
+                // Only process for Zip64ExtendedInformation
+                if (bytes.size() > 2 && bytes[0] == 0x01 && bytes[1] == 0x00)
                 {
                     LARGE_INTEGER zero = {0};
                     ULARGE_INTEGER pos = {0};
@@ -535,9 +540,6 @@ namespace MSIX {
             {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid compressed size");
             };
             // 8 - uncompressed size               4 bytes
-            Field<8>().validation = [&](std::uint32_t& v)
-            {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid uncompressed size");
-            };
             // 9 - file name length                2 bytes
             Field<9>().validation = [&](std::uint16_t& v)
             {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (v != 0), "unsupported file name size");
@@ -545,8 +547,8 @@ namespace MSIX {
             };
             // 10- extra field length              2 bytes
             Field<10>().validation = [&](std::uint16_t& v)
-            {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (v == 0), "unsupported extra field size");
-                Field<12>().value.resize(GetExtraFieldLength(), 0);
+            {   // Even if we don't validate them, we need to read the extra field
+                if (v != 0) { Field<12>().value.resize(v,0); }
             };
             // 11- file name (variable size)
             // 12- extra field (variable size)
@@ -588,7 +590,7 @@ namespace MSIX {
         void SetFileNameLength(std::uint16_t value)         { Field<9>().value = value;  }
         void SetExtraFieldLength(std::uint16_t value)       { Field<10>().value = value; }
 
-        std::string   GetFileName()
+        std::string GetFileName()
         {
             auto data = Field<11>().value;
             return std::string(data.begin(), data.end());
@@ -959,7 +961,6 @@ namespace MSIX {
             ThrowErrorIfNot(Error::ZipHiddenData, (uPos.QuadPart == zip64Locator.GetRelativeOffset()), "hidden data unsupported");
         }
 
-        std::map<std::uint64_t, std::shared_ptr<LocalFileHeader>> fileRepository;
         // TODO: change population of m_streams into cache semantics and move into ZipObject::GetFile
         // Read the file repository
         for (const auto& centralFileHeader : centralDirectory)
@@ -968,9 +969,6 @@ namespace MSIX {
             ThrowHrIfFailed(m_stream->Seek(pos, MSIX::StreamBase::Reference::START, nullptr));
             auto localFileHeader = std::make_shared<LocalFileHeader>(centralFileHeader.second);
             localFileHeader->Read(m_stream.Get());
-            fileRepository.insert(std::make_pair(
-                centralFileHeader.second->GetRelativeOffsetOfLocalHeader(),
-                localFileHeader));
 
             auto fileStream = ComPtr<IStream>::Make<ZipFileStream>(
                 centralFileHeader.second->GetFileName(),

@@ -1,3 +1,7 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 #include "ntstatus.h"
 #define WIN32_NO_STATUS
 #include <windows.h>

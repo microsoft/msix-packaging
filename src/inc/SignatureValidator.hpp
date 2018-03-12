@@ -1,3 +1,7 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 #pragma once
 #include "AppxPackaging.hpp"
 #include "AppxSignature.hpp"
@@ -24,6 +28,7 @@ namespace MSIX {
     {
     public:
         static bool Validate(
+            IMSIXFactory* factory,
             MSIX_VALIDATION_OPTION option, 
             IStream *stream, 
             std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,
