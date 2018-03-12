@@ -30,6 +30,7 @@ namespace MSIX {
         {
             return ResultOf([&]{
                 ThrowHrIfFailed(m_factory->MarshalOutBytes(m_block->hash, bufferSize, buffer));
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -38,6 +39,7 @@ namespace MSIX {
             return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter, (size == nullptr), "bad pointer");
                 *size = static_cast<UINT32>(m_block->compressedSize);
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -64,6 +66,7 @@ namespace MSIX {
                 ThrowErrorIf(Error::InvalidParameter, (block == nullptr || *block != nullptr), "bad pointer");
                 *block = m_blocks->at(m_cursor).Get();
                 (*block)->AddRef();
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -71,6 +74,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
                 *hasCurrent = (m_cursor != m_blocks->size()) ? TRUE : FALSE;
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -78,6 +82,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
                 *hasNext = (++m_cursor != m_blocks->size()) ? TRUE : FALSE;
+                return static_cast<HRESULT>(Error::OK);
             });
         }
     };
@@ -117,6 +122,7 @@ namespace MSIX {
                 }
                 ThrowErrorIf(Error::InvalidParameter, (blocks == nullptr || *blocks != nullptr), "bad pointer.");
                 *blocks = ComPtr<IAppxBlockMapBlocksEnumerator>::Make<AppxBlockMapBlocksEnumerator>(&m_blockMapBlocks).Detach();
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -125,6 +131,7 @@ namespace MSIX {
             return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter, (lfhSize == nullptr), "bad pointer");
                 *lfhSize = static_cast<UINT32>(m_localFileHeaderSize);
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -132,6 +139,7 @@ namespace MSIX {
         {
             return ResultOf([&]{
                 ThrowHrIfFailed(m_factory->MarshalOutString(m_name, name));
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -140,15 +148,13 @@ namespace MSIX {
             return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter, (size == nullptr), "bad pointer");
                 *size = static_cast<UINT64>(m_uncompressedSize);
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
         HRESULT STDMETHODCALLTYPE ValidateFileHash(IStream *fileStream, BOOL *isValid) override
         {
-            return ResultOf([&]{
-                // TODO: Implement...
-                throw Exception(Error::NotImplemented);
-            });
+            return static_cast<HRESULT>(Error::NotImplemented);
         }
 
     private:
@@ -180,6 +186,7 @@ namespace MSIX {
             return ResultOf([&]{
                 ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
                 ThrowHrIfFailed(m_reader->GetFile(utf8_to_utf16(m_files.at(m_cursor)).c_str(), block));
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -187,6 +194,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
                 *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -194,6 +202,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
                 *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
+                return static_cast<HRESULT>(Error::OK);
             });
         }
     };

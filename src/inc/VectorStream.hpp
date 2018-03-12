@@ -19,6 +19,7 @@ namespace MSIX {
                 if (amountToRead > 0) { memcpy(buffer, &(m_data->at(m_offset)), amountToRead); }                
                 m_offset += amountToRead;
                 if (bytesRead) { *bytesRead = amountToRead; }
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -40,6 +41,7 @@ namespace MSIX {
                 }
                 m_offset = std::min(newPos.u.LowPart, static_cast<ULONG>(m_data->size()));
                 if (newPosition) { newPosition->QuadPart = newPos.QuadPart; }
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 

@@ -159,6 +159,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
 
         auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
         reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+        return static_cast<HRESULT>(MSIX::Error::OK);
     });
 }
 
@@ -174,6 +175,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char
                     reinterpret_cast<void*>(const_cast<char*>(MSIX::Global::Log::Text().c_str())),
                     countBytes - sizeof(char));
         MSIX::Global::Log::Clear();
+        return static_cast<HRESULT>(MSIX::Error::OK);
     });
 }
 
@@ -185,6 +187,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     return MSIX::ResultOf([&]() {
         MSIX::FileStream::Mode mode = forRead ? MSIX::FileStream::Mode::READ : MSIX::FileStream::Mode::WRITE_UPDATE;
         *stream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(utf8File, mode).Detach();
+        return static_cast<HRESULT>(MSIX::Error::OK);
     });
 }
 
@@ -196,6 +199,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     return MSIX::ResultOf([&]() {
         MSIX::FileStream::Mode mode = forRead ? MSIX::FileStream::Mode::READ : MSIX::FileStream::Mode::WRITE_UPDATE;
         *stream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(MSIX::utf16_to_utf8(utf16File), mode).Detach();
+        return static_cast<HRESULT>(MSIX::Error::OK);
     });
 }    
 
@@ -207,6 +211,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
 {
     return MSIX::ResultOf([&]() {
         *appxFactory = MSIX::ComPtr<IAppxFactory>::Make<MSIX::AppxFactory>(validationOption, memalloc, memfree).Detach();
+        return static_cast<HRESULT>(MSIX::Error::OK);
     });
 }
 

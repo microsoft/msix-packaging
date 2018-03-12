@@ -92,6 +92,7 @@ namespace MSIX {
                 }
                 // always call into cache seek to keep cache state aligned with the underlying stream state.
                 CacheSeek(move, origin, newPosition);
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -119,6 +120,7 @@ namespace MSIX {
                 else
                 {   CacheRead(buffer, countBytes, actualRead);
                 }
+                return static_cast<HRESULT>(Error::OK);
             });            
         }
 
@@ -139,7 +141,10 @@ namespace MSIX {
         
         HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
         {
-            return ResultOf([&]{ if (size) { *size = m_streamSize; }});
+            return ResultOf([&]{
+                if (size) { *size = m_streamSize; }
+                return static_cast<HRESULT>(Error::OK);
+                });
         }
     };
 }

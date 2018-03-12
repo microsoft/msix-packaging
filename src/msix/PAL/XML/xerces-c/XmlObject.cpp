@@ -74,21 +74,21 @@ public:
     {
         // TODO: add message, line number and column
         assert(false);
-        throw Exception(MSIX::Error::XercesWarning);
+        throw Exception(MSIX::Error::XmlWarning);
     }
 
     void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
     {
         // TODO: add message, line number and column
         assert(false);
-        throw Exception(MSIX::Error::XercesError);
+        throw Exception(MSIX::Error::XmlError);
     }
 
     void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
     {
         // TODO: add message, line number and column
         assert(false);
-        throw Exception(MSIX::Error::XercesFatal);
+        throw Exception(MSIX::Error::XmlFatal);
     }
 
     void resetErrors() override {}

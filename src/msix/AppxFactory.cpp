@@ -25,6 +25,7 @@ namespace MSIX {
             auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), inputStream);
             auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, zip.Get());
             *packageReader = result.Detach();
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
@@ -32,10 +33,7 @@ namespace MSIX {
         IStream* inputStream,
         IAppxManifestReader** manifestReader)
     {
-        return ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
+        return static_cast<HRESULT>(Error::NotImplemented);
     }
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBlockMapReader (
@@ -53,6 +51,7 @@ namespace MSIX {
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
             ComPtr<IStream> stream(inputStream);
             *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), stream).Detach();
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
@@ -76,6 +75,7 @@ namespace MSIX {
             auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self->GetValidationOptions(), stream.Get());
             auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", inputStream);
             *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), validatedStream).Detach();
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
@@ -91,6 +91,7 @@ namespace MSIX {
             std::memcpy(reinterpret_cast<void*>(*result),
                         reinterpret_cast<void*>(const_cast<wchar_t*>(intermediate.c_str())),
                         countBytes - sizeof(wchar_t));
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
@@ -104,6 +105,7 @@ namespace MSIX {
             std::memcpy(reinterpret_cast<void*>(*buffer),
                         reinterpret_cast<void*>(data.data()),
                         data.size());
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
