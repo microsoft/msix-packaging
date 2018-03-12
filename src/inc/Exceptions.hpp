@@ -238,6 +238,7 @@ namespace MSIX {
     {   assert(false);                                                          \
         std::ostringstream message;                                             \
         message << "Call failed in: " << __FILE__ << " on line " << __LINE__;   \
-        throw MSIX::Exception(hr, message.str());                               \
+        std::string reason = message.str();                                     \
+        throw MSIX::Exception(hr, reason);                                      \
     }                                                                           \
 }
