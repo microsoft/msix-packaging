@@ -1,4 +1,3 @@
-#pragma once
 #include <memory>
 #include <string>
 #include <vector>
@@ -7,6 +6,8 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "IXml.hpp"
+#include "StreamHelper.hpp"
+#include "MSIXResource.hpp"
 
 // Mandatory for using any feature of Xerces.
 #include "xercesc/dom/DOM.hpp"
@@ -18,10 +19,6 @@
 #include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/util/XMLString.hpp"
 #include "xercesc/util/Base64.hpp"
-
-// schemas
-#include "AppxBlockMapSchemas.hpp"
-#include "ContentTypesSchemas.hpp"
 
 XERCES_CPP_NAMESPACE_USE
 
@@ -263,25 +260,11 @@ protected:
 class XercesDom : public ComClass<XercesDom, IXmlDom>
 {
 public:
-    XercesDom(ComPtr<IStream>& stream, std::map<std::string, std::string>* schemas = nullptr) :  m_stream(stream)
+    XercesDom(ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :  m_stream(stream)
     {
-        // Create buffer from stream
-        LARGE_INTEGER start = { 0 };
-        ULARGE_INTEGER end = { 0 };
-        ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::END, &end));
-        ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
-
-        std::uint32_t streamSize = end.u.LowPart;
-        std::vector<std::uint8_t> buffer(streamSize);
-        ULONG actualRead = 0;
-        ThrowHrIfFailed(stream->Read(buffer.data(), streamSize, &actualRead));
-        ThrowErrorIf(Error::FileRead, (actualRead != streamSize), "read error");
-
-        // move the underlying stream back to the begginning.
-        ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
-
+        auto buffer = Helper::CreateBufferFromStream(stream);
         std::unique_ptr<XERCES_CPP_NAMESPACE::MemBufInputSource> source = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
-            reinterpret_cast<const XMLByte*>(&buffer[0]), actualRead, "XML File");
+            reinterpret_cast<const XMLByte*>(&buffer[0]), buffer.size(), "XML File");
 
         // Create parser and grammar pool
         auto grammarPool = std::make_unique<XERCES_CPP_NAMESPACE::XMLGrammarPoolImpl>(XERCES_CPP_NAMESPACE::XMLPlatformUtils::fgMemoryManager);
@@ -306,14 +289,13 @@ public:
         }
 
         // Add schemas
-        if (schemas != nullptr)
-        {   for (auto index = schemas->begin(); index != schemas->end(); index++)
-            {   auto item = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
-                    reinterpret_cast<const XMLByte*>(index->second.c_str()),
-                    index->second.length(),
-                    index->first.c_str());
+        if (HasSchemas)
+        {   for(auto& schema : *schemas)
+            {   auto schemaBuffer = Helper::CreateBufferFromStream(schema);
+                auto item = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
+                    reinterpret_cast<const XMLByte*>(&schemaBuffer[0]), schemaBuffer.size(), "Schema");
                 m_parser->loadGrammar(*item, XERCES_CPP_NAMESPACE::Grammar::GrammarType::SchemaGrammarType, true);
-            }                
+            }           
         }
 
         // Set the error handler for the parser
@@ -364,7 +346,7 @@ protected:
 class XercesFactory : public ComClass<XercesFactory, IXmlFactory>
 {
 public:
-    XercesFactory()
+    XercesFactory(IMSIXFactory* factory) : m_factory(factory)
     {
         XERCES_CPP_NAMESPACE::XMLPlatformUtils::Initialize();
     }
@@ -379,17 +361,25 @@ public:
         switch (footPrintType)
         {
             case XmlContentType::AppxBlockMapXml:
+            {
+                auto blockMapSchema = GetResources(m_factory, Resource::Type::BlockMap);
                 return ComPtr<IXmlDom>::Make<XercesDom>(stream, &blockMapSchema);
+            }
             case XmlContentType::AppxManifestXml:
                 // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
                 return ComPtr<IXmlDom>::Make<XercesDom>(stream);
             case XmlContentType::ContentTypeXml:
-                return ComPtr<IXmlDom>::Make<XercesDom>(stream, &contentTypesSchema);
+            {
+                auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
+                return ComPtr<IXmlDom>::Make<XercesDom>(stream, &contentTypeSchema);
+            }
         }
-        throw Exception(Error::InvalidParameter);    
-    }    
+        throw Exception(Error::InvalidParameter);
+    }
+protected:
+    IMSIXFactory* m_factory;
 };
 
-ComPtr<IXmlFactory> CreateXmlFactory() { return ComPtr<IXmlFactory>::Make<XercesFactory>(); }
+ComPtr<IXmlFactory> CreateXmlFactory(IMSIXFactory* factory) { return ComPtr<IXmlFactory>::Make<XercesFactory>(factory); }
 
 } // namespace MSIX

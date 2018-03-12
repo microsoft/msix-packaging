@@ -1,4 +1,3 @@
-#pragma once
 #include <memory>
 #include <string>
 #include <sstream>
@@ -11,10 +10,6 @@
 #include "UnicodeConversion.hpp"
 
 #include <msxml6.h>
-
-// schemas
-#include "AppxBlockMapSchemas.hpp"
-#include "ContentTypesSchemas.hpp"
 
 EXTERN_C const IID IID_IMSXMLElement;
 
@@ -308,7 +303,7 @@ protected:
 class MSXMLFactory : public ComClass<MSXMLFactory, IXmlFactory>
 {
 public:
-    MSXMLFactory()
+    MSXMLFactory(IMSIXFactory* factory) : m_factory(factory)
     {
         HRESULT result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
         m_CoInitialized = SUCCEEDED(result);
@@ -333,8 +328,9 @@ public:
 
 protected:
     bool m_CoInitialized = false;
+    IMSIXFactory* m_factory;
 };
 
-ComPtr<IXmlFactory> CreateXmlFactory() { return ComPtr<IXmlFactory>::Make<MSXMLFactory>(); }
+ComPtr<IXmlFactory> CreateXmlFactory(IMSIXFactory* factory) { return ComPtr<IXmlFactory>::Make<MSXMLFactory>(factory); }
 
 } // namespace MSIX

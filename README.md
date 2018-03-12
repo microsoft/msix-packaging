@@ -1,23 +1,23 @@
-MSIX Packaging SDK 
----------
-    Copyright (c) 2017 Microsoft Corp. 
-    All rights reserved.
+# MSIX Packaging SDK 
+--------------------
+    Copyright (c) 2017 Microsoft Corp.  All rights reserved.
 
-DESCRIPTION
------------
+# DESCRIPTION
+-------------
+    The MSIX Packaging format is an evolution of the Windows 8 era AppX package format as detailed at: 
+    https://blogs.msdn.microsoft.com/windowsappdev/2012/12/04/designing-a-simple-and-secure-app-package-appx/.  
+
     The MSIX Packaging SDK project is an effort to enable developers on a variety of platforms to package and unpackage 
-    application packages for the purposes of distribution from either the Microsoft Windows Apps Store, or 
-    2nd/3rd party stores.  To that end, the file format of these packages need to be in a format that is easily 
-    digestible to through the Microsoft Windows Apps Store back-end ingestion processes; which means that the 
-    file format for these packages will be an .AppX package.
+    application packages for the purposes of distribution from either the Microsoft Store, or 2nd/3rd party stores.  
+    
+    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
+    documented here: https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx.  See 
+    ./sample/ExtractContentsSample/ExtratContentsSample.cpp for additional details.
 
 
-OVERVIEW
---------
-The MSIX Packaging SDK project includes:
-1. Cross platform API support for unpacakge of .appx package
-
-The scheduling of the highlevel work listed above will be determined with respect to the relative priorities. 
+# OVERVIEW
+----------
+The MSIX Packaging SDK project includes cross platform API support for unpacking of .msix/.appx packages
 
     The MSIX Packaging SDK project includes:
 
@@ -26,43 +26,52 @@ The scheduling of the highlevel work listed above will be determined with respec
                           https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx
                           for additional details.
 
-                          On platforms that do not support COM (e.g. anything _other_ than Windows) instead of
-                          CoCreating IAppxFactory, a c-style export: CoCreateAppxFactory is provided instead.
-                          See sample folder at root of package for cross platform consumption examples
+                          On all platforms instead of CoCreating IAppxFactory, a c-style export: CoCreateAppxFactory is 
+                          provided.  See sample folder at root of package for cross platform consumption examples.
 
-                          Finally, there is one exports 'Unpack' that provides an simplified unpackage implementations.
+                          Finally, there is one export 'Unpack' that provides an simplified unpackage implementation.
                           
         makemsix        - A command line wrapper over the Unpack implementation.  This tool exists
                           primarily as a means of validating the implementation of the MSIX Packaging SDK internal
                           routines and is compiled for Win32, MacOS, and Linux platforms.
 
-SETUP INSTRUCTIONS
-------------------
+# SETUP INSTRUCTIONS
+--------------------
     Step 1: Clone the repository:
-        git clone https://microsoft.visualstudio.com/DefaultCollection/_git/xPlatAppx
+        git clone [URL]
+        
     Step 2: Initialize git submodules:
         git submodule init
         git submodule update
 
-ISSUES
-------
+# ISSUES
+--------
     If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset, then 1st:
         step 1: Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
         step 2: start -> visual studio installer -> Visual Studio Build Tools 2017 -> Modify the 2014 toolset -> individual components 
         step 3: make sure that VC++ 2015.3 v140 toolset for desktop is selected and then unselect VC++ 2017 141 toolset
         step 4: close, then re-open the solution.
 
-INSTALLATION
-------------
-    TODO: write stuffs here
-
-
-PREREQUISITES
--------------
+# PREREQUISITES
+---------------
     Make sure that you have CMAKE installed on your machine 
 
     * https://cmake.org/download/
 
+    One or more of the following prerequisites may also be required on your machine:
+
+    Ninja-build:
+    ------------
+    https://github.com/ninja-build/ninja/releases
+
+    Android NDK:
+    ------------
+    https://developer.android.com/ndk/downloads/index.html
+
+    Clang/LLVM:
+    -----------
+    http://releases.llvm.org/download.html
+    
     VS 2017 clients: 
     ----------------
     Open Visual Studio 2017
@@ -80,8 +89,24 @@ PREREQUISITES
 
     See: https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode for additional details
 
-    Make Android on Windows:
-    ------------------------
+# BUILD
+-------
+    On Windows using Visual Studio 2017 nmake:
+    ------------------------------------------
+        makewin32.cmd
+
+    On Mac using make: 
+    ------------------
+        ./makemac
+        ./makeios
+    
+    On Linux using make:
+    --------------------
+        ./makelinux
+        ./makeaosp
+    
+    How to compile for Android on Windows:
+    --------------------------------------
     Unpack the latest Android NDK to c:\android-ndk
     Unpack Ninja-build to c:\ninja
     Add c:\ninja to the path environment variable
@@ -99,40 +124,19 @@ PREREQUISITES
 
     To compile, run the following command from the android folder:
 
-    ninja
+    ninja    
 
+# Contributing
+--------------
+    This project welcomes contributions and suggestions. Most contributions require you to
+    agree to a Contributor License Agreement (CLA) declaring that you have the right to,
+    and actually do, grant us the rights to use your contribution. For details, visit
+    https://cla.microsoft.com.
 
-    Ninja-build:
-    ------------
-    https://github.com/ninja-build/ninja/releases
+    When you submit a pull request, a CLA-bot will automatically determine whether you need
+    to provide a CLA and decorate the PR appropriately (e.g., label, comment). Simply follow the
+    instructions provided by the bot. You will only need to do this once across all repositories using our CLA.
 
-    Android NDK:
-    ------------
-    https://developer.android.com/ndk/downloads/index.html
-
-    Clang/LLVM:
-    -----------
-    http://releases.llvm.org/download.html
-
-BUILD
------
-    On Windows using Visual Studio 2017 nmake:
-        makewin32.cmd
-
-    On Mac using make: 
-        ./makemac
-        ./makeios
-    
-    On Linux using make:
-        ./makelinux
-        ./makeaosp
-    
-    
-
-SUPPORT
--------
-    TODO: write stuffs here
-
-HOW TO CONTRIBUTE TO MSIX Packaging SDK
-------------------------------
-    TODO: write stuffs here
+    This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/).
+    For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/)
+    or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
