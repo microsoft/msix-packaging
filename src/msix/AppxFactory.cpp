@@ -126,7 +126,7 @@ namespace MSIX {
             m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), resourceStream.Get());
         }
         auto file = m_resourcezip->GetFile(resource);
-        ThrowErrorIfNot(Error::FileNotFound, (file.first), "File:"+resource+" not found in resources");
+        ThrowErrorIfNot(Error::FileNotFound, (file.first), resource.c_str());
         return file.second;
     }
 } // namespace MSIX 
