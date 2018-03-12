@@ -290,10 +290,7 @@ namespace MSIX {
     // IAppxPackageReader
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader** blockMapReader)
     {
-        return MSIX::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
+        return static_cast<HRESULT>(Error::NotImplemented);
     }
    
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file)
@@ -308,6 +305,7 @@ namespace MSIX {
             ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
             auto result = stream.As<IAppxFile>();
             *file = result.Detach();
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
@@ -322,6 +320,7 @@ namespace MSIX {
             ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
             auto result = stream.As<IAppxFile>();
             *file = result.Detach();
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
@@ -334,14 +333,12 @@ namespace MSIX {
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, reinterpret_cast<void**>(&storage)));
             auto result = ComPtr<IAppxFilesEnumerator>::Make<AppxFilesEnumerator>(storage.Get());
             *filesEnumerator = result.Detach();
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxManifestReader** manifestReader)
     {
-        return MSIX::ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
+        return static_cast<HRESULT>(Error::NotImplemented);
     }
 }

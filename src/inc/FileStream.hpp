@@ -46,6 +46,7 @@ namespace MSIX {
                 ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
                 offset = Ftell();
                 if (newPosition) { newPosition->QuadPart = offset; }
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -57,6 +58,7 @@ namespace MSIX {
                 ThrowErrorIfNot(Error::FileRead, (result == countBytes || Feof()), "read failed");
                 offset = Ftell();
                 if (bytesRead) { *bytesRead = result; }
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -68,6 +70,7 @@ namespace MSIX {
                 ThrowErrorIfNot(Error::FileWrite, (result == countBytes), "write failed");
                 offset = Ftell();
                 if (bytesWritten) { *bytesWritten = result; }
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 

@@ -5,6 +5,7 @@
 #include <exception>
 #include <cassert>
 #include <functional>
+#include <sstream>
 
 #include "Log.hpp"
 #include "MSIXWindows.hpp"
@@ -17,9 +18,10 @@
 namespace MSIX {
 
     static const std::uint32_t ERROR_FACILITY       = 0x8BAD0000;              // Facility 2989
-    static const std::uint32_t XERCES_SAX_FACILITY  = ERROR_FACILITY + 0x1000; // Xerces XMLException. 0x8BAD1000 + XMLException error code
-    static const std::uint32_t XERCES_XML_FACILITY  = ERROR_FACILITY + 0x2000;
-    static const std::uint32_t XERCES_DOM_FACILITY  = ERROR_FACILITY + 0x3000;
+    static const std::uint32_t XML_FACILITY         = ERROR_FACILITY + 0x1000; // XML exceptions: 0x8BAD1000 + XMLException error code
+    static const std::uint32_t XERCES_SAX_FACILITY  = ERROR_FACILITY + 0x2000; // Xerces XMLException. 0x8BAD1000 + XMLException error code
+    static const std::uint32_t XERCES_XML_FACILITY  = ERROR_FACILITY + 0x3000;
+    static const std::uint32_t XERCES_DOM_FACILITY  = ERROR_FACILITY + 0x4000;
 
     // defines error codes
     enum class Error : std::uint32_t
@@ -83,9 +85,9 @@ namespace MSIX {
         AppxManifestSemanticError   = ERROR_FACILITY + 0x0061,
 
         // XML parsing errors
-        XercesWarning               = XERCES_SAX_FACILITY + 0x0001,
-        XercesError                 = XERCES_SAX_FACILITY + 0x0002,
-        XercesFatal                 = XERCES_SAX_FACILITY + 0x0003,
+        XmlWarning                  = XML_FACILITY + 0x0001,
+        XmlError                    = XML_FACILITY + 0x0002,
+        XmlFatal                    = XML_FACILITY + 0x0003,
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
@@ -174,7 +176,7 @@ namespace MSIX {
         HRESULT hr = static_cast<HRESULT>(MSIX::Error::OK);
         try
         {
-            lambda();
+            hr = lambda();
         }
 #ifdef USING_XERCES        
         catch (const XERCES_CPP_NAMESPACE::XMLException& e)
@@ -225,11 +227,13 @@ namespace MSIX {
 
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
 
-#define ThrowHrIfFailed(a)                              \
-{                                                       \
-    HRESULT hr = a;                                     \
-    if (FAILED(hr))                                     \
-    {   assert(false);                                  \
-        throw MSIX::Exception(hr, "Call failed");       \
-    }                                                   \
+#define ThrowHrIfFailed(a)                                                      \
+{                                                                               \
+    HRESULT hr = a;                                                             \
+    if (FAILED(hr))                                                             \
+    {   assert(false);                                                          \
+        std::ostringstream message;                                             \
+        message << "Call failed in: " << __FILE__ << " on line " << __LINE__;   \
+        throw MSIX::Exception(hr, message.str());                               \
+    }                                                                           \
 }

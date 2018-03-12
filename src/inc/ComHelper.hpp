@@ -151,16 +151,18 @@ namespace MSIX {
 
         virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
         {
-            return ResultOf([&]{
-                ThrowErrorIf(Error::InvalidParameter, (ppvObject == nullptr || *ppvObject != nullptr), "bad pointer");
-                *ppvObject = nullptr;
-                if (QIHelper<Interfaces...>::Matches(riid, ppvObject))
-                {
-                    AddRef();
-                    return S_OK;
-                }
-                throw MSIX::Exception(MSIX::Error::NoInterface);
-            });
+            if (ppvObject == nullptr || *ppvObject != nullptr)
+            {
+                return static_cast<HRESULT>(Error::InvalidParameter);
+            }
+            //ThrowErrorIf(Error::InvalidParameter, (ppvObject == nullptr || *ppvObject != nullptr), "bad pointer");
+            *ppvObject = nullptr;
+            if (QIHelper<Interfaces...>::Matches(riid, ppvObject))
+            {
+                AddRef();
+                return S_OK;
+            }
+            return static_cast<HRESULT>(MSIX::Error::NoInterface);
         }
 
     protected:

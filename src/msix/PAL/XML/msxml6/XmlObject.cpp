@@ -36,20 +36,36 @@ SpecializeUuidOfImpl(IMSXMLElement);
 
 namespace MSIX {
 
-//              content type ->              alias  <-> uri
+//              content type -> list[alias <-> uri]
 static std::map<XmlContentType, std::vector<std::pair<std::wstring, std::wstring>>> xmlNamespaces = {
      {XmlContentType::ContentTypeXml,    {}},
      {XmlContentType::AppxBlockMapXml,   {
-         {L"a", L"http://schemas.microsoft.com/appx/2010/blockmap"},
-         {L"b", L"http://schemas.microsoft.com/appx/2015/blockmap"},
-         {L"c", L"http://schemas.microsoft.com/appx/2017/blockmap"},
+         {L"a",                 L"http://schemas.microsoft.com/appx/2010/blockmap"},
+         {L"b",                 L"http://schemas.microsoft.com/appx/2015/blockmap"},
+         {L"c",                 L"http://schemas.microsoft.com/appx/2017/blockmap"},
      }},
      {XmlContentType::AppxManifestXml,   {
+         {L"foundation",        L"http://schemas.microsoft.com/appx/manifest/foundation/thresholdpreview"},
+         {L"win10foundation",   L"http://schemas.microsoft.com/appx/manifest/foundation/windows10"},
+         {L"foundation2",       L"http://schemas.microsoft.com/appx/manifest/foundation/windows10/2"},
+         {L"uap",               L"http://schemas.microsoft.com/appx/manifest/uap/thresholdpreview"},
+         {L"win10uap",          L"http://schemas.microsoft.com/appx/manifest/uap/windows10"},
+         {L"uap2",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/2"},
+         {L"uap3",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/3"},
+         {L"desktop",           L"http://schemas.microsoft.com/appx/manifest/desktop/windows10"},
+         {L"com",               L"http://schemas.microsoft.com/appx/manifest/com/windows10"},
+         {L"uap4",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/4"},
+         {L"desktop2",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"},
+         {L"com2",              L"http://schemas.microsoft.com/appx/manifest/com/windows10/2"},
+         {L"uap5",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/5"},
+         {L"desktop3",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/3"},
+         {L"uap6",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/6"},
+         {L"desktop4",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"},
      }}
  };
 
 static std::map<XmlQueryName, std::wstring> xPaths = {
-    {XmlQueryName::Package_Identity                             ,L"Package/Identity"},
+    {XmlQueryName::Package_Identity                             ,L"/*[local-name()='Package']/*[local-name()='Identity']"},
     {XmlQueryName::BlockMap_File                                ,L"/*[local-name()='BlockMap']/*[local-name()='File']"},
     {XmlQueryName::BlockMap_File_Block                          ,L"*[local-name()='Block']"},
 };    
@@ -123,13 +139,16 @@ public:
 
 class MSXMLElement : public ComClass<MSXMLElement, IXmlElement, IMSXMLElement>
 {
-    Variant GetAttribute(XmlAttributeName attribute)
+    std::pair<bool, Variant> GetAttribute(XmlAttributeName attribute)
     {
         Bstr name(attributeNames[attribute]);
         Variant value;
         ThrowHrIfFailed(m_element->getAttribute(name, value.AddressOf()));
-        ThrowErrorIfNot(Error::Unexpected, (value.Get().vt == VT_BSTR), "unexpected attribute value type.");    
-        return std::move(value);    
+        if (value.Get().vt == VT_BSTR)
+        {
+            return std::make_pair(true, std::move(value));
+        }
+        return std::make_pair<bool, Variant>(false, Variant());
     }
 
 public:
@@ -138,13 +157,18 @@ public:
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        return utf16_to_utf8(static_cast<WCHAR*>(GetAttribute(attribute).Get().bstrVal));
+        auto value = GetAttribute(attribute);
+        if (value.first)
+        {   return utf16_to_utf8(static_cast<WCHAR*>(value.second.Get().bstrVal));
+        }
+        return "";
     }
 
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
     {
         std::vector<std::uint8_t> result;
-        auto intermediate = GetAttributeValue(attribute);
+
+        auto intermediate = GetAttributeValue(attribute);;
         ThrowErrorIfNot(Error::InvalidParameter, (0 == (intermediate.length() % 4)), "invalid base64 encoding");
         for(std::size_t index=0; index < intermediate.length(); index += 4)
         {
@@ -214,8 +238,13 @@ public:
             Bstr reason;
             ThrowHrIfFailed(error->get_reason(reason.AddressOf()));
             std::ostringstream message;
-            message << "Error: " << errorCode << " on [" << lineNumber << ":" << columnNumber << "]: " << utf16_to_utf8(static_cast<wchar_t*>(reason.Get()));
-            ThrowErrorIf(Error::Unexpected, (success == VARIANT_FALSE), message.str());
+            message << "XML error: " << std::hex << errorCode << " on line " << std::dec << lineNumber << ", col " << columnNumber << ".  " << utf16_to_utf8(static_cast<wchar_t*>(reason.Get()));
+
+            // as necessary translate MSXML specific errors w.r.t. malformed XML into generic Xml errors and leave the full details in the log.
+            if (errorCode == 0xc00cee65)
+            {   errorCode = static_cast<long>(Error::XmlFatal);
+            }
+            ThrowErrorIf(errorCode, (success == VARIANT_FALSE), message.str());
         }
         
         size_t countNamespaces = 0;

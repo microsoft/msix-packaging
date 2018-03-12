@@ -69,6 +69,7 @@ namespace MSIX {
 
                 if (bytesRead)      { bytesRead->QuadPart = read; }
                 if (bytesWritten)   { bytesWritten->QuadPart = written;}
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 

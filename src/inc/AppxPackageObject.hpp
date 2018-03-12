@@ -150,6 +150,7 @@ namespace MSIX {
                 ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
                 ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
                 *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor]).second).As<IAppxFile>().Detach();
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -157,6 +158,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
                 *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -164,6 +166,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
                 *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
+                return static_cast<HRESULT>(Error::OK);
             });
         }
     };
