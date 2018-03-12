@@ -8,6 +8,7 @@
 #include "StreamBase.hpp"
 #include "IXml.hpp"
 #include "UnicodeConversion.hpp"
+#include "MSIXResource.hpp"
 
 #include <msxml6.h>
 
@@ -202,7 +203,7 @@ protected:
 class MSXMLDom : public ComClass<MSXMLDom, IXmlDom>
 {
 public:
-    MSXMLDom(ComPtr<IStream>& stream, std::vector<std::pair<std::wstring, std::wstring>>& namespaces)
+    MSXMLDom(ComPtr<IStream>& stream, std::vector<std::pair<std::wstring, std::wstring>>& namespaces, std::vector<ComPtr<IStream>>* schemas = nullptr)
     {
         ThrowHrIfFailed(CoCreateInstance(__uuidof(DOMDocument60), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&xmlDocument)));
         ThrowHrIfFailed(xmlDocument->put_async(VARIANT_FALSE));
@@ -317,11 +318,15 @@ public:
         switch (footPrintType)
         {   // TODO: pass schemas for validation.
             case XmlContentType::AppxBlockMapXml:
-                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType]);
+            {   auto blockMapSchema = GetResources(m_factory, Resource::Type::BlockMap);
+                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], &blockMapSchema);
+            }
             case XmlContentType::AppxManifestXml:
                 return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType]);
             case XmlContentType::ContentTypeXml:
-                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType]);
+            {   auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
+                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], &contentTypeSchema);
+            }
         }
         throw Exception(Error::InvalidParameter);    
     }
