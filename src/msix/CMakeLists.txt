@@ -84,6 +84,8 @@ SET(LIB_PRIVATE_HEADERS
     ../inc/FileStream.hpp
     ../inc/InflateStream.hpp
     ../inc/Log.hpp
+    ../inc/MSIXFactory.hpp
+    ../inc/MSIXResource.hpp
     ../inc/ObjectBase.hpp
     ../inc/RangeStream.hpp
     ../inc/StorageObject.hpp

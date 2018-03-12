@@ -6,6 +6,7 @@
 #include "Exceptions.hpp"
 #include "ComHelper.hpp"
 #include "StreamBase.hpp"
+#include "MSIXFactory.hpp"
 
 // XML file content types/schemas
 enum class XmlContentType : std::uint8_t
@@ -91,5 +92,5 @@ SpecializeUuidOfImpl(IXmlDom);
 SpecializeUuidOfImpl(IXmlFactory);
 
 namespace MSIX {
-    MSIX::ComPtr<IXmlFactory> CreateXmlFactory();
+    MSIX::ComPtr<IXmlFactory> CreateXmlFactory(IMSIXFactory* factory);
 }
