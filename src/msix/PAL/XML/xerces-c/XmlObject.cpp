@@ -361,16 +361,14 @@ public:
         switch (footPrintType)
         {
             case XmlContentType::AppxBlockMapXml:
-            {
-                auto blockMapSchema = GetResources(m_factory, Resource::Type::BlockMap);
+            {   auto blockMapSchema = GetResources(m_factory, Resource::Type::BlockMap);
                 return ComPtr<IXmlDom>::Make<XercesDom>(stream, &blockMapSchema);
             }
             case XmlContentType::AppxManifestXml:
                 // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
                 return ComPtr<IXmlDom>::Make<XercesDom>(stream);
             case XmlContentType::ContentTypeXml:
-            {
-                auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
+            {   auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
                 return ComPtr<IXmlDom>::Make<XercesDom>(stream, &contentTypeSchema);
             }
         }
