@@ -33,6 +33,7 @@ list(APPEND RESOURCES_BLOCKMAP
 if(HAVE_MSXML6)
     list(APPEND RESOURCES_APPXMANIFEST
     "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"
+    "AppxPackaging/Manifest/Schema/2015/AppxPhoneManifestSchema2014.xsd"
     "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2013.xsd"
     "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"
     "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"
