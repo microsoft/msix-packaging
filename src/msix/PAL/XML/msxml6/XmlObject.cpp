@@ -51,27 +51,39 @@ namespace MSIX {
 //              content type -> list[alias <-> uri <-> XSD]
 static std::map<XmlContentType, std::vector<std::tuple<std::wstring, std::wstring, std::string>>> xmlNamespaces = {
      {XmlContentType::ContentTypeXml,    {
-        {L"a",                 L"http://schemas.openxmlformats.org/package/2006/content-types",            "AppxPackaging/[Content_Types]/opc-contentTypes.xsd"},
+        {L"a",               L"http://schemas.openxmlformats.org/package/2006/content-types",                             "AppxPackaging/[Content_Types]/opc-contentTypes.xsd"},
      }},
      {XmlContentType::AppxBlockMapXml,   {
-        {L"a",                 L"http://schemas.microsoft.com/appx/2010/blockmap",                         "AppxPackaging/BlockMap/schema/BlockMapSchema.xsd"},
-        {L"b",                 L"http://schemas.microsoft.com/appx/2015/blockmap",                         "AppxPackaging/BlockMap/schema/BlockMapSchema2015.xsd"},
-        {L"c",                 L"http://schemas.microsoft.com/appx/2017/blockmap",                         "AppxPackaging/BlockMap/schema/BlockMapSchema2017.xsd"},
+        {L"a",               L"http://schemas.microsoft.com/appx/2010/blockmap",                                          "AppxPackaging/BlockMap/schema/BlockMapSchema.xsd"},
+        {L"b",               L"http://schemas.microsoft.com/appx/2015/blockmap",                                          "AppxPackaging/BlockMap/schema/BlockMapSchema2015.xsd"},
+        {L"c",               L"http://schemas.microsoft.com/appx/2017/blockmap",                                          "AppxPackaging/BlockMap/schema/BlockMapSchema2017.xsd"},
      }},
      {XmlContentType::AppxManifestXml,   {
-        {L"win10foundation",   L"http://schemas.microsoft.com/appx/manifest/foundation/windows10",         "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"},
-        {L"win10uap",          L"http://schemas.microsoft.com/appx/manifest/uap/windows10",                "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"},
-        {L"uap2",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/2",              "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v2.xsd"},
-        {L"uap3",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/3",              "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v3.xsd"},
-        {L"desktop",           L"http://schemas.microsoft.com/appx/manifest/desktop/windows10",            "AppxPackaging/Manifest/Schema/2015/DesktopManifestSchema.xsd"},
-        {L"com",               L"http://schemas.microsoft.com/appx/manifest/com/windows10",                "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"},
-        {L"uap4",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/4",              "AppxPackaging/Manifest/Schema/2016/UapManifestSchema_v4.xsd"},
-        {L"desktop2",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/2",          "AppxPackaging/Manifest/Schema/2016/DesktopManifestSchema_v2.xsd"},
-        {L"com2",              L"http://schemas.microsoft.com/appx/manifest/com/windows10/2",              "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"},
-        {L"uap5",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/5",              "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"},
-        {L"desktop3",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/3",          "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v3.xsd"},
-        {L"uap6",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/6",              "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd"},
-        {L"desktop4",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/4",          "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v4.xsd"},
+        {L"win10foundation", L"http://schemas.microsoft.com/appx/manifest/foundation/windows10",                          "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"},
+        {L"win10uap",        L"http://schemas.microsoft.com/appx/manifest/uap/windows10",                                 "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"},
+        {L"t",               L"http://schemas.microsoft.com/appx/manifest/types",                                         "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"},
+        {L"mp",              L"http://schemas.microsoft.com/appx/2014/phone/manifest",                                    "AppxPackaging/Manifest/Schema/2015/AppxPhoneManifestSchema2014.xsd"},
+        {L"foundation2",     L"http://schemas.microsoft.com/appx/manifest/foundation/windows10/2",                        "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema_v2.xsd"},
+        {L"uap2",            L"http://schemas.microsoft.com/appx/manifest/uap/windows10/2",                               "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v2.xsd"},        
+        {L"uap3",            L"http://schemas.microsoft.com/appx/manifest/uap/windows10/3",                               "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v3.xsd"},
+        {L"uap4",            L"http://schemas.microsoft.com/appx/manifest/uap/windows10/4",                               "AppxPackaging/Manifest/Schema/2016/UapManifestSchema_v4.xsd"},
+        {L"win10wincap",     L"http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities",      "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema.xsd"},
+        {L"wincap2",         L"http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/2",    "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema_v2.xsd"},
+        {L"wincap3",         L"http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3",    "AppxPackaging/Manifest/Schema/2016/WindowsCapabilitiesManifestSchema_v3.xsd"},
+        {L"win10rescap",     L"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities",   "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema.xsd"},
+        {L"rescap2",         L"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/2", "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema_v2.xsd"},
+        {L"rescap3",         L"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3", "AppxPackaging/Manifest/Schema/2016/RestrictedCapabilitiesManifestSchema_v3.xsd"},
+        {L"rescap4",         L"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/4", "AppxPackaging/Manifest/Schema/2017/RestrictedCapabilitiesManifestSchema_v4.xsd"},
+        {L"win10iot",        L"http://schemas.microsoft.com/appx/manifest/iot/windows10",                                 "AppxPackaging/Manifest/Schema/2015/IotManifestSchema.xsd"},
+        {L"iot2",            L"http://schemas.microsoft.com/appx/manifest/iot/windows10/2",                               "AppxPackaging/Manifest/Schema/2017/IotManifestSchema_v2.xsd"},
+        {L"desktop",         L"http://schemas.microsoft.com/appx/manifest/desktop/windows10",                             "AppxPackaging/Manifest/Schema/2015/DesktopManifestSchema.xsd"},
+        {L"desktop2",        L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/2",                           "AppxPackaging/Manifest/Schema/2016/DesktopManifestSchema_v2.xsd"},
+        {L"desktop3",        L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/3",                           "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v3.xsd"},
+        {L"desktop4",        L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/4",                           "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v4.xsd"},
+        {L"com",             L"http://schemas.microsoft.com/appx/manifest/com/windows10",                                 "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"},
+        {L"com2",            L"http://schemas.microsoft.com/appx/manifest/com/windows10/2",                               "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"},
+        {L"uap5",            L"http://schemas.microsoft.com/appx/manifest/uap/windows10/5",                               "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"},
+        {L"uap6",            L"http://schemas.microsoft.com/appx/manifest/uap/windows10/6",                               "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd"},
      }}
  };
 
@@ -407,7 +419,7 @@ public:
             case XmlContentType::AppxManifestXml:
                 return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], m_factory);
             case XmlContentType::ContentTypeXml:
-                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType]/*, m_factory*/);
+                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], m_factory);
         }
         throw Exception(Error::InvalidParameter);    
     }
