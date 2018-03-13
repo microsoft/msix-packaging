@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @@BEGIN_SDKSPLIT
+
+  THRESHOLD RESTRICED CAPABILITIES MANIFEST SCHEMA
+
+  This is the Schema that defines elements and attributes for the Universal App
+  Platform features in Thresold.  These types are imported into the Foundation
+  schema and included in products that support UAP.
+
+  !!!WARNING!!!
+
+  Don't make any changes to this schema.  Changes will affect a wide range of
+  partners and can potentially break product and test code, as well as existing
+  .appx packages and manifests.  Please contact 'manifest' alias if you need to
+  request any addition or modification.
+
+@@END_SDKSPLIT -->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+           xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+           xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
+           xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+           >
+
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
+  
+  <xs:element name="Capability" substitutionGroup="f:CapabilityChoice">
+    <xs:complexType>
+      <xs:attribute name="Name" type="t:ST_Capability_Windows_Restricted_Party" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:element name="Extension" substitutionGroup="f:ApplicationExtensionChoice">
+    <xs:complexType>
+      <xs:choice minOccurs="0">
+        <xs:element name="SettingsApp" type="CT_SettingsApp"/>
+      </xs:choice>
+      <xs:attribute name="Category" type="t:ST_ApplicationExtensionCategory_Restricted" use="required"/>
+      <xs:attributeGroup ref="t:ExtensionBaseAttributes"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:complexType name="CT_SettingsApp">
+    <xs:sequence>
+      <xs:element name="AppLinks" type="CT_SettingsExtensionAppLinkCollection" minOccurs="0" maxOccurs="1"/>
+      <xs:element name="SearchTerms" type="CT_SettingsExtensionAppSearchTermsCollection" minOccurs="0" maxOccurs="1"/>
+    </xs:sequence>
+    <xs:attribute name="SettingsPageUri" type="t:ST_SettingsPageUri" use="optional"/>
+    <xs:attribute name="Category" type="t:ST_SettingsAppCategories" use="optional"/>
+  </xs:complexType>
+
+  <xs:complexType name="CT_SettingsExtensionAppLinkCollection">
+    <xs:sequence>
+      <xs:element name="Link" type="CT_SettingsExtensionAppLink" minOccurs="1" maxOccurs="5" />
+    </xs:sequence>
+  </xs:complexType>
+
+  <xs:complexType name="CT_SettingsExtensionAppLink">
+    <xs:attribute name="AppActivationMode" type="xs:string"/>
+    <xs:attribute name="DisplayName" type="xs:string"/>
+  </xs:complexType>
+
+  <xs:complexType name="CT_SettingsExtensionAppSearchTermsCollection">
+    <xs:sequence>
+      <xs:element name="Term" type="xs:string" minOccurs="0" maxOccurs="5" />
+    </xs:sequence>
+  </xs:complexType>
+</xs:schema>
