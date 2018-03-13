@@ -2,9 +2,11 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <tuple>
 #include <map>
 
 #include "Exceptions.hpp"
+#include "Log.hpp"
 #include "StreamBase.hpp"
 #include "IXml.hpp"
 #include "UnicodeConversion.hpp"
@@ -13,6 +15,7 @@
 #include <msxml6.h>
 
 EXTERN_C const IID IID_IMSXMLElement;
+EXTERN_C const IID IID_IMSXMLDom;
 
 #ifndef WIN32
 // {2730f595-0c80-4f3e-8891-753b2e8c305d}
@@ -28,35 +31,47 @@ public:
     virtual IXMLDOMElement* GetElement() = 0;
 };
 
+#ifndef WIN32
+// {b6bca5f0-c6c1-4409-85be-e476aabec19a}
+interface IMSXMLDom : public IUnknown
+#else
+class IMSXMLDom : public IUnknown
+#endif
+// An internal interface for XML document object model
+{
+public:
+    virtual MSIX::ComPtr<IXMLDOMDocument> GetDomDocument() = 0;
+};
+
 SpecializeUuidOfImpl(IMSXMLElement);
+SpecializeUuidOfImpl(IMSXMLDom);
 
 namespace MSIX {
 
-//              content type -> list[alias <-> uri]
-static std::map<XmlContentType, std::vector<std::pair<std::wstring, std::wstring>>> xmlNamespaces = {
-     {XmlContentType::ContentTypeXml,    {}},
+//              content type -> list[alias <-> uri <-> XSD]
+static std::map<XmlContentType, std::vector<std::tuple<std::wstring, std::wstring, std::string>>> xmlNamespaces = {
+     {XmlContentType::ContentTypeXml,    {
+        {L"a",                 L"http://schemas.openxmlformats.org/package/2006/content-types",            "AppxPackaging/[Content_Types]/opc-contentTypes.xsd"},
+     }},
      {XmlContentType::AppxBlockMapXml,   {
-         {L"a",                 L"http://schemas.microsoft.com/appx/2010/blockmap"},
-         {L"b",                 L"http://schemas.microsoft.com/appx/2015/blockmap"},
-         {L"c",                 L"http://schemas.microsoft.com/appx/2017/blockmap"},
+        {L"a",                 L"http://schemas.microsoft.com/appx/2010/blockmap",                         "AppxPackaging/BlockMap/schema/BlockMapSchema.xsd"},
+        {L"b",                 L"http://schemas.microsoft.com/appx/2015/blockmap",                         "AppxPackaging/BlockMap/schema/BlockMapSchema2015.xsd"},
+        {L"c",                 L"http://schemas.microsoft.com/appx/2017/blockmap",                         "AppxPackaging/BlockMap/schema/BlockMapSchema2017.xsd"},
      }},
      {XmlContentType::AppxManifestXml,   {
-         {L"foundation",        L"http://schemas.microsoft.com/appx/manifest/foundation/thresholdpreview"},
-         {L"win10foundation",   L"http://schemas.microsoft.com/appx/manifest/foundation/windows10"},
-         {L"foundation2",       L"http://schemas.microsoft.com/appx/manifest/foundation/windows10/2"},
-         {L"uap",               L"http://schemas.microsoft.com/appx/manifest/uap/thresholdpreview"},
-         {L"win10uap",          L"http://schemas.microsoft.com/appx/manifest/uap/windows10"},
-         {L"uap2",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/2"},
-         {L"uap3",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/3"},
-         {L"desktop",           L"http://schemas.microsoft.com/appx/manifest/desktop/windows10"},
-         {L"com",               L"http://schemas.microsoft.com/appx/manifest/com/windows10"},
-         {L"uap4",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/4"},
-         {L"desktop2",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"},
-         {L"com2",              L"http://schemas.microsoft.com/appx/manifest/com/windows10/2"},
-         {L"uap5",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/5"},
-         {L"desktop3",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/3"},
-         {L"uap6",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/6"},
-         {L"desktop4",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"},
+        {L"win10foundation",   L"http://schemas.microsoft.com/appx/manifest/foundation/windows10",         "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"},
+        {L"win10uap",          L"http://schemas.microsoft.com/appx/manifest/uap/windows10",                "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"},
+        {L"uap2",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/2",              "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v2.xsd"},
+        {L"uap3",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/3",              "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v3.xsd"},
+        {L"desktop",           L"http://schemas.microsoft.com/appx/manifest/desktop/windows10",            "AppxPackaging/Manifest/Schema/2015/DesktopManifestSchema.xsd"},
+        {L"com",               L"http://schemas.microsoft.com/appx/manifest/com/windows10",                "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"},
+        {L"uap4",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/4",              "AppxPackaging/Manifest/Schema/2016/UapManifestSchema_v4.xsd"},
+        {L"desktop2",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/2",          "AppxPackaging/Manifest/Schema/2016/DesktopManifestSchema_v2.xsd"},
+        {L"com2",              L"http://schemas.microsoft.com/appx/manifest/com/windows10/2",              "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"},
+        {L"uap5",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/5",              "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"},
+        {L"desktop3",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/3",          "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v3.xsd"},
+        {L"uap6",              L"http://schemas.microsoft.com/appx/manifest/uap/windows10/6",              "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd"},
+        {L"desktop4",          L"http://schemas.microsoft.com/appx/manifest/desktop/windows10/4",          "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v4.xsd"},
      }}
  };
 
@@ -78,7 +93,6 @@ static std::map<XmlAttributeName, std::wstring> attributeNames = {
     {XmlAttributeName::BlockMap_File_Block_Size                 ,L"Size"},
     {XmlAttributeName::BlockMap_File_Block_Hash                 ,L"Hash"},
 };
-
 
 const std::uint8_t base64DecoderRing[128] =
 {
@@ -117,12 +131,37 @@ public:
 
 class Variant
 {
-    VARIANT m_variant; 
+    VARIANT m_variant;
+    bool    m_clear = true;
 public:
     operator VARIANT() && = delete;
     operator VARIANT() & { return m_variant; }
-    Variant() { VariantInit(&m_variant); }
-    ~Variant() { VariantClear(&m_variant); }
+    Variant() : m_clear(true) { VariantInit(&m_variant); }
+    Variant(bool value) : m_clear(true)
+    {
+        VariantInit(&m_variant);
+        m_variant.vt = VT_BOOL;
+        m_variant.boolVal = value ? VARIANT_TRUE : VARIANT_FALSE;
+    }
+    Variant(IStream* stream) : m_clear(false)
+    {
+        m_variant.vt = VT_UNKNOWN;
+        m_variant.punkVal = stream;
+    }
+    Variant(Bstr& value) : m_clear(false)
+    {
+        m_variant.vt = VT_BSTR;
+        m_variant.bstrVal = value.Get();
+    }
+
+    template <class T>
+    Variant(ComPtr<T>& item) : m_clear(false)
+    {
+        m_variant.vt = VT_UNKNOWN;
+        m_variant.punkVal = item.Get();
+    }
+
+    ~Variant() { if (m_clear) {VariantClear(&m_variant);} }
 
     VARIANT* AddressOf()
     { 
@@ -200,31 +239,88 @@ protected:
     ComPtr<IXMLDOMElement> m_element;
 };
 
-class MSXMLDom : public ComClass<MSXMLDom, IXmlDom>
+// Because MSXML6 uses IErrorInfo to provide additional details as to why a call could
+// fail we'll use a translation-unit-specific macro for logging those additional details.
+#define ThrowHrIfFailedWithIErrorInfo(a)                                         \
+{   HRESULT result = a;                                                          \
+    if (FAILED(result))                                                          \
+    {   ComPtr<IErrorInfo> errorInfo;                                            \
+        ThrowHrIfFailed(::GetErrorInfo(0, &errorInfo));                          \
+        if (nullptr != errorInfo.Get())                                          \
+        {   Bstr description;                                                    \
+            ThrowHrIfFailed(errorInfo->GetDescription(description.AddressOf())); \
+            Global::Log::Append(utf16_to_utf8(description.Get()));               \
+        }                                                                        \
+        ThrowHrIfFailed(result);                                                 \
+    }                                                                            \
+}
+
+class MSXMLDom : public ComClass<MSXMLDom, IXmlDom, IMSXMLDom>
 {
 public:
-    MSXMLDom(ComPtr<IStream>& stream, std::vector<std::pair<std::wstring, std::wstring>>& namespaces, std::vector<ComPtr<IStream>>* schemas = nullptr)
+    MSXMLDom(ComPtr<IStream>& stream, std::vector<std::tuple<std::wstring, std::wstring, std::string>>& namespaces, IMSIXFactory* factory = nullptr)
     {
-        ThrowHrIfFailed(CoCreateInstance(__uuidof(DOMDocument60), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&xmlDocument)));
-        ThrowHrIfFailed(xmlDocument->put_async(VARIANT_FALSE));
+        ThrowHrIfFailed(CoCreateInstance(__uuidof(DOMDocument60), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_xmlDocument)));
+        ThrowHrIfFailed(m_xmlDocument->put_async(VARIANT_FALSE));
 
-        VARIANT vTrue;
-        VariantInit(&vTrue);
-        vTrue.vt = VT_BOOL;
-        vTrue.boolVal = VARIANT_TRUE;
-        Bstr property(L"NewParser"); // huh?
-        ThrowHrIfFailed(xmlDocument->setProperty(property.Get(), vTrue));
+        Variant vTrue(true);
+        Bstr property(L"NewParser"); // see https://msdn.microsoft.com/en-us/library/ms767616%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
+        ThrowHrIfFailed(m_xmlDocument->setProperty(property.Get(), vTrue.Get()));
 
-        VARIANT var;
-        var.vt = VT_UNKNOWN;
-        var.punkVal = stream.Get();
+        ComPtr<IXMLDOMSchemaCollection2> cache;
+        if (factory != nullptr)
+        {   ThrowHrIfFailed(CoCreateInstance(__uuidof(XMLSchemaCache60), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&cache)));
+            ThrowHrIfFailed(cache->put_validateOnLoad(VARIANT_FALSE));
+        }
 
+        // process selection namespaces
+        std::vector<std::tuple<std::wstring, std::wstring, std::string>> empty;
+        std::wostringstream value;
+        std::size_t countNamespaces = 0;
+        for(auto& item : namespaces)
+        {               
+            if (0 != countNamespaces++) { value << L" "; } // namespaces are space-delimited
+            value << L"xmlns:" << std::get<0>(item) << LR"(=")" << std::get<1>(item) << LR"(")";
+
+            // Process schema XSD for current namespace
+            if (factory != nullptr && !(std::get<2>(item).empty()))
+            {
+                ComPtr<IStream> resource(factory->GetResource(std::get<2>(item)));
+                auto schema = ComPtr<IMSXMLDom>::Make<MSXMLDom>(resource, empty)->GetDomDocument();
+
+                long readyState = 0;                
+                ThrowHrIfFailed(schema->get_readyState(&readyState));
+                ThrowErrorIfNot(Error::Unexpected, (4 == readyState), "The document has not been completely loaded.");
+
+                Bstr schemaNamespace(std::get<1>(item));
+                Variant var(schema);
+                ThrowHrIfFailedWithIErrorInfo(cache->add(schemaNamespace, var.Get()));
+            }
+        }
+
+        if (nullptr != cache.Get())
+        {   // validate the schema collection and set the schemas for the XML document
+            ThrowHrIfFailedWithIErrorInfo(cache->validate());
+            Variant var(cache);
+            ThrowHrIfFailed(m_xmlDocument->putref_schemas(var.Get()));
+        }
+
+        if (!value.str().empty())
+        {   // Set selection namespaces for the XML document
+            Bstr selectionProperty(L"SelectionNamespaces");
+            Bstr selectionValue(value.str());
+            Variant var(selectionValue);
+            ThrowHrIfFailed(m_xmlDocument->setProperty(selectionProperty, var.Get()));
+        }        
+
+        // Now parse the XML document
+        Variant var(stream.Get());
         VARIANT_BOOL success(VARIANT_FALSE);
-        ThrowHrIfFailed(xmlDocument->load(var, &success));
+        ThrowHrIfFailed(m_xmlDocument->load(var, &success));
         if (VARIANT_FALSE == success)
         {
             ComPtr<IXMLDOMParseError> error;            
-            ThrowHrIfFailed(xmlDocument->get_parseError(&error));
+            ThrowHrIfFailed(m_xmlDocument->get_parseError(&error));
 
             long errorCode = 0, lineNumber = 0, columnNumber = 0;
             ThrowHrIfFailed(error->get_errorCode(&errorCode));
@@ -242,32 +338,21 @@ public:
             }
             ThrowErrorIf(errorCode, (success == VARIANT_FALSE), message.str());
         }
-        
-        size_t countNamespaces = 0;
-        std::wostringstream value;
-        for(auto& item : namespaces)
-        {               
-            if (0 != countNamespaces) { value << L" "; } // namespaces are space-delimited
-            value << L"xmlns:" << item.first << LR"(=")" << item.second << LR"(")";
-            countNamespaces++;
-        }
+    }
 
-        if (countNamespaces != 0)
-        {
-            Bstr selectionProperty(L"SelectionNamespaces");
-            Bstr selectionValue(value.str());
-            VARIANT var;
-            var.vt = VT_BSTR;
-            var.bstrVal = selectionValue.Get();
-            ThrowHrIfFailed(xmlDocument->setProperty(selectionProperty, var));
-        }
+    // IMSXMLDom
+    MSIX::ComPtr<IXMLDOMDocument> GetDomDocument() override
+    {
+        MSIX::ComPtr<IXMLDOMDocument> result;
+        ThrowHrIfFailed(m_xmlDocument->QueryInterface(IID_PPV_ARGS(&result)));
+        return result;
     }
 
     // IXmlDom
     MSIX::ComPtr<IXmlElement> GetDocument() override
     {
         ComPtr<IXMLDOMElement> element;
-        ThrowHrIfFailed(xmlDocument->get_documentElement(&element));
+        ThrowHrIfFailed(m_xmlDocument->get_documentElement(&element));
         return ComPtr<IXmlElement>::Make<MSXMLElement>(element);
     }
     
@@ -298,7 +383,7 @@ public:
     }
 
 protected:
-    ComPtr<IXMLDOMDocument2> xmlDocument;
+    ComPtr<IXMLDOMDocument2> m_xmlDocument;
 };
 
 class MSXMLFactory : public ComClass<MSXMLFactory, IXmlFactory>
@@ -318,15 +403,11 @@ public:
         switch (footPrintType)
         {   // TODO: pass schemas for validation.
             case XmlContentType::AppxBlockMapXml:
-            {   auto blockMapSchema = GetResources(m_factory, Resource::Type::BlockMap);
-                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], &blockMapSchema);
-            }
+                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], m_factory);
             case XmlContentType::AppxManifestXml:
-                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType]);
+                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], m_factory);
             case XmlContentType::ContentTypeXml:
-            {   auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
-                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], &contentTypeSchema);
-            }
+                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType]/*, m_factory*/);
         }
         throw Exception(Error::InvalidParameter);    
     }
@@ -337,5 +418,4 @@ protected:
 };
 
 ComPtr<IXmlFactory> CreateXmlFactory(IMSIXFactory* factory) { return ComPtr<IXmlFactory>::Make<MSXMLFactory>(factory); }
-
 } // namespace MSIX
