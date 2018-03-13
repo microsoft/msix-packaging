@@ -322,7 +322,9 @@ public:
                 return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], &blockMapSchema);
             }
             case XmlContentType::AppxManifestXml:
-                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType]);
+            {   auto appxManifestSchema = GetResources(m_factory, Resource::Type::AppxManifest);
+                return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], &appxManifestSchema);
+            }
             case XmlContentType::ContentTypeXml:
             {   auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
                 return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces[footPrintType], &contentTypeSchema);

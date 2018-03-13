@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @@BEGIN_SDKSPLIT
+
+  RS1 WINDOWS CAPABILITIES MANIFEST SCHEMA
+
+  This is the Schema that defines elements and attributes that are internal to
+  the Windows platform for RS1 release.
+
+  !!!WARNING!!!
+
+  Don't make any changes to this schema.  Changes will affect a wide range of
+  partners and can potentially break product and test code, as well as existing
+  .appx packages and manifests.  Please contact 'manifest' alias if you need to
+  request any addition or modification.
+
+@@END_SDKSPLIT -->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/2"
+           xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/2"
+           xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
+           xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+           >
+
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
+
+  <xs:element name="Extension" substitutionGroup="f:ApplicationExtensionChoice">
+    <xs:complexType>
+        <xs:attribute name="Category" type="t:ST_ApplicationExtensionCategory_Windows_Restricted_Party2" use="required"/>
+        <xs:attributeGroup ref="t:ExtensionBaseAttributes"/>
+    </xs:complexType>
+  </xs:element>
+</xs:schema>
