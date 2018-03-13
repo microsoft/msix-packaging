@@ -211,22 +211,26 @@ namespace MSIX {
 }
 
 // Helper to make code more terse and more readable at the same time.
-#define ThrowErrorIfNot(c, a, m)     \
-{                                    \
-    if (!(a))                        \
-    {                                \
-        assert(false);               \
-        throw MSIX::Exception(c,m);  \
-    }                                \
+#define ThrowErrorIfNot(c, a, m)                                                            \
+{                                                                                           \
+    if (!(a))                                                                               \
+    {   assert(false);                                                                      \
+        std::ostringstream _message;                                                        \
+        _message << "Call failed in: " << __FILE__ << " on line " << __LINE__ << "\n" << m; \
+        std::string reason = _message.str();                                                \
+        throw MSIX::Exception(c, reason.c_str());                                           \
+    }                                                                                       \
 }
 
-#define ThrowWin32ErrorIfNot(c, a, m)       \
-{                                           \
-    if (!(a))                               \
-    {                                       \
-        assert(false);                      \
-        throw MSIX::Win32Exception(c,m);    \
-    }                                       \
+#define ThrowWin32ErrorIfNot(c, a, m)                                                       \
+{                                                                                           \
+    if (!(a))                                                                               \
+    {   assert(false);                                                                      \
+        std::ostringstream _message;                                                        \
+        _message << "Call failed in: " << __FILE__ << " on line " << __LINE__ << "\n" << m; \
+        std::string reason = _message.str();                                                \
+        throw MSIX::Win32Exception(c,reason.c_str());                                       \
+    }                                                                                       \
 }
 
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
