@@ -216,7 +216,7 @@ namespace MSIX {
     if (!(a))                                                                               \
     {   assert(false);                                                                      \
         std::ostringstream _message;                                                        \
-        _message << "Call failed in: " << __FILE__ << " on line " << __LINE__ << "\n" << m; \
+        _message << m << "\n" << "Call failed in: " << __FILE__ << " on line " << __LINE__; \
         std::string reason = _message.str();                                                \
         throw MSIX::Exception(c, reason.c_str());                                           \
     }                                                                                       \
@@ -227,7 +227,7 @@ namespace MSIX {
     if (!(a))                                                                               \
     {   assert(false);                                                                      \
         std::ostringstream _message;                                                        \
-        _message << "Call failed in: " << __FILE__ << " on line " << __LINE__ << "\n" << m; \
+        _message << m << "\n" << "Call failed in: " << __FILE__ << " on line " << __LINE__; \
         std::string reason = _message.str();                                                \
         throw MSIX::Win32Exception(c,reason.c_str());                                       \
     }                                                                                       \
