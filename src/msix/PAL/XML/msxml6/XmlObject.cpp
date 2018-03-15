@@ -413,9 +413,12 @@ public:
                         ThrowHrIfFailed(ignorableNodes->QueryInterface(__uuidof(IXMLDOMSelection), reinterpret_cast<void**>(&selection)));
                         ThrowHrIfFailed(selection->removeAll());
                     }
-                }       
+                }
             }
-        }        
+        }
+        // It is important to reset the stream back to the beginning!
+        LARGE_INTEGER li = {0};
+        ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, nullptr));
 
         ComPtr<IXMLDOMParseError> error;        
         if (VARIANT_FALSE == success) { ThrowHrIfFailed(m_xmlDocument->get_parseError(&error)); }
