@@ -169,18 +169,20 @@ namespace MSIX {
     template <typename E, class C>
     #ifdef WIN32
     __declspec(noinline)
+    constexpr
     #endif
-    constexpr void 
+    void 
     #ifndef WIN32
     __attribute__(( noinline, cold, noreturn )) 
     #endif    
     RaiseException(const int line, const char* file, const char* details, C c)
     {
-        std::ostringstream message;
-        if (details) { message << details << "\n"; }
-        message << "Call failed in " << file << " on line " << line;
         assert(false);
-        throw E(message.str(), c);
+        std::ostringstream builder;
+        if (details) { builder << details << "\n"; }
+        builder << "Call failed in " << file << " on line " << line;
+        std::string message = builder.str();
+        throw E(message, c);
     }    
 }
 
