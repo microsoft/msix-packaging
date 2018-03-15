@@ -448,7 +448,7 @@ public:
                 {   // file is either invalid XML, or it's valid, but failed schema validation.
                     errorCode = static_cast<long>(Error::XmlFatal);
                 }
-                ThrowErrorIf(errorCode, (true), message.str());      
+                ThrowErrorIf(errorCode, (true), message.str().c_str());      
             }      
         }
     }

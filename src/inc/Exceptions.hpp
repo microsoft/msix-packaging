@@ -99,34 +99,14 @@ namespace MSIX {
     class Exception : public std::exception
     {
     public:
-        Exception(Error error) : m_code(static_cast<std::uint32_t>(error))
-        {}
-
-        Exception(std::uint32_t error) : m_code(0x80070000 + error)
-        {}
-
-        Exception(Error error, std::string& message) :
+        Exception(std::string& message, Error error) :
             m_code(static_cast<std::uint32_t>(error)),
             m_message(message)
         {
             Global::Log::Append(Message());
         }
 
-        Exception(Error error, const char* message) :
-            m_code(static_cast<std::uint32_t>(error)),
-            m_message(message)
-        {
-            Global::Log::Append(Message());
-        }
-
-        Exception(HRESULT error, std::string& message) :
-            m_code(error),
-            m_message(message)
-        {
-            Global::Log::Append(Message());
-        }
-
-        Exception(HRESULT error, const char* message) :
+        Exception(std::string& message, HRESULT error) :
             m_code(error),
             m_message(message)
         {
@@ -144,30 +124,7 @@ namespace MSIX {
     class Win32Exception : public Exception
     {
     public:
-        Win32Exception(DWORD error, std::string& message) :
-            Exception(0x80070000 + error, message)
-        {
-            Global::Log::Append(Message());
-        }
-
-        Win32Exception(DWORD error, const char* message) :
-            Exception(0x80070000 + error, message)
-        {
-            Global::Log::Append(Message());
-        }
-    };
-
-    class NtStatusException : public Exception
-    {
-    public:
-        NtStatusException(NTSTATUS error, std::string& message) :
-            Exception(static_cast<std::uint32_t>(error), message)
-        {
-            Global::Log::Append(Message());
-        }
-
-        NtStatusException(NTSTATUS error, const char* message) :
-            Exception(static_cast<std::uint32_t>(error), message)
+        Win32Exception(std::string& message, DWORD error) : Exception(message, 0x80070000 + error)
         {
             Global::Log::Append(Message());
         }
@@ -208,41 +165,37 @@ namespace MSIX {
         }
         return hr;
     }
+
+    template <typename E, class C>
+    #ifdef WIN32
+    __declspec(noinline)
+    #endif
+    constexpr void 
+    #ifndef WIN32
+    __attribute__(( noinline, cold, noreturn )) 
+    #endif    
+    RaiseException(const int line, const char* file, const char* details, C c)
+    {
+        std::ostringstream message;
+        if (details) { message << details << "\n"; }
+        message << "Call failed in " << file << " on line " << line;
+        assert(false);
+        throw E(message.str(), c);
+    }    
 }
 
 // Helper to make code more terse and more readable at the same time.
-#define ThrowErrorIfNot(c, a, m)                                                            \
-{                                                                                           \
-    if (!(a))                                                                               \
-    {   assert(false);                                                                      \
-        std::ostringstream _message;                                                        \
-        _message << m << "\n" << "Call failed in: " << __FILE__ << " on line " << __LINE__; \
-        std::string reason = _message.str();                                                \
-        throw MSIX::Exception(c, reason.c_str());                                           \
-    }                                                                                       \
-}
+#define ThrowError(c)  { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, c); }
+#define NOTSUPPORTED   ThrowError(Error::NotSupported);
+#define NOTIMPLEMENTED ThrowError(Error::NotImplemented);
 
-#define ThrowWin32ErrorIfNot(c, a, m)                                                       \
-{                                                                                           \
-    if (!(a))                                                                               \
-    {   assert(false);                                                                      \
-        std::ostringstream _message;                                                        \
-        _message << m << "\n" << "Call failed in: " << __FILE__ << " on line " << __LINE__; \
-        std::string reason = _message.str();                                                \
-        throw MSIX::Win32Exception(c,reason.c_str());                                       \
-    }                                                                                       \
-}
-
+#define ThrowErrorIfNot(c, a, m)      if (!(a)) { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, m, c); }
+#define ThrowWin32ErrorIfNot(c, a, m) if (!(a)) { MSIX::RaiseException<MSIX::Win32Exception>(__LINE__, __FILE__, m, c); }
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
 
 #define ThrowHrIfFailed(a)                                                      \
-{                                                                               \
-    HRESULT hr = a;                                                             \
+{   HRESULT hr = a;                                                             \
     if (FAILED(hr))                                                             \
-    {   assert(false);                                                          \
-        std::ostringstream message;                                             \
-        message << "Call failed in: " << __FILE__ << " on line " << __LINE__;   \
-        std::string reason = message.str();                                     \
-        throw MSIX::Exception(hr, reason);                                      \
+    {   MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, hr); \
     }                                                                           \
 }
