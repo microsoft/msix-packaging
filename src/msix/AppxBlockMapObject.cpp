@@ -160,7 +160,7 @@ namespace MSIX {
         return std::make_pair(true, index->second.As<IStream>().Detach());
     }
 
-    void AppxBlockMapObject::RemoveFile(const std::string& )                           { throw Exception(Error::NotImplemented); }
-    IStream* AppxBlockMapObject::OpenFile(const std::string& ,MSIX::FileStream::Mode)  { throw Exception(Error::NotImplemented); }
-    void AppxBlockMapObject::CommitChanges()                                           { throw Exception(Error::NotImplemented); }
+    void AppxBlockMapObject::RemoveFile(const std::string& )                           { NOTIMPLEMENTED }
+    IStream* AppxBlockMapObject::OpenFile(const std::string& ,MSIX::FileStream::Mode)  { NOTIMPLEMENTED }
+    void AppxBlockMapObject::CommitChanges()                                           { NOTIMPLEMENTED }
 }

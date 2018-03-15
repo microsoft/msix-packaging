@@ -892,20 +892,9 @@ namespace MSIX {
         return std::make_pair(true, result->second.Get());
     }
 
-    void ZipObject::RemoveFile(const std::string& fileName)
-    {
-        throw Exception(Error::NotImplemented);
-    }
-
-    IStream* ZipObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
-    {
-        throw Exception(Error::NotImplemented);
-    }
-
-    void ZipObject::CommitChanges()
-    {
-        throw Exception(Error::NotImplemented);
-    }
+    void ZipObject::RemoveFile(const std::string& fileName)                                 { NOTIMPLEMENTED }
+    IStream* ZipObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)  { NOTIMPLEMENTED }
+    void ZipObject::CommitChanges()                                                         { NOTIMPLEMENTED }
 
     std::string ZipObject::GetPathSeparator() { return "/"; }
 

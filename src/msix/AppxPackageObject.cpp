@@ -83,13 +83,9 @@ namespace MSIX {
         std::string result;
         for (std::uint32_t i = 0; i < fileName.length(); ++i)
         {   if(fileName[i] == '%')
-            {   auto found = EncodingToChar.find(fileName.substr(i+1, 2));
-                if (found != EncodingToChar.end())
-                {   result += found->second;
-                }
-                else
-                {   throw Exception(Error::UnknownFileNameEncoding, fileName);
-                }
+            {   const auto& found = EncodingToChar.find(fileName.substr(i+1, 2));
+                ThrowErrorIf(Error::UnknownFileNameEncoding, (found == EncodingToChar.end()), fileName.c_str())
+                result += found->second;                
                 i += 2;
             }
             else
@@ -177,7 +173,7 @@ namespace MSIX {
         {
             std::string reason = "Publisher mismatch: '" + m_appxManifest->GetPublisher() + "' != '" + m_appxSignature->GetPublisher() + "'";
             ThrowErrorIfNot(Error::PublisherMismatch,
-                (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())), reason);
+                (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())), reason.c_str());
         }
 
         struct Config
@@ -231,7 +227,7 @@ namespace MSIX {
         {
             std::string targetName;
             if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
-            {   throw Exception(Error::NotImplemented);
+            {   NOTIMPLEMENTED
                 //targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
             }
             else
@@ -277,19 +273,19 @@ namespace MSIX {
     void AppxPackageObject::RemoveFile(const std::string& fileName)
     {
         // TODO: Implement
-        throw Exception(Error::NotImplemented);
+        NOTIMPLEMENTED
     }
 
     IStream* AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
     {
         // TODO: Implement
-        throw Exception(Error::NotImplemented);
+        NOTIMPLEMENTED
     }
 
     void AppxPackageObject::CommitChanges()
     {
         // TODO: Implement
-        throw Exception(Error::NotImplemented);
+        NOTIMPLEMENTED
     }
 
     // IAppxPackageReader

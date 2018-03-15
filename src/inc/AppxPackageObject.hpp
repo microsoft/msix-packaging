@@ -79,10 +79,7 @@ namespace MSIX {
         const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
         MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
-        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override
-        {
-            throw Exception(Error::NotSupported);
-        }
+        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override { NOTSUPPORTED }
 
         AppxPackageId* GetPackageId()    { return m_packageId.get(); }
         std::string GetPackageFullName() { return m_packageId->GetPackageFullName(); }

@@ -68,24 +68,18 @@ public:
     ~ParsingException() {};
 
     void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
-    {
-        // TODO: add message, line number and column
-        assert(false);
-        throw Exception(MSIX::Error::XmlWarning);
+    {        
+        ThrowError(MSIX::Error::XmlWarning);
     }
 
     void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
     {
-        // TODO: add message, line number and column
-        assert(false);
-        throw Exception(MSIX::Error::XmlError);
+        ThrowError(MSIX::Error::XmlError);
     }
 
     void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
     {
-        // TODO: add message, line number and column
-        assert(false);
-        throw Exception(MSIX::Error::XmlFatal);
+        ThrowError(MSIX::Error::XmlFatal);
     }
 
     void resetErrors() override {}
@@ -372,7 +366,7 @@ public:
                 return ComPtr<IXmlDom>::Make<XercesDom>(stream, &contentTypeSchema);
             }
         }
-        throw Exception(Error::InvalidParameter);
+        ThrowError(Error::InvalidParameter);
     }
 protected:
     IMSIXFactory* m_factory;

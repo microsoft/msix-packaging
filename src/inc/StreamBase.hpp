@@ -44,7 +44,7 @@ namespace MSIX {
             return ResultOf([&] {
                 if (bytesRead) { bytesRead->QuadPart = 0; }
                 if (bytesWritten) { bytesWritten->QuadPart = 0; }
-                ThrowErrorIfNot(Error::InvalidParameter, (stream), "invalid parameter.");
+                ThrowErrorIf(Error::InvalidParameter, (nullptr == stream), "invalid parameter.");
 
                 static const ULONGLONG size = 1024;
                 std::vector<std::int8_t> bytes(size);

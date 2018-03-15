@@ -220,7 +220,7 @@ namespace MSIX
                     break;
 
                 default:
-                    throw MSIX::Exception(MSIX::Error::SignatureInvalid);
+                    ThrowError(MSIX::Error::SignatureInvalid);
             }
         }
 
