@@ -221,7 +221,7 @@ namespace MSIX {
         }
         // If the map is not empty, there's a file in the container that didn't go to the footprint or payload
         // files. (eg. payload file missing in the AppxBlockMap.xml)
-        ThrowErrorIfNot(Error::BlockMapSemanticError, (filesToProcess.empty()), "Package not valid!");
+        ThrowErrorIfNot(Error::BlockMapSemanticError, (filesToProcess.empty()), "Payload file not described in AppxBlockMap.xml");
     }
 
     void AppxPackageObject::Unpack(MSIX_PACKUNPACK_OPTION options, IStorageObject* to)
