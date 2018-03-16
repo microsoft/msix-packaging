@@ -1,3 +1,7 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+// 
 #include <memory>
 #include <string>
 #include <sstream>
@@ -54,15 +58,15 @@ typedef std::map<XmlContentType, NamespaceManager>                      Namespac
 //              content type -> [map uri <-> [alias,XSD]]
 //         ALL THE URIs MUST BE LOWER-CASE
 static const NamespaceTable xmlNamespaces = {
-     {XmlContentType::ContentTypeXml,    {
+    {XmlContentType::ContentTypeXml,    {
         {L"http://schemas.openxmlformats.org/package/2006/content-types",                             {L"a",               "AppxPackaging/[Content_Types]/opc-contentTypes.xsd"}},
-     }},
-     {XmlContentType::AppxBlockMapXml,   {
+    }},
+    {XmlContentType::AppxBlockMapXml,   {
         {L"http://schemas.microsoft.com/appx/2010/blockmap",                                          {L"a",               "AppxPackaging/BlockMap/schema/BlockMapSchema.xsd"}},
         {L"http://schemas.microsoft.com/appx/2015/blockmap",                                          {L"b",               "AppxPackaging/BlockMap/schema/BlockMapSchema2015.xsd"}},
         {L"http://schemas.microsoft.com/appx/2017/blockmap",                                          {L"c",               "AppxPackaging/BlockMap/schema/BlockMapSchema2017.xsd"}},
-     }},
-     {XmlContentType::AppxManifestXml,   {
+    }},
+    {XmlContentType::AppxManifestXml,   {
         {L"http://schemas.microsoft.com/appx/manifest/foundation/windows10",                          {L"win10foundation", "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"}},
         {L"http://schemas.microsoft.com/appx/manifest/uap/windows10",                                 {L"win10uap",        "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"}},
         {L"http://schemas.microsoft.com/appx/manifest/types",                                         {L"t",               "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"}},
@@ -88,8 +92,8 @@ static const NamespaceTable xmlNamespaces = {
         {L"http://schemas.microsoft.com/appx/manifest/com/windows10/2",                               {L"com2",            "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"}},
         {L"http://schemas.microsoft.com/appx/manifest/uap/windows10/5",                               {L"uap5",            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"}},
         {L"http://schemas.microsoft.com/appx/manifest/uap/windows10/6",                               {L"uap6",            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd"}},
-     }}
- };
+    }}
+};
 
 static std::map<XmlQueryName, std::wstring> xPaths = {
     {XmlQueryName::Package_Identity                             ,L"/*[local-name()='Package']/*[local-name()='Identity']"},
@@ -109,6 +113,14 @@ static std::map<XmlAttributeName, std::wstring> attributeNames = {
     {XmlAttributeName::BlockMap_File_Block_Size                 ,L"Size"},
     {XmlAttributeName::BlockMap_File_Block_Hash                 ,L"Hash"},
 };
+
+// --------------------------------------------------------
+// MSXML6 specific error codes
+// --------------------------------------------------------
+// MSG_E_UNDECLAREDPREFIX              - Undeclared prefix
+#define UNDECLAREDPREFIX        0xc00cee65
+// XMLOM_VALIDATE_DECLARATION_NOTFOUND - The node is neither valid nor invalid because no DTD/Schema declaration was found.
+#define DECLARATION_NOTFOUND    0xc00ce224
 
 const std::uint8_t base64DecoderRing[128] =
 {
@@ -313,9 +325,8 @@ public:
             Bstr selectionValue(value.str());
             Variant selectionVariant(selectionValue);
             ThrowHrIfFailed(m_xmlDocument->setProperty(selectionProperty, selectionVariant.Get()));
-            ThrowHrIfFailedWithIErrorInfo(cache->validate());
-            // If we're not going to strip namespaces, then just load the stream that's passed in.
             // Validate the schema collection and set the schemas for the XML document
+            ThrowHrIfFailedWithIErrorInfo(cache->validate());
             Variant schemasVariant(cache);
             ThrowHrIfFailed(m_xmlDocument->putref_schemas(schemasVariant.Get()));            
         }               
@@ -405,7 +416,7 @@ public:
                     if (result == namespaces.end())
                     {   // the namespace specified is unknown to us.  remove everything with the specified alias!
                         std::wostringstream xPath;
-                        xPath << L"//*[namespace-uri()='" << uri << "']";
+                        xPath << L"//*[namespace-uri()='" << uri << L"' or " << L"//@*[namespace-uri()='" << uri << L"']]";
                         Bstr query(xPath.str());
                         ComPtr<IXMLDOMNodeList> ignorableNodes;
                         ThrowHrIfFailed(element->selectNodes(query, &ignorableNodes));
@@ -416,7 +427,8 @@ public:
                 }
             }
         }
-        // It is important to reset the stream back to the beginning!
+        // Because we don't create shallow copies of Streams, it is important 
+        // to reset the stream back to the beginning after reading it.
         LARGE_INTEGER li = {0};
         ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, nullptr));
 
@@ -447,7 +459,7 @@ public:
 
                 // As necessary, translate MSXML6-specific errors w.r.t. malformed/non-schema-compliant 
                 // XML into generic Xml errors and leave the full details in the log.
-                if (0xc00cee65 == errorCode || 0xc00ce224  == errorCode)
+                if (UNDECLAREDPREFIX == errorCode || DECLARATION_NOTFOUND == errorCode)
                 {   // file is either invalid XML, or it's valid, but failed schema validation.
                     errorCode = static_cast<long>(Error::XmlFatal);
                 }

@@ -86,7 +86,7 @@ execute_process(
 file(READ "${CMAKE_BINARY_DIR}/resources.zip" RESOURCE_HEX HEX)
 # Create a list by matching every 2 charactes. CMake separates lists with ;
 string(REGEX MATCHALL ".." RESOURCE_HEX_LIST "${RESOURCE_HEX}")
-list(LENGTH RESOURCE_HEX_LIST RESOURCE_LENGHT)
+list(LENGTH RESOURCE_HEX_LIST RESOURCE_LENGTH)
 # The list is just a string, so change ; for ", 0x" to initialize the vector.
 # Just remember the first element won't have 0x.
 string(REGEX REPLACE ";" ", 0x" RESOURCE_BYTES "${RESOURCE_HEX_LIST}")
@@ -125,8 +125,8 @@ namespace MSIX {
             AppxManifest
         };
 
-        const size_t resourceLenght = ${RESOURCE_LENGHT};
-        const std::uint8_t resourceByte[resourceLenght] = {0x${RESOURCE_BYTES}};
+        const size_t resourceLength = ${RESOURCE_LENGTH};
+        const std::uint8_t resourceByte[resourceLength] = {0x${RESOURCE_BYTES}};
     }
 
     inline std::vector<ComPtr<IStream>> GetResources(IMSIXFactory* factory, Resource::Type type)

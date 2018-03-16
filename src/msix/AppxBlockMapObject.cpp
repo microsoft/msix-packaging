@@ -33,7 +33,7 @@ namespace MSIX {
     template <class T>
     static T GetNumber(IXmlElement* element, XmlAttributeName attribute, T defaultValue)
     {
-        std::string attributeValue = element->GetAttributeValue(attribute);
+        const auto& attributeValue = element->GetAttributeValue(attribute);
         bool hasValue = !attributeValue.empty();
         T value = defaultValue;
         if (hasValue) { value = static_cast<T>(std::stoul(attributeValue)); }
@@ -56,7 +56,7 @@ namespace MSIX {
         size_t countFilesFound = 0;
         dom->ForEachElementIn(dom->GetDocument().Get(), XmlQueryName::BlockMap_File, [&](IXmlElement* fileNode)
         {
-            auto name = fileNode->GetAttributeValue(XmlAttributeName::BlockMap_File_Name);
+            const auto& name = fileNode->GetAttributeValue(XmlAttributeName::BlockMap_File_Name);
             ThrowErrorIf(Error::BlockMapSemanticError, (name == "[Content_Types].xml"), "[Content_Types].xml cannot be in the AppxBlockMap.xml file");
             ThrowErrorIf(Error::BlockMapSemanticError, (m_blockMap.find(name) != m_blockMap.end()), "duplicate file name specified.");
 
