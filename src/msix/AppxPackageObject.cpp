@@ -119,11 +119,11 @@ namespace MSIX {
                 identitiesFound++;
                 ThrowErrorIf(Error::AppxManifestSemanticError, (identitiesFound > 1), "There must be only one Identity element at most in AppxManifest.xml");
 
-                auto name           = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Name);
-                auto architecture   = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ProcessorArchitecture);
-                auto publisher      = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Publisher);
-                auto version        = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Version);
-                auto resourceId     = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ResourceId);
+                const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Name);
+                const auto& architecture   = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ProcessorArchitecture);
+                const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Publisher);
+                const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Version);
+                const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ResourceId);
 
                 m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisher);
                 return true;             

@@ -24,7 +24,7 @@ namespace MSIX {
             ThrowHrIfFailed(stream->Read(buffer.data(), streamSize, &actualRead));
             ThrowErrorIf(Error::FileRead, (actualRead != streamSize), "read error");
 
-            // move the underlying stream back to the begginning.
+            // move the underlying stream back to the beginning.
             ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
             return buffer;
         }

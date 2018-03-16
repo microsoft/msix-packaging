@@ -175,7 +175,7 @@ namespace MSIX {
     #ifndef WIN32
     __attribute__(( noinline, cold, noreturn )) 
     #endif    
-    RaiseException(const int line, const char* file, const char* details, C c)
+    RaiseException(const int line, const char* const file, const char* details, C c)
     {
         assert(false);
         std::ostringstream builder;
