@@ -17,7 +17,7 @@
 #include "StorageObject.hpp"
 #include "ZipObject.hpp"
 #include "VerifierObject.hpp"
-#include "XmlObject.hpp"
+#include "IXml.hpp"
 #include "AppxBlockMapObject.hpp"
 #include "AppxSignature.hpp"
 #include "AppxFactory.hpp"
@@ -73,16 +73,13 @@ namespace MSIX {
     class AppxManifestObject : public ComClass<AppxManifestObject, IVerifierObject>
     {
     public:
-        AppxManifestObject(ComPtr<IStream>& stream);
+        AppxManifestObject(IXmlFactory* factory, ComPtr<IStream>& stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
         MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
-        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override
-        {
-            throw Exception(Error::NotSupported);
-        }
+        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override { NOTSUPPORTED }
 
         AppxPackageId* GetPackageId()    { return m_packageId.get(); }
         std::string GetPackageFullName() { return m_packageId->GetPackageFullName(); }
@@ -115,7 +112,7 @@ namespace MSIX {
         // IStorageObject methods
         std::string               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
-        IStream*                  GetFile(const std::string& fileName) override;
+        std::pair<bool,IStream*>  GetFile(const std::string& fileName) override;
         void                      RemoveFile(const std::string& fileName) override;
         IStream*                  OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         void                      CommitChanges() override;
@@ -128,7 +125,6 @@ namespace MSIX {
         ComPtr<IVerifierObject>     m_appxSignature;
         ComPtr<IVerifierObject>     m_appxBlockMap;
         ComPtr<IVerifierObject>     m_appxManifest;
-        ComPtr<IVerifierObject>     m_contentType;        
         ComPtr<IStorageObject>      m_container;
         
         std::vector<std::string>    m_payloadFiles;
@@ -154,7 +150,8 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
                 ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor])).As<IAppxFile>().Detach();
+                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor]).second).As<IAppxFile>().Detach();
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -162,6 +159,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
                 *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -169,6 +167,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
                 *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
+                return static_cast<HRESULT>(Error::OK);
             });
         }
     };

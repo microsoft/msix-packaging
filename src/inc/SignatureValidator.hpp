@@ -28,6 +28,7 @@ namespace MSIX {
     {
     public:
         static bool Validate(
+            IMSIXFactory* factory,
             MSIX_VALIDATION_OPTION option, 
             IStream *stream, 
             std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,

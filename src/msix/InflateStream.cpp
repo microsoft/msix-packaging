@@ -145,6 +145,7 @@ namespace MSIX {
             }
             m_startCurrentBuffer = nullptr;
             if (bytesRead) { *bytesRead = m_bytesRead; }
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
@@ -183,6 +184,7 @@ namespace MSIX {
                 }
             }
             if (newPosition) { newPosition->QuadPart = m_seekPosition; }
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 

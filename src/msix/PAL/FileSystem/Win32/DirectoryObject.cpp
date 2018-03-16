@@ -103,19 +103,19 @@ namespace MSIX {
     std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
-        throw Exception(Error::NotImplemented);
+        NOTIMPLEMENTED
     }
 
-    IStream* DirectoryObject::GetFile(const std::string& fileName)
+    std::pair<bool,IStream*> DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
-        throw Exception(Error::NotImplemented);
+        NOTIMPLEMENTED
     }
 
     void DirectoryObject::RemoveFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
-        throw Exception(Error::NotImplemented);
+        NOTIMPLEMENTED
     }
 
     IStream* DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)

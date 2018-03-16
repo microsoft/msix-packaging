@@ -21,11 +21,11 @@
 
 namespace MSIX {
 
-AppxSignatureObject::AppxSignatureObject(MSIX_VALIDATION_OPTION validationOptions, IStream* stream) : 
+AppxSignatureObject::AppxSignatureObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validationOptions, IStream* stream) : 
     m_stream(stream), 
     m_validationOptions(validationOptions)
 {
-    m_hasDigests = SignatureValidator::Validate(validationOptions, stream, m_digests, m_signatureOrigin, m_publisher);
+    m_hasDigests = SignatureValidator::Validate(factory, validationOptions, stream, m_digests, m_signatureOrigin, m_publisher);
 
     if (0 == (validationOptions & MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE))
     {   // reset the source stream back to the beginning after validating it.
