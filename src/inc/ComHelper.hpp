@@ -11,7 +11,6 @@
 
 #include "Exceptions.hpp"
 #include "AppxPackaging.hpp"
-#include "xercesc/util/XMLString.hpp"
 
 namespace MSIX {
 
@@ -156,152 +155,22 @@ namespace MSIX {
 
         virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
         {
-            return ResultOf([&]{
-                ThrowErrorIf(Error::InvalidParameter, (ppvObject == nullptr || *ppvObject != nullptr), "bad pointer");
-                *ppvObject = nullptr;
-                if (QIHelper<Interfaces...>::Matches(riid, ppvObject))
-                {
-                    AddRef();
-                    return S_OK;
-                }
-                throw MSIX::Exception(MSIX::Error::NoInterface);
-            });
+            if (ppvObject == nullptr || *ppvObject != nullptr)
+            {
+                return static_cast<HRESULT>(Error::InvalidParameter);
+            }
+            //ThrowErrorIf(Error::InvalidParameter, (ppvObject == nullptr || *ppvObject != nullptr), "bad pointer");
+            *ppvObject = nullptr;
+            if (QIHelper<Interfaces...>::Matches(riid, ppvObject))
+            {
+                AddRef();
+                return S_OK;
+            }
+            return static_cast<HRESULT>(MSIX::Error::NoInterface);
         }
 
     protected:
         std::atomic<std::uint32_t> m_ref;
         ComClass() : m_ref(1) {}
-    };
-
-    template<class T>
-    class XercesPtr
-    {
-    public:
-        XercesPtr() : m_ptr(nullptr) {}
-        XercesPtr(T* p)  : m_ptr(p) {}
-
-        // move ctor
-        XercesPtr(XercesPtr &&right) : m_ptr(nullptr)
-        {
-            if (this != reinterpret_cast<XercesPtr*>(&reinterpret_cast<std::int8_t&>(right)))
-            {   Swap(right);
-            }
-        } 
-
-        virtual ~XercesPtr() { InternalRelease(); }
-
-        void InternalRelease()
-        {
-            T* temp = m_ptr;
-            if (temp)
-            {
-                m_ptr = nullptr;
-                temp->release();
-            }
-        }
-        
-        XercesPtr& operator=(XercesPtr&& right)
-        {   XercesPtr(std::move(right)).Swap(*this);
-            return *this;
-        }
-
-        T* operator->() const { return m_ptr; }
-        T* Get() const { return m_ptr; }
-    protected:
-        inline void Swap(XercesPtr& right ) { std::swap(m_ptr, right.m_ptr); }
-        T* m_ptr = nullptr;
-    };
-
-    class XercesCharPtr
-    {
-    public:
-        XercesCharPtr(char* c) : m_ptr(c) {};
-        ~XercesCharPtr() { InternalRelease(); }
-
-        // move ctor
-        XercesCharPtr(XercesCharPtr &&right) : m_ptr(nullptr)
-        {
-            if (this != reinterpret_cast<XercesCharPtr*>(&reinterpret_cast<std::int8_t&>(right)))
-            {   Swap(right);
-            }
-        } 
-
-        void InternalRelease()
-        {   XERCES_CPP_NAMESPACE::XMLString::release(&m_ptr);
-            m_ptr = nullptr;
-        }
-
-        XercesCharPtr& operator=(XercesCharPtr&& right)
-        {   XercesCharPtr(std::move(right)).Swap(*this);
-            return *this;
-        }
-
-        char* operator->() const { return m_ptr; }
-        char* Get() const { return m_ptr; }
-    protected:
-        inline void Swap(XercesCharPtr& right ) { std::swap(m_ptr, right.m_ptr); }
-        char* m_ptr = nullptr;        
-    };
-
-    class XercesXMLChPtr
-    {
-    public:
-        XercesXMLChPtr(XMLCh* c) : m_ptr(c) {}
-        ~XercesXMLChPtr() { InternalRelease(); }
-
-        // move ctor
-        XercesXMLChPtr(XercesXMLChPtr &&right) : m_ptr(nullptr)
-        {
-            if (this != reinterpret_cast<XercesXMLChPtr*>(&reinterpret_cast<std::int8_t&>(right)))
-            {   Swap(right);
-            }
-        }         
-
-        void InternalRelease()
-        {   XERCES_CPP_NAMESPACE::XMLString::release(&m_ptr);
-            m_ptr = nullptr;            
-        }
-
-        XercesXMLChPtr& operator=(XercesXMLChPtr&& right)
-        {   XercesXMLChPtr(std::move(right)).Swap(*this);
-            return *this;
-        }
-
-        XMLCh* operator->() const { return m_ptr; }
-        XMLCh* Get() const { return m_ptr; }
-    protected:
-        inline void Swap(XercesXMLChPtr& right ) { std::swap(m_ptr, right.m_ptr); }
-        XMLCh* m_ptr = nullptr;              
-    };
-
-    class XercesXMLBytePtr
-    {
-    public:
-        XercesXMLBytePtr(XMLByte* c) : m_ptr(c) {}
-        ~XercesXMLBytePtr() { InternalRelease(); }
-
-        // move ctor
-        XercesXMLBytePtr(XercesXMLBytePtr &&right) : m_ptr(nullptr)
-        {
-            if (this != reinterpret_cast<XercesXMLBytePtr*>(&reinterpret_cast<std::int8_t&>(right)))
-            {   Swap(right);
-            }
-        }  
-
-        void InternalRelease()
-        {   delete(m_ptr);
-            m_ptr = nullptr;
-        }
-
-        XercesXMLBytePtr& operator=(XercesXMLBytePtr&& right)
-        {   XercesXMLBytePtr(std::move(right)).Swap(*this);
-            return *this;
-        }
-
-        XMLByte* operator->() const { return m_ptr; }
-        XMLByte* Get() const { return m_ptr; }
-    protected:
-        inline void Swap(XercesXMLBytePtr& right ) { std::swap(m_ptr, right.m_ptr); }
-        XMLByte* m_ptr = nullptr;             
     };
 }

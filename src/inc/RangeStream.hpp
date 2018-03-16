@@ -46,6 +46,7 @@ namespace MSIX {
                 m_stream->Seek(newPos, Reference::START, &pos);
                 m_relativePosition = std::min(static_cast<std::uint64_t>(pos.QuadPart - m_offset), m_size);
                 if (newPosition) { newPosition->QuadPart = m_relativePosition; }
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -62,6 +63,7 @@ namespace MSIX {
                 m_relativePosition += amountRead;
                 if (bytesRead) { *bytesRead = amountRead; }
                 ThrowErrorIf(Error::FileSeekOutOfRange, (m_relativePosition > m_size), "seek pointer out of bounds.");
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
@@ -69,6 +71,7 @@ namespace MSIX {
         {
             return ResultOf([&]{
                 if (size) { *size = m_size; }
+                return static_cast<HRESULT>(Error::OK);
             });
         }
 
