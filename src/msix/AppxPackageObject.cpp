@@ -210,6 +210,7 @@ namespace MSIX {
             {   std::string containerFileName = EncodeFileName(fileName);
                 m_payloadFiles.push_back(containerFileName);
                 auto fileStream = m_container->GetFile(containerFileName);
+                ThrowErrorIfNot(Error::FileNotFound, (fileStream.first), "File described in blockmap not contained in OPC container");
 
                 // Verify file in OPC and BlockMap
                 ComPtr<IAppxFile> appxFile;
@@ -259,8 +260,6 @@ namespace MSIX {
                         || (blocksSize == sizeOnZip - 2), // case 2
                         "Compressed size of the file in the block map and the OPC container don't match");
                 }
-
-                ThrowErrorIfNot(Error::FileNotFound, (fileStream.first), "File described in blockmap not contained in OPC container");
                 m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream.second);
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
             }
