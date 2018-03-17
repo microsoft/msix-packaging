@@ -57,6 +57,9 @@ namespace MSIX {
             return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetContentType(contentType); });
         }
 
+        // IAppxFileInternal
+        std::uint64_t GetCompressSize() override { return m_stream.As<IAppxFileInternal>()->GetCompressSize(); }
+
     protected:
         void Cleanup();
 

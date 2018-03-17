@@ -73,7 +73,7 @@ namespace MSIX {
             ThrowErrorIf(Error::BlockMapSemanticError, (0 == countBlocks && 0 != sizeAttribute), "If size is non-zero, then there must be 1+ blocks.");
             
             m_blockMap.insert(std::make_pair(name, std::move(blocks)));
-            m_blockMapfiles.insert(std::make_pair(name,
+            m_blockMapFiles.insert(std::make_pair(name,
                 ComPtr<IAppxBlockMapFile>::Make<AppxBlockMapFile>(
                     factory,
                     &(m_blockMap[name]),
@@ -101,10 +101,10 @@ namespace MSIX {
             ThrowErrorIf(Error::InvalidParameter, (
                 filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
             ), "bad pointer");
-            auto fileStream = GetFile(utf16_to_utf8(filename));
-            ThrowErrorIfNot(Error::InvalidParameter, (fileStream.first), "file not found!");
-            MSIX::ComPtr<IStream> stream = fileStream.second;
-            *file = stream.As<IAppxBlockMapFile>().Detach();
+            auto blockMapFile = m_blockMapFiles.find(utf16_to_utf8(filename));
+            ThrowErrorIf(Error::InvalidParameter, (blockMapFile == m_blockMapFiles.end()), "File not found!");
+            MSIX::ComPtr<IAppxBlockMapFile> result = blockMapFile->second;
+            *file = result.Detach();
             return static_cast<HRESULT>(Error::OK);
         });
     }
@@ -117,7 +117,7 @@ namespace MSIX {
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IAppxBlockMapReader>::iid, reinterpret_cast<void**>(&self)));
             *enumerator = ComPtr<IAppxBlockMapFilesEnumerator>::Make<AppxBlockMapFilesEnumerator>(
                 self.Get(),
-                std::move(GetFileNames(FileNameOptions::All))).Detach();
+                std::move(GetFileNames())).Detach();
             return static_cast<HRESULT>(Error::OK);
         });
     }
@@ -139,28 +139,30 @@ namespace MSIX {
         });
     }
 
-    // IStorageObject methods
-    std::string AppxBlockMapObject::GetPathSeparator() { return "\\"; }
-    std::vector<std::string> AppxBlockMapObject::GetFileNames(FileNameOptions)
+    // IAppxBlockMapInternal methods
+    std::vector<std::string> AppxBlockMapObject::GetFileNames()
     {
         std::vector<std::string> fileNames;
         std::transform(
-            m_blockMapfiles.begin(),
-            m_blockMapfiles.end(),
+            m_blockMapFiles.begin(),
+            m_blockMapFiles.end(),
             std::back_inserter(fileNames),
             [](auto keyValuePair){ return keyValuePair.first; }
         );
         return fileNames;
     }
 
-    std::pair<bool,IStream*> AppxBlockMapObject::GetFile(const std::string& fileName)
-    {
-        auto index = m_blockMapfiles.find(fileName);
-        ThrowErrorIf(Error::FileNotFound, (index == m_blockMapfiles.end()), "named file not in blockmap");
-        return std::make_pair(true, index->second.As<IStream>().Detach());
+    std::vector<Block> AppxBlockMapObject::GetBlocks(const std::string& fileName)
+    {   
+        auto index = m_blockMap.find(fileName);
+        ThrowErrorIf(Error::FileNotFound, (index == m_blockMap.end()), "File not in blockmap");
+        return index->second;
     }
 
-    void AppxBlockMapObject::RemoveFile(const std::string& )                           { NOTIMPLEMENTED }
-    IStream* AppxBlockMapObject::OpenFile(const std::string& ,MSIX::FileStream::Mode)  { NOTIMPLEMENTED }
-    void AppxBlockMapObject::CommitChanges()                                           { NOTIMPLEMENTED }
+    ComPtr<IAppxBlockMapFile> AppxBlockMapObject::GetFile(const std::string& fileName)
+    {
+        auto index = m_blockMapFiles.find(fileName);
+        ThrowErrorIf(Error::FileNotFound, (index == m_blockMapFiles.end()), "File not in blockmap");
+        return index->second;
+    }
 }
