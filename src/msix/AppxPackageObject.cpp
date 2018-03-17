@@ -219,9 +219,9 @@ namespace MSIX {
                 ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
                 bool isUncompressed = (compressionOpt == APPX_COMPRESSION_OPTION_NONE);
                 
-                ComPtr<IAppxFileInternal> appxfileInternal;
-                ThrowHrIfFailed(fileStream.second->QueryInterface(UuidOfImpl<IAppxFileInternal>::iid, reinterpret_cast<void**>(&appxfileInternal)));
-                auto sizeOnZip = appxfileInternal->GetCompressSize();
+                ComPtr<IAppxFileInternal> appxFileInternal;
+                ThrowHrIfFailed(fileStream.second->QueryInterface(UuidOfImpl<IAppxFileInternal>::iid, reinterpret_cast<void**>(&appxFileInternal)));
+                auto sizeOnZip = appxFileInternal->GetCompressSize();
 
                 auto blocks = blockMapInternal->GetBlocks(fileName);
                 std::uint64_t blocksSize = 0;

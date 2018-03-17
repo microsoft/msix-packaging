@@ -372,7 +372,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "FileDoesNotExist.appx", unpackFolder, ss, 1);
     hr = RunTest(source + "BlockMap/Missing_Manifest_in_blockmap.appx", unpackFolder, ss, 81);
     hr = RunTest(source + "BlockMap/ContentTypes_in_blockmap.appx", unpackFolder, ss, 81);
-    hr = RunTest(source + "BlockMap/Invalid_Bad_Block.appx", unpackFolder, ss, 65);
+    hr = RunTest(source + "BlockMap/Invalid_Bad_Block.appx", unpackFolder, ss, 81);
     hr = RunTest(source + "BlockMap/Size_wrong_uncompressed.appx", unpackFolder, ss, 81);
     hr = RunTest(source + "BlockMap/HelloWorld.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "BlockMap/Extra_file_in_blockmap.appx", unpackFolder, ss, 2);
