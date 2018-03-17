@@ -203,13 +203,63 @@ namespace MSIX {
             }
         }
         
-        auto blockMapStorage = m_appxBlockMap.As<IStorageObject>();
-        for (const auto& fileName : blockMapStorage->GetFileNames(FileNameOptions::PayloadOnly))
+        auto blockMapInternal = m_appxBlockMap.As<IAppxBlockMapInternal>();
+        for (const auto& fileName : blockMapInternal->GetFileNames())
         {   auto footPrintFile = footPrintFileNames.find(fileName);
             if (footPrintFile == footPrintFileNames.end())
             {   std::string containerFileName = EncodeFileName(fileName);
                 m_payloadFiles.push_back(containerFileName);
                 auto fileStream = m_container->GetFile(containerFileName);
+
+                // Verify file in OPC and BlockMap
+                ComPtr<IAppxFile> appxFile;
+                ThrowHrIfFailed(fileStream.second->QueryInterface(UuidOfImpl<IAppxFile>::iid, reinterpret_cast<void**>(&appxFile)));
+                APPX_COMPRESSION_OPTION compressionOpt;
+                ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
+                bool isUncompressed = (compressionOpt == APPX_COMPRESSION_OPTION_NONE);
+                
+                ComPtr<IAppxFileInternal> appxfileInternal;
+                ThrowHrIfFailed(fileStream.second->QueryInterface(UuidOfImpl<IAppxFileInternal>::iid, reinterpret_cast<void**>(&appxfileInternal)));
+                auto sizeOnZip = appxfileInternal->GetCompressSize();
+
+                auto blocks = blockMapInternal->GetBlocks(fileName);
+                std::uint64_t blocksSize = 0;
+                for(auto& block : blocks)
+                {   // For Block elements that don't have a Size attribute, we always set its size as BLOCKMAP_BLOCK_SIZE
+                    // (even for the last one). The Size attribute isn't specified if the file is not compressed.
+                    ThrowErrorIf(Error::BlockMapSemanticError, isUncompressed && (block.compressedSize != BLOCKMAP_BLOCK_SIZE),
+                        "An uncompressed file has a size attribute in its Block elements");
+                    blocksSize += block.compressedSize;
+                }
+
+                if(isUncompressed)
+                {   UINT64 blockMapFileSize;
+                    auto blockMapFile = blockMapInternal->GetFile(fileName);
+                    ThrowHrIfFailed(blockMapFile->GetUncompressedSize(&blockMapFileSize));
+                    ThrowErrorIf(Error::BlockMapSemanticError, (blockMapFileSize != sizeOnZip ),
+                        "Uncompressed size of the file in the block map and the OPC container don't match");
+                }
+                else
+                {   // From Windows code:
+                    // The file item is compressed. There are 2 cases here:
+                    // 1. The compressed size of the file is the same as the total size of all compressed blocks.
+                    // 2. The compressed size of the file is 2 bytes more than the total size of all compressed blocks.
+                    // It depends on how the block compression is done. MakeAppx block compression implementation will end up 
+                    // with case 2. However, we shouldn't block the first case since it is totally valid and 3rd party
+                    // implementation may end up with it.
+                    // The reason we created compressed file item with 2 extra bytes (03 00) is because we use Z_FULL_FLUSH 
+                    // flag to compress every block. If we use Z_FINISH flag to compress the last block, these 2 extra bytes will
+                    // not be generated. The AddBlock()-->... -->AddBlock()-->Close() pattern in OPC push stack prevents the
+                    // deflator from knowing whether the current block is the last block. So it cannot use Z_FINISH flag for
+                    // the last block of the file. Note that removing the 2 extra bytes from the compressed file data will make
+                    // it invalid when consumed by popular zip tools like WinZip and ShellZip. So they are required for the 
+                    // packages we created.
+                    ThrowErrorIfNot(Error::BlockMapSemanticError,
+                        (blocksSize == sizeOnZip ) // case 1
+                        || (blocksSize == sizeOnZip - 2), // case 2
+                        "Compressed size of the file in the block map and the OPC container don't match");
+                }
+
                 ThrowErrorIfNot(Error::FileNotFound, (fileStream.first), "File described in blockmap not contained in OPC container");
                 m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream.second);
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
