@@ -69,7 +69,7 @@ RunTest 1 ./../appx/FileDoesNotExist.appx -ss
 RunTest 81 ./../appx/BlockMap/Missing_Manifest_in_blockmap.appx -ss
 RunTest 81 ./../appx/BlockMap/ContentTypes_in_blockmap.appx -ss
 RunTest 65 ./../appx/BlockMap/Invalid_Bad_Block.appx -ss
-RunTest 0 ./../appx/BlockMap/Size_wrong_uncompressed.appx -ss
+RunTest 81 ./../appx/BlockMap/Size_wrong_uncompressed.appx -ss
 RunTest 0 ./../appx/BlockMap/HelloWorld.appx -ss
 RunTest 2 ./../appx/BlockMap/Extra_file_in_blockmap.appx -ss
 RunTest 81 ./../appx/BlockMap/File_missing_from_blockmap.appx -ss
