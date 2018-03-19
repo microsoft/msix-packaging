@@ -484,7 +484,7 @@ public:
         return ComPtr<IXmlElement>::Make<MSXMLElement>(element);
     }
     
-    bool ForEachElementIn(IXmlElement* root, XmlQueryName query, std::function<bool(IXmlElement*)> visitor) override
+    bool ForEachElementIn(IXmlElement* root, XmlQueryName query, void* context, XmlVisitor visitor) override
     {
         ComPtr<IMSXMLElement> element;
         ThrowHrIfFailed(root->QueryInterface(UuidOfImpl<IMSXMLElement>::iid, reinterpret_cast<void**>(&element)));
@@ -502,7 +502,7 @@ public:
             ComPtr<IXMLDOMElement> elementItem;
             ThrowHrIfFailed(node->QueryInterface(__uuidof(IXMLDOMElement), reinterpret_cast<void**>(&elementItem)));
             auto item = ComPtr<IXmlElement>::Make<MSXMLElement>(elementItem);
-            if (!visitor(item.Get()))
+            if (!visitor(context, item.Get()))
             {
                 return false;
             }

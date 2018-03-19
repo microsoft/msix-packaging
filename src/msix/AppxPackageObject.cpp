@@ -111,13 +111,22 @@ namespace MSIX {
     }
 
     AppxManifestObject::AppxManifestObject(IXmlFactory* factory, ComPtr<IStream>& stream) : m_stream(stream)
-    {
-        size_t identitiesFound = 0;
+    {      
+        struct _context
+        {
+            AppxManifestObject* self;
+            size_t identitiesFound;
+        };
+        _context context = {};
+        context.self            = this;
+        context.identitiesFound = 0;
+
         auto dom = factory->CreateDomFromStream(XmlContentType::AppxManifestXml, stream);
-        dom->ForEachElementIn(dom->GetDocument().Get(), XmlQueryName::Package_Identity,
-            [&](IXmlElement* identityNode){
-                identitiesFound++;
-                ThrowErrorIf(Error::AppxManifestSemanticError, (identitiesFound > 1), "There must be only one Identity element at most in AppxManifest.xml");
+        dom->ForEachElementIn(dom->GetDocument().Get(), XmlQueryName::Package_Identity, static_cast<void*>(&context), 
+            [](void* c, IXmlElement* identityNode){
+                _context* context = reinterpret_cast<_context*>(c);
+                context->identitiesFound++;
+                ThrowErrorIf(Error::AppxManifestSemanticError, (context->identitiesFound > 1), "There must be only one Identity element at most in AppxManifest.xml");
 
                 const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Name);
                 const auto& architecture   = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ProcessorArchitecture);
@@ -125,12 +134,12 @@ namespace MSIX {
                 const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Version);
                 const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ResourceId);
 
-                m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisher);
+                context->self->m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisher);
                 return true;             
             }
         );
         // Have to check for this semantically as not all validating parsers can validate this via schema
-        ThrowErrorIf(Error::AppxManifestSemanticError, (identitiesFound == 0), "No Identity element in AppxManifest.xml");
+        ThrowErrorIf(Error::AppxManifestSemanticError, (context.identitiesFound == 0), "No Identity element in AppxManifest.xml");
     }
 
     AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, IStorageObject* container) :

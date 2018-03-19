@@ -62,6 +62,8 @@ public:
     virtual std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) = 0;
 };
 
+typedef bool(XmlVisitor)(void*, IXmlElement*);
+
 #ifndef WIN32
 // {0e7a446e-baf7-44c1-b38a-216bfa18a1a8}
 interface IXmlDom : public IUnknown
@@ -75,7 +77,8 @@ public:
     virtual bool ForEachElementIn(
         IXmlElement* root,
         XmlQueryName query,
-        std::function<bool(IXmlElement*)> visitor
+        void*        context,
+        XmlVisitor   visitor
     ) = 0;
 };
 
