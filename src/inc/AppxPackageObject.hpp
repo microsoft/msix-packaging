@@ -112,7 +112,7 @@ namespace MSIX {
         // IStorageObject methods
         std::string               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
-        std::pair<bool,IStream*>  GetFile(const std::string& fileName) override;
+        IStream*                  GetFile(const std::string& fileName) override;
         void                      RemoveFile(const std::string& fileName) override;
         IStream*                  OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         void                      CommitChanges() override;
@@ -150,7 +150,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
                 ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor]).second).As<IAppxFile>().Detach();
+                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor])).As<IAppxFile>().Detach();
                 return static_cast<HRESULT>(Error::OK);
             });
         }

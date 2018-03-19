@@ -881,15 +881,15 @@ namespace MSIX {
         return result;
     }
 
-    std::pair<bool,IStream*> ZipObject::GetFile(const std::string& fileName)
+    IStream* ZipObject::GetFile(const std::string& fileName)
     {
         // TODO: Make this on-demand populate m_streams and then pull from there.
         auto result = m_streams.find(fileName);
         if (result == m_streams.end())
         {
-            return std::make_pair(false, nullptr);
+            return nullptr;
         }        
-        return std::make_pair(true, result->second.Get());
+        return result->second.Get();
     }
 
     void ZipObject::RemoveFile(const std::string& fileName)                                 { NOTIMPLEMENTED }
