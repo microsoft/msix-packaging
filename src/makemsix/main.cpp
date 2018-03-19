@@ -7,7 +7,6 @@
 
 #include <iostream>
 #include <iomanip>
-#include <functional>
 #include <vector>
 #include <string>
 #include <initializer_list>
@@ -77,7 +76,7 @@ struct State
 // describes an option to a command that the user may specify
 struct Option
 {
-    using CBF = std::function<bool(State& state, const std::string& value)>;
+    typedef bool (*CBF)(State& state, const std::string& value);
 
     Option(const std::string& name, bool param, const std::string& help, CBF callback) : 
         Name(name), Help(help), Callback(callback), TakesParameter(param)
@@ -96,7 +95,7 @@ struct Option
 // describes a command that the user may specify.
 struct Command
 {
-    using CBF = std::function<bool(State& state)>;
+    typedef bool (*CBF)(State& state);
 
     Command(const std::string& name, const std::string& help, CBF callback, std::vector<Option> options) :
         Name(name), Help(help), Callback(callback), Options(options)
