@@ -15,32 +15,32 @@
 // XML file content types/schemas
 enum class XmlContentType : std::uint8_t
 {
-    ContentTypeXml,
-    AppxBlockMapXml,
-    AppxManifestXml,
+    ContentTypeXml  = 0,
+    AppxBlockMapXml = 1,
+    AppxManifestXml = 2,
 };
 
 // defines queries for use in IXmlDom->ForEachElementIn
 enum class XmlQueryName : std::uint8_t
 {
-    Package_Identity,
-    BlockMap_File,
-    BlockMap_File_Block,
+    Package_Identity    = 0,
+    BlockMap_File       = 1,
+    BlockMap_File_Block = 2,
 };
 
 // defines attribute names for use in IXmlElement-> [GetAttributeValue|GetBase64DecodedAttributeValue]
 enum class XmlAttributeName : std::uint8_t
 {
-    Package_Identity_Name,
-    Package_Identity_ProcessorArchitecture,
-    Package_Identity_Publisher,
-    Package_Identity_Version,
-    Package_Identity_ResourceId,
+    Package_Identity_Name                   = 0,
+    Package_Identity_ProcessorArchitecture  = 1,
+    Package_Identity_Publisher              = 2,
+    Package_Identity_Version                = 3,
+    Package_Identity_ResourceId             = 4,
 
-    BlockMap_File_Name,
-    BlockMap_File_LocalFileHeaderSize,
-    BlockMap_File_Block_Size,
-    BlockMap_File_Block_Hash,
+    BlockMap_File_Name                      = 5,
+    BlockMap_File_LocalFileHeaderSize       = 6,
+    BlockMap_File_Block_Size                = 7,
+    BlockMap_File_Block_Hash                = 8,
 };
 
 EXTERN_C const IID IID_IXmlElement;

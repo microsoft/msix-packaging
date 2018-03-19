@@ -9,7 +9,6 @@
 #include <iomanip>
 #include <functional>
 #include <vector>
-#include <map>
 #include <string>
 #include <initializer_list>
 
@@ -32,12 +31,6 @@ struct State
             return false;
         }
         specified = spec;
-        return true;
-    }
-
-    bool CreatePackageSubfolder()
-    {
-        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
         return true;
     }
 
@@ -84,10 +77,15 @@ struct State
 // describes an option to a command that the user may specify
 struct Option
 {
-    using CBF = std::function<bool(const std::string& value)>;
+    using CBF = std::function<bool(State& state, const std::string& value)>;
 
-    Option(bool param, const std::string& help, CBF callback): Help(help), Callback(callback), TakesParameter(param)
+    Option(const std::string& name, bool param, const std::string& help, CBF callback) : 
+        Name(name), Help(help), Callback(callback), TakesParameter(param)
     {}
+
+    bool operator==(const std::string& rhs) {
+        return Name == rhs;
+    }
 
     bool        TakesParameter;
     std::string Name;
@@ -98,19 +96,24 @@ struct Option
 // describes a command that the user may specify.
 struct Command
 {
-    using CBF = std::function<bool()>;
+    using CBF = std::function<bool(State& state)>;
 
-    Command(const std::string& help, CBF callback, std::map<std::string, Option> options) :
-        Help(help), Callback(callback), Options(options)
+    Command(const std::string& name, const std::string& help, CBF callback, std::vector<Option> options) :
+        Name(name), Help(help), Callback(callback), Options(options)
     {}
 
-    std::string                   Help;
-    std::map<std::string, Option> Options;
-    CBF                           Callback;
+    bool operator==(const std::string& rhs) {
+        return Name == rhs;
+    }
+
+    std::string         Name;
+    std::string         Help;
+    std::vector<Option> Options;
+    CBF                 Callback;
 };
 
 // Displays contextual formatted help to the user.
-int Help(char* toolName, std::map<std::string, Command>& commands, State& state)
+int Help(char* toolName, std::vector<Command>& commands, State& state)
 {
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
@@ -128,14 +131,14 @@ int Help(char* toolName, std::map<std::string, Command>& commands, State& state)
         for (const auto& command : commands)
         {
             std::cout << "    " << std::left << std::setfill(' ') << std::setw(10) <<
-                command.first << "--  " << command.second.Help << std::endl;
+                command.Name << "--  " << command.Help << std::endl;
         }
 
         std::cout << std::endl;
         std::cout << "For help with a specific command, enter " << toolName << " <command> -?" << std::endl;
         return 0;
     case UserSpecified::Unpack:
-        command = commands.find("unpack");
+        command = std::find(commands.begin(), commands.end(), "unpack");
         std::cout << "    " << toolName << " upack -p <package> -d <directory> [options] " << std::endl;
         std::cout << std::endl;
         std::cout << "Description:" << std::endl;
@@ -149,10 +152,10 @@ int Help(char* toolName, std::map<std::string, Command>& commands, State& state)
     std::cout << "Options:" << std::endl;
     std::cout << "--------" << std::endl;
 
-    for (const auto& option : command->second.Options)
+    for (const auto& option : command->Options)
     {
         std::cout << "    " << std::left << std::setfill(' ') << std::setw(5) <<
-            option.first << ": " << option.second.Help << std::endl;
+            option.Name << ": " << option.Help << std::endl;
     }
     return 0;
 }
@@ -163,37 +166,38 @@ void Error(char* toolName)
     std::cout << toolName << ": error : Missing required options.  Use '-?' for more details." << std::endl;
 }
 
+bool ParseInput(std::vector<Command>& commands, State& state, int argc, char* argv[])
+{
+    int index = 1;
+    auto& command = commands.end();
+    while (index < argc)
+    {
+        command = std::find(commands.begin(), commands.end(), argv[index]);
+        if (command == commands.end())   { return false; }
+        if (!command->Callback(state))   { return false; }
+        if (++index == argc)             { break; }
+        auto& option =std::find(command->Options.begin(), command->Options.end(), argv[index]);
+        while (option != command->Options.end())
+        {
+            char const *parameter = "";
+            if (option->TakesParameter)
+            {
+                if (++index == argc) { break; }
+                parameter = argv[index];
+            }            
+            if (!option->Callback(state, parameter)) { return false; }
+            if (++index == argc) { break; }
+            option = std::find(command->Options.begin(), command->Options.end(), argv[index]);
+        }
+    }
+    return true;
+}
+
 // Parses argc/argv input via commands into state, and calls into the 
 // appropriate function with the correct parameters if warranted.
-int ParseAndRun(std::map<std::string, Command>& commands, State& state, int argc, char* argv[])
+int ParseAndRun(std::vector<Command>& commands, State& state, int argc, char* argv[])
 {
-    auto ParseInput = [&]()->bool {
-        int index = 1;
-        while (index < argc)
-        {
-            auto command = commands.find(argv[index]);
-            if (command == commands.end())    { return false; }
-            if (!command->second.Callback())  { return false; }
-            if (++index == argc)              { break; }
-            auto option = command->second.Options.find(argv[index]);
-            while (option != command->second.Options.end())
-            {
-                char const *parameter = "";
-                if (option->second.TakesParameter)
-                {
-                    if (++index == argc) { break; }
-                    parameter = argv[index];
-                }
-                if (!option->second.Callback(parameter)) { return false; }
-                if (++index == argc) { break; }
-                option = command->second.Options.find(argv[index]);
-            }
-        }
-        return true;
-    };
-
-    if (!ParseInput())
-    {
+    if (!ParseInput(commands, state, argc, argv)) { 
         return Help(argv[0], commands, state);
     }
 
@@ -202,7 +206,6 @@ int ParseAndRun(std::map<std::string, Command>& commands, State& state, int argc
     case UserSpecified::Help:
     case UserSpecified::Nothing:
         return Help(argv[0], commands, state);
-
     case UserSpecified::Unpack:
         if (state.packageName.empty() || state.directoryName.empty())
         {
@@ -236,38 +239,35 @@ int main(int argc, char* argv[])
     std::cout << "Microsoft (R) " << argv[0] << " version " << std::endl; // TODO: specify version
     std::cout << "Copyright (C) 2017 Microsoft.  All rights reserved." << std::endl;
 
-    State state;
-    std::map<std::string, Command> commands = {
-        { "unpack", Command("Unpack files from a package to disk", [&]() { return state.Specify(UserSpecified::Unpack); },
+    std::vector<Command> commands = {
+        {   Command("unpack", "Unpack files from a package to disk", [](State& state) { return state.Specify(UserSpecified::Unpack); },
             {
-                { "-p", Option(true, "REQUIRED, specify input package name.",
-                [&](const std::string& name) { return state.SetPackageName(name); })
+                {   Option("-p", true, "REQUIRED, specify input package name.",
+                [](State& state, const std::string& name) { return state.SetPackageName(name); })
                 },
-                { "-d", Option(true, "REQUIRED, specify output directory name.",
-                    [&](const std::string& name) { return state.SetDirectoryName(name); })
+                {   Option("-d", true, "REQUIRED, specify output directory name.",
+                    [](State& state, const std::string& name) { return state.SetDirectoryName(name); })
                 },
-                { "-pfn", Option(false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
-                    [&](const std::string&) { return state.CreatePackageSubfolder(); })
+                {   Option("-mv", false, "Skips manifest validation.  By default manifest validation is enabled.",
+                    [](State& state, const std::string&) { return state.SkipManifestValidation(); })
                 },
-                { "-mv", Option(false, "Skips manifest validation.  By default manifest validation is enabled.",
-                    [&](const std::string&) { return state.SkipManifestValidation(); })
+                {   Option("-sv", false, "Skips signature validation.  By default signature validation is enabled.",
+                    [](State& state, const std::string&) { return state.AllowSignatureOriginUnknown(); })
                 },
-                { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
-                    [&](const std::string&) { return state.AllowSignatureOriginUnknown(); })
+                {   Option("-ss", false, "Skips enforcement of signed packages.  By default packages must be signed.",
+                    [](State& state, const std::string&) { return state.SkipSignature(); })
                 },
-                { "-ss", Option(false, "Skips enforcement of signed packages.  By default packages must be signed.",
-                    [&](const std::string&) { return state.SkipSignature(); })
-                },
-                { "-?", Option(false, "Displays this help text.",
-                    [&](const std::string&) { return false; })
+                {   Option("-?", false, "Displays this help text.",
+                    [](State& state, const std::string&) { return false; })
                 }
             })
         },
         {
-            "-?", Command("Displays this help text.", [&]() { return state.Specify(UserSpecified::Help);}, {})
+            Command("-?", "Displays this help text.", [](State& state) { return state.Specify(UserSpecified::Help);}, {})
         },
     };
 
+    State state;
     auto result = ParseAndRun(commands, state, argc, argv);
     if (result != 0)
     {        
