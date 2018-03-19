@@ -118,7 +118,7 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
     std::cout << "Usage:" << std::endl;
     std::cout << "------" << std::endl;
 
-    auto command = commands.end();
+    std::vector<Command>::iterator command;
     switch (state.specified)
     {
     case UserSpecified::Nothing:
@@ -127,10 +127,10 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
         std::cout << std::endl;
         std::cout << "Valid commands:" << std::endl;
         std::cout << "---------------" << std::endl;
-        for (const auto& command : commands)
+        for (const auto& c : commands)
         {
             std::cout << "    " << std::left << std::setfill(' ') << std::setw(10) <<
-                command.Name << "--  " << command.Help << std::endl;
+                c.Name << "--  " << c.Help << std::endl;
         }
 
         std::cout << std::endl;
@@ -168,14 +168,15 @@ void Error(char* toolName)
 bool ParseInput(std::vector<Command>& commands, State& state, int argc, char* argv[])
 {
     int index = 1;
-    auto& command = commands.end();
+    std::vector<Command>::iterator command;
+    std::vector<Option>::iterator option;
     while (index < argc)
     {
         command = std::find(commands.begin(), commands.end(), argv[index]);
         if (command == commands.end())   { return false; }
         if (!command->Callback(state))   { return false; }
         if (++index == argc)             { break; }
-        auto& option =std::find(command->Options.begin(), command->Options.end(), argv[index]);
+        option = std::find(command->Options.begin(), command->Options.end(), argv[index]);
         while (option != command->Options.end())
         {
             char const *parameter = "";
