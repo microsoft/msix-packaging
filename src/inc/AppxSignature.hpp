@@ -7,6 +7,7 @@
 #include "AppxPackaging.hpp"
 #include "VerifierObject.hpp"
 #include "StreamBase.hpp"
+#include "AppxFactory.hpp"
 
 #include <vector>
 #include <map>
@@ -52,7 +53,7 @@ namespace MSIX {
             AXCI = 0x49435841, // AppxMetadata/CodeIntegrity.cat (uncompressed, optional)
         };
 
-        AppxSignatureObject(MSIX_VALIDATION_OPTION validationOptions, IStream* stream);
+        AppxSignatureObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validationOptions, IStream* stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override { return m_publisher; }

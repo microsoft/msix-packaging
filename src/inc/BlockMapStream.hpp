@@ -157,7 +157,10 @@ namespace MSIX {
         
         HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
         {
-            return ResultOf([&]{ if (size) { *size = m_streamSize; }});
+            return ResultOf([&]{
+                if (size) { *size = m_streamSize; }
+                return static_cast<HRESULT>(Error::OK);
+                });
         }
       
     protected:
