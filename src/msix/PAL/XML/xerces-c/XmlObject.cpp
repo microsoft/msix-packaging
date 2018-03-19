@@ -308,7 +308,7 @@ public:
         return ComPtr<IXmlElement>::Make<XercesElement>(m_parser->getDocument()->getDocumentElement());
     }
 
-    bool ForEachElementIn(IXmlElement* root, XmlQueryName query, std::function<bool(IXmlElement*)> visitor) override
+    bool ForEachElementIn(IXmlElement* root, XmlQueryName query, void* context, XmlVisitor visitor) override
     {
         ComPtr<IXercesElement> element;
         ThrowHrIfFailed(root->QueryInterface(UuidOfImpl<IXercesElement>::iid, reinterpret_cast<void**>(&element)));
@@ -328,7 +328,7 @@ public:
             result->snapshotItem(i);
             auto node = static_cast<DOMElement*>(result->getNodeValue());
             auto item = ComPtr<IXmlElement>::Make<XercesElement>(node);
-            if (!visitor(item.Get()))
+            if (!visitor(context, item.Get()))
             {
                 return false;
             }

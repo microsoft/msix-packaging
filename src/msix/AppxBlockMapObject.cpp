@@ -53,38 +53,52 @@ namespace MSIX {
         ComPtr<IXmlFactory> xmlFactory;
         ThrowHrIfFailed(factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));        
         auto dom = xmlFactory->CreateDomFromStream(XmlContentType::AppxBlockMapXml, stream);
-        size_t countFilesFound = 0;
-        dom->ForEachElementIn(dom->GetDocument().Get(), XmlQueryName::BlockMap_File, [&](IXmlElement* fileNode)
+
+        struct _context
+        {
+            AppxBlockMapObject* self;
+            IMSIXFactory*       factory;
+            size_t              countFilesFound;
+            IXmlDom*            dom;
+        };
+        _context context = {};
+        context.self            = this;
+        context.factory         = factory;
+        context.countFilesFound = 0;
+        context.dom             = dom.Get();
+
+        dom->ForEachElementIn(dom->GetDocument().Get(), XmlQueryName::BlockMap_File, static_cast<void*>(&context), [](void* c, IXmlElement* fileNode)
         {
             const auto& name = fileNode->GetAttributeValue(XmlAttributeName::BlockMap_File_Name);
             ThrowErrorIf(Error::BlockMapSemanticError, (name == "[Content_Types].xml"), "[Content_Types].xml cannot be in the AppxBlockMap.xml file");
-            ThrowErrorIf(Error::BlockMapSemanticError, (m_blockMap.find(name) != m_blockMap.end()), "duplicate file name specified.");
+
+            _context* context = reinterpret_cast<_context*>(c);            
+            ThrowErrorIf(Error::BlockMapSemanticError, (context->self->m_blockMap.find(name) != context->self->m_blockMap.end()), "duplicate file name specified.");
 
             std::vector<Block> blocks;
-            size_t countBlocks = 0;
-            dom->ForEachElementIn(fileNode, XmlQueryName::BlockMap_File_Block, [&](IXmlElement* blockNode)
+            context->dom->ForEachElementIn(fileNode, XmlQueryName::BlockMap_File_Block, static_cast<void*>(&blocks), [](void* b, IXmlElement* blockNode)
             {
-                blocks.push_back(GetBlock(blockNode));
-                countBlocks++;    
+                std::vector<Block>* blocks = reinterpret_cast<std::vector<Block>*>(b);       
+                blocks->push_back(GetBlock(blockNode));
                 return true;
             });
 
             std::uint64_t sizeAttribute = GetNumber<std::uint64_t>(fileNode, XmlAttributeName::BlockMap_File_Block_Size, BLOCKMAP_BLOCK_SIZE);
-            ThrowErrorIf(Error::BlockMapSemanticError, (0 == countBlocks && 0 != sizeAttribute), "If size is non-zero, then there must be 1+ blocks.");
+            ThrowErrorIf(Error::BlockMapSemanticError, (0 == blocks.size() && 0 != sizeAttribute), "If size is non-zero, then there must be 1+ blocks.");
             
-            m_blockMap.insert(std::make_pair(name, std::move(blocks)));
-            m_blockMapfiles.insert(std::make_pair(name,
+            context->self->m_blockMap.insert(std::make_pair(name, std::move(blocks)));
+            context->self->m_blockMapfiles.insert(std::make_pair(name,
                 ComPtr<IAppxBlockMapFile>::Make<AppxBlockMapFile>(
-                    factory,
-                    &(m_blockMap[name]),
+                    context->factory,
+                    &(context->self->m_blockMap[name]),
                     GetNumber<std::uint32_t>(fileNode, XmlAttributeName::BlockMap_File_LocalFileHeaderSize, 0),
                     name,
                     sizeAttribute
                 )));
-            countFilesFound++;    
+            context->countFilesFound++;    
             return true;            
         });
-        ThrowErrorIf(Error::BlockMapSemanticError, (0 == countFilesFound), "Empty AppxBlockMap.xml");
+        ThrowErrorIf(Error::BlockMapSemanticError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
     }
 
     MSIX::ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, IStream* stream)
