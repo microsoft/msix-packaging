@@ -91,7 +91,7 @@ LIST(APPEND CERTS_TO_PUBLISH
     Microsoft_MarketPlace_PCA_2011.cer
 )
 FOREACH(CERT_TO_PUBLISH ${CERTS_TO_PUBLISH})
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/certs/${CERT_TO_PUBLISH} ${CMAKE_BINARY_DIR}/build/certs/${CERT_TO_PUBLISH})
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/certs/${CERT_TO_PUBLISH} ${CMAKE_BINARY_DIR}/build/certs/${CERT_TO_PUBLISH})
 ENDFOREACH()
 MESSAGE (STATUS "Certificates published")
 MESSAGE (STATUS "--------------------------------")    
@@ -123,6 +123,19 @@ ELSE()
         MESSAGE (STATUS "Building for Linux")
         # Static libraries must be position independent to be linked with a shared object.
         set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    ENDIF()
+ENDIF()
+
+# Enforce parser PAL
+IF(NOT XML_PARSER)
+    MESSAGE (STATUS "Choose the type of parser, options are: [xerces, msxml6].  Use the -DXML_PARSER=[option] to specify.")
+    INCLUDE(CheckIncludeFileCXX)
+    CHECK_INCLUDE_FILE_CXX(msxml6.h HAVE_MSXML6)
+
+    IF (HAVE_MSXML6)
+        SET(XML_PARSER msxml6 CACHE STRING "Using msxml6." FORCE)
+    ELSE()
+        SET(XML_PARSER xerces CACHE STRING "Using xerces" FORCE)
     ENDIF()
 ENDIF()
 

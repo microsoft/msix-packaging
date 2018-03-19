@@ -73,7 +73,7 @@ RunTest 0 ./../appx/BlockMap/Size_wrong_uncompressed.appx -ss
 RunTest 0 ./../appx/BlockMap/HelloWorld.appx -ss
 RunTest 2 ./../appx/BlockMap/Extra_file_in_blockmap.appx -ss
 RunTest 81 ./../appx/BlockMap/File_missing_from_blockmap.appx -ss
-RunTest 2 ./../appx/BlockMap/No_blockmap.appx -ss
+RunTest 51 ./../appx/BlockMap/No_blockmap.appx -ss
 RunTest 3 ./../appx/BlockMap/Bad_Namespace_Blockmap.appx -ss
 RunTest 81 ./../appx/BlockMap/Duplicate_file_in_blockmap.appx -ss
 RunTest 0  ./../appx/sdx/en-us_win32.appx

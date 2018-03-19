@@ -7,6 +7,8 @@
 #include "Exceptions.hpp"
 #include "ZipObject.hpp"
 #include "AppxPackageObject.hpp"
+#include "MSIXResource.hpp"
+#include "VectorStream.hpp"
 
 namespace MSIX {
     // IAppxFactory
@@ -29,6 +31,7 @@ namespace MSIX {
             auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), inputStream);
             auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, zip.Get());
             *packageReader = result.Detach();
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
@@ -36,10 +39,7 @@ namespace MSIX {
         IStream* inputStream,
         IAppxManifestReader** manifestReader)
     {
-        return ResultOf([&]() {
-            // TODO: Implement
-            throw Exception(Error::NotImplemented);
-        });
+        return static_cast<HRESULT>(Error::NotImplemented);
     }
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBlockMapReader (
@@ -57,6 +57,7 @@ namespace MSIX {
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
             ComPtr<IStream> stream(inputStream);
             *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), stream).Detach();
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
@@ -77,12 +78,14 @@ namespace MSIX {
             ComPtr<IMSIXFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
             auto stream = ComPtr<IStream>::Make<FileStream>(utf16_to_utf8(signatureFileName), FileStream::Mode::READ);
-            auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self->GetValidationOptions(), stream.Get());
+            auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream.Get());
             auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", inputStream);
             *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), validatedStream).Detach();
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
+    // IMSIXFactory
     HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result)
     {
         return ResultOf([&]() {
@@ -95,6 +98,7 @@ namespace MSIX {
             std::memcpy(reinterpret_cast<void*>(*result),
                         reinterpret_cast<void*>(const_cast<wchar_t*>(intermediate.c_str())),
                         countBytes - sizeof(wchar_t));
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
@@ -108,7 +112,23 @@ namespace MSIX {
             std::memcpy(reinterpret_cast<void*>(*buffer),
                         reinterpret_cast<void*>(data.data()),
                         data.size());
+            return static_cast<HRESULT>(Error::OK);
         });
     }
 
+    IStream* AppxFactory::GetResource(const std::string& resource)
+    {
+        if(m_resourcezip.Get() == nullptr) // Initialize it when first needed.
+        {
+            ComPtr<IMSIXFactory> self;
+            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
+            // Get stream of the resource zip file generated at CMake processing.
+            m_resourcesVector = std::vector<std::uint8_t>(MSIX::Resource::resourceByte, MSIX::Resource::resourceByte + MSIX::Resource::resourceLength);
+            auto resourceStream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&m_resourcesVector);
+            m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), resourceStream.Get());
+        }
+        auto file = m_resourcezip->GetFile(resource);
+        ThrowErrorIfNot(Error::FileNotFound, (file.first), resource.c_str());
+        return file.second;
+    }
 } // namespace MSIX 

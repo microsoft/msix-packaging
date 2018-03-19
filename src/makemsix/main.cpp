@@ -238,7 +238,7 @@ int main(int argc, char* argv[])
 
     State state;
     std::map<std::string, Command> commands = {
-        { "unpack", Command("Create a new package from files on disk", [&]() { return state.Specify(UserSpecified::Unpack); },
+        { "unpack", Command("Unpack files from a package to disk", [&]() { return state.Specify(UserSpecified::Unpack); },
             {
                 { "-p", Option(true, "REQUIRED, specify input package name.",
                 [&](const std::string& name) { return state.SetPackageName(name); })
