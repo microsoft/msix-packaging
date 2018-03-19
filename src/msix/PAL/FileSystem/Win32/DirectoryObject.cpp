@@ -106,7 +106,7 @@ namespace MSIX {
         NOTIMPLEMENTED
     }
 
-    std::pair<bool,IStream*> DirectoryObject::GetFile(const std::string& fileName)
+    IStream* DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
         NOTIMPLEMENTED

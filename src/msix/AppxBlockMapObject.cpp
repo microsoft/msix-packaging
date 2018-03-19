@@ -102,8 +102,8 @@ namespace MSIX {
                 filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
             ), "bad pointer");
             auto fileStream = GetFile(utf16_to_utf8(filename));
-            ThrowErrorIfNot(Error::InvalidParameter, (fileStream.first), "file not found!");
-            MSIX::ComPtr<IStream> stream = fileStream.second;
+            ThrowErrorIfNot(Error::InvalidParameter, (fileStream), "file not found!");
+            MSIX::ComPtr<IStream> stream = fileStream;
             *file = stream.As<IAppxBlockMapFile>().Detach();
             return static_cast<HRESULT>(Error::OK);
         });
@@ -153,11 +153,11 @@ namespace MSIX {
         return fileNames;
     }
 
-    std::pair<bool,IStream*> AppxBlockMapObject::GetFile(const std::string& fileName)
+    IStream* AppxBlockMapObject::GetFile(const std::string& fileName)
     {
         auto index = m_blockMapfiles.find(fileName);
         ThrowErrorIf(Error::FileNotFound, (index == m_blockMapfiles.end()), "named file not in blockmap");
-        return std::make_pair(true, index->second.As<IStream>().Detach());
+        return index->second.As<IStream>().Detach();
     }
 
     void AppxBlockMapObject::RemoveFile(const std::string& )                           { NOTIMPLEMENTED }

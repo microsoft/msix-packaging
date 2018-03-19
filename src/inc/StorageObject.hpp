@@ -49,7 +49,7 @@ public:
     virtual std::vector<std::string> GetFileNames(FileNameOptions options) = 0;
 
     // Obtains a pointer to a stream representing the file that exists in the storage object
-    virtual std::pair<bool,IStream*> GetFile(const std::string& fileName) = 0;
+    virtual IStream* GetFile(const std::string& fileName) = 0;
 
     // Remvoes a file by name from the storage object.  If the file does not exist, the operation is a no-op
     virtual void RemoveFile(const std::string& fileName) = 0;
