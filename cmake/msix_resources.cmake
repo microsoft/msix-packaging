@@ -19,7 +19,7 @@ if(NOT WIN32) # Always add the certs for non-Windows.
         "certs/Microsoft_MarketPlace_PCA_2011.cer")
 endif()
 
-#if(USE_VALIDATION_PARSER) turn on when there's an implementation of XmlLite/LibXml2
+if(USE_VALIDATION_PARSER) 
 
 list(APPEND RESOURCES_CONTENTTYPE 
     "AppxPackaging/[Content_Types]/opc-contentTypes.xsd")
@@ -69,7 +69,7 @@ else() # xerces
     # TODO: make changes required to make the xsds WC3 compliant.
 endif()
 
-#endif() USE_VALIDATION_PARSER
+endif(USE_VALIDATION_PARSER) 
 
 # Create zip file. Use execute_process to run the command while CMake is procesing.
 message(STATUS "Resource files:")

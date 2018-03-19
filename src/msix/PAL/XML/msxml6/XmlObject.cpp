@@ -529,8 +529,20 @@ public:
 
     ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream) override
     {   
+        #if VALIDATING
         bool HasIgnorableNamespaces = (XmlContentType::AppxManifestXml == footPrintType);
-        return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces.at(footPrintType), m_factory, HasIgnorableNamespaces);
+        #else
+        bool HasIgnorableNamespaces = false;
+        NamespaceManager emptyManager; 
+        #endif
+
+        return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, 
+            #if VALIDATING        
+                xmlNamespaces.at(footPrintType),
+            #else
+                emptyManager,
+            #endif
+            m_factory, HasIgnorableNamespaces);
     }
 
 protected:
