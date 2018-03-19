@@ -23,18 +23,14 @@ namespace MSIX {
         Unsigned    // no signature.
     };
 
-    namespace OID {
+    class OID 
+    {
+    public:
         // Object identifier for the Windows Store certificate. We look for this
         // identifier in the cert EKUs to determine if the cert originates from
         // Windows Store.
-        const std::string WindowsStore    = "1.3.6.1.4.1.311.76.3.1";
-
-        // https://support.microsoft.com/en-us/kb/287547
-        const std::string IndirectData    = "1.3.6.1.4.1.311.2.1.4";
-        const std::string StatementType   = "1.3.6.1.4.1.311.2.1.11";
-        const std::string SpOpusInfo      = "1.3.6.1.4.1.311.2.1.12";
-        const std::string SipInfo         = "1.3.6.1.4.1.311.2.1.30";
-    } // namespace OID
+        static const std::string WindowsStore()   { return "1.3.6.1.4.1.311.76.3.1"; }
+    };
 
     // APPX-specific header placed in the P7X file, before the actual signature
     const DWORD P7X_FILE_ID = 0x58434b50;

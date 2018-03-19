@@ -112,7 +112,7 @@ namespace MSIX
                         BIO_get_mem_ptr(extbio.get(), &bptr);
                         
                         if (bptr && bptr->data && 
-                            std::string((char*)bptr->data).find(std::string(OID::WindowsStore)) != std::string::npos)
+                            std::string((char*)bptr->data).find(std::string(OID::WindowsStore())) != std::string::npos)
                         {
                             return true;
                         }

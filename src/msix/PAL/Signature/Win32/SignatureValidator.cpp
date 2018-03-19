@@ -378,7 +378,7 @@ namespace MSIX
         if (GetEnhancedKeyUsage(certificateContext.get(), oids))
         {   std::size_t count = oids.size();
             for (std::size_t i = 0; i < count; i++)
-            {   if (0 == oids.at(i).compare(OID::WindowsStore))
+            {   if (0 == oids.at(i).compare(OID::WindowsStore()))
                 {   return true;
                 }
             }
