@@ -251,7 +251,7 @@ namespace MSIX {
         }
     }
 
-    std::string AppxPackageObject::GetPathSeparator() { return "/"; }
+    const char* AppxPackageObject::GetPathSeparator() { return "/"; }
 
     std::vector<std::string> AppxPackageObject::GetFileNames(FileNameOptions options)
     {
