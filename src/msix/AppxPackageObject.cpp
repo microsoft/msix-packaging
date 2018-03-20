@@ -16,7 +16,6 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include <functional>
 #include <limits>
 
 namespace MSIX {
@@ -187,17 +186,17 @@ namespace MSIX {
 
         struct Config
         {
-            using lambda = std::function<MSIX::ComPtr<IStream>()>;
+            typedef MSIX::ComPtr<IStream>(*lambda)(AppxPackageObject* self);
             Config(lambda f) : GetValidationStream(f) {}
             lambda GetValidationStream;
         };
 
         std::map<std::string, Config> footPrintFileNames = {
-            { APPXBLOCKMAP_XML,  Config([&](){ m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return m_appxBlockMap->GetStream();})  },
-            { APPXMANIFEST_XML,  Config([&](){ m_footprintFiles.push_back(APPXMANIFEST_XML);  return m_appxManifest->GetStream();})  },
-            { APPXSIGNATURE_P7X, Config([&](){ if (m_appxSignature->GetStream().Get()){m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return m_appxSignature->GetStream();}) },
-            { CODEINTEGRITY_CAT, Config([&](){ m_footprintFiles.push_back(CODEINTEGRITY_CAT); return m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, std::move(m_container->GetFile(CODEINTEGRITY_CAT)));}) },
-            { CONTENT_TYPES_XML, Config([&]()->IStream*{ return nullptr;}) }, // content types is never implicitly unpacked
+            { APPXBLOCKMAP_XML,  Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return self->m_appxBlockMap->GetStream();})  },
+            { APPXMANIFEST_XML,  Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXMANIFEST_XML);  return self->m_appxManifest->GetStream();})  },
+            { APPXSIGNATURE_P7X, Config([](AppxPackageObject* self){ if (self->m_appxSignature->GetStream().Get()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}) },
+            { CODEINTEGRITY_CAT, Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, std::move(self->m_container->GetFile(CODEINTEGRITY_CAT)));}) },
+            { CONTENT_TYPES_XML, Config([](AppxPackageObject*)->MSIX::ComPtr<IStream>{ return MSIX::ComPtr<IStream>();}) }, // content types is never implicitly unpacked
         };
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
@@ -207,7 +206,7 @@ namespace MSIX {
         for (const auto& fileName : m_container->GetFileNames(FileNameOptions::FootPrintOnly))
         {   auto footPrintFile = footPrintFileNames.find(fileName);
             if (footPrintFile != footPrintFileNames.end())
-            {   m_streams[fileName] = footPrintFile->second.GetValidationStream();
+            {   m_streams[fileName] = footPrintFile->second.GetValidationStream(this);
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
             }
         }
