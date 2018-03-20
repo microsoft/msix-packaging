@@ -22,7 +22,7 @@ namespace MSIX {
         lambda Handler;
     };
 
-    std::array<InflateHandler, InflateStream::State::MAX> stateMachine =
+    std::array<InflateHandler, static_cast<size_t>(InflateStream::State::MAX)> stateMachine =
     {            
         // State::UNINITIALIZED
         InflateHandler([](InflateStream* self, void*, ULONG)
@@ -150,7 +150,7 @@ namespace MSIX {
                 bool stayInLoop = true;
                 while (stayInLoop && (m_bytesRead < countBytes))
                 {
-                    auto&& result = stateMachine[m_state].Handler(this, m_startCurrentBuffer + m_bytesRead, countBytes - m_bytesRead);
+                    auto&& result = stateMachine[static_cast<size_t>(m_state)].Handler(this, m_startCurrentBuffer + m_bytesRead, countBytes - m_bytesRead);
                     stayInLoop = std::get<0>(result);
                     m_previous = m_state;
                     m_state = std::get<1>(result);

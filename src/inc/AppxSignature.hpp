@@ -29,7 +29,7 @@ namespace MSIX {
         // Object identifier for the Windows Store certificate. We look for this
         // identifier in the cert EKUs to determine if the cert originates from
         // Windows Store.
-        static const std::string WindowsStore()   { return "1.3.6.1.4.1.311.76.3.1"; }
+        static const char* WindowsStore()   { return "1.3.6.1.4.1.311.76.3.1"; }
     };
 
     // APPX-specific header placed in the P7X file, before the actual signature
@@ -54,8 +54,8 @@ namespace MSIX {
         // IVerifierObject
         const std::string& GetPublisher() override { return m_publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
-        MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
-        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream) override;
+        ComPtr<IStream> GetStream() override { return m_stream; }
+        ComPtr<IStream> GetValidationStream(const std::string& part, ComPtr<IStream>& stream) override;
 
         using Digest = std::vector<std::uint8_t>;
 

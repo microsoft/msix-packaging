@@ -60,7 +60,7 @@ namespace MSIX {
         void Cleanup();
 
         static const ULONG BUFFERSIZE = 4096;
-        enum State : std::uint8_t
+        enum class State : size_t
         {
             UNINITIALIZED = 0,
             READY_TO_READ,
