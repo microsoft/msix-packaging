@@ -106,7 +106,7 @@ namespace MSIX {
         NOTIMPLEMENTED
     }
 
-    IStream* DirectoryObject::GetFile(const std::string& fileName)
+    ComPtr<IStream> DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
         NOTIMPLEMENTED
@@ -118,7 +118,7 @@ namespace MSIX {
         NOTIMPLEMENTED
     }
 
-    IStream* DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
+    ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
         std::vector<std::string> directories;
         auto PopFirst = [&directories]()
@@ -176,8 +176,9 @@ namespace MSIX {
             found = false;
         }
         name = path + GetPathSeparator() + name;
-        auto result = m_streams[fileName] = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
-        return result.Get();
+        auto result = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
+        m_streams[fileName] = result.Get(); // now cache the result in m_streams.
+        return result;
     }
 
     void DirectoryObject::CommitChanges()

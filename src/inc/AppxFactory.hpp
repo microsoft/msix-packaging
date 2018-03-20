@@ -48,7 +48,7 @@ namespace MSIX {
         HRESULT MarshalOutString(std::string& internal, LPWSTR *result) override;
         HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) override;
         MSIX_VALIDATION_OPTION GetValidationOptions() override { return m_validationOptions; }
-        IStream* GetResource(const std::string& resource) override;
+        ComPtr<IStream> GetResource(const std::string& resource) override;
 
         // IXmlFactory
         MSIX::ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream) override

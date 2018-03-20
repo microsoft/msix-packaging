@@ -111,6 +111,7 @@ SET(LIB_SOURCES
     AppxPackageObject.cpp
     AppxPackaging_i.cpp
     AppxSignature.cpp
+    Exceptions.cpp
     InflateStream.cpp
     Log.cpp
     UnicodeConversion.cpp

@@ -21,7 +21,7 @@
 
 namespace MSIX {
 
-AppxSignatureObject::AppxSignatureObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validationOptions, IStream* stream) : 
+AppxSignatureObject::AppxSignatureObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validationOptions, ComPtr<IStream>& stream) : 
     m_stream(stream), 
     m_validationOptions(validationOptions)
 {
@@ -34,7 +34,7 @@ AppxSignatureObject::AppxSignatureObject(IMSIXFactory* factory, MSIX_VALIDATION_
     }
 }
 
-MSIX::ComPtr<IStream>  AppxSignatureObject::GetValidationStream(const std::string& part, IStream* stream)
+MSIX::ComPtr<IStream>  AppxSignatureObject::GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream)
 {
     if (m_hasDigests)
     {

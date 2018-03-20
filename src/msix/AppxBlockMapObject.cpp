@@ -101,9 +101,9 @@ namespace MSIX {
         ThrowErrorIf(Error::BlockMapSemanticError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
     }
 
-    MSIX::ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, IStream* stream)
+    MSIX::ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream)
     {
-        ThrowErrorIf(Error::InvalidParameter, (part.empty() || stream == nullptr), "bad input");
+        ThrowErrorIf(Error::InvalidParameter, (part.empty() || stream.Get() == nullptr), "bad input");
         auto item = m_blockMap.find(part);
         ThrowErrorIf(Error::BlockMapSemanticError, item == m_blockMap.end(), "file not tracked by blockmap");
         return ComPtr<IStream>::Make<BlockMapStream>(m_factory, part, stream, item->second);
@@ -116,9 +116,8 @@ namespace MSIX {
                 filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
             ), "bad pointer");
             auto fileStream = GetFile(utf16_to_utf8(filename));
-            ThrowErrorIfNot(Error::InvalidParameter, (fileStream), "file not found!");
-            MSIX::ComPtr<IStream> stream = fileStream;
-            *file = stream.As<IAppxBlockMapFile>().Detach();
+            ThrowErrorIfNot(Error::InvalidParameter, (fileStream.Get()), "file not found!");
+            *file = fileStream.As<IAppxBlockMapFile>().Detach();
             return static_cast<HRESULT>(Error::OK);
         });
     }
@@ -167,14 +166,14 @@ namespace MSIX {
         return fileNames;
     }
 
-    IStream* AppxBlockMapObject::GetFile(const std::string& fileName)
+    ComPtr<IStream> AppxBlockMapObject::GetFile(const std::string& fileName)
     {
         auto index = m_blockMapfiles.find(fileName);
         ThrowErrorIf(Error::FileNotFound, (index == m_blockMapfiles.end()), "named file not in blockmap");
-        return index->second.As<IStream>().Detach();
+        return index->second.As<IStream>();
     }
 
     void AppxBlockMapObject::RemoveFile(const std::string& )                           { NOTIMPLEMENTED }
-    IStream* AppxBlockMapObject::OpenFile(const std::string& ,MSIX::FileStream::Mode)  { NOTIMPLEMENTED }
+    ComPtr<IStream> AppxBlockMapObject::OpenFile(const std::string& ,MSIX::FileStream::Mode)  { NOTIMPLEMENTED }
     void AppxBlockMapObject::CommitChanges()                                           { NOTIMPLEMENTED }
 }

@@ -78,8 +78,9 @@ namespace MSIX {
             ComPtr<IMSIXFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
             auto stream = ComPtr<IStream>::Make<FileStream>(utf16_to_utf8(signatureFileName), FileStream::Mode::READ);
-            auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream.Get());
-            auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", inputStream);
+            auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream);
+            ComPtr<IStream> input(inputStream);
+            auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", input);
             *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), validatedStream).Detach();
             return static_cast<HRESULT>(Error::OK);
         });
@@ -116,7 +117,7 @@ namespace MSIX {
         });
     }
 
-    IStream* AppxFactory::GetResource(const std::string& resource)
+    ComPtr<IStream> AppxFactory::GetResource(const std::string& resource)
     {
         if(m_resourcezip.Get() == nullptr) // Initialize it when first needed.
         {
@@ -128,7 +129,7 @@ namespace MSIX {
             m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), resourceStream.Get());
         }
         auto file = m_resourcezip->GetFile(resource);
-        ThrowErrorIfNot(Error::FileNotFound, (file), resource.c_str());
+        ThrowErrorIfNot(Error::FileNotFound, (file.Get()), resource.c_str());
         return file;
     }
 } // namespace MSIX 
