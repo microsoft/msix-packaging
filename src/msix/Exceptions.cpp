@@ -10,7 +10,7 @@ __declspec(noinline)
 #endif
 void 
 #ifndef WIN32
-__attribute__(( noinline, cold, noreturn )) 
+__attribute__(( noinline)) 
 #endif
 RaiseExceptionIfFailed(HRESULT hr, const int line, const char* const file)
 {
