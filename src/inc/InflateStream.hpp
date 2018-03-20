@@ -58,7 +58,7 @@ namespace MSIX {
         }
 
         // IAppxFileInternal
-        std::uint64_t GetCompressSize() override { return m_stream.As<IAppxFileInternal>()->GetCompressSize(); }
+        std::uint64_t GetCompressedSize() override { return m_stream.As<IAppxFileInternal>()->GetCompressedSize(); }
 
     protected:
         void Cleanup();

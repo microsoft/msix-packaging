@@ -221,7 +221,7 @@ namespace MSIX {
                 
                 ComPtr<IAppxFileInternal> appxFileInternal;
                 ThrowHrIfFailed(fileStream.second->QueryInterface(UuidOfImpl<IAppxFileInternal>::iid, reinterpret_cast<void**>(&appxFileInternal)));
-                auto sizeOnZip = appxFileInternal->GetCompressSize();
+                auto sizeOnZip = appxFileInternal->GetCompressedSize();
 
                 auto blocks = blockMapInternal->GetBlocks(fileName);
                 std::uint64_t blocksSize = 0;

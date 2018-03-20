@@ -49,7 +49,7 @@ namespace MSIX {
         inline bool IsCompressed() { return m_isCompressed; }
 
         // IAppxFileInternal
-        std::uint64_t GetCompressSize() override { return m_compressedSize; }
+        std::uint64_t GetCompressedSize() override { return m_compressedSize; }
 
     protected:
         IMSIXFactory*   m_factory;

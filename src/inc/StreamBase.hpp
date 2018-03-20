@@ -26,7 +26,7 @@ class IAppxFileInternal : public IUnknown
 #endif
 {
 public:
-    virtual std::uint64_t GetCompressSize() = 0;
+    virtual std::uint64_t GetCompressedSize() = 0;
 };
 
 SpecializeUuidOfImpl(IAppxFileInternal);
@@ -154,7 +154,11 @@ namespace MSIX {
         }
 
         // IAppxFileInternal
-        virtual std::uint64_t GetCompressSize() override { NOTIMPLEMENTED }
+        virtual std::uint64_t GetCompressedSize() override
+        {
+            NOTIMPLEMENTED;
+            return 0;
+        }
 
         template <class T>
         static ULONG Read(IStream* stream, T* value)
