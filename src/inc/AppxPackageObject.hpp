@@ -78,8 +78,8 @@ namespace MSIX {
         // IVerifierObject
         const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
-        MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
-        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream) override
+        ComPtr<IStream> GetStream() override { return m_stream; }
+        ComPtr<IStream> GetValidationStream(const std::string& part, ComPtr<IStream>& stream) override
         {
             NOTSUPPORTED;
             return ComPtr<IStream>();

@@ -101,7 +101,7 @@ namespace MSIX {
         ThrowErrorIf(Error::BlockMapSemanticError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
     }
 
-    MSIX::ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream)
+    ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, ComPtr<IStream>& stream)
     {
         ThrowErrorIf(Error::InvalidParameter, (part.empty() || stream.Get() == nullptr), "bad input");
         auto item = m_blockMap.find(part);

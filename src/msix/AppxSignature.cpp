@@ -34,7 +34,7 @@ AppxSignatureObject::AppxSignatureObject(IMSIXFactory* factory, MSIX_VALIDATION_
     }
 }
 
-MSIX::ComPtr<IStream>  AppxSignatureObject::GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream)
+ComPtr<IStream>  AppxSignatureObject::GetValidationStream(const std::string& part, ComPtr<IStream>& stream)
 {
     if (m_hasDigests)
     {

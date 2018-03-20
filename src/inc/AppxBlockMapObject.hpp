@@ -224,8 +224,8 @@ namespace MSIX {
             return std::move(std::string());
         }
         bool HasStream() override { return m_stream.Get() != nullptr; }
-        MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
-        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream) override;
+        ComPtr<IStream> GetStream() override { return m_stream; }
+        ComPtr<IStream> GetValidationStream(const std::string& part, ComPtr<IStream>& stream) override;
 
         // IAppxBlockMapReader
         HRESULT STDMETHODCALLTYPE GetFile(LPCWSTR filename, IAppxBlockMapFile **file) override;
