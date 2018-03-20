@@ -110,7 +110,7 @@ namespace MSIX {
         std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
 
         // IStorageObject methods
-        std::string               GetPathSeparator() override;
+        const char*               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
         IStream*                  GetFile(const std::string& fileName) override;
         void                      RemoveFile(const std::string& fileName) override;

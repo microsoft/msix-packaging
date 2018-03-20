@@ -32,7 +32,7 @@ namespace MSIX {
         NOTIMPLEMENTED
     }
     
-    std::string DirectoryObject::GetPathSeparator() { return "/"; }
+    const char* DirectoryObject::GetPathSeparator() { return "/"; }
     
     #define DEFAULT_MODE S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
     void mkdirp(std::string& path, mode_t mode = DEFAULT_MODE)

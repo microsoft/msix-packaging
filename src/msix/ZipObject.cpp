@@ -896,7 +896,7 @@ namespace MSIX {
     IStream* ZipObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)  { NOTIMPLEMENTED }
     void ZipObject::CommitChanges()                                                         { NOTIMPLEMENTED }
 
-    std::string ZipObject::GetPathSeparator() { return "/"; }
+    const char* ZipObject::GetPathSeparator() { return "/"; }
 
     ZipObject::ZipObject(IMSIXFactory* appxFactory, IStream* stream) : m_factory(appxFactory), m_stream(stream)
     {

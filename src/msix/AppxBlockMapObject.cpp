@@ -154,7 +154,7 @@ namespace MSIX {
     }
 
     // IStorageObject methods
-    std::string AppxBlockMapObject::GetPathSeparator() { return "\\"; }
+    const char* AppxBlockMapObject::GetPathSeparator() { return "\\"; }
     std::vector<std::string> AppxBlockMapObject::GetFileNames(FileNameOptions)
     {
         std::vector<std::string> fileNames;

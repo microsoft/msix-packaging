@@ -22,7 +22,7 @@ namespace MSIX {
         ZipObject(IMSIXFactory* factory, IStream* stream);
 
         // StorageObject methods
-        std::string                 GetPathSeparator() override;
+        const char*                 GetPathSeparator() override;
         std::vector<std::string>    GetFileNames(FileNameOptions options) override;
         IStream*                    GetFile(const std::string& fileName) override;
         void                        RemoveFile(const std::string& fileName) override;

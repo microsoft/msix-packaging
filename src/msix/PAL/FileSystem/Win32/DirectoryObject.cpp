@@ -98,7 +98,7 @@ namespace MSIX {
             "FindNextFile");
     }
 
-    std::string DirectoryObject::GetPathSeparator() { return "\\"; }
+    const char* DirectoryObject::GetPathSeparator() { return "\\"; }
 
     std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
     {
