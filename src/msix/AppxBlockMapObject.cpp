@@ -173,7 +173,17 @@ namespace MSIX {
         return index->second.As<IStream>();
     }
 
-    void AppxBlockMapObject::RemoveFile(const std::string& )                           { NOTIMPLEMENTED }
-    ComPtr<IStream> AppxBlockMapObject::OpenFile(const std::string& ,MSIX::FileStream::Mode)  { NOTIMPLEMENTED }
-    void AppxBlockMapObject::CommitChanges()                                           { NOTIMPLEMENTED }
+    void AppxBlockMapObject::RemoveFile(const std::string& )
+    {
+        NOTIMPLEMENTED
+    }
+    ComPtr<IStream> AppxBlockMapObject::OpenFile(const std::string& ,MSIX::FileStream::Mode)
+    {
+        NOTIMPLEMENTED
+        return ComPtr<IStream>();
+    }
+    void AppxBlockMapObject::CommitChanges()
+    {
+        NOTIMPLEMENTED
+    }
 }

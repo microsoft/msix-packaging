@@ -892,9 +892,19 @@ namespace MSIX {
         return result->second;
     }
 
-    void ZipObject::RemoveFile(const std::string& fileName)                                 { NOTIMPLEMENTED }
-    ComPtr<IStream> ZipObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)  { NOTIMPLEMENTED }
-    void ZipObject::CommitChanges()                                                         { NOTIMPLEMENTED }
+    void ZipObject::RemoveFile(const std::string& fileName)
+    {
+        NOTIMPLEMENTED;
+    }
+    ComPtr<IStream> ZipObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
+    { 
+        NOTIMPLEMENTED;
+        return ComPtr<IStream>();
+    }
+    void ZipObject::CommitChanges()
+    {
+        NOTIMPLEMENTED;
+    }
 
     const char* ZipObject::GetPathSeparator() { return "/"; }
 

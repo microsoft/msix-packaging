@@ -66,6 +66,18 @@ struct State
         return true;
     }
 
+    bool Validate()
+    {
+        switch (specified)
+        {
+        case UserSpecified::Unpack:            
+            if (packageName.empty() || directoryName.empty()) {
+                return false;
+            }            
+        }
+        return true;
+    }
+
     std::string packageName;
     std::string certName;
     std::string directoryName;
@@ -139,7 +151,7 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
         return 0;
     case UserSpecified::Unpack:
         command = std::find(commands.begin(), commands.end(), "unpack");
-        std::cout << "    " << toolName << " upack -p <package> -d <directory> [options] " << std::endl;
+        std::cout << "    " << toolName << " unpack -p <package> -d <directory> [options] " << std::endl;
         std::cout << std::endl;
         std::cout << "Description:" << std::endl;
         std::cout << "------------" << std::endl;
@@ -152,8 +164,7 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
     std::cout << "Options:" << std::endl;
     std::cout << "--------" << std::endl;
 
-    for (const auto& option : command->Options)
-    {
+    for (const auto& option : command->Options) {
         std::cout << "    " << std::left << std::setfill(' ') << std::setw(5) <<
             option.Name << ": " << option.Help << std::endl;
     }
@@ -174,30 +185,42 @@ bool ParseInput(std::vector<Command>& commands, State& state, int argc, char* ar
     while (index < argc)
     {
         command = std::find(commands.begin(), commands.end(), argv[index]);
-        if (command == commands.end())   { return false; }
-        if (!command->Callback(state))   { return false; }
-        if (++index == argc)             { break; }
+        if (command == commands.end()) {
+            return false;
+        }
+        if (!command->Callback(state)) {
+            return false;
+        }
+        if (++index == argc) {
+            break;
+        }
         option = std::find(command->Options.begin(), command->Options.end(), argv[index]);
         while (option != command->Options.end())
         {
             char const *parameter = "";
-            if (option->TakesParameter)
-            {
-                if (++index == argc) { break; }
+            if (option->TakesParameter) {
+                if (++index == argc) {
+                    break;
+                }
                 parameter = argv[index];
             }            
-            if (!option->Callback(state, parameter)) { return false; }
-            if (++index == argc) { break; }
+            if (!option->Callback(state, parameter)) {
+                return false;
+            }
+            if (++index == argc) {
+                break;
+            }
             option = std::find(command->Options.begin(), command->Options.end(), argv[index]);
         }
     }
-    return true;
+    return state.Validate();
 }
 
 // Parses argc/argv input via commands into state, and calls into the 
 // appropriate function with the correct parameters if warranted.
-int ParseAndRun(std::vector<Command>& commands, State& state, int argc, char* argv[])
+int ParseAndRun(std::vector<Command>& commands, int argc, char* argv[])
 {
+    State state;
     if (!ParseInput(commands, state, argc, argv)) { 
         return Help(argv[0], commands, state);
     }
@@ -208,11 +231,6 @@ int ParseAndRun(std::vector<Command>& commands, State& state, int argc, char* ar
     case UserSpecified::Nothing:
         return Help(argv[0], commands, state);
     case UserSpecified::Unpack:
-        if (state.packageName.empty() || state.directoryName.empty())
-        {
-            Error(argv[0]);
-            return -1;
-        }
         return UnpackPackage(state.unpackOptions, state.validationOptions,
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
@@ -241,35 +259,29 @@ int main(int argc, char* argv[])
     std::cout << "Copyright (C) 2017 Microsoft.  All rights reserved." << std::endl;
 
     std::vector<Command> commands = {
-        {   Command("unpack", "Unpack files from a package to disk", [](State& state) { return state.Specify(UserSpecified::Unpack); },
-            {
-                {   Option("-p", true, "REQUIRED, specify input package name.",
-                [](State& state, const std::string& name) { return state.SetPackageName(name); })
-                },
-                {   Option("-d", true, "REQUIRED, specify output directory name.",
-                    [](State& state, const std::string& name) { return state.SetDirectoryName(name); })
-                },
-                {   Option("-mv", false, "Skips manifest validation.  By default manifest validation is enabled.",
-                    [](State& state, const std::string&) { return state.SkipManifestValidation(); })
-                },
-                {   Option("-sv", false, "Skips signature validation.  By default signature validation is enabled.",
-                    [](State& state, const std::string&) { return state.AllowSignatureOriginUnknown(); })
-                },
-                {   Option("-ss", false, "Skips enforcement of signed packages.  By default packages must be signed.",
-                    [](State& state, const std::string&) { return state.SkipSignature(); })
-                },
-                {   Option("-?", false, "Displays this help text.",
-                    [](State& state, const std::string&) { return false; })
-                }
+        {   Command("unpack", "Unpack files from a package to disk",
+                [](State& state) { return state.Specify(UserSpecified::Unpack); },
+            {   
+                Option("-p", true, "REQUIRED, specify input package name.",
+                    [](State& state, const std::string& name) { return state.SetPackageName(name); }),
+                Option("-d", true, "REQUIRED, specify output directory name.",
+                    [](State& state, const std::string& name) { return state.SetDirectoryName(name); }),
+                Option("-mv", false, "Skips manifest validation.  By default manifest validation is enabled.",
+                    [](State& state, const std::string&) { return state.SkipManifestValidation(); }),
+                Option("-sv", false, "Skips signature validation.  By default signature validation is enabled.",
+                    [](State& state, const std::string&) { return state.AllowSignatureOriginUnknown(); }),
+                Option("-ss", false, "Skips enforcement of signed packages.  By default packages must be signed.",
+                    [](State& state, const std::string&) { return state.SkipSignature(); }),
+                Option("-?", false, "Displays this help text.",
+                    [](State& state, const std::string&) { return false; })                
             })
         },
-        {
-            Command("-?", "Displays this help text.", [](State& state) { return state.Specify(UserSpecified::Help);}, {})
+        {   Command("-?", "Displays this help text.",
+                [](State& state) { return state.Specify(UserSpecified::Help);}, {})
         },
     };
 
-    State state;
-    auto result = ParseAndRun(commands, state, argc, argv);
+    auto result = ParseAndRun(commands, argc, argv);
     if (result != 0)
     {        
         std::cout << "Error: " << std::hex << result << std::endl;

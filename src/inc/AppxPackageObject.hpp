@@ -79,7 +79,11 @@ namespace MSIX {
         const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
         MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
-        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream) override { NOTSUPPORTED }
+        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream) override
+        {
+            NOTSUPPORTED;
+            return ComPtr<IStream>();
+        }
 
         AppxPackageId* GetPackageId()    { return m_packageId.get(); }
         std::string GetPackageFullName() { return m_packageId->GetPackageFullName(); }
@@ -155,20 +159,22 @@ namespace MSIX {
             });
         }
 
-        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override
-        {   return ResultOf([&]{
-                ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
-                *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
-                return static_cast<HRESULT>(Error::OK);
-            });
+        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) noexcept override
+        {   
+            if (nullptr == hasCurrent) {
+                return static_cast<HRESULT>(Error::InvalidParameter);
+            }
+            *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
+            return static_cast<HRESULT>(Error::OK);
         }
 
-        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override      
-        {   return ResultOf([&]{
-                ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
-                *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
-                return static_cast<HRESULT>(Error::OK);
-            });
+        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) noexcept override      
+        {   
+            if (nullptr == hasNext) {
+                return static_cast<HRESULT>(Error::InvalidParameter);
+            }            
+            *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
+            return static_cast<HRESULT>(Error::OK);
         }
     };
 }

@@ -286,8 +286,8 @@ namespace MSIX {
 
     ComPtr<IStream> AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
     {
-        // TODO: Implement
         NOTIMPLEMENTED
+        return ComPtr<IStream>();
     }
 
     void AppxPackageObject::CommitChanges()
