@@ -186,7 +186,7 @@ namespace MSIX {
 
         struct Config
         {
-            typedef MSIX::ComPtr<IStream>(*lambda)(AppxPackageObject* self);
+            typedef MSIX::ComPtr<IStream> (*lambda)(AppxPackageObject* self);
             Config(lambda f) : GetValidationStream(f) {}
             lambda GetValidationStream;
         };
@@ -195,7 +195,7 @@ namespace MSIX {
             { APPXBLOCKMAP_XML,  Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return self->m_appxBlockMap->GetStream();})  },
             { APPXMANIFEST_XML,  Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXMANIFEST_XML);  return self->m_appxManifest->GetStream();})  },
             { APPXSIGNATURE_P7X, Config([](AppxPackageObject* self){ if (self->m_appxSignature->GetStream().Get()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}) },
-            { CODEINTEGRITY_CAT, Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, self->m_container->GetFile(CODEINTEGRITY_CAT));}) },
+            { CODEINTEGRITY_CAT, Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); auto file = self->m_container->GetFile(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, file);}) },
             { CONTENT_TYPES_XML, Config([](AppxPackageObject*)->MSIX::ComPtr<IStream>{ return MSIX::ComPtr<IStream>();}) }, // content types is never implicitly unpacked
         };
 
