@@ -10,6 +10,7 @@
 #include <vector>
 #include <string>
 #include <initializer_list>
+#include <algorithm>
 
 // Describes which command the user specified
 enum class UserSpecified
