@@ -153,27 +153,27 @@ namespace MSIX {
         // TODO: pass validation flags and other necessary goodness through.
         auto file = m_container->GetFile(APPXSIGNATURE_P7X);
         if ((validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
-        {   ThrowErrorIfNot(Error::MissingAppxSignatureP7X, (file), "AppxSignature.p7x not in archive!");
+        {   ThrowErrorIf(Error::MissingAppxSignatureP7X, (nullptr == file.Get()), "AppxSignature.p7x not in archive!");
         }
 
         m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(factory, validation, file);
 
         // 2. Get content type using signature object for validation
         file = m_container->GetFile(CONTENT_TYPES_XML);
-        ThrowErrorIfNot(Error::MissingContentTypesXML, (file), "[Content_Types].xml not in archive!");
+        ThrowErrorIf(Error::MissingContentTypesXML, (nullptr == file.Get()), "[Content_Types].xml not in archive!");
         MSIX::ComPtr<IStream> stream = m_appxSignature->GetValidationStream(CONTENT_TYPES_XML, file);        
         auto contentType = xmlFactory->CreateDomFromStream(XmlContentType::ContentTypeXml, stream);
 
         // 3. Get blockmap object using signature object for validation        
         file = m_container->GetFile(APPXBLOCKMAP_XML);
-        ThrowErrorIfNot(Error::MissingAppxBlockMapXML, (file), "AppxBlockMap.xml not in archive!");
+        ThrowErrorIf(Error::MissingAppxBlockMapXML, (nullptr == file.Get()), "AppxBlockMap.xml not in archive!");
         stream = m_appxSignature->GetValidationStream(APPXBLOCKMAP_XML, file);
         m_appxBlockMap = ComPtr<IVerifierObject>::Make<AppxBlockMapObject>(factory, stream);
 
         // 4. Get manifest object using blockmap object for validation
         // TODO: pass validation flags and other necessary goodness through.
         file = m_container->GetFile(APPXMANIFEST_XML);
-        ThrowErrorIfNot(Error::MissingAppxManifestXML, (file), "AppxManifest.xml not in archive!");
+        ThrowErrorIf(Error::MissingAppxManifestXML, (nullptr == file.Get()), "AppxManifest.xml not in archive!");
         stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, file);
         m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(xmlFactory.Get(), stream);
         
@@ -195,7 +195,7 @@ namespace MSIX {
             { APPXBLOCKMAP_XML,  Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return self->m_appxBlockMap->GetStream();})  },
             { APPXMANIFEST_XML,  Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXMANIFEST_XML);  return self->m_appxManifest->GetStream();})  },
             { APPXSIGNATURE_P7X, Config([](AppxPackageObject* self){ if (self->m_appxSignature->GetStream().Get()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}) },
-            { CODEINTEGRITY_CAT, Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, std::move(self->m_container->GetFile(CODEINTEGRITY_CAT)));}) },
+            { CODEINTEGRITY_CAT, Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, self->m_container->GetFile(CODEINTEGRITY_CAT));}) },
             { CONTENT_TYPES_XML, Config([](AppxPackageObject*)->MSIX::ComPtr<IStream>{ return MSIX::ComPtr<IStream>();}) }, // content types is never implicitly unpacked
         };
 
@@ -218,7 +218,7 @@ namespace MSIX {
             {   std::string containerFileName = EncodeFileName(fileName);
                 m_payloadFiles.push_back(containerFileName);
                 auto fileStream = m_container->GetFile(containerFileName);
-                ThrowErrorIfNot(Error::FileNotFound, (fileStream), "File described in blockmap not contained in OPC container");
+                ThrowErrorIfNot(Error::FileNotFound, (fileStream.Get()), "File described in blockmap not contained in OPC container");
                 m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream);
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
             }
@@ -247,7 +247,7 @@ namespace MSIX {
 
             ULARGE_INTEGER bytesCount = {0};
             bytesCount.QuadPart = std::numeric_limits<std::uint64_t>::max();
-            ThrowHrIfFailed(sourceFile->CopyTo(targetFile, bytesCount, nullptr, nullptr));
+            ThrowHrIfFailed(sourceFile->CopyTo(targetFile.Get(), bytesCount, nullptr, nullptr));
         }
     }
 
@@ -268,14 +268,14 @@ namespace MSIX {
         return result;
     }
 
-    IStream* AppxPackageObject::GetFile(const std::string& fileName)
+    ComPtr<IStream> AppxPackageObject::GetFile(const std::string& fileName)
     {
         auto result = m_streams.find(fileName);
         if (result == m_streams.end())
         {
-            return nullptr;
+            return ComPtr<IStream>();
         }
-        return result->second.Get();
+        return result->second;
     }
 
     void AppxPackageObject::RemoveFile(const std::string& fileName)
@@ -284,7 +284,7 @@ namespace MSIX {
         NOTIMPLEMENTED
     }
 
-    IStream* AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
+    ComPtr<IStream> AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
     {
         // TODO: Implement
         NOTIMPLEMENTED

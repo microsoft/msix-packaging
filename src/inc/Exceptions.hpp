@@ -169,7 +169,6 @@ namespace MSIX {
     template <typename E, class C>
     #ifdef WIN32
     __declspec(noinline)
-    constexpr
     #endif
     void 
     #ifndef WIN32
@@ -183,7 +182,16 @@ namespace MSIX {
         builder << "Call failed in " << file << " on line " << line;
         std::string message = builder.str();
         throw E(message, c);
-    }    
+    }
+    
+    #ifdef WIN32
+    __declspec(noinline)
+    #endif
+    void 
+    #ifndef WIN32
+    __attribute__(( noinline, cold, noreturn )) 
+    #endif    
+    RaiseExceptionIfFailed(HRESULT hr, const int line, const char* const file);
 }
 
 // Helper to make code more terse and more readable at the same time.
@@ -195,9 +203,4 @@ namespace MSIX {
 #define ThrowWin32ErrorIfNot(c, a, m) if (!(a)) { MSIX::RaiseException<MSIX::Win32Exception>(__LINE__, __FILE__, m, c); }
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
 
-#define ThrowHrIfFailed(a)                                                      \
-{   HRESULT hr = a;                                                             \
-    if (FAILED(hr))                                                             \
-    {   MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, hr); \
-    }                                                                           \
-}
+#define ThrowHrIfFailed(a) MSIX::RaiseExceptionIfFailed(a, __LINE__, __FILE__);

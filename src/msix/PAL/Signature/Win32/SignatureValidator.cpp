@@ -433,7 +433,7 @@ namespace MSIX
     bool SignatureValidator::Validate(
         IMSIXFactory* factory,
         MSIX_VALIDATION_OPTION option,
-        IStream *stream,
+        ComPtr<IStream>& stream,
         std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,
         SignatureOrigin& origin,
         std::string& publisher)
@@ -441,7 +441,7 @@ namespace MSIX
         // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
         if (option & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
         
-        ThrowErrorIfNot(Error::MissingAppxSignatureP7X, (stream), "AppxSignature.p7x missing");
+        ThrowErrorIf(Error::MissingAppxSignatureP7X, (nullptr == stream.Get()), "AppxSignature.p7x missing");
         
         LARGE_INTEGER li = {0};
         ULARGE_INTEGER uli = {0};

@@ -79,7 +79,7 @@ namespace MSIX {
         const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
         MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
-        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override { NOTSUPPORTED }
+        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream) override { NOTSUPPORTED }
 
         AppxPackageId* GetPackageId()    { return m_packageId.get(); }
         std::string GetPackageFullName() { return m_packageId->GetPackageFullName(); }
@@ -112,9 +112,9 @@ namespace MSIX {
         // IStorageObject methods
         const char*               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
-        IStream*                  GetFile(const std::string& fileName) override;
+        ComPtr<IStream>           GetFile(const std::string& fileName) override;
         void                      RemoveFile(const std::string& fileName) override;
-        IStream*                  OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
+        ComPtr<IStream>           OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         void                      CommitChanges() override;
 
     protected:
@@ -150,7 +150,7 @@ namespace MSIX {
         {   return ResultOf([&]{
                 ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
                 ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor])).As<IAppxFile>().Detach();
+                *file = m_storage->GetFile(m_files[m_cursor]).As<IAppxFile>().Detach();
                 return static_cast<HRESULT>(Error::OK);
             });
         }

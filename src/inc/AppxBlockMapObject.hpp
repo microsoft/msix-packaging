@@ -221,7 +221,7 @@ namespace MSIX {
         const std::string& GetPublisher() override { NOTSUPPORTED }
         bool HasStream() override { return m_stream.Get() != nullptr; }
         MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
-        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override;
+        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, MSIX::ComPtr<IStream>& stream) override;
 
         // IAppxBlockMapReader
         HRESULT STDMETHODCALLTYPE GetFile(LPCWSTR filename, IAppxBlockMapFile **file) override;
@@ -232,9 +232,9 @@ namespace MSIX {
         // IStorageObject methods
         const char*               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
-        IStream*                  GetFile(const std::string& fileName) override;
+        ComPtr<IStream>           GetFile(const std::string& fileName) override;
         void                      RemoveFile(const std::string& fileName) override;
-        IStream*                  OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
+        ComPtr<IStream>           OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         void                      CommitChanges() override;
 
     protected:
