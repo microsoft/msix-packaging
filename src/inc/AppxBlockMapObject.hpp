@@ -10,7 +10,6 @@
 #include <iterator>
 
 #include "StreamBase.hpp"
-#include "StorageObject.hpp"
 #include "VerifierObject.hpp"
 #include "AppxPackaging.hpp"
 #include "ComHelper.hpp"
@@ -18,6 +17,24 @@
 #include "AppxFactory.hpp"
 #include "IXml.hpp"
 #include "BlockMapStream.hpp"
+
+// internal interface
+EXTERN_C const IID IID_IAppxBlockMapInternal;
+#ifndef WIN32
+// {67fed21a-70ef-4175-8f12-415b213ab6d2}
+interface IAppxBlockMapInternal : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IAppxBlockMapInternal : public IUnknown
+#endif
+{
+public:
+    virtual std::vector<std::string>  GetFileNames() = 0;
+    virtual std::vector<MSIX::Block>  GetBlocks(const std::string& fileName) = 0;
+    virtual MSIX::ComPtr<IAppxBlockMapFile> GetFile(const std::string& fileName) = 0;
+};
+SpecializeUuidOfImpl(IAppxBlockMapInternal);
 
 namespace MSIX {
 
@@ -212,7 +229,7 @@ namespace MSIX {
     };
 
     // Object backed by AppxBlockMap.xml
-    class AppxBlockMapObject : public MSIX::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IStorageObject>
+    class AppxBlockMapObject : public MSIX::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IAppxBlockMapInternal>
     {
     public:
         AppxBlockMapObject(IMSIXFactory* factory, ComPtr<IStream>& stream);
@@ -229,17 +246,14 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetHashMethod(IUri **hashMethod) override;
         HRESULT STDMETHODCALLTYPE GetStream(IStream **blockMapStream) override;
 
-        // IStorageObject methods
-        std::string               GetPathSeparator() override;
-        std::vector<std::string>  GetFileNames(FileNameOptions options) override;
-        std::pair<bool,IStream*>  GetFile(const std::string& fileName) override;
-        void                      RemoveFile(const std::string& fileName) override;
-        IStream*                  OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
-        void                      CommitChanges() override;
+        // IAppxBlockMapInternal methods
+        std::vector<std::string>        GetFileNames() override;
+        std::vector<Block>              GetBlocks(const std::string& fileName) override;
+        MSIX::ComPtr<IAppxBlockMapFile> GetFile(const std::string& fileName) override;
 
     protected:
         std::map<std::string, std::vector<Block>>        m_blockMap;
-        std::map<std::string, ComPtr<IAppxBlockMapFile>> m_blockMapfiles;
+        std::map<std::string, ComPtr<IAppxBlockMapFile>> m_blockMapFiles;
         IMSIXFactory*   m_factory;
         ComPtr<IStream> m_stream;
     };
