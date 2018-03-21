@@ -111,34 +111,25 @@ namespace MSIX {
 
     AppxManifestObject::AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
     {      
-        struct _context
-        {
-            AppxManifestObject* self;
-            size_t identitiesFound;
-        };
-        _context context = {};
-        context.self            = this;
-        context.identitiesFound = 0;
-
         auto dom = factory->CreateDomFromStream(XmlContentType::AppxManifestXml, stream);
-        dom->ForEachElementIn(dom->GetDocument().Get(), XmlQueryName::Package_Identity, static_cast<void*>(&context), 
-            [](void* c, IXmlElement* identityNode){
-                _context* context = reinterpret_cast<_context*>(c);
-                context->identitiesFound++;
-                ThrowErrorIf(Error::AppxManifestSemanticError, (context->identitiesFound > 1), "There must be only one Identity element at most in AppxManifest.xml");
+        dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Package_Identity, XmlVisitor(
+            static_cast<void*>(this), 
+            [](void* s, const ComPtr<IXmlElement>& identityNode)->bool
+        {
+            AppxManifestObject* self = reinterpret_cast<AppxManifestObject*>(s);
+            ThrowErrorIf(Error::AppxManifestSemanticError, (nullptr != self->m_packageId), "There must be only one Identity element at most in AppxManifest.xml");
 
-                const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Name);
-                const auto& architecture   = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ProcessorArchitecture);
-                const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Publisher);
-                const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Version);
-                const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ResourceId);
+            const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Name);
+            const auto& architecture   = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ProcessorArchitecture);
+            const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Publisher);
+            const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Version);
+            const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ResourceId);
 
-                context->self->m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisher);
-                return true;             
-            }
-        );
+            self->m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisher);
+            return true;             
+        }));
         // Have to check for this semantically as not all validating parsers can validate this via schema
-        ThrowErrorIf(Error::AppxManifestSemanticError, (context.identitiesFound == 0), "No Identity element in AppxManifest.xml");
+        ThrowErrorIfNot(Error::AppxManifestSemanticError, m_packageId, "No Identity element in AppxManifest.xml");
     }
 
     AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container) :
@@ -153,27 +144,27 @@ namespace MSIX {
         // TODO: pass validation flags and other necessary goodness through.
         auto file = m_container->GetFile(APPXSIGNATURE_P7X);
         if ((validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
-        {   ThrowErrorIf(Error::MissingAppxSignatureP7X, (nullptr == file.Get()), "AppxSignature.p7x not in archive!");
+        {   ThrowErrorIfNot(Error::MissingAppxSignatureP7X, file, "AppxSignature.p7x not in archive!");
         }
 
         m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(factory, validation, file);
 
         // 2. Get content type using signature object for validation
         file = m_container->GetFile(CONTENT_TYPES_XML);
-        ThrowErrorIf(Error::MissingContentTypesXML, (nullptr == file.Get()), "[Content_Types].xml not in archive!");
+        ThrowErrorIfNot(Error::MissingContentTypesXML, file, "[Content_Types].xml not in archive!");
         ComPtr<IStream> stream = m_appxSignature->GetValidationStream(CONTENT_TYPES_XML, file);        
         auto contentType = xmlFactory->CreateDomFromStream(XmlContentType::ContentTypeXml, stream);
 
         // 3. Get blockmap object using signature object for validation        
         file = m_container->GetFile(APPXBLOCKMAP_XML);
-        ThrowErrorIf(Error::MissingAppxBlockMapXML, (nullptr == file.Get()), "AppxBlockMap.xml not in archive!");
+        ThrowErrorIfNot(Error::MissingAppxBlockMapXML, file, "AppxBlockMap.xml not in archive!");
         stream = m_appxSignature->GetValidationStream(APPXBLOCKMAP_XML, file);
         m_appxBlockMap = ComPtr<IVerifierObject>::Make<AppxBlockMapObject>(factory, stream);
 
         // 4. Get manifest object using blockmap object for validation
         // TODO: pass validation flags and other necessary goodness through.
         file = m_container->GetFile(APPXMANIFEST_XML);
-        ThrowErrorIf(Error::MissingAppxManifestXML, (nullptr == file.Get()), "AppxManifest.xml not in archive!");
+        ThrowErrorIfNot(Error::MissingAppxManifestXML, file, "AppxManifest.xml not in archive!");
         stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, file);
         m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(xmlFactory.Get(), stream);
         
@@ -194,7 +185,7 @@ namespace MSIX {
         std::map<std::string, Config> footPrintFileNames = {
             { APPXBLOCKMAP_XML,  Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return self->m_appxBlockMap->GetStream();})  },
             { APPXMANIFEST_XML,  Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXMANIFEST_XML);  return self->m_appxManifest->GetStream();})  },
-            { APPXSIGNATURE_P7X, Config([](AppxPackageObject* self){ if (self->m_appxSignature->GetStream().Get()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}) },
+            { APPXSIGNATURE_P7X, Config([](AppxPackageObject* self){ if (self->m_appxSignature->HasStream()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}) },
             { CODEINTEGRITY_CAT, Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); auto file = self->m_container->GetFile(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, file);}) },
             { CONTENT_TYPES_XML, Config([](AppxPackageObject*)->ComPtr<IStream>{ return ComPtr<IStream>();}) }, // content types is never implicitly unpacked
         };
@@ -309,7 +300,7 @@ namespace MSIX {
             auto footprint = footprintFiles.find(type);
             ThrowErrorIf(Error::FileNotFound, (footprint == footprintFiles.end()), "unknown footprint file type");
             ComPtr<IStream> stream = GetFile(footprint->second);
-            ThrowErrorIf(Error::FileNotFound, (stream.Get() == nullptr), "requested footprint file not in package")
+            ThrowErrorIfNot(Error::FileNotFound, stream, "requested footprint file not in package")
             // Clients expect the stream's pointer to be at the start of the file!
             ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
             auto result = stream.As<IAppxFile>();
@@ -324,7 +315,7 @@ namespace MSIX {
             ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
             std::string name = utf16_to_utf8(fileName);
             ComPtr<IStream> stream = GetFile(name);
-            ThrowErrorIf(Error::FileNotFound, (stream.Get() == nullptr), "requested file not in package")
+            ThrowErrorIfNot(Error::FileNotFound, stream, "requested file not in package")
             // Clients expect the stream's pointer to be at the start of the file!
             ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
             auto result = stream.As<IAppxFile>();

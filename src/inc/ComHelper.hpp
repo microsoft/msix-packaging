@@ -98,6 +98,9 @@ namespace MSIX {
             return *this;
         }
 
+        // conversion-to-bool to remove/avoid usage of nullptr == _x_.Get() checks.
+        inline explicit operator bool() const { return m_ptr != nullptr; }
+
         ~ComPtr() { InternalRelease(); }
 
         inline T* operator->() const { return m_ptr; }
