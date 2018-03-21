@@ -119,7 +119,7 @@ namespace MSIX {
 
     ComPtr<IStream> AppxFactory::GetResource(const std::string& resource)
     {
-        if(m_resourcezip.Get() == nullptr) // Initialize it when first needed.
+        if(m_resourcezip) // Initialize it when first needed.
         {
             ComPtr<IMSIXFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
@@ -129,7 +129,7 @@ namespace MSIX {
             m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), resourceStream.Get());
         }
         auto file = m_resourcezip->GetFile(resource);
-        ThrowErrorIf(Error::FileNotFound, (nullptr == file.Get()), resource.c_str());
+        ThrowErrorIfNot(Error::FileNotFound, file, resource.c_str());
         return file;
     }
 } // namespace MSIX 

@@ -179,9 +179,8 @@ namespace MSIX {
         std::size_t                 m_cursor = 0;
 
     public:
-        AppxBlockMapFilesEnumerator(IAppxBlockMapReader* reader, std::vector<std::string>&& files) :
-            m_reader(reader),
-            m_files(files)
+        AppxBlockMapFilesEnumerator(const ComPtr<IAppxBlockMapReader>& reader, std::vector<std::string>&& files) :
+            m_reader(reader), m_files(files)
         {}
 
         // IAppxBlockMapFilesEnumerator
@@ -223,7 +222,7 @@ namespace MSIX {
             NOTSUPPORTED;
             return std::move(std::string());
         }
-        bool HasStream() override { return m_stream.Get() != nullptr; }
+        bool HasStream() override { return !!m_stream; }
         ComPtr<IStream> GetStream() override { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>& stream) override;
 

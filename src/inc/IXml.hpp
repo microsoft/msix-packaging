@@ -62,7 +62,15 @@ public:
     virtual std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) = 0;
 };
 
-typedef bool(*XmlVisitor)(void*, IXmlElement*);
+struct XmlVisitor
+{        
+    typedef bool(*lambda)(void*, const MSIX::ComPtr<IXmlElement>& );
+
+    void*   context;
+    lambda  Callback;
+
+    XmlVisitor(void* c, lambda f) : context(c), Callback(f) {}
+};
 
 #ifndef WIN32
 // {0e7a446e-baf7-44c1-b38a-216bfa18a1a8}
@@ -75,10 +83,9 @@ class IXmlDom : public IUnknown
 public:
     virtual MSIX::ComPtr<IXmlElement> GetDocument() = 0;
     virtual bool ForEachElementIn(
-        IXmlElement* root,
+        const MSIX::ComPtr<IXmlElement>& root,
         XmlQueryName query,
-        void*        context,
-        XmlVisitor   visitor
+        XmlVisitor&  visitor
     ) = 0;
 };
 
