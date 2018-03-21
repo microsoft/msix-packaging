@@ -17,19 +17,19 @@ namespace MSIX {
     std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
-        NOTIMPLEMENTED
+        NOTIMPLEMENTED;
     }
     
     ComPtr<IStream> DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
-        NOTIMPLEMENTED
+        NOTIMPLEMENTED;
     }
     
     void DirectoryObject::RemoveFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
-        NOTIMPLEMENTED
+        NOTIMPLEMENTED;
     }
     
     const char* DirectoryObject::GetPathSeparator() { return "/"; }

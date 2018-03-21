@@ -217,11 +217,7 @@ namespace MSIX {
         AppxBlockMapObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);
 
         // IVerifierObject
-        const std::string& GetPublisher() override
-        {
-            NOTSUPPORTED;
-            return std::move(std::string());
-        }
+        const std::string& GetPublisher() override {NOTSUPPORTED;}
         bool HasStream() override { return !!m_stream; }
         ComPtr<IStream> GetStream() override { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>& stream) override;

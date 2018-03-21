@@ -104,14 +104,12 @@ namespace MSIX {
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
         NOTIMPLEMENTED;
-        return std::vector<std::string>();
     }
 
     ComPtr<IStream> DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes.
         NOTIMPLEMENTED;
-        return ComPtr<IStream>();
     }
 
     void DirectoryObject::RemoveFile(const std::string& fileName)

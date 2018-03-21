@@ -12,26 +12,14 @@
 
 namespace MSIX {
 
-    typedef struct DigestHash
-    {
-        MSIX::AppxSignatureObject::DigestName name;
-        std::uint8_t content[HASH_BYTES];
-    } DigestHash;
-
-    typedef struct DigestHeader
-    {
-        MSIX::AppxSignatureObject::DigestName name;
-        DigestHash hash[1];
-    } DigestHeader;
-
     class SignatureValidator
     {
     public:
         static bool Validate(
             IMSIXFactory* factory,
             MSIX_VALIDATION_OPTION option, 
-            const ComPtr<IStream>& stream, 
-            std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,
+            const ComPtr<IStream>& stream,
+            AppxSignatureObject* signatureObject,
             SignatureOrigin& origin,
             std::string& publisher);
     };
