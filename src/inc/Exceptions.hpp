@@ -169,6 +169,7 @@ namespace MSIX {
     template <typename E, class C>
     #ifdef WIN32
     __declspec(noinline)
+    __declspec(noreturn)
     #endif
     void 
     #ifndef WIN32

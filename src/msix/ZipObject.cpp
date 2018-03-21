@@ -899,7 +899,6 @@ namespace MSIX {
     ComPtr<IStream> ZipObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
     { 
         NOTIMPLEMENTED;
-        return ComPtr<IStream>();
     }
     void ZipObject::CommitChanges()
     {

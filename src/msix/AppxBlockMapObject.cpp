@@ -70,8 +70,10 @@ namespace MSIX {
             const auto& name = fileNode->GetAttributeValue(XmlAttributeName::BlockMap_File_Name);
             ThrowErrorIf(Error::BlockMapSemanticError, (name == "[Content_Types].xml"), "[Content_Types].xml cannot be in the AppxBlockMap.xml file");
 
-            _context* context = reinterpret_cast<_context*>(c);            
-            ThrowErrorIf(Error::BlockMapSemanticError, (context->self->m_blockMap.find(name) != context->self->m_blockMap.end()), "duplicate file name specified.");
+            _context* context = reinterpret_cast<_context*>(c);
+            std::ostringstream builder;
+            builder << "Duplicate file: '" << name << "' specified in AppxBlockMap.xml.";
+            ThrowErrorIf(Error::BlockMapSemanticError, (context->self->m_blockMap.find(name) != context->self->m_blockMap.end()), builder.str().c_str());
 
             std::vector<Block> blocks;
             context->dom->ForEachElementIn(fileNode, XmlQueryName::BlockMap_File_Block, XmlVisitor(
@@ -105,7 +107,9 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidParameter, (part.empty() || !stream), "bad input");
         auto item = m_blockMap.find(part);
-        ThrowErrorIf(Error::BlockMapSemanticError, item == m_blockMap.end(), "file not tracked by blockmap");
+        std::ostringstream builder;
+        builder << "file: '" << part << "' not tracked by blockmap.";
+        ThrowErrorIf(Error::BlockMapSemanticError, item == m_blockMap.end(), builder.str().c_str());
         return ComPtr<IStream>::Make<BlockMapStream>(m_factory, part, stream, item->second);
     }
 
@@ -173,17 +177,7 @@ namespace MSIX {
         return index->second.As<IStream>();
     }
 
-    void AppxBlockMapObject::RemoveFile(const std::string& )
-    {
-        NOTIMPLEMENTED
-    }
-    ComPtr<IStream> AppxBlockMapObject::OpenFile(const std::string&, MSIX::FileStream::Mode)
-    {
-        NOTIMPLEMENTED
-        return ComPtr<IStream>();
-    }
-    void AppxBlockMapObject::CommitChanges()
-    {
-        NOTIMPLEMENTED
-    }
+    void AppxBlockMapObject::RemoveFile(const std::string& )                                 { NOTIMPLEMENTED; }
+    ComPtr<IStream> AppxBlockMapObject::OpenFile(const std::string&, MSIX::FileStream::Mode) { NOTIMPLEMENTED; }
+    void AppxBlockMapObject::CommitChanges()                                                 { NOTIMPLEMENTED; }
 }

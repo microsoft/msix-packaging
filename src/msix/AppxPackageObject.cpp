@@ -17,6 +17,8 @@
 #include <map>
 #include <memory>
 #include <limits>
+#include <algorithm>
+#include <array>
 
 namespace MSIX {
 
@@ -27,54 +29,64 @@ namespace MSIX {
     #define APPXSIGNATURE_P7X "AppxSignature.p7x"
     #define CONTENT_TYPES_XML "[Content_Types].xml"
 
-    static const std::map<APPX_FOOTPRINT_FILE_TYPE, std::string> footprintFiles = 
+    static const std::array<const char*, 4> footprintFiles = 
+    {   APPXMANIFEST_XML,
+        APPXBLOCKMAP_XML,
+        APPXSIGNATURE_P7X,
+        CODEINTEGRITY_CAT,
+    };
+
+    static const std::size_t PercentangeEncodingTableSize = 0x5E;
+    static const std::array<const char*, PercentangeEncodingTableSize> PercentangeEncoding =
+    {   nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        "%20",   "%21",   nullptr, "%23",   "%24",   "%25",   "%26",   "%27", // [space] ! # $ % & '
+        "%28",   "%29",   nullptr, "%2B",   "%2C",   nullptr, nullptr, nullptr, // ( ) + ,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, "%3B",   nullptr, "%3D",   nullptr, nullptr,   // ; =
+        "%40",   nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // @
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, "%5B",   nullptr, "%5D" // [ ]
+    };
+
+    struct EncodingChar
     {
-        {APPX_FOOTPRINT_FILE_TYPE_MANIFEST,         APPXMANIFEST_XML},
-        {APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP,         APPXBLOCKMAP_XML},
-        {APPX_FOOTPRINT_FILE_TYPE_SIGNATURE,        APPXSIGNATURE_P7X},
-        {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY,    CODEINTEGRITY_CAT},
+        const char* encode;
+        char        decode;
+
+        bool operator==(const std::string& rhs) const {
+            return rhs == encode;
+        }
+        EncodingChar(const char* e, char d) : encode(e), decode(d) {} 
     };
 
-    static const std::uint8_t PercentangeEncodingTableSize = 0x5E;
-    static const std::vector<std::string> PercentangeEncoding =
-    {   "", "", "", "", "", "", "", "",
-        "", "", "", "", "", "", "", "",
-        "", "", "", "", "", "", "", "",
-        "", "", "", "", "", "", "", "",
-        "%20", "%21", "", "%23", "%24", "%25", "%26", "%27", // [space] ! # $ % & '
-        "%28", "%29", "", "%2B", "%2C", "", "", "", // ( ) + ,
-        "", "", "", "", "", "", "", "",
-        "", "", "", "%3B",   "", "%3D", "", "",   // ; =
-        "%40",   "", "", "", "", "", "", "", // @
-        "", "", "", "", "", "", "", "",
-        "", "", "", "", "", "", "", "",
-        "", "", "", "%5B", "", "%5D" // [ ]
-    };
-
-    static const std::map<std::string, char> EncodingToChar = 
-    {   {"20", ' '}, {"21", '!'}, {"23", '#'},  {"24", '$'},
-        {"25", '%'}, {"26", '&'}, {"27", '\''}, {"28", '('},
-        {"29", ')'}, {"25", '+'}, {"2B", '%'},  {"2C", ','},
-        {"3B", ';'}, {"3D", '='}, {"40", '@'},  {"5B", '['},
-        {"5D", ']'}
+    static const EncodingChar EncodingToChar[] = 
+    {   EncodingChar("20", ' '), EncodingChar("21", '!'), EncodingChar("23", '#'),  EncodingChar("24", '$'),
+        EncodingChar("25", '%'), EncodingChar("26", '&'), EncodingChar("27", '\''), EncodingChar("28", '('),
+        EncodingChar("29", ')'), EncodingChar("25", '+'), EncodingChar("2B", '%'),  EncodingChar("2C", ','),
+        EncodingChar("3B", ';'), EncodingChar("3D", '='), EncodingChar("40", '@'),  EncodingChar("5B", '['),
+        EncodingChar("5D", ']')
     };
 
     static std::string EncodeFileName(std::string fileName)
     {
-        std::string result;
+        std::ostringstream result;
         for (std::uint32_t position = 0; position < fileName.length(); ++position)
         {   std::uint8_t index = static_cast<std::uint8_t>(fileName[position]);
-            if(fileName[position] < PercentangeEncodingTableSize && index < PercentangeEncoding.size() && !PercentangeEncoding[index].empty())
-            {   result += PercentangeEncoding[index];
+            if(fileName[position] < PercentangeEncodingTableSize && index < PercentangeEncoding.size() && PercentangeEncoding[index] != nullptr)
+            {   result << PercentangeEncoding[index];
             }
             else if (fileName[position] == '\\') // Remove Windows file separator.
-            {   result += '/';
+            {   result << '/';
             }
             else
-            {   result += fileName[position];
+            {   result << fileName[position];
             }
         }
-        return result;
+        return result.str();
     }
 
     static std::string DecodeFileName(const std::string& fileName)
@@ -82,9 +94,9 @@ namespace MSIX {
         std::string result;
         for (std::uint32_t i = 0; i < fileName.length(); ++i)
         {   if(fileName[i] == '%')
-            {   const auto& found = EncodingToChar.find(fileName.substr(i+1, 2));
-                ThrowErrorIf(Error::UnknownFileNameEncoding, (found == EncodingToChar.end()), fileName.c_str())
-                result += found->second;                
+            {   const auto& found = std::find(std::begin(EncodingToChar), std::end(EncodingToChar), fileName.substr(i+1, 2));
+                ThrowErrorIf(Error::UnknownFileNameEncoding, (found == std::end(EncodingToChar)), fileName.c_str())
+                result += found->decode;
                 i += 2;
             }
             else
@@ -178,16 +190,22 @@ namespace MSIX {
         struct Config
         {
             typedef ComPtr<IStream> (*lambda)(AppxPackageObject* self);
-            Config(lambda f) : GetValidationStream(f) {}
+            Config(const char* n, lambda f) : GetValidationStream(f), Name(n) {}
+
+            const char* Name;
             lambda GetValidationStream;
+
+            bool operator==(const std::string& rhs) const {
+                return rhs == Name;
+            }
         };
 
-        std::map<std::string, Config> footPrintFileNames = {
-            { APPXBLOCKMAP_XML,  Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return self->m_appxBlockMap->GetStream();})  },
-            { APPXMANIFEST_XML,  Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXMANIFEST_XML);  return self->m_appxManifest->GetStream();})  },
-            { APPXSIGNATURE_P7X, Config([](AppxPackageObject* self){ if (self->m_appxSignature->HasStream()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}) },
-            { CODEINTEGRITY_CAT, Config([](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); auto file = self->m_container->GetFile(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, file);}) },
-            { CONTENT_TYPES_XML, Config([](AppxPackageObject*)->ComPtr<IStream>{ return ComPtr<IStream>();}) }, // content types is never implicitly unpacked
+        static const Config footPrintFileNames[] = {
+            Config(APPXBLOCKMAP_XML,  [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return self->m_appxBlockMap->GetStream();}),
+            Config(APPXMANIFEST_XML,  [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXMANIFEST_XML);  return self->m_appxManifest->GetStream();}),
+            Config(APPXSIGNATURE_P7X, [](AppxPackageObject* self){ if (self->m_appxSignature->HasStream()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}),
+            Config(CODEINTEGRITY_CAT, [](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); auto file = self->m_container->GetFile(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, file);}),
+            Config(CONTENT_TYPES_XML, [](AppxPackageObject*)->ComPtr<IStream>{ return ComPtr<IStream>();}), // content types is never implicitly unpacked
         };
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
@@ -195,17 +213,17 @@ namespace MSIX {
         // the footprint files, and then by going through the payload files.
         auto filesToProcess = m_container->GetFileNames(FileNameOptions::All);
         for (const auto& fileName : m_container->GetFileNames(FileNameOptions::FootPrintOnly))
-        {   auto footPrintFile = footPrintFileNames.find(fileName);
-            if (footPrintFile != footPrintFileNames.end())
-            {   m_streams[fileName] = footPrintFile->second.GetValidationStream(this);
+        {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
+            if (footPrintFile != std::end(footPrintFileNames))
+            {   m_streams[fileName] = footPrintFile->GetValidationStream(this);
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
             }
         }
         
         auto blockMapStorage = m_appxBlockMap.As<IStorageObject>();
         for (const auto& fileName : blockMapStorage->GetFileNames(FileNameOptions::PayloadOnly))
-        {   auto footPrintFile = footPrintFileNames.find(fileName);
-            if (footPrintFile == footPrintFileNames.end())
+        {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
+            if (footPrintFile == std::end(footPrintFileNames))
             {   std::string containerFileName = EncodeFileName(fileName);
                 m_payloadFiles.push_back(containerFileName);
                 auto fileStream = m_container->GetFile(containerFileName);
@@ -226,8 +244,8 @@ namespace MSIX {
         {
             std::string targetName;
             if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
-            {   NOTIMPLEMENTED
-                //targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
+            {   //targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
+                NOTIMPLEMENTED;
             }
             else
             {   targetName = DecodeFileName(fileName);
@@ -269,23 +287,9 @@ namespace MSIX {
         return result->second;
     }
 
-    void AppxPackageObject::RemoveFile(const std::string& fileName)
-    {
-        // TODO: Implement
-        NOTIMPLEMENTED
-    }
-
-    ComPtr<IStream> AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
-    {
-        NOTIMPLEMENTED
-        return ComPtr<IStream>();
-    }
-
-    void AppxPackageObject::CommitChanges()
-    {
-        // TODO: Implement
-        NOTIMPLEMENTED
-    }
+    void AppxPackageObject::RemoveFile(const std::string& fileName)                                       { NOTIMPLEMENTED;}
+    ComPtr<IStream> AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) { NOTIMPLEMENTED; }
+    void AppxPackageObject::CommitChanges()                                                               { NOTIMPLEMENTED; }
 
     // IAppxPackageReader
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader** blockMapReader)
@@ -297,9 +301,9 @@ namespace MSIX {
     {
         return MSIX::ResultOf([&]() {
             ThrowErrorIf(Error::InvalidParameter, (file == nullptr || *file != nullptr), "bad pointer");
-            auto footprint = footprintFiles.find(type);
-            ThrowErrorIf(Error::FileNotFound, (footprint == footprintFiles.end()), "unknown footprint file type");
-            ComPtr<IStream> stream = GetFile(footprint->second);
+            ThrowErrorIf(Error::FileNotFound, (static_cast<size_t>(type) > footprintFiles.size()), "unknown footprint file type");
+            std::string footprint (footprintFiles[type]);
+            ComPtr<IStream> stream = GetFile(footprint);
             ThrowErrorIfNot(Error::FileNotFound, stream, "requested footprint file not in package")
             // Clients expect the stream's pointer to be at the start of the file!
             ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 

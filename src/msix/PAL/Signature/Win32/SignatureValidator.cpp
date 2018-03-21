@@ -434,11 +434,11 @@ namespace MSIX
         IMSIXFactory* factory,
         MSIX_VALIDATION_OPTION option,
         const ComPtr<IStream>& stream,
-        std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,
+        AppxSignatureObject* signatureObject,
         SignatureOrigin& origin,
         std::string& publisher)
     {
-        // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
+        // If the caller wants to skip signature validation altogether, just bug out early; we will not read the digests
         if (option & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
         
         ThrowErrorIf(Error::MissingAppxSignatureP7X, (nullptr == stream.Get()), "AppxSignature.p7x missing");
@@ -562,33 +562,11 @@ namespace MSIX
                 &indirectContentSize)
         ), "CryptDecodeObjectEx failed");
 
-        DigestHeader *header = reinterpret_cast<DigestHeader*>(indirectContent->Digest.pbData);
-        std::uint32_t numberOfHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) / sizeof(DigestHash);
-        std::uint32_t modHashes = (indirectContent->Digest.cbData - sizeof(DWORD)) % sizeof(DigestHash);
-        ThrowErrorIf(Error::SignatureInvalid, (
-            (header->name != MSIX::AppxSignatureObject::DigestName::HEAD) &&
-            (numberOfHashes != 4 && numberOfHashes != 5) &&
-            (modHashes != 0)
-        ), "bad signature data");
-
-        for (unsigned i = 0; i < numberOfHashes; i++)
-        {
-            std::vector<std::uint8_t> hash(HASH_BYTES);
-            switch (header->hash[i].name)
-            {
-                case MSIX::AppxSignatureObject::DigestName::AXPC:
-                case MSIX::AppxSignatureObject::DigestName::AXCT:
-                case MSIX::AppxSignatureObject::DigestName::AXBM:
-                case MSIX::AppxSignatureObject::DigestName::AXCI:
-                case MSIX::AppxSignatureObject::DigestName::AXCD:
-                    hash.assign(&header->hash[i].content[0], &header->hash[i].content[HASH_BYTES]);
-                    digests.emplace(header->hash[i].name, hash);
-                    break;
-
-                default:
-                    ThrowError(MSIX::Error::SignatureInvalid);
-            }
-        }
+        signatureObject->ValidateDigestHeader(
+            reinterpret_cast<DigestHeader*>(indirectContent->Digest.pbData),
+            (indirectContent->Digest.cbData - sizeof(DWORD)) / sizeof(DigestHash),
+            (indirectContent->Digest.cbData - sizeof(DWORD)) % sizeof(DigestHash)
+        );
 
         origin = MSIX::SignatureOrigin::Unknown;
         if (IsStoreOrigin(p7s, p7sSize)) { origin = MSIX::SignatureOrigin::Store; }
