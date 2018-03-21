@@ -91,7 +91,7 @@ class IXmlFactory : public IUnknown
 // An internal interface for creating an IXmlDom object as well as managing XML services lifetime
 {
 public:
-    virtual MSIX::ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, MSIX::ComPtr<IStream>& stream) = 0;
+    virtual MSIX::ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, const MSIX::ComPtr<IStream>& stream) = 0;
 };
 
 SpecializeUuidOfImpl(IXmlElement);

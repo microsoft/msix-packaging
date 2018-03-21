@@ -258,7 +258,7 @@ protected:
 class XercesDom : public ComClass<XercesDom, IXmlDom>
 {
 public:
-    XercesDom(ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :  m_stream(stream)
+    XercesDom(const ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :  m_stream(stream)
     {
         auto buffer = Helper::CreateBufferFromStream(stream);
         std::unique_ptr<XERCES_CPP_NAMESPACE::MemBufInputSource> source = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
@@ -354,7 +354,7 @@ public:
         XERCES_CPP_NAMESPACE::XMLPlatformUtils::Terminate();
     }
 
-    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream) override
+    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, const ComPtr<IStream>& stream) override
     {
         switch (footPrintType)
         {

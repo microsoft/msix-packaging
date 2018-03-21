@@ -183,7 +183,7 @@ public:
     }
 
     template <class T>
-    Variant(ComPtr<T>& item) : m_clear(false)
+    Variant(const ComPtr<T>& item) : m_clear(false)
     {
         m_variant.vt = VT_UNKNOWN;
         m_variant.punkVal = item.Get();
@@ -286,7 +286,7 @@ protected:
 class MSXMLDom : public ComClass<MSXMLDom, IXmlDom, IMSXMLDom>
 {
 public:
-    MSXMLDom(ComPtr<IStream>& stream, const NamespaceManager& namespaces, IMSIXFactory* factory = nullptr, bool stripIgnorableNamespaces = false)
+    MSXMLDom(const ComPtr<IStream>& stream, const NamespaceManager& namespaces, IMSIXFactory* factory = nullptr, bool stripIgnorableNamespaces = false)
     {
         ThrowHrIfFailed(CoCreateInstance(__uuidof(DOMDocument60), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_xmlDocument)));
         ThrowHrIfFailed(m_xmlDocument->put_async(VARIANT_FALSE));
@@ -527,7 +527,7 @@ public:
 
     ~MSXMLFactory() { if (m_CoInitialized) { CoUninitialize(); m_CoInitialized = false; } }    
 
-    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream) override
+    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, const ComPtr<IStream>& stream) override
     {   
         #if VALIDATING
         bool HasIgnorableNamespaces = (XmlContentType::AppxManifestXml == footPrintType);

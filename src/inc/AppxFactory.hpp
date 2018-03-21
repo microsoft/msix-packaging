@@ -51,7 +51,7 @@ namespace MSIX {
         ComPtr<IStream> GetResource(const std::string& resource) override;
 
         // IXmlFactory
-        MSIX::ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream) override
+        MSIX::ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, const ComPtr<IStream>& stream) override
         {   
             return m_xmlFactory->CreateDomFromStream(footPrintType, stream);
         }
