@@ -25,7 +25,7 @@ namespace MSIX {
             bool isCompressed,
             std::uint64_t offset,
             std::uint64_t size,
-            ComPtr<IStream>& stream
+            const ComPtr<IStream>& stream
         ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream), m_name(name), m_contentType(contentType), m_factory(factory)
         {
         }

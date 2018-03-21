@@ -215,7 +215,7 @@ namespace MSIX {
     class AppxBlockMapObject : public MSIX::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IStorageObject>
     {
     public:
-        AppxBlockMapObject(IMSIXFactory* factory, ComPtr<IStream>& stream);
+        AppxBlockMapObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override
@@ -225,7 +225,7 @@ namespace MSIX {
         }
         bool HasStream() override { return m_stream.Get() != nullptr; }
         ComPtr<IStream> GetStream() override { return m_stream; }
-        ComPtr<IStream> GetValidationStream(const std::string& part, ComPtr<IStream>& stream) override;
+        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>& stream) override;
 
         // IAppxBlockMapReader
         HRESULT STDMETHODCALLTYPE GetFile(LPCWSTR filename, IAppxBlockMapFile **file) override;

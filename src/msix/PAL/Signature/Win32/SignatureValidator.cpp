@@ -433,7 +433,7 @@ namespace MSIX
     bool SignatureValidator::Validate(
         IMSIXFactory* factory,
         MSIX_VALIDATION_OPTION option,
-        ComPtr<IStream>& stream,
+        const ComPtr<IStream>& stream,
         std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,
         SignatureOrigin& origin,
         std::string& publisher)

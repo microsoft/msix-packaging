@@ -40,7 +40,7 @@ namespace MSIX {
     class BlockMapStream : public StreamBase
     {
     public:
-        BlockMapStream(IMSIXFactory* factory, std::string decodedName, ComPtr<IStream>& stream, std::vector<Block>& blocks)
+        BlockMapStream(IMSIXFactory* factory, std::string decodedName, const ComPtr<IStream>& stream, std::vector<Block>& blocks)
             : m_factory(factory), m_decodedName(decodedName), m_stream(stream)
         {
             // Determine overall stream size

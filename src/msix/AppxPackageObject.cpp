@@ -109,7 +109,7 @@ namespace MSIX {
         // TODO: calculate the publisher hash from the publisher value.
     }
 
-    AppxManifestObject::AppxManifestObject(IXmlFactory* factory, ComPtr<IStream>& stream) : m_stream(stream)
+    AppxManifestObject::AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
     {      
         struct _context
         {
@@ -141,7 +141,7 @@ namespace MSIX {
         ThrowErrorIf(Error::AppxManifestSemanticError, (context.identitiesFound == 0), "No Identity element in AppxManifest.xml");
     }
 
-    AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, IStorageObject* container) :
+    AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container) :
         m_factory(factory),
         m_validation(validation),
         m_container(container)
@@ -228,7 +228,7 @@ namespace MSIX {
         ThrowErrorIfNot(Error::BlockMapSemanticError, (filesToProcess.empty()), "Payload file not described in AppxBlockMap.xml");
     }
 
-    void AppxPackageObject::Unpack(MSIX_PACKUNPACK_OPTION options, IStorageObject* to)
+    void AppxPackageObject::Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to)
     {
         auto fileNames = GetFileNames(FileNameOptions::All);
         for (const auto& fileName : fileNames)

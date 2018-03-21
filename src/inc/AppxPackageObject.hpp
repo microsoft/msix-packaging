@@ -34,7 +34,7 @@ class IPackage : public IUnknown
 #endif
 {
 public:
-    virtual void Unpack(MSIX_PACKUNPACK_OPTION options, IStorageObject* to) = 0;
+    virtual void Unpack(MSIX_PACKUNPACK_OPTION options, const MSIX::ComPtr<IStorageObject>& to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
 };
 
@@ -73,13 +73,13 @@ namespace MSIX {
     class AppxManifestObject : public ComClass<AppxManifestObject, IVerifierObject>
     {
     public:
-        AppxManifestObject(IXmlFactory* factory, ComPtr<IStream>& stream);
+        AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
         ComPtr<IStream> GetStream() override { return m_stream; }
-        ComPtr<IStream> GetValidationStream(const std::string& part, ComPtr<IStream>& stream) override
+        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override
         {
             NOTSUPPORTED;
             return ComPtr<IStream>();
@@ -97,11 +97,11 @@ namespace MSIX {
     class AppxPackageObject : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject>
     {
     public:
-        AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, IStorageObject* container);
+        AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container);
         ~AppxPackageObject() {}
 
         // internal IPackage methods
-        void Unpack(MSIX_PACKUNPACK_OPTION options, IStorageObject* to) override;
+        void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to) override;
 
         // IAppxPackageReader
         HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override;
@@ -143,7 +143,7 @@ namespace MSIX {
         std::vector<std::string>    m_files;
 
     public:
-        AppxFilesEnumerator(IStorageObject* storage) : 
+        AppxFilesEnumerator(const ComPtr<IStorageObject>& storage) : 
             m_storage(storage)
         {
             m_files = storage->GetFileNames(FileNameOptions::PayloadOnly);            

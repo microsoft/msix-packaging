@@ -49,13 +49,13 @@ namespace MSIX {
             AXCI = 0x49435841, // AppxMetadata/CodeIntegrity.cat (uncompressed, optional)
         };
 
-        AppxSignatureObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validationOptions, ComPtr<IStream>& stream);
+        AppxSignatureObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validationOptions,const ComPtr<IStream>& stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override { return m_publisher; }
         bool HasStream() override { return m_stream.Get() != nullptr; }
         ComPtr<IStream> GetStream() override { return m_stream; }
-        ComPtr<IStream> GetValidationStream(const std::string& part, ComPtr<IStream>& stream) override;
+        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>& stream) override;
 
         using Digest = std::vector<std::uint8_t>;
 

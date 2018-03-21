@@ -48,7 +48,7 @@ namespace MSIX {
         return result;
     }
 
-    AppxBlockMapObject::AppxBlockMapObject(IMSIXFactory* factory, ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
+    AppxBlockMapObject::AppxBlockMapObject(IMSIXFactory* factory, const ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
     {
         ComPtr<IXmlFactory> xmlFactory;
         ThrowHrIfFailed(factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));        
@@ -61,11 +61,7 @@ namespace MSIX {
             size_t              countFilesFound;
             IXmlDom*            dom;
         };
-        _context context = {};
-        context.self            = this;
-        context.factory         = factory;
-        context.countFilesFound = 0;
-        context.dom             = dom.Get();
+        _context context = { this, factory, 0, dom.Get() };
 
         dom->ForEachElementIn(dom->GetDocument().Get(), XmlQueryName::BlockMap_File, static_cast<void*>(&context), [](void* c, IXmlElement* fileNode)
         {
@@ -101,7 +97,7 @@ namespace MSIX {
         ThrowErrorIf(Error::BlockMapSemanticError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
     }
 
-    ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, ComPtr<IStream>& stream)
+    ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, const ComPtr<IStream>& stream)
     {
         ThrowErrorIf(Error::InvalidParameter, (part.empty() || stream.Get() == nullptr), "bad input");
         auto item = m_blockMap.find(part);
@@ -177,7 +173,7 @@ namespace MSIX {
     {
         NOTIMPLEMENTED
     }
-    ComPtr<IStream> AppxBlockMapObject::OpenFile(const std::string& ,MSIX::FileStream::Mode)
+    ComPtr<IStream> AppxBlockMapObject::OpenFile(const std::string&, MSIX::FileStream::Mode)
     {
         NOTIMPLEMENTED
         return ComPtr<IStream>();
