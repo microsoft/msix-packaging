@@ -63,9 +63,7 @@ namespace MSIX {
         };
         _context context = { this, factory, 0, dom.Get() };
 
-        dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::BlockMap_File, XmlVisitor(
-            static_cast<void*>(&context),
-            [](void* c, const ComPtr<IXmlElement>& fileNode)->bool
+        XmlVisitor visitor(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& fileNode)->bool
         {
             const auto& name = fileNode->GetAttributeValue(XmlAttributeName::BlockMap_File_Name);
             ThrowErrorIf(Error::BlockMapSemanticError, (name == "[Content_Types].xml"), "[Content_Types].xml cannot be in the AppxBlockMap.xml file");
@@ -76,14 +74,13 @@ namespace MSIX {
             ThrowErrorIf(Error::BlockMapSemanticError, (context->self->m_blockMap.find(name) != context->self->m_blockMap.end()), builder.str().c_str());
 
             std::vector<Block> blocks;
-            context->dom->ForEachElementIn(fileNode, XmlQueryName::BlockMap_File_Block, XmlVisitor(
-                static_cast<void*>(&blocks), 
-                [](void* b, const ComPtr<IXmlElement>& blockNode)->bool
+            XmlVisitor visitor(static_cast<void*>(&blocks), [](void* b, const ComPtr<IXmlElement>& blockNode)->bool
             {
                 std::vector<Block>* blocks = reinterpret_cast<std::vector<Block>*>(b);       
                 blocks->push_back(GetBlock(blockNode));
                 return true;
-            }));
+            });
+            context->dom->ForEachElementIn(fileNode, XmlQueryName::BlockMap_File_Block, visitor);
 
             std::uint64_t sizeAttribute = GetNumber<std::uint64_t>(fileNode, XmlAttributeName::BlockMap_File_Block_Size, BLOCKMAP_BLOCK_SIZE);
             ThrowErrorIf(Error::BlockMapSemanticError, (0 == blocks.size() && 0 != sizeAttribute), "If size is non-zero, then there must be 1+ blocks.");
@@ -99,7 +96,8 @@ namespace MSIX {
                 )));
             context->countFilesFound++;    
             return true;            
-        }));
+        });
+        dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::BlockMap_File, visitor);
         ThrowErrorIf(Error::BlockMapSemanticError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
     }
 
