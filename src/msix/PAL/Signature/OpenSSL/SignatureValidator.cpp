@@ -180,7 +180,7 @@ namespace MSIX
         bool found = false;
         while (spcIndirectDataContent < spcIndirectDataContentEnd && !found)
         {
-            if (*(MSIX::AppxSignatureObject::DigestName *)spcIndirectDataContent == MSIX::AppxSignatureObject::DigestName::HEAD)
+            if (*reinterpret_cast<DigestName*>(spcIndirectDataContent) == DigestName::HEAD)
             {
                 found = true;
                 break;
@@ -194,8 +194,8 @@ namespace MSIX
         // If we found the APPX header, validate the contents
         signatureObject->ValidateDigestHeader(
             reinterpret_cast<DigestHeader*>(spcIndirectDataContent),
-            (spcIndirectDataContentSize - sizeof(MSIX::AppxSignatureObject::DigestName)) / sizeof(DigestHash),
-            (spcIndirectDataContentSize - sizeof(MSIX::AppxSignatureObject::DigestName)) % sizeof(DigestHash)
+            (spcIndirectDataContentSize - sizeof(DigestName)) / sizeof(DigestHash),
+            (spcIndirectDataContentSize - sizeof(DigestName)) % sizeof(DigestHash)
         );
 	}
 	

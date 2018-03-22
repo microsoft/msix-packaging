@@ -124,9 +124,7 @@ namespace MSIX {
     AppxManifestObject::AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
     {      
         auto dom = factory->CreateDomFromStream(XmlContentType::AppxManifestXml, stream);
-        dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Package_Identity, XmlVisitor(
-            static_cast<void*>(this), 
-            [](void* s, const ComPtr<IXmlElement>& identityNode)->bool
+        XmlVisitor visitor(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& identityNode)->bool
         {
             AppxManifestObject* self = reinterpret_cast<AppxManifestObject*>(s);
             ThrowErrorIf(Error::AppxManifestSemanticError, (nullptr != self->m_packageId), "There must be only one Identity element at most in AppxManifest.xml");
@@ -139,7 +137,8 @@ namespace MSIX {
 
             self->m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisher);
             return true;             
-        }));
+        });
+        dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Package_Identity, visitor);
         // Have to check for this semantically as not all validating parsers can validate this via schema
         ThrowErrorIfNot(Error::AppxManifestSemanticError, m_packageId, "No Identity element in AppxManifest.xml");
     }

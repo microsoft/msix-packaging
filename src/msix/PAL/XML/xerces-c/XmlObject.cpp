@@ -308,7 +308,7 @@ public:
         return ComPtr<IXmlElement>::Make<XercesElement>(m_parser->getDocument()->getDocumentElement());
     }
 
-    bool ForEachElementIn(IXmlElement* root, XmlQueryName query, XmlVisitor& visitor) override
+    bool ForEachElementIn(const ComPtr<IXmlElement>& root, XmlQueryName query, XmlVisitor& visitor) override
     {
         ComPtr<IXercesElement> element;
         ThrowHrIfFailed(root->QueryInterface(UuidOfImpl<IXercesElement>::iid, reinterpret_cast<void**>(&element)));
