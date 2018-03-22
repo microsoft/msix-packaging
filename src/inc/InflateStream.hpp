@@ -60,22 +60,21 @@ namespace MSIX {
         // IAppxFileInternal
         std::uint64_t GetCompressedSize() override { return m_stream.As<IAppxFileInternal>()->GetCompressedSize(); }
 
-    protected:
         void Cleanup();
 
         static const ULONG BUFFERSIZE = 4096;
-        enum class State : std::uint8_t
+        enum class State : size_t
         {
             UNINITIALIZED = 0,
             READY_TO_READ,
             READY_TO_INFLATE,
             READY_TO_COPY,
-            CLEANUP
+            CLEANUP,
+            MAX = CLEANUP + 1
         };
 
         State m_previous = State::UNINITIALIZED;
         State m_state    = State::UNINITIALIZED;
-        std::map<State, std::function<std::tuple<bool, State>(void* buffer, ULONG countBytes)>> m_stateMachine;
 
         ComPtr<IStream> m_stream;
         ULONGLONG       m_seekPosition = 0;

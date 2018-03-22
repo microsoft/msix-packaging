@@ -196,9 +196,8 @@ namespace MSIX {
         std::size_t                 m_cursor = 0;
 
     public:
-        AppxBlockMapFilesEnumerator(IAppxBlockMapReader* reader, std::vector<std::string>&& files) :
-            m_reader(reader),
-            m_files(files)
+        AppxBlockMapFilesEnumerator(const ComPtr<IAppxBlockMapReader>& reader, std::vector<std::string>&& files) :
+            m_reader(reader), m_files(files)
         {}
 
         // IAppxBlockMapFilesEnumerator
@@ -232,13 +231,13 @@ namespace MSIX {
     class AppxBlockMapObject : public MSIX::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IAppxBlockMapInternal>
     {
     public:
-        AppxBlockMapObject(IMSIXFactory* factory, ComPtr<IStream>& stream);
+        AppxBlockMapObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);
 
         // IVerifierObject
-        const std::string& GetPublisher() override { NOTSUPPORTED }
-        bool HasStream() override { return m_stream.Get() != nullptr; }
-        MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
-        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override;
+        const std::string& GetPublisher() override {NOTSUPPORTED;}
+        bool HasStream() override { return !!m_stream; }
+        ComPtr<IStream> GetStream() override { return m_stream; }
+        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>& stream) override;
 
         // IAppxBlockMapReader
         HRESULT STDMETHODCALLTYPE GetFile(LPCWSTR filename, IAppxBlockMapFile **file) override;

@@ -33,7 +33,7 @@ class IMSXMLElement : public IUnknown
 // An internal interface for XML document object model
 {
 public:
-    virtual IXMLDOMElement* GetElement() = 0;
+    virtual MSIX::ComPtr<IXMLDOMNodeList> SelectNodes(XmlQueryName query) = 0;
 };
 
 #ifndef WIN32
@@ -183,7 +183,7 @@ public:
     }
 
     template <class T>
-    Variant(ComPtr<T>& item) : m_clear(false)
+    Variant(const ComPtr<T>& item) : m_clear(false)
     {
         m_variant.vt = VT_UNKNOWN;
         m_variant.punkVal = item.Get();
@@ -261,7 +261,13 @@ public:
     }
 
     // IMSXMLElement
-    IXMLDOMElement* GetElement() override { return m_element.Get(); }
+    ComPtr<IXMLDOMNodeList> SelectNodes(XmlQueryName query) override
+    {
+        Bstr xPath(xPaths[query]);
+        ComPtr<IXMLDOMNodeList> list;
+        ThrowHrIfFailed(m_element->selectNodes(xPath, &list));        
+        return list;
+    }
 
 protected:
     ComPtr<IXMLDOMElement> m_element;
@@ -274,7 +280,7 @@ protected:
     if (FAILED(result))                                                          \
     {   ComPtr<IErrorInfo> errorInfo;                                            \
         ThrowHrIfFailed(::GetErrorInfo(0, &errorInfo));                          \
-        if (nullptr != errorInfo.Get())                                          \
+        if (errorInfo)                                                           \
         {   Bstr description;                                                    \
             ThrowHrIfFailed(errorInfo->GetDescription(description.AddressOf())); \
             Global::Log::Append(utf16_to_utf8(description.Get()));               \
@@ -286,7 +292,7 @@ protected:
 class MSXMLDom : public ComClass<MSXMLDom, IXmlDom, IMSXMLDom>
 {
 public:
-    MSXMLDom(ComPtr<IStream>& stream, const NamespaceManager& namespaces, IMSIXFactory* factory = nullptr, bool stripIgnorableNamespaces = false)
+    MSXMLDom(const ComPtr<IStream>& stream, const NamespaceManager& namespaces, IMSIXFactory* factory = nullptr, bool stripIgnorableNamespaces = false)
     {
         ThrowHrIfFailed(CoCreateInstance(__uuidof(DOMDocument60), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_xmlDocument)));
         ThrowHrIfFailed(m_xmlDocument->put_async(VARIANT_FALSE));
@@ -405,7 +411,7 @@ public:
                     Bstr namespaceAlias(builder.str());
                     ComPtr<IXMLDOMNode> attribute;
                     ThrowHrIfFailed(attributes->getNamedItem(namespaceAlias, &attribute));
-                    ThrowErrorIf(Error::XmlError, (nullptr == attribute.Get()), "ignorable namespace alias is not actually defined as valid xml namespace." );
+                    ThrowErrorIfNot(Error::XmlError, attribute, "ignorable namespace alias is not actually defined as valid xml namespace." );
                     Variant attributeValue;
                     ThrowHrIfFailed(attribute->get_nodeValue(attributeValue.AddressOf()));
                     ThrowErrorIf(Error::XmlError, (VT_NULL == attributeValue.Get().vt), "ignorable namespace alias has empty target namespace URI.");
@@ -442,7 +448,7 @@ public:
             ThrowHrIfFailed(m_xmlDocument->validate(&error));
         }
 
-        if(nullptr != error.Get())
+        if(error)
         {
             long errorCode = 0, lineNumber = 0, columnNumber = 0;
             ThrowHrIfFailed(error->get_errorCode(&errorCode));
@@ -484,14 +490,10 @@ public:
         return ComPtr<IXmlElement>::Make<MSXMLElement>(element);
     }
     
-    bool ForEachElementIn(IXmlElement* root, XmlQueryName query, std::function<bool(IXmlElement*)> visitor) override
+    bool ForEachElementIn(const ComPtr<IXmlElement>& root, XmlQueryName query, XmlVisitor& visitor) override
     {
-        ComPtr<IMSXMLElement> element;
-        ThrowHrIfFailed(root->QueryInterface(UuidOfImpl<IMSXMLElement>::iid, reinterpret_cast<void**>(&element)));
-
-        Bstr xPath(xPaths[query]);
-        ComPtr<IXMLDOMNodeList> list;
-        ThrowHrIfFailed(element->GetElement()->selectNodes(xPath, &list));
+        ComPtr<IMSXMLElement> element = root.As<IMSXMLElement>();
+        ComPtr<IXMLDOMNodeList> list = element->SelectNodes(query);
 
         long count = 0;
         ThrowHrIfFailed(list->get_length(&count));
@@ -502,7 +504,7 @@ public:
             ComPtr<IXMLDOMElement> elementItem;
             ThrowHrIfFailed(node->QueryInterface(__uuidof(IXMLDOMElement), reinterpret_cast<void**>(&elementItem)));
             auto item = ComPtr<IXmlElement>::Make<MSXMLElement>(elementItem);
-            if (!visitor(item.Get()))
+            if (!visitor.Callback(visitor.context, item))
             {
                 return false;
             }
@@ -527,10 +529,22 @@ public:
 
     ~MSXMLFactory() { if (m_CoInitialized) { CoUninitialize(); m_CoInitialized = false; } }    
 
-    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream) override
+    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, const ComPtr<IStream>& stream) override
     {   
+        #if VALIDATING
         bool HasIgnorableNamespaces = (XmlContentType::AppxManifestXml == footPrintType);
-        return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, xmlNamespaces.at(footPrintType), m_factory, HasIgnorableNamespaces);
+        #else
+        bool HasIgnorableNamespaces = false;
+        NamespaceManager emptyManager; 
+        #endif
+
+        return ComPtr<IXmlDom>::Make<MSXMLDom>(stream, 
+            #if VALIDATING        
+                xmlNamespaces.at(footPrintType),
+            #else
+                emptyManager,
+            #endif
+            m_factory, HasIgnorableNamespaces);
     }
 
 protected:

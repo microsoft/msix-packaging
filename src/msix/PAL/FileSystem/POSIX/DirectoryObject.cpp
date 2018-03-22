@@ -17,22 +17,22 @@ namespace MSIX {
     std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
-        NOTIMPLEMENTED
+        NOTIMPLEMENTED;
     }
     
-    std::pair<bool,IStream*> DirectoryObject::GetFile(const std::string& fileName)
+    ComPtr<IStream> DirectoryObject::GetFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
-        NOTIMPLEMENTED
+        NOTIMPLEMENTED;
     }
     
     void DirectoryObject::RemoveFile(const std::string& fileName)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
-        NOTIMPLEMENTED
+        NOTIMPLEMENTED;
     }
     
-    std::string DirectoryObject::GetPathSeparator() { return "/"; }
+    const char* DirectoryObject::GetPathSeparator() { return "/"; }
     
     #define DEFAULT_MODE S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
     void mkdirp(std::string& path, mode_t mode = DEFAULT_MODE)
@@ -51,14 +51,15 @@ namespace MSIX {
         }
     }
     
-    IStream* DirectoryObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
+    ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
     {
         std::string name = m_root + "/" + fileName;
         auto lastSlash = name.find_last_of("/");
         std::string path = name.substr(0, lastSlash);
         mkdirp(path);
-        auto result = m_streams[fileName] = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
-        return result.Get();
+        auto result = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
+        m_streams[fileName] = result.Get(); // now cache the result in m_streams.
+        return result;
     }
     
     void DirectoryObject::CommitChanges()
