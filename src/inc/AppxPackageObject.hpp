@@ -90,7 +90,7 @@ namespace MSIX {
     };
 
     // Storage object representing the entire AppxPackage
-    class AppxPackageObject : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject>
+    class AppxPackageObject : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader>
     {
     public:
         AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, IStorageObject* container);
@@ -106,6 +106,14 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetPayloadFiles(IAppxFilesEnumerator**  filesEnumerator) override;
         HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) override;
 
+        // IAppxBundleReader
+        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_BUNDLE_FOOTPRINT_FILE_TYPE fileType, IAppxFile **footprintFile)  override;
+        HRESULT STDMETHODCALLTYPE GetManifest(IAppxBundleManifestReader **manifestReader) override;
+        HRESULT STDMETHODCALLTYPE GetPayloadPackages(IAppxFilesEnumerator **payloadPackages) override;
+        HRESULT STDMETHODCALLTYPE GetPayloadPackage(LPCWSTR fileName, IAppxFile **payloadPackage) override;
+        // Same signature as IAppxPackageReader
+        // HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override; 
+
         // returns a list of the footprint files found within this package.
         std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
 
@@ -118,6 +126,9 @@ namespace MSIX {
         void                      CommitChanges() override;
 
     protected:
+        // Helper methods
+        void VerifyFile(IStream* stream/*const ComPtr<IStream>& stream*/, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal);
+
         std::map<std::string, ComPtr<IStream>>  m_streams;
 
         MSIX_VALIDATION_OPTION      m_validation = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
@@ -129,6 +140,8 @@ namespace MSIX {
         
         std::vector<std::string>    m_payloadFiles;
         std::vector<std::string>    m_footprintFiles;
+
+        bool                        m_isBundle = false;
     };
 
     class AppxFilesEnumerator : public MSIX::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>

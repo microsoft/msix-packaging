@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace MSIX {
-    class AppxFactory : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory>
+    class AppxFactory : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory, IAppxBundleFactory>
     {
     public:
         AppxFactory(MSIX_VALIDATION_OPTION validationOptions, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
@@ -36,13 +36,18 @@ namespace MSIX {
             IAppxPackageWriter** packageWriter) override;           
 
         HRESULT STDMETHODCALLTYPE CreatePackageReader (IStream* inputStream, IAppxPackageReader** packageReader) override;
-        HRESULT STDMETHODCALLTYPE CreateManifestReader(IStream* inputStream, IAppxManifestReader** manifestReader) override ;
+        HRESULT STDMETHODCALLTYPE CreateManifestReader(IStream* inputStream, IAppxManifestReader** manifestReader) override;
         HRESULT STDMETHODCALLTYPE CreateBlockMapReader (IStream* inputStream, IAppxBlockMapReader** blockMapReader) override;
 
         HRESULT STDMETHODCALLTYPE CreateValidatedBlockMapReader (
             IStream* blockMapStream,
             LPCWSTR signatureFileName,
             IAppxBlockMapReader** blockMapReader) override;
+
+        // IAppxBundleFactory
+        HRESULT STDMETHODCALLTYPE CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) override;
+        HRESULT STDMETHODCALLTYPE CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) override;
+        HRESULT STDMETHODCALLTYPE CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) override;
 
         // IMSIXFactory
         HRESULT MarshalOutString(std::string& internal, LPWSTR *result) override;
