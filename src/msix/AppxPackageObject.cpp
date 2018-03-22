@@ -23,11 +23,12 @@
 namespace MSIX {
 
     // names of footprint files.
-    #define APPXBLOCKMAP_XML  "AppxBlockMap.xml"
-    #define APPXMANIFEST_XML  "AppxManifest.xml"
-    #define CODEINTEGRITY_CAT "AppxMetadata/CodeIntegrity.cat"
-    #define APPXSIGNATURE_P7X "AppxSignature.p7x"
-    #define CONTENT_TYPES_XML "[Content_Types].xml"
+    #define APPXBLOCKMAP_XML       "AppxBlockMap.xml"
+    #define APPXMANIFEST_XML       "AppxManifest.xml"
+    #define CODEINTEGRITY_CAT      "AppxMetadata/CodeIntegrity.cat"
+    #define APPXSIGNATURE_P7X      "AppxSignature.p7x"
+    #define CONTENT_TYPES_XML      "[Content_Types].xml"
+    #define APPXBUNDLEMANIFEST_XML "AppxMetadata/AppxBundleManifest.xml"
 
     static const std::array<const char*, 4> footprintFiles = 
     {   APPXMANIFEST_XML,
@@ -174,16 +175,32 @@ namespace MSIX {
 
         // 4. Get manifest object using blockmap object for validation
         // TODO: pass validation flags and other necessary goodness through.
-        file = m_container->GetFile(APPXMANIFEST_XML);
-        ThrowErrorIfNot(Error::MissingAppxManifestXML, file, "AppxManifest.xml not in archive!");
-        stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, file);
-        m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(xmlFactory.Get(), stream);
+        auto appxManifestInContainer = m_container->GetFile(APPXMANIFEST_XML);
+        auto appxBundleManifestInContainer = m_container->GetFile(APPXBUNDLEMANIFEST_XML);
         
-        if ((validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
+        ThrowErrorIfNot(Error::MissingAppxManifestXML, (appxManifestInContainer || appxBundleManifestInContainer) , 
+            "AppxManifest.xml or AppxBundleManifest.xml not in archive!");
+        ThrowErrorIf(Error::MissingAppxManifestXML, (appxManifestInContainer && appxBundleManifestInContainer) , 
+            "AppxManifest.xml and AppxBundleManifest.xml in archive!");
+        // We already validate that there's at least one and not both
+        if(appxManifestInContainer.second)
         {
-            std::string reason = "Publisher mismatch: '" + m_appxManifest->GetPublisher() + "' != '" + m_appxSignature->GetPublisher() + "'";
-            ThrowErrorIfNot(Error::PublisherMismatch,
-                (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())), reason.c_str());
+            stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, file);
+            m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(xmlFactory.Get(), stream);
+            if ((m_validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
+            {
+                std::string reason = "Publisher mismatch: '" + m_appxManifest->GetPublisher() + "' != '" + m_appxSignature->GetPublisher() + "'";
+                ThrowErrorIfNot(Error::PublisherMismatch,
+                    (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())), reason.c_str());
+            }
+        }
+        else
+        {
+            std::string pathInWindows(APPXBUNDLEMANIFEST_XML);
+            std::replace(pathInWindows.begin(), pathInWindows.end(), '/', '\\');
+            stream = m_appxBlockMap->GetValidationStream(pathInWindows, appxBundleManifestInContainer);
+            //m_appxBundleManifest = ComPtr<IVerifierObject::Make<AppxBundleManifestObject(..., stream);
+            m_isBundle = true;
         }
 
         struct Config
@@ -200,11 +217,12 @@ namespace MSIX {
         };
 
         static const Config footPrintFileNames[] = {
-            Config(APPXBLOCKMAP_XML,  [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return self->m_appxBlockMap->GetStream();}),
-            Config(APPXMANIFEST_XML,  [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXMANIFEST_XML);  return self->m_appxManifest->GetStream();}),
-            Config(APPXSIGNATURE_P7X, [](AppxPackageObject* self){ if (self->m_appxSignature->HasStream()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}),
-            Config(CODEINTEGRITY_CAT, [](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); auto file = self->m_container->GetFile(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, file);}),
-            Config(CONTENT_TYPES_XML, [](AppxPackageObject*)->ComPtr<IStream>{ return ComPtr<IStream>();}), // content types is never implicitly unpacked
+            Config(APPXBLOCKMAP_XML,       [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return self->m_appxBlockMap->GetStream();}),
+            Config(APPXMANIFEST_XML,       [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXMANIFEST_XML);  return self->m_appxManifest->GetStream();}),
+            Config(APPXSIGNATURE_P7X,      [](AppxPackageObject* self){ if (self->m_appxSignature->HasStream()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}),
+            Config(CODEINTEGRITY_CAT,      [](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); auto file = self->m_container->GetFile(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, file);}),
+            Config(CONTENT_TYPES_XML,      [](AppxPackageObject*)->ComPtr<IStream>{ return ComPtr<IStream>();}), // content types is never implicitly unpacked
+            //Config(APPXBUNDLEMANIFEST_XML, [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBUNDLEMANIFEST_XML); return self->m_appxBundleManifest->GetStream();}),
         };
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
@@ -218,69 +236,97 @@ namespace MSIX {
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
             }
         }
-        
+
         auto blockMapInternal = m_appxBlockMap.As<IAppxBlockMapInternal>();
-        for (const auto& fileName : blockMapInternal->GetFileNames())
-        {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
-            if (footPrintFile == std::end(footPrintFileNames))
-            {   std::string containerFileName = EncodeFileName(fileName);
-                m_payloadFiles.push_back(containerFileName);
-                auto fileStream = m_container->GetFile(containerFileName);
-                ThrowErrorIfNot(Error::FileNotFound, fileStream, "File described in blockmap not contained in OPC container");
-
-                // Verify file in OPC and BlockMap
-                ComPtr<IAppxFile> appxFile = fileStream.As<IAppxFile>();
-                APPX_COMPRESSION_OPTION compressionOpt;
-                ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
-                bool isUncompressed = (compressionOpt == APPX_COMPRESSION_OPTION_NONE);
-                
-                ComPtr<IAppxFileInternal> appxFileInternal = fileStream.As<IAppxFileInternal>();
-                auto sizeOnZip = appxFileInternal->GetCompressedSize();
-
-                auto blocks = blockMapInternal->GetBlocks(fileName);
-                std::uint64_t blocksSize = 0;
-                for(auto& block : blocks)
-                {   // For Block elements that don't have a Size attribute, we always set its size as BLOCKMAP_BLOCK_SIZE
-                    // (even for the last one). The Size attribute isn't specified if the file is not compressed.
-                    ThrowErrorIf(Error::BlockMapSemanticError, isUncompressed && (block.compressedSize != BLOCKMAP_BLOCK_SIZE),
-                        "An uncompressed file has a size attribute in its Block elements");
-                    blocksSize += block.compressedSize;
+        auto blockMapFiles = blockMapInternal->GetFileNames();
+        if(m_isBundle)
+        {
+            // There should only be one file in the blockmap for bundles. We validate that the block map contains
+            // AppxMetadata/AppxBundleManifest.xml before, so just check the size.
+            ThrowErrorIfNot(Error::BlockMapSemanticError, ((blockMapFiles.size() == 1)), "Block map contains invalid files.");
+            
+            // TODO: change this to get the files in from the bundle manifest and compare with m_container when the parsing is done.
+            for (const auto& fileName : m_container->GetFileNames(FileNameOptions::PayloadOnly))
+            {   auto footPrintFile = footPrintFileNames.find(fileName);
+                if (footPrintFile == footPrintFileNames.end())
+                {
+                    m_payloadFiles.push_back(fileName);
+                    m_streams[fileName] = std::move(m_container->GetFile(fileName));
+                    filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
                 }
-
-                if(isUncompressed)
-                {   UINT64 blockMapFileSize;
-                    auto blockMapFile = blockMapInternal->GetFile(fileName);
-                    ThrowHrIfFailed(blockMapFile->GetUncompressedSize(&blockMapFileSize));
-                    ThrowErrorIf(Error::BlockMapSemanticError, (blockMapFileSize != sizeOnZip ),
-                        "Uncompressed size of the file in the block map and the OPC container don't match");
-                }
-                else
-                {   // From Windows code:
-                    // The file item is compressed. There are 2 cases here:
-                    // 1. The compressed size of the file is the same as the total size of all compressed blocks.
-                    // 2. The compressed size of the file is 2 bytes more than the total size of all compressed blocks.
-                    // It depends on how the block compression is done. MakeAppx block compression implementation will end up 
-                    // with case 2. However, we shouldn't block the first case since it is totally valid and 3rd party
-                    // implementation may end up with it.
-                    // The reason we created compressed file item with 2 extra bytes (03 00) is because we use Z_FULL_FLUSH 
-                    // flag to compress every block. If we use Z_FINISH flag to compress the last block, these 2 extra bytes will
-                    // not be generated. The AddBlock()-->... -->AddBlock()-->Close() pattern in OPC push stack prevents the
-                    // deflator from knowing whether the current block is the last block. So it cannot use Z_FINISH flag for
-                    // the last block of the file. Note that removing the 2 extra bytes from the compressed file data will make
-                    // it invalid when consumed by popular zip tools like WinZip and ShellZip. So they are required for the 
-                    // packages we created.
-                    ThrowErrorIfNot(Error::BlockMapSemanticError,
-                        (blocksSize == sizeOnZip ) // case 1
-                        || (blocksSize == sizeOnZip - 2), // case 2
-                        "Compressed size of the file in the block map and the OPC container don't match");
-                }
-                m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream);
-                filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
             }
         }
+        else
+        {
+            for (const auto& fileName : blockMapFiles)
+            {   auto footPrintFile = footPrintFileNames.find(fileName);
+                if (footPrintFile == footPrintFileNames.end())
+                {   std::string containerFileName = EncodeFileName(fileName);
+                    m_payloadFiles.push_back(containerFileName);
+                    auto fileStream = m_container->GetFile(containerFileName);
+                    ThrowErrorIfNot(Error::FileNotFound, (fileStream.first), "File described in blockmap not contained in OPC container");
+                    VerifyFile(fileStream, fileName, blockMapInternal);
+                    m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream);
+                    filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
+                }
+            }
+        }
+
         // If the map is not empty, there's a file in the container that didn't go to the footprint or payload
         // files. (eg. payload file missing in the AppxBlockMap.xml)
         ThrowErrorIfNot(Error::BlockMapSemanticError, (filesToProcess.empty()), "Payload file not described in AppxBlockMap.xml");
+    }
+
+    // Verify file in OPC and BlockMap
+    void AppxPackageObject::VerifyFile(const ComPtr<IStream>& stream, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal)
+    {    
+        ComPtr<IAppxFile> appxFile;
+        ThrowHrIfFailed(stream->QueryInterface(UuidOfImpl<IAppxFile>::iid, reinterpret_cast<void**>(&appxFile)));
+        APPX_COMPRESSION_OPTION compressionOpt;
+        ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
+        bool isUncompressed = (compressionOpt == APPX_COMPRESSION_OPTION_NONE);
+                
+        ComPtr<IAppxFileInternal> appxFileInternal;
+        ThrowHrIfFailed(stream->QueryInterface(UuidOfImpl<IAppxFileInternal>::iid, reinterpret_cast<void**>(&appxFileInternal)));
+        auto sizeOnZip = appxFileInternal->GetCompressedSize();
+
+        auto blocks = blockMapInternal->GetBlocks(fileName);
+        std::uint64_t blocksSize = 0;
+        for(auto& block : blocks)
+        {   // For Block elements that don't have a Size attribute, we always set its size as BLOCKMAP_BLOCK_SIZE
+            // (even for the last one). The Size attribute isn't specified if the file is not compressed.
+            ThrowErrorIf(Error::BlockMapSemanticError, isUncompressed && (block.compressedSize != BLOCKMAP_BLOCK_SIZE),
+                "An uncompressed file has a size attribute in its Block elements");
+            blocksSize += block.compressedSize;
+        }
+
+        if(isUncompressed)
+        {   UINT64 blockMapFileSize;
+            auto blockMapFile = blockMapInternal->GetFile(fileName);
+            ThrowHrIfFailed(blockMapFile->GetUncompressedSize(&blockMapFileSize));
+            ThrowErrorIf(Error::BlockMapSemanticError, (blockMapFileSize != sizeOnZip ),
+                "Uncompressed size of the file in the block map and the OPC container don't match");
+        }
+        else
+        {   // From Windows code:
+            // The file item is compressed. There are 2 cases here:
+            // 1. The compressed size of the file is the same as the total size of all compressed blocks.
+            // 2. The compressed size of the file is 2 bytes more than the total size of all compressed blocks.
+            // It depends on how the block compression is done. MakeAppx block compression implementation will end up 
+            // with case 2. However, we shouldn't block the first case since it is totally valid and 3rd party
+            // implementation may end up with it.
+            // The reason we created compressed file item with 2 extra bytes (03 00) is because we use Z_FULL_FLUSH 
+            // flag to compress every block. If we use Z_FINISH flag to compress the last block, these 2 extra bytes will
+            // not be generated. The AddBlock()-->... -->AddBlock()-->Close() pattern in OPC push stack prevents the
+            // deflator from knowing whether the current block is the last block. So it cannot use Z_FINISH flag for
+            // the last block of the file. Note that removing the 2 extra bytes from the compressed file data will make
+            // it invalid when consumed by popular zip tools like WinZip and ShellZip. So they are required for the 
+            // packages we created.
+            ThrowErrorIfNot(Error::BlockMapSemanticError,
+                (blocksSize == sizeOnZip ) // case 1
+                || (blocksSize == sizeOnZip - 2), // case 2
+                "Compressed size of the file in the block map and the OPC container don't match");
+        }
     }
 
     void AppxPackageObject::Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to)
@@ -389,6 +435,39 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxManifestReader** manifestReader)
     {
+        return static_cast<HRESULT>(Error::NotImplemented);
+    }
+
+    // IAppxBundleReader
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_BUNDLE_FOOTPRINT_FILE_TYPE fileType, IAppxFile **footprintFile)
+    {
+        //if(m_isBundle)
+        //{
+        //    TODO: Implement    
+        //}
+        return static_cast<HRESULT>(Error::NotImplemented);
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxBundleManifestReader **manifestReader)
+    {   
+        return static_cast<HRESULT>(Error::NotImplemented);
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadPackages(IAppxFilesEnumerator **payloadPackages)
+    {
+        //if(m_isBundle)
+        //{
+        //    TODO: Implement    
+        //}
+        return static_cast<HRESULT>(Error::NotImplemented);
+    }
+
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadPackage(LPCWSTR fileName, IAppxFile **payloadPackage)
+    {
+        //if(m_isBundle)
+        //{
+        //    TODO: Implement    
+        //}
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 }

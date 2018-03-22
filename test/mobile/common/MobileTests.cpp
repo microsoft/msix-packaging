@@ -381,6 +381,35 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "BlockMap/Bad_Namespace_Blockmap.appx", unpackFolder, ss, 4099);
     hr = RunTest(source + "BlockMap/Duplicate_file_in_blockmap.appx", unpackFolder, ss, 81);
     hr = RunTest(source + "sdx/en-us_win32.appx", unpackFolder, full, 0);
+    
+    // Bundle tests
+    hr = RunTest(source + "bundles/BlockMapContainsPayloadPackage.appxbundle", ss, 81);
+    hr = RunTest(source + "bundles/BlockMapIsMissing.appxbundle", ss, 51);
+    //hr = RunTest(source + "bundles/BlockMapViolatesSchema.appxbundle", full,  0);
+    //hr = RunTest(source + "bundles/ContainsNeutralAndX86AppPackages.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ContainsNoPayload.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ContainsOnlyResourcePackages.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ContainsTwoNeutralAppPackages.appxbundle", full, 0);
+    hr = RunTest(source + "bundles/MainBundle.appxbundle", ss, 0 );
+    //hr = RunTest(source + "bundles/ManifestDeclaresAppPackageForResourcePackage.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ManifestHasExtraPackage.appxbundle", full, 0);
+    hr = RunTest(source + "bundles/ManifestIsMissing.appxbundle", ss, 52);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectArchitecture.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectName.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectPublisher.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectSize.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectVersion.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ManifestPackageHasInvalidOffset.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ManifestPackageHasInvalidRange.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/ManifestViolatesSchema.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/PayloadPackageHasNonAppxExtension.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/PayloadPackageIsCompressed.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/PayloadPackageIsEmpty.appxbundle.zip", full, 0);
+    //hr = RunTest(source + "bundles/PayloadPackageIsNotAppxPackage.appxbundle", full, 0);
+    //hr = RunTest(source + "bundles/PayloadPackageNotListedInManifest.appxbundle", full, 0);
+    hr = RunTest(source + "bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle", full, 66);
+    hr = RunTest(source + "bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle", full, 0 );
 
     std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" << std::endl;
     if(g_TestFailed)

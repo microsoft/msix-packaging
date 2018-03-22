@@ -12,7 +12,7 @@ function FindBinFolder {
     elif [ -e "../../build/bin/makemsix" ]
     then
         BINDIR="../../build/bin"
-    else 
+    else
         echo "ERROR: Could not find build binaries"
         exit 2
     fi
@@ -40,7 +40,7 @@ function RunTest {
     echo "expect: "$SUCCESS", got: "$RESULT
     if [ $RESULT -eq $SUCCESS ]
     then
-        echo "succeeded" 
+        echo "succeeded"
     else
         echo "FAILED"
         TESTFAILED=1
@@ -77,6 +77,35 @@ RunTest 51 ./../appx/BlockMap/No_blockmap.appx -ss
 RunTest 3 ./../appx/BlockMap/Bad_Namespace_Blockmap.appx -ss
 RunTest 81 ./../appx/BlockMap/Duplicate_file_in_blockmap.appx -ss
 RunTest 0  ./../appx/sdx/en-us_win32.appx
+
+# Bundle tests
+RunTest 81 ./../appx/bundles/BlockMapContainsPayloadPackage.appxbundle -ss
+RunTest 51 ./../appx/bundles/BlockMapIsMissing.appxbundle -ss
+#RunTest 0 ./../appx/bundles/BlockMapViolatesSchema.appxbundle
+#RunTest 0 ./../appx/bundles/ContainsNeutralAndX86AppPackages.appxbundle
+#RunTest 0 ./../appx/bundles/ContainsNoPayload.appxbundle
+#RunTest 0 ./../appx/bundles/ContainsOnlyResourcePackages.appxbundle
+#RunTest 0 ./../appx/bundles/ContainsTwoNeutralAppPackages.appxbundle
+RunTest 0 ./../appx/bundles/MainBundle.appxbundle -ss
+#RunTest 0 ./../appx/bundles/ManifestDeclaresAppPackageForResourcePackage.appxbundle
+#RunTest 0 ./../appx/bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle
+#RunTest 0 ./../appx/bundles/ManifestHasExtraPackage.appxbundle
+RunTest 52 ./../appx/bundles/ManifestIsMissing.appxbundle -ss
+#RunTest 0 ./../appx/bundles/ManifestPackageHasIncorrectArchitecture.appxbundle
+#RunTest 0 ./../appx/bundles/ManifestPackageHasIncorrectName.appxbundle
+#RunTest 0 ./../appx/bundles/ManifestPackageHasIncorrectPublisher.appxbundle
+#RunTest 0 ./../appx/bundles/ManifestPackageHasIncorrectSize.appxbundle
+#RunTest 0 ./../appx/bundles/ManifestPackageHasIncorrectVersion.appxbundle
+#RunTest 0 ./../appx/bundles/ManifestPackageHasInvalidOffset.appxbundle
+#RunTest 0 ./../appx/bundles/ManifestPackageHasInvalidRange.appxbundle
+#RunTest 0 ./../appx/bundles/ManifestViolatesSchema.appxbundle
+#RunTest 0 ./../appx/bundles/PayloadPackageHasNonAppxExtension.appxbundle
+#RunTest 0 ./../appx/bundles/PayloadPackageIsCompressed.appxbundle
+#RunTest 0 ./../appx/bundles/PayloadPackageIsEmpty.appxbundle.zip
+#RunTest 0 ./../appx/bundles/PayloadPackageIsNotAppxPackage.appxbundle
+#RunTest 0 ./../appx/bundles/PayloadPackageNotListedInManifest.appxbundle
+RunTest 66 ./../appx/bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle
+RunTest 0 ./../appx/bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
 
     echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if [ $TESTFAILED -ne 0 ]
