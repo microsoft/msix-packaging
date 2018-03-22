@@ -26,7 +26,7 @@ namespace MSIX {
             std::uint64_t offset,
             std::uint64_t size,
             const ComPtr<IStream>& stream
-        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream), m_name(name), m_contentType(contentType), m_factory(factory)
+        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream), m_name(name), m_contentType(contentType), m_factory(factory), m_compressedSize(size)
         {
         }
 
@@ -48,10 +48,14 @@ namespace MSIX {
 
         inline bool IsCompressed() { return m_isCompressed; }
 
+        // IAppxFileInternal
+        std::uint64_t GetCompressedSize() override { return m_compressedSize; }
+
     protected:
         IMSIXFactory*   m_factory;
         std::string     m_name;
         std::string     m_contentType;
         bool            m_isCompressed = false;
+        std::uint64_t   m_compressedSize;
     };
 }
