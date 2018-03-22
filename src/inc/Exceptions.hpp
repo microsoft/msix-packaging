@@ -169,7 +169,7 @@ namespace MSIX {
     template <typename E, class C>
     #ifdef WIN32
     __declspec(noinline)
-    constexpr
+    __declspec(noreturn)
     #endif
     void 
     #ifndef WIN32
@@ -183,21 +183,25 @@ namespace MSIX {
         builder << "Call failed in " << file << " on line " << line;
         std::string message = builder.str();
         throw E(message, c);
-    }    
+    }
+    
+    #ifdef WIN32
+    __declspec(noinline)
+    #endif
+    void 
+    #ifndef WIN32
+    __attribute__(( noinline)) 
+    #endif    
+    RaiseExceptionIfFailed(HRESULT hr, const int line, const char* const file);
 }
 
 // Helper to make code more terse and more readable at the same time.
 #define ThrowError(c)  { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, c); }
-#define NOTSUPPORTED   ThrowError(Error::NotSupported);
-#define NOTIMPLEMENTED ThrowError(Error::NotImplemented);
+#define NOTSUPPORTED   { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::NotSupported); }
+#define NOTIMPLEMENTED { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::NotImplemented); }
 
 #define ThrowErrorIfNot(c, a, m)      if (!(a)) { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, m, c); }
 #define ThrowWin32ErrorIfNot(c, a, m) if (!(a)) { MSIX::RaiseException<MSIX::Win32Exception>(__LINE__, __FILE__, m, c); }
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
 
-#define ThrowHrIfFailed(a)                                                      \
-{   HRESULT hr = a;                                                             \
-    if (FAILED(hr))                                                             \
-    {   MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, hr); \
-    }                                                                           \
-}
+#define ThrowHrIfFailed(a) MSIX::RaiseExceptionIfFailed(a, __LINE__, __FILE__);

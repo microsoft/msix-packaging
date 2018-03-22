@@ -98,24 +98,27 @@ namespace MSIX {
             return *this;
         }
 
+        // conversion-to-bool to remove/avoid usage of nullptr == _x_.Get() checks.
+        inline explicit operator bool() const { return m_ptr != nullptr; }
+
         ~ComPtr() { InternalRelease(); }
 
         inline T* operator->() const { return m_ptr; }
         inline T* Get() const { return m_ptr; }
-        
-        inline T* Detach() 
+
+        T* Detach() 
         {   T* temp = m_ptr;
             m_ptr = nullptr;
             return temp;
         }
 
-        inline T** operator&()
+        T** operator&()
         {   InternalRelease();
             return &m_ptr;
         }
 
         template <class U>
-        inline ComPtr<U> As()
+        ComPtr<U> As() const
         {   
             ComPtr<U> out;
             ThrowHrIfFailed(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(&out)));
@@ -124,7 +127,7 @@ namespace MSIX {
     protected:
         T* m_ptr = nullptr;
 
-        inline void InternalRelease()
+        void InternalRelease()
         {   
             T* temp = m_ptr;
             if (temp)
