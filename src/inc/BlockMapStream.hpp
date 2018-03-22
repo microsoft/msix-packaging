@@ -40,7 +40,7 @@ namespace MSIX {
     class BlockMapStream : public StreamBase
     {
     public:
-        BlockMapStream(IMSIXFactory* factory, std::string decodedName, IStream* stream, std::vector<Block>& blocks)
+        BlockMapStream(IMSIXFactory* factory, std::string decodedName, const ComPtr<IStream>& stream, std::vector<Block>& blocks)
             : m_factory(factory), m_decodedName(decodedName), m_stream(stream)
         {
             // Determine overall stream size
@@ -61,7 +61,7 @@ namespace MSIX {
             for (auto block = blocks.begin(); ((sizeRemaining != 0) && (block != blocks.end())); block++)
             {
                 auto rangeStream = ComPtr<IStream>::Make<RangeStream>(offset, std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE), stream);                
-                auto hashStream = ComPtr<IStream>::Make<HashStream>(rangeStream.Get(), block->hash);
+                auto hashStream = ComPtr<IStream>::Make<HashStream>(rangeStream, block->hash);
                 std::uint64_t blockSize = std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE);
 
                 BlockPlusStream bs;

@@ -881,22 +881,31 @@ namespace MSIX {
         return result;
     }
 
-    std::pair<bool,IStream*> ZipObject::GetFile(const std::string& fileName)
+    ComPtr<IStream> ZipObject::GetFile(const std::string& fileName)
     {
         // TODO: Make this on-demand populate m_streams and then pull from there.
         auto result = m_streams.find(fileName);
         if (result == m_streams.end())
         {
-            return std::make_pair(false, nullptr);
+            return ComPtr<IStream>();
         }        
-        return std::make_pair(true, result->second.Get());
+        return result->second;
     }
 
-    void ZipObject::RemoveFile(const std::string& fileName)                                 { NOTIMPLEMENTED }
-    IStream* ZipObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)  { NOTIMPLEMENTED }
-    void ZipObject::CommitChanges()                                                         { NOTIMPLEMENTED }
+    void ZipObject::RemoveFile(const std::string& fileName)
+    {
+        NOTIMPLEMENTED;
+    }
+    ComPtr<IStream> ZipObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
+    { 
+        NOTIMPLEMENTED;
+    }
+    void ZipObject::CommitChanges()
+    {
+        NOTIMPLEMENTED;
+    }
 
-    std::string ZipObject::GetPathSeparator() { return "/"; }
+    const char* ZipObject::GetPathSeparator() { return "/"; }
 
     ZipObject::ZipObject(IMSIXFactory* appxFactory, IStream* stream) : m_factory(appxFactory), m_stream(stream)
     {
@@ -966,7 +975,7 @@ namespace MSIX {
                 localFileHeader->GetCompressionType() == CompressionType::Deflate,
                 centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
                 localFileHeader->GetCompressedSize(),                
-                m_stream.Get()
+                m_stream
                 );
 
             if (localFileHeader->GetCompressionType() == CompressionType::Deflate)

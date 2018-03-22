@@ -10,7 +10,7 @@
 namespace MSIX {
     namespace Helper {
 
-        inline std::vector<std::uint8_t> CreateBufferFromStream(ComPtr<IStream>& stream)
+        inline std::vector<std::uint8_t> CreateBufferFromStream(const ComPtr<IStream>& stream)
         {
             // Create buffer from stream
             LARGE_INTEGER start = { 0 };

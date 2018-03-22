@@ -23,7 +23,7 @@ public:
     virtual HRESULT MarshalOutString(std::string& internal, LPWSTR *result) = 0;
     virtual HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) = 0;
     virtual MSIX_VALIDATION_OPTION GetValidationOptions() = 0;
-    virtual IStream* GetResource(const std::string& resource) = 0;
+    virtual MSIX::ComPtr<IStream> GetResource(const std::string& resource) = 0;
 };
 
 SpecializeUuidOfImpl(IMSIXFactory);

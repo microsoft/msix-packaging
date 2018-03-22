@@ -22,12 +22,10 @@ IF (XML_PARSER MATCHES msxml6)
     SET (USING_MSXML=1)
 ENDIF()
 
-
 IF(WIN32)
     SET (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.CPP)
     SET (SHA256 PAL/SHA256/Win32/SHA256.CPP)
     SET (Signature PAL/Signature/Win32/SignatureValidator.cpp)
-	SET (MSIX_API=1)    
 ELSE()
     # Visibility variables for non-win32 platforms
     IF((IOS) OR (MACOS))
@@ -61,10 +59,18 @@ ELSE()
 	SET (DirectoryObject PAL/FileSystem/POSIX/DirectoryObject.cpp)
 ENDIF()
 
+IF(USE_VALIDATION_PARSER)
+    MESSAGE (STATUS "PAL: VALIDATING parser" )
+    add_definitions(-DVALIDATING=1)
+ELSE()
+    MESSAGE (STATUS "PAL: non-validating parser" )
+    add_definitions(-DVALIDATING=0)
+ENDIF()
+
+MESSAGE (STATUS "PAL: XML             = ${XmlParser}")
 MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
 MESSAGE (STATUS "PAL: SHA256          = ${SHA256}")
 MESSAGE (STATUS "PAL: Signature       = ${Signature}")
-MESSAGE (STATUS "PAL: XML             = ${XmlParser}")
 
 include(msix_resources)
 
@@ -105,6 +111,7 @@ SET(LIB_SOURCES
     AppxPackageObject.cpp
     AppxPackaging_i.cpp
     AppxSignature.cpp
+    Exceptions.cpp
     InflateStream.cpp
     Log.cpp
     UnicodeConversion.cpp

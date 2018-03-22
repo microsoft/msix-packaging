@@ -22,7 +22,9 @@ namespace MSIX {
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
             #ifdef WIN32
             errno_t err = fopen_s(&file, path.c_str(), modes[mode]);
-            ThrowErrorIfNot(Error::FileOpen, (err==0), path.c_str());
+            std::ostringstream builder;
+            builder << "file: '" << path << "' does not exist.";
+            ThrowErrorIfNot(Error::FileOpen, (err==0), builder.str().c_str());
             #else
             file = std::fopen(path.c_str(), modes[mode]);
             ThrowErrorIfNot(Error::FileOpen, (file), path.c_str());
