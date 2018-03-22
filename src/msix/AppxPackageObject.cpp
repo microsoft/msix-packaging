@@ -35,6 +35,7 @@ namespace MSIX {
         APPXBLOCKMAP_XML,
         APPXSIGNATURE_P7X,
         CODEINTEGRITY_CAT,
+        //APPXBUNDLEMANIFEST_XML,
     };
 
     static const std::size_t PercentangeEncodingTableSize = 0x5E;
