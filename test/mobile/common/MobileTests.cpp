@@ -390,7 +390,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     //hr = RunTest(source + "bundles/ContainsNoPayload.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ContainsOnlyResourcePackages.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ContainsTwoNeutralAppPackages.appxbundle", unpackFolder, full, 0);
-    hr = RunTest(source + "bundles/MainBundle.appxbundle", ss, 0 );
+    hr = RunTest(source + "bundles/MainBundle.appxbundle", unpackFolder, ss, 0 );
     //hr = RunTest(source + "bundles/ManifestDeclaresAppPackageForResourcePackage.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestHasExtraPackage.appxbundle", unpackFolder, full, 0);
