@@ -137,7 +137,7 @@ namespace MSIX {
 
     ComPtr<IStream> AppxFactory::GetResource(const std::string& resource)
     {
-        if(m_resourcezip) // Initialize it when first needed.
+        if(!m_resourcezip) // Initialize it when first needed.
         {
             ComPtr<IMSIXFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
