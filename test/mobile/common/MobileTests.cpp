@@ -383,8 +383,8 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "sdx/en-us_win32.appx", unpackFolder, full, 0);
     
     // Bundle tests
-    //hr = RunTest(source + "bundles/BlockMapContainsPayloadPackage.appxbundle", unpackFolder, ss, 81);
-    //hr = RunTest(source + "bundles/BlockMapIsMissing.appxbundle", unpackFolder, ss, 51);
+    hr = RunTest(source + "bundles/BlockMapContainsPayloadPackage.appxbundle", unpackFolder, ss, 81);
+    hr = RunTest(source + "bundles/BlockMapIsMissing.appxbundle", unpackFolder, ss, 51);
     //hr = RunTest(source + "bundles/BlockMapViolatesSchema.appxbundle", unpackFolder, full,  0);
     //hr = RunTest(source + "bundles/ContainsNeutralAndX86AppPackages.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ContainsNoPayload.appxbundle", unpackFolder, full, 0);
@@ -394,7 +394,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     //hr = RunTest(source + "bundles/ManifestDeclaresAppPackageForResourcePackage.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestHasExtraPackage.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ManifestIsMissing.appxbundle", unpackFolder, ss, 52);
+    hr = RunTest(source + "bundles/ManifestIsMissing.appxbundle", unpackFolder, ss, 52);
     //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectArchitecture.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectName.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectPublisher.appxbundle", unpackFolder, full, 0);
@@ -408,7 +408,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     //hr = RunTest(source + "bundles/PayloadPackageIsEmpty.appxbundle.zip", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/PayloadPackageIsNotAppxPackage.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/PayloadPackageNotListedInManifest.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle", unpackFolder, full, 66);
+    hr = RunTest(source + "bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle", unpackFolder, full, 66);
     //hr = RunTest(source + "bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle", unpackFolder, full, 0);
 
     std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" << std::endl;

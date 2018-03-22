@@ -265,7 +265,7 @@ namespace MSIX {
                 {   std::string containerFileName = EncodeFileName(fileName);
                     m_payloadFiles.push_back(containerFileName);
                     auto fileStream = m_container->GetFile(containerFileName);
-                    ThrowErrorIfNot(Error::FileNotFound, (fileStream), "File described in blockmap not contained in OPC container");
+                    ThrowErrorIfNot(Error::FileNotFound, fileStream, "File described in blockmap not contained in OPC container");
                     VerifyFile(fileStream, fileName, blockMapInternal);
                     m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream);
                     filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
@@ -281,14 +281,12 @@ namespace MSIX {
     // Verify file in OPC and BlockMap
     void AppxPackageObject::VerifyFile(const ComPtr<IStream>& stream, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal)
     {    
-        ComPtr<IAppxFile> appxFile;
-        ThrowHrIfFailed(stream->QueryInterface(UuidOfImpl<IAppxFile>::iid, reinterpret_cast<void**>(&appxFile)));
+        ComPtr<IAppxFile> appxFile = stream.As<IAppxFile>();;
         APPX_COMPRESSION_OPTION compressionOpt;
         ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
         bool isUncompressed = (compressionOpt == APPX_COMPRESSION_OPTION_NONE);
                 
-        ComPtr<IAppxFileInternal> appxFileInternal;
-        ThrowHrIfFailed(stream->QueryInterface(UuidOfImpl<IAppxFileInternal>::iid, reinterpret_cast<void**>(&appxFileInternal)));
+        ComPtr<IAppxFileInternal> appxFileInternal = stream.As<IAppxFileInternal>();
         auto sizeOnZip = appxFileInternal->GetCompressedSize();
 
         auto blocks = blockMapInternal->GetBlocks(fileName);
