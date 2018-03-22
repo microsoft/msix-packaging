@@ -29,7 +29,7 @@ namespace MSIX {
         size_t m_streamSize;
 
     public:
-        HashStream(IStream* stream, std::vector<std::uint8_t>& expectedHash) :
+        HashStream(const ComPtr<IStream>& stream, std::vector<std::uint8_t>& expectedHash) :
             m_validated(false),
             m_stream(stream),
             m_expectedHash(expectedHash),

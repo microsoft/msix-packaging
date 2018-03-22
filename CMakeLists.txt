@@ -127,6 +127,10 @@ ELSE()
 ENDIF()
 
 # Enforce parser PAL
+IF(NOT USE_VALIDATION_PARSER)
+    MESSAGE (STATUS "To choose type of validation, Use the -DUSE_VALIDATION_PARSER=on to enable.  Default is 'off'")
+ENDIF()
+
 IF(NOT XML_PARSER)
     MESSAGE (STATUS "Choose the type of parser, options are: [xerces, msxml6].  Use the -DXML_PARSER=[option] to specify.")
     INCLUDE(CheckIncludeFileCXX)

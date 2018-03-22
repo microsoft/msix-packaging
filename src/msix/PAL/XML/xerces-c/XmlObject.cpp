@@ -258,7 +258,7 @@ protected:
 class XercesDom : public ComClass<XercesDom, IXmlDom>
 {
 public:
-    XercesDom(ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :  m_stream(stream)
+    XercesDom(const ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :  m_stream(stream)
     {
         auto buffer = Helper::CreateBufferFromStream(stream);
         std::unique_ptr<XERCES_CPP_NAMESPACE::MemBufInputSource> source = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
@@ -308,7 +308,7 @@ public:
         return ComPtr<IXmlElement>::Make<XercesElement>(m_parser->getDocument()->getDocumentElement());
     }
 
-    bool ForEachElementIn(IXmlElement* root, XmlQueryName query, std::function<bool(IXmlElement*)> visitor) override
+    bool ForEachElementIn(const ComPtr<IXmlElement>& root, XmlQueryName query, XmlVisitor& visitor) override
     {
         ComPtr<IXercesElement> element;
         ThrowHrIfFailed(root->QueryInterface(UuidOfImpl<IXercesElement>::iid, reinterpret_cast<void**>(&element)));
@@ -328,7 +328,7 @@ public:
             result->snapshotItem(i);
             auto node = static_cast<DOMElement*>(result->getNodeValue());
             auto item = ComPtr<IXmlElement>::Make<XercesElement>(node);
-            if (!visitor(item.Get()))
+            if (!visitor.Callback(visitor.context, item))
             {
                 return false;
             }
@@ -354,7 +354,7 @@ public:
         XERCES_CPP_NAMESPACE::XMLPlatformUtils::Terminate();
     }
 
-    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, ComPtr<IStream>& stream) override
+    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, const ComPtr<IStream>& stream) override
     {
         switch (footPrintType)
         {

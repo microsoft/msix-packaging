@@ -4,5 +4,5 @@ cd .vs
 if exist CMakeFiles rd /s /q CMakeFiles
 if exist CMakeCache.txt del CMakeCache.txt
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-cmake -DWIN32=on -DCMAKE_BUILD_TYPE=Debug -G"NMake Makefiles" ..
+cmake -DWIN32=on -DCMAKE_BUILD_TYPE=Debug %1 -G"NMake Makefiles" ..
 nmake

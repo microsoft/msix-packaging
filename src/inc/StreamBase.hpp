@@ -15,8 +15,24 @@
 #include "Exceptions.hpp"
 #include "ComHelper.hpp"
 
+EXTERN_C const IID IID_IAppxFileInternal;
+#ifndef WIN32
+// {cd24e5d3-4a35-4497-ba7e-d68df05c582c}
+interface IAppxFileInternal : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IAppxFileInternal : public IUnknown
+#endif
+{
+public:
+    virtual std::uint64_t GetCompressedSize() = 0;
+};
+
+SpecializeUuidOfImpl(IAppxFileInternal);
+
 namespace MSIX {
-    class StreamBase : public MSIX::ComClass<StreamBase, IAppxFile, IStream>
+    class StreamBase : public MSIX::ComClass<StreamBase, IAppxFile, IStream, IAppxFileInternal>
     {
     public:
         // These are the same values as STREAM_SEEK. See 
@@ -135,6 +151,13 @@ namespace MSIX {
         virtual HRESULT STDMETHODCALLTYPE GetStream(IStream** stream) override
         {
             return QueryInterface(UuidOfImpl<IStream>::iid, reinterpret_cast<void**>(stream));
+        }
+
+        // IAppxFileInternal
+        virtual std::uint64_t GetCompressedSize() override
+        {
+            NOTIMPLEMENTED;
+            return 0;
         }
 
         template <class T>
