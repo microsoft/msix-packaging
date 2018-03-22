@@ -157,7 +157,6 @@ namespace MSIX {
         virtual std::uint64_t GetCompressedSize() override
         {
             NOTIMPLEMENTED;
-            return 0;
         }
 
         template <class T>

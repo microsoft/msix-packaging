@@ -183,9 +183,9 @@ namespace MSIX {
         ThrowErrorIf(Error::MissingAppxManifestXML, (appxManifestInContainer && appxBundleManifestInContainer) , 
             "AppxManifest.xml and AppxBundleManifest.xml in archive!");
         // We already validate that there's at least one and not both
-        if(appxManifestInContainer.second)
+        if(appxManifestInContainer)
         {
-            stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, file);
+            stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, appxManifestInContainer);
             m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(xmlFactory.Get(), stream);
             if ((m_validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
             {
@@ -247,8 +247,8 @@ namespace MSIX {
             
             // TODO: change this to get the files in from the bundle manifest and compare with m_container when the parsing is done.
             for (const auto& fileName : m_container->GetFileNames(FileNameOptions::PayloadOnly))
-            {   auto footPrintFile = footPrintFileNames.find(fileName);
-                if (footPrintFile == footPrintFileNames.end())
+            {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
+                if (footPrintFile == std::end(footPrintFileNames))
                 {
                     m_payloadFiles.push_back(fileName);
                     m_streams[fileName] = std::move(m_container->GetFile(fileName));
@@ -259,12 +259,12 @@ namespace MSIX {
         else
         {
             for (const auto& fileName : blockMapFiles)
-            {   auto footPrintFile = footPrintFileNames.find(fileName);
-                if (footPrintFile == footPrintFileNames.end())
+            {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
+                if (footPrintFile == std::end(footPrintFileNames))
                 {   std::string containerFileName = EncodeFileName(fileName);
                     m_payloadFiles.push_back(containerFileName);
                     auto fileStream = m_container->GetFile(containerFileName);
-                    ThrowErrorIfNot(Error::FileNotFound, (fileStream.first), "File described in blockmap not contained in OPC container");
+                    ThrowErrorIfNot(Error::FileNotFound, (fileStream), "File described in blockmap not contained in OPC container");
                     VerifyFile(fileStream, fileName, blockMapInternal);
                     m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream);
                     filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());

@@ -127,7 +127,7 @@ namespace MSIX {
 
     protected:
         // Helper methods
-        void VerifyFile(IStream* stream/*const ComPtr<IStream>& stream*/, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal);
+        void VerifyFile(const ComPtr<IStream>& stream, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal);
 
         std::map<std::string, ComPtr<IStream>>  m_streams;
 
