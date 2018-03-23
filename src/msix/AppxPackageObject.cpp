@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <array>
 
+
 namespace MSIX {
 
     // names of footprint files.
@@ -121,6 +122,20 @@ namespace MSIX {
         ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty() || Publisher.empty()), "Invalid Identity element");
 
         // TODO: calculate the publisher hash from the publisher value.
+        auto wpublisher = utf8_to_utf16_2(publisher);
+        std::vector<std::uint8_t> buffer(wpublisher.size() * sizeof(char16_t));
+        memcpy(buffer.data(), &wpublisher[0], wpublisher.size() * sizeof(char16_t));
+
+        std::vector<std::uint8_t> hash;
+        ThrowErrorIfNot(MSIX::Error::Unexpected, 
+            MSIX::SHA256::ComputeHash(buffer.data(), buffer.size(), hash), 
+            "Invalid signature");
+        
+        for (auto const& byte: hash)
+        {
+           printf("0x%.2x\n", byte);
+        }
+        std::cout << std::endl;
     }
 
     AppxManifestObject::AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
@@ -251,7 +266,7 @@ namespace MSIX {
             {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
                 if (footPrintFile == std::end(footPrintFileNames))
                 {
-                    m_payloadFiles.push_back(fileName);
+                    m_payloadPackages.push_back(fileName);
                     m_streams[fileName] = std::move(m_container->GetFile(fileName));
                     filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
                 }
@@ -364,6 +379,10 @@ namespace MSIX {
         if ((options & FileNameOptions::PayloadOnly) == FileNameOptions::PayloadOnly)
         {
             result.insert(result.end(), m_payloadFiles.begin(), m_payloadFiles.end());
+        }
+        if(m_isBundle)
+        {
+            result.insert(result.end(), m_payloadPackages.begin(), m_payloadPackages.end());
         }
         return result;
     }

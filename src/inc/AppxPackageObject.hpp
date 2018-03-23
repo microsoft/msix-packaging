@@ -140,6 +140,7 @@ namespace MSIX {
         
         std::vector<std::string>    m_payloadFiles;
         std::vector<std::string>    m_footprintFiles;
+        std::vector<std::string>    m_payloadPackages;
 
         bool                        m_isBundle = false;
     };
