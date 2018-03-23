@@ -68,6 +68,7 @@ namespace MSIX {
         bool HasStream() override                   { return !!m_stream; }
         ComPtr<IStream> GetStream() override        { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>& stream) override;
+        const std::string GetPackageFullName() override { NOTSUPPORTED; }
 
         void ValidateDigestHeader(DigestHeader* header, std::size_t numberOfHashes, std::size_t modHashes);
 

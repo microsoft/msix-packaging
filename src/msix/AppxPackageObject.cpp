@@ -55,6 +55,9 @@ namespace MSIX {
         nullptr, nullptr, nullptr, "%5B",   nullptr, "%5D" // [ ]
     };
 
+    // Douglas Crockford's base 32 alphabet variant is 0-9, A-Z except for i, l, o, and u.
+    static const char base32DigitList[] = "0123456789abcdefghjkmnpqrstvwxyz";
+
     struct EncodingChar
     {
         const char* encode;
@@ -109,6 +112,78 @@ namespace MSIX {
         return result;
     }
 
+    static char ValueToDigit(uint8_t value)
+    {
+        //NT_ASSERT(value < 0x20);
+        return base32DigitList[value];
+    }
+
+    static std::string Base32Encoding(const std::vector<uint8_t>& bytes)
+    {
+        static const size_t bitsPerBase32Digit = 5;
+        static const size_t byteCount = 8;
+        
+        // Get char count
+        auto bitCount = bytes.size() * 8;
+        auto charCount = bitCount / bitsPerBase32Digit;
+
+        // We need to round up the division.  When there aren't exactly enough bits to fill in the final base32 digit,
+        // the remaining bits are set to zero.
+        if (bitCount % bitsPerBase32Digit > 0) { charCount++; }
+
+        // Consider groups of five bytes.  This is the smallest number of bytes that has a number of bits 
+        // that's evently divisible by five.
+        // Every five bits starting with the most significant of the first byte are made into a base32 value.
+        // Each value is used to index into the alphabet array to produce a base32 digit.
+        // When out of bytes but the corresponding base32 value doesn't yet have five bits, 0 is used.
+        // Normally in these cases a particular number of '=' characters are appended to the resulting base32
+        // string to indicate how many bits didn't come from the actual byte value.  For our purposes no
+        // such padding characters are necessary.
+        //
+        // Bytes:         aaaaaaaa  bbbbbbbb  cccccccc  dddddddd  eeeeeeee
+        // Base32 Values: 000aaaaa  000aaabb  000bbbbb  000bcccc  000ccccd  000ddddd 000ddeee 000eeeee
+        //
+        // Combo of byte    a & F8    a & 07    b & 3E    b & 01    c & 0F    d & 7C   d & 03   e & 1F
+        // values except              b & C0              c & F0    d & 80             e & E0
+        // for shifting 
+
+        // Make sure the following math doesn't overflow.
+        std::string output = "";
+        for(size_t byteIndex = 0; byteIndex < byteCount; byteIndex +=5)
+        {
+            uint8_t firstByte = bytes[byteIndex];
+            uint8_t secondByte = (byteIndex + 1) < byteCount ? bytes[byteIndex + 1] : 0;
+            output.append(1, base32DigitList[(firstByte & 0xF8) >> 3]);
+            output.append(1, base32DigitList[((firstByte & 0x07) << 2) | ((secondByte & 0xC0) >> 6)]);
+
+            if(byteIndex + 1 < byteCount)
+            {
+                uint8_t thirdByte = (byteIndex + 2) < byteCount ? bytes[byteIndex + 2] : 0;
+                output.append(1, base32DigitList[(secondByte & 0x3E) >> 1]);
+                output.append(1, base32DigitList[((secondByte & 0x01) << 4) | ((thirdByte & 0xF0) >> 4)]);
+
+                if(byteIndex + 2 < byteCount)
+                {
+                    uint8_t fourthByte = (byteIndex + 3) < byteCount ? bytes[byteIndex + 3] : 0;
+                    output.append(1, base32DigitList[((thirdByte & 0x0F) << 1) | ((fourthByte & 0x80) >> 7)]);
+
+                    if (byteIndex + 3 < byteCount)
+                    {
+                        uint8_t fifthByte = (byteIndex + 4) < byteCount ? bytes[byteIndex + 4] : 0;
+                        output.append(1, base32DigitList[(fourthByte & 0x7C) >> 2]);
+                        output.append(1, base32DigitList[((fourthByte & 0x03) << 3) | ((fifthByte & 0xE0) >> 5)]);
+
+                        if (byteIndex + 4 < byteCount)
+                        {
+                            output.append(1, base32DigitList[fifthByte & 0x1F]);
+                        }
+                    }
+                }
+            }
+        }
+        return output;
+    }
+
     AppxPackageId::AppxPackageId(
         const std::string& name,
         const std::string& version,
@@ -121,21 +196,15 @@ namespace MSIX {
         // Only name, publisher and version are required
         ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty() || Publisher.empty()), "Invalid Identity element");
 
-        // TODO: calculate the publisher hash from the publisher value.
+        // TODO: validate the name and resource id as package strings
+
         auto wpublisher = utf8_to_utf16_2(publisher);
         std::vector<std::uint8_t> buffer(wpublisher.size() * sizeof(char16_t));
         memcpy(buffer.data(), &wpublisher[0], wpublisher.size() * sizeof(char16_t));
 
         std::vector<std::uint8_t> hash;
-        ThrowErrorIfNot(MSIX::Error::Unexpected, 
-            MSIX::SHA256::ComputeHash(buffer.data(), buffer.size(), hash), 
-            "Invalid signature");
-        
-        for (auto const& byte: hash)
-        {
-           printf("0x%.2x\n", byte);
-        }
-        std::cout << std::endl;
+        ThrowErrorIfNot(Error::Unexpected, SHA256::ComputeHash(buffer.data(), buffer.size(), hash),  "Failed computing publisherId");
+        PublisherId = std::move(Base32Encoding(hash));
     }
 
     AppxManifestObject::AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
@@ -346,12 +415,13 @@ namespace MSIX {
     void AppxPackageObject::Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to)
     {
         auto fileNames = GetFileNames(FileNameOptions::All);
+
         for (const auto& fileName : fileNames)
         {
             std::string targetName;
             if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
-            {   //targetName = GetAppxManifest()->GetPackageFullName() + to->GetPathSeparator() + fileName;
-                NOTIMPLEMENTED;
+            {
+                targetName = m_appxManifest->GetPackageFullName() + "/" + fileName;
             }
             else
             {   targetName = DecodeFileName(fileName);

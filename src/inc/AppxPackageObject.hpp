@@ -56,16 +56,16 @@ namespace MSIX {
         std::string ResourceId;
         std::string Architecture;
         std::string Publisher;
-        std::string PublisherHash;
+        std::string PublisherId;
 
         std::string GetPackageFullName()
         {
-            return Name + "_" + Version + "_" + Architecture + "_" + ResourceId + "_" + PublisherHash;
+            return Name + "_" + Version + "_" + Architecture + "_" + ResourceId + "_" + PublisherId;
         }
 
         std::string GetPackageFamilyName()
         {
-            return Name + "_" + PublisherHash;
+            return Name + "_" + PublisherId;
         }
     };
 
@@ -80,9 +80,9 @@ namespace MSIX {
         bool HasStream() override { return !!m_stream; }
         ComPtr<IStream> GetStream() override { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
+        const std::string GetPackageFullName() override { return m_packageId->GetPackageFullName(); }
 
         AppxPackageId* GetPackageId()    { return m_packageId.get(); }
-        std::string GetPackageFullName() { return m_packageId->GetPackageFullName(); }
 
     protected:
         ComPtr<IStream> m_stream;
