@@ -79,7 +79,8 @@ struct State
         case UserSpecified::Unpack:            
             if (packageName.empty() || directoryName.empty()) {
                 return false;
-            }            
+            }
+            break;
         }
         return true;
     }
