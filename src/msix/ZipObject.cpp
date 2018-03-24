@@ -48,7 +48,6 @@ enum class ZipVersions : std::uint16_t
 
 inline constexpr operator std::uint16_t(const ZipVersions& value) { return static_cast<std::uint16_t>(value); }
 
-
 // from AppNote.txt, section 4.5.2:
 enum class HeaderIDs : std::uint16_t
 {
@@ -126,13 +125,11 @@ enum class GeneralPurposeBitFlags : std::uint16_t
 };
 
 inline constexpr GeneralPurposeBitFlags operator &(GeneralPurposeBitFlags a, GeneralPurposeBitFlags b)
-{
-    return static_cast<GeneralPurposeBitFlags>(static_cast<uint16_t>(a) & static_cast<uint16_t>(b));
+{   return static_cast<GeneralPurposeBitFlags>(static_cast<uint16_t>(a) & static_cast<uint16_t>(b));
 }
 
 inline constexpr GeneralPurposeBitFlags operator |(GeneralPurposeBitFlags a, GeneralPurposeBitFlags b)
-{
-    return static_cast<GeneralPurposeBitFlags>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
+{   return static_cast<GeneralPurposeBitFlags>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
 }
 
 // if any of these are set, then fail.
@@ -724,7 +721,7 @@ class Zip64EndOfCentralDirectoryLocator : public Meta::StructuredObject<Zip64End
     OffsetOrSize64bit,  // 2 - relative offset of the zip64 end of central
                         //     directory record                                  8 bytes
     Z64NumberOfDisks    // 3 - total number of disks                             4 bytes
-    >, Meta::InjectableValidator
+    >
 {
 public:
     void ValidateField(size_t field) override
@@ -741,7 +738,7 @@ public:
         }
     }
 
-    Zip64EndOfCentralDirectoryLocator(IStream* s) : m_stream(s)
+    Zip64EndOfCentralDirectoryLocator(const ComPtr<IStream>& s) : m_stream(s)
     {
         // wire-up injectable field validation
         ConfigureField<2>();   
@@ -760,7 +757,7 @@ private:
     void SetNumberOfDisk(std::uint32_t value)       { Field<1>().value = value; }
     void SetTotalNumberOfDisks(std::uint32_t value) { Field<3>().value = value; }
 
-    IStream* m_stream = nullptr;
+    ComPtr<IStream> m_stream;
 }; //class Zip64EndOfCentralDirectoryLocator
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -838,6 +835,9 @@ private:
     inline void SetCommentLength(std::uint16_t value)                  { Field<7>().value = value; }
 };//class EndOfCentralDirectoryRecord
 
+//////////////////////////////////////////////////////////////////////////////////////////////
+//                              ZipObject member implementation                             //
+//////////////////////////////////////////////////////////////////////////////////////////////                                                          
 std::vector<std::string> ZipObject::GetFileNames(FileNameOptions)
 {
     std::vector<std::string> result;
@@ -858,21 +858,6 @@ ComPtr<IStream> ZipObject::GetFile(const std::string& fileName)
     }        
     return result->second;
 }
-
-void ZipObject::RemoveFile(const std::string& fileName)
-{
-    NOTIMPLEMENTED;
-}
-ComPtr<IStream> ZipObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
-{ 
-    NOTIMPLEMENTED;
-}
-void ZipObject::CommitChanges()
-{
-    NOTIMPLEMENTED;
-}
-
-const char* ZipObject::GetPathSeparator() { return "/"; }
 
 ZipObject::ZipObject(IMSIXFactory* appxFactory, IStream* stream) : m_factory(appxFactory), m_stream(stream)
 {

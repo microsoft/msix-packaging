@@ -333,7 +333,6 @@ namespace MSIX {
         return result->second;
     }
 
-    void AppxPackageObject::RemoveFile(const std::string& fileName)                                       { NOTIMPLEMENTED;}
     ComPtr<IStream> AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) { NOTIMPLEMENTED; }
     void AppxPackageObject::CommitChanges()                                                               { NOTIMPLEMENTED; }
 
