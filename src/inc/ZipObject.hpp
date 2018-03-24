@@ -19,7 +19,7 @@ namespace MSIX {
     class ZipObject : public ComClass<ZipObject, IStorageObject>
     {
     public:
-        ZipObject(IMSIXFactory* factory, IStream* stream);
+        ZipObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);
 
         // StorageObject methods
         const char*                 GetPathSeparator() override { return "/"; }

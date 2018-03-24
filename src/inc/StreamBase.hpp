@@ -154,11 +154,7 @@ namespace MSIX {
         }
 
         // IAppxFileInternal
-        virtual std::uint64_t GetCompressedSize() override
-        {
-            NOTIMPLEMENTED;
-            return 0;
-        }
+        virtual std::uint64_t GetCompressedSize() override { NOTIMPLEMENTED; }
 
         template <class T>
         static ULONG Read(const ComPtr<IStream>& stream, T* value)
