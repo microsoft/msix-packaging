@@ -205,7 +205,7 @@ namespace MSIX {
         {
             return ResultOf([&]{
                 ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                ThrowHrIfFailed(m_reader->GetFile(utf8_to_utf16(m_files.at(m_cursor)).c_str(), block));
+                ThrowHrIfFailed(m_reader->GetFile(utf8_to_wstring(m_files.at(m_cursor)).c_str(), block));
                 return static_cast<HRESULT>(Error::OK);
             });
         }

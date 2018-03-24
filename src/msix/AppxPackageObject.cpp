@@ -132,7 +132,7 @@ namespace MSIX {
         if (bitCount % bitsPerBase32Digit > 0) { charCount++; }
 
         // Consider groups of five bytes.  This is the smallest number of bytes that has a number of bits 
-        // that's evently divisible by five.
+        // that's evenly divisible by five.
         // Every five bits starting with the most significant of the first byte are made into a base32 value.
         // Each value is used to index into the alphabet array to produce a base32 digit.
         // When out of bytes but the corresponding base32 value doesn't yet have five bits, 0 is used.
@@ -198,7 +198,7 @@ namespace MSIX {
 
         // TODO: validate the name and resource id as package strings
 
-        auto wpublisher = utf8_to_utf16_2(publisher);
+        auto wpublisher = utf8_to_u16string(publisher);
         std::vector<std::uint8_t> buffer(wpublisher.size() * sizeof(char16_t));
         memcpy(buffer.data(), &wpublisher[0], wpublisher.size() * sizeof(char16_t));
 

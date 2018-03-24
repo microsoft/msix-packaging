@@ -109,7 +109,7 @@ namespace MSIX {
     {
         return ResultOf([&]() {
             ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
-            auto intermediate = utf8_to_utf16(internal);
+            auto intermediate = utf8_to_wstring(internal);
             std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
             *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
             ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");

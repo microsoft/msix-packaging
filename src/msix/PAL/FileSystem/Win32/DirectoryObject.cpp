@@ -41,7 +41,7 @@ namespace MSIX {
         static std::string dot(".");
         static std::string dotdot("..");
 
-        std::wstring utf16Name = utf8_to_utf16(root);
+        std::wstring utf16Name = utf8_to_wstring(root);
 
         WIN32_FIND_DATA findFileData = {};
         std::unique_ptr<std::remove_pointer<HANDLE>::type, decltype(&::FindClose)> find(
@@ -165,7 +165,7 @@ namespace MSIX {
 
             if (!found)
             {
-                std::wstring utf16Name = utf8_to_utf16(path + GetPathSeparator() + directories.front());
+                std::wstring utf16Name = utf8_to_wstring(path + GetPathSeparator() + directories.front());
                 if (!CreateDirectory(utf16Name.c_str(), nullptr))
                 {
                     auto lastError = GetLastError();
