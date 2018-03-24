@@ -161,7 +161,7 @@ namespace MSIX {
         }
 
         template <class T>
-        static ULONG Read(IStream* stream, T* value)
+        static ULONG Read(const ComPtr<IStream>& stream, T* value)
         {
             ULONG result = 0;
             ThrowHrIfFailed(stream->Read(
@@ -174,7 +174,7 @@ namespace MSIX {
         }
 
         template <class T>
-        static void Write(IStream* stream, T* value)
+        static void Write(const ComPtr<IStream>& stream, T* value)
         {
             ULONG result = 0;
             ThrowHrIfFailed(stream->Write(
