@@ -35,7 +35,17 @@ class ExactValueValidation // there is exactly one value that this field is allo
 {
 public:
     static void Validate(std::size_t, Derived* self) {
-        ThrowErrorIf(Error::InvalidParameter, spec != self->value, "Incorrect value specified at field.");
+        ThrowErrorIfNot(Error::InvalidParameter, spec == self->value, "Incorrect value specified at field.");
+        }
+    }
+};
+
+template <class Derived, std::size_t spec>
+class NotValueValidation // there is exactly one value that this field is not allowed to be
+{
+public:
+    static void Validate(std::size_t, Derived* self) {
+        ThrowErrorIf(Error::InvalidParameter, spec == self->value, "Incorrect value specified at field.");
         }
     }
 };
@@ -82,6 +92,9 @@ class InjectableValidator
 {
 public:
     virtual void ValidateField(size_t field) = 0;
+
+    template<size_t index>
+    inline void  ConfigureField() noexcept { this->Field<index>().parent = static_cast<InjectableValidator*>(this); }
 };
 
 template <class Derived>

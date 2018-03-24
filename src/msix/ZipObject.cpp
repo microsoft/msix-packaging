@@ -46,6 +46,9 @@ enum class ZipVersions : std::uint16_t
     Zip64FormatExtension = 45,
 };
 
+inline constexpr operator std::uint16_t(const ZipVersions& value) { return static_cast<std::uint16_t>(value); }
+
+
 // from AppNote.txt, section 4.5.2:
 enum class HeaderIDs : std::uint16_t
 {
@@ -610,83 +613,75 @@ protected:
     std::shared_ptr<CentralDirectoryFileHeader> m_directoryEntry = nullptr;
 }; //class LocalFileHeader
 
-class Zip64EndOfCentralDirectoryRecord : public Meta::StructuredObject<
-    Meta::Field4Bytes, // 0 - zip64 end of central dir signature                            4 bytes(0x06064b50)
-    Meta::Field8Bytes, // 1 - size of zip64 end of central directory record                 8 bytes
-    Meta::Field2Bytes, // 2 - version made by                                               2 bytes
-    Meta::Field2Bytes, // 3 - version needed to extract                                     2 bytes
-    Meta::Field4Bytes, // 4 - number of this disk                                           4 bytes
-    Meta::Field4Bytes, // 5 - number of the disk with the start of the central directory    4 bytes
-    Meta::Field8Bytes, // 6 - total number of entries in the central directory on this disk 8 bytes
-    Meta::Field8Bytes, // 7 - total number of entries in the central directory              8 bytes
-    Meta::Field8Bytes, // 8 - size of the central directory                                 8 bytes
-    Meta::Field8Bytes, // 9 - offset of start of central directory with respect to the
-                        //     starting disk number                                          8 bytes
-    Meta::FieldNBytes  //10 - zip64 extensible data sector                                  (variable size)
+//////////////////////////////////////////////////////////////////////////////////////////////
+//                              Zip64EndOfCentralDirectoryRecord                            //
+//////////////////////////////////////////////////////////////////////////////////////////////
+class EOCDSignature     : public Meta::FieldBase<EOCDSignature,       std::uint32_t, Meta::ExactValueValidation<EOCDSignature, Signatures::EndOfCentralDirectory>> {};
+class EOCDNumberDisks   : public Meta::FieldBase<EOCDNumberDisks,     std::uint16_t, Meta::OnlyEitherValueValidation<EOCDNumberDisks,   0, 0xFFFF>> {};
+class OffsetOrSize32bit : public Meta::FieldBase<OffsetOrSize32bit,   std::uint32_t, Meta::OnlyEitherValueValidation<OffsetOrSize32bit, 0, 0xFFFFFFFF>> {};
+class CommentLength     : public Meta::FieldBase<CommentLength,       std::uint16_t, Meta::ExactValueValidation<CommentLength, 0>> {};
+class FieldMustBeEmpty  : public Meta::FieldNBytes<FieldMustBeEmpty,  Meta::InvalidFieldValidation<FieldMustBeEmpty>>{};
+
+class Z64EOCDLocator    : public Meta::FieldBase<Z64EOCDLocator,      std::uint32_t, Meta::ExactValueValidation<Z64EOCDLocator, Signatures::Zip64EndOfCDLocator>> {};
+class Z64DiskNumber     : public Meta::FieldBase<Z64DiskNumber,       std::uint32_t, Meta::ExactValueValidation<Z64DiskNumber, 0>> {};
+class OffsetOrSize64bit : public Meta::FieldBase<OffsetOrSize64bit,   std::uint64_t, Meta::InjectedValidation<OffsetOrSize64bit >> {};
+class Z64NumberOfDisks  : public Meta::FieldBase<Z64NumberOfDisks,    std::uint32_t, Meta::ExactValueValidation<Z64NumberOfDisks, 1>> {};
+
+class Z64EOCDRecord     : public Meta::FieldBase<Z64EOCDRecord,       std::uint32_t, Meta::ExactValueValidation<Z64EOCDRecord, Signatures::Zip64EndOfCD>> {};
+class Z64EOCDRSize      : public Meta::FieldBase<Z64EOCDRSize,        std::uint64_t, Meta::InjectedValidation<Z64EOCDRSize >> {};
+class Z64EOCDRVersion   : public Meta::FieldBase<Z64EOCDRVersion,     std::uint16_t, Meta::ExactValueValidation<Z64EOCDRVersion, ZipVersions::Zip64FormatExtension>> {};
+class Z64EOCDRCount     : public Meta::FiledBase<Z64EOCDRCount,       std::uint64_t, Meta::NotValueValidation<Z64EOCDRCount, 0>> {};
+
+class Zip64EndOfCentralDirectoryRecord : public Meta::StructuredObject<Zip64EndOfCentralDirectoryRecord, 
+    Z64EOCDRecord,     // 0 - zip64 end of central dir signature                            4 bytes(0x06064b50)
+    Z64EOCDRSize,      // 1 - size of zip64 end of central directory record                 8 bytes
+    Z64EOCDRVersion,   // 2 - version made by                                               2 bytes
+    Z64EOCDRVersion,   // 3 - version needed to extract                                     2 bytes
+    Z64DiskNumber,     // 4 - number of this disk                                           4 bytes
+    Z64DiskNumber,     // 5 - number of the disk with the start of the central directory    4 bytes
+    Z64EOCDRCount,     // 6 - total number of entries in the central directory on this disk 8 bytes
+    Z64EOCDRCount,     // 7 - total number of entries in the central directory              8 bytes
+    Z64EOCDRSize,      // 8 - size of the central directory                                 8 bytes
+    Z64EOCDRSize,      // 9 - offset of start of central directory with respect to the
+                       //     starting disk number                                          8 bytes
+    FieldMustBeEmpty   //10 - zip64 extensible data sector                                  (variable size)
     >
 {
 public:
-    Zip64EndOfCentralDirectoryRecord(IStream* s) : m_stream(s)
+    void ValidateField(size_t field) override
     {
-        // 0 - zip64 end of central dir signature 4 bytes(0x06064b50)
-        Field<0>().validation = [](std::uint32_t& v)
-        {   ThrowErrorIfNot(Error::Zip64EOCDRecord,
-                (v == static_cast<std::uint32_t>(Signatures::Zip64EndOfCD)),
-                "end of zip64 central directory does not match signature");
-        };
-        // 1 - size of zip64 end of central directory record 8 bytes
-        Field<1>().validation = [&](std::uint64_t& v)
-        {   //4.3.14.1 The value stored into the "size of zip64 end of central
+        ULARGE_INTEGER pos = {0};
+        ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
+        
+        switch (field)
+        {
+        case 1:
+            //4.3.14.1 The value stored into the "size of zip64 end of central
             //    directory record" should be the size of the remaining
             //    record and should not include the leading 12 bytes.
-            ThrowErrorIfNot(Error::Zip64EOCDRecord, (v == (this->Size() - 12)), "invalid size of zip64 EOCD");
-        };
-        // 2 - version made by                 2 bytes
-        Field<2>().validation = [](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::Zip64EOCDRecord,
-                (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
-                "invalid zip64 EOCD version made by");
-        };
-        // 3 - version needed to extract       2 bytes
-        Field<3>().validation = [](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::Zip64EOCDRecord,
-                (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
-                "invalid zip64 EOCD version to extract");
-        };
-        // 4 - number of this disk             4 bytes
-        Field<4>().validation = [](std::uint32_t& v)
-        {   ThrowErrorIfNot(Error::Zip64EOCDRecord, (v == 0), "invalid disk number");
-        };
-        // 5 - number of the disk with the start of the central directory  4 bytes
-        Field<5>().validation = [](std::uint32_t& v)
-        {   ThrowErrorIfNot(Error::Zip64EOCDRecord, (v == 0), "invalid disk index");
-        };
-        // 6 - total number of entries in the central directory on this disk  8 bytes
-        Field<6>().validation = [](std::uint64_t& v)
-        {   ThrowErrorIfNot(Error::Zip64EOCDRecord, (v != 0), "invalid number of entries");
-        };
-        // 7 - total number of entries in the central directory 8 bytes
-        Field<7>().validation = [&](std::uint64_t& v)
-        {   ThrowErrorIfNot(Error::Zip64EOCDRecord, (v == this->GetTotalNumberOfEntries()), "invalid total number of entries");
-        };
-        // 8 - size of the central directory   8 bytes
-        Field<8>().validation = [&](std::uint64_t& v)
-        {   // TODO: tighten up this validation
-            ULARGE_INTEGER pos = {0};
-            ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
-            ThrowErrorIfNot(Error::Zip64EOCDRecord, ((v != 0) && (v < pos.QuadPart)), "invalid size of central directory");
-        };
-        // 9 - offset of start of central directory with respect to the starting disk number        8 bytes
-        Field<9>().validation = [&](std::uint64_t& v)
-        {   // TODO: tighten up this validation
-            ULARGE_INTEGER pos = {0};
-            ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
-            ThrowErrorIfNot(Error::Zip64EOCDRecord, ((v != 0) && (v < pos.QuadPart)), "invalid start of central directory");
-        };
-        //10 - zip64 extensible data sector(variable size)
-        Field<10>().validation = [](std::vector<std::uint8_t>& data)
-        {   ThrowErrorIfNot(Error::Zip64EOCDRecord, (data.size() == 0), "unsupported extensible data");
-        };
+            ThrowErrorIfNot(Error::Zip64EOCDRecord, (Field<1>().value == (this->Size() - 12)), "invalid size of zip64 EOCD");
+            break;
+        case 8:
+            ThrowErrorIfNot(Error::Zip64EOCDRecord, ((Field<8>().value != 0) && (Field<8>().value < pos.QuadPart)), "invalid size of central directory");
+            break;
+        case 9:
+            ThrowErrorIfNot(Error::Zip64EOCDRecord, ((Field<9>().value != 0) && (Field<9>().value < pos.QuadPart)), "invalid size of central directory");
+            break;
+        default:
+            UNEXPECTED;
+        }
+    }
+
+    void Validate() override
+    {
+        ThrowErrorIfNot(Error::Zip64EOCDRecord, (Field<7>().value == this->GetTotalNumberOfEntries()), "invalid total number of entries");
+    }
+
+    Zip64EndOfCentralDirectoryRecord(IStream* s) : m_stream(s)
+    {
+        ConfigureField<1>(); // TODO: can we make this a static value instead?
+        ConfigureField<8>();
+        ConfigureField<9>();
 
         SetSignature(static_cast<std::uint32_t>(Signatures::Zip64EndOfCD));
         SetGetSizeOfZip64CDRecord(this->Size() - 12);
@@ -694,7 +689,6 @@ public:
         SetVersionNeededToExtract(static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension));
         SetNumberOfThisDisk(0);
         SetTotalNumberOfEntries(0);
-        Field<10>().value.resize(0);
     }
 
     std::uint64_t GetTotalNumberOfEntries() { return Field<6>().value; }
@@ -705,10 +699,10 @@ public:
         Field<7>().value = value;
     }
 
-    std::uint64_t GetSizeOfCD()                     { return Field<8>().value; }
-    void SetSizeOfCD(std::uint64_t value)           { Field<8>().value = value; }
-    std::uint64_t GetOffsetStartOfCD()              { return Field<9>().value; }
-    void SetOffsetfStartOfCD(std::uint64_t value)   { Field<9>().value = value; }
+    std::uint64_t GetSizeOfCD()                         { return Field<8>().value; }
+    void SetSizeOfCD(std::uint64_t value)               { Field<8>().value = value; }
+    std::uint64_t GetOffsetStartOfCD()                  { return Field<9>().value; }
+    void SetOffsetfStartOfCD(std::uint64_t value)       { Field<9>().value = value; }
 
 private:
     void SetSignature(std::uint32_t value)              { Field<0>().value = value; }
@@ -723,17 +717,6 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                          Zip64EndOfCentralDirectoryLocator                               //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class EOCDSignature     : public Meta::FieldBase<EOCDSignature,       std::uint32_t, Meta::ExactValueValidation<EOCDSignature, Signatures::EndOfCentralDirectory>> {};
-class EOCDNumberDisks   : public Meta::FieldBase<EOCDNumberDisks,     std::uint16_t, Meta::OnlyEitherValueValidation<EOCDNumberDisks, 0, 0xFFFF>> {};
-class OffsetOrSize32bit : public Meta::FieldBase<OffsetOrSize32bit,   std::uint32_t, Meta::OnlyEitherValueValidation<OffsetOrSize32bit, 0, 0xFFFFFFFF>> {};
-class CommentLength     : public Meta::FieldBase<CommentLength,       std::uint16_t, Meta::ExactValueValidation<CommentLength, 0>> {};
-class Comment           : public Meta::FieldNBytes<Comment, Meta::InvalidFieldValidation<Comment>>{};
-
-class Z64EOCDLocator    : public Meta::FieldBase<Z64EOCDLocator,      std::uint32_t, Meta::ExactValueValidation<Z64EOCDLocator, Signatures::Zip64EndOfCDLocator>> {};
-class Z64DiskNumber     : public Meta::FieldBase<Z64DiskNumber,       std::uint32_t, Meta::ExactValueValidation<Z64DiskNumber, 0>> {};
-class OffsetOrSize64bit : public Meta::FieldBase<OffsetOrSize64bit,   std::uint64_t, Meta::InjectedValidation<OffsetOrSize64bit >> {};
-class Z64NumberOfDisks  : public Meta::FieldBase<Z64NumberOfDisks,    std::uint32_t, Meta::ExactValueValidation<Z64NumberOfDisks, 1>> {};
-
 class Zip64EndOfCentralDirectoryLocator : public Meta::StructuredObject<Zip64EndOfCentralDirectoryLocator,
     Z64EOCDLocator,     // 0 - zip64 end of central dir locator signature        4 bytes(0x07064b50)
     Z64NumberDisks,     // 1 - number of the disk with the start of the zip64
@@ -761,7 +744,7 @@ public:
     Zip64EndOfCentralDirectoryLocator(IStream* s) : m_stream(s)
     {
         // wire-up injectable field validation
-        Field<2>().parent = static_cast<InjectableValidator*>(this);      
+        ConfigureField<2>();   
 
         // set smart defaults.
         SetSignature(static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator));
@@ -797,7 +780,7 @@ class EndOfCentralDirectoryRecord : public Meta::StructuredObject<EndOfCentralDi
     Field4Bytes,        // 6 - offset of start of central directory with
                         //     respect to the starting disk number       4 bytes
     CommentLength,      // 7 - .ZIP file comment length                  2 bytes
-    Comment             // 8 - .ZIP file comment                         (variable size)
+    FieldMustBeEmpty    // 8 - .ZIP file comment                         (variable size)
     >
 {
 public:
