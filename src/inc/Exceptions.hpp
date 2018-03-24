@@ -197,6 +197,7 @@ namespace MSIX {
 
 // Helper to make code more terse and more readable at the same time.
 #define ThrowError(c)  { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, c); }
+#define UNEXPECTED     { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::Unexpected); }
 #define NOTSUPPORTED   { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::NotSupported); }
 #define NOTIMPLEMENTED { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::NotImplemented); }
 
