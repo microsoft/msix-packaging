@@ -28,8 +28,9 @@ namespace MSIX {
             ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
             ComPtr<IMSIXFactory> self;
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
-            auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), inputStream);
-            auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, zip.Get());
+            ComPtr<IStream> input(inputStream);
+            auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), input);
+            auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, zip);
             *packageReader = result.Detach();
             return static_cast<HRESULT>(Error::OK);
         });
