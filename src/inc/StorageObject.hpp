@@ -51,7 +51,7 @@ public:
     // Obtains a pointer to a stream representing the file that exists in the storage object
     virtual MSIX::ComPtr<IStream> GetFile(const std::string& fileName) = 0;
 
-    // Remvoes a file by name from the storage object.  If the file does not exist, the operation is a no-op
+    // Removes a file by name from the storage object.  If the file does not exist, the operation is a no-op
     virtual void RemoveFile(const std::string& fileName) = 0;
 
     // Opens a stream to a file by name in the storage object.  If the file does not exist and mode is read,
@@ -61,8 +61,10 @@ public:
 
     // Some storage objects may operate under cache semantics and therefore require an explicit commit.
     // Clients should explicitly call CommitChanges after all write operations into the object are complete.
-    // An implementation of this interface MAY be a no-op.
-    virtual void CommitChanges() = 0;
+    // An implementation of this interface MAY be a no-op. However, having this plus a vector of streams
+    // as a member will cause errno = 24 (too many open files) for appx/bundles that have too many files.
+    // Nobody needs this functionality currently, so just leave it out for now.
+    // virtual void CommitChanges() = 0;
 };
 
 SpecializeUuidOfImpl(IStorageObject);

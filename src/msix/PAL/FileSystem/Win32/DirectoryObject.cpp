@@ -177,13 +177,7 @@ namespace MSIX {
         }
         name = path + GetPathSeparator() + name;
         auto result = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
-        m_streams[fileName] = result.Get(); // now cache the result in m_streams.
         return result;
-    }
-
-    void DirectoryObject::CommitChanges()
-    {
-        m_streams.clear();
     }
 }
 

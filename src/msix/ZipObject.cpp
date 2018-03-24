@@ -900,11 +900,7 @@ namespace MSIX {
     { 
         NOTIMPLEMENTED;
     }
-    void ZipObject::CommitChanges()
-    {
-        NOTIMPLEMENTED;
-    }
-
+    
     const char* ZipObject::GetPathSeparator() { return "/"; }
 
     ZipObject::ZipObject(IMSIXFactory* appxFactory, IStream* stream) : m_factory(appxFactory), m_stream(stream)

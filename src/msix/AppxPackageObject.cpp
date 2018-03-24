@@ -307,7 +307,7 @@ namespace MSIX {
             Config(APPXSIGNATURE_P7X,      [](AppxPackageObject* self){ if (self->m_appxSignature->HasStream()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}),
             Config(CODEINTEGRITY_CAT,      [](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); auto file = self->m_container->GetFile(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, file);}),
             Config(CONTENT_TYPES_XML,      [](AppxPackageObject*)->ComPtr<IStream>{ return ComPtr<IStream>();}), // content types is never implicitly unpacked
-            //Config(APPXBUNDLEMANIFEST_XML, [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBUNDLEMANIFEST_XML); return self->m_appxBundleManifest->GetStream();}),
+            Config(APPXBUNDLEMANIFEST_XML, [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBUNDLEMANIFEST_XML); return /*self->m_appxBundleManifest->GetStream()*/ self->m_container->GetFile(APPXBUNDLEMANIFEST_XML);}),
         };
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
@@ -384,14 +384,16 @@ namespace MSIX {
         }
 
         if(isUncompressed)
-        {   UINT64 blockMapFileSize;
+        {   
+            UINT64 blockMapFileSize;
             auto blockMapFile = blockMapInternal->GetFile(fileName);
             ThrowHrIfFailed(blockMapFile->GetUncompressedSize(&blockMapFileSize));
             ThrowErrorIf(Error::BlockMapSemanticError, (blockMapFileSize != sizeOnZip ),
                 "Uncompressed size of the file in the block map and the OPC container don't match");
         }
         else
-        {   // From Windows code:
+        {   
+            // From Windows code:
             // The file item is compressed. There are 2 cases here:
             // 1. The compressed size of the file is the same as the total size of all compressed blocks.
             // 2. The compressed size of the file is 2 bytes more than the total size of all compressed blocks.
@@ -434,6 +436,18 @@ namespace MSIX {
             bytesCount.QuadPart = std::numeric_limits<std::uint64_t>::max();
             ThrowHrIfFailed(sourceFile->CopyTo(targetFile.Get(), bytesCount, nullptr, nullptr));
         }
+        if(m_isBundle)
+        {
+            for(const auto& appx : m_payloadPackages)
+            {
+                auto appxStream = GetFile(appx);
+                auto appxFactory = m_factory.As<IAppxFactory>();
+                ComPtr<IAppxPackageReader> reader;
+                ThrowHrIfFailed(appxFactory->CreatePackageReader(appxStream.Get(), &reader));
+                reader.As<IPackage>()->Unpack(
+                    static_cast<MSIX_PACKUNPACK_OPTION>(options | MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER), to.Get());
+            }
+        }
     }
 
     const char* AppxPackageObject::GetPathSeparator() { return "/"; }
@@ -450,10 +464,6 @@ namespace MSIX {
         {
             result.insert(result.end(), m_payloadFiles.begin(), m_payloadFiles.end());
         }
-        if(m_isBundle)
-        {
-            result.insert(result.end(), m_payloadPackages.begin(), m_payloadPackages.end());
-        }
         return result;
     }
 
@@ -467,9 +477,8 @@ namespace MSIX {
         return result->second;
     }
 
-    void AppxPackageObject::RemoveFile(const std::string& fileName)                                       { NOTIMPLEMENTED;}
+    void AppxPackageObject::RemoveFile(const std::string& fileName)                                       { NOTIMPLEMENTED; }
     ComPtr<IStream> AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) { NOTIMPLEMENTED; }
-    void AppxPackageObject::CommitChanges()                                                               { NOTIMPLEMENTED; }
 
     // IAppxPackageReader
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader** blockMapReader)

@@ -27,7 +27,6 @@ namespace MSIX {
         ComPtr<IStream>             GetFile(const std::string& fileName) override;
         void                        RemoveFile(const std::string& fileName) override;
         ComPtr<IStream>             OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
-        void                        CommitChanges() override;
 
     protected:
         IMSIXFactory*                          m_factory;

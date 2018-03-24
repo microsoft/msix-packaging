@@ -27,10 +27,8 @@ namespace MSIX {
         ComPtr<IStream>          GetFile(const std::string& fileName) override;
         void                     RemoveFile(const std::string& fileName) override;
         ComPtr<IStream>          OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
-        void                     CommitChanges() override;
 
     protected:
-        std::map<std::string, ComPtr<IStream>> m_streams;
         std::string m_root;
 
     };//class DirectoryObject
