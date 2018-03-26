@@ -369,6 +369,10 @@ public:
             {   auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
                 return ComPtr<IXmlDom>::Make<XercesDom>(stream, &contentTypeSchema);
             }
+            case XmlContentType::AppxBundleManifestXml:
+            {   auto bundleSchema = GetResources(m_factory, Resource::Type::AppxBundleManifest);
+                return ComPtr<IXmlDom>::Make<XercesDom>(stream, &bundleSchema);
+            }
         }
         ThrowError(Error::InvalidParameter);
     }

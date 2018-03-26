@@ -67,7 +67,6 @@ else() # xerces
 endif()
 
 list(APPEND RESOURCES_APPXBUNDLEMANIFEST
-    "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2013.xsd"
     "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"
     "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"
     "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd")

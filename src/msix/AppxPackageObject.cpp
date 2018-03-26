@@ -216,6 +216,12 @@ namespace MSIX {
         ThrowErrorIfNot(Error::AppxManifestSemanticError, m_packageId, "No Identity element in AppxManifest.xml");
     }
 
+    AppxBundleManifestObject::AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
+    {
+        auto dom = factory->CreateDomFromStream(XmlContentType::AppxBundleManifestXml, stream);
+        // TODO: Create XmlVisitors
+    }
+
     AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container) :
         m_factory(factory),
         m_validation(validation),
@@ -271,7 +277,7 @@ namespace MSIX {
             std::string pathInWindows(APPXBUNDLEMANIFEST_XML);
             std::replace(pathInWindows.begin(), pathInWindows.end(), '/', '\\');
             stream = m_appxBlockMap->GetValidationStream(pathInWindows, appxBundleManifestInContainer);
-            // TODO: create appxBundleManifestObject and validate
+            m_appxBundleManifest = ComPtr<IVerifierObject>::Make<AppxBundleManifestObject>(xmlFactory.Get(), stream);
             m_isBundle = true;
         }
 

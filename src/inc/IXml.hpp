@@ -18,6 +18,7 @@ enum class XmlContentType : std::uint8_t
     ContentTypeXml  = 0,
     AppxBlockMapXml = 1,
     AppxManifestXml = 2,
+    AppxBundleManifestXml =3,
 };
 
 // defines queries for use in IXmlDom->ForEachElementIn
