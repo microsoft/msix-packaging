@@ -117,7 +117,6 @@ public:
  
     void Write(std::size_t index, const ComPtr<IStream>& stream)
     {
-        Validation::Validate(static_cast<Derived*>(index, this));
         StreamBase::Write<T>(stream, &value);
     }
     
@@ -146,7 +145,6 @@ public:
     
     void Write(std::size_t index, const ComPtr<IStream>& stream)
     {
-        Validation::Validate(static_cast<Derived*>(index, this));
         if (value.size() != 0)
         {   ThrowHrIfFailed(stream->Write(
                 reinterpret_cast<void*>(value.data()),
@@ -211,7 +209,6 @@ public:
     
     void Write(const ComPtr<IStream>& s)
     {
-        Validation::Validate(static_cast<Derived*>(this));
         this->for_each([](auto& field, std::size_t index, const ComPtr<IStream>& stream)
         {   field.Write(index, stream);
         }, s);

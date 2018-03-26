@@ -3,6 +3,7 @@
 //  See LICENSE file in the project root for full license information.
 // 
 #include "Exceptions.hpp"
+#include "ComHelper.hpp"
 #include "StreamBase.hpp"
 #include "ObjectBase.hpp"
 #include "ZipObject.hpp"
@@ -15,15 +16,12 @@
 #include <limits>
 #include <functional>
 #include <algorithm>
-
 namespace MSIX {
-
 /* Zip File Structure
 [LocalFileHeader 1]
 [encryption header 1]
 [file data 1]
 [data descriptor 1]
-.
 .
 .
 [LocalFileHeader n]
@@ -141,33 +139,18 @@ constexpr static const GeneralPurposeBitFlags UnsupportedFlagsMask =
     GeneralPurposeBitFlags::UNSUPPORTED_14 |
     GeneralPurposeBitFlags::UNSUPPORTED_15;
 
-/*
-class DataDescriptor : public Meta::StructuredObject
-{
-public:
-    std::uint32_t GetCrc32() { return *Meta::Object::GetValue<std::uint32_t>(Field(0)); }
-    void SetCrc32(std::uint32_t value) { Meta::Object::SetValue(Field(0), value); }
-
-    std::uint32_t GetCompressedSize() { return *Meta::Object::GetValue<std::uint32_t>(Field(1)); }
-    void SetCompressedSize(std::uint32_t value) { Meta::Object::SetValue(Field(1), value); }
-
-    std::uint32_t GetUncompressedSize() { return *Meta::Object::GetValue<std::uint32_t>(Field(2)); }
-    void SetUncompressedSize(std::uint32_t value) { Meta::Object::SetValue(Field(2), value); }
-
-    DataDescriptor() : Meta::StructuredObject(
-    {
-        // 0 - crc - 32                          4 bytes    
-        std::make_shared<Meta::Field4Bytes>([](std::uint32_t& v) {}),
-        // 1 - compressed size                 4 bytes
-        std::make_shared<Meta::Field4Bytes>([](std::uint32_t& v) {}),
-        // 2 - uncompressed size               4 bytes
-        std::make_shared<Meta::Field4Bytes>([](std::uint32_t& v) {})
-
-    })
-    {
-    }
-};//class DataDescriptor
-*/
+//////////////////////////////////////////////////////////////////////////////////////////////
+//                              General Zip validation policies                             //
+//////////////////////////////////////////////////////////////////////////////////////////////
+class OffsetOrSize32bit : public Meta::FieldBase<OffsetOrSize32bit,   std::uint32_t, Meta::OnlyEitherValueValidation<OffsetOrSize32bit, 0, 0xFFFFFFFF>> {};
+class OffsetOrSize64bit : public Meta::FieldBase<OffsetOrSize64bit,   std::uint64_t, Meta::InjectedValidation<OffsetOrSize64bit >> {};
+class HowCompressed     : public Meta::FieldBase<HowCompressed,       std::uint16_t, Meta::OnlyEitherValueValidation<HowCompressed, CompressionType::Deflate, CompressionType::Store>> {};
+class FieldMustBeEmpty  : public Meta::FieldNBytes<FieldMustBeEmpty,  Meta::InvalidFieldValidation<FieldMustBeEmpty>>{};
+class VarFieldLength    : public Meta::FieldBase<VarFieldLength,      std::uint16_t, Meta::InjectedValidation<VarFieldLength>> {};
+class VarFieldLenZero   : public Meta::FieldBase<VarFieldLenZero,     std::uint16_t, Meta::ExactValueValidation<VarFieldLenZero, 0>> {};
+class InjectedVal2Bytes : public Meta::FieldBase<InjectedVal2Bytes,   std::uint16_t, Meta::InjectedValidation<InjectedVal2Bytes>> {};
+class InjectedVal4Bytes : public Meta::FieldBase<InjectedVal4Bytes,   std::uint32_t, Meta::InjectedValidation<InjectedVal4Bytes>> {};
+class InjectedVal8Bytes : public Meta::FieldBase<InjectedVal8Bytes,   std::uint64_t, Meta::InjectedValidation<InjectedVal8Bytes>> {};
 
 /*  FROM APPNOTE.TXT section 4.5.3:
     If one of the size or offset fields in the Local or Central directory
@@ -179,211 +162,165 @@ public:
 
     Note: all fields stored in Intel low-byte/high-byte order.
 */
+//////////////////////////////////////////////////////////////////////////////////////////////
+//                                  Zip64ExtendedInformation                                //
+//////////////////////////////////////////////////////////////////////////////////////////////
+class Z64ExtInfoHeader  : public Meta::FieldBase<Z64ExtInfoHeader,    std::uint16_t, Meta::ExactValueValidation<Z64ExtInfoHeader, HeaderIDs::Zip64ExtendedInfo>> {};
+class Z64ExtInfoSize    : public Meta::FieldBase<Z64ExtInfosize,      std::uint16_t, Meta::OnlyEitherValueValidation<Z64ExtInfoSize, 24, 28>> {};
+
 class Zip64ExtendedInformation : public Meta::StructuredObject<
-    Meta::Field2Bytes,  // 0 - tag for the "extra" block type               2 bytes(0x0001)
-    Meta::Field2Bytes,  // 1 - size of this "extra" block                   2 bytes
+    Z64ExtInfoHeader,   // 0 - tag for the "extra" block type               2 bytes(0x0001)
+    Z64ExtInfoSize,     // 1 - size of this "extra" block                   2 bytes
     Meta::Field8Bytes,  // 2 - Original uncompressed file size              8 bytes
+                        // No point in validating these as it is actually 
+                        // possible to have a 0-byte file... Who knew.
     Meta::Field8Bytes,  // 3 - Compressed file size                         8 bytes
-    Meta::Field8Bytes   // 4 - Offset of local header record                8 bytes
+                        // No point in validating these as it is actually 
+                        // possible to have a 0-byte file... Who knew.    
+    InjectedVal8Bytes   // 4 - Offset of local header record                8 bytes
     //Meta::Field4Bytes // 5 - number of the disk on which the file starts  4 bytes -- ITS A FAAKEE!
 >
 {
 public:
-    Zip64ExtendedInformation(ULARGE_INTEGER start, IStream* stream) : m_start(start), m_stream(stream)
+    void ValidateField(size_t field) override 
     {
-        Field<0>().validation = [](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::ZipBadExtendedData,
-                (v == static_cast<std::uint16_t>(HeaderIDs::Zip64ExtendedInfo)),
-                "Bad Zip64ExtendedInfo Signature");
-        };
-        Field<1>().validation = [&](std::uint16_t& v)
-        {   
-            // Technically, Disk Start Number is optional, so we either have 24 (0x18) or 
-            // 28 (0x1c) bytes of data to read, but the field will always be big enough, 
-            // as enforced by CentralDirectoryFileHeader's Field<18> validation.
-            ThrowErrorIf(Error::ZipBadExtendedData,(v != 24 && v != 28), "Bad Zip64ExtendedInfo Size");
-        }; 
-        // No point in validating these as it is actually possible to have a 0-byte file... Who knew.
-        // Field<2>().validation = [](std::uint64_t& v)
-        // {   ThrowErrorIf(Error::ZipBadExtendedData, (v == 0), "Bad Zip64ExtendedInfo uncompressed size");
-        // };
-        // Field<3>().validation = [](std::uint64_t& v)
-        // {   ThrowErrorIf(Error::ZipBadExtendedData, (v == 0), "Bad Zip64ExtendedInfo compressed size");
-        // };
-        Field<4>().validation = [&](std::uint64_t& v)
-        {   
-            ULARGE_INTEGER pos = {0};
-            ThrowErrorIfNot(Error::ZipBadExtendedData, ((v < m_start.QuadPart)), "invalid relative header offset"); 
-        };
-        // ITS A FAAAKE!
-        // Field<5>().validation = [&](std::uint32_t& v)
-        // {   if (Field<1>().value == 32)
-        //     {   // this value was explicitly specified by way of the length of the extended data field, 
-        //         // so this value had better be 0.
-        //         ThrowErrorIf(Error::ZipBadExtendedData, (v != 0), "Bad Zip64ExtendedInfo disk number");
-        //     } 
-        //     else 
-        //     {   Field<5>().value = 0;
-        //     }
-        // };
+        ULARGE_INTEGER pos = {0};        
+        switch (field)
+        {
+        case 4:
+            ThrowErrorIfNot(Error::ZipBadExtendedData, ((Field<4>().value < m_start.QuadPart)), "invalid relative header offset");         
+            break;
+        default:
+            UNEXPECTED;
+        }
     }
 
-    std::uint64_t GetUncompressedSize()         { return Field<2>().value; }
-    void SetUncompressedSize(std::uint64_t v)   { Field<2>().value = v; }
+    Zip64ExtendedInformation(ULARGE_INTEGER start, IStream* stream) : m_start(start), m_stream(stream)
+    {
+        ConfigureField<4>();
+    }
 
-    std::uint64_t GetCompressedSize()           { return Field<3>().value; }
-    void SetCompressedSize(std::uint64_t v)     { Field<3>().value = v; }
-
-    std::uint64_t GetRelativeOffset()           { return Field<4>().value; }
-    void SetRelativeOffset(std::uint64_t v)     { Field<4>().value = v; }
+    std::uint64_t GetUncompressedSize()   const noexcept { return Field<2>().value; }
+    void SetUncompressedSize(std::uint64_t v)   noexcept { Field<2>().value = v; }
+    std::uint64_t GetCompressedSize()     const noexcept { return Field<3>().value; }
+    void SetCompressedSize(std::uint64_t v)     noexcept { Field<3>().value = v; }
+    std::uint64_t GetRelativeOffset()     const noexcept { return Field<4>().value; }
+    void SetRelativeOffset(std::uint64_t v)     noexcept { Field<4>().value = v; }
 
 private:
     ULARGE_INTEGER  m_start;
     ComPtr<IStream> m_stream;
 };
 
-    /*  TODO: Implement large file support.
-    This type currently represents a "zip32" Central Directory Header.  We need to create a new field type (offset)
-    to replace the type for fields 8 & 9 whose implementation is determined by the version needed to extract (field 2)'s
-    value.
+/*  TODO: Implement large file support.
+This type currently represents a "zip32" Central Directory Header.  We need to create a new field type (offset)
+to replace the type for fields 8 & 9 whose implementation is determined by the version needed to extract (field 2)'s
+value.
 
-    This type would replace its existing compressed & uncompressed sizes properties (encapsulated in fields 8 & 9)
-    with a 64-bit value version of those methods:
-    std::uint64_t GetCompressedSize()   { ...
-    std::uint64_t GetUncompressedSize() { ...
-    void SetCompressedSize  (std::uint64_t...
-    void SetUncompressedSize(std::uint64_t...
+This type would replace its existing compressed & uncompressed sizes properties (encapsulated in fields 8 & 9)
+with a 64-bit value version of those methods:
+std::uint64_t GetCompressedSize()   { ...
+std::uint64_t GetUncompressedSize() { ...
+void SetCompressedSize  (std::uint64_t...
+void SetUncompressedSize(std::uint64_t...
 
-    The underlying implementation of these methods would validate the resulting in/out values and pass the correct
-    static_casted value to the new meta object type (offset) which would then hold the correct value, as well
-    as handle the correct sizes w.r.t. (de)serialization.
+The underlying implementation of these methods would validate the resulting in/out values and pass the correct
+static_casted value to the new meta object type (offset) which would then hold the correct value, as well
+as handle the correct sizes w.r.t. (de)serialization.
 
-    As-is I don't believe that we "need" this for now, so keeping the implementation "simpler" is probably the correct
-    answer for now.
+As-is I don't believe that we "need" this for now, so keeping the implementation "simpler" is probably the correct
+answer for now.
 */
+//////////////////////////////////////////////////////////////////////////////////////////////
+//                              CentralDirectoryFileHeader                                  //
+//////////////////////////////////////////////////////////////////////////////////////////////
+class CDFH_Header       : public Meta::FieldBase<CDFH_Header,         std::uint32_t, Meta::ExactValueValidation<CDFH_Header, Signatures::CentralFileHeader>> {};
+class CDFH_DiskNumber   : public Meta::FieldBase<CDFH_DiskNumber,     std::uint16_t, Meta::ExactValueValidation<CDFH_DiskNumber, 0>> {};
+class CDFH_ExtraField   : public Meta::FieldNBytes<CDFH_ExtraField,   Meta::InjectedValidation<CDFH_ExtraField>> {};
+class CDFH_GPBit        : public Meta::FiedlBase<CDFH_GPBit,          std::uint16_t, Meta::VirtualValidation<CDFH_GPBit, 0>>
+{
+public:
+    void Validate(std::size_t, CDFH_GPBit* self) override {
+        ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
+            ((self->Field<3>().value  & static_cast<std::uint16_t>(UnsupportedFlagsMask)) == 0),
+            "unsupported flag(s) specified");
+        };
+    }
+};
+
 class CentralDirectoryFileHeader : public Meta::StructuredObject<
-    Meta::Field4Bytes, // 0 - central file header signature   4 bytes(0x02014b50)
+    CDFH_Header,       // 0 - central file header signature   4 bytes(0x02014b50)
     Meta::Field2Bytes, // 1 - version made by                 2 bytes
     Meta::Field2Bytes, // 2 - version needed to extract       2 bytes
-    Meta::Field2Bytes, // 3 - general purpose bit flag        2 bytes
-    Meta::Field2Bytes, // 4 - compression method              2 bytes
+    CDFH_GPBit,        // 3 - general purpose bit flag        2 bytes
+    HowCompressed,     // 4 - compression method              2 bytes
     Meta::Field2Bytes, // 5 - last mod file time              2 bytes
     Meta::Field2Bytes, // 6 - last mod file date              2 bytes
     Meta::Field4Bytes, // 7 - crc - 32                        4 bytes
     Meta::Field4Bytes, // 8 - compressed size                 4 bytes
     Meta::Field4Bytes, // 9 - uncompressed size               4 bytes
-    Meta::Field2Bytes, //10 - file name length                2 bytes
-    Meta::Field2Bytes, //11 - extra field length              2 bytes
-    Meta::Field2Bytes, //12 - file comment length             2 bytes
-    Meta::Field2Bytes, //13 - disk number start               2 bytes
+    InjectedVal2Bytes, //10 - file name length                2 bytes
+    InjectedVal2Bytes, //11 - extra field length              2 bytes
+    VarFieldLenZero,   //12 - file comment length             2 bytes
+    CDFH_DiskNumber,   //13 - disk number start               2 bytes
     Meta::Field2Bytes, //14 - internal file attributes        2 bytes
     Meta::Field4Bytes, //15 - external file attributes        4 bytes
-    Meta::Field4Bytes, //16 - relative offset of local header 4 bytes
+    InjectedVal4Bytes, //16 - relative offset of local header 4 bytes
     Meta::FieldNBytes, //17 - file name(variable size)
-    Meta::FieldNBytes, //18 - extra field(variable size)
-    Meta::FieldNBytes  //19 - file comment(variable size)
+    CDFH_ExtraField,   //18 - extra field(variable size)
+    FieldMustBeEmpty   //19 - file comment(variable size)
     >
 {
 public:
-    CentralDirectoryFileHeader(bool isZip64, IStream* s) : m_isZip64(isZip64), m_stream(s)
+    void ValidateField(size_t field)
     {
-        // 0 - central file header signature   4 bytes(0x02014b50)
-        Field<0>().validation = [](std::uint32_t& v)
-        {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
-                (v == static_cast<std::uint32_t>(Signatures::CentralFileHeader)),
-                "CDFH Signature");
-        };
-        // we actually do not base any decisions on these values, and OPC and Appx both do not
-        // consider the values in these fields to be all that interesting either apparently.
-        // // 1 - version made by                 2 bytes
-        // Field<1>().validation = [](std::uint16_t& v)
-        // {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
-        //         (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)),
-        //         "unsupported version made by");
-        // };
-        // // 2 - version needed to extract       2 bytes
-        // Field<2>().validation = [](std::uint16_t& v)
-        // {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
-        //         ((v == static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) ||
-        //         (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))),
-        //         "unsupported version needed to extract");
-        // };
-        // 3 - general purpose bit flag        2 bytes
-        Field<3>().validation = [](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
-            ((v & static_cast<std::uint16_t>(UnsupportedFlagsMask)) == 0),
-            "unsupported flag(s) specified");
-        };
-        // 4 - compression method              2 bytes
-        Field<4>().validation = [](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
-                ((v == static_cast<std::uint16_t>(CompressionType::Store)) ||
-                (v == static_cast<std::uint16_t>(CompressionType::Deflate))),
-                "unsupported compression method");
-        };
-        // 5 - last mod file time              2 bytes
-        // 6 - last mod file date              2 bytes
-        // 7 - crc - 32                        4 bytes
-        // 8 - compressed size                 4 bytes
-        // 9 - uncompressed size               4 bytes
-        //10 - file name length                2 bytes
-        Field<10>().validation = [&](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v != 0), "unsupported file name size");
-            Field<17>().value.resize(v,0);
-        };
-        //11 - extra field length              2 bytes
-        Field<11>().validation = [&](std::uint16_t& v)
-        {   
-            if (v != 0) { Field<18>().value.resize(v,0); }
-        };
-        //12 - file comment length             2 bytes
-        Field<12>().validation = [&](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported file comment size");
-        };
-        //13 - disk number start               2 bytes
-        Field<13>().validation = [](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported disk number start");
-        };
-        // //14 - internal file attributes        2 bytes
-        // Field<14>().validation = [](std::uint16_t& v)
-        // {   ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (v == 0), "unsupported internal file attributes");
-        // };
-        //15 - external file attributes        4 bytes
-        //16 - relative offset of local header 4 bytes
-        Field<16>().validation = [&](std::uint32_t& v)
-        {   
-            ULARGE_INTEGER pos = {0};
+        ULARGE_INTEGER pos = {0};
+
+        switch(field)
+        {
+        case 10:
+            ThrowErrorIfNot(Error::ZipCentralDirectoryHeader, (Field<10>().value != 0), "unsupported file name size");
+            Field<17>().value.resize(Field<10>().value, 0);
+            break;
+        case 11:
+            if (Field<11>().value != 0) { Field<18>().value.resize(Field<11>().value, 0); }  
+            break;
+        case 16:
             ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
             if (!GetIsZip64())
-            {   ThrowErrorIf(Error::ZipCentralDirectoryHeader, (v >= pos.QuadPart), "invalid relative header offset");
+            {   ThrowErrorIf(Error::ZipCentralDirectoryHeader, (Field<16>().value >= pos.QuadPart), "invalid relative header offset");
             }
             else
-            {   ThrowErrorIf(Error::ZipCentralDirectoryHeader, (v != 0xFFFFFFFF), "invalid zip64 local header offset");
-            }
-        };
-        //17 - file name(variable size)
-        //18 - extra field(variable size)
-        Field<18>().validation = [&](std::vector<std::uint8_t>& bytes)
-        {
+            {   ThrowErrorIf(Error::ZipCentralDirectoryHeader, (Field<16>().value != 0xFFFFFFFF), "invalid zip64 local header offset");
+            }        
+            break;
+        case 18:
             // Only process for Zip64ExtendedInformation
-            if (bytes.size() > 2 && bytes[0] == 0x01 && bytes[1] == 0x00)
+            if (Field<18>().value.size() > 2 && Field<18>().value[0] == 0x01 && Field<18>().value[1] == 0x00)
             {
                 LARGE_INTEGER zero = {0};
-                ULARGE_INTEGER pos = {0};
                 ThrowHrIfFailed(m_stream->Seek(zero, StreamBase::Reference::CURRENT, &pos));
-                auto vectorStream = ComPtr<IStream>::Make<VectorStream>(&bytes);
+                auto vectorStream = ComPtr<IStream>::Make<VectorStream>(&Field<18>().value);
                 m_extendedInfo = std::make_unique<Zip64ExtendedInformation>(pos, vectorStream.Get());
-                ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,(bytes.size() >= m_extendedInfo->Size()),"Unexpected extended info size");
+                ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,(Field<18>().value.size() >= m_extendedInfo->Size()),"Unexpected extended info size");
                 m_extendedInfo->Read(vectorStream.Get());
             }
-        };
-        //19 - file comment(variable size)
-        
-        SetSignature(static_cast<std::uint32_t>(Signatures::CentralFileHeader));
+            break;
+        default:
+            UNEXPECTED;
+        }
+    }
 
+    CentralDirectoryFileHeader(bool isZip64, IStream* s) : m_isZip64(isZip64), m_stream(s)
+    {
+        ConfigureField<10>();
+        ConfigureField<11>();
+        ConfigureField<16>();
+        ConfigureField<18>();
+
+        SetSignature(static_cast<std::uint32_t>(Signatures::CentralFileHeader));
         SetVersionMadeBy(static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension));
-        // only set to Zip64FormatExtension iff required!
-        SetVersionNeededToExtract(static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion));    
+        SetVersionNeededToExtract(static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion));  // only set to Zip64FormatExtension iff required!
         SetLastModFileDate(static_cast<std::uint16_t>(MagicNumbers::FileDate));
         SetLastModFileTime(static_cast<std::uint16_t>(MagicNumbers::FileTime));
         SetExtraFieldLength(0);
@@ -393,58 +330,52 @@ public:
         SetExternalFileAttributes(0);
     }
 
-    bool IsGeneralPurposeBitSet()
-    {
-        return ((GetGeneralPurposeBitFlags() & GeneralPurposeBitFlags::GeneralPurposeBit) == GeneralPurposeBitFlags::GeneralPurposeBit);
+    inline bool IsGeneralPurposeBitSet() const noexcept
+    {   return ((GetGeneralPurposeBitFlags() & GeneralPurposeBitFlags::GeneralPurposeBit) == GeneralPurposeBitFlags::GeneralPurposeBit);
     }
 
-    std::uint16_t GetVersionNeededToExtract()                { return Field<2>().value; }
+    inline std::uint16_t GetVersionNeededToExtract()          const noexcept { return Field<2>().value; }
+    inline GeneralPurposeBitFlags GetGeneralPurposeBitFlags() const noexcept { return static_cast<GeneralPurposeBitFlags>(Field<3>().value); }
+    inline void SetGeneralPurposeBitFlags(std::uint16_t value)      noexcept { Field<3>().value = value; }
+    inline std::uint16_t GetCompressionMethod()               const noexcept { return Field<4>().value; }
+    inline void SetCompressionMethod(std::uint16_t value)           noexcept { Field<4>().value= value; }
+    inline std::uint32_t GetCrc32()                           const noexcept { return Field<7>().value; }
+    inline void SetCrc(std::uint32_t value)                         noexcept { Field<7>().value = value; }
 
-    GeneralPurposeBitFlags GetGeneralPurposeBitFlags()       { return static_cast<GeneralPurposeBitFlags>(Field<3>().value); }
-    void SetGeneralPurposeBitFlags(std::uint16_t value)      { Field<3>().value = value; }
-
-    std::uint16_t GetCompressionMethod()                     { return Field<4>().value; }
-    void SetCompressionMethod(std::uint16_t value)           { Field<4>().value= value; }
-
-    std::uint32_t GetCrc32()                                 { return Field<7>().value; }
-    void SetCrc(std::uint32_t value)                         { Field<7>().value = value; }
-
-    std::uint64_t GetCompressedSize()
+    std::uint64_t GetCompressedSize() const noexcept
     {
-        if (!m_extendedInfo.get()) { return static_cast<std::uint64_t>(Field<8>().value); }
+        if (!m_extendedInfo.get()) {
+            return static_cast<std::uint64_t>(Field<8>().value);
+        }
         return m_extendedInfo->GetCompressedSize();
     }
-    void SetCompressedSize(std::uint32_t value)
-    {
-        // TODO: on-demand create m_extendedInfo?
-        Field<8>().value = value;
-    }
 
-    std::uint64_t GetUncompressedSize()                      
+    // TODO: on-demand create m_extendedInfo?
+    inline void SetCompressedSize(std::uint32_t value) noexcept { Field<8>().value = value; }
+
+    std::uint64_t GetUncompressedSize() const noexcept
     {
-        if (!m_extendedInfo.get()) { return static_cast<std::uint64_t>(Field<9>().value); }
+        if (!m_extendedInfo.get()) {
+            return static_cast<std::uint64_t>(Field<9>().value);
+        }
         return m_extendedInfo->GetUncompressedSize();
     }
 
-    void SetUncompressedSize(std::uint32_t value)
-    {
-        // TODO: on-demand create m_extendedInfo?
-        Field<9>().value = value;
-    }
+    // TODO: on-demand create m_extendedInfo?
+    inline void SetUncompressedSize(std::uint32_t value) noexcept { Field<9>().value = value; }
 
-    std::uint64_t GetRelativeOffsetOfLocalHeader()
+    std::uint64_t GetRelativeOffsetOfLocalHeader() const noexcept
     {
-        if (!m_extendedInfo.get()) { return static_cast<std::uint64_t>(Field<16>().value); }
+        if (!m_extendedInfo.get()) {
+            return static_cast<std::uint64_t>(Field<16>().value);
+        }
         return m_extendedInfo->GetRelativeOffset();
     }
 
-    void SetRelativeOffsetOfLocalHeader(std::uint32_t value)
-    {
-        // TODO: on-demand create m_extendedInfo?
-        Field<16>().value = value;
-    }
+    // TODO: on-demand create m_extendedInfo?
+    inline void SetRelativeOffsetOfLocalHeader(std::uint32_t value) noexcept { Field<16>().value = value; }
 
-    std::string GetFileName()
+    std::string GetFileName() const
     {
         auto data = Field<17>().value;
         return std::string(data.begin(), data.end());
@@ -458,122 +389,84 @@ public:
         SetFileNameLength(static_cast<std::uint16_t>(name.size()));
     }
 
-    bool GetIsZip64() { return m_isZip64; }
+    inline bool GetIsZip64() const noexcept { return m_isZip64; }
 
 private:
-    void SetSignature(std::uint32_t value)              { Field<0>().value = value; }
-    void SetVersionMadeBy(std::uint16_t value)          { Field<1>().value = value; }
-    void SetVersionNeededToExtract(std::uint16_t value) { Field<2>().value = value; }
-
-    void SetLastModFileTime(std::uint16_t value)        { Field<5>().value = value; }
-    void SetLastModFileDate(std::uint16_t value)        { Field<6>().value = value; }
-
-    void SetFileNameLength(std::uint16_t value)         { Field<10>().value = value; }
-
-    void SetExtraFieldLength(std::uint16_t value)       { Field<11>().value = value; }
-    std::uint16_t GetExtraFieldLength()                 { return Field<11>().value;  }
-
-    void SetFileCommentLength(std::uint16_t value)      { Field<12>().value = value; }
-    void SetDiskNumberStart(std::uint16_t value)        { Field<13>().value = value; }
-    void SetInternalFileAttributes(std::uint16_t value) { Field<14>().value = value; }
-    void SetExternalFileAttributes(std::uint16_t value) { Field<15>().value = value; }
+    inline void SetSignature(std::uint32_t value)              noexcept { Field<0>().value = value; }
+    inline void SetVersionMadeBy(std::uint16_t value)          noexcept { Field<1>().value = value; }
+    inline void SetVersionNeededToExtract(std::uint16_t value) noexcept { Field<2>().value = value; }
+    inline void SetLastModFileTime(std::uint16_t value)        noexcept { Field<5>().value = value; }
+    inline void SetLastModFileDate(std::uint16_t value)        noexcept { Field<6>().value = value; }
+    inline void SetFileNameLength(std::uint16_t value)         noexcept { Field<10>().value = value; }
+    inline void SetExtraFieldLength(std::uint16_t value)       noexcept { Field<11>().value = value; }
+    inline std::uint16_t GetExtraFieldLength()           const noexcept { return Field<11>().value;  }
+    inline void SetFileCommentLength(std::uint16_t value)      noexcept { Field<12>().value = value; }
+    inline void SetDiskNumberStart(std::uint16_t value)        noexcept { Field<13>().value = value; }
+    inline void SetInternalFileAttributes(std::uint16_t value) noexcept { Field<14>().value = value; }
+    inline void SetExternalFileAttributes(std::uint16_t value) noexcept { Field<15>().value = value; }
 
     std::unique_ptr<Zip64ExtendedInformation> m_extendedInfo;
-    IStream* m_stream = nullptr;
-    bool     m_isZip64 = false;
+    ComPtr<IStream> m_stream;
+    bool m_isZip64 = false;
 };//class CentralDirectoryFileHeader
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                                  LocalFileHeader                                         //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class EOCDSignature     : public Meta::FieldBase<EOCDSignature,       std::uint32_t, Meta::ExactValueValidation<EOCDSignature, Signatures::EndOfCentralDirectory>> {};
-class EOCDNumberDisks   : public Meta::FieldBase<EOCDNumberDisks,     std::uint16_t, Meta::OnlyEitherValueValidation<EOCDNumberDisks,   0, 0xFFFF>> {};
-class OffsetOrSize32bit : public Meta::FieldBase<OffsetOrSize32bit,   std::uint32_t, Meta::OnlyEitherValueValidation<OffsetOrSize32bit, 0, 0xFFFFFFFF>> {};
-class CommentLength     : public Meta::FieldBase<CommentLength,       std::uint16_t, Meta::ExactValueValidation<CommentLength, 0>> {};
-class FieldMustBeEmpty  : public Meta::FieldNBytes<FieldMustBeEmpty,  Meta::InvalidFieldValidation<FieldMustBeEmpty>>{};
-
-class Z64EOCDLocator    : public Meta::FieldBase<Z64EOCDLocator,      std::uint32_t, Meta::ExactValueValidation<Z64EOCDLocator, Signatures::Zip64EndOfCDLocator>> {};
-class Z64DiskNumber     : public Meta::FieldBase<Z64DiskNumber,       std::uint32_t, Meta::ExactValueValidation<Z64DiskNumber, 0>> {};
-class OffsetOrSize64bit : public Meta::FieldBase<OffsetOrSize64bit,   std::uint64_t, Meta::InjectedValidation<OffsetOrSize64bit >> {};
-class Z64NumberOfDisks  : public Meta::FieldBase<Z64NumberOfDisks,    std::uint32_t, Meta::ExactValueValidation<Z64NumberOfDisks, 1>> {};
-
-class Z64EOCDRecord     : public Meta::FieldBase<Z64EOCDRecord,       std::uint32_t, Meta::ExactValueValidation<Z64EOCDRecord, Signatures::Zip64EndOfCD>> {};
-class Z64EOCDRSize      : public Meta::FieldBase<Z64EOCDRSize,        std::uint64_t, Meta::InjectedValidation<Z64EOCDRSize >> {};
-class Z64EOCDRVersion   : public Meta::FieldBase<Z64EOCDRVersion,     std::uint16_t, Meta::ExactValueValidation<Z64EOCDRVersion, ZipVersions::Zip64FormatExtension>> {};
-class Z64EOCDRCount     : public Meta::FiledBase<Z64EOCDRCount,       std::uint64_t, Meta::NotValueValidation<Z64EOCDRCount, 0>> {};
-
+class LFH_Header        : public Meta::FieldBase<LFH_Header,          std::uint32_t, Meta::ExactValueValidation<LFH_Header, Signatures::LocalFileHeader>> {};
+class LFH_VersionNeeded : public Meta::FieldBase<LFH_VersionNeeded,   std::uint16_t, Meta::OnlyEitherValueValidation<LFH_VersionNeeded, ZipVersions::Zip32DefaultVersion, ZipVersions::Zip64FormatExtension>> {};
 
 class LocalFileHeader : public Meta::StructuredObject<LocalFileHeader, 
-    Meta::Field4Bytes,  // 0 - local file header signature     4 bytes(0x04034b50)
-    Meta::Field2Bytes,  // 1 - version needed to extract       2 bytes
-    Meta::Field2Bytes,  // 2 - general purpose bit flag        2 bytes
-    Meta::Field2Bytes,  // 3 - compression method              2 bytes
+    LFH_Header,         // 0 - local file header signature     4 bytes(0x04034b50)
+    LFH_VersionNeeded,  // 1 - version needed to extract       2 bytes
+    InjectedVal2Bytes,  // 2 - general purpose bit flag        2 bytes
+    HowCompressed,      // 3 - compression method              2 bytes
     Meta::Field2Bytes,  // 4 - last mod file time              2 bytes
     Meta::Field2Bytes,  // 5 - last mod file date              2 bytes
-    Meta::Field4Bytes,  // 6 - crc - 32                        4 bytes
-    Meta::Field4Bytes,  // 7 - compressed size                 4 bytes
+    InjectedVal4Bytes,  // 6 - crc - 32                        4 bytes
+    InjectedVal4Bytes,  // 7 - compressed size                 4 bytes
     Meta::Field4Bytes,  // 8 - uncompressed size               4 bytes
-    Meta::Field2Bytes,  // 9 - file name length                2 bytes
-    Meta::Field2Bytes,  // 10- extra field length              2 bytes
+    InjectedVal2Bytes,  // 9 - file name length                2 bytes
+    InjectedVal2Bytes,  // 10- extra field length              2 bytes
     Meta::FieldNBytes,  // 11- file name                       (variable size)
     Meta::FieldNBytes   // 12- extra field                     (variable size)
 >
 {
 public:
+    void ValidateField(size_t field)
+    {
+        switch (field)
+        {
+        case 2:
+            ThrowErrorIfNot(Error::ZipLocalFileHeader, ((Field<2>().value & static_cast<std::uint16_t>(UnsupportedFlagsMask)) == 0), "unsupported flag(s) specified");
+            ThrowErrorIfNot(Error::ZipLocalFileHeader, (IsGeneralPurposeBitSet() == m_directoryEntry->IsGeneralPurposeBitSet()), "inconsistent general purpose bits specified");        
+            break;
+        case 6:
+            ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (Field<6>().value == 0)), "Invalid Zip CRC");
+            break;
+        case 7:
+            ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (Field<7>().value == 0)), "Invalid Zip CRC");
+            break;
+        case 9:
+            ThrowErrorIfNot(Error::ZipLocalFileHeader, (Field<9>.value != 0), "unsupported file name size");
+            Field<11>().value.resize(GetFileNameLength(), 0);
+            break;
+        case 10:
+            // Even if we don't validate them, we need to read the extra field
+            if (Field<10>().value != 0) { Field<12>().value.resize(Field<10>().value,0); }
+            break;
+        default:
+            UNEXPECTED;
+        }
+    }
+
     LocalFileHeader(std::shared_ptr<CentralDirectoryFileHeader> directoryEntry) : m_isZip64(directoryEntry->GetIsZip64()), m_directoryEntry(directoryEntry)
     {
-        // 0 - local file header signature     4 bytes(0x04034b50)
-        Field<0>().validation = [](std::uint32_t& v)
-        {   ThrowErrorIfNot(Error::ZipLocalFileHeader,
-                (v == static_cast<std::uint32_t>(Signatures::LocalFileHeader)),
-                "file header does not match signature");
-        };
-        // 1 - version needed to extract       2 bytes
-        Field<1>().validation = [](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::ZipLocalFileHeader, 
-                ((v == static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion)) ||
-                (v == static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension))),
-                "unsupported version needed to extract");
-        };
-        // 2 - general purpose bit flag        2 bytes
-        Field<2>().validation = [&](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::ZipLocalFileHeader, 
-                ((v & static_cast<std::uint16_t>(UnsupportedFlagsMask)) == 0),
-                "unsupported flag(s) specified");
-            ThrowErrorIfNot(Error::ZipLocalFileHeader,
-                (IsGeneralPurposeBitSet() == m_directoryEntry->IsGeneralPurposeBitSet()),
-                "inconsistent general purpose bits specified");
-        };
-        // 3 - compression method              2 bytes
-        Field<3>().validation = [](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::ZipLocalFileHeader, 
-                ((v == static_cast<std::uint16_t>(CompressionType::Store)) ||
-                (v == static_cast<std::uint16_t>(CompressionType::Deflate)) ),
-                "unsupported compression method");
-        };
-        // 4 - last mod file time              2 bytes
-        // 5 - last mod file date              2 bytes
-        // 6 - crc - 32                        4 bytes
-        Field<6>().validation = [&](std::uint32_t& v)
-        {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid Zip CRC");
-        };
-        // 7 - compressed size                 4 bytes
-        Field<7>().validation = [&](std::uint32_t& v)
-        {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (v == 0)), "Invalid compressed size");
-        };
-        // 8 - uncompressed size               4 bytes
-        // 9 - file name length                2 bytes
-        Field<9>().validation = [&](std::uint16_t& v)
-        {   ThrowErrorIfNot(Error::ZipLocalFileHeader, (v != 0), "unsupported file name size");
-            Field<11>().value.resize(GetFileNameLength(), 0);
-        };
-        // 10- extra field length              2 bytes
-        Field<10>().validation = [&](std::uint16_t& v)
-        {   // Even if we don't validate them, we need to read the extra field
-            if (v != 0) { Field<12>().value.resize(v,0); }
-        };
-        // 11- file name (variable size)
-        // 12- extra field (variable size)
+        ConfigureField<2>();
+        ConfigureField<6>();
+        ConfigureField<7>();
+        ConfigureField<9>();
+        ConfigureField<10>();
     }
 
     inline bool IsGeneralPurposeBitSet() const noexcept
@@ -588,7 +481,7 @@ public:
     }
 
     inline std::uint64_t GetUncompressedSize() const noexcept
-    { return IsGeneralPurposeBitSet() ? m_directoryEntry->GetUncompressedSize() : static_cast<std::uint64_t>(Field<8>().value);
+    {   return IsGeneralPurposeBitSet() ? m_directoryEntry->GetUncompressedSize() : static_cast<std::uint64_t>(Field<8>().value);
     }
 
     inline std::uint16_t GetFileNameLength()                  const noexcept { return Field<9>().value;  }
@@ -621,18 +514,22 @@ protected:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              Zip64EndOfCentralDirectoryRecord                            //
 //////////////////////////////////////////////////////////////////////////////////////////////
+class Z64DiskNumber     : public Meta::FieldBase<Z64DiskNumber,       std::uint32_t, Meta::ExactValueValidation<Z64DiskNumber, 0>> {};
+class Z64EOCDRecord     : public Meta::FieldBase<Z64EOCDRecord,       std::uint32_t, Meta::ExactValueValidation<Z64EOCDRecord, Signatures::Zip64EndOfCD>> {};
+class Z64EOCDRVersion   : public Meta::FieldBase<Z64EOCDRVersion,     std::uint16_t, Meta::ExactValueValidation<Z64EOCDRVersion, ZipVersions::Zip64FormatExtension>> {};
+class Z64EOCDRCount     : public Meta::FiledBase<Z64EOCDRCount,       std::uint64_t, Meta::NotValueValidation<Z64EOCDRCount, 0>> {};
 
 class Zip64EndOfCentralDirectoryRecord : public Meta::StructuredObject<Zip64EndOfCentralDirectoryRecord, 
     Z64EOCDRecord,     // 0 - zip64 end of central dir signature                            4 bytes(0x06064b50)
-    Z64EOCDRSize,      // 1 - size of zip64 end of central directory record                 8 bytes
+    InjectedVal8Bytes, // 1 - size of zip64 end of central directory record                 8 bytes
     Z64EOCDRVersion,   // 2 - version made by                                               2 bytes
     Z64EOCDRVersion,   // 3 - version needed to extract                                     2 bytes
     Z64DiskNumber,     // 4 - number of this disk                                           4 bytes
     Z64DiskNumber,     // 5 - number of the disk with the start of the central directory    4 bytes
     Z64EOCDRCount,     // 6 - total number of entries in the central directory on this disk 8 bytes
     Z64EOCDRCount,     // 7 - total number of entries in the central directory              8 bytes
-    Z64EOCDRSize,      // 8 - size of the central directory                                 8 bytes
-    Z64EOCDRSize,      // 9 - offset of start of central directory with respect to the
+    InjectedVal8Bytes, // 8 - size of the central directory                                 8 bytes
+    InjectedVal8Bytes, // 9 - offset of start of central directory with respect to the
                        //     starting disk number                                          8 bytes
     FieldMustBeEmpty   //10 - zip64 extensible data sector                                  (variable size)
     >
@@ -707,6 +604,9 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                          Zip64EndOfCentralDirectoryLocator                               //
 //////////////////////////////////////////////////////////////////////////////////////////////
+class Z64EOCDLocator    : public Meta::FieldBase<Z64EOCDLocator,      std::uint32_t, Meta::ExactValueValidation<Z64EOCDLocator, Signatures::Zip64EndOfCDLocator>> {};
+class Z64NumberOfDisks  : public Meta::FieldBase<Z64NumberOfDisks,    std::uint32_t, Meta::ExactValueValidation<Z64NumberOfDisks, 1>> {};
+
 class Zip64EndOfCentralDirectoryLocator : public Meta::StructuredObject<Zip64EndOfCentralDirectoryLocator,
     Z64EOCDLocator,     // 0 - zip64 end of central dir locator signature        4 bytes(0x07064b50)
     Z64NumberDisks,     // 1 - number of the disk with the start of the zip64
@@ -754,6 +654,8 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              EndOfCentralDirectoryRecord                                 //
 //////////////////////////////////////////////////////////////////////////////////////////////
+class EOCDSignature     : public Meta::FieldBase<EOCDSignature,       std::uint32_t, Meta::ExactValueValidation<EOCDSignature, Signatures::EndOfCentralDirectory>> {};
+class EOCDNumberDisks   : public Meta::FieldBase<EOCDNumberDisks,     std::uint16_t, Meta::OnlyEitherValueValidation<EOCDNumberDisks,   0, 0xFFFF>> {};
 
 class EndOfCentralDirectoryRecord : public Meta::StructuredObject<EndOfCentralDirectoryRecord,
     EOCDSignature,      // 0 - end of central dir signature              4 bytes  (0x06054b50)
@@ -767,7 +669,7 @@ class EndOfCentralDirectoryRecord : public Meta::StructuredObject<EndOfCentralDi
     Field4Bytes,        // 5 - size of the central directory             4 bytes
     Field4Bytes,        // 6 - offset of start of central directory with
                         //     respect to the starting disk number       4 bytes
-    CommentLength,      // 7 - .ZIP file comment length                  2 bytes
+    VarFieldLenZero,    // 7 - .ZIP file comment length                  2 bytes
     FieldMustBeEmpty    // 8 - .ZIP file comment                         (variable size)
     >
 {
@@ -840,8 +742,7 @@ std::vector<std::string> ZipObject::GetFileNames(FileNameOptions)
 }
 
 ComPtr<IStream> ZipObject::GetFile(const std::string& fileName)
-{
-    // TODO: Make this on-demand populate m_streams and then pull from there.
+{   // TODO: Make this on-demand populate m_streams and then pull from there.
     auto result = m_streams.find(fileName);
     if (result == m_streams.end())
     {
@@ -851,8 +752,7 @@ ComPtr<IStream> ZipObject::GetFile(const std::string& fileName)
 }
 
 ZipObject::ZipObject(IMSIXFactory* appxFactory, const ComPtr<IStream>& stream) : m_factory(appxFactory), m_stream(stream)
-{
-    // Confirm that the file IS the correct format
+{   // Confirm that the file IS the correct format
     EndCentralDirectoryRecord endCentralDirectoryRecord;
     LARGE_INTEGER pos = {0};
     pos.QuadPart = -1 * endCentralDirectoryRecord.Size();
@@ -929,5 +829,4 @@ ZipObject::ZipObject(IMSIXFactory* appxFactory, const ComPtr<IStream>& stream) :
         m_streams.insert(std::make_pair(centralFileHeader.second->GetFileName(), std::move(fileStream)));
     }
 } // ZipObject::ZipObject
-
 } // namespace MSIX
