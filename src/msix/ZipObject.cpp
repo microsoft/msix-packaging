@@ -248,9 +248,9 @@ class CDFH_ExtraField   : public Meta::VarLenField<CDFH_ExtraField,   Meta::Inje
 class CDFH_GPBit        : public Meta::FieldBase<CDFH_GPBit,          std::uint16_t, Meta::VirtualValidation<CDFH_GPBit>>
 {
 public:
-    void Validate(std::size_t, CDFH_GPBit* self) {
+    void Validate() {
         ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
-            0 == (self->value & static_cast<std::uint16_t>(UnsupportedFlagsMask)),
+            0 == (value & static_cast<std::uint16_t>(UnsupportedFlagsMask)),
             "unsupported flag(s) specified");
     }
 };
@@ -633,12 +633,12 @@ class Zip64EndOfCentralDirectoryLocator : public Meta::StructuredObject<Zip64End
 public:
     void ValidateField(size_t field) override
     {
+        ULARGE_INTEGER pos = {0};        
         switch (field)
         {
         case 2:
-            ULARGE_INTEGER pos = {0};
             ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
-            ThrowErrorIfNot(Error::Zip64EOCDLocator, ((v != 0) && (v < pos.QuadPart)), "Invalid relative offset");            
+            ThrowErrorIfNot(Error::Zip64EOCDLocator, ((Field<2>().value != 0) && (Field<2>().value < pos.QuadPart)), "Invalid relative offset");            
         break;
         default:
             UNEXPECTED;
@@ -668,20 +668,20 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              EndOfCentralDirectoryRecord                                 //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class EOCDSignature     : public Meta::FieldBase<EOCDSignature,       std::uint32_t, Meta::ExactValueValidation<EOCDSignature, Signatures::EndOfCentralDirectory>> {};
-class EOCDNumberDisks   : public Meta::FieldBase<EOCDNumberDisks,     std::uint16_t, Meta::OnlyEitherValueValidation<EOCDNumberDisks,   0, 0xFFFF>> {};
+class EOCDSignature     : public Meta::FieldBase<EOCDSignature,       std::uint32_t, Meta::ExactValueValidation<EOCDSignature, static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory)>> {};
+class EOCDNumberDisks   : public Meta::FieldBase<EOCDNumberDisks,     std::uint16_t, Meta::OnlyEitherValueValidation<EOCDNumberDisks, 0, 0xFFFF>> {};
 
-class EndOfCentralDirectoryRecord : public Meta::StructuredObject<EndOfCentralDirectoryRecord,
+class EndCentralDirectoryRecord : public Meta::StructuredObject<EndCentralDirectoryRecord,
     EOCDSignature,      // 0 - end of central dir signature              4 bytes  (0x06054b50)
     EOCDNumberDisks,    // 1 - number of this disk                       2 bytes
     EOCDNumberDisks,    // 2 - number of the disk with the start of the
                         //     central directory                         2 bytes
-    Field2Bytes,        // 3 - total number of entries in the central
+    Meta::Field2Bytes,  // 3 - total number of entries in the central
                         //     directory on this disk                    2 bytes
-    Field2Bytes,        // 4 - total number of entries in the central
+    Meta::Field2Bytes,  // 4 - total number of entries in the central
                         //     directory                                 2 bytes
-    Field4Bytes,        // 5 - size of the central directory             4 bytes
-    Field4Bytes,        // 6 - offset of start of central directory with
+    Meta::Field4Bytes,  // 5 - size of the central directory             4 bytes
+    Meta::Field4Bytes,  // 6 - offset of start of central directory with
                         //     respect to the starting disk number       4 bytes
     VarFieldLenZero,    // 7 - .ZIP file comment length                  2 bytes
     FieldMustBeEmpty    // 8 - .ZIP file comment                         (variable size)
@@ -708,9 +708,9 @@ public:
         }
     }
     
-    EndOfCentralDirectoryRecord()
+    EndCentralDirectoryRecord()
     {
-        SetSignature(Signatures::EndOfCentralDirectory);
+        SetSignature(static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory));
         SetNumberOfDisk(0);
         SetDiskStart(0);
         // by default, the next 12 bytes need to be: FFFF FFFF  FFFF FFFF  FFFF FFFF
@@ -740,7 +740,7 @@ private:
     inline void SetOffsetOfCentralDirectory(std::uint32_t value)       noexcept { Field<6>().value = value; }
     inline std::uint32_t GetOffsetOfCentralDirectory()                 noexcept { return Field<6>().value;  }
     inline void SetCommentLength(std::uint16_t value)                  noexcept { Field<7>().value = value; }
-};//class EndOfCentralDirectoryRecord
+};//class EndCentralDirectoryRecord
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              ZipObject member implementation                             //

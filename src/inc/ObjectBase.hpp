@@ -67,7 +67,7 @@ template <class Derived>
 class VirtualValidation // let the derived type specify what-ever elaborate story they want
 {
 public:
-    static inline void Validate(std::size_t, Derived* self)  { self->Validate(); }
+    static inline void Validate(std::size_t index, Derived* self)  { self->Validate(); }
 };
 
 // An injectable validator type supports parent-injectable validation.  This is used in
@@ -77,16 +77,13 @@ class InjectableValidator
 {
 public:
     virtual void ValidateField(size_t field) = 0;
-
-    template<size_t index>
-    inline void  ConfigureField() noexcept { this->Field<index>().parent = static_cast<InjectableValidator*>(this); }
 };
 
 template <class Derived>
 class InjectedValidation  // derived type will rely on in situ parent-scope validation 
 {
 public:
-    static inline void Validate(std::size_t field, Derived* self)  { parent->ValidateField(field); }
+    static inline void Validate(std::size_t field, Derived* self)  { self->parent->ValidateField(field); }
 
     InjectableValidator* parent = nullptr;
 };
@@ -95,7 +92,7 @@ public:
 //              Base type for individual serializable/deserializable fields                 //
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <class Derived, class T, class Validation=NoValidation<Derived> >
-class FieldBase
+class FieldBase : public Validation
 {
 public:
     FieldBase() = default;
@@ -108,7 +105,7 @@ public:
     virtual void Read(std::size_t index, const ComPtr<IStream>& stream)
     {
         StreamBase::Read<T>(stream, &value);
-        Validation::Validate(static_cast<Derived*>(index, this));
+        Validate(index, static_cast<Derived*>(this));
     }
     
     virtual size_t Size() { return sizeof(T); }
@@ -123,7 +120,7 @@ class Field8Bytes : public FieldBase<Field8Bytes, std::uint64_t> { };
 
 // variable length field.
 template <class Derived, class Validation=NoValidation<Derived> >
-class VarLenField : public FieldBase<VarLenField<Derived, Validation>, std::vector<std::uint8_t>, Validation>
+class VarLenField : public FieldBase<Derived, std::vector<std::uint8_t>, Validation>
 {
 public:
     virtual size_t Size() override { return value.size(); }
@@ -148,7 +145,7 @@ public:
                 nullptr                            
             ));
         }
-        Validation::Validate(static_cast<Derived*>(index, this));        
+        Validate(index, static_cast<Derived*>(this));        
     }
 };
 
@@ -181,7 +178,7 @@ public:
 //                              Aggregated set of types                                     //
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <class Derived, class... Types>
-class StructuredObject : public InjectableValidator, public VirtualValidation<Derived>, public TypeList<Types...>
+class StructuredObject : public InjectableValidator, public TypeList<Types...>
 {
 public:
     size_t Size()
@@ -205,7 +202,7 @@ public:
         this->for_each([](auto& field, std::size_t index, const ComPtr<IStream>& stream)
         {  field.Read(index, stream);
         }, s);
-        Validation::Validate(static_cast<Derived*>(this));
+        static_cast<Derived*>(this)->Validate();
     }
 
     virtual void Validate() {} // default sturcutred object validation is no validation.
@@ -215,6 +212,10 @@ public:
         // field's parent to point at your type's instance.
         UNEXPECTED;
     }
+
+    template<size_t index>
+    void ConfigureField() { Field<index>().parent = static_cast<InjectableValidator*>(this); }
+    
 };
 
 } /* namespace Meta */ } /* namespace MSIX */
