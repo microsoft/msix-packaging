@@ -140,12 +140,12 @@ constexpr static const GeneralPurposeBitFlags UnsupportedFlagsMask =
 //////////////////////////////////////////////////////////////////////////////////////////////
 class OffsetOrSize32bit : public Meta::FieldBase<OffsetOrSize32bit,   std::uint32_t, Meta::OnlyEitherValueValidation<OffsetOrSize32bit, 0, 0xFFFFFFFF>> {};
 class OffsetOrSize64bit : public Meta::FieldBase<OffsetOrSize64bit,   std::uint64_t, Meta::InjectedValidation<OffsetOrSize64bit >> {};
-class FieldMustBeEmpty  : public Meta::FieldNBytes<FieldMustBeEmpty,  Meta::InvalidFieldValidation<FieldMustBeEmpty>>{};
+class FieldMustBeEmpty  : public Meta::VarLenField<FieldMustBeEmpty,  Meta::InvalidFieldValidation<FieldMustBeEmpty>>{};
 class VarFieldLength    : public Meta::FieldBase<VarFieldLength,      std::uint16_t, Meta::InjectedValidation<VarFieldLength>> {};
 class VarFieldLenZero   : public Meta::FieldBase<VarFieldLenZero,     std::uint16_t, Meta::ExactValueValidation<VarFieldLenZero, 0>> {};
-class InjectedVal2Bytes : public Meta::FieldBase<InjectedVal2Bytes,   std::uint16_t, Meta::InjectedValidation<InjectedVal2Bytes>> {};
-class InjectedVal4Bytes : public Meta::FieldBase<InjectedVal4Bytes,   std::uint32_t, Meta::InjectedValidation<InjectedVal4Bytes>> {};
-class InjectedVal8Bytes : public Meta::FieldBase<InjectedVal8Bytes,   std::uint64_t, Meta::InjectedValidation<InjectedVal8Bytes>> {};
+class InjectedVal2Bytes : public Meta::FieldBase<InjectedVal2Bytes,   std::uint16_t, Meta::InjectedValidation<InjectedVal2Bytes> > {};
+class InjectedVal4Bytes : public Meta::FieldBase<InjectedVal4Bytes,   std::uint32_t, Meta::InjectedValidation<InjectedVal4Bytes> > {};
+class InjectedVal8Bytes : public Meta::FieldBase<InjectedVal8Bytes,   std::uint64_t, Meta::InjectedValidation<InjectedVal8Bytes> > {};
 
 class HowCompressed     : public Meta::FieldBase<HowCompressed,       
     std::uint16_t, Meta::OnlyEitherValueValidation<HowCompressed, 
@@ -172,7 +172,7 @@ class Z64ExtInfoHeader  : public Meta::FieldBase<Z64ExtInfoHeader,
         static_cast<std::uint16_t>(HeaderIDs::Zip64ExtendedInfo)>
     > {};
 
-class Zip64ExtendedInformation : public Meta::StructuredObject<
+class Zip64ExtendedInformation : public Meta::StructuredObject<Zip64ExtendedInformation,
     Z64ExtInfoHeader,   // 0 - tag for the "extra" block type               2 bytes(0x0001)
     Z64ExtInfoSize,     // 1 - size of this "extra" block                   2 bytes
     Meta::Field8Bytes,  // 2 - Original uncompressed file size              8 bytes
@@ -192,7 +192,7 @@ public:
         switch (field)
         {
         case 4:
-            ThrowErrorIfNot(Error::ZipBadExtendedData, ((Field<4>().value < m_start.QuadPart)), "invalid relative header offset");         
+            ThrowErrorIfNot(Error::ZipBadExtendedData, Field<4>().value < m_start.QuadPart, "invalid relative header offset");         
             break;
         default:
             UNEXPECTED;
@@ -204,11 +204,11 @@ public:
         ConfigureField<4>();
     }
 
-    std::uint64_t GetUncompressedSize()   const noexcept { return Field<2>().value; }
+    std::uint64_t GetUncompressedSize()         noexcept { return Field<2>().value; }
     void SetUncompressedSize(std::uint64_t v)   noexcept { Field<2>().value = v; }
-    std::uint64_t GetCompressedSize()     const noexcept { return Field<3>().value; }
+    std::uint64_t GetCompressedSize()           noexcept { return Field<3>().value; }
     void SetCompressedSize(std::uint64_t v)     noexcept { Field<3>().value = v; }
-    std::uint64_t GetRelativeOffset()     const noexcept { return Field<4>().value; }
+    std::uint64_t GetRelativeOffset()           noexcept { return Field<4>().value; }
     void SetRelativeOffset(std::uint64_t v)     noexcept { Field<4>().value = v; }
 
 private:
@@ -238,21 +238,24 @@ answer for now.
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              CentralDirectoryFileHeader                                  //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class CDFH_Header       : public Meta::FieldBase<CDFH_Header,         std::uint32_t, Meta::ExactValueValidation<CDFH_Header, Signatures::CentralFileHeader>> {};
+class CDFH_Header       : public Meta::FieldBase<CDFH_Header,
+    std::uint32_t, Meta::ExactValueValidation<CDFH_Header,
+        static_cast<std::uint32_t>(Signatures::CentralFileHeader)>
+    > {};
+
 class CDFH_DiskNumber   : public Meta::FieldBase<CDFH_DiskNumber,     std::uint16_t, Meta::ExactValueValidation<CDFH_DiskNumber, 0>> {};
-class CDFH_ExtraField   : public Meta::FieldNBytes<CDFH_ExtraField,   Meta::InjectedValidation<CDFH_ExtraField>> {};
-class CDFH_GPBit        : public Meta::FiedlBase<CDFH_GPBit,          std::uint16_t, Meta::VirtualValidation<CDFH_GPBit, 0>>
+class CDFH_ExtraField   : public Meta::VarLenField<CDFH_ExtraField,   Meta::InjectedValidation<CDFH_ExtraField>> {};
+class CDFH_GPBit        : public Meta::FieldBase<CDFH_GPBit,          std::uint16_t, Meta::VirtualValidation<CDFH_GPBit>>
 {
 public:
-    void Validate(std::size_t, CDFH_GPBit* self) override {
+    void Validate(std::size_t, CDFH_GPBit* self) {
         ThrowErrorIfNot(Error::ZipCentralDirectoryHeader,
-            ((self->Field<3>().value  & static_cast<std::uint16_t>(UnsupportedFlagsMask)) == 0),
+            0 == (self->value & static_cast<std::uint16_t>(UnsupportedFlagsMask)),
             "unsupported flag(s) specified");
-        };
     }
 };
 
-class CentralDirectoryFileHeader : public Meta::StructuredObject<
+class CentralDirectoryFileHeader : public Meta::StructuredObject<CentralDirectoryFileHeader,
     CDFH_Header,       // 0 - central file header signature   4 bytes(0x02014b50)
     Meta::Field2Bytes, // 1 - version made by                 2 bytes
     Meta::Field2Bytes, // 2 - version needed to extract       2 bytes
@@ -334,19 +337,19 @@ public:
         SetExternalFileAttributes(0);
     }
 
-    inline bool IsGeneralPurposeBitSet() const noexcept
+    inline bool IsGeneralPurposeBitSet() noexcept
     {   return ((GetGeneralPurposeBitFlags() & GeneralPurposeBitFlags::GeneralPurposeBit) == GeneralPurposeBitFlags::GeneralPurposeBit);
     }
 
-    inline std::uint16_t GetVersionNeededToExtract()          const noexcept { return Field<2>().value; }
-    inline GeneralPurposeBitFlags GetGeneralPurposeBitFlags() const noexcept { return static_cast<GeneralPurposeBitFlags>(Field<3>().value); }
-    inline void SetGeneralPurposeBitFlags(std::uint16_t value)      noexcept { Field<3>().value = value; }
-    inline std::uint16_t GetCompressionMethod()               const noexcept { return Field<4>().value; }
-    inline void SetCompressionMethod(std::uint16_t value)           noexcept { Field<4>().value= value; }
-    inline std::uint32_t GetCrc32()                           const noexcept { return Field<7>().value; }
-    inline void SetCrc(std::uint32_t value)                         noexcept { Field<7>().value = value; }
+    inline std::uint16_t GetVersionNeededToExtract()           noexcept { return Field<2>().value; }
+    inline GeneralPurposeBitFlags GetGeneralPurposeBitFlags()  noexcept { return static_cast<GeneralPurposeBitFlags>(Field<3>().value); }
+    inline void SetGeneralPurposeBitFlags(std::uint16_t value) noexcept { Field<3>().value = value; }
+    inline std::uint16_t GetCompressionMethod()                noexcept { return Field<4>().value; }
+    inline void SetCompressionMethod(std::uint16_t value)      noexcept { Field<4>().value= value; }
+    inline std::uint32_t GetCrc32()                            noexcept { return Field<7>().value; }
+    inline void SetCrc(std::uint32_t value)                    noexcept { Field<7>().value = value; }
 
-    std::uint64_t GetCompressedSize() const noexcept
+    std::uint64_t GetCompressedSize() noexcept
     {
         if (!m_extendedInfo.get()) {
             return static_cast<std::uint64_t>(Field<8>().value);
@@ -357,7 +360,7 @@ public:
     // TODO: on-demand create m_extendedInfo?
     inline void SetCompressedSize(std::uint32_t value) noexcept { Field<8>().value = value; }
 
-    std::uint64_t GetUncompressedSize() const noexcept
+    std::uint64_t GetUncompressedSize() noexcept
     {
         if (!m_extendedInfo.get()) {
             return static_cast<std::uint64_t>(Field<9>().value);
@@ -368,7 +371,7 @@ public:
     // TODO: on-demand create m_extendedInfo?
     inline void SetUncompressedSize(std::uint32_t value) noexcept { Field<9>().value = value; }
 
-    std::uint64_t GetRelativeOffsetOfLocalHeader() const noexcept
+    std::uint64_t GetRelativeOffsetOfLocalHeader() noexcept
     {
         if (!m_extendedInfo.get()) {
             return static_cast<std::uint64_t>(Field<16>().value);
@@ -379,7 +382,7 @@ public:
     // TODO: on-demand create m_extendedInfo?
     inline void SetRelativeOffsetOfLocalHeader(std::uint32_t value) noexcept { Field<16>().value = value; }
 
-    std::string GetFileName() const
+    std::string GetFileName()
     {
         auto data = Field<17>().value;
         return std::string(data.begin(), data.end());
@@ -393,7 +396,7 @@ public:
         SetFileNameLength(static_cast<std::uint16_t>(name.size()));
     }
 
-    inline bool GetIsZip64() const noexcept { return m_isZip64; }
+    inline bool GetIsZip64() noexcept { return m_isZip64; }
 
 private:
     inline void SetSignature(std::uint32_t value)              noexcept { Field<0>().value = value; }
@@ -403,7 +406,7 @@ private:
     inline void SetLastModFileDate(std::uint16_t value)        noexcept { Field<6>().value = value; }
     inline void SetFileNameLength(std::uint16_t value)         noexcept { Field<10>().value = value; }
     inline void SetExtraFieldLength(std::uint16_t value)       noexcept { Field<11>().value = value; }
-    inline std::uint16_t GetExtraFieldLength()           const noexcept { return Field<11>().value;  }
+    inline std::uint16_t GetExtraFieldLength()                 noexcept { return Field<11>().value;  }
     inline void SetFileCommentLength(std::uint16_t value)      noexcept { Field<12>().value = value; }
     inline void SetDiskNumberStart(std::uint16_t value)        noexcept { Field<13>().value = value; }
     inline void SetInternalFileAttributes(std::uint16_t value) noexcept { Field<14>().value = value; }
@@ -460,7 +463,7 @@ public:
             ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (Field<7>().value == 0)), "Invalid Zip CRC");
             break;
         case 9:
-            ThrowErrorIfNot(Error::ZipLocalFileHeader, (Field<9>.value != 0), "unsupported file name size");
+            ThrowErrorIfNot(Error::ZipLocalFileHeader, (Field<9>().value != 0), "unsupported file name size");
             Field<11>().value.resize(GetFileNameLength(), 0);
             break;
         case 10:
@@ -481,31 +484,30 @@ public:
         ConfigureField<10>();
     }
 
-    inline bool IsGeneralPurposeBitSet() const noexcept
+    inline bool IsGeneralPurposeBitSet() noexcept
     {   return ((GetGeneralPurposeBitFlags() & GeneralPurposeBitFlags::GeneralPurposeBit) == GeneralPurposeBitFlags::GeneralPurposeBit);
     }
 
-    inline GeneralPurposeBitFlags GetGeneralPurposeBitFlags() const noexcept { return static_cast<GeneralPurposeBitFlags>(Field<2>().value); }
-    inline CompressionType GetCompressionType() const noexcept { return static_cast<CompressionType>(Field<3>().value); }
+    inline GeneralPurposeBitFlags GetGeneralPurposeBitFlags() noexcept { return static_cast<GeneralPurposeBitFlags>(Field<2>().value); }
+    inline CompressionType GetCompressionType() noexcept { return static_cast<CompressionType>(Field<3>().value); }
 
-    inline std::uint64_t GetCompressedSize() const noexcept
+    inline std::uint64_t GetCompressedSize() noexcept
     {   return IsGeneralPurposeBitSet() ? m_directoryEntry->GetCompressedSize() : static_cast<std::uint64_t>(Field<7>().value);
     }
 
-    inline std::uint64_t GetUncompressedSize() const noexcept
+    inline std::uint64_t GetUncompressedSize() noexcept
     {   return IsGeneralPurposeBitSet() ? m_directoryEntry->GetUncompressedSize() : static_cast<std::uint64_t>(Field<8>().value);
     }
 
-    inline std::uint16_t GetFileNameLength()                  const noexcept { return Field<9>().value;  }
-    inline std::uint16_t GetExtraFieldLength()                const noexcept { return Field<10>().value; }
+    inline std::uint16_t GetFileNameLength()                  noexcept { return Field<9>().value;  }
+    inline std::uint16_t GetExtraFieldLength()                noexcept { return Field<10>().value; }
+    inline void SetGeneralPurposeBitFlag(std::uint16_t value) noexcept { Field<2>().value = value;  }
+    inline void SetCompressedSize(std::uint32_t value)        noexcept { Field<7>().value = value;  }
+    inline void SetUncompressedSize(std::uint32_t value)      noexcept { Field<8>().value = value;  }
+    inline void SetFileNameLength(std::uint16_t value)        noexcept { Field<9>().value = value;  }
+    inline void SetExtraFieldLength(std::uint16_t value)      noexcept { Field<10>().value = value; }
 
-    inline void SetGeneralPurposeBitFlag(std::uint16_t value) const noexcept { Field<2>().value = value;  }
-    inline void SetCompressedSize(std::uint32_t value)        const noexcept { Field<7>().value = value;  }
-    inline void SetUncompressedSize(std::uint32_t value)      const noexcept { Field<8>().value = value;  }
-    inline void SetFileNameLength(std::uint16_t value)        const noexcept { Field<9>().value = value;  }
-    inline void SetExtraFieldLength(std::uint16_t value)      const noexcept { Field<10>().value = value; }
-
-    std::string GetFileName() const
+    std::string GetFileName()
     {
         auto data = Field<11>().value;
         return std::string(data.begin(), data.end());
@@ -527,9 +529,9 @@ protected:
 //                              Zip64EndOfCentralDirectoryRecord                            //
 //////////////////////////////////////////////////////////////////////////////////////////////
 class Z64DiskNumber     : public Meta::FieldBase<Z64DiskNumber,       std::uint32_t, Meta::ExactValueValidation<Z64DiskNumber, 0>> {};
-class Z64EOCDRecord     : public Meta::FieldBase<Z64EOCDRecord,       std::uint32_t, Meta::ExactValueValidation<Z64EOCDRecord, Signatures::Zip64EndOfCD>> {};
-class Z64EOCDRVersion   : public Meta::FieldBase<Z64EOCDRVersion,     std::uint16_t, Meta::ExactValueValidation<Z64EOCDRVersion, ZipVersions::Zip64FormatExtension>> {};
-class Z64EOCDRCount     : public Meta::FiledBase<Z64EOCDRCount,       std::uint64_t, Meta::NotValueValidation<Z64EOCDRCount, 0>> {};
+class Z64EOCDRecord     : public Meta::FieldBase<Z64EOCDRecord,       std::uint32_t, Meta::ExactValueValidation<Z64EOCDRecord, static_cast<std::uint32_t>(Signatures::Zip64EndOfCD)>> {};
+class Z64EOCDRVersion   : public Meta::FieldBase<Z64EOCDRVersion,     std::uint16_t, Meta::ExactValueValidation<Z64EOCDRVersion, static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)>> {};
+class Z64EOCDRCount     : public Meta::FieldBase<Z64EOCDRCount,       std::uint64_t, Meta::NotValueValidation<Z64EOCDRCount, 0>> {};
 
 class Zip64EndOfCentralDirectoryRecord : public Meta::StructuredObject<Zip64EndOfCentralDirectoryRecord, 
     Z64EOCDRecord,     // 0 - zip64 end of central dir signature                            4 bytes(0x06064b50)
@@ -590,7 +592,7 @@ public:
         SetTotalNumberOfEntries(0);
     }
 
-    inline std::uint64_t GetTotalNumberOfEntries() const noexcept { return Field<6>().value; }
+    inline std::uint64_t GetTotalNumberOfEntries() noexcept { return Field<6>().value; }
 
     void SetTotalNumberOfEntries(std::uint64_t value) noexcept
     {
@@ -598,9 +600,9 @@ public:
         Field<7>().value = value;
     }
 
-    inline std::uint64_t GetSizeOfCD()                   const noexcept { return Field<8>().value; }
+    inline std::uint64_t GetSizeOfCD()                         noexcept { return Field<8>().value; }
     inline void SetSizeOfCD(std::uint64_t value)               noexcept { Field<8>().value = value; }
-    inline std::uint64_t GetOffsetStartOfCD()            const noexcept { return Field<9>().value; }
+    inline std::uint64_t GetOffsetStartOfCD()                  noexcept { return Field<9>().value; }
     inline void SetOffsetfStartOfCD(std::uint64_t value)       noexcept { Field<9>().value = value; }
 
 private:
@@ -610,18 +612,18 @@ private:
     inline void SetVersionNeededToExtract(std::uint16_t value) noexcept { Field<3>().value = value; }
     inline void SetNumberOfThisDisk(std::uint32_t value)       noexcept { Field<4>().value = value; }
 
-    ComPtr<IStream> m_stream = nullptr;
+    ComPtr<IStream> m_stream;
 }; //class Zip64EndOfCentralDirectoryRecord
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                          Zip64EndOfCentralDirectoryLocator                               //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class Z64EOCDLocator    : public Meta::FieldBase<Z64EOCDLocator,      std::uint32_t, Meta::ExactValueValidation<Z64EOCDLocator, Signatures::Zip64EndOfCDLocator>> {};
+class Z64EOCDLocator    : public Meta::FieldBase<Z64EOCDLocator,      std::uint32_t, Meta::ExactValueValidation<Z64EOCDLocator, static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator)>> {};
 class Z64NumberOfDisks  : public Meta::FieldBase<Z64NumberOfDisks,    std::uint32_t, Meta::ExactValueValidation<Z64NumberOfDisks, 1>> {};
 
 class Zip64EndOfCentralDirectoryLocator : public Meta::StructuredObject<Zip64EndOfCentralDirectoryLocator,
     Z64EOCDLocator,     // 0 - zip64 end of central dir locator signature        4 bytes(0x07064b50)
-    Z64NumberDisks,     // 1 - number of the disk with the start of the zip64
+    Z64NumberOfDisks,   // 1 - number of the disk with the start of the zip64
                         //     end of central directory                          4 bytes
     OffsetOrSize64bit,  // 2 - relative offset of the zip64 end of central
                         //     directory record                                  8 bytes
@@ -652,7 +654,7 @@ public:
         SetTotalNumberOfDisks(1);
     }
 
-    inline std::uint64_t GetRelativeOffset()         const noexcept { return Field<2>().value; }
+    inline std::uint64_t GetRelativeOffset()               noexcept { return Field<2>().value; }
     inline void SetRelativeOffset(std::uint64_t value)     noexcept { Field<2>().value = value; }
 
 private:
@@ -720,10 +722,10 @@ public:
         SetCommentLength(0);
     }
     
-    inline bool GetArchiveHasZip64Locator()                      const noexcept { return m_archiveHasZip64Locator; }
-    inline bool GetIsZip64()                                     const noexcept { return m_isZip64; }
-    inline std::uint64_t GetNumberOfCentralDirectoryEntries()    const noexcept { return static_cast<std::uint64_t>(Field<3>().value); }
-    inline std::uint64_t GetStartOfCentralDirectory()            const noexcept { return static_cast<std::uint64_t>(Field<6>().value); }
+    inline bool GetArchiveHasZip64Locator()                            noexcept { return m_archiveHasZip64Locator; }
+    inline bool GetIsZip64()                                           noexcept { return m_isZip64; }
+    inline std::uint64_t GetNumberOfCentralDirectoryEntries()          noexcept { return static_cast<std::uint64_t>(Field<3>().value); }
+    inline std::uint64_t GetStartOfCentralDirectory()                  noexcept { return static_cast<std::uint64_t>(Field<6>().value); }
 
 private:
     bool m_isZip64 = false;
@@ -736,7 +738,7 @@ private:
     inline void SetTotalEntriesInCentralDirectory(std::uint16_t value) noexcept { Field<4>().value = value; }
     inline void SetSizeOfCentralDirectory(std::uint32_t value)         noexcept { Field<5>().value = value; }
     inline void SetOffsetOfCentralDirectory(std::uint32_t value)       noexcept { Field<6>().value = value; }
-    inline std::uint32_t GetOffsetOfCentralDirectory()           const noexcept { return Field<6>().value;  }
+    inline std::uint32_t GetOffsetOfCentralDirectory()                 noexcept { return Field<6>().value;  }
     inline void SetCommentLength(std::uint16_t value)                  noexcept { Field<7>().value = value; }
 };//class EndOfCentralDirectoryRecord
 

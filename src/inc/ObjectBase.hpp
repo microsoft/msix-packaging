@@ -100,18 +100,18 @@ class FieldBase
 public:
     FieldBase() = default;
  
-    void Write(std::size_t index, const ComPtr<IStream>& stream)
+    virtual void Write(std::size_t index, const ComPtr<IStream>& stream)
     {
         StreamBase::Write<T>(stream, &value);
     }
     
-    void Read(std::size_t index, const ComPtr<IStream>& stream)
+    virtual void Read(std::size_t index, const ComPtr<IStream>& stream)
     {
         StreamBase::Read<T>(stream, &value);
         Validation::Validate(static_cast<Derived*>(index, this));
     }
     
-    inline size_t Size() const  { return sizeof(T); }
+    virtual size_t Size() { return sizeof(T); }
     
     T value;
 };
@@ -123,12 +123,12 @@ class Field8Bytes : public FieldBase<Field8Bytes, std::uint64_t> { };
 
 // variable length field.
 template <class Derived, class Validation=NoValidation<Derived> >
-class FieldNBytes
+class VarLenField : public FieldBase<VarLenField<Derived, Validation>, std::vector<std::uint8_t>, Validation>
 {
 public:
-    inline size_t Size() const { return value.size(); }
+    virtual size_t Size() override { return value.size(); }
     
-    void Write(std::size_t index, const ComPtr<IStream>& stream)
+    void Write(std::size_t index, const ComPtr<IStream>& stream) override
     {
         if (value.size() != 0)
         {   ThrowHrIfFailed(stream->Write(
@@ -139,7 +139,7 @@ public:
         }       
     }
     
-    void Read(std::size_t index, const ComPtr<IStream>& stream)
+    void Read(std::size_t index, const ComPtr<IStream>& stream) override
     {
         if (value.size() != 0)
         {   ThrowHrIfFailed(stream->Read(
@@ -147,21 +147,21 @@ public:
                 static_cast<ULONG>(value.size()),
                 nullptr                            
             ));
-        }        
-        Validation::Validate(static_cast<Derived*>(index, this));
+        }
+        Validation::Validate(static_cast<Derived*>(index, this));        
     }
-    
-    std::vector<std::uint8_t> value;
 };
+
+class FieldNBytes : public VarLenField<FieldNBytes> {};
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //      Heterogeneous collection of types that are operated on as a compile-time vector     //
 //////////////////////////////////////////////////////////////////////////////////////////////
-template <class Derived, typename... Types>
+template <typename... Types>
 class TypeList
 {
+    std::tuple<Types...> fields;
     static constexpr std::size_t last_index { std::tuple_size<std::tuple<Types...>>::value };
-    std::tuple<Types...> values;
 public:
     template<std::size_t index = 0, typename FuncT, class... Args>
     inline typename std::enable_if<index == last_index, void>::type for_each(FuncT, Args&&... args) { }
@@ -174,14 +174,14 @@ public:
     }
 
     template <size_t index>
-    inline auto& Field() { return std::get<index>(values); }
+    inline auto& Field() noexcept { return std::get<index>(fields); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              Aggregated set of types                                     //
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <class Derived, class... Types>
-class StructuredObject : public InjectableValidator, public VirtualValidation<Derived>, public TypeList<Derived, Types...>
+class StructuredObject : public InjectableValidator, public VirtualValidation<Derived>, public TypeList<Types...>
 {
 public:
     size_t Size()
