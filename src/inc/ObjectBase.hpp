@@ -36,7 +36,6 @@ class ExactValueValidation // there is exactly one value that this field is allo
 public:
     static void Validate(std::size_t, Derived* self) {
         ThrowErrorIfNot(Error::InvalidParameter, spec == self->value, "Incorrect value specified at field.");
-        }
     }
 };
 
@@ -46,7 +45,6 @@ class NotValueValidation // there is exactly one value that this field is not al
 public:
     static void Validate(std::size_t, Derived* self) {
         ThrowErrorIf(Error::InvalidParameter, spec == self->value, "Incorrect value specified at field.");
-        }
     }
 };
 
@@ -62,19 +60,6 @@ public:
     }
 };
     
-template <class Derived, std::size_t spec1, std::size_t spec2>
-class NeitherValueValidation // 2's compliment to previous
-{
-public:
-    static void Validate(std::size_t, Derived* self)
-    {
-        ThrowErrorIf(Error::InvalidParameter,
-            spec1 == self->value || spec2 == self->value,
-            "Incorrect value specified at field.");
-        }
-    }
-};
-
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                           Advanced Validation Policies                                   //
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -173,9 +158,10 @@ public:
 //      Heterogeneous collection of types that are operated on as a compile-time vector     //
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <class Derived, typename... Types>
-class TypeList : public std::tuple<Types...>
+class TypeList
 {
     static constexpr std::size_t last_index { std::tuple_size<std::tuple<Types...>>::value };
+    std::tuple<Types...> values;
 public:
     template<std::size_t index = 0, typename FuncT, class... Args>
     inline typename std::enable_if<index == last_index, void>::type for_each(FuncT, Args&&... args) { }
@@ -188,14 +174,14 @@ public:
     }
 
     template <size_t index>
-    inline auto& Field() { return std::get<index>(*static_cast<Derived*>(this)); }
+    inline auto& Field() { return std::get<index>(values); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              Aggregated set of types                                     //
 //////////////////////////////////////////////////////////////////////////////////////////////
 template <class Derived, class... Types>
-class StructuredObject : public TypeList<Derived, Types...>, Validation=VirtualValidation<Derived>, InjectableValidator
+class StructuredObject : public InjectableValidator, public VirtualValidation<Derived>, public TypeList<Derived, Types...>
 {
 public:
     size_t Size()
@@ -222,7 +208,7 @@ public:
         Validation::Validate(static_cast<Derived*>(this));
     }
 
-    void Validate() override {} // default sturcutred object validation is no validation.
+    virtual void Validate() {} // default sturcutred object validation is no validation.
     void ValidateField(size_t field) override
     {   // If you're here and you didn't override, you either have a bug in your 
         // type list definition or your derived type didn't wire-up the specified
