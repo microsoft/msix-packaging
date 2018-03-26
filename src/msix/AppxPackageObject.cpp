@@ -112,24 +112,10 @@ namespace MSIX {
         return result;
     }
 
-    static char ValueToDigit(uint8_t value)
-    {
-        //NT_ASSERT(value < 0x20);
-        return base32DigitList[value];
-    }
-
     static std::string Base32Encoding(const std::vector<uint8_t>& bytes)
     {
-        static const size_t bitsPerBase32Digit = 5;
+        static const size_t publisherIdSize = 13;
         static const size_t byteCount = 8;
-        
-        // Get char count
-        auto bitCount = bytes.size() * 8;
-        auto charCount = bitCount / bitsPerBase32Digit;
-
-        // We need to round up the division.  When there aren't exactly enough bits to fill in the final base32 digit,
-        // the remaining bits are set to zero.
-        if (bitCount % bitsPerBase32Digit > 0) { charCount++; }
 
         // Consider groups of five bytes.  This is the smallest number of bytes that has a number of bits 
         // that's evenly divisible by five.
@@ -148,40 +134,41 @@ namespace MSIX {
         // for shifting 
 
         // Make sure the following math doesn't overflow.
-        std::string output = "";
+        char output[publisherIdSize] = "";
+        size_t outputIndex = 0;
         for(size_t byteIndex = 0; byteIndex < byteCount; byteIndex +=5)
         {
             uint8_t firstByte = bytes[byteIndex];
             uint8_t secondByte = (byteIndex + 1) < byteCount ? bytes[byteIndex + 1] : 0;
-            output.append(1, base32DigitList[(firstByte & 0xF8) >> 3]);
-            output.append(1, base32DigitList[((firstByte & 0x07) << 2) | ((secondByte & 0xC0) >> 6)]);
+            output[outputIndex++] = base32DigitList[(firstByte & 0xF8) >> 3];
+            output[outputIndex++] = base32DigitList[((firstByte & 0x07) << 2) | ((secondByte & 0xC0) >> 6)];
 
             if(byteIndex + 1 < byteCount)
             {
                 uint8_t thirdByte = (byteIndex + 2) < byteCount ? bytes[byteIndex + 2] : 0;
-                output.append(1, base32DigitList[(secondByte & 0x3E) >> 1]);
-                output.append(1, base32DigitList[((secondByte & 0x01) << 4) | ((thirdByte & 0xF0) >> 4)]);
+                output[outputIndex++] = base32DigitList[(secondByte & 0x3E) >> 1];
+                output[outputIndex++] = base32DigitList[((secondByte & 0x01) << 4) | ((thirdByte & 0xF0) >> 4)];
 
                 if(byteIndex + 2 < byteCount)
                 {
                     uint8_t fourthByte = (byteIndex + 3) < byteCount ? bytes[byteIndex + 3] : 0;
-                    output.append(1, base32DigitList[((thirdByte & 0x0F) << 1) | ((fourthByte & 0x80) >> 7)]);
+                    output[outputIndex++] = base32DigitList[((thirdByte & 0x0F) << 1) | ((fourthByte & 0x80) >> 7)];
 
                     if (byteIndex + 3 < byteCount)
                     {
                         uint8_t fifthByte = (byteIndex + 4) < byteCount ? bytes[byteIndex + 4] : 0;
-                        output.append(1, base32DigitList[(fourthByte & 0x7C) >> 2]);
-                        output.append(1, base32DigitList[((fourthByte & 0x03) << 3) | ((fifthByte & 0xE0) >> 5)]);
+                        output[outputIndex++] = base32DigitList[(fourthByte & 0x7C) >> 2];
+                        output[outputIndex++] = base32DigitList[((fourthByte & 0x03) << 3) | ((fifthByte & 0xE0) >> 5)];
 
                         if (byteIndex + 4 < byteCount)
                         {
-                            output.append(1, base32DigitList[fifthByte & 0x1F]);
+                            output[outputIndex++] = base32DigitList[fifthByte & 0x1F];
                         }
                     }
                 }
             }
         }
-        return output;
+        return std::string(output);
     }
 
     AppxPackageId::AppxPackageId(
@@ -204,7 +191,7 @@ namespace MSIX {
 
         std::vector<std::uint8_t> hash;
         ThrowErrorIfNot(Error::Unexpected, SHA256::ComputeHash(buffer.data(), buffer.size(), hash),  "Failed computing publisherId");
-        PublisherId = std::move(Base32Encoding(hash));
+        PublisherId = Base32Encoding(hash);
     }
 
     AppxManifestObject::AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)

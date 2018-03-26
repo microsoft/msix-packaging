@@ -9,6 +9,12 @@
 namespace MSIX {
 
     // converts an input utf8 formatted string into a utf16 formatted string
+    #ifdef WIN32
+    std::basic_string<unsigned short>
+    #else
+    std::u16string
+    #endif
+    utf8_to_utf16(const std::string& utf8string);
     std::wstring utf8_to_wstring(const std::string& utf8string);
     std::u16string utf8_to_u16string(const std::string& utf8string);
 

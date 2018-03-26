@@ -11,7 +11,12 @@
 
 namespace MSIX {
 
-    std::wstring utf8_to_wstring(const std::string& utf8string)
+    #ifdef WIN32
+    std::basic_string<unsigned short>
+    #else
+    std::u16string
+    #endif
+    utf8_to_utf16(const std::string& utf8string)
     {
         /*
         from: https://connect.microsoft.com/VisualStudio/feedback/details/1403302/unresolved-external-when-using-codecvt-utf8
@@ -25,21 +30,22 @@ namespace MSIX {
         <snip>
         */
         #ifdef WIN32
-        auto converted = std::wstring_convert<std::codecvt_utf8_utf16<unsigned short>, unsigned short>{}.from_bytes(utf8string.data());
+        return std::wstring_convert<std::codecvt_utf8_utf16<unsigned short>, unsigned short>{}.from_bytes(utf8string.data());
         #else
-        auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data()); 
+        return std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data()); 
         #endif
+    }
+
+    std::wstring utf8_to_wstring(const std::string& utf8string)
+    {
+        auto converted = utf8_to_utf16(utf8string);
         std::wstring result(converted.begin(), converted.end());
         return result;
     }
 
     std::u16string utf8_to_u16string(const std::string& utf8string)
     {
-        #ifdef WIN32
-        auto converted = std::wstring_convert<std::codecvt_utf8_utf16<unsigned short>, unsigned short>{}.from_bytes(utf8string.data());
-        #else
-        auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data()); 
-        #endif
+        auto converted = utf8_to_utf16(utf8string);
         std::u16string result(converted.begin(), converted.end());
         return result;
     }
