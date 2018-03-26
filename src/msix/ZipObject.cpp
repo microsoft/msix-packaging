@@ -44,8 +44,6 @@ enum class ZipVersions : std::uint16_t
     Zip64FormatExtension = 45,
 };
 
-inline constexpr operator std::uint16_t(const ZipVersions& value) { return static_cast<std::uint16_t>(value); }
-
 // from AppNote.txt, section 4.5.2:
 enum class HeaderIDs : std::uint16_t
 {
@@ -79,8 +77,6 @@ enum class Signatures : std::uint32_t
     Zip64EndOfCDLocator     = 0x07064b50,
     EndOfCentralDirectory   = 0x06054b50,
 };
-
-inline constexpr operator std::uint32_t(const Signatures& value) { return static_cast<std::uint32_t>(value); }
 
 enum class CompressionType : std::uint16_t
 {
@@ -144,13 +140,18 @@ constexpr static const GeneralPurposeBitFlags UnsupportedFlagsMask =
 //////////////////////////////////////////////////////////////////////////////////////////////
 class OffsetOrSize32bit : public Meta::FieldBase<OffsetOrSize32bit,   std::uint32_t, Meta::OnlyEitherValueValidation<OffsetOrSize32bit, 0, 0xFFFFFFFF>> {};
 class OffsetOrSize64bit : public Meta::FieldBase<OffsetOrSize64bit,   std::uint64_t, Meta::InjectedValidation<OffsetOrSize64bit >> {};
-class HowCompressed     : public Meta::FieldBase<HowCompressed,       std::uint16_t, Meta::OnlyEitherValueValidation<HowCompressed, CompressionType::Deflate, CompressionType::Store>> {};
 class FieldMustBeEmpty  : public Meta::FieldNBytes<FieldMustBeEmpty,  Meta::InvalidFieldValidation<FieldMustBeEmpty>>{};
 class VarFieldLength    : public Meta::FieldBase<VarFieldLength,      std::uint16_t, Meta::InjectedValidation<VarFieldLength>> {};
 class VarFieldLenZero   : public Meta::FieldBase<VarFieldLenZero,     std::uint16_t, Meta::ExactValueValidation<VarFieldLenZero, 0>> {};
 class InjectedVal2Bytes : public Meta::FieldBase<InjectedVal2Bytes,   std::uint16_t, Meta::InjectedValidation<InjectedVal2Bytes>> {};
 class InjectedVal4Bytes : public Meta::FieldBase<InjectedVal4Bytes,   std::uint32_t, Meta::InjectedValidation<InjectedVal4Bytes>> {};
 class InjectedVal8Bytes : public Meta::FieldBase<InjectedVal8Bytes,   std::uint64_t, Meta::InjectedValidation<InjectedVal8Bytes>> {};
+
+class HowCompressed     : public Meta::FieldBase<HowCompressed,       
+    std::uint16_t, Meta::OnlyEitherValueValidation<HowCompressed, 
+        static_cast<std::uint16_t>(CompressionType::Deflate), 
+        static_cast<std::uint16_t>(CompressionType::Store)>
+    > {};
 
 /*  FROM APPNOTE.TXT section 4.5.3:
     If one of the size or offset fields in the Local or Central directory
@@ -165,8 +166,11 @@ class InjectedVal8Bytes : public Meta::FieldBase<InjectedVal8Bytes,   std::uint6
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                                  Zip64ExtendedInformation                                //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class Z64ExtInfoHeader  : public Meta::FieldBase<Z64ExtInfoHeader,    std::uint16_t, Meta::ExactValueValidation<Z64ExtInfoHeader, HeaderIDs::Zip64ExtendedInfo>> {};
-class Z64ExtInfoSize    : public Meta::FieldBase<Z64ExtInfosize,      std::uint16_t, Meta::OnlyEitherValueValidation<Z64ExtInfoSize, 24, 28>> {};
+class Z64ExtInfoSize    : public Meta::FieldBase<Z64ExtInfoSize,      std::uint16_t, Meta::OnlyEitherValueValidation<Z64ExtInfoSize, 24, 28>> {};
+class Z64ExtInfoHeader  : public Meta::FieldBase<Z64ExtInfoHeader,    
+    std::uint16_t, Meta::ExactValueValidation<Z64ExtInfoHeader, 
+        static_cast<std::uint16_t>(HeaderIDs::Zip64ExtendedInfo)>
+    > {};
 
 class Zip64ExtendedInformation : public Meta::StructuredObject<
     Z64ExtInfoHeader,   // 0 - tag for the "extra" block type               2 bytes(0x0001)
@@ -413,8 +417,16 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                                  LocalFileHeader                                         //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class LFH_Header        : public Meta::FieldBase<LFH_Header,          std::uint32_t, Meta::ExactValueValidation<LFH_Header, Signatures::LocalFileHeader>> {};
-class LFH_VersionNeeded : public Meta::FieldBase<LFH_VersionNeeded,   std::uint16_t, Meta::OnlyEitherValueValidation<LFH_VersionNeeded, ZipVersions::Zip32DefaultVersion, ZipVersions::Zip64FormatExtension>> {};
+class LFH_Header        : public Meta::FieldBase<LFH_Header,
+    std::uint32_t, Meta::ExactValueValidation<LFH_Header,
+        static_cast<std::uint32_t>(Signatures::LocalFileHeader)>
+    > {};
+
+class LFH_VersionNeeded : public Meta::FieldBase<LFH_VersionNeeded,
+    std::uint16_t, Meta::OnlyEitherValueValidation<LFH_VersionNeeded, 
+        static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion), 
+        static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)>
+    > {};
 
 class LocalFileHeader : public Meta::StructuredObject<LocalFileHeader, 
     LFH_Header,         // 0 - local file header signature     4 bytes(0x04034b50)
