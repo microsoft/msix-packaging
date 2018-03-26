@@ -89,6 +89,22 @@ namespace MSIX {
         std::unique_ptr<AppxPackageId> m_packageId;
     };
 
+    class AppxBundleManifestObject : public ComClass<AppxBundleManifestObject, IVerifierObject>
+    {
+    public:
+        AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
+
+         // IVerifierObject
+        const std::string& GetPublisher() override { NOTSUPPORTED; }
+        bool HasStream() override { return !!m_stream; }
+        ComPtr<IStream> GetStream() override { return m_stream; }
+        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
+        const std::string GetPackageFullName() override { NOTSUPPORTED; }
+
+    protected:
+        ComPtr<IStream> m_stream;
+    };
+
     // Storage object representing the entire AppxPackage
     class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader>
     {
@@ -135,6 +151,7 @@ namespace MSIX {
         ComPtr<IVerifierObject>     m_appxSignature;
         ComPtr<IVerifierObject>     m_appxBlockMap;
         ComPtr<IVerifierObject>     m_appxManifest;
+        ComPtr<IVerifierObject>     m_appxBundleManifest;
         ComPtr<IStorageObject>      m_container;
         
         std::vector<std::string>    m_payloadFiles;
