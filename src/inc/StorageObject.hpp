@@ -58,13 +58,6 @@ public:
     // or read + update, then nullptr is returned.  If the file is opened with write and it does not exist, 
     // then the file is created and an empty stream to the file is handed back to the caller.
     virtual MSIX::ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) = 0;
-
-    // Some storage objects may operate under cache semantics and therefore require an explicit commit.
-    // Clients should explicitly call CommitChanges after all write operations into the object are complete.
-    // An implementation of this interface MAY be a no-op. However, having this plus a vector of streams
-    // as a member will cause errno = 24 (too many open files) for appx/bundles that have too many files.
-    // Nobody needs this functionality currently, so just leave it out for now.
-    // virtual void CommitChanges() = 0;
 };
 
 SpecializeUuidOfImpl(IStorageObject);

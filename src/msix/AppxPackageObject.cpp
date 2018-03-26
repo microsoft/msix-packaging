@@ -36,7 +36,6 @@ namespace MSIX {
         APPXBLOCKMAP_XML,
         APPXSIGNATURE_P7X,
         CODEINTEGRITY_CAT,
-        //APPXBUNDLEMANIFEST_XML,
     };
 
     static const std::size_t PercentangeEncodingTableSize = 0x5E;
@@ -271,7 +270,7 @@ namespace MSIX {
             std::string pathInWindows(APPXBUNDLEMANIFEST_XML);
             std::replace(pathInWindows.begin(), pathInWindows.end(), '/', '\\');
             stream = m_appxBlockMap->GetValidationStream(pathInWindows, appxBundleManifestInContainer);
-            //m_appxBundleManifest = ComPtr<IVerifierObject::Make<AppxBundleManifestObject(..., stream);
+            // TODO: create appxBundleManifestObject and validate
             m_isBundle = true;
         }
 
@@ -404,12 +403,15 @@ namespace MSIX {
     void AppxPackageObject::Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to)
     {
         auto fileNames = GetFileNames(FileNameOptions::All);
-
         for (const auto& fileName : fileNames)
         {
             std::string targetName;
             if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
-            {
+            {   // Don't use to->GetPathSeparator(). DirectoryObject::OpenFile created directories
+                // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with 
+                // the package full name won't be created on Windows, but it will on other platforms.
+                // This means that we have different behaviors in non-Win platforms.
+                // TODO: have the same behavior on Windows and other platforms.
                 targetName = m_appxManifest->GetPackageFullName() + "/" + fileName;
             }
             else
@@ -525,10 +527,7 @@ namespace MSIX {
     // IAppxBundleReader
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_BUNDLE_FOOTPRINT_FILE_TYPE fileType, IAppxFile **footprintFile)
     {
-        //if(m_isBundle)
-        //{
-        //    TODO: Implement    
-        //}
+        // TODO: Implement
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 
@@ -539,19 +538,13 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadPackages(IAppxFilesEnumerator **payloadPackages)
     {
-        //if(m_isBundle)
-        //{
-        //    TODO: Implement    
-        //}
+        // TODO: Implement
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadPackage(LPCWSTR fileName, IAppxFile **payloadPackage)
     {
-        //if(m_isBundle)
-        //{
-        //    TODO: Implement    
-        //}
+        // TODO: Implement
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 }
