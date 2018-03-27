@@ -12,7 +12,7 @@
 #include "StreamBase.hpp"
 
 namespace MSIX {
-    class FileStream : public StreamBase
+    class FileStream final : public StreamBase
     {
     public:
         enum Mode { READ = 0, WRITE, APPEND, READ_UPDATE, WRITE_UPDATE, APPEND_UPDATE };

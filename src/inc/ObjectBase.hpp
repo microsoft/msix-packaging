@@ -114,9 +114,9 @@ public:
 };
 
 // Simple 2, 4, and 8 byte fields with no validation
-class Field2Bytes : public FieldBase<Field2Bytes, std::uint16_t> { };
-class Field4Bytes : public FieldBase<Field4Bytes, std::uint32_t> { };
-class Field8Bytes : public FieldBase<Field8Bytes, std::uint64_t> { };
+class Field2Bytes final : public FieldBase<Field2Bytes, std::uint16_t> { };
+class Field4Bytes final : public FieldBase<Field4Bytes, std::uint32_t> { };
+class Field8Bytes final : public FieldBase<Field8Bytes, std::uint64_t> { };
 
 // variable length field.
 template <typename Derived, class Validation=NoValidation<Derived> >
@@ -149,7 +149,7 @@ public:
     }
 };
 
-class FieldNBytes : public VarLenField<FieldNBytes> {};
+class FieldNBytes final : public VarLenField<FieldNBytes> {};
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //      Heterogeneous collection of types that are operated on as a compile-time vector     //

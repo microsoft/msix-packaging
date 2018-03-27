@@ -18,7 +18,7 @@
 namespace MSIX {
   
     // This represents a subset of a Stream
-    class HashStream : public StreamBase
+    class HashStream final : public StreamBase
     {
     protected:
         bool m_validated;
