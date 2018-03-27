@@ -88,17 +88,15 @@ namespace MSIX {
             if (newPosition) { newPosition->QuadPart = (std::uint64_t)m_relativePosition; }
         }        
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override try
         {
-            return ResultOf([&]{
-                if (m_cacheBuffer.get() == nullptr)
-                {   ThrowHrIfFailed(m_stream->Seek(move, origin, newPosition));
-                }
-                // always call into cache seek to keep cache state aligned with the underlying stream state.
-                CacheSeek(move, origin, newPosition);
-                return static_cast<HRESULT>(Error::OK);
-            });
-        }
+            if (m_cacheBuffer.get() == nullptr)
+            {   ThrowHrIfFailed(m_stream->Seek(move, origin, newPosition));
+            }
+            // always call into cache seek to keep cache state aligned with the underlying stream state.
+            CacheSeek(move, origin, newPosition);
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
         void CacheRead(void* buffer, ULONG countBytes, ULONG* actualRead)
         {
@@ -114,41 +112,37 @@ namespace MSIX {
             if (actualRead) { *actualRead = bytesToRead; }
         }
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) override
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) override try
         {
-            return ResultOf([&]{
-                Validate();
-                if (m_cacheBuffer.get() == nullptr)
-                {   ThrowHrIfFailed(m_stream->Read(buffer, countBytes, actualRead));
-                }
-                else
-                {   CacheRead(buffer, countBytes, actualRead);
-                }
-                return static_cast<HRESULT>(Error::OK);
-            });            
-        }
+            Validate();
+            if (m_cacheBuffer.get() == nullptr)
+            {   ThrowHrIfFailed(m_stream->Read(buffer, countBytes, actualRead));
+            }
+            else
+            {   CacheRead(buffer, countBytes, actualRead);
+            }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override try
         {
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption); });
-        }
+            return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override try
         {
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetName(fileName); });
-        }
+            return m_stream.As<IAppxFile>()->GetName(fileName);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override try
         {
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetContentType(contentType); });
-        }
+            return m_stream.As<IAppxFile>()->GetContentType(contentType);
+        } CATCH_RETURN();
         
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override try
         {
-            return ResultOf([&]{
-                if (size) { *size = m_streamSize; }
-                return static_cast<HRESULT>(Error::OK);
-                });
-        }
+            if (size) { *size = m_streamSize; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
     };
 }

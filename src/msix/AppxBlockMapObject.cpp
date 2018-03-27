@@ -111,49 +111,43 @@ namespace MSIX {
         return ComPtr<IStream>::Make<BlockMapStream>(m_factory, part, stream, item->second);
     }
 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFile(LPCWSTR filename, IAppxBlockMapFile **file)
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFile(LPCWSTR filename, IAppxBlockMapFile **file) try
     {
-        return ResultOf([&]{
-            ThrowErrorIf(Error::InvalidParameter, (
-                filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
-            ), "bad pointer");
-            auto blockMapFile = m_blockMapFiles.find(utf16_to_utf8(filename));
-            ThrowErrorIf(Error::InvalidParameter, (blockMapFile == m_blockMapFiles.end()), "File not found!");
-            MSIX::ComPtr<IAppxBlockMapFile> result = blockMapFile->second;
-            *file = result.Detach();
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ThrowErrorIf(Error::InvalidParameter, (
+            filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
+        ), "bad pointer");
+        auto blockMapFile = m_blockMapFiles.find(utf16_to_utf8(filename));
+        ThrowErrorIf(Error::InvalidParameter, (blockMapFile == m_blockMapFiles.end()), "File not found!");
+        MSIX::ComPtr<IAppxBlockMapFile> result = blockMapFile->second;
+        *file = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFiles(IAppxBlockMapFilesEnumerator **enumerator)
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFiles(IAppxBlockMapFilesEnumerator **enumerator) try
     {
-        return ResultOf([&]{
-            ThrowErrorIf(Error::InvalidParameter, (enumerator == nullptr || *enumerator != nullptr), "bad pointer");
-            ComPtr<IAppxBlockMapReader> self;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IAppxBlockMapReader>::iid, reinterpret_cast<void**>(&self)));
-            *enumerator = ComPtr<IAppxBlockMapFilesEnumerator>::Make<AppxBlockMapFilesEnumerator>(
-                self,
-                std::move(GetFileNames())).Detach();
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ThrowErrorIf(Error::InvalidParameter, (enumerator == nullptr || *enumerator != nullptr), "bad pointer");
+        ComPtr<IAppxBlockMapReader> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IAppxBlockMapReader>::iid, reinterpret_cast<void**>(&self)));
+        *enumerator = ComPtr<IAppxBlockMapFilesEnumerator>::Make<AppxBlockMapFilesEnumerator>(
+            self,
+            std::move(GetFileNames())).Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetHashMethod(IUri **hashMethod)
     {   // Ultimately, this IUri object represents the HashMethod attribute in the blockmap:
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetStream(IStream **blockMapStream)
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetStream(IStream **blockMapStream) try
     {
-        return ResultOf([&]{
-            ThrowErrorIf(Error::InvalidParameter, (blockMapStream == nullptr || *blockMapStream != nullptr), "bad pointer");
-            auto stream = GetStream();
-            LARGE_INTEGER li{0};
-            ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, nullptr));
-            *blockMapStream = stream.Detach();
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ThrowErrorIf(Error::InvalidParameter, (blockMapStream == nullptr || *blockMapStream != nullptr), "bad pointer");
+        auto stream = GetStream();
+        LARGE_INTEGER li{0};
+        ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, nullptr));
+        *blockMapStream = stream.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     // IAppxBlockMapInternal methods
     std::vector<std::string> AppxBlockMapObject::GetFileNames()

@@ -55,43 +55,41 @@ namespace MSIX {
 
         // Copies a specified number of bytes from the current seek pointer in the stream to the current seek pointer in 
         // another stream.
-        virtual HRESULT STDMETHODCALLTYPE CopyTo(IStream *stream, ULARGE_INTEGER bytesCount, ULARGE_INTEGER *bytesRead, ULARGE_INTEGER *bytesWritten) override
+        virtual HRESULT STDMETHODCALLTYPE CopyTo(IStream *stream, ULARGE_INTEGER bytesCount, ULARGE_INTEGER *bytesRead, ULARGE_INTEGER *bytesWritten) override try
         {
-            return ResultOf([&] {
-                if (bytesRead) { bytesRead->QuadPart = 0; }
-                if (bytesWritten) { bytesWritten->QuadPart = 0; }
-                ThrowErrorIf(Error::InvalidParameter, (nullptr == stream), "invalid parameter.");
+            if (bytesRead) { bytesRead->QuadPart = 0; }
+            if (bytesWritten) { bytesWritten->QuadPart = 0; }
+            ThrowErrorIf(Error::InvalidParameter, (nullptr == stream), "invalid parameter.");
 
-                static const ULONGLONG size = 1024;
-                std::vector<std::int8_t> bytes(size);
-                std::int64_t read = 0;
-                std::int64_t written = 0;
-                ULONG length = 0;
+            static const ULONGLONG size = 1024;
+            std::vector<std::int8_t> bytes(size);
+            std::int64_t read = 0;
+            std::int64_t written = 0;
+            ULONG length = 0;
 
-                while (0 < bytesCount.QuadPart)
+            while (0 < bytesCount.QuadPart)
+            {
+                ULONGLONG chunk = std::min(bytesCount.QuadPart, static_cast<ULONGLONG>(size));
+                ThrowHrIfFailed(Read(reinterpret_cast<void*>(bytes.data()), (ULONG)chunk, &length));
+                if (length == 0) { break; }
+                read += length;
+
+                ULONG offset = 0;
+                while (0 < length)
                 {
-                    ULONGLONG chunk = std::min(bytesCount.QuadPart, static_cast<ULONGLONG>(size));
-                    ThrowHrIfFailed(Read(reinterpret_cast<void*>(bytes.data()), (ULONG)chunk, &length));
-                    if (length == 0) { break; }
-                    read += length;
-
-                    ULONG offset = 0;
-                    while (0 < length)
-                    {
-                        ULONG copy = 0;
-                        ThrowHrIfFailed(stream->Write(reinterpret_cast<void*>(&bytes[offset]), length, &copy));
-                        offset += copy;
-                        written += copy;
-                        length -= copy;
-                        bytesCount.QuadPart -= copy;
-                    }
+                    ULONG copy = 0;
+                    ThrowHrIfFailed(stream->Write(reinterpret_cast<void*>(&bytes[offset]), length, &copy));
+                    offset += copy;
+                    written += copy;
+                    length -= copy;
+                    bytesCount.QuadPart -= copy;
                 }
+            }
 
-                if (bytesRead)      { bytesRead->QuadPart = read; }
-                if (bytesWritten)   { bytesWritten->QuadPart = written;}
-                return static_cast<HRESULT>(Error::OK);
-            });
-        }
+            if (bytesRead)      { bytesRead->QuadPart = read; }
+            if (bytesWritten)   { bytesWritten->QuadPart = written;}
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
         virtual HRESULT STDMETHODCALLTYPE Read(void*, ULONG, ULONG*) override { return static_cast<HRESULT>(Error::NotImplemented); }
 

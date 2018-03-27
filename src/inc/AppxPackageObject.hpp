@@ -146,14 +146,13 @@ namespace MSIX {
         }
 
         // IAppxFilesEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) override
-        {   return ResultOf([&]{
-                ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
-                ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                *file = m_storage->GetFile(m_files[m_cursor]).As<IAppxFile>().Detach();
-                return static_cast<HRESULT>(Error::OK);
-            });
-        }
+        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) override try
+        {
+            ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
+            ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
+            *file = m_storage->GetFile(m_files[m_cursor]).As<IAppxFile>().Detach();
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
         HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) noexcept override
         {   
