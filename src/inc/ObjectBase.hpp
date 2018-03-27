@@ -14,14 +14,14 @@ namespace MSIX { namespace Meta {
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              Basic Validation Policies                                   //
 //////////////////////////////////////////////////////////////////////////////////////////////
-template <class Derived>
+template <typename Derived>
 class NoValidation
 {
 public:
     static inline void Validate(std::size_t, Derived*) { }
 };
 
-template <class Derived>
+template <typename Derived>
 class InvalidFieldValidation // If the field has size>0, then this field should NOT be read.
 {
 public:
@@ -30,7 +30,7 @@ public:
     }
 };
     
-template <class Derived, std::size_t spec>
+template <typename Derived, std::size_t spec>
 class ExactValueValidation // there is exactly one value that this field is allowed to be
 {
 public:
@@ -39,7 +39,7 @@ public:
     }
 };
 
-template <class Derived, std::size_t spec>
+template <typename Derived, std::size_t spec>
 class NotValueValidation // there is exactly one value that this field is not allowed to be
 {
 public:
@@ -48,7 +48,7 @@ public:
     }
 };
 
-template <class Derived, std::size_t spec1, std::size_t spec2>
+template <typename Derived, std::size_t spec1, std::size_t spec2>
 class OnlyEitherValueValidation // there are exactly two values that this field is allowed to be
 {
 public:
@@ -79,7 +79,7 @@ public:
     }
 };
 
-template <class Derived>
+template <typename Derived>
 class InjectedValidation  // derived type will rely on in situ parent-scope validation 
 {
 public:
@@ -91,7 +91,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //              Base type for individual serializable/deserializable fields                 //
 //////////////////////////////////////////////////////////////////////////////////////////////
-template <class Derived, class T, class Validation=NoValidation<Derived> >
+template <typename Derived, class T, class Validation=NoValidation<Derived> >
 class FieldBase : public Validation
 {
 public:
@@ -105,7 +105,7 @@ public:
     void Read(std::size_t index, const ComPtr<IStream>& stream)
     {
         StreamBase::Read<T>(stream, &value);
-        Validate(index, static_cast<Derived*>(this));
+        this->Validate(index, static_cast<Derived*>(this));
     }
     
     size_t Size() { return sizeof(T); }
@@ -119,18 +119,18 @@ class Field4Bytes : public FieldBase<Field4Bytes, std::uint32_t> { };
 class Field8Bytes : public FieldBase<Field8Bytes, std::uint64_t> { };
 
 // variable length field.
-template <class Derived, class Validation=NoValidation<Derived> >
+template <typename Derived, class Validation=NoValidation<Derived> >
 class VarLenField : public FieldBase<Derived, std::vector<std::uint8_t>, Validation>
 {
 public:
-    size_t Size() { return value.size(); }
+    size_t Size() { return this->value.size(); }
     
     void Write(std::size_t index, const ComPtr<IStream>& stream)
     {
-        if (value.size() != 0)
+        if (this->value.size() != 0)
         {   ThrowHrIfFailed(stream->Write(
-                reinterpret_cast<void*>(value.data()),
-                static_cast<ULONG>(value.size()),
+                reinterpret_cast<void*>(this->value.data()),
+                static_cast<ULONG>(this->value.size()),
                 nullptr
             )); 
         }       
@@ -138,14 +138,14 @@ public:
     
     void Read(std::size_t index, const ComPtr<IStream>& stream)
     {
-        if (value.size() != 0)
+        if (this->value.size() != 0)
         {   ThrowHrIfFailed(stream->Read(
-                reinterpret_cast<void*>(value.data()),
-                static_cast<ULONG>(value.size()),
+                reinterpret_cast<void*>(this->value.data()),
+                static_cast<ULONG>(this->value.size()),
                 nullptr                            
             ));
         }
-        Validate(index, static_cast<Derived*>(this));        
+        this->Validate(index, static_cast<Derived*>(this));
     }
 };
 
@@ -157,9 +157,9 @@ class FieldNBytes : public VarLenField<FieldNBytes> {};
 template <typename... Types>
 class TypeList
 {
-    std::tuple<Types...> fields;
     static constexpr std::size_t last_index { std::tuple_size<std::tuple<Types...>>::value };
 public:
+    std::tuple<Types...> fields;    
     template<std::size_t index = 0, typename FuncT, class... Args>
     inline typename std::enable_if<index == last_index, void>::type for_each(FuncT, Args&&... args) { }
 
@@ -177,7 +177,7 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              Aggregated set of types                                     //
 //////////////////////////////////////////////////////////////////////////////////////////////
-template <class Derived, class... Types>
+template <typename Derived, class... Types>
 class StructuredObject : public InjectableValidator, public TypeList<Types...>
 {
 public:
@@ -205,11 +205,10 @@ public:
         static_cast<Derived*>(this)->Validate();
     }
 
-    void Validate() {} // default sturcutred object validation is no validation.
+    void Validate() {} // default structured object validation is no validation.
 
     template<size_t index>
-    void ConfigureField() { Field<index>().parent = static_cast<InjectableValidator*>(this); }
-    
+    void ConfigureField() { std::get<index>(this->fields).parent = static_cast<InjectableValidator*>(this); }
 };
 
 } /* namespace Meta */ } /* namespace MSIX */

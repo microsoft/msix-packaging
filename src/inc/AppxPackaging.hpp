@@ -2015,36 +2015,36 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_VALIDATION_OPTION validationOption,
     char* utf8SourcePackage,
     char* utf8Destination
-);
+) noexcept;
 
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying 
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.
 typedef LPVOID STDMETHODCALLTYPE COTASKMEMALLOC(SIZE_T cb);
 typedef void STDMETHODCALLTYPE COTASKMEMFREE(LPVOID pv);
 
-MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText);
+MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept;
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     MSIX_VALIDATION_OPTION validationOption,
-    IAppxFactory** appxFactory);
+    IAppxFactory** appxFactory) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     MSIX_VALIDATION_OPTION validationOption,
-    IAppxFactory** appxFactory);
+    IAppxFactory** appxFactory) noexcept;
 
 // provided as a helper for platforms that do not have an implementation of SHCreateStreamOnFileEx
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     char* utf8File,
     bool forRead,
-    IStream** stream);
+    IStream** stream) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     LPCWSTR utf16File,
     bool forRead,
-    IStream** stream);
+    IStream** stream) noexcept;
 
 } // extern "C++" 
 
