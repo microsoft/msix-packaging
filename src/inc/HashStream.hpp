@@ -88,7 +88,7 @@ namespace MSIX {
             if (newPosition) { newPosition->QuadPart = (std::uint64_t)m_relativePosition; }
         }        
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override try
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override try
         {
             if (m_cacheBuffer.get() == nullptr)
             {   ThrowHrIfFailed(m_stream->Seek(move, origin, newPosition));
@@ -112,7 +112,7 @@ namespace MSIX {
             if (actualRead) { *actualRead = bytesToRead; }
         }
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) override try
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) noexcept override try
         {
             Validate();
             if (m_cacheBuffer.get() == nullptr)
@@ -124,22 +124,22 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override try
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override try
         {
             return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override try
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override try
         {
             return m_stream.As<IAppxFile>()->GetName(fileName);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override try
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override try
         {
             return m_stream.As<IAppxFile>()->GetContentType(contentType);
         } CATCH_RETURN();
         
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override try
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override try
         {
             if (size) { *size = m_streamSize; }
             return static_cast<HRESULT>(Error::OK);

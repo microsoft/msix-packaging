@@ -111,7 +111,7 @@ namespace MSIX {
         return ComPtr<IStream>::Make<BlockMapStream>(m_factory, part, stream, item->second);
     }
 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFile(LPCWSTR filename, IAppxBlockMapFile **file) try
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFile(LPCWSTR filename, IAppxBlockMapFile **file) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (
             filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
@@ -123,7 +123,7 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFiles(IAppxBlockMapFilesEnumerator **enumerator) try
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFiles(IAppxBlockMapFilesEnumerator **enumerator) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (enumerator == nullptr || *enumerator != nullptr), "bad pointer");
         ComPtr<IAppxBlockMapReader> self;
@@ -134,12 +134,12 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetHashMethod(IUri **hashMethod)
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetHashMethod(IUri **hashMethod) noexcept
     {   // Ultimately, this IUri object represents the HashMethod attribute in the blockmap:
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetStream(IStream **blockMapStream) try
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetStream(IStream **blockMapStream) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (blockMapStream == nullptr || *blockMapStream != nullptr), "bad pointer");
         auto stream = GetStream();

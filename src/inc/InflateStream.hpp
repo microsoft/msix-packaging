@@ -29,30 +29,30 @@ namespace MSIX {
         InflateStream(IStream* stream, std::uint64_t uncompressedSize);
         ~InflateStream();
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override;
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override;
-        HRESULT STDMETHODCALLTYPE Write(void const *buffer, ULONG countBytes, ULONG *bytesWritten) override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override;
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override;
+        HRESULT STDMETHODCALLTYPE Write(void const *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override
         {
             if (size) { *size = m_uncompressedSize; }
             return static_cast<HRESULT>(Error::OK);
         }
 
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override try
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override try
         {   // The underlying ZipFileStream object knows, so go ask it.
             return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override try
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override try
         {   // The underlying ZipFileStream object knows, so go ask it.
             return m_stream.As<IAppxFile>()->GetName(fileName);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override try
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override try
         {   // The underlying ZipFileStream object knows, so go ask it.
             return m_stream.As<IAppxFile>()->GetContentType(contentType);
         } CATCH_RETURN();

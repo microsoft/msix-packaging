@@ -25,7 +25,7 @@ namespace MSIX {
         {
         }
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override try
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override try
         {
             LARGE_INTEGER newPos = { 0 };
             switch (origin)
@@ -48,7 +48,7 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override try
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
         {
             LARGE_INTEGER offset = {0};
             offset.QuadPart = m_relativePosition + m_offset;
@@ -63,7 +63,7 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override try
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override try
         {
             if (size) { *size = m_size; }
             return static_cast<HRESULT>(Error::OK);
