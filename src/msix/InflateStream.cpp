@@ -140,66 +140,62 @@ namespace MSIX {
         Cleanup();
     }
 
-    HRESULT InflateStream::Read(void* buffer, ULONG countBytes, ULONG* bytesRead)
+    HRESULT InflateStream::Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept try
     {
-        return ResultOf([&]{
-            m_bytesRead = 0;
-            m_startCurrentBuffer = reinterpret_cast<std::uint8_t*>(buffer);
-            if (m_seekPosition < m_uncompressedSize)
+        m_bytesRead = 0;
+        m_startCurrentBuffer = reinterpret_cast<std::uint8_t*>(buffer);
+        if (m_seekPosition < m_uncompressedSize)
+        {
+            bool stayInLoop = true;
+            while (stayInLoop && (m_bytesRead < countBytes))
             {
-                bool stayInLoop = true;
-                while (stayInLoop && (m_bytesRead < countBytes))
-                {
-                    auto&& result = stateMachine[static_cast<size_t>(m_state)].Handler(this, m_startCurrentBuffer + m_bytesRead, countBytes - m_bytesRead);
-                    stayInLoop = std::get<0>(result);
-                    m_previous = m_state;
-                    m_state = std::get<1>(result);
-                }
+                auto&& result = stateMachine[static_cast<size_t>(m_state)].Handler(this, m_startCurrentBuffer + m_bytesRead, countBytes - m_bytesRead);
+                stayInLoop = std::get<0>(result);
+                m_previous = m_state;
+                m_state = std::get<1>(result);
             }
-            m_startCurrentBuffer = nullptr;
-            if (bytesRead) { *bytesRead = m_bytesRead; }
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        }
+        m_startCurrentBuffer = nullptr;
+        if (bytesRead) { *bytesRead = m_bytesRead; }
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
-    HRESULT InflateStream::Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition)
+    HRESULT InflateStream::Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept try
     {
-        return ResultOf([&]{
-            LARGE_INTEGER seekPosition = { 0 };
-            switch (origin)
-            {
-            case Reference::CURRENT:
-                seekPosition.QuadPart = m_seekPosition + move.QuadPart;
-                break;
-            case Reference::START:
-                seekPosition.QuadPart = move.QuadPart;
-                break;
-            case Reference::END:
-                seekPosition.QuadPart = m_uncompressedSize + move.QuadPart;
-                break;
-            }
+        LARGE_INTEGER seekPosition = { 0 };
+        switch (origin)
+        {
+        case Reference::CURRENT:
+            seekPosition.QuadPart = m_seekPosition + move.QuadPart;
+            break;
+        case Reference::START:
+            seekPosition.QuadPart = move.QuadPart;
+            break;
+        case Reference::END:
+            seekPosition.QuadPart = m_uncompressedSize + move.QuadPart;
+            break;
+        }
 
-            // Can't seek beyond the end of the uncompressed stream
-            seekPosition.QuadPart = std::min(seekPosition.QuadPart, static_cast<LONGLONG>(m_uncompressedSize));
+        // Can't seek beyond the end of the uncompressed stream
+        seekPosition.QuadPart = std::min(seekPosition.QuadPart, static_cast<LONGLONG>(m_uncompressedSize));
 
-            if (seekPosition.QuadPart != m_seekPosition)
+        if (seekPosition.QuadPart != m_seekPosition)
+        {
+            m_seekPosition = seekPosition.QuadPart;
+            // If the caller is trying to seek back to an earlier
+            // point in the inflated stream, we will need to reset
+            // zlib and start inflating from the beginning of the
+            // stream; otherwise, seeking forward is fine: We will
+            // catch up to the seek pointer during the ::Read operation.
+            if (m_seekPosition < m_fileCurrentPosition)
             {
-                m_seekPosition = seekPosition.QuadPart;
-                // If the caller is trying to seek back to an earlier
-                // point in the inflated stream, we will need to reset
-                // zlib and start inflating from the beginning of the
-                // stream; otherwise, seeking forward is fine: We will
-                // catch up to the seek pointer during the ::Read operation.
-                if (m_seekPosition < m_fileCurrentPosition)
-                {
-                    m_fileCurrentPosition = 0;
-                    Cleanup();
-                }
+                m_fileCurrentPosition = 0;
+                Cleanup();
             }
-            if (newPosition) { newPosition->QuadPart = m_seekPosition; }
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        }
+        if (newPosition) { newPosition->QuadPart = m_seekPosition; }
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     void InflateStream::Cleanup()
     {

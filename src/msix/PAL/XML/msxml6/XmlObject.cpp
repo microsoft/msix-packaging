@@ -214,7 +214,7 @@ public:
     VARIANT& Get() { return m_variant; }
 };
 
-class MSXMLElement : public ComClass<MSXMLElement, IXmlElement, IMSXMLElement>
+class MSXMLElement final : public ComClass<MSXMLElement, IXmlElement, IMSXMLElement>
 {
     std::pair<bool, Variant> GetAttribute(XmlAttributeName attribute)
     {
@@ -303,7 +303,7 @@ protected:
     }                                                                            \
 }
 
-class MSXMLDom : public ComClass<MSXMLDom, IXmlDom, IMSXMLDom>
+class MSXMLDom final : public ComClass<MSXMLDom, IXmlDom, IMSXMLDom>
 {
 public:
     MSXMLDom(const ComPtr<IStream>& stream, const NamespaceManager& namespaces, IMSIXFactory* factory = nullptr, bool stripIgnorableNamespaces = false)
@@ -533,7 +533,7 @@ protected:
     ComPtr<IXMLDOMDocument2> m_xmlDocument;
 };
 
-class MSXMLFactory : public ComClass<MSXMLFactory, IXmlFactory>
+class MSXMLFactory final : public ComClass<MSXMLFactory, IXmlFactory>
 {
 public:
     MSXMLFactory(IMSIXFactory* factory) : m_factory(factory), m_CoInitialized(false)

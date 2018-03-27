@@ -121,7 +121,7 @@ namespace MSIX {
         std::string     m_message;
     };
 
-    class Win32Exception : public Exception
+    class Win32Exception final : public Exception
     {
     public:
         Win32Exception(std::string& message, DWORD error) : Exception(message, 0x80070000 + error)
@@ -130,42 +130,40 @@ namespace MSIX {
         }
     };
 
+#ifdef USING_XERCES                                              
     // Provides an ABI exception boundary with parameter validation
-    template <class Lambda>
-    inline HRESULT ResultOf(Lambda lambda)
-    {
-        HRESULT hr = static_cast<HRESULT>(MSIX::Error::OK);
-        try
-        {
-            hr = lambda();
-        }
-#ifdef USING_XERCES        
-        catch (const XERCES_CPP_NAMESPACE::XMLException& e)
-        {
-            hr = static_cast<HRESULT>(MSIX::XERCES_XML_FACILITY) +
-                static_cast<HRESULT>(e.getCode());
-        }
-        catch (const XERCES_CPP_NAMESPACE::DOMException& e)
-        {
-            hr = static_cast<HRESULT>(MSIX::XERCES_DOM_FACILITY) +
-                static_cast<HRESULT>(e.code);
-        }
-#endif        
-        catch (MSIX::Exception& e)
-        {
-            hr = static_cast<HRESULT>(e.Code());
-        }
-        catch (std::bad_alloc&)
-        {
-            hr = static_cast<HRESULT>(MSIX::Error::OutOfMemory);
-        }
-        catch (std::exception&)
-        {
-            hr = static_cast<HRESULT>(MSIX::Error::Unexpected);
-        }
-        return hr;
+    #define CATCH_RETURN()                                                  \
+    catch (const XERCES_CPP_NAMESPACE::XMLException& e)                     \
+    {   return static_cast<HRESULT>(MSIX::XERCES_XML_FACILITY) +            \
+            static_cast<HRESULT>(e.getCode());                              \
+    }                                                                       \
+    catch (const XERCES_CPP_NAMESPACE::DOMException& e)                     \
+    {   return static_cast<HRESULT>(MSIX::XERCES_DOM_FACILITY) +            \
+            static_cast<HRESULT>(e.code);                                   \
+    }                                                                       \
+    catch (MSIX::Exception& e)                                              \
+    {   return static_cast<HRESULT>(e.Code());                              \
+    }                                                                       \
+    catch (std::bad_alloc&)                                                 \
+    {   return static_cast<HRESULT>(MSIX::Error::OutOfMemory);              \
+    }                                                                       \
+    catch (...)                                                             \
+    {   return static_cast<HRESULT>(MSIX::Error::Unexpected);               \
     }
-
+#else
+    // Provides an ABI exception boundary with parameter validation
+    #define CATCH_RETURN()                                                  \
+    catch (MSIX::Exception& e)                                              \
+    {   return static_cast<HRESULT>(e.Code());                              \
+    }                                                                       \
+    catch (std::bad_alloc&)                                                 \
+    {   return static_cast<HRESULT>(MSIX::Error::OutOfMemory);              \
+    }                                                                       \
+    catch (...)                                                             \
+    {   return static_cast<HRESULT>(MSIX::Error::Unexpected);               \
+    }
+#endif              
+                                             
     template <typename E, class C>
     #ifdef WIN32
     __declspec(noinline)
@@ -197,6 +195,7 @@ namespace MSIX {
 
 // Helper to make code more terse and more readable at the same time.
 #define ThrowError(c)  { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, c); }
+#define UNEXPECTED     { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::Unexpected); }
 #define NOTSUPPORTED   { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::NotSupported); }
 #define NOTIMPLEMENTED { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::NotImplemented); }
 

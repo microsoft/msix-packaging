@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace MSIX {
-    class AppxFactory : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory>
+    class AppxFactory final : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory>
     {
     public:
         AppxFactory(MSIX_VALIDATION_OPTION validationOptions, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
@@ -35,18 +35,18 @@ namespace MSIX {
             APPX_PACKAGE_SETTINGS* ,//settings, TODO: plumb this through
             IAppxPackageWriter** packageWriter) override;           
 
-        HRESULT STDMETHODCALLTYPE CreatePackageReader (IStream* inputStream, IAppxPackageReader** packageReader) override;
-        HRESULT STDMETHODCALLTYPE CreateManifestReader(IStream* inputStream, IAppxManifestReader** manifestReader) override ;
-        HRESULT STDMETHODCALLTYPE CreateBlockMapReader (IStream* inputStream, IAppxBlockMapReader** blockMapReader) override;
+        HRESULT STDMETHODCALLTYPE CreatePackageReader (IStream* inputStream, IAppxPackageReader** packageReader) noexcept override;
+        HRESULT STDMETHODCALLTYPE CreateManifestReader(IStream* inputStream, IAppxManifestReader** manifestReader) noexcept override ;
+        HRESULT STDMETHODCALLTYPE CreateBlockMapReader (IStream* inputStream, IAppxBlockMapReader** blockMapReader) noexcept override;
 
         HRESULT STDMETHODCALLTYPE CreateValidatedBlockMapReader (
             IStream* blockMapStream,
             LPCWSTR signatureFileName,
-            IAppxBlockMapReader** blockMapReader) override;
+            IAppxBlockMapReader** blockMapReader) noexcept override;
 
         // IMSIXFactory
-        HRESULT MarshalOutString(std::string& internal, LPWSTR *result) override;
-        HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) override;
+        HRESULT MarshalOutString(std::string& internal, LPWSTR *result) noexcept override;
+        HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) noexcept override;
         MSIX_VALIDATION_OPTION GetValidationOptions() override { return m_validationOptions; }
         ComPtr<IStream> GetResource(const std::string& resource) override;
 
