@@ -3,9 +3,9 @@
 //  See LICENSE file in the project root for full license information.
 // 
 #include "Exceptions.hpp"
-#include "ComHelper.hpp"
 #include "StreamBase.hpp"
 #include "ObjectBase.hpp"
+#include "ComHelper.hpp"
 #include "ZipObject.hpp"
 #include "ZipFileStream.hpp"
 #include "InflateStream.hpp"
