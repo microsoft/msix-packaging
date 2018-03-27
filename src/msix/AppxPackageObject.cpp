@@ -133,7 +133,7 @@ namespace MSIX {
         // for shifting 
 
         // Make sure the following math doesn't overflow.
-        char output[publisherIdSize] = "";
+        char output[publisherIdSize+1] = "";
         size_t outputIndex = 0;
         for(size_t byteIndex = 0; byteIndex < byteCount; byteIndex +=5)
         {
@@ -167,6 +167,7 @@ namespace MSIX {
                 }
             }
         }
+        output[publisherIdSize] = '\0';
         return std::string(output);
     }
 
