@@ -63,12 +63,6 @@ public:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                           Advanced Validation Policies                                   //
 //////////////////////////////////////////////////////////////////////////////////////////////
-template <class Derived>
-class VirtualValidation // let the derived type specify what-ever elaborate story they want
-{
-public:
-    static inline void Validate(std::size_t index, Derived* self)  { self->Validate(); }
-};
 
 // An injectable validator type supports parent-injectable validation.  This is used in
 // concert with the InjectedValidation type, which is specified as a validator of either
@@ -76,14 +70,20 @@ public:
 class InjectableValidator
 {
 public:
-    virtual void ValidateField(size_t field) = 0;
+    virtual void ValidateField(size_t field)
+    {
+        // If you're here and you didn't override, you either have a bug in your 
+        // type list definition or your derived type didn't wire-up the specified
+        // field's parent to point at your type's instance.
+        UNEXPECTED;
+    }
 };
 
 template <class Derived>
 class InjectedValidation  // derived type will rely on in situ parent-scope validation 
 {
 public:
-    static inline void Validate(std::size_t field, Derived* self)  { self->parent->ValidateField(field); }
+    static void Validate(std::size_t field, Derived* self)  { self->parent->ValidateField(field); }
 
     InjectableValidator* parent = nullptr;
 };
@@ -97,18 +97,18 @@ class FieldBase : public Validation
 public:
     FieldBase() = default;
  
-    virtual void Write(std::size_t index, const ComPtr<IStream>& stream)
+    void Write(std::size_t index, const ComPtr<IStream>& stream)
     {
         StreamBase::Write<T>(stream, &value);
     }
     
-    virtual void Read(std::size_t index, const ComPtr<IStream>& stream)
+    void Read(std::size_t index, const ComPtr<IStream>& stream)
     {
         StreamBase::Read<T>(stream, &value);
         Validate(index, static_cast<Derived*>(this));
     }
     
-    virtual size_t Size() { return sizeof(T); }
+    size_t Size() { return sizeof(T); }
     
     T value;
 };
@@ -123,9 +123,9 @@ template <class Derived, class Validation=NoValidation<Derived> >
 class VarLenField : public FieldBase<Derived, std::vector<std::uint8_t>, Validation>
 {
 public:
-    virtual size_t Size() override { return value.size(); }
+    size_t Size() { return value.size(); }
     
-    void Write(std::size_t index, const ComPtr<IStream>& stream) override
+    void Write(std::size_t index, const ComPtr<IStream>& stream)
     {
         if (value.size() != 0)
         {   ThrowHrIfFailed(stream->Write(
@@ -136,7 +136,7 @@ public:
         }       
     }
     
-    void Read(std::size_t index, const ComPtr<IStream>& stream) override
+    void Read(std::size_t index, const ComPtr<IStream>& stream)
     {
         if (value.size() != 0)
         {   ThrowHrIfFailed(stream->Read(
@@ -171,7 +171,7 @@ public:
     }
 
     template <size_t index>
-    inline auto& Field() noexcept { return std::get<index>(fields); }
+    auto& Field() noexcept { return std::get<index>(fields); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -205,13 +205,7 @@ public:
         static_cast<Derived*>(this)->Validate();
     }
 
-    virtual void Validate() {} // default sturcutred object validation is no validation.
-    void ValidateField(size_t field) override
-    {   // If you're here and you didn't override, you either have a bug in your 
-        // type list definition or your derived type didn't wire-up the specified
-        // field's parent to point at your type's instance.
-        UNEXPECTED;
-    }
+    void Validate() {} // default sturcutred object validation is no validation.
 
     template<size_t index>
     void ConfigureField() { Field<index>().parent = static_cast<InjectableValidator*>(this); }
