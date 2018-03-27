@@ -158,11 +158,7 @@ namespace MSIX {
         static ULONG Read(const ComPtr<IStream>& stream, T* value)
         {
             ULONG result = 0;
-            ThrowHrIfFailed(stream->Read(
-                reinterpret_cast<void*>(value),
-                static_cast<ULONG>(sizeof(T)),
-                &result                            
-            ));
+            ThrowHrIfFailed(stream->Read(value, static_cast<ULONG>(sizeof(T)), &result));
             ThrowErrorIf(Error::FileRead, (result != sizeof(T)), "Entire object wasn't read!");
             return result;
         }
@@ -171,11 +167,7 @@ namespace MSIX {
         static void Write(const ComPtr<IStream>& stream, T* value)
         {
             ULONG result = 0;
-            ThrowHrIfFailed(stream->Write(
-                reinterpret_cast<void*>(value),
-                static_cast<ULONG>(sizeof(T)),
-                nullptr                            
-            ));
+            ThrowHrIfFailed(stream->Write(value, static_cast<ULONG>(sizeof(T)), nullptr));
             ThrowErrorIf(Error::FileWrite, (result != sizeof(T)), "Entire object wasn't written!");
         }
     };
