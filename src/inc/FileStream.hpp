@@ -45,40 +45,34 @@ namespace MSIX {
             }
         }
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override try
         {
-            return ResultOf([&] {
-                int rc = std::fseek(file, (long)move.QuadPart, origin);
-                ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
-                offset = Ftell();
-                if (newPosition) { newPosition->QuadPart = offset; }
-                return static_cast<HRESULT>(Error::OK);
-            });
-        }
+            int rc = std::fseek(file, (long)move.QuadPart, origin);
+            ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
+            offset = Ftell();
+            if (newPosition) { newPosition->QuadPart = offset; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override try
         {
             if (bytesRead) { *bytesRead = 0; }
-            return ResultOf([&] {
-                ULONG result = static_cast<ULONG>(std::fread(buffer, sizeof(std::uint8_t), countBytes, file));
-                ThrowErrorIfNot(Error::FileRead, (result == countBytes || Feof()), "read failed");
-                offset = Ftell();
-                if (bytesRead) { *bytesRead = result; }
-                return static_cast<HRESULT>(Error::OK);
-            });
-        }
+            ULONG result = static_cast<ULONG>(std::fread(buffer, sizeof(std::uint8_t), countBytes, file));
+            ThrowErrorIfNot(Error::FileRead, (result == countBytes || Feof()), "read failed");
+            offset = Ftell();
+            if (bytesRead) { *bytesRead = result; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) override
+        HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) override try
         {
             if (bytesWritten) { *bytesWritten = 0; }
-            return ResultOf([&] {
-                ULONG result = static_cast<ULONG>(std::fwrite(buffer, sizeof(std::uint8_t), countBytes, file));
-                ThrowErrorIfNot(Error::FileWrite, (result == countBytes), "write failed");
-                offset = Ftell();
-                if (bytesWritten) { *bytesWritten = result; }
-                return static_cast<HRESULT>(Error::OK);
-            });
-        }
+            ULONG result = static_cast<ULONG>(std::fwrite(buffer, sizeof(std::uint8_t), countBytes, file));
+            ThrowErrorIfNot(Error::FileWrite, (result == countBytes), "write failed");
+            offset = Ftell();
+            if (bytesWritten) { *bytesWritten = result; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
     protected:
         inline int Ferror() { return std::ferror(file); }

@@ -42,20 +42,20 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         }
 
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override try
         {   // The underlying ZipFileStream object knows, so go ask it.
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption); });
-        }
+            return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override try
         {   // The underlying ZipFileStream object knows, so go ask it.
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetName(fileName); });
-        }
+            return m_stream.As<IAppxFile>()->GetName(fileName);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override try
         {   // The underlying ZipFileStream object knows, so go ask it.
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetContentType(contentType); });
-        }
+            return m_stream.As<IAppxFile>()->GetContentType(contentType);
+        } CATCH_RETURN();
 
         // IAppxFileInternal
         std::uint64_t GetCompressedSize() override { return m_stream.As<IAppxFileInternal>()->GetCompressedSize(); }

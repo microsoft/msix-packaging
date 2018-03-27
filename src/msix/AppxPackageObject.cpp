@@ -344,49 +344,43 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::NotImplemented);
     }
    
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file)
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file) try
     {
-        return MSIX::ResultOf([&]() {
-            ThrowErrorIf(Error::InvalidParameter, (file == nullptr || *file != nullptr), "bad pointer");
-            ThrowErrorIf(Error::FileNotFound, (static_cast<size_t>(type) > footprintFiles.size()), "unknown footprint file type");
-            std::string footprint (footprintFiles[type]);
-            ComPtr<IStream> stream = GetFile(footprint);
-            ThrowErrorIfNot(Error::FileNotFound, stream, "requested footprint file not in package")
-            // Clients expect the stream's pointer to be at the start of the file!
-            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
-            auto result = stream.As<IAppxFile>();
-            *file = result.Detach();
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ThrowErrorIf(Error::InvalidParameter, (file == nullptr || *file != nullptr), "bad pointer");
+        ThrowErrorIf(Error::FileNotFound, (static_cast<size_t>(type) > footprintFiles.size()), "unknown footprint file type");
+        std::string footprint (footprintFiles[type]);
+        ComPtr<IStream> stream = GetFile(footprint);
+        ThrowErrorIfNot(Error::FileNotFound, stream, "requested footprint file not in package")
+        // Clients expect the stream's pointer to be at the start of the file!
+        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
+        auto result = stream.As<IAppxFile>();
+        *file = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFile(LPCWSTR fileName, IAppxFile** file)
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFile(LPCWSTR fileName, IAppxFile** file) try
     {
-        return MSIX::ResultOf([&]() {
-            ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
-            std::string name = utf16_to_utf8(fileName);
-            ComPtr<IStream> stream = GetFile(name);
-            ThrowErrorIfNot(Error::FileNotFound, stream, "requested file not in package")
-            // Clients expect the stream's pointer to be at the start of the file!
-            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
-            auto result = stream.As<IAppxFile>();
-            *file = result.Detach();
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
+        std::string name = utf16_to_utf8(fileName);
+        ComPtr<IStream> stream = GetFile(name);
+        ThrowErrorIfNot(Error::FileNotFound, stream, "requested file not in package")
+        // Clients expect the stream's pointer to be at the start of the file!
+        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
+        auto result = stream.As<IAppxFile>();
+        *file = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFiles(IAppxFilesEnumerator** filesEnumerator)
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFiles(IAppxFilesEnumerator** filesEnumerator) try
     {
-        return MSIX::ResultOf([&]() {
-            ThrowErrorIf(Error::InvalidParameter,(filesEnumerator == nullptr || *filesEnumerator != nullptr), "bad pointer");
+        ThrowErrorIf(Error::InvalidParameter,(filesEnumerator == nullptr || *filesEnumerator != nullptr), "bad pointer");
 
-            ComPtr<IStorageObject> storage;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, reinterpret_cast<void**>(&storage)));
-            auto result = ComPtr<IAppxFilesEnumerator>::Make<AppxFilesEnumerator>(storage.Get());
-            *filesEnumerator = result.Detach();
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ComPtr<IStorageObject> storage;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, reinterpret_cast<void**>(&storage)));
+        auto result = ComPtr<IAppxFilesEnumerator>::Make<AppxFilesEnumerator>(storage.Get());
+        *filesEnumerator = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxManifestReader** manifestReader)
     {
