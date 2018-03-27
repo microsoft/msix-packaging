@@ -362,11 +362,11 @@ public:
         if (!stripIgnorableNamespaces)
         {   
             Variant var(stream);
-            ThrowHrIfFailed(m_xmlDocument->load(var, &success));        
+            ThrowHrIfFailedWithIErrorInfo(m_xmlDocument->load(var, &success));
         }
         else
         {   /* Because load will only parse, a failure to read the stream (e.g. due to a blockmap 
-            hash validation failuire, for instance) will result in an error other than SignatureInvalid
+            hash validation failure, for instance) will result in an error other than SignatureInvalid
             being returned to the caller.  To prevent that, we will copy the stream into a memory buffer
             (so that should read fail, it does so there with the correct error), and then create our DOM
             with deferred validation from the in memory copy; but first we need to compute the size of
