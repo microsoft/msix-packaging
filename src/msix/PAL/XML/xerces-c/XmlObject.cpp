@@ -65,7 +65,7 @@ static std::map<XmlAttributeName, std::string> attributeNames = {
     {XmlAttributeName::BlockMap_File_Block_Hash                 ,"Hash"},
 };
 
-class ParsingException : public XERCES_CPP_NAMESPACE::ErrorHandler
+class ParsingException final : public XERCES_CPP_NAMESPACE::ErrorHandler
 {
 public:
     ParsingException() {};
@@ -221,7 +221,7 @@ protected:
     XMLByte* m_ptr = nullptr;             
 };    
 
-class XercesElement : public ComClass<XercesElement, IXmlElement, IXercesElement>
+class XercesElement final : public ComClass<XercesElement, IXmlElement, IXercesElement>
 {
 public:
     XercesElement(DOMElement* element) : m_element(element) {}
@@ -255,7 +255,7 @@ protected:
     DOMElement* m_element = nullptr;
 };
 
-class XercesDom : public ComClass<XercesDom, IXmlDom>
+class XercesDom final : public ComClass<XercesDom, IXmlDom>
 {
 public:
     XercesDom(const ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :  m_stream(stream)
@@ -341,7 +341,7 @@ protected:
     ComPtr<IStream> m_stream;    
 };
 
-class XercesFactory : public ComClass<XercesFactory, IXmlFactory>
+class XercesFactory final : public ComClass<XercesFactory, IXmlFactory>
 {
 public:
     XercesFactory(IMSIXFactory* factory) : m_factory(factory)
