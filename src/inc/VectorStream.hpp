@@ -16,7 +16,7 @@ namespace MSIX {
     public:
         VectorStream(std::vector<std::uint8_t>* data) : m_data(data) {}
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override try
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
         {
             ULONG amountToRead = std::min(countBytes, static_cast<ULONG>(m_data->size() - m_offset));
             if (amountToRead > 0) { memcpy(buffer, &(m_data->at(m_offset)), amountToRead); }                
@@ -25,7 +25,7 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override try
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override try
         {
             LARGE_INTEGER newPos {0};
             switch (origin)

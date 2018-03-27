@@ -140,7 +140,7 @@ namespace MSIX {
         Cleanup();
     }
 
-    HRESULT InflateStream::Read(void* buffer, ULONG countBytes, ULONG* bytesRead) try
+    HRESULT InflateStream::Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept try
     {
         m_bytesRead = 0;
         m_startCurrentBuffer = reinterpret_cast<std::uint8_t*>(buffer);
@@ -160,7 +160,7 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT InflateStream::Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) try
+    HRESULT InflateStream::Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept try
     {
         LARGE_INTEGER seekPosition = { 0 };
         switch (origin)

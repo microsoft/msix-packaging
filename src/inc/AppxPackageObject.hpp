@@ -100,11 +100,11 @@ namespace MSIX {
         void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to) override;
 
         // IAppxPackageReader
-        HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override;
-        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file) override;
-        HRESULT STDMETHODCALLTYPE GetPayloadFile(LPCWSTR fileName, IAppxFile** file) override;
-        HRESULT STDMETHODCALLTYPE GetPayloadFiles(IAppxFilesEnumerator**  filesEnumerator) override;
-        HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) override;
+        HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPayloadFile(LPCWSTR fileName, IAppxFile** file) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPayloadFiles(IAppxFilesEnumerator**  filesEnumerator) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) noexcept override;
 
         // returns a list of the footprint files found within this package.
         std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
@@ -146,7 +146,7 @@ namespace MSIX {
         }
 
         // IAppxFilesEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) override try
+        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
             ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");

@@ -47,13 +47,13 @@ namespace MSIX {
         {}
 
         // IAppxBlockMapBlock
-        HRESULT STDMETHODCALLTYPE GetHash(UINT32* bufferSize, BYTE** buffer) override try
+        HRESULT STDMETHODCALLTYPE GetHash(UINT32* bufferSize, BYTE** buffer) noexcept override try
         {
             ThrowHrIfFailed(m_factory->MarshalOutBytes(m_block->hash, bufferSize, buffer));
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetCompressedSize(UINT32* size) override try
+        HRESULT STDMETHODCALLTYPE GetCompressedSize(UINT32* size) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (size == nullptr), "bad pointer");
             *size = static_cast<UINT32>(m_block->compressedSize);
@@ -77,7 +77,7 @@ namespace MSIX {
         {}
 
         // IAppxBlockMapBlocksEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxBlockMapBlock** block) override try
+        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxBlockMapBlock** block) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (block == nullptr || *block != nullptr), "bad pointer");
             *block = m_blocks->at(m_cursor).Get();
@@ -85,14 +85,14 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override try
+        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) noexcept override try
         {   
             ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
             *hasCurrent = (m_cursor != m_blocks->size()) ? TRUE : FALSE;
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override try
+        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) noexcept override try
         {
             ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
             *hasNext = (++m_cursor != m_blocks->size()) ? TRUE : FALSE;
@@ -119,7 +119,7 @@ namespace MSIX {
         }
 
         // IAppxBlockMapFile
-        HRESULT STDMETHODCALLTYPE GetBlocks(IAppxBlockMapBlocksEnumerator **blocks) override try
+        HRESULT STDMETHODCALLTYPE GetBlocks(IAppxBlockMapBlocksEnumerator **blocks) noexcept override try
         {
             if (m_blockMapBlocks.empty())
             {   m_blockMapBlocks.reserve(m_blocks->size());
@@ -137,27 +137,27 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetLocalFileHeaderSize(UINT32* lfhSize) override try
+        HRESULT STDMETHODCALLTYPE GetLocalFileHeaderSize(UINT32* lfhSize) noexcept override try
         {   // Retrieves the size of the zip local file header of the associated zip file item
             ThrowErrorIf(Error::InvalidParameter, (lfhSize == nullptr), "bad pointer");
             *lfhSize = static_cast<UINT32>(m_localFileHeaderSize);
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR *name) override try
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR *name) noexcept override try
         {
             ThrowHrIfFailed(m_factory->MarshalOutString(m_name, name));
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetUncompressedSize(UINT64 *size) override try
+        HRESULT STDMETHODCALLTYPE GetUncompressedSize(UINT64 *size) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (size == nullptr), "bad pointer");
             *size = static_cast<UINT64>(m_uncompressedSize);
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE ValidateFileHash(IStream *fileStream, BOOL *isValid) override
+        HRESULT STDMETHODCALLTYPE ValidateFileHash(IStream *fileStream, BOOL *isValid) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
@@ -185,21 +185,21 @@ namespace MSIX {
         {}
 
         // IAppxBlockMapFilesEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxBlockMapFile** block) override try
+        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxBlockMapFile** block) noexcept override try
         {
             ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
             ThrowHrIfFailed(m_reader->GetFile(utf8_to_utf16(m_files.at(m_cursor)).c_str(), block));
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override try
+        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) noexcept override try
         {
             ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
             *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override try
+        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) noexcept override try
         {
             ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
             *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
@@ -220,10 +220,10 @@ namespace MSIX {
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>& stream) override;
 
         // IAppxBlockMapReader
-        HRESULT STDMETHODCALLTYPE GetFile(LPCWSTR filename, IAppxBlockMapFile **file) override;
-        HRESULT STDMETHODCALLTYPE GetFiles(IAppxBlockMapFilesEnumerator **enumerator) override;
-        HRESULT STDMETHODCALLTYPE GetHashMethod(IUri **hashMethod) override;
-        HRESULT STDMETHODCALLTYPE GetStream(IStream **blockMapStream) override;
+        HRESULT STDMETHODCALLTYPE GetFile(LPCWSTR filename, IAppxBlockMapFile **file) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetFiles(IAppxBlockMapFilesEnumerator **enumerator) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetHashMethod(IUri **hashMethod) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetStream(IStream **blockMapStream) noexcept override;
 
         // IAppxBlockMapInternal methods
         std::vector<std::string>        GetFileNames() override;

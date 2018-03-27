@@ -47,7 +47,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
     char* utf8SourcePackage,
-    char* utf8Destination) try
+    char* utf8Destination) noexcept try
 {
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
         (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
@@ -70,7 +70,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
-MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) try
+MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept try
 {
     ThrowErrorIf(MSIX::Error::InvalidParameter, (logText == nullptr || *logText != nullptr), "bad pointer" );
     std::size_t countBytes = sizeof(char)*(MSIX::Global::Log::Text().size()+1);
@@ -87,7 +87,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     char* utf8File,
     bool forRead,
-    IStream** stream) try
+    IStream** stream) noexcept try
 {
     MSIX::FileStream::Mode mode = forRead ? MSIX::FileStream::Mode::READ : MSIX::FileStream::Mode::WRITE_UPDATE;
     *stream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(utf8File, mode).Detach();
@@ -97,7 +97,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     LPCWSTR utf16File,
     bool forRead,
-    IStream** stream) try
+    IStream** stream) noexcept try
 {
     MSIX::FileStream::Mode mode = forRead ? MSIX::FileStream::Mode::READ : MSIX::FileStream::Mode::WRITE_UPDATE;
     *stream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(MSIX::utf16_to_utf8(utf16File), mode).Detach();
@@ -108,7 +108,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     MSIX_VALIDATION_OPTION validationOption,
-    IAppxFactory** appxFactory) try
+    IAppxFactory** appxFactory) noexcept try
 {
     *appxFactory = MSIX::ComPtr<IAppxFactory>::Make<MSIX::AppxFactory>(validationOption, memalloc, memfree).Detach();
     return static_cast<HRESULT>(MSIX::Error::OK);
@@ -117,7 +117,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     MSIX_VALIDATION_OPTION validationOption,
-    IAppxFactory** appxFactory)
+    IAppxFactory** appxFactory) noexcept
 {
     #ifdef WIN32
         return CoCreateAppxFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);

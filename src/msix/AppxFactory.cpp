@@ -22,7 +22,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreatePackageReader (
         IStream* inputStream,
-        IAppxPackageReader** packageReader) try
+        IAppxPackageReader** packageReader) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
         ComPtr<IMSIXFactory> self;
@@ -36,14 +36,14 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateManifestReader(
         IStream* inputStream,
-        IAppxManifestReader** manifestReader)
+        IAppxManifestReader** manifestReader) noexcept
     {
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBlockMapReader (
         IStream* inputStream,
-        IAppxBlockMapReader** blockMapReader) try
+        IAppxBlockMapReader** blockMapReader) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (
             inputStream == nullptr || 
@@ -61,7 +61,7 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateValidatedBlockMapReader (
         IStream* inputStream,
         LPCWSTR signatureFileName,
-        IAppxBlockMapReader** blockMapReader) try
+        IAppxBlockMapReader** blockMapReader) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (
             inputStream == nullptr || 
@@ -82,7 +82,7 @@ namespace MSIX {
     } CATCH_RETURN();
 
     // IMSIXFactory
-    HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result) try
+    HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
         auto intermediate = utf8_to_utf16(internal);
@@ -96,7 +96,7 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT AppxFactory::MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) try
+    HRESULT AppxFactory::MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (size==nullptr || buffer == nullptr || *buffer != nullptr), "Bad pointer");
         *size = static_cast<UINT32>(data.size());
