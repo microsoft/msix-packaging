@@ -37,7 +37,7 @@ namespace MSIX {
     } BlockPlusStream;
 
     // This represents a subset of a Stream
-    class BlockMapStream : public StreamBase
+    class BlockMapStream final : public StreamBase
     {
     public:
         BlockMapStream(IMSIXFactory* factory, std::string decodedName, const ComPtr<IStream>& stream, std::vector<Block>& blocks)

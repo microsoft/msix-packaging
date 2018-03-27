@@ -70,7 +70,7 @@ namespace MSIX {
     };
 
     // Object backed by AppxManifest.xml
-    class AppxManifestObject : public ComClass<AppxManifestObject, IVerifierObject>
+    class AppxManifestObject final : public ComClass<AppxManifestObject, IVerifierObject>
     {
     public:
         AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
@@ -90,7 +90,7 @@ namespace MSIX {
     };
 
     // Storage object representing the entire AppxPackage
-    class AppxPackageObject : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject>
+    class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject>
     {
     public:
         AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container);
@@ -131,7 +131,7 @@ namespace MSIX {
         std::vector<std::string>    m_footprintFiles;
     };
 
-    class AppxFilesEnumerator : public MSIX::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>
+    class AppxFilesEnumerator final : public MSIX::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>
     {
     protected:
         ComPtr<IStorageObject>      m_storage;

@@ -16,7 +16,7 @@
 
 namespace MSIX {
     // This represents a raw stream over a.zip file.
-    class ZipObject : public ComClass<ZipObject, IStorageObject>
+    class ZipObject final : public ComClass<ZipObject, IStorageObject>
     {
     public:
         ZipObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);

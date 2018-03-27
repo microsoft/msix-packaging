@@ -138,16 +138,14 @@ constexpr static const GeneralPurposeBitFlags UnsupportedFlagsMask =
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              General Zip validation policies                             //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class OffsetOrSize32bit : public Meta::FieldBase<OffsetOrSize32bit,   std::uint32_t, Meta::OnlyEitherValueValidation<OffsetOrSize32bit, 0, 0xFFFFFFFF>> {};
-class OffsetOrSize64bit : public Meta::FieldBase<OffsetOrSize64bit,   std::uint64_t, Meta::InjectedValidation<OffsetOrSize64bit >> {};
-class FieldMustBeEmpty  : public Meta::VarLenField<FieldMustBeEmpty,  Meta::InvalidFieldValidation<FieldMustBeEmpty>>{};
-class VarFieldLength    : public Meta::FieldBase<VarFieldLength,      std::uint16_t, Meta::InjectedValidation<VarFieldLength>> {};
-class VarFieldLenZero   : public Meta::FieldBase<VarFieldLenZero,     std::uint16_t, Meta::ExactValueValidation<VarFieldLenZero, 0>> {};
-class InjectedVal2Bytes : public Meta::FieldBase<InjectedVal2Bytes,   std::uint16_t, Meta::InjectedValidation<InjectedVal2Bytes> > {};
-class InjectedVal4Bytes : public Meta::FieldBase<InjectedVal4Bytes,   std::uint32_t, Meta::InjectedValidation<InjectedVal4Bytes> > {};
-class InjectedVal8Bytes : public Meta::FieldBase<InjectedVal8Bytes,   std::uint64_t, Meta::InjectedValidation<InjectedVal8Bytes> > {};
+class OffsetOrSize64bit final : public Meta::FieldBase<OffsetOrSize64bit,   std::uint64_t, Meta::InjectedValidation<OffsetOrSize64bit >> {};
+class FieldMustBeEmpty  final : public Meta::VarLenField<FieldMustBeEmpty,  Meta::InvalidFieldValidation<FieldMustBeEmpty>>{};
+class VarFieldLenZero   final : public Meta::FieldBase<VarFieldLenZero,     std::uint16_t, Meta::ExactValueValidation<VarFieldLenZero, 0>> {};
+class InjectedVal2Bytes final : public Meta::FieldBase<InjectedVal2Bytes,   std::uint16_t, Meta::InjectedValidation<InjectedVal2Bytes> > {};
+class InjectedVal4Bytes final : public Meta::FieldBase<InjectedVal4Bytes,   std::uint32_t, Meta::InjectedValidation<InjectedVal4Bytes> > {};
+class InjectedVal8Bytes final : public Meta::FieldBase<InjectedVal8Bytes,   std::uint64_t, Meta::InjectedValidation<InjectedVal8Bytes> > {};
 
-class HowCompressed     : public Meta::FieldBase<HowCompressed,       
+class HowCompressed     final : public Meta::FieldBase<HowCompressed,       
     std::uint16_t, Meta::OnlyEitherValueValidation<HowCompressed, 
         static_cast<std::uint16_t>(CompressionType::Deflate), 
         static_cast<std::uint16_t>(CompressionType::Store)>
@@ -166,13 +164,13 @@ class HowCompressed     : public Meta::FieldBase<HowCompressed,
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                                  Zip64ExtendedInformation                                //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class Z64ExtInfoSize    : public Meta::FieldBase<Z64ExtInfoSize,      std::uint16_t, Meta::OnlyEitherValueValidation<Z64ExtInfoSize, 24, 28>> {};
-class Z64ExtInfoHeader  : public Meta::FieldBase<Z64ExtInfoHeader,    
+class Z64ExtInfoSize    final : public Meta::FieldBase<Z64ExtInfoSize,      std::uint16_t, Meta::OnlyEitherValueValidation<Z64ExtInfoSize, 24, 28>> {};
+class Z64ExtInfoHeader  final : public Meta::FieldBase<Z64ExtInfoHeader,    
     std::uint16_t, Meta::ExactValueValidation<Z64ExtInfoHeader, 
         static_cast<std::uint16_t>(HeaderIDs::Zip64ExtendedInfo)>
     > {};
 
-class Zip64ExtendedInformation : public Meta::StructuredObject<Zip64ExtendedInformation,
+class Zip64ExtendedInformation final : public Meta::StructuredObject<Zip64ExtendedInformation,
     Z64ExtInfoHeader,   // 0 - tag for the "extra" block type               2 bytes(0x0001)
     Z64ExtInfoSize,     // 1 - size of this "extra" block                   2 bytes
     Meta::Field8Bytes,  // 2 - Original uncompressed file size              8 bytes
@@ -238,13 +236,13 @@ answer for now.
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              CentralDirectoryFileHeader                                  //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class CDFH_Header       : public Meta::FieldBase<CDFH_Header,
+class CDFH_Header       final : public Meta::FieldBase<CDFH_Header,
     std::uint32_t, Meta::ExactValueValidation<CDFH_Header,
         static_cast<std::uint32_t>(Signatures::CentralFileHeader)>
     > {};
 
-class CDFH_DiskNumber   : public Meta::FieldBase<CDFH_DiskNumber,     std::uint16_t, Meta::ExactValueValidation<CDFH_DiskNumber, 0>> {};
-class CDFH_ExtraField   : public Meta::VarLenField<CDFH_ExtraField,   Meta::InjectedValidation<CDFH_ExtraField>> {};
+class CDFH_DiskNumber   final : public Meta::FieldBase<CDFH_DiskNumber,     std::uint16_t, Meta::ExactValueValidation<CDFH_DiskNumber, 0>> {};
+class CDFH_ExtraField   final : public Meta::VarLenField<CDFH_ExtraField,   Meta::InjectedValidation<CDFH_ExtraField>> {};
 
 template <class Derived>
 class CDFH_GPBitValidation // there are exactly two values that this field is allowed to be
@@ -257,9 +255,9 @@ public:
     }
 };
 
-class CDFH_GPBit        : public Meta::FieldBase<CDFH_GPBit,          std::uint16_t, CDFH_GPBitValidation<CDFH_GPBit>> {};
+class CDFH_GPBit       final : public Meta::FieldBase<CDFH_GPBit,          std::uint16_t, CDFH_GPBitValidation<CDFH_GPBit>> {};
 
-class CentralDirectoryFileHeader : public Meta::StructuredObject<CentralDirectoryFileHeader,
+class CentralDirectoryFileHeader final : public Meta::StructuredObject<CentralDirectoryFileHeader,
     CDFH_Header,       // 0 - central file header signature   4 bytes(0x02014b50)
     Meta::Field2Bytes, // 1 - version made by                 2 bytes
     Meta::Field2Bytes, // 2 - version needed to extract       2 bytes
@@ -424,18 +422,18 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                                  LocalFileHeader                                         //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class LFH_Header        : public Meta::FieldBase<LFH_Header,
+class LFH_Header        final : public Meta::FieldBase<LFH_Header,
     std::uint32_t, Meta::ExactValueValidation<LFH_Header,
         static_cast<std::uint32_t>(Signatures::LocalFileHeader)>
     > {};
 
-class LFH_VersionNeeded : public Meta::FieldBase<LFH_VersionNeeded,
+class LFH_VersionNeeded final : public Meta::FieldBase<LFH_VersionNeeded,
     std::uint16_t, Meta::OnlyEitherValueValidation<LFH_VersionNeeded, 
         static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion), 
         static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)>
     > {};
 
-class LocalFileHeader : public Meta::StructuredObject<LocalFileHeader, 
+class LocalFileHeader final : public Meta::StructuredObject<LocalFileHeader, 
     LFH_Header,         // 0 - local file header signature     4 bytes(0x04034b50)
     LFH_VersionNeeded,  // 1 - version needed to extract       2 bytes
     InjectedVal2Bytes,  // 2 - general purpose bit flag        2 bytes
@@ -532,12 +530,12 @@ protected:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              Zip64EndOfCentralDirectoryRecord                            //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class Z64DiskNumber     : public Meta::FieldBase<Z64DiskNumber,       std::uint32_t, Meta::ExactValueValidation<Z64DiskNumber, 0>> {};
-class Z64EOCDRecord     : public Meta::FieldBase<Z64EOCDRecord,       std::uint32_t, Meta::ExactValueValidation<Z64EOCDRecord, static_cast<std::uint32_t>(Signatures::Zip64EndOfCD)>> {};
-class Z64EOCDRVersion   : public Meta::FieldBase<Z64EOCDRVersion,     std::uint16_t, Meta::ExactValueValidation<Z64EOCDRVersion, static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)>> {};
-class Z64EOCDRCount     : public Meta::FieldBase<Z64EOCDRCount,       std::uint64_t, Meta::NotValueValidation<Z64EOCDRCount, 0>> {};
+class Z64DiskNumber     final : public Meta::FieldBase<Z64DiskNumber,       std::uint32_t, Meta::ExactValueValidation<Z64DiskNumber, 0>> {};
+class Z64EOCDRecord     final : public Meta::FieldBase<Z64EOCDRecord,       std::uint32_t, Meta::ExactValueValidation<Z64EOCDRecord, static_cast<std::uint32_t>(Signatures::Zip64EndOfCD)>> {};
+class Z64EOCDRVersion   final : public Meta::FieldBase<Z64EOCDRVersion,     std::uint16_t, Meta::ExactValueValidation<Z64EOCDRVersion, static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)>> {};
+class Z64EOCDRCount     final : public Meta::FieldBase<Z64EOCDRCount,       std::uint64_t, Meta::NotValueValidation<Z64EOCDRCount, 0>> {};
 
-class Zip64EndOfCentralDirectoryRecord : public Meta::StructuredObject<Zip64EndOfCentralDirectoryRecord, 
+class Zip64EndOfCentralDirectoryRecord final : public Meta::StructuredObject<Zip64EndOfCentralDirectoryRecord, 
     Z64EOCDRecord,     // 0 - zip64 end of central dir signature                            4 bytes(0x06064b50)
     InjectedVal8Bytes, // 1 - size of zip64 end of central directory record                 8 bytes
     Z64EOCDRVersion,   // 2 - version made by                                               2 bytes
@@ -622,11 +620,11 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                          Zip64EndOfCentralDirectoryLocator                               //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class Z64EOCDLocator    : public Meta::FieldBase<Z64EOCDLocator,      std::uint32_t, Meta::ExactValueValidation<Z64EOCDLocator, static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator)>> {};
-class Z64StartOfDisks   : public Meta::FieldBase<Z64StartOfDisks,    std::uint32_t, Meta::ExactValueValidation<Z64StartOfDisks, 0>> {};
-class Z64NumberOfDisks  : public Meta::FieldBase<Z64NumberOfDisks,    std::uint32_t, Meta::ExactValueValidation<Z64NumberOfDisks, 1>> {};
+class Z64EOCDLocator    final : public Meta::FieldBase<Z64EOCDLocator,      std::uint32_t, Meta::ExactValueValidation<Z64EOCDLocator, static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator)>> {};
+class Z64StartOfDisks   final : public Meta::FieldBase<Z64StartOfDisks,    std::uint32_t, Meta::ExactValueValidation<Z64StartOfDisks, 0>> {};
+class Z64NumberOfDisks  final : public Meta::FieldBase<Z64NumberOfDisks,    std::uint32_t, Meta::ExactValueValidation<Z64NumberOfDisks, 1>> {};
 
-class Zip64EndOfCentralDirectoryLocator : public Meta::StructuredObject<Zip64EndOfCentralDirectoryLocator,
+class Zip64EndOfCentralDirectoryLocator final : public Meta::StructuredObject<Zip64EndOfCentralDirectoryLocator,
     Z64EOCDLocator,     // 0 - zip64 end of central dir locator signature        4 bytes(0x07064b50)
     Z64StartOfDisks,    // 1 - number of the disk with the start of the zip64
                         //     end of central directory                          4 bytes
@@ -673,10 +671,10 @@ private:
 //////////////////////////////////////////////////////////////////////////////////////////////
 //                              EndOfCentralDirectoryRecord                                 //
 //////////////////////////////////////////////////////////////////////////////////////////////
-class EOCDSignature     : public Meta::FieldBase<EOCDSignature,       std::uint32_t, Meta::ExactValueValidation<EOCDSignature, static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory)>> {};
-class EOCDNumberDisks   : public Meta::FieldBase<EOCDNumberDisks,     std::uint16_t, Meta::OnlyEitherValueValidation<EOCDNumberDisks, 0, 0xFFFF>> {};
+class EOCDSignature     final : public Meta::FieldBase<EOCDSignature,       std::uint32_t, Meta::ExactValueValidation<EOCDSignature, static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory)>> {};
+class EOCDNumberDisks   final : public Meta::FieldBase<EOCDNumberDisks,     std::uint16_t, Meta::OnlyEitherValueValidation<EOCDNumberDisks, 0, 0xFFFF>> {};
 
-class EndCentralDirectoryRecord : public Meta::StructuredObject<EndCentralDirectoryRecord,
+class EndCentralDirectoryRecord final : public Meta::StructuredObject<EndCentralDirectoryRecord,
     EOCDSignature,      // 0 - end of central dir signature              4 bytes  (0x06054b50)
     EOCDNumberDisks,    // 1 - number of this disk                       2 bytes
     EOCDNumberDisks,    // 2 - number of the disk with the start of the

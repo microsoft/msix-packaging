@@ -38,7 +38,7 @@ SpecializeUuidOfImpl(IAppxBlockMapInternal);
 
 namespace MSIX {
 
-    class AppxBlockMapBlock : public MSIX::ComClass<AppxBlockMapBlock, IAppxBlockMapBlock>
+    class AppxBlockMapBlock final : public MSIX::ComClass<AppxBlockMapBlock, IAppxBlockMapBlock>
     {
     public:
         AppxBlockMapBlock(IMSIXFactory* factory, Block* block) :
@@ -65,7 +65,7 @@ namespace MSIX {
         Block*          m_block;
     };
 
-    class AppxBlockMapBlocksEnumerator : public MSIX::ComClass<AppxBlockMapBlocksEnumerator, IAppxBlockMapBlocksEnumerator>
+    class AppxBlockMapBlocksEnumerator final : public MSIX::ComClass<AppxBlockMapBlocksEnumerator, IAppxBlockMapBlocksEnumerator>
     {
     protected:
         std::vector<ComPtr<IAppxBlockMapBlock>>* m_blocks;
@@ -100,7 +100,7 @@ namespace MSIX {
         } CATCH_RETURN();
     };
 
-    class AppxBlockMapFile : public MSIX::ComClass<AppxBlockMapFile, IAppxBlockMapFile>
+    class AppxBlockMapFile final : public MSIX::ComClass<AppxBlockMapFile, IAppxBlockMapFile>
     {
     public:
         AppxBlockMapFile(
@@ -172,7 +172,7 @@ namespace MSIX {
         std::uint64_t       m_uncompressedSize;
     };
 
-    class AppxBlockMapFilesEnumerator : public MSIX::ComClass<AppxBlockMapFilesEnumerator, IAppxBlockMapFilesEnumerator>
+    class AppxBlockMapFilesEnumerator final : public MSIX::ComClass<AppxBlockMapFilesEnumerator, IAppxBlockMapFilesEnumerator>
     {
     protected:
         ComPtr<IAppxBlockMapReader> m_reader;
@@ -208,7 +208,7 @@ namespace MSIX {
     };
 
     // Object backed by AppxBlockMap.xml
-    class AppxBlockMapObject : public MSIX::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IAppxBlockMapInternal>
+    class AppxBlockMapObject final : public MSIX::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IAppxBlockMapInternal>
     {
     public:
         AppxBlockMapObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);

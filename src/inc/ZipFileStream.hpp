@@ -14,7 +14,7 @@
 namespace MSIX {
 
     // This represents a raw stream over a file contained in a .zip file.
-    class ZipFileStream : public RangeStream
+    class ZipFileStream final : public RangeStream
     {
     public:
         // TODO: define what streams to pass in on the .ctor

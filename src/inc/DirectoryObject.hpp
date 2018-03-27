@@ -16,7 +16,7 @@
 
 namespace MSIX {
 
-    class DirectoryObject : public ComClass<DirectoryObject, IStorageObject>
+    class DirectoryObject final : public ComClass<DirectoryObject, IStorageObject>
     {
     public:
         DirectoryObject(std::string root) : m_root(std::move(root)) {}

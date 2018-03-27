@@ -121,7 +121,7 @@ namespace MSIX {
         std::string     m_message;
     };
 
-    class Win32Exception : public Exception
+    class Win32Exception final : public Exception
     {
     public:
         Win32Exception(std::string& message, DWORD error) : Exception(message, 0x80070000 + error)

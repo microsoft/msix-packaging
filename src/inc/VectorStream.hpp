@@ -11,7 +11,7 @@
 
 namespace MSIX {
 
-    class VectorStream : public StreamBase
+    class VectorStream final : public StreamBase
     {
     public:
         VectorStream(std::vector<std::uint8_t>* data) : m_data(data) {}

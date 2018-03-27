@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace MSIX {
-    class AppxFactory : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory>
+    class AppxFactory final : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory>
     {
     public:
         AppxFactory(MSIX_VALIDATION_OPTION validationOptions, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 

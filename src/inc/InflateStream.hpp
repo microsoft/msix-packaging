@@ -23,7 +23,7 @@
 namespace MSIX {
 
     // This represents a LZW-compressed stream
-    class InflateStream : public StreamBase
+    class InflateStream final : public StreamBase
     {
     public:
         InflateStream(IStream* stream, std::uint64_t uncompressedSize);
