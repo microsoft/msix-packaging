@@ -46,14 +46,14 @@ In the app package manifest file, you will need to include the appropriate targe
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
          xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3">
 
-  <Identity Name="awesome.BestApp"
+  <Identity Name="awesome.BestAppExtension"
             Publisher="Awesome Publisher"
             Version="1.0.0.0" />
 
-    <Properties>
-    <DisplayName>Best App</DisplayName>
+  <Properties>
+    <DisplayName>Best App Extension</DisplayName>
     <PublisherDisplayName>Awesome Publisher</PublisherDisplayName>
-    <Description>msix package</Description>
+    <Description>This is an extension package to my app</Description>
     <Logo>Assets\Logo.png</Logo>
   </Properties>
 
@@ -64,7 +64,7 @@ In the app package manifest file, you will need to include the appropriate targe
   <Applications>
     <Application Id="e504fb41-a92a-4526-b101-542f357b7acb">
         <uap:VisualElements
-            DisplayName="Best App" 
+            DisplayName="Best App Extension" 
             BackgroundColor="white"
             Square150x150Logo="images\squareTile-sdk.png" 
             Square44x44Logo="images\smallTile-sdk.png" 
