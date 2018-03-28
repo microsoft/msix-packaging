@@ -25,55 +25,49 @@ namespace MSIX {
         {
         }
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override try
         {
-            return ResultOf([&] {
-                LARGE_INTEGER newPos = { 0 };
-                switch (origin)
-                {
-                case Reference::CURRENT:
-                    newPos.QuadPart = m_offset + m_relativePosition + move.QuadPart;
-                    break;
-                case Reference::START:
-                    newPos.QuadPart = m_offset + move.QuadPart;
-                    break;
-                case Reference::END:
-                    newPos.QuadPart = m_offset + m_size + move.QuadPart;
-                    break;
-                }
-                //TODO: We need to constrain newPos so that it can't exceed the end of the stream
-                ULARGE_INTEGER pos = { 0 };
-                m_stream->Seek(newPos, Reference::START, &pos);
-                m_relativePosition = std::min(static_cast<std::uint64_t>(pos.QuadPart - m_offset), m_size);
-                if (newPosition) { newPosition->QuadPart = m_relativePosition; }
-                return static_cast<HRESULT>(Error::OK);
-            });
-        }
+            LARGE_INTEGER newPos = { 0 };
+            switch (origin)
+            {
+            case Reference::CURRENT:
+                newPos.QuadPart = m_offset + m_relativePosition + move.QuadPart;
+                break;
+            case Reference::START:
+                newPos.QuadPart = m_offset + move.QuadPart;
+                break;
+            case Reference::END:
+                newPos.QuadPart = m_offset + m_size + move.QuadPart;
+                break;
+            }
+            //TODO: We need to constrain newPos so that it can't exceed the end of the stream
+            ULARGE_INTEGER pos = { 0 };
+            m_stream->Seek(newPos, Reference::START, &pos);
+            m_relativePosition = std::min(static_cast<std::uint64_t>(pos.QuadPart - m_offset), m_size);
+            if (newPosition) { newPosition->QuadPart = m_relativePosition; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
         {
-            return ResultOf([&] {
-                LARGE_INTEGER offset = {0};
-                offset.QuadPart = m_relativePosition + m_offset;
-                ThrowHrIfFailed(m_stream->Seek(offset, StreamBase::START, nullptr));
-                ULONG amountToRead = std::min(countBytes, static_cast<ULONG>(m_size - m_relativePosition));
-                ULONG amountRead = 0;
-                ThrowHrIfFailed(m_stream->Read(buffer, amountToRead, &amountRead));
-                ThrowErrorIf(Error::FileRead, (amountToRead != amountRead), "Did not read as much as requesteed.");
-                m_relativePosition += amountRead;
-                if (bytesRead) { *bytesRead = amountRead; }
-                ThrowErrorIf(Error::FileSeekOutOfRange, (m_relativePosition > m_size), "seek pointer out of bounds.");
-                return static_cast<HRESULT>(Error::OK);
-            });
-        }
+            LARGE_INTEGER offset = {0};
+            offset.QuadPart = m_relativePosition + m_offset;
+            ThrowHrIfFailed(m_stream->Seek(offset, StreamBase::START, nullptr));
+            ULONG amountToRead = std::min(countBytes, static_cast<ULONG>(m_size - m_relativePosition));
+            ULONG amountRead = 0;
+            ThrowHrIfFailed(m_stream->Read(buffer, amountToRead, &amountRead));
+            ThrowErrorIf(Error::FileRead, (amountToRead != amountRead), "Did not read as much as requesteed.");
+            m_relativePosition += amountRead;
+            if (bytesRead) { *bytesRead = amountRead; }
+            ThrowErrorIf(Error::FileSeekOutOfRange, (m_relativePosition > m_size), "seek pointer out of bounds.");
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override try
         {
-            return ResultOf([&]{
-                if (size) { *size = m_size; }
-                return static_cast<HRESULT>(Error::OK);
-            });
-        }
+            if (size) { *size = m_size; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
         std::uint64_t Size() { return m_size; }
 

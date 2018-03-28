@@ -37,7 +37,7 @@ namespace MSIX {
     } BlockPlusStream;
 
     // This represents a subset of a Stream
-    class BlockMapStream : public StreamBase
+    class BlockMapStream final : public StreamBase
     {
     public:
         BlockMapStream(IMSIXFactory* factory, std::string decodedName, const ComPtr<IStream>& stream, std::vector<Block>& blocks)
@@ -80,7 +80,7 @@ namespace MSIX {
             ThrowHrIfFailed(Seek(li, STREAM_SEEK_SET, nullptr));
         }
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override
         {
             LARGE_INTEGER newPos = { 0 };
             switch (origin)
@@ -102,7 +102,7 @@ namespace MSIX {
             return S_OK;
         }
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) override
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) noexcept override
         {
             std::uint32_t bytesRead = 0;
             if (m_relativePosition < m_streamSize)
@@ -140,28 +140,26 @@ namespace MSIX {
             return (countBytes == bytesRead) ? S_OK : S_FALSE;
         }
 
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override try
         {
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption); });
-        }
+            return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override
         {
             return m_factory->MarshalOutString(m_decodedName, fileName);
         }
 
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override try
         {
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetContentType(contentType); });
-        }
+            return m_stream.As<IAppxFile>()->GetContentType(contentType);
+        } CATCH_RETURN();
         
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override try
         {
-            return ResultOf([&]{
-                if (size) { *size = m_streamSize; }
-                return static_cast<HRESULT>(Error::OK);
-                });
-        }
+            if (size) { *size = m_streamSize; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
       
     protected:
         std::vector<BlockPlusStream>::iterator m_currentBlock;
