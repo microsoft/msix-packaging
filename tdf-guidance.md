@@ -10,7 +10,8 @@ To take advantage of the new SDK and the ability to distribute your package cont
 
 The following table shows the target device families to declare in the manifest:
 
-<TABLE GOES HERE> - AS AN IMAGE
+![alt text](tdf.png "Target Device Families")
+
 
 ## Sample Manifest File(AppxManifest.xml)
 
