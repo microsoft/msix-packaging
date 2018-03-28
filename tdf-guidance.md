@@ -1,6 +1,5 @@
 
-#MSIX Packaging SDK
-   Copyright (c) 2017 Microsoft Corp.  All rights reserved.
+#Developer Guidance to target MSIX Packaging SDK
 
 ## Build a package to target the SDK 
 
