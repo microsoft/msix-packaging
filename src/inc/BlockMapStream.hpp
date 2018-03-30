@@ -80,7 +80,7 @@ namespace MSIX {
             ThrowHrIfFailed(Seek(li, STREAM_SEEK_SET, nullptr));
         }
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override try
         {
             LARGE_INTEGER newPos = { 0 };
             switch (origin)
@@ -100,9 +100,9 @@ namespace MSIX {
 
             m_currentBlock = m_blockStreams.begin();
             return S_OK;
-        }
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) noexcept override
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) noexcept override try
         {
             std::uint32_t bytesRead = 0;
             if (m_relativePosition < m_streamSize)
@@ -138,17 +138,17 @@ namespace MSIX {
             }
             if (actualRead) { *actualRead = bytesRead; }
             return (countBytes == bytesRead) ? S_OK : S_FALSE;
-        }
+        } CATCH_RETURN();
 
         HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override try
         {
             return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override try
         {
             return m_factory->MarshalOutString(m_decodedName, fileName);
-        }
+        } CATCH_RETURN();
 
         HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override try
         {
