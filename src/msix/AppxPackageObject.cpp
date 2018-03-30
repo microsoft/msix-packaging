@@ -226,17 +226,15 @@ namespace MSIX {
             {   std::string containerFileName = EncodeFileName(fileName);
                 m_payloadFiles.push_back(containerFileName);
                 auto fileStream = m_container->GetFile(containerFileName);
-                ThrowErrorIfNot(Error::FileNotFound, (fileStream.first), "File described in blockmap not contained in OPC container");
+                ThrowErrorIf(Error::FileNotFound, !fileStream, "File described in blockmap not contained in OPC container");
 
                 // Verify file in OPC and BlockMap
-                ComPtr<IAppxFile> appxFile;
-                ThrowHrIfFailed(fileStream.second->QueryInterface(UuidOfImpl<IAppxFile>::iid, reinterpret_cast<void**>(&appxFile)));
+                ComPtr<IAppxFile> appxFile = fileStream.As<IAppxFile>();
                 APPX_COMPRESSION_OPTION compressionOpt;
                 ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
                 bool isUncompressed = (compressionOpt == APPX_COMPRESSION_OPTION_NONE);
                 
-                ComPtr<IAppxFileInternal> appxFileInternal;
-                ThrowHrIfFailed(fileStream.second->QueryInterface(UuidOfImpl<IAppxFileInternal>::iid, reinterpret_cast<void**>(&appxFileInternal)));
+                ComPtr<IAppxFileInternal> appxFileInternal = fileStream.As<IAppxFileInternal>();
                 auto sizeOnZip = appxFileInternal->GetCompressedSize();
 
                 auto blocks = blockMapInternal->GetBlocks(fileName);
@@ -276,7 +274,7 @@ namespace MSIX {
                         || (blocksSize == sizeOnZip - 2), // case 2
                         "Compressed size of the file in the block map and the OPC container don't match");
                 }
-                m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream.second);
+                m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream);
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
             }
         }
