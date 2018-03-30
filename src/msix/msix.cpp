@@ -47,82 +47,77 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
     char* utf8SourcePackage,
-    char* utf8Destination)
+    char* utf8Destination) noexcept try
 {
-    return MSIX::ResultOf([&]() {
-        ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
-            (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
-            "Invalid parameters"
-        );
+    ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
+        (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
+        "Invalid parameters"
+    );
 
-        MSIX::ComPtr<IAppxFactory> factory;
-        // We don't need to use the caller's heap here because we're not marshalling any strings
-        // out to the caller.  So default to new / delete[] and be done with it!
-        ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, validationOption, &factory));
+    MSIX::ComPtr<IAppxFactory> factory;
+    // We don't need to use the caller's heap here because we're not marshalling any strings
+    // out to the caller.  So default to new / delete[] and be done with it!
+    ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, validationOption, &factory));
 
-        MSIX::ComPtr<IStream> stream;
-        ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
+    MSIX::ComPtr<IStream> stream;
+    ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
 
-        MSIX::ComPtr<IAppxPackageReader> reader;
-        ThrowHrIfFailed(factory->CreatePackageReader(stream.Get(), &reader));
+    MSIX::ComPtr<IAppxPackageReader> reader;
+    ThrowHrIfFailed(factory->CreatePackageReader(stream.Get(), &reader));
 
-        auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
-        reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
-    });
-}
+    auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
+    reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
 
-MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText)
+MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept try
 {
-    return MSIX::ResultOf([&](){        
-        ThrowErrorIf(MSIX::Error::InvalidParameter, (logText == nullptr || *logText != nullptr), "bad pointer" );
-        std::size_t countBytes = sizeof(char)*(MSIX::Global::Log::Text().size()+1);
-        *logText = reinterpret_cast<char*>(memalloc(countBytes));
-        ThrowErrorIfNot(MSIX::Error::OutOfMemory, (*logText), "Allocation failed!");
-        std::memset(reinterpret_cast<void*>(*logText), 0, countBytes);
-        std::memcpy(reinterpret_cast<void*>(*logText),
-                    reinterpret_cast<void*>(const_cast<char*>(MSIX::Global::Log::Text().c_str())),
-                    countBytes - sizeof(char));
-        MSIX::Global::Log::Clear();
-    });
-}
+    ThrowErrorIf(MSIX::Error::InvalidParameter, (logText == nullptr || *logText != nullptr), "bad pointer" );
+    std::size_t countBytes = sizeof(char)*(MSIX::Global::Log::Text().size()+1);
+    *logText = reinterpret_cast<char*>(memalloc(countBytes));
+    ThrowErrorIfNot(MSIX::Error::OutOfMemory, (*logText), "Allocation failed!");
+    std::memset(reinterpret_cast<void*>(*logText), 0, countBytes);
+    std::memcpy(reinterpret_cast<void*>(*logText),
+                reinterpret_cast<void*>(const_cast<char*>(MSIX::Global::Log::Text().c_str())),
+                countBytes - sizeof(char));
+    MSIX::Global::Log::Clear();
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
 
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     char* utf8File,
     bool forRead,
-    IStream** stream)
+    IStream** stream) noexcept try
 {
-    return MSIX::ResultOf([&]() {
-        MSIX::FileStream::Mode mode = forRead ? MSIX::FileStream::Mode::READ : MSIX::FileStream::Mode::WRITE_UPDATE;
-        *stream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(utf8File, mode).Detach();
-    });
-}
+    MSIX::FileStream::Mode mode = forRead ? MSIX::FileStream::Mode::READ : MSIX::FileStream::Mode::WRITE_UPDATE;
+    *stream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(utf8File, mode).Detach();
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
 
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     LPCWSTR utf16File,
     bool forRead,
-    IStream** stream)
+    IStream** stream) noexcept try
 {
-    return MSIX::ResultOf([&]() {
-        MSIX::FileStream::Mode mode = forRead ? MSIX::FileStream::Mode::READ : MSIX::FileStream::Mode::WRITE_UPDATE;
-        *stream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(MSIX::utf16_to_utf8(utf16File), mode).Detach();
-    });
-}    
+    MSIX::FileStream::Mode mode = forRead ? MSIX::FileStream::Mode::READ : MSIX::FileStream::Mode::WRITE_UPDATE;
+    *stream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(MSIX::utf16_to_utf8(utf16File), mode).Detach();
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
 
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     MSIX_VALIDATION_OPTION validationOption,
-    IAppxFactory** appxFactory)
+    IAppxFactory** appxFactory) noexcept try
 {
-    return MSIX::ResultOf([&]() {
-        *appxFactory = MSIX::ComPtr<IAppxFactory>::Make<MSIX::AppxFactory>(validationOption, memalloc, memfree).Detach();
-    });
-}
+    *appxFactory = MSIX::ComPtr<IAppxFactory>::Make<MSIX::AppxFactory>(validationOption, memalloc, memfree).Detach();
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     MSIX_VALIDATION_OPTION validationOption,
-    IAppxFactory** appxFactory)
+    IAppxFactory** appxFactory) noexcept
 {
     #ifdef WIN32
         return CoCreateAppxFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);

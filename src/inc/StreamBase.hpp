@@ -15,8 +15,24 @@
 #include "Exceptions.hpp"
 #include "ComHelper.hpp"
 
+EXTERN_C const IID IID_IAppxFileInternal;
+#ifndef WIN32
+// {cd24e5d3-4a35-4497-ba7e-d68df05c582c}
+interface IAppxFileInternal : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IAppxFileInternal : public IUnknown
+#endif
+{
+public:
+    virtual std::uint64_t GetCompressedSize() = 0;
+};
+
+SpecializeUuidOfImpl(IAppxFileInternal);
+
 namespace MSIX {
-    class StreamBase : public MSIX::ComClass<StreamBase, IAppxFile, IStream>
+    class StreamBase : public MSIX::ComClass<StreamBase, IAppxFile, IStream, IAppxFileInternal>
     {
     public:
         // These are the same values as STREAM_SEEK. See 
@@ -30,134 +46,128 @@ namespace MSIX {
         //
 
         // Creates a new stream object with its own seek pointer that references the same bytes as the original stream.
-        virtual HRESULT STDMETHODCALLTYPE Clone(IStream**) override { return static_cast<HRESULT>(Error::NotSupported); }
+        virtual HRESULT STDMETHODCALLTYPE Clone(IStream**) noexcept override { return static_cast<HRESULT>(Error::NotSupported); }
 
         // Ensures that any changes made to a stream object open in transacted mode are reflected in the parent storage.
         // If the stream object is open in direct mode, IStream::Commit has no effect other than flushing all memory buffers
         // to the next-level storage object.
-        virtual HRESULT STDMETHODCALLTYPE Commit(DWORD) override { return static_cast<HRESULT>(Error::OK); }
+        virtual HRESULT STDMETHODCALLTYPE Commit(DWORD) noexcept override { return static_cast<HRESULT>(Error::OK); }
 
         // Copies a specified number of bytes from the current seek pointer in the stream to the current seek pointer in 
         // another stream.
-        virtual HRESULT STDMETHODCALLTYPE CopyTo(IStream *stream, ULARGE_INTEGER bytesCount, ULARGE_INTEGER *bytesRead, ULARGE_INTEGER *bytesWritten) override
+        virtual HRESULT STDMETHODCALLTYPE CopyTo(IStream *stream, ULARGE_INTEGER bytesCount, ULARGE_INTEGER *bytesRead, ULARGE_INTEGER *bytesWritten) noexcept override try
         {
-            return ResultOf([&] {
-                if (bytesRead) { bytesRead->QuadPart = 0; }
-                if (bytesWritten) { bytesWritten->QuadPart = 0; }
-                ThrowErrorIfNot(Error::InvalidParameter, (stream), "invalid parameter.");
+            if (bytesRead) { bytesRead->QuadPart = 0; }
+            if (bytesWritten) { bytesWritten->QuadPart = 0; }
+            ThrowErrorIf(Error::InvalidParameter, (nullptr == stream), "invalid parameter.");
 
-                static const ULONGLONG size = 1024;
-                std::vector<std::int8_t> bytes(size);
-                std::int64_t read = 0;
-                std::int64_t written = 0;
-                ULONG length = 0;
+            static const ULONGLONG size = 1024;
+            std::vector<std::int8_t> bytes(size);
+            std::int64_t read = 0;
+            std::int64_t written = 0;
+            ULONG length = 0;
 
-                while (0 < bytesCount.QuadPart)
+            while (0 < bytesCount.QuadPart)
+            {
+                ULONGLONG chunk = std::min(bytesCount.QuadPart, static_cast<ULONGLONG>(size));
+                ThrowHrIfFailed(Read(reinterpret_cast<void*>(bytes.data()), (ULONG)chunk, &length));
+                if (length == 0) { break; }
+                read += length;
+
+                ULONG offset = 0;
+                while (0 < length)
                 {
-                    ULONGLONG chunk = std::min(bytesCount.QuadPart, static_cast<ULONGLONG>(size));
-                    ThrowHrIfFailed(Read(reinterpret_cast<void*>(bytes.data()), (ULONG)chunk, &length));
-                    if (length == 0) { break; }
-                    read += length;
-
-                    ULONG offset = 0;
-                    while (0 < length)
-                    {
-                        ULONG copy = 0;
-                        ThrowHrIfFailed(stream->Write(reinterpret_cast<void*>(&bytes[offset]), length, &copy));
-                        offset += copy;
-                        written += copy;
-                        length -= copy;
-                        bytesCount.QuadPart -= copy;
-                    }
+                    ULONG copy = 0;
+                    ThrowHrIfFailed(stream->Write(reinterpret_cast<void*>(&bytes[offset]), length, &copy));
+                    offset += copy;
+                    written += copy;
+                    length -= copy;
+                    bytesCount.QuadPart -= copy;
                 }
+            }
 
-                if (bytesRead)      { bytesRead->QuadPart = read; }
-                if (bytesWritten)   { bytesWritten->QuadPart = written;}
-            });
-        }
+            if (bytesRead)      { bytesRead->QuadPart = read; }
+            if (bytesWritten)   { bytesWritten->QuadPart = written;}
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
-        virtual HRESULT STDMETHODCALLTYPE Read(void*, ULONG, ULONG*) override { return static_cast<HRESULT>(Error::NotImplemented); }
+        virtual HRESULT STDMETHODCALLTYPE Read(void*, ULONG, ULONG*) noexcept override { return static_cast<HRESULT>(Error::NotImplemented); }
 
         // Restricts access to a specified range of bytes in the stream. Supporting this functionality is optional since
         // some file systems do not provide it.
-        virtual HRESULT STDMETHODCALLTYPE LockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) override
+        virtual HRESULT STDMETHODCALLTYPE LockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) noexcept override
         {
             return static_cast<HRESULT>(Error::NotSupported);
         }
 
         // Discards all changes that have been made to a transacted stream since the last IStream::Commit call.
-        virtual HRESULT STDMETHODCALLTYPE Revert() override { return static_cast<HRESULT>(Error::NotSupported); }
+        virtual HRESULT STDMETHODCALLTYPE Revert() noexcept override { return static_cast<HRESULT>(Error::NotSupported); }
 
         // Changes the seek pointer to a new location. The new location is relative to either the beginning of the
         // stream, the end of the stream, or the current seek pointer.
-        virtual HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER, DWORD, ULARGE_INTEGER*) override { return static_cast<HRESULT>(Error::NotImplemented); }
+        virtual HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER, DWORD, ULARGE_INTEGER*) noexcept override { return static_cast<HRESULT>(Error::NotImplemented); }
 
         // Changes the size of the stream object.
-        virtual HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER) override { return static_cast<HRESULT>(Error::NotSupported); }
+        virtual HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER) noexcept override { return static_cast<HRESULT>(Error::NotSupported); }
 
         // Retrieves the STATSTG structure for this stream.
-        virtual HRESULT STDMETHODCALLTYPE Stat(STATSTG* , DWORD) override { return static_cast<HRESULT>(Error::NotSupported); }
+        virtual HRESULT STDMETHODCALLTYPE Stat(STATSTG* , DWORD) noexcept override { return static_cast<HRESULT>(Error::NotSupported); }
 
         // Removes the access restriction on a range of bytes previously restricted with IStream::LockRegion.
-        virtual HRESULT STDMETHODCALLTYPE UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) override
+        virtual HRESULT STDMETHODCALLTYPE UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) noexcept override
         {
             return static_cast<HRESULT>(Error::NotSupported);
         }
 
         // Writes a specified number of bytes into the stream object starting at the current seek pointer.
-        virtual HRESULT STDMETHODCALLTYPE Write(const void*, ULONG, ULONG*) override { return static_cast<HRESULT>(Error::NotImplemented); }
+        virtual HRESULT STDMETHODCALLTYPE Write(const void*, ULONG, ULONG*) noexcept override { return static_cast<HRESULT>(Error::NotImplemented); }
 
         //
         // IAppxFile methods
         //
-        virtual HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
+        virtual HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override
         {
             if (compressionOption) { *compressionOption = APPX_COMPRESSION_OPTION_NONE; }
             return static_cast<HRESULT>(Error::OK);
         }
 
-        virtual HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
+        virtual HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
-        virtual HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
+        virtual HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
-        virtual HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
+        virtual HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
-        virtual HRESULT STDMETHODCALLTYPE GetStream(IStream** stream) override
+        virtual HRESULT STDMETHODCALLTYPE GetStream(IStream** stream) noexcept override
         {
             return QueryInterface(UuidOfImpl<IStream>::iid, reinterpret_cast<void**>(stream));
         }
 
+        // IAppxFileInternal
+        virtual std::uint64_t GetCompressedSize() override { NOTIMPLEMENTED; }
+
         template <class T>
-        static ULONG Read(IStream* stream, T* value)
+        static ULONG Read(const ComPtr<IStream>& stream, T* value)
         {
             ULONG result = 0;
-            ThrowHrIfFailed(stream->Read(
-                reinterpret_cast<void*>(value),
-                static_cast<ULONG>(sizeof(T)),
-                &result                            
-            ));
+            ThrowHrIfFailed(stream->Read(value, static_cast<ULONG>(sizeof(T)), &result));
             ThrowErrorIf(Error::FileRead, (result != sizeof(T)), "Entire object wasn't read!");
             return result;
         }
 
         template <class T>
-        static void Write(IStream* stream, T* value)
+        static void Write(const ComPtr<IStream>& stream, T* value)
         {
             ULONG result = 0;
-            ThrowHrIfFailed(stream->Write(
-                reinterpret_cast<void*>(value),
-                static_cast<ULONG>(sizeof(T)),
-                nullptr                            
-            ));
+            ThrowHrIfFailed(stream->Write(value, static_cast<ULONG>(sizeof(T)), nullptr));
             ThrowErrorIf(Error::FileWrite, (result != sizeof(T)), "Entire object wasn't written!");
         }
     };

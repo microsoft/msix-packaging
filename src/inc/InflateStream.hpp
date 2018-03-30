@@ -23,56 +23,58 @@
 namespace MSIX {
 
     // This represents a LZW-compressed stream
-    class InflateStream : public StreamBase
+    class InflateStream final : public StreamBase
     {
     public:
         InflateStream(IStream* stream, std::uint64_t uncompressedSize);
         ~InflateStream();
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override;
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override;
-        HRESULT STDMETHODCALLTYPE Write(void const *buffer, ULONG countBytes, ULONG *bytesWritten) override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override;
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override;
+        HRESULT STDMETHODCALLTYPE Write(void const *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) override
+        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override
         {
             if (size) { *size = m_uncompressedSize; }
             return static_cast<HRESULT>(Error::OK);
         }
 
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) override
+        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override try
         {   // The underlying ZipFileStream object knows, so go ask it.
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption); });
-        }
+            return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) override
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override try
         {   // The underlying ZipFileStream object knows, so go ask it.
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetName(fileName); });
-        }
+            return m_stream.As<IAppxFile>()->GetName(fileName);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) override
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override try
         {   // The underlying ZipFileStream object knows, so go ask it.
-            return ResultOf([&]{ return m_stream.As<IAppxFile>()->GetContentType(contentType); });
-        }
+            return m_stream.As<IAppxFile>()->GetContentType(contentType);
+        } CATCH_RETURN();
 
-    protected:
+        // IAppxFileInternal
+        std::uint64_t GetCompressedSize() override { return m_stream.As<IAppxFileInternal>()->GetCompressedSize(); }
+
         void Cleanup();
 
         static const ULONG BUFFERSIZE = 4096;
-        enum class State : std::uint8_t
+        enum class State : size_t
         {
             UNINITIALIZED = 0,
             READY_TO_READ,
             READY_TO_INFLATE,
             READY_TO_COPY,
-            CLEANUP
+            CLEANUP,
+            MAX = CLEANUP + 1
         };
 
         State m_previous = State::UNINITIALIZED;
         State m_state    = State::UNINITIALIZED;
-        std::map<State, std::function<std::tuple<bool, State>(void* buffer, ULONG countBytes)>> m_stateMachine;
 
         ComPtr<IStream> m_stream;
         ULONGLONG       m_seekPosition = 0;
