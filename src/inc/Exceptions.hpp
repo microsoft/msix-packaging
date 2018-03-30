@@ -9,20 +9,23 @@
 #include <exception>
 #include <cassert>
 #include <functional>
+#include <sstream>
 
 #include "Log.hpp"
 #include "MSIXWindows.hpp"
-#include "xercesc/util/PlatformUtils.hpp"
-#include "xercesc/sax/ErrorHandler.hpp"
-#include "xercesc/sax/SAXParseException.hpp"
-#include "xercesc/dom/DOM.hpp"
+
+#ifdef USING_XERCES
+    #include "xercesc/util/XMLException.hpp"
+    #include "xercesc/dom/DOMException.hpp"
+#endif
 
 namespace MSIX {
 
     static const std::uint32_t ERROR_FACILITY       = 0x8BAD0000;              // Facility 2989
-    static const std::uint32_t XERCES_SAX_FACILITY  = ERROR_FACILITY + 0x1000; // Xerces XMLException. 0x8BAD1000 + XMLException error code
-    static const std::uint32_t XERCES_XML_FACILITY  = ERROR_FACILITY + 0x2000;
-    static const std::uint32_t XERCES_DOM_FACILITY  = ERROR_FACILITY + 0x3000;
+    static const std::uint32_t XML_FACILITY         = ERROR_FACILITY + 0x1000; // XML exceptions: 0x8BAD1000 + XMLException error code
+    static const std::uint32_t XERCES_SAX_FACILITY  = ERROR_FACILITY + 0x2000; // Xerces XMLException. 0x8BAD1000 + XMLException error code
+    static const std::uint32_t XERCES_XML_FACILITY  = ERROR_FACILITY + 0x3000;
+    static const std::uint32_t XERCES_DOM_FACILITY  = ERROR_FACILITY + 0x4000;
 
     // defines error codes
     enum class Error : std::uint32_t
@@ -86,9 +89,9 @@ namespace MSIX {
         AppxManifestSemanticError   = ERROR_FACILITY + 0x0061,
 
         // XML parsing errors
-        XercesWarning               = XERCES_SAX_FACILITY + 0x0001,
-        XercesError                 = XERCES_SAX_FACILITY + 0x0002,
-        XercesFatal                 = XERCES_SAX_FACILITY + 0x0003,
+        XmlWarning                  = XML_FACILITY + 0x0001,
+        XmlError                    = XML_FACILITY + 0x0002,
+        XmlFatal                    = XML_FACILITY + 0x0003,
     };
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
@@ -96,34 +99,14 @@ namespace MSIX {
     class Exception : public std::exception
     {
     public:
-        Exception(Error error) : m_code(static_cast<std::uint32_t>(error))
-        {}
-
-        Exception(std::uint32_t error) : m_code(0x80070000 + error)
-        {}
-
-        Exception(Error error, std::string& message) :
+        Exception(std::string& message, Error error) :
             m_code(static_cast<std::uint32_t>(error)),
             m_message(message)
         {
             Global::Log::Append(Message());
         }
 
-        Exception(Error error, const char* message) :
-            m_code(static_cast<std::uint32_t>(error)),
-            m_message(message)
-        {
-            Global::Log::Append(Message());
-        }
-
-        Exception(HRESULT error, std::string& message) :
-            m_code(error),
-            m_message(message)
-        {
-            Global::Log::Append(Message());
-        }
-
-        Exception(HRESULT error, const char* message) :
+        Exception(std::string& message, HRESULT error) :
             m_code(error),
             m_message(message)
         {
@@ -138,130 +121,86 @@ namespace MSIX {
         std::string     m_message;
     };
 
-    class Win32Exception : public Exception
+    class Win32Exception final : public Exception
     {
     public:
-        Win32Exception(DWORD error, std::string& message) :
-            Exception(0x80070000 + error, message)
-        {
-            Global::Log::Append(Message());
-        }
-
-        Win32Exception(DWORD error, const char* message) :
-            Exception(0x80070000 + error, message)
+        Win32Exception(std::string& message, DWORD error) : Exception(message, 0x80070000 + error)
         {
             Global::Log::Append(Message());
         }
     };
 
-    class NtStatusException : public Exception
-    {
-    public:
-        NtStatusException(NTSTATUS error, std::string& message) :
-            Exception(static_cast<std::uint32_t>(error), message)
-        {
-            Global::Log::Append(Message());
-        }
-
-        NtStatusException(NTSTATUS error, const char* message) :
-            Exception(static_cast<std::uint32_t>(error), message)
-        {
-            Global::Log::Append(Message());
-        }
-    };
-
-    class ParsingException : public XERCES_CPP_NAMESPACE::ErrorHandler
-    {
-    public:
-        ParsingException() {};
-        ~ParsingException() {};
-
-        void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
-        {
-            // TODO: add message, line number and column
-            assert(false);
-            throw Exception(MSIX::Error::XercesWarning);
-        }
-
-        void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
-        {
-            // TODO: add message, line number and column
-            assert(false);
-            throw Exception(MSIX::Error::XercesError);
-        }
-
-        void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
-        {
-            // TODO: add message, line number and column
-            assert(false);
-            throw Exception(MSIX::Error::XercesFatal);
-        }
-
-        void resetErrors() override {}
-    };
-
+#ifdef USING_XERCES                                              
     // Provides an ABI exception boundary with parameter validation
-    template <class Lambda>
-    inline HRESULT ResultOf(Lambda lambda)
-    {
-        HRESULT hr = static_cast<HRESULT>(MSIX::Error::OK);
-        try
-        {
-            lambda();
-        }
-        catch (MSIX::Exception& e)
-        {
-            hr = static_cast<HRESULT>(e.Code());
-        }
-        catch (std::bad_alloc&)
-        {
-            hr = static_cast<HRESULT>(MSIX::Error::OutOfMemory);
-        }
-        catch (std::exception&)
-        {
-            hr = static_cast<HRESULT>(MSIX::Error::Unexpected);
-        }
-        catch (const XERCES_CPP_NAMESPACE::XMLException& e)
-        {
-            hr = static_cast<HRESULT>(MSIX::XERCES_XML_FACILITY) +
-                static_cast<HRESULT>(e.getCode());
-        }
-        catch (const XERCES_CPP_NAMESPACE::DOMException& e)
-        {
-            hr = static_cast<HRESULT>(MSIX::XERCES_DOM_FACILITY) +
-                static_cast<HRESULT>(e.code);
-        }
-
-        return hr;
+    #define CATCH_RETURN()                                                  \
+    catch (const XERCES_CPP_NAMESPACE::XMLException& e)                     \
+    {   return static_cast<HRESULT>(MSIX::XERCES_XML_FACILITY) +            \
+            static_cast<HRESULT>(e.getCode());                              \
+    }                                                                       \
+    catch (const XERCES_CPP_NAMESPACE::DOMException& e)                     \
+    {   return static_cast<HRESULT>(MSIX::XERCES_DOM_FACILITY) +            \
+            static_cast<HRESULT>(e.code);                                   \
+    }                                                                       \
+    catch (MSIX::Exception& e)                                              \
+    {   return static_cast<HRESULT>(e.Code());                              \
+    }                                                                       \
+    catch (std::bad_alloc&)                                                 \
+    {   return static_cast<HRESULT>(MSIX::Error::OutOfMemory);              \
+    }                                                                       \
+    catch (...)                                                             \
+    {   return static_cast<HRESULT>(MSIX::Error::Unexpected);               \
     }
+#else
+    // Provides an ABI exception boundary with parameter validation
+    #define CATCH_RETURN()                                                  \
+    catch (MSIX::Exception& e)                                              \
+    {   return static_cast<HRESULT>(e.Code());                              \
+    }                                                                       \
+    catch (std::bad_alloc&)                                                 \
+    {   return static_cast<HRESULT>(MSIX::Error::OutOfMemory);              \
+    }                                                                       \
+    catch (...)                                                             \
+    {   return static_cast<HRESULT>(MSIX::Error::Unexpected);               \
+    }
+#endif              
+                                             
+    template <typename E, class C>
+    #ifdef WIN32
+    __declspec(noinline)
+    __declspec(noreturn)
+    #endif
+    void 
+    #ifndef WIN32
+    __attribute__(( noinline, cold, noreturn )) 
+    #endif    
+    RaiseException(const int line, const char* const file, const char* details, C c)
+    {
+        assert(false);
+        std::ostringstream builder;
+        if (details) { builder << details << "\n"; }
+        builder << "Call failed in " << file << " on line " << line;
+        std::string message = builder.str();
+        throw E(message, c);
+    }
+    
+    #ifdef WIN32
+    __declspec(noinline)
+    #endif
+    void 
+    #ifndef WIN32
+    __attribute__(( noinline)) 
+    #endif    
+    RaiseExceptionIfFailed(HRESULT hr, const int line, const char* const file);
 }
 
 // Helper to make code more terse and more readable at the same time.
-#define ThrowErrorIfNot(c, a, m)     \
-{                                    \
-    if (!(a))                        \
-    {                                \
-        assert(false);               \
-        throw MSIX::Exception(c,m);  \
-    }                                \
-}
+#define ThrowError(c)  { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, c); }
+#define UNEXPECTED     { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::Unexpected); }
+#define NOTSUPPORTED   { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::NotSupported); }
+#define NOTIMPLEMENTED { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::NotImplemented); }
 
-#define ThrowWin32ErrorIfNot(c, a, m)       \
-{                                           \
-    if (!(a))                               \
-    {                                       \
-        assert(false);                      \
-        throw MSIX::Win32Exception(c,m);    \
-    }                                       \
-}
-
+#define ThrowErrorIfNot(c, a, m)      if (!(a)) { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, m, c); }
+#define ThrowWin32ErrorIfNot(c, a, m) if (!(a)) { MSIX::RaiseException<MSIX::Win32Exception>(__LINE__, __FILE__, m, c); }
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
 
-#define ThrowHrIfFailed(a)                              \
-{                                                       \
-    HRESULT hr = a;                                     \
-    if (FAILED(hr))                                     \
-    {   assert(false);                                  \
-        throw MSIX::Exception(hr, "COM Call failed");   \
-    }                                                   \
-}
+#define ThrowHrIfFailed(a) MSIX::RaiseExceptionIfFailed(a, __LINE__, __FILE__);

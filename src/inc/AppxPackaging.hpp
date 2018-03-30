@@ -194,38 +194,38 @@ enum tagLOCKTYPE
         virtual /* [local] */ HRESULT STDMETHODCALLTYPE Seek(
             /* [in] */ LARGE_INTEGER dlibMove,
             /* [in] */ DWORD dwOrigin,
-            /* [out] */  ULARGE_INTEGER *plibNewPosition) = 0;
+            /* [out] */  ULARGE_INTEGER *plibNewPosition) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE SetSize(
-            /* [in] */ ULARGE_INTEGER libNewSize) = 0;
+            /* [in] */ ULARGE_INTEGER libNewSize) noexcept = 0;
 
         virtual /* [local] */ HRESULT STDMETHODCALLTYPE CopyTo(
             /* [unique][in] */  IStream *pstm,
             /* [in] */ ULARGE_INTEGER cb,
             /* [out] */ ULARGE_INTEGER *pcbRead,
-            /* [out] */ ULARGE_INTEGER *pcbWritten) = 0;
+            /* [out] */ ULARGE_INTEGER *pcbWritten) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE Commit(
-            /* [in] */ DWORD grfCommitFlags) = 0;
+            /* [in] */ DWORD grfCommitFlags) noexcept = 0;
 
-        virtual HRESULT STDMETHODCALLTYPE Revert( void) = 0;
+        virtual HRESULT STDMETHODCALLTYPE Revert( void) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE LockRegion(
             /* [in] */ ULARGE_INTEGER libOffset,
             /* [in] */ ULARGE_INTEGER cb,
-            /* [in] */ DWORD dwLockType) = 0;
+            /* [in] */ DWORD dwLockType) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE UnlockRegion(
             /* [in] */ ULARGE_INTEGER libOffset,
             /* [in] */ ULARGE_INTEGER cb,
-            /* [in] */ DWORD dwLockType) = 0;
+            /* [in] */ DWORD dwLockType) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE Stat(
             /* [out] */ STATSTG *pstatstg,
-            /* [in] */ DWORD grfStatFlag) = 0;
+            /* [in] */ DWORD grfStatFlag) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE Clone(
-            /* [out] */ IStream **ppstm) = 0;
+            /* [out] */ IStream **ppstm) noexcept = 0;
 
     };
 #endif  /* __IStream_INTERFACE_DEFINED__ */
@@ -414,21 +414,21 @@ EXTERN_C const IID IID_IAppxPackageReader;
     {
     public:
         virtual HRESULT STDMETHODCALLTYPE GetBlockMap(
-            /* [retval][out] */  IAppxBlockMapReader **blockMapReader) = 0;
+            /* [retval][out] */  IAppxBlockMapReader **blockMapReader) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetFootprintFile(
             /* [in] */ APPX_FOOTPRINT_FILE_TYPE type,
-            /* [retval][out] */  IAppxFile **file) = 0;
+            /* [retval][out] */  IAppxFile **file) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetPayloadFile(
             /* [string][in] */  LPCWSTR fileName,
-            /* [retval][out] */  IAppxFile **file) = 0;
+            /* [retval][out] */  IAppxFile **file) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetPayloadFiles(
-            /* [retval][out] */  IAppxFilesEnumerator **filesEnumerator) = 0;
+            /* [retval][out] */  IAppxFilesEnumerator **filesEnumerator) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetManifest(
-            /* [retval][out] */  IAppxManifestReader **manifestReader) = 0;
+            /* [retval][out] */  IAppxManifestReader **manifestReader) noexcept = 0;
 
     };
 #endif 	/* __IAppxPackageReader_INTERFACE_DEFINED__ */
@@ -522,19 +522,19 @@ EXTERN_C const IID IID_IAppxFile;
     {
     public:
         virtual HRESULT STDMETHODCALLTYPE GetCompressionOption(
-            /* [retval][out] */  APPX_COMPRESSION_OPTION *compressionOption) = 0;
+            /* [retval][out] */  APPX_COMPRESSION_OPTION *compressionOption) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetContentType(
-            /* [retval][string][out] */ LPWSTR *contentType) = 0;
+            /* [retval][string][out] */ LPWSTR *contentType) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetName(
-            /* [retval][string][out] */ LPWSTR *fileName) = 0;
+            /* [retval][string][out] */ LPWSTR *fileName) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetSize(
-            /* [retval][out] */  UINT64 *size) = 0;
+            /* [retval][out] */  UINT64 *size) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetStream(
-            /* [retval][out] */  IStream **stream) = 0;
+            /* [retval][out] */  IStream **stream) noexcept = 0;
 
     };
 #endif 	/* __IAppxFile_INTERFACE_DEFINED__ */
@@ -551,13 +551,13 @@ EXTERN_C const IID IID_IAppxFilesEnumerator;
     {
     public:
         virtual HRESULT STDMETHODCALLTYPE GetCurrent(
-            /* [retval][out] */  IAppxFile **file) = 0;
+            /* [retval][out] */  IAppxFile **file) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(
-            /* [retval][out] */  BOOL *hasCurrent) = 0;
+            /* [retval][out] */  BOOL *hasCurrent) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
-            /* [retval][out] */  BOOL *hasNext) = 0;
+            /* [retval][out] */  BOOL *hasNext) noexcept = 0;
 
     };
 #endif 	/* __IAppxFilesEnumerator_INTERFACE_DEFINED__ */
@@ -575,16 +575,16 @@ EXTERN_C const IID IID_IAppxBlockMapReader;
     public:
         virtual HRESULT STDMETHODCALLTYPE GetFile(
             /* [string][in] */  LPCWSTR filename,
-            /* [retval][out] */  IAppxBlockMapFile **file) = 0;
+            /* [retval][out] */  IAppxBlockMapFile **file) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetFiles(
-            /* [retval][out] */  IAppxBlockMapFilesEnumerator **enumerator) = 0;
+            /* [retval][out] */  IAppxBlockMapFilesEnumerator **enumerator) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetHashMethod(
-            /* [retval][out] */  IUri **hashMethod) = 0;
+            /* [retval][out] */  IUri **hashMethod) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetStream(
-            /* [retval][out] */  IStream **blockMapStream) = 0;
+            /* [retval][out] */  IStream **blockMapStream) noexcept = 0;
 
     };
 #endif 	/* __IAppxBlockMapReader_INTERFACE_DEFINED__ */
@@ -601,20 +601,20 @@ EXTERN_C const IID IID_IAppxBlockMapFile;
     {
     public:
         virtual HRESULT STDMETHODCALLTYPE GetBlocks(
-            /* [retval][out] */  IAppxBlockMapBlocksEnumerator **blocks) = 0;
+            /* [retval][out] */  IAppxBlockMapBlocksEnumerator **blocks) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetLocalFileHeaderSize(
-            /* [retval][out] */  UINT32 *lfhSize) = 0;
+            /* [retval][out] */  UINT32 *lfhSize) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetName(
-            /* [retval][string][out] */ LPWSTR *name) = 0;
+            /* [retval][string][out] */ LPWSTR *name) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetUncompressedSize(
-            /* [retval][out] */  UINT64 *size) = 0;
+            /* [retval][out] */  UINT64 *size) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE ValidateFileHash(
             /* [in] */  IStream *fileStream,
-            /* [retval][out] */  BOOL *isValid) = 0;
+            /* [retval][out] */  BOOL *isValid) noexcept = 0;
 
     };
 #endif 	/* __IAppxBlockMapFile_INTERFACE_DEFINED__ */
@@ -631,13 +631,13 @@ EXTERN_C const IID IID_IAppxBlockMapFilesEnumerator;
     {
     public:
         virtual HRESULT STDMETHODCALLTYPE GetCurrent(
-            /* [retval][out] */  IAppxBlockMapFile **file) = 0;
+            /* [retval][out] */  IAppxBlockMapFile **file) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(
-            /* [retval][out] */  BOOL *hasCurrent) = 0;
+            /* [retval][out] */  BOOL *hasCurrent) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
-            /* [retval][out] */  BOOL *hasCurrent) = 0;
+            /* [retval][out] */  BOOL *hasCurrent) noexcept = 0;
 
     };
 #endif 	/* __IAppxBlockMapFilesEnumerator_INTERFACE_DEFINED__ */
@@ -655,10 +655,10 @@ EXTERN_C const IID IID_IAppxBlockMapBlock;
     public:
         virtual HRESULT STDMETHODCALLTYPE GetHash(
             /* [out] */  UINT32 *bufferSize,
-            /* [retval][size_is][size_is][out] */  BYTE **buffer) = 0;
+            /* [retval][size_is][size_is][out] */  BYTE **buffer) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetCompressedSize(
-            /* [retval][out] */  UINT32 *size) = 0;
+            /* [retval][out] */  UINT32 *size)  noexcept = 0;
 
     };
 #endif 	/* __IAppxBlockMapBlock_INTERFACE_DEFINED__ */
@@ -675,13 +675,13 @@ EXTERN_C const IID IID_IAppxBlockMapBlocksEnumerator;
     {
     public:
         virtual HRESULT STDMETHODCALLTYPE GetCurrent(
-            /* [retval][out] */  IAppxBlockMapBlock **block) = 0;
+            /* [retval][out] */  IAppxBlockMapBlock **block) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(
-            /* [retval][out] */  BOOL *hasCurrent) = 0;
+            /* [retval][out] */  BOOL *hasCurrent) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
-            /* [retval][out] */  BOOL *hasNext) = 0;
+            /* [retval][out] */  BOOL *hasNext) noexcept = 0;
 
     };
 #endif 	/* __IAppxBlockMapBlocksEnumerator_INTERFACE_DEFINED__ */
@@ -2015,36 +2015,36 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_VALIDATION_OPTION validationOption,
     char* utf8SourcePackage,
     char* utf8Destination
-);
+) noexcept;
 
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying 
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.
 typedef LPVOID STDMETHODCALLTYPE COTASKMEMALLOC(SIZE_T cb);
 typedef void STDMETHODCALLTYPE COTASKMEMFREE(LPVOID pv);
 
-MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText);
+MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept;
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     MSIX_VALIDATION_OPTION validationOption,
-    IAppxFactory** appxFactory);
+    IAppxFactory** appxFactory) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     MSIX_VALIDATION_OPTION validationOption,
-    IAppxFactory** appxFactory);
+    IAppxFactory** appxFactory) noexcept;
 
 // provided as a helper for platforms that do not have an implementation of SHCreateStreamOnFileEx
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     char* utf8File,
     bool forRead,
-    IStream** stream);
+    IStream** stream) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     LPCWSTR utf16File,
     bool forRead,
-    IStream** stream);
+    IStream** stream) noexcept;
 
 } // extern "C++" 
 

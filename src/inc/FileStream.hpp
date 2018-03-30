@@ -12,7 +12,7 @@
 #include "StreamBase.hpp"
 
 namespace MSIX {
-    class FileStream : public StreamBase
+    class FileStream final : public StreamBase
     {
     public:
         enum Mode { READ = 0, WRITE, APPEND, READ_UPDATE, WRITE_UPDATE, APPEND_UPDATE };
@@ -22,7 +22,9 @@ namespace MSIX {
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
             #ifdef WIN32
             errno_t err = fopen_s(&file, path.c_str(), modes[mode]);
-            ThrowErrorIfNot(Error::FileOpen, (err==0), path.c_str());
+            std::ostringstream builder;
+            builder << "file: '" << path << "' does not exist.";
+            ThrowErrorIfNot(Error::FileOpen, (err==0), builder.str().c_str());
             #else
             file = std::fopen(path.c_str(), modes[mode]);
             ThrowErrorIfNot(Error::FileOpen, (file), path.c_str());
@@ -43,37 +45,34 @@ namespace MSIX {
             }
         }
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) override
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override try
         {
-            return ResultOf([&] {
-                int rc = std::fseek(file, (long)move.QuadPart, origin);
-                ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
-                offset = Ftell();
-                if (newPosition) { newPosition->QuadPart = offset; }
-            });
-        }
+            int rc = std::fseek(file, (long)move.QuadPart, origin);
+            ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
+            offset = Ftell();
+            if (newPosition) { newPosition->QuadPart = offset; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) override
+        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
         {
             if (bytesRead) { *bytesRead = 0; }
-            return ResultOf([&] {
-                ULONG result = static_cast<ULONG>(std::fread(buffer, sizeof(std::uint8_t), countBytes, file));
-                ThrowErrorIfNot(Error::FileRead, (result == countBytes || Feof()), "read failed");
-                offset = Ftell();
-                if (bytesRead) { *bytesRead = result; }
-            });
-        }
+            ULONG result = static_cast<ULONG>(std::fread(buffer, sizeof(std::uint8_t), countBytes, file));
+            ThrowErrorIfNot(Error::FileRead, (result == countBytes || Feof()), "read failed");
+            offset = Ftell();
+            if (bytesRead) { *bytesRead = result; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) override
+        HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept override try
         {
             if (bytesWritten) { *bytesWritten = 0; }
-            return ResultOf([&] {
-                ULONG result = static_cast<ULONG>(std::fwrite(buffer, sizeof(std::uint8_t), countBytes, file));
-                ThrowErrorIfNot(Error::FileWrite, (result == countBytes), "write failed");
-                offset = Ftell();
-                if (bytesWritten) { *bytesWritten = result; }
-            });
-        }
+            ULONG result = static_cast<ULONG>(std::fwrite(buffer, sizeof(std::uint8_t), countBytes, file));
+            ThrowErrorIfNot(Error::FileWrite, (result == countBytes), "write failed");
+            offset = Ftell();
+            if (bytesWritten) { *bytesWritten = result; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
     protected:
         inline int Ferror() { return std::ferror(file); }

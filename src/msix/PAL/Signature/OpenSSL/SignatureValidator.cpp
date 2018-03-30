@@ -6,7 +6,8 @@
 #include "Exceptions.hpp"
 #include "FileStream.hpp"
 #include "SignatureValidator.hpp"
-#include "AppxCerts.hpp"
+#include "MSIXResource.hpp"
+#include "StreamHelper.hpp"
 
 #include <string>
 #include <sstream>
@@ -111,7 +112,7 @@ namespace MSIX
                         BIO_get_mem_ptr(extbio.get(), &bptr);
                         
                         if (bptr && bptr->data && 
-                            std::string((char*)bptr->data).find(std::string(OID::WindowsStore)) != std::string::npos)
+                            std::string((char*)bptr->data).find(OID::WindowsStore()) != std::string::npos)
                         {
                             return true;
                         }
@@ -129,9 +130,7 @@ namespace MSIX
         return retValue;
     }
 
-    bool ReadDigestHashes(/*[in]*/ PKCS7* p7, 
-        /*[inout]*/ std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,
-        /*[inout]*/ unique_BIO& signatureDigest)
+    void ReadDigestHashes(PKCS7* p7, AppxSignatureObject* signatureObject, unique_BIO& signatureDigest)
     {
         ThrowErrorIf(Error::SignatureInvalid,
             !(p7 && 
@@ -181,7 +180,7 @@ namespace MSIX
         bool found = false;
         while (spcIndirectDataContent < spcIndirectDataContentEnd && !found)
         {
-            if (*(MSIX::AppxSignatureObject::DigestName *)spcIndirectDataContent == MSIX::AppxSignatureObject::DigestName::HEAD)
+            if (*reinterpret_cast<DigestName*>(spcIndirectDataContent) == DigestName::HEAD)
             {
                 found = true;
                 break;
@@ -193,41 +192,11 @@ namespace MSIX
         ThrowErrorIf(Error::SignatureInvalid, (!found), "Could not find the digest hashes in the signature");
 
         // If we found the APPX header, validate the contents
-        DigestHeader *header = reinterpret_cast<DigestHeader*>(spcIndirectDataContent);
-        std::uint32_t numberOfHashes = 
-            (spcIndirectDataContentSize - sizeof(MSIX::AppxSignatureObject::DigestName)) / sizeof(DigestHash);
-        std::uint32_t modHashes = 
-            (spcIndirectDataContentSize - sizeof(MSIX::AppxSignatureObject::DigestName)) % sizeof(DigestHash);
-        ThrowErrorIf(Error::SignatureInvalid, (
-            (header->name != MSIX::AppxSignatureObject::DigestName::HEAD) &&
-            (numberOfHashes != 4 && numberOfHashes != 5) &&
-            (modHashes != 0)
-        ), "bad signature data");
-
-        for (unsigned i = 0; i < numberOfHashes; i++)
-        {
-            std::vector<std::uint8_t> hash(HASH_BYTES);
-            switch (header->hash[i].name)
-            {
-                case MSIX::AppxSignatureObject::DigestName::AXPC:
-                case MSIX::AppxSignatureObject::DigestName::AXCT:
-                case MSIX::AppxSignatureObject::DigestName::AXBM:
-                case MSIX::AppxSignatureObject::DigestName::AXCI:
-                case MSIX::AppxSignatureObject::DigestName::AXCD:
-                    hash.assign(&header->hash[i].content[0], &header->hash[i].content[HASH_BYTES]);
-                    digests.emplace(header->hash[i].name, hash);
-                    break;
-
-                default:
-                    throw MSIX::Exception(MSIX::Error::SignatureInvalid);
-            }
-        }
-
-        ThrowErrorIf(Error::SignatureInvalid,
-            (digests.size() != 4 && digests.size() != 5),
-            "Digest hashes missing entries");
-
-        return true;
+        signatureObject->ValidateDigestHeader(
+            reinterpret_cast<DigestHeader*>(spcIndirectDataContent),
+            (spcIndirectDataContentSize - sizeof(DigestName)) / sizeof(DigestHash),
+            (spcIndirectDataContentSize - sizeof(DigestName)) % sizeof(DigestHash)
+        );
 	}
 	
     // This callback will be invoked during certificate verification
@@ -328,13 +297,14 @@ namespace MSIX
     }
 
     bool SignatureValidator::Validate(
-        MSIX_VALIDATION_OPTION option, 
-        IStream *stream, 
-        std::map<MSIX::AppxSignatureObject::DigestName, MSIX::AppxSignatureObject::Digest>& digests,
+        IMSIXFactory* factory,
+        MSIX_VALIDATION_OPTION option,
+        const ComPtr<IStream>& stream, 
+        AppxSignatureObject* signatureObject,
         SignatureOrigin& origin,
         std::string& publisher)
     {
-        // If the caller wants to skip signature validation altogether, just bug out early. We will not read the digests
+        // If the caller wants to skip signature validation altogether, just bug out early; we will not read the digests
         if (option & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
 
         LARGE_INTEGER start = {0};
@@ -370,10 +340,13 @@ namespace MSIX
         
         // Loop through our trusted PEM certs, create X509 objects from them, and add to trusted store
         unique_STACK_X509 trustedChain(sk_X509_new_null());
-        for ( std::string s : appxCerts )
-        {
+        
+        // Get certificates from our resources
+        auto appxCerts = GetResources(factory, Resource::Certificates);
+        for ( auto& appxCert : appxCerts )
+        {   auto certBuffer = Helper::CreateBufferFromStream(appxCert);
             // Load the cert into memory
-            unique_BIO bcert(BIO_new_mem_buf(s.data(), s.size()));
+            unique_BIO bcert(BIO_new_mem_buf(certBuffer.data(), certBuffer.size()));
 
             // Create a cert from the memory buffer
             unique_X509 cert(PEM_read_bio_X509(bcert.get(), nullptr, nullptr, nullptr));
@@ -387,7 +360,7 @@ namespace MSIX
         }
 
         unique_BIO signatureDigest(nullptr);
-        ReadDigestHashes(p7.get(), digests, signatureDigest);
+        ReadDigestHashes(p7.get(), signatureObject, signatureDigest);
         
         // Loop through the untrusted certs and verify them if we're going to treat
         if (MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN != (option & MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN))

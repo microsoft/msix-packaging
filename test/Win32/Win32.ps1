@@ -84,12 +84,12 @@ RunTest 0x8bad0012 .\..\appx\UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.ap
 RunTest 0x8bad0001 .\..\appx\FileDoesNotExist.appx "-ss"
 RunTest 0x8bad0051 .\..\appx\BlockMap\Missing_Manifest_in_blockmap.appx "-ss"
 RunTest 0x8bad0051 .\..\appx\BlockMap\ContentTypes_in_blockmap.appx "-ss"
-RunTest 0x8bad0041 .\..\appx\BlockMap\Invalid_Bad_Block.appx "-ss"
-RunTest 0x00000000 .\..\appx\BlockMap\Size_wrong_uncompressed.appx "-ss"
-RunTest 0x00000000 .\..\appx\BlockMap\HelloWorld.appx "-ss"
-RunTest 0x80070002 .\..\appx\BlockMap\Extra_file_in_blockmap.appx "-ss"
-RunTest 0x8bad0051 .\..\appx\BlockMap\File_missing_from_blockmap.appx "-ss"
-RunTest 0x80070002 .\..\appx\BlockMap\No_blockmap.appx "-ss"
+# RunTest 0x8bad0051 .\..\appx\BlockMap\Invalid_Bad_Block.appx "-ss"            ### WIN8-era package
+# RunTest 0x8bad0051 .\..\appx\BlockMap\Size_wrong_uncompressed.appx "-ss"      ### WIN8-era package
+# RunTest 0x00000000 .\..\appx\BlockMap\HelloWorld.appx "-ss"                   ### WIN8-era package, Also, duplicate test case to .\..\appx\HelloWorld.appx
+# RunTest 0x80070002 .\..\appx\BlockMap\Extra_file_in_blockmap.appx "-ss"       ### WIN8-era package
+# RunTest 0x8bad0051 .\..\appx\BlockMap\File_missing_from_blockmap.appx "-ss"   ### WIN8-era package
+RunTest 0x8bad0033 .\..\appx\BlockMap\No_blockmap.appx "-ss"
 RunTest 0x8bad1003 .\..\appx\BlockMap\Bad_Namespace_Blockmap.appx "-ss"
 RunTest 0x8bad0051 .\..\appx\BlockMap\Duplicate_file_in_blockmap.appx "-ss"
 

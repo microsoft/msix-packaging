@@ -8,8 +8,6 @@
 
 namespace MSIX {
 
-    const unsigned HASH_BYTES = 32;
-
     class SHA256
     {
     public:

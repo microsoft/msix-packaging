@@ -17,7 +17,7 @@
 #include "StorageObject.hpp"
 #include "ZipObject.hpp"
 #include "VerifierObject.hpp"
-#include "XmlObject.hpp"
+#include "IXml.hpp"
 #include "AppxBlockMapObject.hpp"
 #include "AppxSignature.hpp"
 #include "AppxFactory.hpp"
@@ -34,7 +34,7 @@ class IPackage : public IUnknown
 #endif
 {
 public:
-    virtual void Unpack(MSIX_PACKUNPACK_OPTION options, IStorageObject* to) = 0;
+    virtual void Unpack(MSIX_PACKUNPACK_OPTION options, const MSIX::ComPtr<IStorageObject>& to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
 };
 
@@ -70,19 +70,16 @@ namespace MSIX {
     };
 
     // Object backed by AppxManifest.xml
-    class AppxManifestObject : public ComClass<AppxManifestObject, IVerifierObject>
+    class AppxManifestObject final : public ComClass<AppxManifestObject, IVerifierObject>
     {
     public:
-        AppxManifestObject(ComPtr<IStream>& stream);
+        AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
-        bool HasStream() override { return m_stream.Get() != nullptr; }
-        MSIX::ComPtr<IStream> GetStream() override { return m_stream; }
-        MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, IStream* stream) override
-        {
-            throw Exception(Error::NotSupported);
-        }
+        bool HasStream() override { return !!m_stream; }
+        ComPtr<IStream> GetStream() override { return m_stream; }
+        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
 
         AppxPackageId* GetPackageId()    { return m_packageId.get(); }
         std::string GetPackageFullName() { return m_packageId->GetPackageFullName(); }
@@ -93,31 +90,31 @@ namespace MSIX {
     };
 
     // Storage object representing the entire AppxPackage
-    class AppxPackageObject : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject>
+    class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject>
     {
     public:
-        AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, IStorageObject* container);
+        AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container);
         ~AppxPackageObject() {}
 
         // internal IPackage methods
-        void Unpack(MSIX_PACKUNPACK_OPTION options, IStorageObject* to) override;
+        void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to) override;
 
         // IAppxPackageReader
-        HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override;
-        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file) override;
-        HRESULT STDMETHODCALLTYPE GetPayloadFile(LPCWSTR fileName, IAppxFile** file) override;
-        HRESULT STDMETHODCALLTYPE GetPayloadFiles(IAppxFilesEnumerator**  filesEnumerator) override;
-        HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) override;
+        HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPayloadFile(LPCWSTR fileName, IAppxFile** file) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPayloadFiles(IAppxFilesEnumerator**  filesEnumerator) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) noexcept override;
 
         // returns a list of the footprint files found within this package.
         std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
 
         // IStorageObject methods
-        std::string               GetPathSeparator() override;
+        const char*               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
-        IStream*                  GetFile(const std::string& fileName) override;
-        void                      RemoveFile(const std::string& fileName) override;
-        IStream*                  OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
+        ComPtr<IStream>           GetFile(const std::string& fileName) override;
+
+        ComPtr<IStream>           OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         void                      CommitChanges() override;
 
     protected:
@@ -128,14 +125,13 @@ namespace MSIX {
         ComPtr<IVerifierObject>     m_appxSignature;
         ComPtr<IVerifierObject>     m_appxBlockMap;
         ComPtr<IVerifierObject>     m_appxManifest;
-        ComPtr<IVerifierObject>     m_contentType;        
         ComPtr<IStorageObject>      m_container;
         
         std::vector<std::string>    m_payloadFiles;
         std::vector<std::string>    m_footprintFiles;
     };
 
-    class AppxFilesEnumerator : public MSIX::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>
+    class AppxFilesEnumerator final : public MSIX::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>
     {
     protected:
         ComPtr<IStorageObject>      m_storage;
@@ -143,33 +139,37 @@ namespace MSIX {
         std::vector<std::string>    m_files;
 
     public:
-        AppxFilesEnumerator(IStorageObject* storage) : 
+        AppxFilesEnumerator(const ComPtr<IStorageObject>& storage) : 
             m_storage(storage)
         {
             m_files = storage->GetFileNames(FileNameOptions::PayloadOnly);            
         }
 
         // IAppxFilesEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) override
-        {   return ResultOf([&]{
-                ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
-                ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                *file = ComPtr<IStream>(m_storage->GetFile(m_files[m_cursor])).As<IAppxFile>().Detach();
-            });
+        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
+            ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
+            *file = m_storage->GetFile(m_files[m_cursor]).As<IAppxFile>().Detach();
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) noexcept override
+        {   
+            if (nullptr == hasCurrent) {
+                return static_cast<HRESULT>(Error::InvalidParameter);
+            }
+            *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
+            return static_cast<HRESULT>(Error::OK);
         }
 
-        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) override
-        {   return ResultOf([&]{
-                ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
-                *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
-            });
-        }
-
-        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) override      
-        {   return ResultOf([&]{
-                ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
-                *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
-            });
+        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) noexcept override      
+        {   
+            if (nullptr == hasNext) {
+                return static_cast<HRESULT>(Error::InvalidParameter);
+            }            
+            *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
+            return static_cast<HRESULT>(Error::OK);
         }
     };
 }
