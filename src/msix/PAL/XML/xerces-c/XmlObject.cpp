@@ -50,19 +50,27 @@ static std::map<XmlQueryName, std::string> xPaths = {
     {XmlQueryName::Package_Identity                             ,"/Package/Identity"},
     {XmlQueryName::BlockMap_File                                ,"/BlockMap/File"},
     {XmlQueryName::BlockMap_File_Block                          ,"./Block"},
+    {XmlQueryName::Bundle_Identity                              ,"/Bundle/Identity"},
+    {XmlQueryName::Bundle_Packages_Package                      ,"/Bundle/Packages/Package"},
+    {XmlQueryName::Bundle_Packages_Package_Resources_Resource   ,"./Resources/Resource"},
 };
 
 static std::map<XmlAttributeName, std::string> attributeNames = {
-    {XmlAttributeName::Package_Identity_Name                    ,"Name"},
-    {XmlAttributeName::Package_Identity_ProcessorArchitecture   ,"ProcessorArchitecture"},
-    {XmlAttributeName::Package_Identity_Publisher               ,"Publisher"},
-    {XmlAttributeName::Package_Identity_Version                 ,"Version"},
-    {XmlAttributeName::Package_Identity_ResourceId              ,"ResourceId"},
+    {XmlAttributeName::Name                                     ,L"Name"},
+    {XmlAttributeName::ResourceId                               ,L"ResourceId"},
+    {XmlAttributeName::Version                                  ,L"Version"},
+    {XmlAttributeName::Size                                     ,L"Size"},
 
-    {XmlAttributeName::BlockMap_File_Name                       ,"Name"},
-    {XmlAttributeName::BlockMap_File_LocalFileHeaderSize        ,"LfhSize"},
-    {XmlAttributeName::BlockMap_File_Block_Size                 ,"Size"},
-    {XmlAttributeName::BlockMap_File_Block_Hash                 ,"Hash"},
+    {XmlAttributeName::Identity_ProcessorArchitecture           ,L"ProcessorArchitecture"},
+    {XmlAttributeName::Identity_Publisher                       ,L"Publisher"},
+
+    {XmlAttributeName::BlockMap_File_LocalFileHeaderSize        ,L"LfhSize"},    
+    {XmlAttributeName::BlockMap_File_Block_Hash                 ,L"Hash"},
+
+    {XmlAttributeName::Bundle_Package_FileName                  ,L"FileName"},
+    {XmlAttributeName::Bundle_Package_Offset                    ,L"Offset"},
+    {XmlAttributeName::Bundle_Package_Type                      ,L"Type"},
+    {XmlAttributeName::Bundle_Package_Architecture              ,L"Architecture"},
 };
 
 class ParsingException final : public XERCES_CPP_NAMESPACE::ErrorHandler
