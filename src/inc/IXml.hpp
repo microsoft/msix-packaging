@@ -24,24 +24,32 @@ enum class XmlContentType : std::uint8_t
 // defines queries for use in IXmlDom->ForEachElementIn
 enum class XmlQueryName : std::uint8_t
 {
-    Package_Identity    = 0,
-    BlockMap_File       = 1,
-    BlockMap_File_Block = 2,
+    Package_Identity                           = 0,
+    BlockMap_File                              = 1,
+    BlockMap_File_Block                        = 2,
+    Bundle_Identity                            = 3,
+    Bundle_Packages_Package                    = 4,
+    Bundle_Packages_Package_Resources_Resource = 5,
 };
 
 // defines attribute names for use in IXmlElement-> [GetAttributeValue|GetBase64DecodedAttributeValue]
 enum class XmlAttributeName : std::uint8_t
 {
-    Package_Identity_Name                   = 0,
-    Package_Identity_ProcessorArchitecture  = 1,
-    Package_Identity_Publisher              = 2,
-    Package_Identity_Version                = 3,
-    Package_Identity_ResourceId             = 4,
+    Name                                    = 0,
+    ResourceId                              = 1,
+    Version                                 = 2,
+    Size                                    = 3,
 
-    BlockMap_File_Name                      = 5,
+    Identity_ProcessorArchitecture          = 4,
+    Identity_Publisher                      = 5,
+
     BlockMap_File_LocalFileHeaderSize       = 6,
-    BlockMap_File_Block_Size                = 7,
-    BlockMap_File_Block_Hash                = 8,
+    BlockMap_File_Block_Hash                = 7,
+
+    Bundle_Package_FileName                 = 8,
+    Bundle_Package_Offset                   = 9,
+    Bundle_Package_Type                     = 10,
+    Bundle_Package_Architecture             = 11,
 };
 
 EXTERN_C const IID IID_IXmlElement;
@@ -108,4 +116,14 @@ SpecializeUuidOfImpl(IXmlFactory);
 
 namespace MSIX {
     MSIX::ComPtr<IXmlFactory> CreateXmlFactory(IMSIXFactory* factory);
+
+    template <class T>
+    static T GetNumber(const ComPtr<IXmlElement>& element, XmlAttributeName attribute, T defaultValue)
+    {
+        const auto& attributeValue = element->GetAttributeValue(attribute);
+        bool hasValue = !attributeValue.empty();
+        T value = defaultValue;
+        if (hasValue) { value = static_cast<T>(std::stoul(attributeValue)); }
+        return value;        
+    }
 }

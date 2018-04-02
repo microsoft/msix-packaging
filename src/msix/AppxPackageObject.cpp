@@ -19,6 +19,7 @@
 #include <limits>
 #include <algorithm>
 #include <array>
+#include <regex>
 
 
 namespace MSIX {
@@ -179,8 +180,7 @@ namespace MSIX {
         const std::string& publisher) :
         Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), Publisher(publisher)
     {
-        // This should go away once the schema validation is on
-        // Only name, publisher and version are required
+        // Only name, publisher and version are required.
         ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty() || Publisher.empty()), "Invalid Identity element");
 
         // TODO: validate the name and resource id as package strings
@@ -194,6 +194,23 @@ namespace MSIX {
         PublisherId = Base32Encoding(hash);
     }
 
+    AppxPackageInBundle::AppxPackageInBundle(
+        const std::string& name,
+        const std::string& version,
+        const std::uint64_t size,
+        const std::uint64_t offset,
+        const std::string& resourceId,
+        const std::string& architecture,
+        bool isApplicationType) :
+        Name(name), Version(version), Size(size), Offset(offset), ResourceId(resourceId), Architecture(architecture), IsApplication(isApplicationType)
+    {
+        // Only name, and version are required.
+        ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty()), "Invalid AppxBundleManifest.xml");
+        std::regex e (".+\.((appx)|(msix))");
+        ThrowErrorIf(Error::AppxManifestSemanticError, !std::regex_match(name, e), "Invalid FileName in AppxBundleManifest.xml");
+    }
+
+
     AppxManifestObject::AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
     {      
         auto dom = factory->CreateDomFromStream(XmlContentType::AppxManifestXml, stream);
@@ -202,11 +219,11 @@ namespace MSIX {
             AppxManifestObject* self = reinterpret_cast<AppxManifestObject*>(s);
             ThrowErrorIf(Error::AppxManifestSemanticError, (nullptr != self->m_packageId), "There must be only one Identity element at most in AppxManifest.xml");
 
-            const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Name);
-            const auto& architecture   = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ProcessorArchitecture);
-            const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Publisher);
-            const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Version);
-            const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ResourceId);
+            const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Name);
+            const auto& architecture   = identityNode->GetAttributeValue(XmlAttributeName::Identity_ProcessorArchitecture);
+            const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Identity_Publisher);
+            const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Version);
+            const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::ResourceId);
 
             self->m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisher);
             return true;             
@@ -216,10 +233,40 @@ namespace MSIX {
         ThrowErrorIfNot(Error::AppxManifestSemanticError, m_packageId, "No Identity element in AppxManifest.xml");
     }
 
+    // TODO: maybe mix with AppxManifestObject?
     AppxBundleManifestObject::AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
     {
         auto dom = factory->CreateDomFromStream(XmlContentType::AppxBundleManifestXml, stream);
-        // TODO: Create XmlVisitors
+        XmlVisitor visitorIdentity(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& identityNode)->bool
+        {
+            AppxBundleManifestObject* self = reinterpret_cast<AppxBundleManifestObject*>(s);
+            ThrowErrorIf(Error::AppxManifestSemanticError, (nullptr != self->m_packageId), "There must be only one Identity element at most in AppxBundleManifest.xml");
+
+            const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Name);
+            const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Identity_Publisher);
+            const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Version);
+
+            self->m_packageId = std::make_unique<AppxPackageId>(name, version, "", "", publisher);
+            return true;             
+        });
+        dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Identity, visitorIdentity);
+
+        // TODO use context as BlockMap
+        XmlVisitor visitorPackages(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& identityNode)->bool
+        {
+            AppxBundleManifestObject* self = reinterpret_cast<AppxBundleManifestObject*>(s);
+
+            const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Bundle_Package_FileName);
+            const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Version);
+            const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::ResourceId);
+            const auto& architecture   = identityNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Architecture);
+            const auto& type           = identityNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Type);
+            const auto size            = GetNumber<std::uint64_t>(identityNode, XmlAttributeName::Size, 0);
+            const auto offset           = GetNumber<std::uint64_t>(identityNode, XmlAttributeName::Bundle_Package_Offset, 0);
+
+            return true;             
+        });
+        dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Packages_Package, visitorPackages);
     }
 
     AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container) :
