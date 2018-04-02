@@ -69,6 +69,26 @@ namespace MSIX {
         }
     };
 
+    struct AppxPackageInBundle
+    {
+        AppxPackageInBundle(
+            const std::string& name,
+            const std::string& version,
+            const std::uint64_t size,
+            const std::uint64_t offset,
+            const std::string& resourceId,
+            const std::string& architecture,
+            bool isApplicationType);
+
+        std::string Name;
+        std::string Version;
+        std::string ResourceId;
+        std::string Architecture;
+        std::uint64_t Size;
+        std::uint64_t Offset;
+        bool IsApplication;
+    };
+
     // Object backed by AppxManifest.xml
     class AppxManifestObject final : public ComClass<AppxManifestObject, IVerifierObject>
     {
@@ -103,6 +123,7 @@ namespace MSIX {
 
     protected:
         ComPtr<IStream> m_stream;
+        std::unique_ptr<AppxPackageId> m_packageId;
     };
 
     // Storage object representing the entire AppxPackage

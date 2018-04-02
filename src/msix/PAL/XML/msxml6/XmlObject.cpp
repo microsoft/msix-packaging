@@ -67,6 +67,7 @@ struct SchemaEntry
     }
 };
 
+<<<<<<< HEAD
 typedef std::vector<SchemaEntry> NamespaceManager;
 
 //         ALL THE URIs MUST BE LOWER-CASE, ordering of schema entries defines order of placement of schema into schema cache.
@@ -114,23 +115,31 @@ SchemaEntry(L"http://schemas.microsoft.com/appx/2017/bundle",                   
 
 // must remain in same order as XmlQueryName
 static const wchar_t* xPaths[] = {
-    /* Package_Identity                          */L"/*[local-name()='Package']/*[local-name()='Identity']",
-    /* BlockMap_File                             */L"/*[local-name()='BlockMap']/*[local-name()='File']",
-    /* BlockMap_File_Block                       */L"*[local-name()='Block']",
+    /* Package_Identity                           */L"/*[local-name()='Package']/*[local-name()='Identity']",
+    /* BlockMap_File                              */L"/*[local-name()='BlockMap']/*[local-name()='File']",
+    /* BlockMap_File_Block                        */L"*[local-name()='Block']",
+    /* Bundle_Identity                            */L"/*[local-name()='Bundle']/*[local-name()='Identity']",
+    /* Bundle_Packages_Package                    */L"/*[local-name()='Bundle']/*[local-name()='Packages']/*[local-name()='Package']",
+    /* Bundle_Packages_Package_Resources_Resource */L"*[local-name()='Resources']/*[local-name()='Resource']",
 };    
 
 // must remain in same order as XmlAttributeName
 static const wchar_t* attributeNames[] = {
-    /* Package_Identity_Name                     */L"Name",
-    /* Package_Identity_ProcessorArchitecture    */L"ProcessorArchitecture",
-    /* Package_Identity_Publisher                */L"Publisher",
-    /* Package_Identity_Version                  */L"Version",
-    /* Package_Identity_ResourceId               */L"ResourceId",
+    /* Name                                       */L"Name",
+    /* ResourceId                                 */L"ResourceId",
+    /* Version                                    */L"Version",
+    /* Size                                       */L"Size",
 
-    /* BlockMap_File_Name                        */L"Name",
-    /* BlockMap_File_LocalFileHeaderSize         */L"LfhSize",
-    /* BlockMap_File_Block_Size                  */L"Size",
-    /* BlockMap_File_Block_Hash                  */L"Hash",
+    /* Package_Identity_ProcessorArchitecture     */L"ProcessorArchitecture",
+    /* Package_Identity_Publisher                 */L"Publisher",
+    
+    /* BlockMap_File_LocalFileHeaderSize          */L"LfhSize",
+    /* BlockMap_File_Block_Hash                   */L"Hash",
+
+    /* Bundle_Package_FileName                    */L"FileName",
+    /* Bundle_Package_Offset                      */L"Offset",
+    /* Bundle_Package_Type                        */L"Type",
+    /* Bundle_Package_Architecture                */L"Architecture",
 };
 
 // --------------------------------------------------------
