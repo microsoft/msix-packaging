@@ -34,6 +34,12 @@ struct State
         return true;
     }
 
+    bool CreatePackageSubfolder()
+    {
+        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
+        return true;
+    }
+
     bool SkipManifestValidation()
     {
         validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST);
@@ -73,7 +79,8 @@ struct State
         case UserSpecified::Unpack:            
             if (packageName.empty() || directoryName.empty()) {
                 return false;
-            }            
+            }
+            break;
         }
         return true;
     }
@@ -266,6 +273,8 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string& name) { return state.SetPackageName(name); }),
                 Option("-d", true, "REQUIRED, specify output directory name.",
                     [](State& state, const std::string& name) { return state.SetDirectoryName(name); }),
+                Option("-pfn", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
+                    [](State& state, const std::string&) {return state.CreatePackageSubfolder(); }),
                 Option("-mv", false, "Skips manifest validation.  By default manifest validation is enabled.",
                     [](State& state, const std::string&) { return state.SkipManifestValidation(); }),
                 Option("-sv", false, "Skips signature validation.  By default signature validation is enabled.",

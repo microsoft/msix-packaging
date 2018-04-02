@@ -8,6 +8,7 @@ set(RESOURCES_CERTS)
 set(RESOURCES_BLOCKMAP)
 set(RESOURCES_CONTENTTYPE)
 set(RESOURCES_APPXMANIFEST)
+set(RESOURCES_APPXBUNDLEMANIFEST)
 
 if(NOT WIN32) # Always add the certs for non-Windows.
     list(APPEND RESOURCES_CERTS
@@ -34,8 +35,6 @@ if(HAVE_MSXML6)
     list(APPEND RESOURCES_APPXMANIFEST
     "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"
     "AppxPackaging/Manifest/Schema/2015/AppxPhoneManifestSchema2014.xsd"
-    "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2013.xsd"
-    "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"
     "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"
     "AppxPackaging/Manifest/Schema/2015/DesktopManifestSchema.xsd"
     "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"
@@ -52,12 +51,10 @@ if(HAVE_MSXML6)
     "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema.xsd"
     "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema_v2.xsd"
     "AppxPackaging/Manifest/Schema/2015/XboxManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"
     "AppxPackaging/Manifest/Schema/2016/DesktopManifestSchema_v2.xsd"
     "AppxPackaging/Manifest/Schema/2016/RestrictedCapabilitiesManifestSchema_v3.xsd"
     "AppxPackaging/Manifest/Schema/2016/UapManifestSchema_v4.xsd"
     "AppxPackaging/Manifest/Schema/2016/WindowsCapabilitiesManifestSchema_v3.xsd"
-    "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd"
     "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"
     "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v3.xsd"
     "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v4.xsd"
@@ -69,16 +66,22 @@ else() # xerces
     # TODO: make changes required to make the xsds WC3 compliant.
 endif()
 
-endif(USE_VALIDATION_PARSER) 
+list(APPEND RESOURCES_APPXBUNDLEMANIFEST
+    "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2013.xsd"
+    "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"
+    "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"
+    "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd")
+
+endif(USE_VALIDATION_PARSER)
 
 # Create zip file. Use execute_process to run the command while CMake is procesing.
 message(STATUS "Resource files:")
-foreach(FILE ${RESOURCES_BLOCKMAP} ${RESOURCES_CONTENTTYPE} ${RESOURCES_APPXMANIFEST} ${RESOURCES_CERTS})
+foreach(FILE ${RESOURCES_BLOCKMAP} ${RESOURCES_CONTENTTYPE} ${RESOURCES_APPXMANIFEST} ${RESOURCES_CERTS} ${RESOURCES_APPXBUNDLEMANIFEST})
     message(STATUS "\t${FILE}")
 endforeach(FILE)
 
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar cvf "${CMAKE_BINARY_DIR}/resources.zip" --format=zip -- ${RESOURCES_BLOCKMAP} ${RESOURCES_CONTENTTYPE} ${RESOURCES_APPXMANIFEST} ${RESOURCES_CERTS}
+    COMMAND ${CMAKE_COMMAND} -E tar cvf "${CMAKE_BINARY_DIR}/resources.zip" --format=zip -- ${RESOURCES_BLOCKMAP} ${RESOURCES_CONTENTTYPE} ${RESOURCES_APPXMANIFEST} ${RESOURCES_CERTS} ${RESOURCES_APPXBUNDLEMANIFEST}
     WORKING_DIRECTORY "${CMAKE_PROJECT_ROOT}/resources"
     OUTPUT_QUIET
 )
@@ -98,10 +101,11 @@ function(GetResourceHpp LIST OUTPUT)
     set(${OUTPUT} ${RESULT} PARENT_SCOPE)
 endfunction()
 
-GetResourceHpp("${RESOURCES_BLOCKMAP}"     BLOCKMAP_HPP)
-GetResourceHpp("${RESOURCES_CONTENTTYPE}"  CONTENTTYPE_HPP)
-GetResourceHpp("${RESOURCES_APPXMANIFEST}" APPXMANIFEST_HPP)
-GetResourceHpp("${RESOURCES_CERTS}"        CERTS_HPP)
+GetResourceHpp("${RESOURCES_BLOCKMAP}"           BLOCKMAP_HPP)
+GetResourceHpp("${RESOURCES_CONTENTTYPE}"        CONTENTTYPE_HPP)
+GetResourceHpp("${RESOURCES_APPXMANIFEST}"       APPXMANIFEST_HPP)
+GetResourceHpp("${RESOURCES_CERTS}"              CERTS_HPP)
+GetResourceHpp("${RESOURCES_APPXBUNDLEMANIFEST}" APPXBUNDLEMANIFEST_HPP)
 
 set(RESOURCE_HEADER "//
 //
@@ -122,7 +126,8 @@ namespace MSIX {
             Certificates,
             ContentType,
             BlockMap,
-            AppxManifest
+            AppxManifest,
+            AppxBundleManifest
         };
 
         const size_t resourceLength = ${RESOURCE_LENGTH};
@@ -145,6 +150,9 @@ namespace MSIX {
                 break;
             case Resource::AppxManifest:
                 ${APPXMANIFEST_HPP}
+                break;
+            case Resource::AppxBundleManifest:
+                ${APPXBUNDLEMANIFEST_HPP}
                 break;
         }
         return result;

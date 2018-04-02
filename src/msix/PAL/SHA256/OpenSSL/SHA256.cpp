@@ -8,10 +8,7 @@
 #include "openssl/sha.h"
 
 namespace MSIX {
-    bool SHA256::ComputeHash(
-        /*in*/ std::uint8_t *buffer, 
-        /*in*/ std::uint32_t cbBuffer, 
-        /*inout*/ std::vector<uint8_t>& hash)
+    bool SHA256::ComputeHash(std::uint8_t *buffer, std::uint32_t cbBuffer, std::vector<uint8_t>& hash)
     {
         hash.resize(SHA256_DIGEST_LENGTH);
         ::SHA256(buffer, cbBuffer, hash.data());
