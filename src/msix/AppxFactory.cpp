@@ -81,11 +81,29 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
+    // IAppxBundleFactory
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept try
+    {
+        return static_cast<HRESULT>(Error::NotImplemented);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) noexcept try
+    {
+        // TODO: Implement. Create helper that is called by CreateBundleReader and CreatePackageReader 
+        // and then verify that is a bundle.
+        return static_cast<HRESULT>(Error::NotImplemented);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept try
+    {
+        return static_cast<HRESULT>(Error::NotImplemented);
+    } CATCH_RETURN();
+
     // IMSIXFactory
     HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
-        auto intermediate = utf8_to_utf16(internal);
+        auto intermediate = utf8_to_wstring(internal);
         std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
         *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
         ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");

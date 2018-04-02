@@ -30,12 +30,12 @@ namespace MSIX {
         {
         }
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override try
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override
         {
             return m_factory->MarshalOutString(m_name, fileName);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override try
+        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override
         {
             return m_factory->MarshalOutString(m_contentType, contentType);
         } CATCH_RETURN();
