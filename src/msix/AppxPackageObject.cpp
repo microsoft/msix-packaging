@@ -383,7 +383,7 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxManifestReader** manifestReader) noexcept
     {
         return static_cast<HRESULT>(Error::NotImplemented);
-    } CATCH_RETURN();
+    }
 
     // IAppxBundleReader
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_BUNDLE_FOOTPRINT_FILE_TYPE fileType, IAppxFile **footprintFile) noexcept try
