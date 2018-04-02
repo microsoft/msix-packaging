@@ -70,7 +70,7 @@ namespace MSIX {
     };
 
     // Object backed by AppxManifest.xml
-    class AppxManifestObject : public ComClass<AppxManifestObject, IVerifierObject>
+    class AppxManifestObject final : public ComClass<AppxManifestObject, IVerifierObject>
     {
     public:
         AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
@@ -90,7 +90,7 @@ namespace MSIX {
     };
 
     // Storage object representing the entire AppxPackage
-    class AppxPackageObject : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader>
+    class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader>
     {
     public:
         AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container);
@@ -100,17 +100,17 @@ namespace MSIX {
         void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to) override;
 
         // IAppxPackageReader
-        HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override;
-        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file) override;
-        HRESULT STDMETHODCALLTYPE GetPayloadFile(LPCWSTR fileName, IAppxFile** file) override;
-        HRESULT STDMETHODCALLTYPE GetPayloadFiles(IAppxFilesEnumerator**  filesEnumerator) override;
-        HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) override;
+        HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPayloadFile(LPCWSTR fileName, IAppxFile** file) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPayloadFiles(IAppxFilesEnumerator**  filesEnumerator) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) noexcept override;
 
         // IAppxBundleReader
-        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_BUNDLE_FOOTPRINT_FILE_TYPE fileType, IAppxFile **footprintFile)  override;
-        HRESULT STDMETHODCALLTYPE GetManifest(IAppxBundleManifestReader **manifestReader) override;
-        HRESULT STDMETHODCALLTYPE GetPayloadPackages(IAppxFilesEnumerator **payloadPackages) override;
-        HRESULT STDMETHODCALLTYPE GetPayloadPackage(LPCWSTR fileName, IAppxFile **payloadPackage) override;
+        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_BUNDLE_FOOTPRINT_FILE_TYPE fileType, IAppxFile **footprintFile) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetManifest(IAppxBundleManifestReader **manifestReader) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPayloadPackages(IAppxFilesEnumerator **payloadPackages) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPayloadPackage(LPCWSTR fileName, IAppxFile **payloadPackage) noexcept override;
         // Same signature as IAppxPackageReader
         // HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override; 
 
@@ -121,7 +121,7 @@ namespace MSIX {
         const char*               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
         ComPtr<IStream>           GetFile(const std::string& fileName) override;
-        void                      RemoveFile(const std::string& fileName) override;
+
         ComPtr<IStream>           OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
 
     protected:
@@ -144,7 +144,7 @@ namespace MSIX {
         bool                        m_isBundle = false;
     };
 
-    class AppxFilesEnumerator : public MSIX::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>
+    class AppxFilesEnumerator final : public MSIX::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>
     {
     protected:
         ComPtr<IStorageObject>      m_storage;
@@ -159,14 +159,13 @@ namespace MSIX {
         }
 
         // IAppxFilesEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) override
-        {   return ResultOf([&]{
-                ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
-                ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-                *file = m_storage->GetFile(m_files[m_cursor]).As<IAppxFile>().Detach();
-                return static_cast<HRESULT>(Error::OK);
-            });
-        }
+        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxFile** file) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter,(file == nullptr || *file != nullptr), "bad pointer");
+            ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
+            *file = m_storage->GetFile(m_files[m_cursor]).As<IAppxFile>().Detach();
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
         HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) noexcept override
         {   

@@ -26,12 +26,6 @@ namespace MSIX {
         NOTIMPLEMENTED;
     }
     
-    void DirectoryObject::RemoveFile(const std::string& fileName)
-    {
-        // TODO: Implement when standing-up the pack side for test validation purposes
-        NOTIMPLEMENTED;
-    }
-    
     const char* DirectoryObject::GetPathSeparator() { return "/"; }
     
     #define DEFAULT_MODE S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH

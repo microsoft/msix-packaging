@@ -51,9 +51,6 @@ public:
     // Obtains a pointer to a stream representing the file that exists in the storage object
     virtual MSIX::ComPtr<IStream> GetFile(const std::string& fileName) = 0;
 
-    // Removes a file by name from the storage object.  If the file does not exist, the operation is a no-op
-    virtual void RemoveFile(const std::string& fileName) = 0;
-
     // Opens a stream to a file by name in the storage object.  If the file does not exist and mode is read,
     // or read + update, then nullptr is returned.  If the file is opened with write and it does not exist, 
     // then the file is created and an empty stream to the file is handed back to the caller.

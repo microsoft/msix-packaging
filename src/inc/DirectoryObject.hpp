@@ -16,7 +16,7 @@
 
 namespace MSIX {
 
-    class DirectoryObject : public ComClass<DirectoryObject, IStorageObject>
+    class DirectoryObject final : public ComClass<DirectoryObject, IStorageObject>
     {
     public:
         DirectoryObject(std::string root) : m_root(std::move(root)) {}
@@ -25,7 +25,7 @@ namespace MSIX {
         const char*              GetPathSeparator() override;
         std::vector<std::string> GetFileNames(FileNameOptions options) override;
         ComPtr<IStream>          GetFile(const std::string& fileName) override;
-        void                     RemoveFile(const std::string& fileName) override;
+
         ComPtr<IStream>          OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
 
     protected:

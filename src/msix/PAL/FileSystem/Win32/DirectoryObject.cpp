@@ -112,12 +112,6 @@ namespace MSIX {
         NOTIMPLEMENTED;
     }
 
-    void DirectoryObject::RemoveFile(const std::string& fileName)
-    {
-        // TODO: Implement when standing-up the pack side for test validation purposes.
-        NOTIMPLEMENTED;
-    }
-
     ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
         std::vector<std::string> directories;

@@ -22,118 +22,109 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreatePackageReader (
         IStream* inputStream,
-        IAppxPackageReader** packageReader)
+        IAppxPackageReader** packageReader) noexcept try
     {
-        return ResultOf([&]() {
-            ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
-            ComPtr<IMSIXFactory> self;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
-            auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), inputStream);
-            auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, zip.Get());
-            *packageReader = result.Detach();
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
+        ComPtr<IMSIXFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
+        ComPtr<IStream> input(inputStream);
+        auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), input);
+        auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, zip);
+        *packageReader = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateManifestReader(
         IStream* inputStream,
-        IAppxManifestReader** manifestReader)
+        IAppxManifestReader** manifestReader) noexcept
     {
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBlockMapReader (
         IStream* inputStream,
-        IAppxBlockMapReader** blockMapReader)
+        IAppxBlockMapReader** blockMapReader) noexcept try
     {
-        return ResultOf([&]() {
-            ThrowErrorIf(Error::InvalidParameter, (
-                inputStream == nullptr || 
-                blockMapReader == nullptr || 
-                *blockMapReader != nullptr
-            ),"bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (
+            inputStream == nullptr || 
+            blockMapReader == nullptr || 
+            *blockMapReader != nullptr
+        ),"bad pointer.");
 
-            ComPtr<IMSIXFactory> self;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
-            ComPtr<IStream> stream(inputStream);
-            *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), stream).Detach();
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ComPtr<IMSIXFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
+        ComPtr<IStream> stream(inputStream);
+        *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), stream).Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateValidatedBlockMapReader (
         IStream* inputStream,
         LPCWSTR signatureFileName,
-        IAppxBlockMapReader** blockMapReader)
+        IAppxBlockMapReader** blockMapReader) noexcept try
     {
-        return ResultOf([&]() {
-            ThrowErrorIf(Error::InvalidParameter, (
-                inputStream == nullptr || 
-                signatureFileName == nullptr ||
-                *signatureFileName == '\0' ||
-                blockMapReader == nullptr || 
-                *blockMapReader != nullptr
-            ),"bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (
+            inputStream == nullptr || 
+            signatureFileName == nullptr ||
+            *signatureFileName == '\0' ||
+            blockMapReader == nullptr || 
+            *blockMapReader != nullptr
+        ),"bad pointer.");
 
-            ComPtr<IMSIXFactory> self;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
-            auto stream = ComPtr<IStream>::Make<FileStream>(utf16_to_utf8(signatureFileName), FileStream::Mode::READ);
-            auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream);
-            ComPtr<IStream> input(inputStream);
-            auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", input);
-            *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), validatedStream).Detach();
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ComPtr<IMSIXFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
+        auto stream = ComPtr<IStream>::Make<FileStream>(utf16_to_utf8(signatureFileName), FileStream::Mode::READ);
+        auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream);
+        ComPtr<IStream> input(inputStream);
+        auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", input);
+        *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), validatedStream).Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     // IAppxBundleFactory
-    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter)
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept try
     {
         return static_cast<HRESULT>(Error::NotImplemented);
-    }
+    } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader)
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) noexcept try
     {
         // TODO: Implement. Create helper that is called by CreateBundleReader and CreatePackageReader 
         // and then verify that is a bundle.
         return static_cast<HRESULT>(Error::NotImplemented);
-    }
+    } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader)
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept try
     {
         return static_cast<HRESULT>(Error::NotImplemented);
-    }
+    } CATCH_RETURN();
 
     // IMSIXFactory
-    HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result)
+    HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result) noexcept try
     {
-        return ResultOf([&]() {
-            ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
-            auto intermediate = utf8_to_wstring(internal);
-            std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
-            *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
-            ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");
-            std::memset(reinterpret_cast<void*>(*result), 0, countBytes);
-            std::memcpy(reinterpret_cast<void*>(*result),
-                        reinterpret_cast<void*>(const_cast<wchar_t*>(intermediate.c_str())),
-                        countBytes - sizeof(wchar_t));
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
+        auto intermediate = utf8_to_wstring(internal);
+        std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
+        *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
+        ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");
+        std::memset(reinterpret_cast<void*>(*result), 0, countBytes);
+        std::memcpy(reinterpret_cast<void*>(*result),
+                    reinterpret_cast<void*>(const_cast<wchar_t*>(intermediate.c_str())),
+                    countBytes - sizeof(wchar_t));
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
-    HRESULT AppxFactory::MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer)
+    HRESULT AppxFactory::MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) noexcept try
     {
-        return ResultOf([&]{
-            ThrowErrorIf(Error::InvalidParameter, (size==nullptr || buffer == nullptr || *buffer != nullptr), "Bad pointer");
-            *size = static_cast<UINT32>(data.size());
-            *buffer = reinterpret_cast<BYTE*>(m_memalloc(data.size()));
-            ThrowErrorIfNot(Error::OutOfMemory, (*buffer), "Allocation failed");
-            std::memcpy(reinterpret_cast<void*>(*buffer),
-                        reinterpret_cast<void*>(data.data()),
-                        data.size());
-            return static_cast<HRESULT>(Error::OK);
-        });
-    }
+        ThrowErrorIf(Error::InvalidParameter, (size==nullptr || buffer == nullptr || *buffer != nullptr), "Bad pointer");
+        *size = static_cast<UINT32>(data.size());
+        *buffer = reinterpret_cast<BYTE*>(m_memalloc(data.size()));
+        ThrowErrorIfNot(Error::OutOfMemory, (*buffer), "Allocation failed");
+        std::memcpy(reinterpret_cast<void*>(*buffer),
+                    reinterpret_cast<void*>(data.data()),
+                    data.size());
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     ComPtr<IStream> AppxFactory::GetResource(const std::string& resource)
     {

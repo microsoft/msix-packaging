@@ -31,7 +31,7 @@ typedef std::unique_ptr<void, unique_hash_handle_deleter> unique_hash_handle;
 
 namespace MSIX {
 
-    class NtStatusException : public Exception
+    class NtStatusException final : public Exception
     {
     public:
         NtStatusException(std::string& message, NTSTATUS error) : Exception(message, static_cast<std::uint32_t>(error)) {}

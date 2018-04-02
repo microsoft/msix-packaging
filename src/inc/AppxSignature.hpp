@@ -57,7 +57,7 @@ namespace MSIX {
     };    
 
     // Object backed by AppxSignature.p7x
-    class AppxSignatureObject : public ComClass<AppxSignatureObject, IVerifierObject>
+    class AppxSignatureObject final : public ComClass<AppxSignatureObject, IVerifierObject>
     {
     public:
 
