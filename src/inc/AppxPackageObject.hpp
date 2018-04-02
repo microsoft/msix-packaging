@@ -90,7 +90,7 @@ namespace MSIX {
     };
 
     // Storage object representing the entire AppxPackage
-    class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject>
+    class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader>
     {
     public:
         AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container);
@@ -105,6 +105,14 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetPayloadFile(LPCWSTR fileName, IAppxFile** file) noexcept override;
         HRESULT STDMETHODCALLTYPE GetPayloadFiles(IAppxFilesEnumerator**  filesEnumerator) noexcept override;
         HRESULT STDMETHODCALLTYPE GetManifest(IAppxManifestReader**  manifestReader) noexcept override;
+
+        // IAppxBundleReader
+        HRESULT STDMETHODCALLTYPE GetFootprintFile(APPX_BUNDLE_FOOTPRINT_FILE_TYPE fileType, IAppxFile **footprintFile) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetManifest(IAppxBundleManifestReader **manifestReader) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPayloadPackages(IAppxFilesEnumerator **payloadPackages) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPayloadPackage(LPCWSTR fileName, IAppxFile **payloadPackage) noexcept override;
+        // Same signature as IAppxPackageReader
+        // HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override; 
 
         // returns a list of the footprint files found within this package.
         std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
