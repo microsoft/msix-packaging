@@ -56,16 +56,16 @@ namespace MSIX {
         std::string ResourceId;
         std::string Architecture;
         std::string Publisher;
-        std::string PublisherHash;
+        std::string PublisherId;
 
         std::string GetPackageFullName()
         {
-            return Name + "_" + Version + "_" + Architecture + "_" + ResourceId + "_" + PublisherHash;
+            return Name + "_" + Version + "_" + Architecture + "_" + ResourceId + "_" + PublisherId;
         }
 
         std::string GetPackageFamilyName()
         {
-            return Name + "_" + PublisherHash;
+            return Name + "_" + PublisherId;
         }
     };
 
@@ -80,9 +80,9 @@ namespace MSIX {
         bool HasStream() override { return !!m_stream; }
         ComPtr<IStream> GetStream() override { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
+        const std::string GetPackageFullName() override { return m_packageId->GetPackageFullName(); }
 
         AppxPackageId* GetPackageId()    { return m_packageId.get(); }
-        std::string GetPackageFullName() { return m_packageId->GetPackageFullName(); }
 
     protected:
         ComPtr<IStream> m_stream;
@@ -123,9 +123,11 @@ namespace MSIX {
         ComPtr<IStream>           GetFile(const std::string& fileName) override;
 
         ComPtr<IStream>           OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
-        void                      CommitChanges() override;
 
     protected:
+        // Helper methods
+        void VerifyFile(const ComPtr<IStream>& stream, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal);
+
         std::map<std::string, ComPtr<IStream>>  m_streams;
 
         MSIX_VALIDATION_OPTION      m_validation = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
@@ -137,6 +139,9 @@ namespace MSIX {
         
         std::vector<std::string>    m_payloadFiles;
         std::vector<std::string>    m_footprintFiles;
+        std::vector<std::string>    m_payloadPackages;
+
+        bool                        m_isBundle = false;
     };
 
     class AppxFilesEnumerator final : public MSIX::ComClass<AppxFilesEnumerator, IAppxFilesEnumerator>

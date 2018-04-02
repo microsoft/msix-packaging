@@ -245,7 +245,7 @@ public:
     {
         std::vector<std::uint8_t> result;
 
-        auto intermediate = GetAttributeValue(attribute);;
+        auto intermediate = GetAttributeValue(attribute);
         ThrowErrorIfNot(Error::InvalidParameter, (0 == (intermediate.length() % 4)), "invalid base64 encoding");
         for(std::size_t index=0; index < intermediate.length(); index += 4)
         {
