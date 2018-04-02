@@ -65,7 +65,7 @@ namespace MSIX {
         ThrowStatusIfFailed(BCryptGetProperty(
             algHandle.get(),            // Handle to a CNG object
             BCRYPT_HASH_LENGTH,         // Property name (null terminated unicode string)
-            (PBYTE)&hashLength,         // Address of the output buffer which recieves the property value
+            (PBYTE)&hashLength,         // Address of the output buffer which receives the property value
             sizeof(hashLength),         // Size of the buffer in bytes
             &resultLength,              // Number of bytes that were copied into the buffer
             0),                         // Flags
@@ -79,7 +79,7 @@ namespace MSIX {
         ThrowStatusIfFailed(BCryptCreateHash(
             algHandle.get(),            // Handle to an algorithm provider                 
             &hashHandleT,               // A pointer to a hash handle - can be a hash or hmac object
-            nullptr,                    // Pointer to the buffer that recieves the hash/hmac object
+            nullptr,                    // Pointer to the buffer that receives the hash/hmac object
             0,                          // Size of the buffer in bytes
             nullptr,                    // A pointer to a key to use for the hash or MAC
             0,                          // Size of the key in bytes
