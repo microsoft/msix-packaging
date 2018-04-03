@@ -200,12 +200,12 @@ namespace MSIX {
         const std::uint64_t size,
         const std::uint64_t offset,
         const std::string& resourceId,
-        const std::string& architecture,
-        bool isApplicationType) :
-        Name(name), Version(version), Size(size), Offset(offset), ResourceId(resourceId), Architecture(architecture), IsApplication(isApplicationType)
+        const std::string& architecture) :
+        Name(name), Version(version), Size(size), Offset(offset), ResourceId(resourceId), Architecture(architecture)
     {
         // Only name, and version are required.
         ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty()), "Invalid AppxBundleManifest.xml");
+        
         std::regex e (".+\.((appx)|(msix))");
         ThrowErrorIf(Error::AppxManifestSemanticError, !std::regex_match(name, e), "Invalid FileName in AppxBundleManifest.xml");
     }
@@ -233,7 +233,6 @@ namespace MSIX {
         ThrowErrorIfNot(Error::AppxManifestSemanticError, m_packageId, "No Identity element in AppxManifest.xml");
     }
 
-    // TODO: maybe mix with AppxManifestObject?
     AppxBundleManifestObject::AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
     {
         auto dom = factory->CreateDomFromStream(XmlContentType::AppxBundleManifestXml, stream);
@@ -251,22 +250,74 @@ namespace MSIX {
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Identity, visitorIdentity);
 
-        // TODO use context as BlockMap
-        XmlVisitor visitorPackages(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& identityNode)->bool
+        struct _context
         {
-            AppxBundleManifestObject* self = reinterpret_cast<AppxBundleManifestObject*>(s);
+            AppxBundleManifestObject* self;
+            IXmlDom*                  dom;
+        };
+        _context context = { this, dom.Get() };
 
-            const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Bundle_Package_FileName);
-            const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Version);
-            const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::ResourceId);
-            const auto& architecture   = identityNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Architecture);
-            const auto& type           = identityNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Type);
-            const auto size            = GetNumber<std::uint64_t>(identityNode, XmlAttributeName::Size, 0);
-            const auto offset           = GetNumber<std::uint64_t>(identityNode, XmlAttributeName::Bundle_Package_Offset, 0);
+        XmlVisitor visitorPackages(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& packageNode)->bool
+        {
+            _context* context = reinterpret_cast<_context*>(c);
+            const auto& name = packageNode->GetAttributeValue(XmlAttributeName::Bundle_Package_FileName);
 
+            std::ostringstream builder;
+            builder << "Duplicate file: '" << name << "' specified in AppxBundleManifest.xml.";
+            ThrowErrorIf(Error::BlockMapSemanticError,
+                (context->self->m_applicationPackages.find(name) != context->self->m_applicationPackages.end()) ||
+                (context->self->m_resourcePackages.find(name) != context->self->m_resourcePackages.end()),
+                builder.str().c_str());
+
+            const auto& version        = packageNode->GetAttributeValue(XmlAttributeName::Version);
+            const auto& resourceId     = packageNode->GetAttributeValue(XmlAttributeName::ResourceId);
+            const auto& architecture   = packageNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Architecture);
+            const auto& type           = packageNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Type);
+            const auto size            = GetNumber<std::uint64_t>(packageNode, XmlAttributeName::Size, 0);
+            const auto offset          = GetNumber<std::uint64_t>(packageNode, XmlAttributeName::Bundle_Package_Offset, 0);
+            
+            bool isResourcePackage = (type.empty() || type == "resource"); // default value is resource
+            auto package = std::make_unique<AppxPackageInBundle>(name, version, size, offset, resourceId, architecture);
+            
+            std::set<std::string> languages;
+            XmlVisitor visitor(static_cast<void*>(&languages), [](void* l, const ComPtr<IXmlElement>& resourceNode)->bool
+            {
+                std::set<std::string>* languages = reinterpret_cast<std::set<std::string>*>(l);
+                const auto& language = resourceNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Resources_Resource_Language);
+                if (!language.empty()) { languages->insert(language); }
+                return true;
+            });
+            context->dom->ForEachElementIn(packageNode, XmlQueryName::Bundle_Packages_Package_Resources_Resource, visitor);
+            package->Languages = std::move(languages);
+
+            if (isResourcePackage)
+            {   // For now, we only support langauges resource packages
+                if(!package->Languages.empty())
+                {
+                    context->self->m_resourcePackages.insert(std::make_pair(name, std::move(package)));
+                }
+            }
+            else
+            {
+                context->self->m_applicationPackages.insert(std::make_pair(name, std::move(package)));
+            }
             return true;             
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Packages_Package, visitorPackages);
+    }
+
+    std::vector<std::string> AppxBundleManifestObject::GetPackagesNames()
+    {
+        std::vector<std::string> result;
+        for (auto const& package : m_applicationPackages)
+        {
+            result.push_back(package.first);
+        }
+        for (auto const& package : m_resourcePackages)
+        {
+            result.push_back(package.first);
+        }
+        return result;
     }
 
     AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container) :
@@ -370,15 +421,15 @@ namespace MSIX {
             // AppxMetadata/AppxBundleManifest.xml before, so just check the size.
             ThrowErrorIfNot(Error::BlockMapSemanticError, ((blockMapFiles.size() == 1)), "Block map contains invalid files.");
             
-            // TODO: change this to get the files in from the bundle manifest and compare with m_container when the parsing is done.
-            for (const auto& fileName : m_container->GetFileNames(FileNameOptions::PayloadOnly))
-            {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
-                if (footPrintFile == std::end(footPrintFileNames))
-                {
-                    m_payloadPackages.push_back(fileName);
-                    m_streams[fileName] = std::move(m_container->GetFile(fileName));
-                    filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
-                }
+            auto bundleInfo = m_appxBundleManifest.As<IBundleInfo>();
+            for (const auto& fileName : bundleInfo->GetPackagesNames())
+            {
+                auto fileStream = m_container->GetFile(fileName);
+                ThrowErrorIfNot(Error::FileNotFound, fileStream, "Package is not in container"); // This will change when we support flat bundles
+                m_payloadPackages.push_back(fileName);
+                m_streams[fileName] = std::move(fileStream);
+                // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like 
+                // resource packages that are not languages packages.
             }
         }
         else
@@ -395,11 +446,11 @@ namespace MSIX {
                     filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
                 }
             }
-        }
 
-        // If the map is not empty, there's a file in the container that didn't go to the footprint or payload
-        // files. (eg. payload file missing in the AppxBlockMap.xml)
-        ThrowErrorIfNot(Error::BlockMapSemanticError, (filesToProcess.empty()), "Payload file not described in AppxBlockMap.xml");
+            // If the map is not empty, there's a file in the container that didn't go to the footprint or payload
+            // files. (eg. payload file missing in the AppxBlockMap.xml)
+            ThrowErrorIfNot(Error::BlockMapSemanticError, (filesToProcess.empty()), "Payload file not described in AppxBlockMap.xml");
+        }
     }
 
     // Verify file in OPC and BlockMap

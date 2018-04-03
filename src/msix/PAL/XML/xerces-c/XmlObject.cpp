@@ -47,30 +47,31 @@ SpecializeUuidOfImpl(IXercesElement);
 namespace MSIX {
 
 static std::map<XmlQueryName, std::string> xPaths = {
-    {XmlQueryName::Package_Identity                             ,"/Package/Identity"},
-    {XmlQueryName::BlockMap_File                                ,"/BlockMap/File"},
-    {XmlQueryName::BlockMap_File_Block                          ,"./Block"},
-    {XmlQueryName::Bundle_Identity                              ,"/Bundle/Identity"},
-    {XmlQueryName::Bundle_Packages_Package                      ,"/Bundle/Packages/Package"},
-    {XmlQueryName::Bundle_Packages_Package_Resources_Resource   ,"./Resources/Resource"},
+    {XmlQueryName::Package_Identity                               ,"/Package/Identity"},
+    {XmlQueryName::BlockMap_File                                  ,"/BlockMap/File"},
+    {XmlQueryName::BlockMap_File_Block                            ,"./Block"},
+    {XmlQueryName::Bundle_Identity                                ,"/Bundle/Identity"},
+    {XmlQueryName::Bundle_Packages_Package                        ,"/Bundle/Packages/Package"},
+    {XmlQueryName::Bundle_Packages_Package_Resources_Resource     ,"./Resources/Resource"},
 };
 
 static std::map<XmlAttributeName, std::string> attributeNames = {
-    {XmlAttributeName::Name                                     ,L"Name"},
-    {XmlAttributeName::ResourceId                               ,L"ResourceId"},
-    {XmlAttributeName::Version                                  ,L"Version"},
-    {XmlAttributeName::Size                                     ,L"Size"},
+    {XmlAttributeName::Name                                       ,"Name"},
+    {XmlAttributeName::ResourceId                                 ,"ResourceId"},
+    {XmlAttributeName::Version                                    ,"Version"},
+    {XmlAttributeName::Size                                       ,"Size"},
 
-    {XmlAttributeName::Identity_ProcessorArchitecture           ,L"ProcessorArchitecture"},
-    {XmlAttributeName::Identity_Publisher                       ,L"Publisher"},
+    {XmlAttributeName::Identity_ProcessorArchitecture             ,"ProcessorArchitecture"},
+    {XmlAttributeName::Identity_Publisher                         ,"Publisher"},
 
-    {XmlAttributeName::BlockMap_File_LocalFileHeaderSize        ,L"LfhSize"},    
-    {XmlAttributeName::BlockMap_File_Block_Hash                 ,L"Hash"},
+    {XmlAttributeName::BlockMap_File_LocalFileHeaderSize          ,"LfhSize"},    
+    {XmlAttributeName::BlockMap_File_Block_Hash                   ,"Hash"},
 
-    {XmlAttributeName::Bundle_Package_FileName                  ,L"FileName"},
-    {XmlAttributeName::Bundle_Package_Offset                    ,L"Offset"},
-    {XmlAttributeName::Bundle_Package_Type                      ,L"Type"},
-    {XmlAttributeName::Bundle_Package_Architecture              ,L"Architecture"},
+    {XmlAttributeName::Bundle_Package_FileName                    ,"FileName"},
+    {XmlAttributeName::Bundle_Package_Offset                      ,"Offset"},
+    {XmlAttributeName::Bundle_Package_Type                        ,"Type"},
+    {XmlAttributeName::Bundle_Package_Architecture                ,"Architecture"},
+    {XmlAttributeName::Bundle_Package_Resources_Resource_Language ,"Language"},
 };
 
 class ParsingException final : public XERCES_CPP_NAMESPACE::ErrorHandler

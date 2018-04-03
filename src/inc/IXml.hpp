@@ -35,21 +35,22 @@ enum class XmlQueryName : std::uint8_t
 // defines attribute names for use in IXmlElement-> [GetAttributeValue|GetBase64DecodedAttributeValue]
 enum class XmlAttributeName : std::uint8_t
 {
-    Name                                    = 0,
-    ResourceId                              = 1,
-    Version                                 = 2,
-    Size                                    = 3,
+    Name                                       = 0,
+    ResourceId                                 = 1,
+    Version                                    = 2,
+    Size                                       = 3,
 
-    Identity_ProcessorArchitecture          = 4,
-    Identity_Publisher                      = 5,
+    Identity_ProcessorArchitecture             = 4,
+    Identity_Publisher                         = 5,
 
-    BlockMap_File_LocalFileHeaderSize       = 6,
-    BlockMap_File_Block_Hash                = 7,
+    BlockMap_File_LocalFileHeaderSize          = 6,
+    BlockMap_File_Block_Hash                   = 7,
 
-    Bundle_Package_FileName                 = 8,
-    Bundle_Package_Offset                   = 9,
-    Bundle_Package_Type                     = 10,
-    Bundle_Package_Architecture             = 11,
+    Bundle_Package_FileName                    = 8,
+    Bundle_Package_Offset                      = 9,
+    Bundle_Package_Type                        = 10,
+    Bundle_Package_Architecture                = 11,
+    Bundle_Package_Resources_Resource_Language = 12,
 };
 
 EXTERN_C const IID IID_IXmlElement;
