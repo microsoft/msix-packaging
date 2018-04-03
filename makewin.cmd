@@ -3,10 +3,10 @@ set var=%1
 set val=%2
 echo var = %var%
 echo val = %val%
-IF /I "%val%" == "NO_VALIDATE" (
-    set val="-DUSE_VALIDATION_PARSER=off"
-) ELSE (
+IF /I "%val%" == "VALIDATE" (
     set val="-DUSE_VALIDATION_PARSER=on"
+) ELSE (
+    set val="-DUSE_VALIDATION_PARSER=off"
 )
 
 IF /I "%var%" == "WIN32" (
@@ -33,7 +33,7 @@ IF /I "%var%" == "WIN32" (
 goto EXIT
 :FAIL
 echo specify one of [WIN32, WIN32-x64, WIN32chk, WIN32-x64chk] for 1st option
-echo specify NO_VALIDATE for 2nd option to disable XML schema validation.
+echo specify VALIDATE for 2nd option to disable XML schema validation.
 EXIT /B 0
 :Exit
 echo done.
