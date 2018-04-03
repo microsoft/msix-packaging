@@ -376,7 +376,7 @@ public:
         if (!stripIgnorableNamespaces)
         {   
             Variant var(stream);
-            ThrowHrIfFailedWithIErrorInfo(m_xmlDocument->load(var, &success));
+            ThrowHrIfFailed(m_xmlDocument->load(var, &success));
         }
         else
         {   /* Because load will only parse, a failure to read the stream (e.g. due to a blockmap 

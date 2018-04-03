@@ -278,7 +278,7 @@ public:
         m_parser = std::make_unique<XERCES_CPP_NAMESPACE::XercesDOMParser>(nullptr, XERCES_CPP_NAMESPACE::XMLPlatformUtils::fgMemoryManager, grammarPool.get());
         
         // For Non validation parser GetResources will return an empty vector for the ContentType, BlockMap and AppxBundleManifest.
-        // XercesDom will only parse the schemas if the vector is not empty. // If not, it will only see that it is valid xml.
+        // XercesDom will only parse the schemas if the vector is not empty. If not, it will only see that it is valid xml.
         bool HasSchemas = ((schemas != nullptr) && (schemas->begin() != schemas->end()));
         m_parser->setValidationScheme(HasSchemas ? 
             XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Always : 
