@@ -291,7 +291,7 @@ namespace MSIX {
             package->Languages = std::move(languages);
 
             if (isResourcePackage)
-            {   // For now, we only support langauges resource packages
+            {   // For now, we only support languages resource packages
                 if(!package->Languages.empty())
                 {
                     context->self->m_resourcePackages.insert(std::make_pair(name, std::move(package)));
