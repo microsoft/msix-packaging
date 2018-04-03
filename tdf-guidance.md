@@ -9,78 +9,209 @@ To take advantage of the new SDK and the ability to distribute your package cont
 
 The following table shows the target device families to declare in the manifest:
 
-| **Platform**   | **Family**      | **Target Device Family**|                    |                        | **Notes**                                                      |
-|:------------:|:-------------:|:----------------------:|:--------------------:|:------------------------:|:------------------------------------------------------------:|
-| Windows 10 | Phone       | Platform.All         | Windows.Universal  | Windows.Mobile         | Mobile devices                                             |
-|            | Desktop     |                      |                    | Windows.Desktop        | PC                                                         |
-|            | Xbox        |                      |                    | Windows.Xbox           | Xbox console                                               |
-|            | Surface Hub |                      |                    | Windows.Team           | Large screen Win 10 devices                                |
-|            | HoloLens    |                      |                    | Windows.Holographic    | VR/AR headset                                              |
-|            | IoT         |                      |                    | Windows.IoT            | IoT devices                                                |
-| iOS        | Phone       |                      | Apple.Ios.All      | Apple.Ios.Phone        | Touch, iPhone                                              |
-|            | Tablet      |                      |                    | Apple.Ios.Tablet       | iPad mini, iPad, iPad Pro                                  |
-|            | TV          |                      |                    | Apple.Ios.TV           | Apple TV                                                   |
-|            | Watch       |                      |                    | Apple.Ios.Watch        | iWatch                                                     |
-| MacOS      | Desktop     |                      |                    | Apple.MacOS.Desktop    | MacBook Pro, MacBook Air, Mac Mini, iMac                   |
-| Android    | Phone       |                      | Google.Android.All | Google.Android.Phone   | Pixels, galaxy etc. These can target any flavor of Android |
-|            | Tablet      |                      |                    | Google.Android.Tablet  | Android tablets                                            |
-|            | Desktop     |                      |                    | Google.Android.Desktop | Chromebooks                                                |
-|            | TV          |                      |                    | Google.Android.TV      |                                                            |
-|            | Watch       |                      |                    | Google.Android.Watch   | Google gear devices                                        |
-| Windows    | 7           |                      | Windows7.Desktop   |                        | Windows 7 devices                                          |
-|            | 8           |                      | Windows8.Desktop   |                        | Windows 8/8.1 devices                                      |
-| Web        | Microsoft   |                      | Web.All            | Web.Edge.All           | edge web engine apps                                       |
-|            | Android     |                      |                    | Web.Blink.All          | Blink web engine apps                                      |
-|            | Apple       |                      |                    | Web.Webkit.All         | Webkit web engine apps                                     |
-|            | Chrome      |                      |                    | Web.Chromium.All       | Chrome web engine apps                                     |
-| Linux      | Any/All     |                      | Linux.All          |                        | All Linux distributions                                    |
 
-![alt text](tdf.png "Target Device Families" =750x)
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-yw4l{vertical-align:top}
+</style>
+<table class="tg">
+  <tr>
+    <th class="tg-yw4l">Platform</th>
+    <th class="tg-yw4l">Family</th>
+    <th class="tg-yw4l" colspan="3">Target Device Family</th>
+    <th class="tg-yw4l">Notes</th>
+  </tr>
+  <tr>
+    <td class="tg-yw4l" rowspan="6">Windows 10</td>
+    <td class="tg-yw4l">Phone</td>
+    <td class="tg-031e" rowspan="24"><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>Platform.All<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br></td>
+    <td class="tg-baqh" rowspan="6">Windows.Universal</td>
+    <td class="tg-yw4l">Windows.Mobile</td>
+    <td class="tg-yw4l">Mobile devices</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Desktop</td>
+    <td class="tg-yw4l">Windows.Desktop</td>
+    <td class="tg-yw4l">PC</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Xbox</td>
+    <td class="tg-yw4l">Windows.Xbox</td>
+    <td class="tg-yw4l">Xbox console</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Surface Hub</td>
+    <td class="tg-yw4l">Windows.Team</td>
+    <td class="tg-yw4l">Large screen Win 10 devices</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">HoloLens</td>
+    <td class="tg-yw4l">Windows.Holographic</td>
+    <td class="tg-yw4l">VR/AR headset</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">IoT</td>
+    <td class="tg-yw4l">Windows.IoT</td>
+    <td class="tg-yw4l">IoT devices</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l" rowspan="4">iOS</td>
+    <td class="tg-yw4l">Phone</td>
+    <td class="tg-yw4l" rowspan="4">Apple.Ios.All</td>
+    <td class="tg-yw4l">Apple.Ios.Phone</td>
+    <td class="tg-yw4l">iPhone, Touch</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Tablet</td>
+    <td class="tg-yw4l">Apple.Ios.Tablet</td>
+    <td class="tg-yw4l">iPad mini, iPad, iPad Pro</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">TV</td>
+    <td class="tg-yw4l">Apple.Ios.TV</td>
+    <td class="tg-yw4l">Apple TV</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Watch</td>
+    <td class="tg-yw4l">Apple.Ios.Watch</td>
+    <td class="tg-yw4l">iWatch</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">MacOS</td>
+    <td class="tg-yw4l">Desktop</td>
+    <td class="tg-baqh" colspan="2">Apple.MacOS.All</td>
+    <td class="tg-yw4l">MacBook Pro, MacBook Air, Mac Mini, iMac</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l" rowspan="5">Android</td>
+    <td class="tg-yw4l">Phone</td>
+    <td class="tg-yw4l" rowspan="5">Google.Android.All</td>
+    <td class="tg-yw4l">Google.Android.Phone</td>
+    <td class="tg-yw4l">Mobile devices that target any flavor of Android</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Tablet</td>
+    <td class="tg-yw4l">Google.Android.Tablet</td>
+    <td class="tg-yw4l">Android tablets</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Desktop</td>
+    <td class="tg-yw4l">Google.Android.Desktop</td>
+    <td class="tg-yw4l">Chromebooks</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">TV</td>
+    <td class="tg-yw4l">Google.Android.TV</td>
+    <td class="tg-yw4l">Android large screen devices</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Watch</td>
+    <td class="tg-yw4l">Google.Android.Watch</td>
+    <td class="tg-yw4l">Google gear devices</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l" rowspan="2">Windows</td>
+    <td class="tg-yw4l">7</td>
+    <td class="tg-baqh" colspan="2">Windows7.Desktop</td>
+    <td class="tg-yw4l">Windows 7 devices</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">8</td>
+    <td class="tg-baqh" colspan="2">Windows8.Desktop</td>
+    <td class="tg-yw4l">Windows 8/8.1 devices</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l" rowspan="5">Web</td>
+    <td class="tg-yw4l">Microsoft</td>
+    <td class="tg-yw4l" rowspan="5">Web.All</td>
+    <td class="tg-yw4l">Web.Edge.All</td>
+    <td class="tg-yw4l">Edge web engine apps</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Android</td>
+    <td class="tg-yw4l">Web.Blink.All</td>
+    <td class="tg-yw4l">Blink web engine apps</td>
+  </tr>
+    <tr>
+    <td class="tg-yw4l">Chrome</td>
+    <td class="tg-yw4l">Web.Chromium.All</td>
+    <td class="tg-yw4l">Chrome web engine apps</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">iOS</td>
+    <td class="tg-yw4l">Web.Webkit.All</td>
+    <td class="tg-yw4l">Webkit web engine apps</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">MacOS</td>
+    <td class="tg-yw4l">Web.Safari.All</td>
+    <td class="tg-yw4l">Safari web engine apps</td>
+  </tr>
+  <tr>
+    <td class="tg-yw4l">Linux</td>
+    <td class="tg-yw4l">Any/All</td>
+    <td class="tg-baqh" colspan="2">Linux.All</td>
+    <td class="tg-yw4l">All Linux distributions</td>
+  </tr>
+</table>
 
-In the app package manifest file, you will need to include the appropriate target device family if you like the package contents to be only extracted on specific platforms and devices. If you like the bulid the package in such a way that it is supported on all platform and device types, choose **Platform.All** as the target device family. Similarly, if you like the package to be only supported on iOS devices, choose **Apple.Ios.All**.
+In the app package manifest file, you will need to include the appropriate target device family if you like the package contents to be only extracted on specific platforms and devices. If you like the bulid the package in such a way that it is supported on all platform and device types, choose **Platform.All** as the target device family. Similarly, if you like the package to be only supported in web apps, choose **Web.All**.
 
-## Sample Manifest File(AppxManifest.xml)
+## Sample Manifest File (AppxManifest.xml)
 
 ```xml
 <?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3">
+         xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+         IgnorableNamespaces="mp uap uap3">
 
-  <Identity Name="awesome.BestAppExtension"
-            Publisher="Awesome Publisher"
+  <Identity Name="BestAppExtension"
+            Publisher="CN=awesomepublisher"
             Version="1.0.0.0" />
+
+  <mp:PhoneIdentity PhoneProductId="56a6ecda-c215-4864-b097-447edd1f49fe" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
   <Properties>
     <DisplayName>Best App Extension</DisplayName>
     <PublisherDisplayName>Awesome Publisher</PublisherDisplayName>
     <Description>This is an extension package to my app</Description>
-    <Logo>Assets\Logo.png</Logo>
+    <Logo>Assets\StoreLogo.png</Logo>
   </Properties>
-
+  
+  <Resources>
+    <Resource Language="x-generate"/>
+  </Resources>
+  
   <Dependencies>
-      <TargetDeviceFamily Name="Platform.All" MinVersion="0.0.0.0" MaxVersionTested="0.0.0.0"/>
+    <TargetDeviceFamily Name="Platform.All" MinVersion="0.0.0.0" MaxVersionTested="0.0.0.0"/>
   </Dependencies>
 
   <Applications>
-    <Application Id="e504fb41-a92a-4526-b101-542f357b7acb">
-        <uap:VisualElements
-            DisplayName="Best App Extension" 
-            BackgroundColor="white"
-            Square150x150Logo="images\squareTile-sdk.png" 
-            Square44x44Logo="images\smallTile-sdk.png" 
-            AppListEntry="none">
-        </uap:VisualElements>
+    <Application Id="App">
+      <uap:VisualElements
+          DisplayName="Best App Extension"
+          Description="This is the best app extension"
+          BackgroundColor="white"
+          Square150x150Logo="images\squareTile-sdk.png"
+          Square44x44Logo="images\smallTile-sdk.png"
+          AppListEntry="none">
+      </uap:VisualElements>
 
-        <Extensions>
-            <uap3:Extension Category="Windows.appExtension">
-                <uap3:AppExtension Name="add-in-contract" Id="add-in" PublicFolder="Public" DisplayName="Sample Add-in" Description="This is a sample add-in">
-                    <uap3:Properties>
-                        <!-- Free form space -->
-                    </uap3:Properties>
-                </uap3:AppExtension>
-            </uap3:Extension>
-        </Extensions>
-        
+      <Extensions>
+        <uap3:Extension Category="Windows.appExtension">
+          <uap3:AppExtension Name="add-in-contract" Id="add-in" PublicFolder="Public" DisplayName="Sample Add-in" Description="This is a sample add-in">
+            <uap3:Properties>
+               <!--Free form space--> 
+            </uap3:Properties>
+          </uap3:AppExtension>
+        </uap3:Extension>
+      </Extensions>
+
     </Application>
   </Applications>
 </Package>
