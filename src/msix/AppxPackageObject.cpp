@@ -207,7 +207,7 @@ namespace MSIX {
         ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty()), "Invalid AppxBundleManifest.xml");
         
         std::regex e (".+\.((appx)|(msix))");
-        ThrowErrorIf(Error::AppxManifestSemanticError, !std::regex_match(name, e), "Invalid FileName in AppxBundleManifest.xml");
+        ThrowErrorIf(Error::AppxManifestSemanticError, !std::regex_match(name, e), "Invalid FileName attribute in AppxBundleManifest.xml");
     }
 
 
@@ -264,7 +264,7 @@ namespace MSIX {
 
             std::ostringstream builder;
             builder << "Duplicate file: '" << name << "' specified in AppxBundleManifest.xml.";
-            ThrowErrorIf(Error::BlockMapSemanticError,
+            ThrowErrorIf(Error::AppxManifestSemanticError,
                 (context->self->m_applicationPackages.find(name) != context->self->m_applicationPackages.end()) ||
                 (context->self->m_resourcePackages.find(name) != context->self->m_resourcePackages.end()),
                 builder.str().c_str());
@@ -304,6 +304,8 @@ namespace MSIX {
             return true;             
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Packages_Package, visitorPackages);
+        ThrowErrorIf(Error::XmlError, ((m_applicationPackages.size() + m_resourcePackages.size()) == 0), "No packages in AppxBundleManifest.xml");
+        ThrowErrorIf(Error::AppxManifestSemanticError, (m_applicationPackages.size() == 0), "Bundle contains only resource packages");
     }
 
     std::vector<std::string> AppxBundleManifestObject::GetPackagesNames()
@@ -426,6 +428,10 @@ namespace MSIX {
             {
                 auto fileStream = m_container->GetFile(fileName);
                 ThrowErrorIfNot(Error::FileNotFound, fileStream, "Package is not in container"); // This will change when we support flat bundles
+                auto appxFile = fileStream.As<IAppxFile>();;
+                APPX_COMPRESSION_OPTION compressionOpt;
+                ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
+                ThrowErrorIf(Error::AppxManifestSemanticError, ((compressionOpt != APPX_COMPRESSION_OPTION_NONE)), "Packages cannot be compressed");
                 m_payloadPackages.push_back(fileName);
                 m_streams[fileName] = std::move(fileStream);
                 // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like 
