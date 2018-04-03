@@ -8,6 +8,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <set>
 
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
@@ -23,7 +24,7 @@
 #include "AppxFactory.hpp"
 
 // internal interface
-EXTERN_C const IID IID_IPackage;   
+EXTERN_C const IID IID_IPackage;
 #ifndef WIN32
 // {51b2c456-aaa9-46d6-8ec9-298220559189}
 interface IPackage : public IUnknown
@@ -38,7 +39,22 @@ public:
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
 };
 
+EXTERN_C const IID IID_IBundleInfo;
+#ifndef WIN32
+// {ff82ffcd-747a-4df9-8879-853ab9dd15a1}
+interface IBundleInfo : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IBundleInfo : public IUnknown
+#endif
+{
+public:
+    virtual std::vector<std::string> GetPackagesNames() = 0;
+};
+
 SpecializeUuidOfImpl(IPackage);
+SpecializeUuidOfImpl(IBundleInfo);
 
 namespace MSIX {
     // The 5-tuple that describes the identity of a package
@@ -77,8 +93,7 @@ namespace MSIX {
             const std::uint64_t size,
             const std::uint64_t offset,
             const std::string& resourceId,
-            const std::string& architecture,
-            bool isApplicationType);
+            const std::string& architecture);
 
         std::string Name;
         std::string Version;
@@ -86,7 +101,7 @@ namespace MSIX {
         std::string Architecture;
         std::uint64_t Size;
         std::uint64_t Offset;
-        bool IsApplication;
+        std::set<std::string> Languages;
     };
 
     // Object backed by AppxManifest.xml
@@ -109,7 +124,7 @@ namespace MSIX {
         std::unique_ptr<AppxPackageId> m_packageId;
     };
 
-    class AppxBundleManifestObject : public ComClass<AppxBundleManifestObject, IVerifierObject>
+    class AppxBundleManifestObject final : public ComClass<AppxBundleManifestObject, IVerifierObject, IBundleInfo>
     {
     public:
         AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
@@ -121,9 +136,14 @@ namespace MSIX {
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
         const std::string GetPackageFullName() override { NOTSUPPORTED; }
 
+        // IBundleInfo
+        std::vector<std::string> GetPackagesNames() override;
+
     protected:
         ComPtr<IStream> m_stream;
         std::unique_ptr<AppxPackageId> m_packageId;
+        std::map<std::string, std::unique_ptr<AppxPackageInBundle>> m_applicationPackages;
+        std::map<std::string, std::unique_ptr<AppxPackageInBundle>> m_resourcePackages;
     };
 
     // Storage object representing the entire AppxPackage

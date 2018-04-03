@@ -140,6 +140,7 @@ static const wchar_t* attributeNames[] = {
     /* Bundle_Package_Offset                      */L"Offset",
     /* Bundle_Package_Type                        */L"Type",
     /* Bundle_Package_Architecture                */L"Architecture",
+    /* Bundle_Package_Resources_Resource_Language */L"Language",
 };
 
 // --------------------------------------------------------
