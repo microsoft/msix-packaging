@@ -96,10 +96,10 @@ RunTest 0x8bad0051 .\..\appx\BlockMap\Duplicate_file_in_blockmap.appx "-ss"
 # Bundle tests
 RunTest 0x8bad0051 .\..\appx\bundles\BlockMapContainsPayloadPackage.appxbundle "-ss"
 RunTest 0x8bad0033 .\..\appx\bundles\BlockMapIsMissing.appxbundle "-ss"
-#RunTest 0x00000000 .\..\appx\bundles\BlockMapViolatesSchema.appxbundle
+RunTest 0x8bad1002 .\..\appx\bundles\BlockMapViolatesSchema.appxbundle "-ss"
 #RunTest 0x00000000 .\..\appx\bundles\ContainsNeutralAndX86AppPackages.appxbundle
-#RunTest 0x00000000 .\..\appx\bundles\ContainsNoPayload.appxbundle
-#RunTest 0x00000000 .\..\appx\bundles\ContainsOnlyResourcePackages.appxbundle
+RunTest 0x8bad1002 .\..\appx\bundles\ContainsNoPayload.appxbundle "-ss"
+RunTest 0x8bad0061 .\..\appx\bundles\ContainsOnlyResourcePackages.appxbundle "-ss"
 #RunTest 0x00000000 .\..\appx\bundles\ContainsTwoNeutralAppPackages.appxbundle
 RunTest 0x00000000 .\..\appx\bundles\MainBundle.appxbundle "-ss"
 #RunTest 0x00000000 .\..\appx\bundles\ManifestDeclaresAppPackageForResourcePackage.appxbundle
@@ -113,11 +113,11 @@ RunTest 0x8bad0034 .\..\appx\bundles\ManifestIsMissing.appxbundle "-ss"
 #RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasIncorrectVersion.appxbundle
 #RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasInvalidOffset.appxbundle
 #RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasInvalidRange.appxbundle
-#RunTest 0x00000000 .\..\appx\bundles\ManifestViolatesSchema.appxbundle
-#RunTest 0x00000000 .\..\appx\bundles\PayloadPackageHasNonAppxExtension.appxbundle
-#RunTest 0x00000000 .\..\appx\bundles\PayloadPackageIsCompressed.appxbundle
-#RunTest 0x00000000 .\..\appx\bundles\PayloadPackageIsEmpty.appxbundle.zip
-#RunTest 0x00000000 .\..\appx\bundles\PayloadPackageIsNotAppxPackage.appxbundle
+RunTest 0x8bad1002 .\..\appx\bundles\ManifestViolatesSchema.appxbundle "-ss"
+RunTest 0x8bad0061 .\..\appx\bundles\PayloadPackageHasNonAppxExtension.appxbundle "-ss"
+RunTest 0x8bad0061 .\..\appx\bundles\PayloadPackageIsCompressed.appxbundle "-ss"
+RunTest 0x8bad0003 .\..\appx\bundles\PayloadPackageIsEmpty.appxbundle "-ss"
+RunTest 0x80070057 .\..\appx\bundles\PayloadPackageIsNotAppxPackage.appxbundle "-ss"
 #RunTest 0x00000000 .\..\appx\bundles\PayloadPackageNotListedInManifest.appxbundle
 RunTest 0x8bad0042 .\..\appx\bundles\SignedUntrustedCert-CERT_E_CHAINING.appxbundle
 RunTest 0x00000000 .\..\appx\bundles\StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
