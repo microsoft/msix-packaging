@@ -150,6 +150,10 @@ static const wchar_t* attributeNames[] = {
 #define UNDECLAREDPREFIX        0xc00cee65
 // XMLOM_VALIDATE_DECLARATION_NOTFOUND - The node is neither valid nor invalid because no DTD/Schema declaration was found.
 #define DECLARATION_NOTFOUND    0xc00ce224
+// XML_EMPTY_NOT_ALLOWED               - Element cannot be empty according to the DTD/Schema.
+#define ELEMENT_EMPTY           0xc00ce011
+// XML_INVALID_CONTENT                 - Element content is invalid according to the DTD/Schema.
+#define INVALID_CONTENT         0xc00ce014
 
 static const std::uint8_t base64DecoderRing[128] =
 {
@@ -498,8 +502,12 @@ public:
                 // As necessary, translate MSXML6-specific errors w.r.t. malformed/non-schema-compliant 
                 // XML into generic Xml errors and leave the full details in the log.
                 if (UNDECLAREDPREFIX == errorCode || DECLARATION_NOTFOUND == errorCode)
-                {   // file is either invalid XML, or it's valid, but failed schema validation.
+                {   // file is either invalid XML, or it's valid, but no schema was found for it.
                     errorCode = static_cast<long>(Error::XmlFatal);
+                }
+                else if (ELEMENT_EMPTY == errorCode || INVALID_CONTENT == errorCode)
+                {   // file is valid XML, but it failed according to the schema provided.
+                    errorCode = static_cast<long>(Error::XmlError);
                 }
                 ThrowErrorIf(errorCode, (true), message.str().c_str());      
             }      

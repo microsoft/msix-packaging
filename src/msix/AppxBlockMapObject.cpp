@@ -88,7 +88,7 @@ namespace MSIX {
             return true;            
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::BlockMap_File, visitor);
-        ThrowErrorIf(Error::BlockMapSemanticError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
+        ThrowErrorIf(Error::XmlError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
     }
 
     ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, const ComPtr<IStream>& stream)
