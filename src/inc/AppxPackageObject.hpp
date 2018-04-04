@@ -8,7 +8,6 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include <set>
 
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
@@ -22,6 +21,7 @@
 #include "AppxBlockMapObject.hpp"
 #include "AppxSignature.hpp"
 #include "AppxFactory.hpp"
+#include "AppxPackageInfo.hpp"
 
 // internal interface
 EXTERN_C const IID IID_IPackage;
@@ -50,56 +50,13 @@ class IBundleInfo : public IUnknown
 #endif
 {
 public:
-    virtual std::vector<std::string> GetPackagesNames() = 0;
+    virtual std::vector<std::unique_ptr<MSIX::AppxPackageInBundle>>& GetPackages() = 0;
 };
 
 SpecializeUuidOfImpl(IPackage);
 SpecializeUuidOfImpl(IBundleInfo);
 
 namespace MSIX {
-    // The 5-tuple that describes the identity of a package
-    struct AppxPackageId
-    {
-        AppxPackageId(
-            const std::string& name,
-            const std::string& version,
-            const std::string& resourceId,
-            const std::string& architecture,
-            const std::string& publisherId);
-
-        std::string Name;
-        std::string Version;
-        std::string ResourceId;
-        std::string Architecture;
-        std::string PublisherId;
-
-        std::string GetPackageFullName()
-        {
-            return Name + "_" + Version + "_" + Architecture + "_" + ResourceId + "_" + PublisherId;
-        }
-
-        std::string GetPackageFamilyName()
-        {
-            return Name + "_" + PublisherId;
-        }
-    };
-
-    struct AppxPackageInBundle
-    {
-        AppxPackageInBundle(
-            const std::string& name,
-            const std::string& version,
-            const std::uint64_t size,
-            const std::uint64_t offset,
-            const std::string& resourceId,
-            const std::string& architecture,
-            const std::string& publisherId);
-
-        std::unique_ptr<AppxPackageId> PackageId;
-        std::uint64_t Size;
-        std::uint64_t Offset;
-        std::set<std::string> Languages;
-    };
 
     // Object backed by AppxManifest.xml
     class AppxManifestObject final : public ComClass<AppxManifestObject, IVerifierObject>
@@ -136,13 +93,12 @@ namespace MSIX {
         AppxPackageId* GetPackageId() { return m_packageId.get(); }
 
         // IBundleInfo
-        std::vector<std::string> GetPackagesNames() override;
+        std::vector<std::unique_ptr<AppxPackageInBundle>>& GetPackages() override { return m_packages; }
 
     protected:
         ComPtr<IStream> m_stream;
         std::unique_ptr<AppxPackageId> m_packageId;
-        std::map<std::string, std::unique_ptr<AppxPackageInBundle>> m_applicationPackages;
-        std::map<std::string, std::unique_ptr<AppxPackageInBundle>> m_resourcePackages;
+        std::vector<std::unique_ptr<AppxPackageInBundle>> m_packages;
     };
 
     // Storage object representing the entire AppxPackage

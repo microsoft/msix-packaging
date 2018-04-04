@@ -109,7 +109,7 @@ RunTest 0x8bad0034 .\..\appx\bundles\ManifestIsMissing.appxbundle "-ss"
 #RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasIncorrectArchitecture.appxbundle
 #RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasIncorrectName.appxbundle
 #RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasIncorrectPublisher.appxbundle
-#RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasIncorrectSize.appxbundle
+RunTest 0x8bad0061 .\..\appx\bundles\ManifestPackageHasIncorrectSize.appxbundle "-ss"
 #RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasIncorrectVersion.appxbundle
 #RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasInvalidOffset.appxbundle
 #RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasInvalidRange.appxbundle
