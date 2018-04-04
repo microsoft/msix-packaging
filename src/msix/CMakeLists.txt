@@ -82,6 +82,7 @@ SET(LIB_PUBLIC_HEADERS
 SET(LIB_PRIVATE_HEADERS
     ../inc/AppxBlockMapObject.hpp
     ../inc/AppxFactory.hpp
+    ../inc/AppxPackageInfo.hpp
     ../inc/AppxPackageObject.hpp
     ../inc/AppxSignature.hpp
     ../inc/ComHelper.hpp
