@@ -177,21 +177,13 @@ namespace MSIX {
         const std::string& version,
         const std::string& resourceId,
         const std::string& architecture,
-        const std::string& publisher) :
-        Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), Publisher(publisher)
+        const std::string& publisherId) :
+        Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), PublisherId(publisherId)
     {
-        // Only name, publisher and version are required.
-        ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty() || Publisher.empty()), "Invalid Identity element");
+        // Only name, publisherId and version are required.
+        ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty() || PublisherId.empty()), "Invalid Identity element");
 
         // TODO: validate the name and resource id as package strings
-
-        auto wpublisher = utf8_to_u16string(publisher);
-        std::vector<std::uint8_t> buffer(wpublisher.size() * sizeof(char16_t));
-        memcpy(buffer.data(), &wpublisher[0], wpublisher.size() * sizeof(char16_t));
-
-        std::vector<std::uint8_t> hash;
-        ThrowErrorIfNot(Error::Unexpected, SHA256::ComputeHash(buffer.data(), buffer.size(), hash),  "Failed computing publisherId");
-        PublisherId = Base32Encoding(hash);
     }
 
     AppxPackageInBundle::AppxPackageInBundle(
@@ -200,16 +192,25 @@ namespace MSIX {
         const std::uint64_t size,
         const std::uint64_t offset,
         const std::string& resourceId,
-        const std::string& architecture) :
-        Name(name), Version(version), Size(size), Offset(offset), ResourceId(resourceId), Architecture(architecture)
+        const std::string& architecture,
+        const std::string& publisherId) :
+        Size(size), Offset(offset)
     {
-        // Only name, and version are required.
-        ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty()), "Invalid AppxBundleManifest.xml");
-        
+        PackageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisherId);
         std::regex e (".+\.((appx)|(msix))");
         ThrowErrorIf(Error::AppxManifestSemanticError, !std::regex_match(name, e), "Invalid FileName attribute in AppxBundleManifest.xml");
     }
 
+    std::string ComputePublisherId(const std::string& publisher)
+    {
+        auto wpublisher = utf8_to_u16string(publisher);
+        std::vector<std::uint8_t> buffer(wpublisher.size() * sizeof(char16_t));
+        memcpy(buffer.data(), &wpublisher[0], wpublisher.size() * sizeof(char16_t));
+
+        std::vector<std::uint8_t> hash;
+        ThrowErrorIfNot(Error::Unexpected, SHA256::ComputeHash(buffer.data(), buffer.size(), hash),  "Failed computing publisherId");
+        return Base32Encoding(hash);
+    }
 
     AppxManifestObject::AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
     {      
@@ -224,8 +225,9 @@ namespace MSIX {
             const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Identity_Publisher);
             const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Version);
             const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::ResourceId);
-
-            self->m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisher);
+            ThrowErrorIf(Error::AppxManifestSemanticError, (publisher.empty()), "Invalid Identity element");
+            auto publisherId = ComputePublisherId(publisher);
+            self->m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisherId);
             return true;             
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Package_Identity, visitor);
@@ -244,8 +246,9 @@ namespace MSIX {
             const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Name);
             const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Identity_Publisher);
             const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Version);
-
-            self->m_packageId = std::make_unique<AppxPackageId>(name, version, "", "", publisher);
+            ThrowErrorIf(Error::AppxManifestSemanticError, (publisher.empty()), "Invalid Identity element");
+            auto publisherId = ComputePublisherId(publisher);
+            self->m_packageId = std::make_unique<AppxPackageId>(name, version, "", "", publisherId);
             return true;             
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Identity, visitorIdentity);
@@ -277,7 +280,8 @@ namespace MSIX {
             const auto offset          = GetNumber<std::uint64_t>(packageNode, XmlAttributeName::Bundle_Package_Offset, 0);
             
             bool isResourcePackage = (type.empty() || type == "resource"); // default value is resource
-            auto package = std::make_unique<AppxPackageInBundle>(name, version, size, offset, resourceId, architecture);
+            auto package = std::make_unique<AppxPackageInBundle>(
+                name, version, size, offset, resourceId, architecture, context->self->m_packageId.get()->PublisherId);
             
             std::set<std::string> languages;
             XmlVisitor visitor(static_cast<void*>(&languages), [](void* l, const ComPtr<IXmlElement>& resourceNode)->bool
@@ -365,12 +369,6 @@ namespace MSIX {
         {
             stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, appxManifestInContainer);
             m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(xmlFactory.Get(), stream);
-            if ((m_validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
-            {
-                std::string reason = "Publisher mismatch: '" + m_appxManifest->GetPublisher() + "' != '" + m_appxSignature->GetPublisher() + "'";
-                ThrowErrorIfNot(Error::PublisherMismatch,
-                    (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())), reason.c_str());
-            }
         }
         else
         {
@@ -379,6 +377,15 @@ namespace MSIX {
             stream = m_appxBlockMap->GetValidationStream(pathInWindows, appxBundleManifestInContainer);
             m_appxBundleManifest = ComPtr<IVerifierObject>::Make<AppxBundleManifestObject>(xmlFactory.Get(), stream);
             m_isBundle = true;
+        }
+
+        if ((m_validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
+        {
+            auto publisherFromSignature = ComputePublisherId(m_appxSignature->GetPublisher());
+            auto publisherFromManifest = (m_isBundle) ? m_appxBundleManifest->GetPublisher() : m_appxManifest->GetPublisher();
+            std::string reason = "Publisher mismatch: '" + publisherFromManifest + "' != '" + publisherFromSignature + "'";
+            ThrowErrorIfNot(Error::PublisherMismatch,
+                    (0 == publisherFromManifest.compare(publisherFromSignature)), reason.c_str());
         }
 
         struct Config
@@ -428,7 +435,7 @@ namespace MSIX {
             {
                 auto fileStream = m_container->GetFile(fileName);
                 ThrowErrorIfNot(Error::FileNotFound, fileStream, "Package is not in container"); // This will change when we support flat bundles
-                auto appxFile = fileStream.As<IAppxFile>();;
+                auto appxFile = fileStream.As<IAppxFile>();
                 APPX_COMPRESSION_OPTION compressionOpt;
                 ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
                 ThrowErrorIf(Error::AppxManifestSemanticError, ((compressionOpt != APPX_COMPRESSION_OPTION_NONE)), "Packages cannot be compressed");

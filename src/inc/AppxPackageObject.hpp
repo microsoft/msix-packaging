@@ -65,13 +65,12 @@ namespace MSIX {
             const std::string& version,
             const std::string& resourceId,
             const std::string& architecture,
-            const std::string& publisher);
+            const std::string& publisherId);
 
         std::string Name;
         std::string Version;
         std::string ResourceId;
         std::string Architecture;
-        std::string Publisher;
         std::string PublisherId;
 
         std::string GetPackageFullName()
@@ -93,12 +92,10 @@ namespace MSIX {
             const std::uint64_t size,
             const std::uint64_t offset,
             const std::string& resourceId,
-            const std::string& architecture);
+            const std::string& architecture,
+            const std::string& publisherId);
 
-        std::string Name;
-        std::string Version;
-        std::string ResourceId;
-        std::string Architecture;
+        std::unique_ptr<AppxPackageId> PackageId;
         std::uint64_t Size;
         std::uint64_t Offset;
         std::set<std::string> Languages;
@@ -111,13 +108,13 @@ namespace MSIX {
         AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
 
         // IVerifierObject
-        const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
+        const std::string& GetPublisher() override { return GetPackageId()->PublisherId; }
         bool HasStream() override { return !!m_stream; }
         ComPtr<IStream> GetStream() override { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
         const std::string GetPackageFullName() override { return m_packageId->GetPackageFullName(); }
 
-        AppxPackageId* GetPackageId()    { return m_packageId.get(); }
+        AppxPackageId* GetPackageId() { return m_packageId.get(); }
 
     protected:
         ComPtr<IStream> m_stream;
@@ -130,11 +127,13 @@ namespace MSIX {
         AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
 
          // IVerifierObject
-        const std::string& GetPublisher() override { NOTSUPPORTED; }
+        const std::string& GetPublisher() override { return GetPackageId()->PublisherId; }
         bool HasStream() override { return !!m_stream; }
         ComPtr<IStream> GetStream() override { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
         const std::string GetPackageFullName() override { NOTSUPPORTED; }
+
+        AppxPackageId* GetPackageId() { return m_packageId.get(); }
 
         // IBundleInfo
         std::vector<std::string> GetPackagesNames() override;
