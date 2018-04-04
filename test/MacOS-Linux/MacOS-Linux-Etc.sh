@@ -94,7 +94,7 @@ RunTest 52 ./../appx/bundles/ManifestIsMissing.appxbundle -ss
 #RunTest 0 ./../appx/bundles/ManifestPackageHasIncorrectArchitecture.appxbundle
 #RunTest 0 ./../appx/bundles/ManifestPackageHasIncorrectName.appxbundle
 #RunTest 0 ./../appx/bundles/ManifestPackageHasIncorrectPublisher.appxbundle
-RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectSize.appxbundle
+RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectSize.appxbundle -ss
 #RunTest 0 ./../appx/bundles/ManifestPackageHasIncorrectVersion.appxbundle
 #RunTest 0 ./../appx/bundles/ManifestPackageHasInvalidOffset.appxbundle
 #RunTest 0 ./../appx/bundles/ManifestPackageHasInvalidRange.appxbundle
