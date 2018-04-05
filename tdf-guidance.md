@@ -218,16 +218,22 @@ In the app package manifest file, you will need to include the appropriate targe
 ```
 
 ## Platform Version 
-In the above sample manifest file, along with the platform name, there are also parameters to specify the **MinVersion** and **MaxVersionTested** These parameters are used on Windows 10 platforms. On Windows 10, the package will only be deployed on Windows 10 OS versions greater than the MinVersion. On other non-Windows 10 platforms, the MinVersion and MaxVersionTested parameters are used by the client apps. The client apps can use this information and make the decision on whether to extract the package contents or not. 
+In the above sample manifest file, along with the platform name, there are also parameters to specify the **MinVersion** and **MaxVersionTested** These parameters are used on Windows 10 platforms. On Windows 10, the package will only be deployed on Windows 10 OS versions greater than the MinVersion. On other non-Windows 10 platforms, the MinVersion and MaxVersionTested parameters aren't used to make the declaration of whether to extract the package contents. 
 
-If you would like to use the package for all platforms(Platform.All), we recommend that you use the MinVersion and MaxVersionTested parameters to specify the Windows 10 OS Versions where you would you app to work. **MinVersion** and **MaxVersionTested** are required fields in the manifest and they need to conform the quad notation(#.#.#.#). 
+If you would like to use the package for all platforms(Windows 10 and non-Windows 10), we recommend that you use the MinVersion and MaxVersionTested parameters to specify the Windows 10 OS Versions where you would like your app to work. So your manifest's **Dependencies** section would look like this:
+```xml
+  <Dependencies>
+    <TargetDeviceFamily Name="Platform.All" MinVersion="0.0.0.0" MaxVersionTested="0.0.0.0"/>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.14393.0" MaxVersionTested="10.0.16294.0"/>
+  </Dependencies>
+```
 
-If you are only using the MSIX packaging SDK for only non-Windows 10 platforms, you can simply use '0.0.0.0' as the **MinVersion** and **MaxVersionTested** as the versions. 
+**MinVersion** and **MaxVersionTested** are required fields in the manifest and they need to conform the quad notation(#.#.#.#). If you are only using the MSIX packaging SDK for only non-Windows 10 platforms, you can simply use '0.0.0.0' as the **MinVersion** and **MaxVersionTested** as the versions. 
 
 ## How to effectively use the same package on all platforms (Windows 10 and non-Windows 10)
 
-To make the most of the MSIX Packaging SDK, you will need to build the package in a way that will be deployed like an app package on Windows 10 and at the same time supported on other platforms. On Windows 10, you can build the package as an app extension. To find more information about App Extensoins and how they can help make your app extensible - [you will find it here](https://blogs.msdn.microsoft.com/appinstaller/2017/05/01/introduction-to-app-extensions/). 
+To make the most of the MSIX Packaging SDK, you will need to build the package in a way that will be deployed like an app package on Windows 10 and at the same time supported on other platforms. On Windows 10, you can build the package as an app extension. To find more information about App Extensions and how they can help make your app extensible - [you will find it here](https://blogs.msdn.microsoft.com/appinstaller/2017/05/01/introduction-to-app-extensions/). 
 
-In the above manifest file, you will notice within the AppExtension element, there is a section for Properties. There is no validation performed in section of the manifest file. This allows developers to specify the required metadata between extension and host/client app. 
+In the above manifest file, you will notice within the AppExtension element, there is a section for Properties. There is no validation performed in this section of the manifest file. This allows developers to specify the required metadata between extension and host/client app. 
 
 If you have any questions or comments, you can send them [our team](mailto:MSIXPackagingOSSCustomerQs@service.microsoft.com) directly! 
