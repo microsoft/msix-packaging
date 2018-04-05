@@ -88,6 +88,9 @@ namespace MSIX {
         // AppxManifest semantic errors
         AppxManifestSemanticError   = ERROR_FACILITY + 0x0061,
 
+        // Bundle errors
+        PackageIsBundle             = ERROR_FACILITY + 0x0071,
+
         // XML parsing errors
         XmlWarning                  = XML_FACILITY + 0x0001,
         XmlError                    = XML_FACILITY + 0x0002,

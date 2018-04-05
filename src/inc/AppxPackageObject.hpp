@@ -109,11 +109,47 @@ namespace MSIX {
     };
 
     // Storage object representing the entire AppxPackage
+    // Note: This class has is own implmentation of QueryInterface, if a new interface is implemented
+    // AppxPackageObject::QueryInterface must also be modified too.
     class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader>
     {
     public:
         AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container);
         ~AppxPackageObject() {}
+
+        HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) noexcept override
+        {
+            if (ppvObject == nullptr || *ppvObject != nullptr)
+            {
+                return static_cast<HRESULT>(Error::InvalidParameter);
+            }
+            *ppvObject = nullptr;
+            if (riid == UuidOfImpl<IAppxPackageReader>::iid)
+            {
+                *ppvObject = static_cast<void*>(static_cast<IAppxPackageReader*>(this));
+                AddRef();
+                return S_OK;
+            }
+            if (riid == UuidOfImpl<IPackage>::iid)
+            {
+                *ppvObject = static_cast<void*>(static_cast<IPackage*>(this));
+                AddRef();
+                return S_OK;
+            }
+            if (riid == UuidOfImpl<IStorageObject>::iid)
+            {
+                *ppvObject = static_cast<void*>(static_cast<IStorageObject*>(this));
+                AddRef();
+                return S_OK;
+            }
+            if (riid == UuidOfImpl<IAppxBundleReader>::iid && m_isBundle)
+            {
+                *ppvObject = static_cast<void*>(static_cast<IAppxBundleReader*>(this));
+                AddRef();
+                return S_OK;
+            }
+            return static_cast<HRESULT>(MSIX::Error::NoInterface);
+        }
 
         // internal IPackage methods
         void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to) override;
@@ -139,7 +175,6 @@ namespace MSIX {
         const char*               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
         ComPtr<IStream>           GetFile(const std::string& fileName) override;
-
         ComPtr<IStream>           OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
 
     protected:
@@ -158,6 +193,7 @@ namespace MSIX {
         
         std::vector<std::string>    m_payloadFiles;
         std::vector<std::string>    m_footprintFiles;
+        std::vector<std::string>    m_payloadPackagesNames;
 
         std::vector<ComPtr<IAppxPackageReader>> m_payloadPackages;
         bool                        m_isBundle = false;

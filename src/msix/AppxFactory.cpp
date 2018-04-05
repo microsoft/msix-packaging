@@ -89,9 +89,11 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) noexcept try
     {
-        // TODO: Implement. Create helper that is called by CreateBundleReader and CreatePackageReader 
-        // and then verify that is a bundle.
-        return static_cast<HRESULT>(Error::NotImplemented);
+        ComPtr<IAppxPackageReader> reader;
+        ThrowHrIfFailed(CreatePackageReader(inputStream, &reader));
+        auto result = reader.As<IAppxBundleReader>();
+        *bundleReader = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept try
