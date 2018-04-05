@@ -417,7 +417,8 @@ namespace MSIX {
                     (appxManifest->GetName() != package.get()->PackageId->Name),
                     "AppxBundleManifest.xml and AppxManifest.xml name mismatch");
                 ThrowErrorIf(Error::AppxManifestSemanticError, 
-                    (appxManifest->GetArchitecture() != package.get()->PackageId->Architecture),
+                    (appxManifest->GetArchitecture() != package.get()->PackageId->Architecture) &&
+                    !(appxManifest->GetArchitecture().empty() && (package.get()->PackageId->Architecture == "neutral")),
                     "AppxBundleManifest.xml and AppxManifest.xml architecture mismatch");
                 m_payloadPackages.push_back(std::move(reader)) ;
                 m_streams[packageName] = std::move(fileStream);
