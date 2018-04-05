@@ -28,6 +28,9 @@ public:
     virtual MSIX::ComPtr<IStream> GetStream() = 0;
     virtual MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, const MSIX::ComPtr<IStream>& stream) = 0;
     virtual const std::string GetPackageFullName() = 0;
+    virtual const std::string& GetVersion() = 0;
+    virtual const std::string& GetName() = 0;
+    virtual const std::string& GetArchitecture() = 0;
 };
 
 SpecializeUuidOfImpl(IVerifierObject);
