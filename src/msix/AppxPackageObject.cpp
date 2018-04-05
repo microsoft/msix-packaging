@@ -20,7 +20,6 @@
 #include <algorithm>
 #include <array>
 
-
 namespace MSIX {
 
     // names of footprint files.
@@ -171,27 +170,15 @@ namespace MSIX {
         return std::string(output);
     }
 
-    AppxPackageId::AppxPackageId(
-        const std::string& name,
-        const std::string& version,
-        const std::string& resourceId,
-        const std::string& architecture,
-        const std::string& publisher) :
-        Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), Publisher(publisher)
+    std::string ComputePublisherId(const std::string& publisher)
     {
-        // This should go away once the schema validation is on
-        // Only name, publisher and version are required
-        ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty() || Publisher.empty()), "Invalid Identity element");
-
-        // TODO: validate the name and resource id as package strings
-
         auto wpublisher = utf8_to_u16string(publisher);
         std::vector<std::uint8_t> buffer(wpublisher.size() * sizeof(char16_t));
         memcpy(buffer.data(), &wpublisher[0], wpublisher.size() * sizeof(char16_t));
 
         std::vector<std::uint8_t> hash;
         ThrowErrorIfNot(Error::Unexpected, SHA256::ComputeHash(buffer.data(), buffer.size(), hash),  "Failed computing publisherId");
-        PublisherId = Base32Encoding(hash);
+        return Base32Encoding(hash);
     }
 
     AppxManifestObject::AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
@@ -202,18 +189,100 @@ namespace MSIX {
             AppxManifestObject* self = reinterpret_cast<AppxManifestObject*>(s);
             ThrowErrorIf(Error::AppxManifestSemanticError, (nullptr != self->m_packageId), "There must be only one Identity element at most in AppxManifest.xml");
 
-            const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Name);
-            const auto& architecture   = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ProcessorArchitecture);
-            const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Publisher);
-            const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_Version);
-            const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::Package_Identity_ResourceId);
-
-            self->m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisher);
+            const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Name);
+            const auto& architecture   = identityNode->GetAttributeValue(XmlAttributeName::Identity_ProcessorArchitecture);
+            const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Identity_Publisher);
+            const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Version);
+            const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::ResourceId);
+            ThrowErrorIf(Error::AppxManifestSemanticError, (publisher.empty()), "Invalid Identity element");
+            auto publisherId = ComputePublisherId(publisher);
+            self->m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisherId);
             return true;             
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Package_Identity, visitor);
         // Have to check for this semantically as not all validating parsers can validate this via schema
         ThrowErrorIfNot(Error::AppxManifestSemanticError, m_packageId, "No Identity element in AppxManifest.xml");
+    }
+
+    AppxBundleManifestObject::AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
+    {
+        auto dom = factory->CreateDomFromStream(XmlContentType::AppxBundleManifestXml, stream);
+        XmlVisitor visitorIdentity(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& identityNode)->bool
+        {
+            AppxBundleManifestObject* self = reinterpret_cast<AppxBundleManifestObject*>(s);
+            ThrowErrorIf(Error::AppxManifestSemanticError, (nullptr != self->m_packageId), "There must be only one Identity element at most in AppxBundleManifest.xml");
+
+            const auto& name           = identityNode->GetAttributeValue(XmlAttributeName::Name);
+            const auto& publisher      = identityNode->GetAttributeValue(XmlAttributeName::Identity_Publisher);
+            const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Version);
+            ThrowErrorIf(Error::AppxManifestSemanticError, (publisher.empty()), "Invalid Identity element");
+            auto publisherId = ComputePublisherId(publisher);
+            self->m_packageId = std::make_unique<AppxPackageId>(name, version, "", "", publisherId);
+            return true;             
+        });
+        dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Identity, visitorIdentity);
+
+        struct _context
+        {
+            AppxBundleManifestObject* self;
+            IXmlDom*                  dom;
+            std::vector<std::string>  packageNames;
+            size_t                    mainPackages;
+        };
+        _context context = { this, dom.Get(), {} , 0};
+
+        XmlVisitor visitorPackages(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& packageNode)->bool
+        {
+            _context* context = reinterpret_cast<_context*>(c);
+            const auto& name = packageNode->GetAttributeValue(XmlAttributeName::Bundle_Package_FileName);
+
+            std::ostringstream builder;
+            builder << "Duplicate file: '" << name << "' specified in AppxBundleManifest.xml.";
+            ThrowErrorIf(Error::AppxManifestSemanticError,
+                std::find(std::begin(context->packageNames), std::end(context->packageNames), name) != context->packageNames.end(),
+                builder.str().c_str());
+            context->packageNames.push_back(name);
+
+            const auto& version        = packageNode->GetAttributeValue(XmlAttributeName::Version);
+            const auto& resourceId     = packageNode->GetAttributeValue(XmlAttributeName::ResourceId);
+            const auto& architecture   = packageNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Architecture);
+            const auto& type           = packageNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Type);
+            const auto size            = GetNumber<std::uint64_t>(packageNode, XmlAttributeName::Size, 0);
+            const auto offset          = GetNumber<std::uint64_t>(packageNode, XmlAttributeName::Bundle_Package_Offset, 0);
+            
+            bool isResourcePackage = (type.empty() || type == "resource"); // default value is resource
+            auto package = std::make_unique<AppxPackageInBundle>(
+                name, context->self->m_packageId.get()->Name, version, size, offset, resourceId,
+                architecture, context->self->m_packageId.get()->PublisherId, isResourcePackage);
+            
+            std::set<std::string> languages;
+            XmlVisitor visitor(static_cast<void*>(&languages), [](void* l, const ComPtr<IXmlElement>& resourceNode)->bool
+            {
+                std::set<std::string>* languages = reinterpret_cast<std::set<std::string>*>(l);
+                const auto& language = resourceNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Resources_Resource_Language);
+                if (!language.empty()) { languages->insert(language); }
+                return true;
+            });
+            context->dom->ForEachElementIn(packageNode, XmlQueryName::Bundle_Packages_Package_Resources_Resource, visitor);
+            package->Languages = std::move(languages);
+
+            if (isResourcePackage)
+            {   // For now, we only support languages resource packages
+                if(!package->Languages.empty())
+                {
+                    context->self->m_packages.push_back(std::move(package));
+                }
+            }
+            else
+            {
+                context->self->m_packages.push_back(std::move(package));
+                context->mainPackages++;
+            }
+            return true;             
+        });
+        dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Packages_Package, visitorPackages);
+        ThrowErrorIf(Error::XmlError, (context.packageNames.size() == 0), "No packages in AppxBundleManifest.xml");
+        ThrowErrorIf(Error::AppxManifestSemanticError, (context.mainPackages == 0), "Bundle contains only resource packages");
     }
 
     AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container) :
@@ -259,20 +328,23 @@ namespace MSIX {
         {
             stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, appxManifestInContainer);
             m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(xmlFactory.Get(), stream);
-            if ((m_validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
-            {
-                std::string reason = "Publisher mismatch: '" + m_appxManifest->GetPublisher() + "' != '" + m_appxSignature->GetPublisher() + "'";
-                ThrowErrorIfNot(Error::PublisherMismatch,
-                    (0 == m_appxManifest->GetPublisher().compare(m_appxSignature->GetPublisher())), reason.c_str());
-            }
         }
         else
         {
             std::string pathInWindows(APPXBUNDLEMANIFEST_XML);
             std::replace(pathInWindows.begin(), pathInWindows.end(), '/', '\\');
             stream = m_appxBlockMap->GetValidationStream(pathInWindows, appxBundleManifestInContainer);
-            // TODO: create appxBundleManifestObject and validate
+            m_appxBundleManifest = ComPtr<IVerifierObject>::Make<AppxBundleManifestObject>(xmlFactory.Get(), stream);
             m_isBundle = true;
+        }
+
+        if ((m_validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
+        {
+            auto publisherFromSignature = ComputePublisherId(m_appxSignature->GetPublisher());
+            auto publisherFromManifest = (m_isBundle) ? m_appxBundleManifest->GetPublisher() : m_appxManifest->GetPublisher();
+            std::string reason = "Publisher mismatch: '" + publisherFromManifest + "' != '" + publisherFromSignature + "'";
+            ThrowErrorIfNot(Error::PublisherMismatch,
+                    (0 == publisherFromManifest.compare(publisherFromSignature)), reason.c_str());
         }
 
         struct Config
@@ -294,7 +366,7 @@ namespace MSIX {
             Config(APPXSIGNATURE_P7X,      [](AppxPackageObject* self){ if (self->m_appxSignature->HasStream()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}),
             Config(CODEINTEGRITY_CAT,      [](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); auto file = self->m_container->GetFile(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, file);}),
             Config(CONTENT_TYPES_XML,      [](AppxPackageObject*)->ComPtr<IStream>{ return ComPtr<IStream>();}), // content types is never implicitly unpacked
-            Config(APPXBUNDLEMANIFEST_XML, [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBUNDLEMANIFEST_XML); return /*self->m_appxBundleManifest->GetStream()*/ self->m_container->GetFile(APPXBUNDLEMANIFEST_XML);}),
+            Config(APPXBUNDLEMANIFEST_XML, [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBUNDLEMANIFEST_XML); return self->m_appxBundleManifest->GetStream();}),
         };
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
@@ -317,15 +389,41 @@ namespace MSIX {
             // AppxMetadata/AppxBundleManifest.xml before, so just check the size.
             ThrowErrorIfNot(Error::BlockMapSemanticError, ((blockMapFiles.size() == 1)), "Block map contains invalid files.");
             
-            // TODO: change this to get the files in from the bundle manifest and compare with m_container when the parsing is done.
-            for (const auto& fileName : m_container->GetFileNames(FileNameOptions::PayloadOnly))
-            {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
-                if (footPrintFile == std::end(footPrintFileNames))
-                {
-                    m_payloadPackages.push_back(fileName);
-                    m_streams[fileName] = std::move(m_container->GetFile(fileName));
-                    filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
-                }
+            auto bundleInfo = m_appxBundleManifest.As<IBundleInfo>();
+            auto appxFactory = m_factory.As<IAppxFactory>();
+            for (const auto& package : bundleInfo->GetPackages())
+            {
+                auto packageName = package.get()->FileName;
+                auto fileStream = m_container->GetFile(packageName);
+                ThrowErrorIfNot(Error::FileNotFound, fileStream, "Package is not in container"); // This will change when we support flat bundles
+                auto appxFile = fileStream.As<IAppxFile>();
+                APPX_COMPRESSION_OPTION compressionOpt;
+                ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
+                ThrowErrorIf(Error::AppxManifestSemanticError, (compressionOpt != APPX_COMPRESSION_OPTION_NONE), "Packages cannot be compressed");
+                ComPtr<IAppxFileInternal> appxFileInternal = fileStream.As<IAppxFileInternal>();
+                ThrowErrorIf(Error::AppxManifestSemanticError, (appxFileInternal->GetCompressedSize() != package.get()->Size), "Size mistmach of package between AppxManifestBundle.appx and container");
+                ComPtr<IAppxPackageReader> reader;
+                ThrowHrIfFailed(appxFactory->CreatePackageReader(fileStream.Get(), &reader));
+                auto appxPackage = reader.As<IPackage>();
+                auto appxManifest = appxPackage->GetAppxManifestObject();
+                ThrowErrorIfNot(Error::Unexpected, appxManifest, "Error getting the AppxManifest object"); // is this even possible?
+                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                    (appxManifest->GetPublisher() != package.get()->PackageId->PublisherId),
+                    "AppxBundleManifest.xml and AppxManifest.xml publisher mismatch");
+                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                    (appxManifest->GetVersion() != package.get()->PackageId->Version),
+                    "AppxBundleManifest.xml and AppxManifest.xml version mismatch");       
+                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                    (appxManifest->GetName() != package.get()->PackageId->Name),
+                    "AppxBundleManifest.xml and AppxManifest.xml name mismatch");
+                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                    (appxManifest->GetArchitecture() != package.get()->PackageId->Architecture) &&
+                    !(appxManifest->GetArchitecture().empty() && (package.get()->PackageId->Architecture == "neutral")),
+                    "AppxBundleManifest.xml and AppxManifest.xml architecture mismatch");
+                m_payloadPackages.push_back(std::move(reader)) ;
+                m_streams[packageName] = std::move(fileStream);
+                // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like 
+                // resource packages that are not languages packages.
             }
         }
         else
@@ -342,11 +440,11 @@ namespace MSIX {
                     filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
                 }
             }
-        }
 
-        // If the map is not empty, there's a file in the container that didn't go to the footprint or payload
-        // files. (eg. payload file missing in the AppxBlockMap.xml)
-        ThrowErrorIfNot(Error::BlockMapSemanticError, (filesToProcess.empty()), "Payload file not described in AppxBlockMap.xml");
+            // If the map is not empty, there's a file in the container that didn't go to the footprint or payload
+            // files. (eg. payload file missing in the AppxBlockMap.xml)
+            ThrowErrorIfNot(Error::BlockMapSemanticError, (filesToProcess.empty()), "Payload file not described in AppxBlockMap.xml");
+        }
     }
 
     // Verify file in OPC and BlockMap
@@ -430,11 +528,7 @@ namespace MSIX {
         {
             for(const auto& appx : m_payloadPackages)
             {
-                auto appxStream = GetFile(appx);
-                auto appxFactory = m_factory.As<IAppxFactory>();
-                ComPtr<IAppxPackageReader> reader;
-                ThrowHrIfFailed(appxFactory->CreatePackageReader(appxStream.Get(), &reader));
-                reader.As<IPackage>()->Unpack(
+                appx.As<IPackage>()->Unpack(
                     static_cast<MSIX_PACKUNPACK_OPTION>(options | MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER), to.Get());
             }
         }

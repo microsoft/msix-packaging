@@ -105,27 +105,42 @@ SchemaEntry(L"http://schemas.microsoft.com/appx/manifest/com/windows10",        
 SchemaEntry(L"http://schemas.microsoft.com/appx/manifest/com/windows10/2",                               L"com2",            "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"),
 SchemaEntry(L"http://schemas.microsoft.com/appx/manifest/uap/windows10/5",                               L"uap5",            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"),
 SchemaEntry(L"http://schemas.microsoft.com/appx/manifest/uap/windows10/6",                               L"uap6",            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd"),
+},
+{   // XmlContentType::AppxBundleManifestXml
+SchemaEntry(L"http://schemas.microsoft.com/appx/manifest/types",                                         L"t",               "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"),
+SchemaEntry(L"http://schemas.microsoft.com/appx/2013/bundle",                                            L"b",               "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"),
+SchemaEntry(L"http://schemas.microsoft.com/appx/2016/bundle",                                            L"b2",              "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"),
+SchemaEntry(L"http://schemas.microsoft.com/appx/2017/bundle",                                            L"b3",              "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd"),
 }};
 
 // must remain in same order as XmlQueryName
 static const wchar_t* xPaths[] = {
-    /* Package_Identity                          */L"/*[local-name()='Package']/*[local-name()='Identity']",
-    /* BlockMap_File                             */L"/*[local-name()='BlockMap']/*[local-name()='File']",
-    /* BlockMap_File_Block                       */L"*[local-name()='Block']",
+    /* Package_Identity                           */L"/*[local-name()='Package']/*[local-name()='Identity']",
+    /* BlockMap_File                              */L"/*[local-name()='BlockMap']/*[local-name()='File']",
+    /* BlockMap_File_Block                        */L"*[local-name()='Block']",
+    /* Bundle_Identity                            */L"/*[local-name()='Bundle']/*[local-name()='Identity']",
+    /* Bundle_Packages_Package                    */L"/*[local-name()='Bundle']/*[local-name()='Packages']/*[local-name()='Package']",
+    /* Bundle_Packages_Package_Resources_Resource */L"*[local-name()='Resources']/*[local-name()='Resource']",
 };    
 
 // must remain in same order as XmlAttributeName
 static const wchar_t* attributeNames[] = {
-    /* Package_Identity_Name                     */L"Name",
-    /* Package_Identity_ProcessorArchitecture    */L"ProcessorArchitecture",
-    /* Package_Identity_Publisher                */L"Publisher",
-    /* Package_Identity_Version                  */L"Version",
-    /* Package_Identity_ResourceId               */L"ResourceId",
+    /* Name                                       */L"Name",
+    /* ResourceId                                 */L"ResourceId",
+    /* Version                                    */L"Version",
+    /* Size                                       */L"Size",
 
-    /* BlockMap_File_Name                        */L"Name",
-    /* BlockMap_File_LocalFileHeaderSize         */L"LfhSize",
-    /* BlockMap_File_Block_Size                  */L"Size",
-    /* BlockMap_File_Block_Hash                  */L"Hash",
+    /* Package_Identity_ProcessorArchitecture     */L"ProcessorArchitecture",
+    /* Package_Identity_Publisher                 */L"Publisher",
+    
+    /* BlockMap_File_LocalFileHeaderSize          */L"LfhSize",
+    /* BlockMap_File_Block_Hash                   */L"Hash",
+
+    /* Bundle_Package_FileName                    */L"FileName",
+    /* Bundle_Package_Offset                      */L"Offset",
+    /* Bundle_Package_Type                        */L"Type",
+    /* Bundle_Package_Architecture                */L"Architecture",
+    /* Bundle_Package_Resources_Resource_Language */L"Language",
 };
 
 // --------------------------------------------------------
@@ -135,6 +150,10 @@ static const wchar_t* attributeNames[] = {
 #define UNDECLAREDPREFIX        0xc00cee65
 // XMLOM_VALIDATE_DECLARATION_NOTFOUND - The node is neither valid nor invalid because no DTD/Schema declaration was found.
 #define DECLARATION_NOTFOUND    0xc00ce224
+// XML_EMPTY_NOT_ALLOWED               - Element cannot be empty according to the DTD/Schema.
+#define ELEMENT_EMPTY           0xc00ce011
+// XML_INVALID_CONTENT                 - Element content is invalid according to the DTD/Schema.
+#define INVALID_CONTENT         0xc00ce014
 
 static const std::uint8_t base64DecoderRing[128] =
 {
@@ -357,11 +376,11 @@ public:
         if (!stripIgnorableNamespaces)
         {   
             Variant var(stream);
-            ThrowHrIfFailed(m_xmlDocument->load(var, &success));        
+            ThrowHrIfFailed(m_xmlDocument->load(var, &success));
         }
         else
         {   /* Because load will only parse, a failure to read the stream (e.g. due to a blockmap 
-            hash validation failuire, for instance) will result in an error other than SignatureInvalid
+            hash validation failure, for instance) will result in an error other than SignatureInvalid
             being returned to the caller.  To prevent that, we will copy the stream into a memory buffer
             (so that should read fail, it does so there with the correct error), and then create our DOM
             with deferred validation from the in memory copy; but first we need to compute the size of
@@ -483,8 +502,12 @@ public:
                 // As necessary, translate MSXML6-specific errors w.r.t. malformed/non-schema-compliant 
                 // XML into generic Xml errors and leave the full details in the log.
                 if (UNDECLAREDPREFIX == errorCode || DECLARATION_NOTFOUND == errorCode)
-                {   // file is either invalid XML, or it's valid, but failed schema validation.
+                {   // file is either invalid XML, or it's valid, but no schema was found for it.
                     errorCode = static_cast<long>(Error::XmlFatal);
+                }
+                else if (ELEMENT_EMPTY == errorCode || INVALID_CONTENT == errorCode)
+                {   // file is valid XML, but it failed according to the schema provided.
+                    errorCode = static_cast<long>(Error::XmlError);
                 }
                 ThrowErrorIf(errorCode, (true), message.str().c_str());      
             }      

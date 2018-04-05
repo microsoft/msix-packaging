@@ -30,20 +30,10 @@
 
 namespace MSIX {
 
-    template <class T>
-    static T GetNumber(const ComPtr<IXmlElement>& element, XmlAttributeName attribute, T defaultValue)
-    {
-        const auto& attributeValue = element->GetAttributeValue(attribute);
-        bool hasValue = !attributeValue.empty();
-        T value = defaultValue;
-        if (hasValue) { value = static_cast<T>(std::stoul(attributeValue)); }
-        return value;        
-    }
-
     static Block GetBlock(const ComPtr<IXmlElement>& element)
     {
         Block result {0};
-        result.compressedSize = GetNumber<std::uint64_t>(element, XmlAttributeName::BlockMap_File_Block_Size, BLOCKMAP_BLOCK_SIZE);
+        result.compressedSize = GetNumber<std::uint64_t>(element, XmlAttributeName::Size, BLOCKMAP_BLOCK_SIZE);
         result.hash = element->GetBase64DecodedAttributeValue(XmlAttributeName::BlockMap_File_Block_Hash);
         return result;
     }
@@ -65,7 +55,7 @@ namespace MSIX {
 
         XmlVisitor visitor(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& fileNode)->bool
         {
-            const auto& name = fileNode->GetAttributeValue(XmlAttributeName::BlockMap_File_Name);
+            const auto& name = fileNode->GetAttributeValue(XmlAttributeName::Name);
             ThrowErrorIf(Error::BlockMapSemanticError, (name == "[Content_Types].xml"), "[Content_Types].xml cannot be in the AppxBlockMap.xml file");
 
             _context* context = reinterpret_cast<_context*>(c);
@@ -82,7 +72,7 @@ namespace MSIX {
             });
             context->dom->ForEachElementIn(fileNode, XmlQueryName::BlockMap_File_Block, visitor);
 
-            std::uint64_t sizeAttribute = GetNumber<std::uint64_t>(fileNode, XmlAttributeName::BlockMap_File_Block_Size, BLOCKMAP_BLOCK_SIZE);
+            std::uint64_t sizeAttribute = GetNumber<std::uint64_t>(fileNode, XmlAttributeName::Size, BLOCKMAP_BLOCK_SIZE);
             ThrowErrorIf(Error::BlockMapSemanticError, (0 == blocks.size() && 0 != sizeAttribute), "If size is non-zero, then there must be 1+ blocks.");
             
             context->self->m_blockMap.insert(std::make_pair(name, std::move(blocks)));
@@ -98,7 +88,7 @@ namespace MSIX {
             return true;            
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::BlockMap_File, visitor);
-        ThrowErrorIf(Error::BlockMapSemanticError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
+        ThrowErrorIf(Error::XmlError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
     }
 
     ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, const ComPtr<IStream>& stream)

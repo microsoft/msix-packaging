@@ -21,9 +21,10 @@
 #include "AppxBlockMapObject.hpp"
 #include "AppxSignature.hpp"
 #include "AppxFactory.hpp"
+#include "AppxPackageInfo.hpp"
 
 // internal interface
-EXTERN_C const IID IID_IPackage;   
+EXTERN_C const IID IID_IPackage;
 #ifndef WIN32
 // {51b2c456-aaa9-46d6-8ec9-298220559189}
 interface IPackage : public IUnknown
@@ -36,38 +37,27 @@ class IPackage : public IUnknown
 public:
     virtual void Unpack(MSIX_PACKUNPACK_OPTION options, const MSIX::ComPtr<IStorageObject>& to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
+    virtual MSIX::ComPtr<IVerifierObject> GetAppxManifestObject() = 0;
+};
+
+EXTERN_C const IID IID_IBundleInfo;
+#ifndef WIN32
+// {ff82ffcd-747a-4df9-8879-853ab9dd15a1}
+interface IBundleInfo : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IBundleInfo : public IUnknown
+#endif
+{
+public:
+    virtual std::vector<std::unique_ptr<MSIX::AppxPackageInBundle>>& GetPackages() = 0;
 };
 
 SpecializeUuidOfImpl(IPackage);
+SpecializeUuidOfImpl(IBundleInfo);
 
 namespace MSIX {
-    // The 5-tuple that describes the identity of a package
-    struct AppxPackageId
-    {
-        AppxPackageId(
-            const std::string& name,
-            const std::string& version,
-            const std::string& resourceId,
-            const std::string& architecture,
-            const std::string& publisher);
-
-        std::string Name;
-        std::string Version;
-        std::string ResourceId;
-        std::string Architecture;
-        std::string Publisher;
-        std::string PublisherId;
-
-        std::string GetPackageFullName()
-        {
-            return Name + "_" + Version + "_" + Architecture + "_" + ResourceId + "_" + PublisherId;
-        }
-
-        std::string GetPackageFamilyName()
-        {
-            return Name + "_" + PublisherId;
-        }
-    };
 
     // Object backed by AppxManifest.xml
     class AppxManifestObject final : public ComClass<AppxManifestObject, IVerifierObject>
@@ -76,17 +66,46 @@ namespace MSIX {
         AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
 
         // IVerifierObject
-        const std::string& GetPublisher() override { return GetPackageId()->Publisher; }
+        const std::string& GetPublisher() override { return GetPackageId()->PublisherId; }
         bool HasStream() override { return !!m_stream; }
         ComPtr<IStream> GetStream() override { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
         const std::string GetPackageFullName() override { return m_packageId->GetPackageFullName(); }
+        const std::string& GetVersion() override { return GetPackageId()->Version; }
+        const std::string& GetName() override { return GetPackageId()->Name; }
+        const std::string& GetArchitecture() override { return GetPackageId()->Architecture; }
 
-        AppxPackageId* GetPackageId()    { return m_packageId.get(); }
+        AppxPackageId* GetPackageId() { return m_packageId.get(); }
 
     protected:
         ComPtr<IStream> m_stream;
         std::unique_ptr<AppxPackageId> m_packageId;
+    };
+
+    class AppxBundleManifestObject final : public ComClass<AppxBundleManifestObject, IVerifierObject, IBundleInfo>
+    {
+    public:
+        AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
+
+         // IVerifierObject
+        const std::string& GetPublisher() override { return GetPackageId()->PublisherId; }
+        bool HasStream() override { return !!m_stream; }
+        ComPtr<IStream> GetStream() override { return m_stream; }
+        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
+        const std::string GetPackageFullName() override { NOTSUPPORTED; }
+        const std::string& GetVersion() override { return GetPackageId()->Version; }
+        const std::string& GetName() override { return GetPackageId()->Name; }
+        const std::string& GetArchitecture() override { NOTSUPPORTED; }
+
+        AppxPackageId* GetPackageId() { return m_packageId.get(); }
+
+        // IBundleInfo
+        std::vector<std::unique_ptr<AppxPackageInBundle>>& GetPackages() override { return m_packages; }
+
+    protected:
+        ComPtr<IStream> m_stream;
+        std::unique_ptr<AppxPackageId> m_packageId;
+        std::vector<std::unique_ptr<AppxPackageInBundle>> m_packages;
     };
 
     // Storage object representing the entire AppxPackage
@@ -98,6 +117,8 @@ namespace MSIX {
 
         // internal IPackage methods
         void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to) override;
+        std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
+        ComPtr<IVerifierObject> GetAppxManifestObject() override { return m_appxManifest; }
 
         // IAppxPackageReader
         HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept override;
@@ -114,9 +135,6 @@ namespace MSIX {
         // Same signature as IAppxPackageReader
         // HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override; 
 
-        // returns a list of the footprint files found within this package.
-        std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
-
         // IStorageObject methods
         const char*               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
@@ -128,19 +146,20 @@ namespace MSIX {
         // Helper methods
         void VerifyFile(const ComPtr<IStream>& stream, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal);
 
-        std::map<std::string, ComPtr<IStream>>  m_streams;
+        std::map<std::string, ComPtr<IStream>> m_streams;
 
         MSIX_VALIDATION_OPTION      m_validation = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
         ComPtr<IMSIXFactory>        m_factory;
         ComPtr<IVerifierObject>     m_appxSignature;
         ComPtr<IVerifierObject>     m_appxBlockMap;
         ComPtr<IVerifierObject>     m_appxManifest;
+        ComPtr<IVerifierObject>     m_appxBundleManifest;
         ComPtr<IStorageObject>      m_container;
         
         std::vector<std::string>    m_payloadFiles;
         std::vector<std::string>    m_footprintFiles;
-        std::vector<std::string>    m_payloadPackages;
 
+        std::vector<ComPtr<IAppxPackageReader>> m_payloadPackages;
         bool                        m_isBundle = false;
     };
 
