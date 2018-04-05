@@ -49,6 +49,7 @@ namespace MSIX {
     {
         AppxPackageInBundle(
             const std::string& name,
+            const std::string& bundleName,
             const std::string& version,
             const std::uint64_t size,
             const std::uint64_t offset,
@@ -56,17 +57,18 @@ namespace MSIX {
             const std::string& architecture,
             const std::string& publisherId,
             bool packageType) :
-            Size(size), Offset(offset), IsResoucePackage(packageType)
+            FileName(name), Size(size), Offset(offset), IsResourcePackage(packageType)
         {
-            PackageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisherId);
+            PackageId = std::make_unique<AppxPackageId>(bundleName, version, resourceId, architecture, publisherId);
             std::regex e (".+\.((appx)|(msix))");
-            ThrowErrorIf(Error::AppxManifestSemanticError, !std::regex_match(name, e), "Invalid FileName attribute in AppxBundleManifest.xml");
+            ThrowErrorIf(Error::AppxManifestSemanticError, !std::regex_match(FileName, e), "Invalid FileName attribute in AppxBundleManifest.xml");
         }
 
+        std::string FileName;
         std::unique_ptr<AppxPackageId> PackageId;
         std::uint64_t Size;
         std::uint64_t Offset;
         std::set<std::string> Languages;
-        bool IsResoucePackage;
+        bool IsResourcePackage;
     };  
 }

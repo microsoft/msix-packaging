@@ -37,6 +37,7 @@ class IPackage : public IUnknown
 public:
     virtual void Unpack(MSIX_PACKUNPACK_OPTION options, const MSIX::ComPtr<IStorageObject>& to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
+    virtual MSIX::ComPtr<IVerifierObject> GetAppxManifestObject() = 0;
 };
 
 EXTERN_C const IID IID_IBundleInfo;
@@ -70,6 +71,9 @@ namespace MSIX {
         ComPtr<IStream> GetStream() override { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
         const std::string GetPackageFullName() override { return m_packageId->GetPackageFullName(); }
+        const std::string& GetVersion() override { return GetPackageId()->Version; }
+        const std::string& GetName() override { return GetPackageId()->Name; }
+        const std::string& GetArchitecture() override { return GetPackageId()->Architecture; }
 
         AppxPackageId* GetPackageId() { return m_packageId.get(); }
 
@@ -89,6 +93,9 @@ namespace MSIX {
         ComPtr<IStream> GetStream() override { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
         const std::string GetPackageFullName() override { NOTSUPPORTED; }
+        const std::string& GetVersion() override { return GetPackageId()->Version; }
+        const std::string& GetName() override { return GetPackageId()->Name; }
+        const std::string& GetArchitecture() override { NOTSUPPORTED; }
 
         AppxPackageId* GetPackageId() { return m_packageId.get(); }
 
@@ -110,6 +117,8 @@ namespace MSIX {
 
         // internal IPackage methods
         void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to) override;
+        std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
+        ComPtr<IVerifierObject> GetAppxManifestObject() override { return m_appxManifest; }
 
         // IAppxPackageReader
         HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept override;
@@ -126,9 +135,6 @@ namespace MSIX {
         // Same signature as IAppxPackageReader
         // HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override; 
 
-        // returns a list of the footprint files found within this package.
-        std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
-
         // IStorageObject methods
         const char*               GetPathSeparator() override;
         std::vector<std::string>  GetFileNames(FileNameOptions options) override;
@@ -140,7 +146,7 @@ namespace MSIX {
         // Helper methods
         void VerifyFile(const ComPtr<IStream>& stream, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal);
 
-        std::map<std::string, ComPtr<IStream>>  m_streams;
+        std::map<std::string, ComPtr<IStream>> m_streams;
 
         MSIX_VALIDATION_OPTION      m_validation = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
         ComPtr<IMSIXFactory>        m_factory;
@@ -152,8 +158,8 @@ namespace MSIX {
         
         std::vector<std::string>    m_payloadFiles;
         std::vector<std::string>    m_footprintFiles;
-        std::vector<std::string>    m_payloadPackages;
 
+        std::vector<ComPtr<IAppxPackageReader>> m_payloadPackages;
         bool                        m_isBundle = false;
     };
 
