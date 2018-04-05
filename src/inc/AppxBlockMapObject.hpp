@@ -219,6 +219,9 @@ namespace MSIX {
         ComPtr<IStream> GetStream() override { return m_stream; }
         ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>& stream) override;
         const std::string GetPackageFullName() override { NOTSUPPORTED; }
+        const std::string& GetVersion() override { NOTSUPPORTED; }
+        const std::string& GetName() override { NOTSUPPORTED; }
+        const std::string& GetArchitecture() override { NOTSUPPORTED; }
 
         // IAppxBlockMapReader
         HRESULT STDMETHODCALLTYPE GetFile(LPCWSTR filename, IAppxBlockMapFile **file) noexcept override;

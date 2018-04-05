@@ -252,7 +252,8 @@ namespace MSIX {
             
             bool isResourcePackage = (type.empty() || type == "resource"); // default value is resource
             auto package = std::make_unique<AppxPackageInBundle>(
-                name, version, size, offset, resourceId, architecture, context->self->m_packageId.get()->PublisherId, isResourcePackage);
+                name, context->self->m_packageId.get()->Name, version, size, offset, resourceId,
+                architecture, context->self->m_packageId.get()->PublisherId, isResourcePackage);
             
             std::set<std::string> languages;
             XmlVisitor visitor(static_cast<void*>(&languages), [](void* l, const ComPtr<IXmlElement>& resourceNode)->bool
@@ -389,9 +390,10 @@ namespace MSIX {
             ThrowErrorIfNot(Error::BlockMapSemanticError, ((blockMapFiles.size() == 1)), "Block map contains invalid files.");
             
             auto bundleInfo = m_appxBundleManifest.As<IBundleInfo>();
+            auto appxFactory = m_factory.As<IAppxFactory>();
             for (const auto& package : bundleInfo->GetPackages())
             {
-                auto packageName = package.get()->PackageId->Name;
+                auto packageName = package.get()->FileName;
                 auto fileStream = m_container->GetFile(packageName);
                 ThrowErrorIfNot(Error::FileNotFound, fileStream, "Package is not in container"); // This will change when we support flat bundles
                 auto appxFile = fileStream.As<IAppxFile>();
@@ -400,7 +402,24 @@ namespace MSIX {
                 ThrowErrorIf(Error::AppxManifestSemanticError, (compressionOpt != APPX_COMPRESSION_OPTION_NONE), "Packages cannot be compressed");
                 ComPtr<IAppxFileInternal> appxFileInternal = fileStream.As<IAppxFileInternal>();
                 ThrowErrorIf(Error::AppxManifestSemanticError, (appxFileInternal->GetCompressedSize() != package.get()->Size), "Size mistmach of package between AppxManifestBundle.appx and container");
-                m_payloadPackages.push_back(packageName) ;
+                ComPtr<IAppxPackageReader> reader;
+                ThrowHrIfFailed(appxFactory->CreatePackageReader(fileStream.Get(), &reader));
+                auto appxPackage = reader.As<IPackage>();
+                auto appxManifest = appxPackage->GetAppxManifestObject();
+                ThrowErrorIfNot(Error::Unexpected, appxManifest, "Error getting the AppxManifest object"); // is this even possible?
+                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                    (appxManifest->GetPublisher() != package.get()->PackageId->PublisherId),
+                    "AppxBundleManifest.xml and AppxManifest.xml publisher mismatch");
+                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                    (appxManifest->GetVersion() != package.get()->PackageId->Version),
+                    "AppxBundleManifest.xml and AppxManifest.xml version mismatch");       
+                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                    (appxManifest->GetName() != package.get()->PackageId->Name),
+                    "AppxBundleManifest.xml and AppxManifest.xml name mismatch");
+                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                    (appxManifest->GetArchitecture() != package.get()->PackageId->Architecture),
+                    "AppxBundleManifest.xml and AppxManifest.xml architecture mismatch");
+                m_payloadPackages.push_back(std::move(reader)) ;
                 m_streams[packageName] = std::move(fileStream);
                 // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like 
                 // resource packages that are not languages packages.
@@ -508,11 +527,7 @@ namespace MSIX {
         {
             for(const auto& appx : m_payloadPackages)
             {
-                auto appxStream = GetFile(appx);
-                auto appxFactory = m_factory.As<IAppxFactory>();
-                ComPtr<IAppxPackageReader> reader;
-                ThrowHrIfFailed(appxFactory->CreatePackageReader(appxStream.Get(), &reader));
-                reader.As<IPackage>()->Unpack(
+                appx.As<IPackage>()->Unpack(
                     static_cast<MSIX_PACKUNPACK_OPTION>(options | MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER), to.Get());
             }
         }
