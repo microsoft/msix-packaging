@@ -54,6 +54,17 @@ protected:
     }    
 };
 
+class Text
+{
+public:
+    char** operator&() { return &content; }
+    ~Text() { Cleanup(); }
+
+    char* content = nullptr;
+protected:
+    void Cleanup() { if (content) { std::free(content); content = nullptr; } }
+};
+
 std::string utf16_to_utf8(const std::wstring& utf16string)
 {
     auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
@@ -310,7 +321,7 @@ HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
     HRESULT hr = S_OK;
     ComPtr<IAppxFactory> appxFactory;
     ComPtr<IStream> inputStream;
-
+    *package = nullptr;
     hr = CreateStreamOnFileUTF16(state.packageName.c_str(), true, &inputStream);
     if (SUCCEEDED(hr))
     {
@@ -330,7 +341,6 @@ HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
             hr = appxFactory->CreatePackageReader(inputStream.Get(), package);
         }
     }
-
     return hr;
 }
 
@@ -682,6 +692,14 @@ int main(int argc, char* argv[])
     if (result != 0)
     {
         std::cout << "Error: " << std::hex << result << " while extracting the appx package" <<std::endl;
+        Text text;
+        auto logResult = GetLogTextUTF8(MyAllocate, &text);
+        if (0 == logResult)
+        {   std::cout << "LOG:" << std::endl << text.content << std::endl;
+        }
+        else
+        {   std::cout << "UNABLE TO GET LOG WITH HR=" << std::hex << logResult << std::endl;
+        }
     }
     return result;
 }
