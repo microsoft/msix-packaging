@@ -82,10 +82,10 @@ namespace MSIX {
     } CATCH_RETURN();
 
     // IAppxBundleFactory
-    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept try
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept
     {
         return static_cast<HRESULT>(Error::NotImplemented);
-    } CATCH_RETURN();
+    }
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) noexcept try
     {
@@ -96,10 +96,10 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept try
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept
     {
         return static_cast<HRESULT>(Error::NotImplemented);
-    } CATCH_RETURN();
+    }
 
     // IMSIXFactory
     HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result) noexcept try

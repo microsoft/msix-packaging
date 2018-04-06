@@ -2035,6 +2035,16 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     MSIX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory) noexcept;
 
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
+    MSIX_VALIDATION_OPTION validationOption,
+    IAppxBundleFactory** appxBundleFactory) noexcept;
+
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
+    COTASKMEMALLOC* memalloc,
+    COTASKMEMFREE* memfree,
+    MSIX_VALIDATION_OPTION validationOption,
+    IAppxBundleFactory** appxBundleFactory) noexcept;
+
 // provided as a helper for platforms that do not have an implementation of SHCreateStreamOnFileEx
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
     char* utf8File,
