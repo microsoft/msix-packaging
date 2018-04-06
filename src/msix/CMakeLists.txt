@@ -142,13 +142,18 @@ SET_TARGET_PROPERTIES(${LIBRARY_NAME} PROPERTIES
 	PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
 )
 
-MESSAGE(STATUS "MSIX takes a static dependency on zlib")
 INCLUDE_DIRECTORIES(
 	${include_directories}
 	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
 	${CMAKE_PROJECT_ROOT}/lib/zlib
 )
-TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zlibstatic)
+IF(USE_SHARED_ZLIB)
+    MESSAGE(STATUS "MSIX takes a static dependency on zlib")
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zlib)
+else()
+    MESSAGE(STATUS "MSIX takes a dynamic dependency on zlib")
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zlibstatic)
+endif()
 
 IF (XML_PARSER MATCHES xerces)
     MESSAGE(STATUS "MSIX takes a static dependency on xerces")

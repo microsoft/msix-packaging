@@ -150,6 +150,11 @@ SET(CMAKE_BUILD_TYPE Debug CACHE STRING
     FORCE)
 ENDIF()
 
+# Enforce build libraries
+IF(NOT USE_SHARED_ZLIB)
+    MESSAGE (STATUS "Choose the type of dependency of zlib, Use the -DUSE_SHARED_ZLIB=on to have a shared dependency.  Default is 'off' (static)")
+ENDIF()
+
 MESSAGE (STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 IF ((CMAKE_BUILD_TYPE MATCHES RelWithDebInfo) OR (CMAKE_BUILD_TYPE MATCHES Release) OR (CMAKE_BUILD_TYPE MATCHES MinSizeRel))
