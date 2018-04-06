@@ -90,12 +90,6 @@ struct Option
 // Tracks the state of the current parse operation as well as implements input validation
 struct State
 {
-    bool CreatePackageSubfolder()
-    {
-        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
-        return true;
-    }
-
     bool SkipManifestValidation()
     {
         validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST);
@@ -128,10 +122,16 @@ struct State
         return true;
     }
 
+    bool SetRecursiveUnpack()
+    {
+        recursiveUnpack = true;
+        return true;
+    }
+
     std::wstring packageName;
     std::wstring directoryName;
+    bool recursiveUnpack = false;
     MSIX_VALIDATION_OPTION validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
-    MSIX_PACKUNPACK_OPTION unpackOptions     = MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE;
 };
 
 // Displays contextual formatted help to the user.
@@ -235,20 +235,29 @@ void Error(char* toolName)
     }
 #endif
 
+template<typename Type>
 struct FootprintFilesType
 {
-    APPX_FOOTPRINT_FILE_TYPE fileType;
+    Type fileType;
     const char* description;
     bool isRequired;
 };
 
 // Types of footprint files in an app package
 const int FootprintFilesCount = 4;
-FootprintFilesType footprintFilesType[FootprintFilesCount] = {
+FootprintFilesType<APPX_FOOTPRINT_FILE_TYPE> footprintFilesType[FootprintFilesCount] = {
     {APPX_FOOTPRINT_FILE_TYPE_MANIFEST, "manifest", true },
     {APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP, "block map", true },
     {APPX_FOOTPRINT_FILE_TYPE_SIGNATURE, "digital signature", true },
-    {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY, "CI catalog", false }, // this is ONLY required iff there exists 1+ PEs 
+    {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY, "CI catalog", false }, // this is ONLY required if there exists 1+ PEs 
+};
+
+// Types of footprint files in a bundle package
+const int BundleFootprintFilesCount = 3;
+FootprintFilesType<APPX_BUNDLE_FOOTPRINT_FILE_TYPE> bundleFootprintFilesType[FootprintFilesCount] = {
+    {APPX_BUNDLE_FOOTPRINT_FILE_TYPE_MANIFEST, "manifest", true },
+    {APPX_BUNDLE_FOOTPRINT_FILE_TYPE_BLOCKMAP, "block map", true },
+    {APPX_BUNDLE_FOOTPRINT_FILE_TYPE_SIGNATURE, "digital signature", true },
 };
 
 //
@@ -291,8 +300,8 @@ void STDMETHODCALLTYPE MyFree(LPVOID pv)        { std::free(pv); }
 // Creates a cross-plat app package.
 //
 // Parameters:
-//   inputFileName  
-//     The fully-qualified name of the app package (.appx file) to be opened.
+//   state  
+//     Contains the information for package name and validation options.
 //   reader 
 //     On success, receives the created instance of IAppxPackageReader.
 //
@@ -346,11 +355,6 @@ HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
 
     // Get basic info about the file
     hr = file->GetName(&fileName);
-
-    if (SUCCEEDED(hr))
-    {
-        hr = file->GetContentType(&contentType);
-    }
     if (SUCCEEDED(hr))
     {
         hr = file->GetSize(&fileSize);
@@ -358,9 +362,8 @@ HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
     }
     if (SUCCEEDED(hr))
     {
-        std::printf("\nFile name: %s\n" , utf16_to_utf8(fileName).c_str());
-        std::printf("Content type: %s\n", utf16_to_utf8(contentType).c_str());
-        std::printf("Size: %llu bytes\n", fileSize);
+        std::printf("\tFile name: %s\n" , utf16_to_utf8(fileName).c_str());
+        std::printf("\tSize: %llu bytes\n\n", fileSize);
     }
 
     // Write the file to disk
@@ -388,7 +391,7 @@ HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
 // Extracts all footprint files from a package.
 //
 // Parameters:
-//   packageReader 
+//   package
 //      The package reader for the app package.
 //   outputPath 
 //      The path of the folder for the extracted footprint files.
@@ -396,7 +399,7 @@ HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
 HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
-    std::printf("\nExtracting footprint files from the package...\n");
+    std::printf("Extracting footprint files from the package...\n");
 
     for (int i = 0; SUCCEEDED(hr) && (i < FootprintFilesCount); i++)
     {
@@ -422,7 +425,7 @@ HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 // Extracts all payload files from a package.
 //
 // Parameters:
-//   packageReader 
+//   package 
 //      The package reader for the app package.
 //   outputPath 
 //      The path of the folder for the extracted payload files.
@@ -431,7 +434,7 @@ HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 {
     HRESULT hr = S_OK;
     ComPtr<IAppxFilesEnumerator> files;
-    std::printf("\nExtracting payload files from the package...\n");
+    std::printf("Extracting payload files from the package...\n");
 
     // Get an enumerator of all payload files from the package reader and iterate
     // through all files.
@@ -455,6 +458,141 @@ HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
                 hr = files->MoveNext(&hasCurrent);
             }
         }
+    }
+    return hr;
+}
+
+//
+// Extracts all files from a package.
+//
+// Parameters:
+//   package 
+//      The package reader for the app package.
+//   outputPath 
+//      The path of the folder for the extracted payload files.
+//
+HRESULT ExtractPackage(IAppxPackageReader* package, LPCWSTR outputPath)
+{
+    // Print information about all footprint files, and extract them to disk
+    HRESULT hr = ExtractFootprintFiles(package, outputPath);
+    // Print information about all payload files, and extract them to disk
+    if (SUCCEEDED(hr))
+    {
+        hr = ExtractPayloadFiles(package, outputPath);
+    }
+    return hr;
+}
+
+//
+// Extracts all footprint files from a bundle.
+//
+// Parameters:
+//   bundle 
+//      The bundle reader for the app bundle.
+//   outputPath 
+//      The path of the folder for the extracted footprint files.
+//
+HRESULT ExtractFootprintFilesForBundle(IAppxBundleReader* bundle, LPCWSTR outputPath)
+{
+    HRESULT hr = S_OK;
+    std::printf("Extracting footprint files from the bundle...\n");
+    for (int i = 0; SUCCEEDED(hr) && (i < BundleFootprintFilesCount); i++)
+    {
+        ComPtr<IAppxFile> footprintFile;
+        hr = bundle->GetFootprintFile(bundleFootprintFilesType[i].fileType, &footprintFile);
+        if (SUCCEEDED(hr) && footprintFile.Get())
+        {
+            hr = ExtractFile(footprintFile.Get(), outputPath);
+        }
+        else if (footprintFilesType[i].isRequired)
+        {
+            std::printf("The package does not contain a %s.\n", footprintFilesType[i].description);
+        }
+        else
+        {
+            hr = S_OK; // the footprint file was not required.
+        }
+    }
+    return hr;
+}
+
+//
+// Extracts all payload packages from a bundle.
+//
+// Parameters:
+//   bundle 
+//      The bundle reader for the app bundle.
+//   outputPath 
+//      The path of the folder for the extracted payload packages.
+HRESULT ExtractPayloadPackages(IAppxBundleReader* bundle, State& state)
+{
+    HRESULT hr = S_OK;
+    ComPtr<IAppxFilesEnumerator> packages;
+    std::printf("Extracting payload files from the package...\n");
+
+    // Get an enumerator of all payload packages from the bundle reader and iterate through all files.
+    hr = bundle->GetPayloadPackages(&packages);
+    if (SUCCEEDED(hr))
+    {
+        BOOL hasCurrent = FALSE;
+        hr = packages->GetHasCurrent(&hasCurrent);
+        while (SUCCEEDED(hr) && hasCurrent)
+        {
+            ComPtr<IAppxFile> package;
+            hr = packages->GetCurrent(&package);
+            if (SUCCEEDED(hr))
+            {
+                if (state.recursiveUnpack)
+                {
+                    ComPtr<IStream> packageStream;
+                    ComPtr<IAppxPackageReader> packageReader;
+                    LPWSTR fileName = nullptr;
+                    
+                    hr = package->GetStream(&packageStream);
+                    if (SUCCEEDED(hr))
+                    {
+                        hr = package->GetName(&fileName);
+                    }
+                    if (SUCCEEDED(hr))
+                    {
+                        std::printf("Extracting package from bundle: %s\n" , utf16_to_utf8(fileName).c_str());
+                        // Pass MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER to avoid overwritting files.
+                        hr = UnpackPackageFromStream(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER,
+                            state.validationOptions, packageStream.Get(), const_cast<char*>(utf16_to_utf8(state.directoryName).c_str()));
+                    }
+                    std::free(fileName);
+                }
+                else
+                {
+                    hr = ExtractFile(package.Get(), state.directoryName.c_str());
+                }
+            }
+            if (SUCCEEDED(hr))
+            {
+                hr = packages->MoveNext(&hasCurrent);
+            }
+        }
+    }
+    return hr;
+}
+
+//
+// Extracts all files from a bundle.
+//
+// Parameters:
+//   bundle 
+//      The package reader for the app package.
+//   outputPath 
+//      The path of the folder for the extracted payload files.
+//
+HRESULT ExtractBundle(IAppxBundleReader* bundle, State& state)
+{
+    // Print information about all footprint files, and extract them to disk
+    HRESULT hr = ExtractFootprintFilesForBundle(bundle, state.directoryName.c_str());
+    // Print information about all payload bundles, and extract them to disk
+    if (SUCCEEDED(hr))
+    {
+        hr = ExtractPayloadPackages(bundle, state);
     }
     return hr;
 }
@@ -485,22 +623,27 @@ int ParseAndRun(std::map<std::string, Option>& options, State& state, int argc, 
     {   Error(argv[0]);
         return -1;
     }
-
+    
     HRESULT hr = S_OK;
-    // Create a package using the file name in argv[1] 
+    // Create a package using the file name in argv[1]
     ComPtr<IAppxPackageReader> package;
     hr = GetPackageReader(state, &package);
-
     // Print information about all footprint files, and extract them to disk
     if (SUCCEEDED(hr))
     {
-        hr = ExtractFootprintFiles(package.Get(), state.directoryName.c_str());
-    }
-
-    // Print information about all payload files, and extract them to disk
-    if (SUCCEEDED(hr))
-    {
-        hr = ExtractPayloadFiles(package.Get(), state.directoryName.c_str());
+        // See if the package is a bundle;
+        ComPtr<IAppxBundleReader> bundle;
+        hr = package->QueryInterface(UuidOfImpl<IAppxBundleReader>::iid, reinterpret_cast<void**>(&bundle));
+        if(SUCCEEDED(hr))
+        {
+            // This is an bundle
+            hr = ExtractBundle(bundle.Get(), state);
+        }
+        else if(hr == E_NOINTERFACE)
+        {
+            // This is a package
+            hr = ExtractPackage(package.Get(), state.directoryName.c_str());
+        }
     }
     return static_cast<int>(hr);
 }
@@ -517,20 +660,18 @@ int main(int argc, char* argv[])
         { "-d", Option(true, "REQUIRED, specify output directory name.",
             [&](const std::string& name) { return state.SetDirectoryName(name); })
         },
-        { "-pfn", Option(false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
-            [&](const std::string&) { return state.CreatePackageSubfolder(); })
-        },
-        { "-mv", Option(false, "Skips manifest validation.  By default manifest validation is enabled.",
-            [&](const std::string&) { return state.SkipManifestValidation(); })
-        },
         { "-sv", Option(false, "Skips signature validation.  By default signature validation is enabled.",
             [&](const std::string&) { return state.AllowSignatureOriginUnknown(); })
         },
         { "-ss", Option(false, "Skips enforcement of signed packages.  By default packages must be signed.",
             [&](const std::string&) 
             {   footprintFilesType[2].isRequired = false;
+                bundleFootprintFilesType[2].isRequired = false;
                 return state.SkipSignature();
             })
+        },
+        { "-r", Option(false, "Recursive unpacking (only applicable for bundles). By default this is turn off.",
+            [&](const std::string&) { return state.SetRecursiveUnpack(); })
         },
         { "-?", Option(false, "Displays this help text.",
             [&](const std::string&) { return false; })

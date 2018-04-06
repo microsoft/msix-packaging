@@ -6,6 +6,7 @@
         CreateStreamOnFileUTF16;
         GetLogTextUTF8;
         UnpackPackage;
+        UnpackPackageFromStream
         CoCreateAppxBundleFactory;
         CoCreateAppxBundleWithHeap;
     local: 
