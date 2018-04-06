@@ -13,6 +13,7 @@ _CreateStreamOnFile
 _CreateStreamOnFileUTF16
 _GetLogTextUTF8
 _UnpackPackage
+_UnpackPackageFromStream
 _CoCreateAppxBundleFactory
 _CoCreateAppxBundleFactoryWithHeap
 
