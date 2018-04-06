@@ -60,7 +60,7 @@ namespace MSIX {
             FileName(name), Size(size), Offset(offset), IsResourcePackage(packageType)
         {
             PackageId = std::make_unique<AppxPackageId>(bundleName, version, resourceId, architecture, publisherId);
-            std::regex e (".+\.((appx)|(msix))");
+            std::regex e (".+\\.((appx)|(msix))");
             ThrowErrorIf(Error::AppxManifestSemanticError, !std::regex_match(FileName, e), "Invalid FileName attribute in AppxBundleManifest.xml");
         }
 
