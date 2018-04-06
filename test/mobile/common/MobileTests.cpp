@@ -19,20 +19,6 @@
 // Used for test results
 bool g_TestFailed = false;
 
-static std::string utf16_to_utf8(const std::wstring& utf16string)
-{
-    auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
-    std::string result(converted.begin(), converted.end());
-    return result;
-}
-
-static std::wstring utf8_to_utf16(const std::string& utf8string)
-{
-    auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data());
-    std::wstring result(converted.begin(), converted.end());
-    return result;
-}
-
 // not all POSIX implementations provide an implementation of mkdirp
 static int mkdirp(std::wstring& utf16Path)
 {
@@ -53,74 +39,6 @@ static int mkdirp(std::wstring& utf16Path)
 	}
 	return 0;
 }
-
-// Tracks the state of the current parse operation as well as implements input validation
-struct State
-{
-    bool CreatePackageSubfolder()
-    {
-        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
-        return true;
-    }
-
-    bool SetValidationOptions(MSIX_VALIDATION_OPTION flags)
-    {
-        validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | flags);
-        return true;
-    }
-    
-    bool SetPackageName(const std::string& name)
-    {
-        if (!packageName.empty() || name.empty()) { return false; }
-        packageName = utf8_to_utf16(name);
-        return true;
-    }
-
-    bool SetDirectoryName(const std::string& name)
-    {
-        if (!directoryName.empty() || name.empty()) { return false; }
-        directoryName = utf8_to_utf16(name);
-        return true;
-    }
-
-    std::wstring packageName;
-    std::wstring directoryName;
-    MSIX_VALIDATION_OPTION validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
-    MSIX_PACKUNPACK_OPTION unpackOptions     = MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE;
-};
-
-// Stripped down ComPtr provided for those platforms that do not already have a ComPtr class.
-template <class T>
-class ComPtr
-{
-public:
-    // default ctor
-    ComPtr() = default;
-    ComPtr(T* ptr) : m_ptr(ptr) { InternalAddRef(); }
-
-    ~ComPtr() { InternalRelease(); }
-    inline T* operator->() const { return m_ptr; }
-    inline T* Get() const { return m_ptr; }
-
-    inline T** operator&()
-    {   InternalRelease();
-        return &m_ptr;
-    }
-
-protected:
-    T* m_ptr = nullptr;
-
-    inline void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
-    inline void InternalRelease()
-    {   
-        T* temp = m_ptr;
-        if (temp)
-        {   m_ptr = nullptr;
-            temp->Release();
-        }
-    }    
-};
-
 // Cleans a directory
 static void RemoveContent(std::string subPath)
 {
@@ -138,112 +56,6 @@ static void RemoveContent(std::string subPath)
     }
 }
 
-// Types of footprint files in an app package
-struct FootprintFilesType
-{
-    APPX_FOOTPRINT_FILE_TYPE fileType;
-    const char* description;
-    bool isRequired;
-};
-
-const int FootprintFilesCount = 4;
-FootprintFilesType footprintFilesType[FootprintFilesCount] = {
-    {APPX_FOOTPRINT_FILE_TYPE_MANIFEST, "manifest", true },
-    {APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP, "block map", true },
-    {APPX_FOOTPRINT_FILE_TYPE_SIGNATURE, "digital signature", true },
-    {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY, "CI catalog", false }, // this is ONLY required iff there exists 1+ PEs 
-};
-
-static HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
-{
-    HRESULT hr = S_OK;
-    const int MaxFileNameLength = 200;
-    std::wstring fullFileName = path + std::wstring(L"/") + fileName;
-    std::replace(fullFileName.begin(), fullFileName.end(), '\\', '/' );
-
-    hr = HRESULT_FROM_WIN32(mkdirp(fullFileName));
-    // Create stream for writing the file
-    if (SUCCEEDED(hr))
-    {   hr = CreateStreamOnFileUTF16(fullFileName.c_str(), false, stream);
-    }
-    return hr;
-}
-
-static HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
-{
-    HRESULT hr = S_OK;
-    LPWSTR fileName = nullptr;
-    LPWSTR contentType = nullptr;
-    UINT64 fileSize = 0;
-    ComPtr<IStream> fileStream;
-    ComPtr<IStream> outputStream;
-    ULARGE_INTEGER fileSizeLargeInteger = { 0 };
-
-    hr = file->GetName(&fileName);
-    if (SUCCEEDED(hr))
-    {   hr = file->GetContentType(&contentType);
-    }
-    if (SUCCEEDED(hr))
-    {   hr = file->GetSize(&fileSize);
-        fileSizeLargeInteger.QuadPart = fileSize;
-    }
-
-    // Write the file to disk
-    if (SUCCEEDED(hr))
-    {   hr = file->GetStream(&fileStream);
-    }
-    if (SUCCEEDED(hr))
-    {   hr = GetOutputStream(outputPath, fileName, &outputStream);
-    }
-    if (SUCCEEDED(hr))
-    {   hr = fileStream->CopyTo(outputStream.Get(), fileSizeLargeInteger, nullptr, nullptr);
-    }
-
-    // You must free string buffers obtained from the packaging APIs,
-    // the heap that you use is specified via CoCreateAppxFactoryWithHeap
-    std::free(fileName);
-    std::free(contentType);
-    return hr;
-}
-
-static HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
-{
-    HRESULT hr = S_OK;
-    for (int i = 0; SUCCEEDED(hr) && (i < FootprintFilesCount); i++)
-    {   ComPtr<IAppxFile> footprintFile;
-        hr = package->GetFootprintFile(footprintFilesType[i].fileType, &footprintFile);
-        if (SUCCEEDED(hr) && footprintFile.Get())
-        {   hr = ExtractFile(footprintFile.Get(), outputPath);
-        }
-        else if (!footprintFilesType[i].isRequired)
-        {   hr = S_OK;
-        }
-    }
-    return hr;
-}
-
-static HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
-{
-    HRESULT hr = S_OK;
-    ComPtr<IAppxFilesEnumerator> files;
-    hr = package->GetPayloadFiles(&files);
-    if (SUCCEEDED(hr))
-    {   BOOL hasCurrent = FALSE;
-        hr = files->GetHasCurrent(&hasCurrent);
-        while (SUCCEEDED(hr) && hasCurrent)
-        {   ComPtr<IAppxFile> file;
-            hr = files->GetCurrent(&file);
-            if (SUCCEEDED(hr))
-            {   hr = ExtractFile(file.Get(), outputPath);
-            }
-            if (SUCCEEDED(hr))
-            {   hr = files->MoveNext(&hasCurrent);
-            }
-        }
-    }
-    return hr;
-}
-
 // allocator/deallocator for non-Windows
 LPVOID STDMETHODCALLTYPE MyAllocate(SIZE_T cb)  { return std::malloc(cb); }
 void STDMETHODCALLTYPE MyFree(LPVOID pv)        { std::free(pv); }
@@ -259,49 +71,20 @@ protected:
     void Cleanup() { if (content) { std::free(content); content = nullptr; } }
 };
 
-static HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
+
+static HRESULT RunTest(std::string packageName, std::string unpackFolder, MSIX_VALIDATION_OPTION validationOptions, int expectedResult)
 {
     HRESULT hr = S_OK;
-    ComPtr<IAppxFactory> appxFactory;
-    ComPtr<IStream> inputStream;
-
-    hr = CreateStreamOnFileUTF16(state.packageName.c_str(), true, &inputStream);
-    if (SUCCEEDED(hr))
-    {   hr = CoCreateAppxFactoryWithHeap(MyAllocate, MyFree, state.validationOptions, &appxFactory);
-        if (SUCCEEDED(hr))
-        {   hr = appxFactory->CreatePackageReader(inputStream.Get(), package);
-        }
-    }
-
-    return hr;
-}
-
-static HRESULT RunTest(std::string packageName, std::string unpackFolder, MSIX_VALIDATION_OPTION flags, int expectedResult)
-{
-    HRESULT hr = S_OK;
-    State state;
-    state.SetPackageName(packageName);
-    state.SetDirectoryName(unpackFolder);
-    state.SetValidationOptions(flags);
     RemoveContent(unpackFolder);
-
-    // Signature is not required for this test
-    if(flags & MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE)
-    {   footprintFilesType[2].isRequired = false;
-    }
 
     std::cout << "------------------------------------------------------" << std::endl;
     std::cout << "Package: " << packageName << std::endl;
     std::cout << "Validation Options: " << std::hex << flags << std::endl;
 
-    ComPtr<IAppxPackageReader> package;
-    hr = GetPackageReader(state, &package);
-    if(SUCCEEDED(hr))
-    {   hr = ExtractFootprintFiles(package.Get(), state.directoryName.c_str());
-    }
-    if (SUCCEEDED(hr))
-    {   hr = ExtractPayloadFiles(package.Get(), state.directoryName.c_str());
-    }
+    hr = UnpackPackage(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
+            validationOptions,
+            const_cast<char*>(packageName),
+            const_cast<char*>(unpackFolder);
 
     if(FAILED(hr))
     {
@@ -324,11 +107,6 @@ static HRESULT RunTest(std::string packageName, std::string unpackFolder, MSIX_V
     else
     {   std::cout << "Failed" << std::endl;
         g_TestFailed = true;
-    }
-
-    // Clean up
-    if(flags & MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE)
-    {   footprintFilesType[2].isRequired = true;
     }
 
     return hr;
