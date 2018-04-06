@@ -1,29 +1,36 @@
 @echo off
-set var=%1
-set val=%2
-echo var = %var%
-echo val = %val%
-IF /I "%val%" == "NO_VALIDATE" (
-    set val="-DUSE_VALIDATION_PARSER=off"
-) ELSE (
+set build=%1
+set val="-DUSE_VALIDATION_PARSER=off"
+set zlib="-DUSE_SHARED_ZLIB=off"
+
+:parseargs
+IF /I "%~2" == "VALIDATE" (
     set val="-DUSE_VALIDATION_PARSER=on"
 )
+IF /I "%~2" == "SHARED_ZLIB" (
+    set zlib="-DUSE_SHARED_ZLIB=on"
+)
+shift /2
+IF not "%~2"=="" goto parseargs
 
-IF /I "%var%" == "WIN32" (
-    echo calling makewin32.cmd %val%
-    call makewin32.cmd %val%
+echo val = %val%
+echo zlib = %zlib%
+
+IF /I "%build%" == "WIN32" (
+    echo calling makewin32.cmd %val% %zlib%
+    call makewin32.cmd %val% %zlib%
 ) ELSE (
-    IF /I "%var%" == "WIN32-x64" (
-        echo calling makewin32x64.cmd %val%
-        call makewin32x64.cmd %val%
+    IF /I "%build%" == "WIN32-x64" (
+        echo calling makewin32x64.cmd %val% %zlib%
+        call makewin32x64.cmd %val% %zlib%
     ) ELSE (
-        IF /I "%var%" == "WIN32chk" (
-            echo calling makewin32chk.cmd %val%
-            call makewin32chk.cmd %val%
+        IF /I "%build%" == "WIN32chk" (
+            echo calling makewin32chk.cmd %val% %zlib%
+            call makewin32chk.cmd %val% %zlib%
         ) ELSE (
-            IF /I "%var%" == "WIN32-x64chk" (
-                echo calling makewin32x64chk.cmd %val%
-                call makewin32x64chk.cmd %val%
+            IF /I "%build%" == "WIN32-x64chk" (
+                echo calling makewin32x64chk.cmd %val% %zlib%
+                call makewin32x64chk.cmd %val% %zlib%
             ) ELSE (
                 goto FAIL
             )
@@ -32,8 +39,8 @@ IF /I "%var%" == "WIN32" (
 )
 goto EXIT
 :FAIL
-echo specify one of [WIN32, WIN32-x64, WIN32chk, WIN32-x64chk] for 1st option
-echo specify NO_VALIDATE for 2nd option to disable XML schema validation.
+echo specify one of [WIN32, WIN32-x64, WIN32chk, WIN32-x64chk] for 1st option. Required.
+echo other options: VALIDATE to enable XML schema validation. SHARED_ZLIB to don't statically link zlib. 
 EXIT /B 0
 :Exit
 echo done.
