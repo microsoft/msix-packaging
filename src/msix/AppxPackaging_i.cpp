@@ -25,8 +25,16 @@ typedef struct _IID
 
 #endif // __IID_DEFINED__
 
+#ifndef WIN32
+#undef MSIX_API
+#define MSIX_API __attribute__((visibility("default")))
+#else
+#undef MSIX_API
+#define MSIX_API
+#endif
+
 #define MIDL_DEFINE_GUID(type,name,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) \
-        extern "C" const type name = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
+        MSIX_API extern "C" const type name = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
 
 MIDL_DEFINE_GUID(IID, IID_IUnknown,0x00000000,0x0000,0x0000,0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46);
 MIDL_DEFINE_GUID(IID, IID_ISequentialStream,0x0c733a30,0x2a1c,0x11ce,0xad,0xe5,0x00,0xaa,0x00,0x44,0x77,0x3d);

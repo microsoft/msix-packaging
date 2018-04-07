@@ -16,4 +16,4 @@ _UnpackPackage
 _UnpackPackageFromStream
 _CoCreateAppxBundleFactory
 _CoCreateAppxBundleFactoryWithHeap
-
+_IID_IAppxBundleReader

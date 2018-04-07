@@ -19,26 +19,6 @@
 // Used for test results
 bool g_TestFailed = false;
 
-// not all POSIX implementations provide an implementation of mkdirp
-static int mkdirp(std::wstring& utf16Path)
-{
-	std::string utf8Path = utf16_to_utf8(utf16Path);
-	auto lastSlash = utf8Path.find_last_of("/");
-	std::string path = utf8Path.substr(0, lastSlash);
-	char* p = const_cast<char*>(path.c_str());
-	if (*p == '/') { p++; }
-	while (*p != '\0')
-	{   while (*p != '\0' && *p != '/') { p++; }
-		char v = *p;
-		*p = '\0';
-		if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) && errno != EEXIST)
-		{   return errno;
-		}
-		*p = v;
-		p++;
-	}
-	return 0;
-}
 // Cleans a directory
 static void RemoveContent(std::string subPath)
 {
@@ -79,12 +59,12 @@ static HRESULT RunTest(std::string packageName, std::string unpackFolder, MSIX_V
 
     std::cout << "------------------------------------------------------" << std::endl;
     std::cout << "Package: " << packageName << std::endl;
-    std::cout << "Validation Options: " << std::hex << flags << std::endl;
+    std::cout << "Validation Options: " << std::hex << validationOptions << std::endl;
 
     hr = UnpackPackage(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
             validationOptions,
-            const_cast<char*>(packageName),
-            const_cast<char*>(unpackFolder);
+            const_cast<char*>(packageName.c_str()),
+            const_cast<char*>(unpackFolder.c_str()));
 
     if(FAILED(hr))
     {
@@ -163,31 +143,31 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     // Bundle tests
     hr = RunTest(source + "bundles/BlockMapContainsPayloadPackage.appxbundle", unpackFolder, ss, 81);
     hr = RunTest(source + "bundles/BlockMapIsMissing.appxbundle", unpackFolder, ss, 51);
-    //hr = RunTest(source + "bundles/BlockMapViolatesSchema.appxbundle", unpackFolder, full,  0);
+    hr = RunTest(source + "bundles/BlockMapViolatesSchema.appxbundle", unpackFolder, ss, 4098);
     //hr = RunTest(source + "bundles/ContainsNeutralAndX86AppPackages.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ContainsNoPayload.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ContainsOnlyResourcePackages.appxbundle", unpackFolder, full, 0);
+    hr = RunTest(source + "bundles/ContainsNoPayload.appxbundle", unpackFolder, ss, 4098);
+    hr = RunTest(source + "bundles/ContainsOnlyResourcePackages.appxbundle", unpackFolder, ss, 97);
     //hr = RunTest(source + "bundles/ContainsTwoNeutralAppPackages.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/MainBundle.appxbundle", unpackFolder, ss, 0 );
+    hr = RunTest(source + "bundles/MainBundle.appxbundle", unpackFolder, ss, 0);
     //hr = RunTest(source + "bundles/ManifestDeclaresAppPackageForResourcePackage.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestHasExtraPackage.appxbundle", unpackFolder, full, 0);
     hr = RunTest(source + "bundles/ManifestIsMissing.appxbundle", unpackFolder, ss, 52);
-    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectArchitecture.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectName.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectPublisher.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectSize.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectVersion.appxbundle", unpackFolder, full, 0);
+    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectArchitecture.appxbundle", unpackFolder, ss, 97);
+    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectName.appxbundle", unpackFolder, ss, 97);
+    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectPublisher.appxbundle", unpackFolder, ss, 97);
+    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectSize.appxbundle", unpackFolder, ss, 97);
+    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectVersion.appxbundle", unpackFolder, ss, 97);
     //hr = RunTest(source + "bundles/ManifestPackageHasInvalidOffset.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestPackageHasInvalidRange.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ManifestViolatesSchema.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/PayloadPackageHasNonAppxExtension.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/PayloadPackageIsCompressed.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/PayloadPackageIsEmpty.appxbundle.zip", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/PayloadPackageIsNotAppxPackage.appxbundle", unpackFolder, full, 0);
+    hr = RunTest(source + "bundles/ManifestViolatesSchema.appxbundle", unpackFolder, ss, 4098);
+    hr = RunTest(source + "bundles/PayloadPackageHasNonAppxExtension.appxbundle", unpackFolder, ss, 97);
+    hr = RunTest(source + "bundles/PayloadPackageIsCompressed.appxbundle", unpackFolder, ss, 97);
+    hr = RunTest(source + "bundles/PayloadPackageIsEmpty.appxbundle", unpackFolder, ss, 3);
+    hr = RunTest(source + "bundles/PayloadPackageIsNotAppxPackage.appxbundle", unpackFolder, ss, 87);
     //hr = RunTest(source + "bundles/PayloadPackageNotListedInManifest.appxbundle", unpackFolder, full, 0);
     hr = RunTest(source + "bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle", unpackFolder, full, 66);
-    //hr = RunTest(source + "bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle", unpackFolder, full, 0);
+    hr = RunTest(source + "bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle", unpackFolder, full, 0);
 
     std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" << std::endl;
     if(g_TestFailed)
