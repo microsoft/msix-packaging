@@ -7,6 +7,37 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C11C9D12048C7C700F6BE01 /* en-us_win32.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4C11C9D02048C7C700F6BE01 /* en-us_win32.appx */; };
+		4C11C9D22048C7F700F6BE01 /* en-us_win32.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C11C9D02048C7C700F6BE01 /* en-us_win32.appx */; };
+		4C7F376D20783FD2002942F4 /* BlockMapContainsPayloadPackage.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375220783FC2002942F4 /* BlockMapContainsPayloadPackage.appxbundle */; };
+		4C7F376E20783FD2002942F4 /* BlockMapIsMissing.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375320783FC2002942F4 /* BlockMapIsMissing.appxbundle */; };
+		4C7F376F20783FD2002942F4 /* BlockMapViolatesSchema.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375420783FC2002942F4 /* BlockMapViolatesSchema.appxbundle */; };
+		4C7F377020783FD2002942F4 /* ContainsNeutralAndX86AppPackages.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375520783FC2002942F4 /* ContainsNeutralAndX86AppPackages.appxbundle */; };
+		4C7F377120783FD2002942F4 /* ContainsNoPayload.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375620783FC2002942F4 /* ContainsNoPayload.appxbundle */; };
+		4C7F377220783FD2002942F4 /* ContainsOnlyResourcePackages.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375720783FC2002942F4 /* ContainsOnlyResourcePackages.appxbundle */; };
+		4C7F377320783FD2002942F4 /* ContainsTwoNeutralAppPackages.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375820783FC2002942F4 /* ContainsTwoNeutralAppPackages.appxbundle */; };
+		4C7F377420783FD2002942F4 /* MainBundle.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375920783FC2002942F4 /* MainBundle.appxbundle */; };
+		4C7F377520783FD2002942F4 /* ManifestDeclaresAppPackageForResourcePackage.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375A20783FC2002942F4 /* ManifestDeclaresAppPackageForResourcePackage.appxbundle */; };
+		4C7F377620783FD2002942F4 /* ManifestDeclaresResourcePackageForAppPackage.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375B20783FC2002942F4 /* ManifestDeclaresResourcePackageForAppPackage.appxbundle */; };
+		4C7F377720783FD2002942F4 /* ManifestHasExtraPackage.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375C20783FC2002942F4 /* ManifestHasExtraPackage.appxbundle */; };
+		4C7F377820783FD2002942F4 /* ManifestIsMissing.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375D20783FC2002942F4 /* ManifestIsMissing.appxbundle */; };
+		4C7F377920783FD2002942F4 /* ManifestPackageHasIncorrectArchitecture.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375E20783FC2002942F4 /* ManifestPackageHasIncorrectArchitecture.appxbundle */; };
+		4C7F377A20783FD2002942F4 /* ManifestPackageHasIncorrectName.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375F20783FC2002942F4 /* ManifestPackageHasIncorrectName.appxbundle */; };
+		4C7F377B20783FD2002942F4 /* ManifestPackageHasIncorrectPublisher.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376020783FC2002942F4 /* ManifestPackageHasIncorrectPublisher.appxbundle */; };
+		4C7F377C20783FD2002942F4 /* ManifestPackageHasIncorrectSize.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376120783FC2002942F4 /* ManifestPackageHasIncorrectSize.appxbundle */; };
+		4C7F377D20783FD2002942F4 /* ManifestPackageHasIncorrectVersion.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376220783FC2002942F4 /* ManifestPackageHasIncorrectVersion.appxbundle */; };
+		4C7F377E20783FD2002942F4 /* ManifestPackageHasInvalidOffset.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376320783FC2002942F4 /* ManifestPackageHasInvalidOffset.appxbundle */; };
+		4C7F377F20783FD2002942F4 /* ManifestPackageHasInvalidRange.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376420783FC2002942F4 /* ManifestPackageHasInvalidRange.appxbundle */; };
+		4C7F378020783FD2002942F4 /* ManifestViolatesSchema.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376520783FC2002942F4 /* ManifestViolatesSchema.appxbundle */; };
+		4C7F378120783FD2002942F4 /* PayloadPackageHasNonAppxExtension.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376620783FC2002942F4 /* PayloadPackageHasNonAppxExtension.appxbundle */; };
+		4C7F378220783FD2002942F4 /* PayloadPackageIsCompressed.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376720783FC2002942F4 /* PayloadPackageIsCompressed.appxbundle */; };
+		4C7F378320783FD2002942F4 /* PayloadPackageIsEmpty.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376820783FC2002942F4 /* PayloadPackageIsEmpty.appxbundle */; };
+		4C7F378420783FD2002942F4 /* PayloadPackageIsNotAppxPackage.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376920783FC2002942F4 /* PayloadPackageIsNotAppxPackage.appxbundle */; };
+		4C7F378520783FD2002942F4 /* PayloadPackageNotListedInManifest.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376A20783FC2002942F4 /* PayloadPackageNotListedInManifest.appxbundle */; };
+		4C7F378620783FD2002942F4 /* SignedUntrustedCert-CERT_E_CHAINING.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376B20783FC2002942F4 /* SignedUntrustedCert-CERT_E_CHAINING.appxbundle */; };
+		4C7F378720783FD2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376C20783FC2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle */; };
+		4C7F3789207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		4C7F378B20784901002942F4 /* libmsix.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		EEE4055020225CDF007B25CE /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4054F20225CDF007B25CE /* AppDelegate.m */; };
 		EEE4055320225CDF007B25CE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4055220225CDF007B25CE /* ViewController.m */; };
 		EEE4055620225CDF007B25CE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEE4055420225CDF007B25CE /* Main.storyboard */; };
@@ -69,19 +100,63 @@
 		EEE405BF20227ED8007B25CE /* Size_wrong_uncompressed.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE4057620225EF5007B25CE /* Size_wrong_uncompressed.appx */; };
 		EEE405C2202E53A7007B25CE /* libmsix.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE405C0202E53A7007B25CE /* libmsix.0.0.0.dylib */; };
 		EEE405C3202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = EEE405C1202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib */; };
-		EEE405C4202E53D9007B25CE /* libmsix.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE405C0202E53A7007B25CE /* libmsix.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		EEE405C5202E53D9007B25CE /* libmsixtestcommon.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = EEE405C1202E53A7007B25CE /* libmsixtestcommon.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		4C11C9CB2048C60500F6BE01 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = sdx;
+			dstSubfolderSpec = 7;
+			files = (
+				4C11C9D22048C7F700F6BE01 /* en-us_win32.appx in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C7F375020783F90002942F4 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = bundles;
+			dstSubfolderSpec = 7;
+			files = (
+				4C7F376D20783FD2002942F4 /* BlockMapContainsPayloadPackage.appxbundle in CopyFiles */,
+				4C7F376E20783FD2002942F4 /* BlockMapIsMissing.appxbundle in CopyFiles */,
+				4C7F376F20783FD2002942F4 /* BlockMapViolatesSchema.appxbundle in CopyFiles */,
+				4C7F377020783FD2002942F4 /* ContainsNeutralAndX86AppPackages.appxbundle in CopyFiles */,
+				4C7F377120783FD2002942F4 /* ContainsNoPayload.appxbundle in CopyFiles */,
+				4C7F377220783FD2002942F4 /* ContainsOnlyResourcePackages.appxbundle in CopyFiles */,
+				4C7F377320783FD2002942F4 /* ContainsTwoNeutralAppPackages.appxbundle in CopyFiles */,
+				4C7F377420783FD2002942F4 /* MainBundle.appxbundle in CopyFiles */,
+				4C7F377520783FD2002942F4 /* ManifestDeclaresAppPackageForResourcePackage.appxbundle in CopyFiles */,
+				4C7F377620783FD2002942F4 /* ManifestDeclaresResourcePackageForAppPackage.appxbundle in CopyFiles */,
+				4C7F377720783FD2002942F4 /* ManifestHasExtraPackage.appxbundle in CopyFiles */,
+				4C7F377820783FD2002942F4 /* ManifestIsMissing.appxbundle in CopyFiles */,
+				4C7F377920783FD2002942F4 /* ManifestPackageHasIncorrectArchitecture.appxbundle in CopyFiles */,
+				4C7F377A20783FD2002942F4 /* ManifestPackageHasIncorrectName.appxbundle in CopyFiles */,
+				4C7F377B20783FD2002942F4 /* ManifestPackageHasIncorrectPublisher.appxbundle in CopyFiles */,
+				4C7F377C20783FD2002942F4 /* ManifestPackageHasIncorrectSize.appxbundle in CopyFiles */,
+				4C7F377D20783FD2002942F4 /* ManifestPackageHasIncorrectVersion.appxbundle in CopyFiles */,
+				4C7F377E20783FD2002942F4 /* ManifestPackageHasInvalidOffset.appxbundle in CopyFiles */,
+				4C7F377F20783FD2002942F4 /* ManifestPackageHasInvalidRange.appxbundle in CopyFiles */,
+				4C7F378020783FD2002942F4 /* ManifestViolatesSchema.appxbundle in CopyFiles */,
+				4C7F378120783FD2002942F4 /* PayloadPackageHasNonAppxExtension.appxbundle in CopyFiles */,
+				4C7F378220783FD2002942F4 /* PayloadPackageIsCompressed.appxbundle in CopyFiles */,
+				4C7F378320783FD2002942F4 /* PayloadPackageIsEmpty.appxbundle in CopyFiles */,
+				4C7F378420783FD2002942F4 /* PayloadPackageIsNotAppxPackage.appxbundle in CopyFiles */,
+				4C7F378520783FD2002942F4 /* PayloadPackageNotListedInManifest.appxbundle in CopyFiles */,
+				4C7F378620783FD2002942F4 /* SignedUntrustedCert-CERT_E_CHAINING.appxbundle in CopyFiles */,
+				4C7F378720783FD2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EEE4056820225E11007B25CE /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				EEE405C4202E53D9007B25CE /* libmsix.0.0.0.dylib in CopyFiles */,
-				EEE405C5202E53D9007B25CE /* libmsixtestcommon.0.0.0.dylib in CopyFiles */,
+				4C7F378B20784901002942F4 /* libmsix.0.0.0.dylib in CopyFiles */,
+				4C7F3789207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -133,6 +208,36 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4C11C9D02048C7C700F6BE01 /* en-us_win32.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "en-us_win32.appx"; sourceTree = "<group>"; };
+		4C7F375220783FC2002942F4 /* BlockMapContainsPayloadPackage.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = BlockMapContainsPayloadPackage.appxbundle; sourceTree = "<group>"; };
+		4C7F375320783FC2002942F4 /* BlockMapIsMissing.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = BlockMapIsMissing.appxbundle; sourceTree = "<group>"; };
+		4C7F375420783FC2002942F4 /* BlockMapViolatesSchema.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = BlockMapViolatesSchema.appxbundle; sourceTree = "<group>"; };
+		4C7F375520783FC2002942F4 /* ContainsNeutralAndX86AppPackages.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ContainsNeutralAndX86AppPackages.appxbundle; sourceTree = "<group>"; };
+		4C7F375620783FC2002942F4 /* ContainsNoPayload.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ContainsNoPayload.appxbundle; sourceTree = "<group>"; };
+		4C7F375720783FC2002942F4 /* ContainsOnlyResourcePackages.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ContainsOnlyResourcePackages.appxbundle; sourceTree = "<group>"; };
+		4C7F375820783FC2002942F4 /* ContainsTwoNeutralAppPackages.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ContainsTwoNeutralAppPackages.appxbundle; sourceTree = "<group>"; };
+		4C7F375920783FC2002942F4 /* MainBundle.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = MainBundle.appxbundle; sourceTree = "<group>"; };
+		4C7F375A20783FC2002942F4 /* ManifestDeclaresAppPackageForResourcePackage.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestDeclaresAppPackageForResourcePackage.appxbundle; sourceTree = "<group>"; };
+		4C7F375B20783FC2002942F4 /* ManifestDeclaresResourcePackageForAppPackage.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestDeclaresResourcePackageForAppPackage.appxbundle; sourceTree = "<group>"; };
+		4C7F375C20783FC2002942F4 /* ManifestHasExtraPackage.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestHasExtraPackage.appxbundle; sourceTree = "<group>"; };
+		4C7F375D20783FC2002942F4 /* ManifestIsMissing.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestIsMissing.appxbundle; sourceTree = "<group>"; };
+		4C7F375E20783FC2002942F4 /* ManifestPackageHasIncorrectArchitecture.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestPackageHasIncorrectArchitecture.appxbundle; sourceTree = "<group>"; };
+		4C7F375F20783FC2002942F4 /* ManifestPackageHasIncorrectName.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestPackageHasIncorrectName.appxbundle; sourceTree = "<group>"; };
+		4C7F376020783FC2002942F4 /* ManifestPackageHasIncorrectPublisher.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestPackageHasIncorrectPublisher.appxbundle; sourceTree = "<group>"; };
+		4C7F376120783FC2002942F4 /* ManifestPackageHasIncorrectSize.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestPackageHasIncorrectSize.appxbundle; sourceTree = "<group>"; };
+		4C7F376220783FC2002942F4 /* ManifestPackageHasIncorrectVersion.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestPackageHasIncorrectVersion.appxbundle; sourceTree = "<group>"; };
+		4C7F376320783FC2002942F4 /* ManifestPackageHasInvalidOffset.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestPackageHasInvalidOffset.appxbundle; sourceTree = "<group>"; };
+		4C7F376420783FC2002942F4 /* ManifestPackageHasInvalidRange.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestPackageHasInvalidRange.appxbundle; sourceTree = "<group>"; };
+		4C7F376520783FC2002942F4 /* ManifestViolatesSchema.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = ManifestViolatesSchema.appxbundle; sourceTree = "<group>"; };
+		4C7F376620783FC2002942F4 /* PayloadPackageHasNonAppxExtension.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = PayloadPackageHasNonAppxExtension.appxbundle; sourceTree = "<group>"; };
+		4C7F376720783FC2002942F4 /* PayloadPackageIsCompressed.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = PayloadPackageIsCompressed.appxbundle; sourceTree = "<group>"; };
+		4C7F376820783FC2002942F4 /* PayloadPackageIsEmpty.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = PayloadPackageIsEmpty.appxbundle; sourceTree = "<group>"; };
+		4C7F376920783FC2002942F4 /* PayloadPackageIsNotAppxPackage.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = PayloadPackageIsNotAppxPackage.appxbundle; sourceTree = "<group>"; };
+		4C7F376A20783FC2002942F4 /* PayloadPackageNotListedInManifest.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = PayloadPackageNotListedInManifest.appxbundle; sourceTree = "<group>"; };
+		4C7F376B20783FC2002942F4 /* SignedUntrustedCert-CERT_E_CHAINING.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SignedUntrustedCert-CERT_E_CHAINING.appxbundle"; sourceTree = "<group>"; };
+		4C7F376C20783FC2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle; sourceTree = "<group>"; };
+		4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsixtestcommon.0.0.0.dylib; path = ../../../.vs/lib/libmsixtestcommon.0.0.0.dylib; sourceTree = "<group>"; };
+		4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsix.0.0.0.dylib; path = ../../../.vs/lib/libmsix.0.0.0.dylib; sourceTree = "<group>"; };
 		EEE4054B20225CDF007B25CE /* iOSBVT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSBVT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EEE4054E20225CDF007B25CE /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		EEE4054F20225CDF007B25CE /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -187,9 +292,55 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		4C11C9CF2048C7C700F6BE01 /* sdx */ = {
+			isa = PBXGroup;
+			children = (
+				4C11C9D02048C7C700F6BE01 /* en-us_win32.appx */,
+			);
+			path = sdx;
+			sourceTree = "<group>";
+		};
+		4C7F375120783FC2002942F4 /* bundles */ = {
+			isa = PBXGroup;
+			children = (
+				4C7F375220783FC2002942F4 /* BlockMapContainsPayloadPackage.appxbundle */,
+				4C7F375320783FC2002942F4 /* BlockMapIsMissing.appxbundle */,
+				4C7F375420783FC2002942F4 /* BlockMapViolatesSchema.appxbundle */,
+				4C7F375520783FC2002942F4 /* ContainsNeutralAndX86AppPackages.appxbundle */,
+				4C7F375620783FC2002942F4 /* ContainsNoPayload.appxbundle */,
+				4C7F375720783FC2002942F4 /* ContainsOnlyResourcePackages.appxbundle */,
+				4C7F375820783FC2002942F4 /* ContainsTwoNeutralAppPackages.appxbundle */,
+				4C7F375920783FC2002942F4 /* MainBundle.appxbundle */,
+				4C7F375A20783FC2002942F4 /* ManifestDeclaresAppPackageForResourcePackage.appxbundle */,
+				4C7F375B20783FC2002942F4 /* ManifestDeclaresResourcePackageForAppPackage.appxbundle */,
+				4C7F375C20783FC2002942F4 /* ManifestHasExtraPackage.appxbundle */,
+				4C7F375D20783FC2002942F4 /* ManifestIsMissing.appxbundle */,
+				4C7F375E20783FC2002942F4 /* ManifestPackageHasIncorrectArchitecture.appxbundle */,
+				4C7F375F20783FC2002942F4 /* ManifestPackageHasIncorrectName.appxbundle */,
+				4C7F376020783FC2002942F4 /* ManifestPackageHasIncorrectPublisher.appxbundle */,
+				4C7F376120783FC2002942F4 /* ManifestPackageHasIncorrectSize.appxbundle */,
+				4C7F376220783FC2002942F4 /* ManifestPackageHasIncorrectVersion.appxbundle */,
+				4C7F376320783FC2002942F4 /* ManifestPackageHasInvalidOffset.appxbundle */,
+				4C7F376420783FC2002942F4 /* ManifestPackageHasInvalidRange.appxbundle */,
+				4C7F376520783FC2002942F4 /* ManifestViolatesSchema.appxbundle */,
+				4C7F376620783FC2002942F4 /* PayloadPackageHasNonAppxExtension.appxbundle */,
+				4C7F376720783FC2002942F4 /* PayloadPackageIsCompressed.appxbundle */,
+				4C7F376820783FC2002942F4 /* PayloadPackageIsEmpty.appxbundle */,
+				4C7F376920783FC2002942F4 /* PayloadPackageIsNotAppxPackage.appxbundle */,
+				4C7F376A20783FC2002942F4 /* PayloadPackageNotListedInManifest.appxbundle */,
+				4C7F376B20783FC2002942F4 /* SignedUntrustedCert-CERT_E_CHAINING.appxbundle */,
+				4C7F376C20783FC2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle */,
+			);
+			name = bundles;
+			path = ../../appx/bundles;
+			sourceTree = "<group>";
+		};
 		EEE4054220225CDE007B25CE = {
 			isa = PBXGroup;
 			children = (
+				4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */,
+				4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */,
+				4C7F375120783FC2002942F4 /* bundles */,
 				EEE4054D20225CDF007B25CE /* iOSBVT */,
 				EEE4054C20225CDF007B25CE /* Products */,
 				EEE405C0202E53A7007B25CE /* libmsix.0.0.0.dylib */,
@@ -277,7 +428,9 @@
 				EEE4054920225CDF007B25CE /* Resources */,
 				EEE4056820225E11007B25CE /* CopyFiles */,
 				EEE405A320227E6D007B25CE /* CopyFiles */,
-				EEE405B520227ECB007B25CE /* CopyFiles */,
+				EEE405B520227ECB007B25CE /* Copy Files */,
+				4C11C9CB2048C60500F6BE01 /* CopyFiles */,
+				4C7F375020783F90002942F4 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -507,7 +660,7 @@
 				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = iOSBVT/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = /Users/philsmith/Documents/projects/xPlatAppx/build/lib;
+				LIBRARY_SEARCH_PATHS = ../../../.vs/lib;
 				PRODUCT_BUNDLE_IDENTIFIER = Microsoft.iOSBVT;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -523,7 +676,7 @@
 				FRAMEWORK_SEARCH_PATHS = "";
 				INFOPLIST_FILE = iOSBVT/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
-				LIBRARY_SEARCH_PATHS = /Users/philsmith/Documents/projects/xPlatAppx/build/lib;
+				LIBRARY_SEARCH_PATHS = ../../../.vs/lib;
 				PRODUCT_BUNDLE_IDENTIFIER = Microsoft.iOSBVT;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TARGETED_DEVICE_FAMILY = "1,2";

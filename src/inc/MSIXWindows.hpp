@@ -238,6 +238,10 @@
     #define HRESULT_FROM_WIN32(x) ((HRESULT)(x) <= 0 ? ((HRESULT)(x)) : ((HRESULT) (((x) & 0x0000FFFF) | (FACILITY_WIN32 << 16) | 0x80000000)))
     #endif
 
+    #ifndef E_NOINTERFACE
+    #define E_NOINTERFACE 0x80004002
+    #endif
+
     #if !defined (_SYS_GUID_OPERATORS_)
     #define _SYS_GUID_OPERATORS_
 
