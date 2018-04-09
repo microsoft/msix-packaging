@@ -45,7 +45,7 @@ function CleanupUnpackFolder {
 function ValidateResult([string] $EXPECTED) {
     write-host "Validating extracted files with $EXPECTED"
     foreach ($file in (Get-ChildItem ".\..\unpack" -file -recurse)) { Add-Content output.txt "$($file.Length) $($file.Name)"}
-    if(Compare-Object -ReferenceObject $(Get-Content "output.txt") -DifferenceObject $(Get-Content "..\ExpectedResults\StoreSigned_Desktop_x64_MoviesTV.txt"))
+    if(Compare-Object -ReferenceObject $(Get-Content "output.txt") -DifferenceObject $(Get-Content $EXPECTED))
     {
         write-host  "FAILED comparing extracted files"
         $global:TESTFAILED=1
