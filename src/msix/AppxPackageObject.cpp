@@ -511,26 +511,30 @@ namespace MSIX {
     {
         auto fileNames = GetFileNames(FileNameOptions::All);
         for (const auto& fileName : fileNames)
-        {
-            std::string targetName;
-            if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
-            {   // Don't use to->GetPathSeparator(). DirectoryObject::OpenFile created directories
-                // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with 
-                // the package full name won't be created on Windows, but it will on other platforms.
-                // This means that we have different behaviors in non-Win platforms.
-                // TODO: have the same behavior on Windows and other platforms.
-                targetName = m_appxManifest->GetPackageFullName() + "/" + fileName;
-            }
-            else
-            {   targetName = DecodeFileName(fileName);
-            }
+        {   // Don't extract packages files
+            auto file = std::find(std::begin(m_payloadPackagesNames), std::end(m_payloadPackagesNames), fileName);
+            if (file == std::end(m_payloadPackagesNames))
+            {
+                std::string targetName;
+                if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
+                {   // Don't use to->GetPathSeparator(). DirectoryObject::OpenFile created directories
+                    // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with 
+                    // the package full name won't be created on Windows, but it will on other platforms.
+                    // This means that we have different behaviors in non-Win platforms.
+                    // TODO: have the same behavior on Windows and other platforms.
+                    targetName = m_appxManifest->GetPackageFullName() + "/" + fileName;
+                }
+                else
+                {   targetName = DecodeFileName(fileName);
+                }
 
-            auto targetFile = to->OpenFile(targetName, MSIX::FileStream::Mode::WRITE_UPDATE);
-            auto sourceFile = GetFile(fileName);
+                auto targetFile = to->OpenFile(targetName, MSIX::FileStream::Mode::WRITE_UPDATE);
+                auto sourceFile = GetFile(fileName);
 
-            ULARGE_INTEGER bytesCount = {0};
-            bytesCount.QuadPart = std::numeric_limits<std::uint64_t>::max();
-            ThrowHrIfFailed(sourceFile->CopyTo(targetFile.Get(), bytesCount, nullptr, nullptr));
+                ULARGE_INTEGER bytesCount = {0};
+                bytesCount.QuadPart = std::numeric_limits<std::uint64_t>::max();
+                ThrowHrIfFailed(sourceFile->CopyTo(targetFile.Get(), bytesCount, nullptr, nullptr));
+            }
         }
         if(m_isBundle)
         {
