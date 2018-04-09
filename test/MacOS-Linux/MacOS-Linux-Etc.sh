@@ -123,7 +123,7 @@ RunTest 66 ./../appx/bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle
 RunTest 0 ./../appx/bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
 
 RunTest 0  ./../appx/StoreSigned_Desktop_x64_MoviesTV.appx
-ValidateResult ../ExpectedResults/StoreSigned_Desktop_x64_MoviesTV.txt
+ValidateResult ExpectedResults/StoreSigned_Desktop_x64_MoviesTV.txt
 
 CleanupUnpackFolder
 

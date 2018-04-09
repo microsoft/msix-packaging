@@ -138,7 +138,7 @@ RunTest 0x8bad0042 .\..\appx\bundles\SignedUntrustedCert-CERT_E_CHAINING.appxbun
 RunTest 0x00000000 .\..\appx\bundles\StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
 
 RunTest 0x00000000 .\..\appx\StoreSigned_Desktop_x64_MoviesTV.appx
-ValidateResult ..\ExpectedResults\StoreSigned_Desktop_x64_MoviesTV.txt
+ValidateResult ExpectedResults\StoreSigned_Desktop_x64_MoviesTV.txt
 
 CleanupUnpackFolder
 
