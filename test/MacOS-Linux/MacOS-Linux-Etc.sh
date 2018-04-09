@@ -39,7 +39,7 @@ function ValidateResult {
         TESTFAILED=1
     else
         echo "succeeded comparing extracted files"
-    if
+    fi
     rm output.txt
 }
 
