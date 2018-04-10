@@ -693,8 +693,8 @@ class EndCentralDirectoryRecord final : public Meta::StructuredObject<EndCentral
 public:
     void Validate()
     {
-        if (Field<1>().value != Field<2>().value) { throw std::invalid_argument("field missmatch"); }
-        if (Field<3>().value != Field<4>().value) { throw std::invalid_argument("field missmatch"); }
+        ThrowErrorIf(Error::ZipEOCDRecord, (Field<1>().value != Field<2>().value), "field missmatch");
+        ThrowErrorIf(Error::ZipEOCDRecord, (Field<3>().value != Field<4>().value), "field missmatch");
 
         m_isZip64 = (0xFFFF == Field<2>().value);
         if (Field<3>().value != 0 && Field<3>().value != 0xFFFF)
@@ -702,12 +702,10 @@ public:
         }
         if(m_archiveHasZip64Locator)
         {
-            if((Field<5>().value != 0) && (Field<5>().value != 0xFFFFFFFF)) {
-                throw std::invalid_argument("unsupported size of central directory");
-            }
-            if ((Field<6>().value != 0) && (Field<6>().value != 0xFFFFFFFF)) {
-                throw std::invalid_argument("unsupported offset of start of central directory");
-            }
+            ThrowErrorIf(Error::ZipEOCDRecord, ((Field<5>().value != 0) && (Field<5>().value != 0xFFFFFFFF)),
+                "unsupported size of central directory");
+            ThrowErrorIf(Error::ZipEOCDRecord, ((Field<6>().value != 0) && (Field<6>().value != 0xFFFFFFFF)),
+                "unsupported offset of start of central directory");
         }
     }
     
