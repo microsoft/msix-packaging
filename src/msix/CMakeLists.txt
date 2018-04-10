@@ -23,9 +23,10 @@ IF (XML_PARSER MATCHES msxml6)
 ENDIF()
 
 IF(WIN32)
-    SET (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.CPP)
-    SET (SHA256 PAL/SHA256/Win32/SHA256.CPP)
+    SET (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
+    SET (SHA256 PAL/SHA256/Win32/SHA256.cpp)
     SET (Signature PAL/Signature/Win32/SignatureValidator.cpp)
+    SET (Applicability PAL/Applicability/Win32/Applicability.cpp)
 ELSE()
     # Visibility variables for non-win32 platforms
     IF((IOS) OR (MACOS))
@@ -71,6 +72,7 @@ MESSAGE (STATUS "PAL: XML             = ${XmlParser}")
 MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
 MESSAGE (STATUS "PAL: SHA256          = ${SHA256}")
 MESSAGE (STATUS "PAL: Signature       = ${Signature}")
+MESSAGE (STATUS "PAL: Applicability   = ${Applicability}")
 
 include(msix_resources)
 
@@ -80,6 +82,7 @@ SET(LIB_PUBLIC_HEADERS
 )
 
 SET(LIB_PRIVATE_HEADERS
+    ../inc/Applicability.hpp
     ../inc/AppxBlockMapObject.hpp
     ../inc/AppxFactory.hpp
     ../inc/AppxPackageInfo.hpp
@@ -122,6 +125,7 @@ SET(LIB_SOURCES
     ${SHA256}
     ${Signature}
     ${XmlParser}
+    ${Applicability}
 )
 
 # Copy out public headers
@@ -175,5 +179,6 @@ IF(OpenSSL_FOUND)
 ENDIF()
 
 if(WIN32)
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust)
+    SET_PROPERTY(TARGET ${BINARY_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib)
 endif()

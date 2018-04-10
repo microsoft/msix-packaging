@@ -7,6 +7,13 @@ project (makemsix)
 # Define two variables in order not to repeat ourselves.
 set(BINARY_NAME ExtractContentsSample)
 
+if(WIN32)
+	set(DESCRIPTION "makemsix manifest")
+	configure_file(../../manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest CRLF)
+	set(MANIFEST ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest)
+endif()
+
+
 include_directories(
 	${include_directories}
 	${CMAKE_PROJECT_ROOT}/src/inc
@@ -14,6 +21,7 @@ include_directories(
 
 add_executable(${BINARY_NAME}
 	ExtractContentsSample.cpp
+	${MANIFEST}
 	)
 
 # specify that this binary is to be built with C++14
