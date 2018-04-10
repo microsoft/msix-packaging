@@ -35,14 +35,14 @@ namespace MSIX {
     {
     public:
         NtStatusException(std::string& message, NTSTATUS error) : Exception(message, static_cast<std::uint32_t>(error)) {}
-    };    
+    };
 
     #define ThrowStatusIfFailed(a, m)                                                      \
     {   NTSTATUS _status = a;                                                              \
         if (!NT_SUCCESS(_status))                                                          \
         {   MSIX::RaiseException<MSIX::NtStatusException>(__LINE__, __FILE__, m, _status); \
         }                                                                                  \
-    }    
+    }
 
     bool SHA256::ComputeHash(std::uint8_t* buffer, std::uint32_t cbBuffer, std::vector<uint8_t>& hash)
     {
@@ -61,7 +61,7 @@ namespace MSIX {
         "failed computing SHA256 hash");
 
         // Obtain the length of the hash
-        unique_alg_handle algHandle(algHandleT);        
+        unique_alg_handle algHandle(algHandleT);
         ThrowStatusIfFailed(BCryptGetProperty(
             algHandle.get(),            // Handle to a CNG object
             BCRYPT_HASH_LENGTH,         // Property name (null terminated unicode string)
@@ -87,7 +87,7 @@ namespace MSIX {
         "failed computing SHA256 hash");
 
         // Hash the message(s)
-        unique_hash_handle hashHandle(hashHandleT);        
+        unique_hash_handle hashHandle(hashHandleT);
         ThrowStatusIfFailed(BCryptHashData(
             hashHandle.get(),           // Handle to the hash or MAC object
             (PBYTE)buffer,              // A pointer to a buffer that contains the data to hash
