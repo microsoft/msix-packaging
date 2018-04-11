@@ -6,6 +6,22 @@
         CreateStreamOnFileUTF16;
         GetLogTextUTF8;
         UnpackPackage;
-    local: 
+        UnpackPackageFromStream;
+        CoCreateAppxBundleFactory;
+        CoCreateAppxBundleWithHeap;
+        IID_IUnknown;
+        IID_IAppxBlockMapBlock;
+        IID_IAppxBlockMapBlocksEnumerator;
+        IID_IAppxBlockMapFile;
+        IID_IAppxBlockMapFilesEnumerator;
+        IID_IAppxBlockMapReader;
+        IID_IAppxFactory;
+        IID_IAppxBundleFactory;
+        IID_IAppxPackageReader;
+        IID_IAppxBundleReader;
+        IID_IAppxFilesEnumerator;
+        IID_IAppxFile;
+        IID_IStream;
+    local:
         *;
 };

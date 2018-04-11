@@ -42,6 +42,21 @@ function CleanupUnpackFolder {
     }
 }
 
+function ValidateResult([string] $EXPECTED) {
+    write-host "Validating extracted files with $EXPECTED"
+    foreach ($file in (Get-ChildItem ".\..\unpack" -file -recurse)) { Add-Content output.txt "$($file.Length) $($file.Name)"}
+    if(Compare-Object -ReferenceObject $(Get-Content "output.txt") -DifferenceObject $(Get-Content $EXPECTED))
+    {
+        write-host  "FAILED comparing extracted files"
+        $global:TESTFAILED=1
+    }
+    else
+    {
+        write-host  "succeeded comparing extracted files"
+    }
+    Remove-Item output.txt
+}
+
 function RunTest([int] $SUCCESSCODE, [string] $PACKAGE, [string] $OPT) {
     CleanupUnpackFolder
     $OPTIONS = "unpack -d .\..\unpack -p $PACKAGE $OPT"
@@ -77,7 +92,6 @@ RunTest 0x8bad0042 .\..\appx\SignedTamperedCD-TRUST_E_BAD_DIGEST.appx
 RunTest 0x8bad0042 .\..\appx\SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx
 RunTest 0x8bad0042 .\..\appx\SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx
 RunTest 0x8bad0042 .\..\appx\SignedUntrustedCert-CERT_E_CHAINING.appx
-RunTest 0x00000000 .\..\appx\StoreSigned_Desktop_x64_MoviesTV.appx
 RunTest 0x00000000 .\..\appx\TestAppxPackage_Win32.appx "-ss"
 RunTest 0x00000000 .\..\appx\TestAppxPackage_x64.appx "-ss"
 RunTest 0x8bad0012 .\..\appx\UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
@@ -122,6 +136,9 @@ RunTest 0x80070057 .\..\appx\bundles\PayloadPackageIsNotAppxPackage.appxbundle "
 #RunTest 0x00000000 .\..\appx\bundles\PayloadPackageNotListedInManifest.appxbundle
 RunTest 0x8bad0042 .\..\appx\bundles\SignedUntrustedCert-CERT_E_CHAINING.appxbundle
 RunTest 0x00000000 .\..\appx\bundles\StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
+
+RunTest 0x00000000 .\..\appx\StoreSigned_Desktop_x64_MoviesTV.appx
+ValidateResult ExpectedResults\StoreSigned_Desktop_x64_MoviesTV.txt
 
 CleanupUnpackFolder
 

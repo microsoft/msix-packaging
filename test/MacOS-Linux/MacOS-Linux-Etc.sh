@@ -27,6 +27,22 @@ function CleanupUnpackFolder {
     fi
 }
 
+function ValidateResult {
+    local EXPECTED=$1
+    echo "Validating extracted files with "$EXPECTED
+    ls -lRp "./../unpack" | grep -v / | awk 'NF > 4 {print $5, $9}' >> output.txt
+    diff output.txt $EXPECTED
+    diff_result=$?
+    if [ $diff_result -eq 1 ]
+    then
+        echo "FAILED comparing extracted files"
+        TESTFAILED=1
+    else
+        echo "succeeded comparing extracted files"
+    fi
+    rm output.txt
+}
+
 function RunTest {
     CleanupUnpackFolder
     local SUCCESS="$1"
@@ -61,7 +77,6 @@ RunTest 66 ./../appx/SignedTamperedCD-TRUST_E_BAD_DIGEST.appx
 RunTest 66 ./../appx/SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx
 RunTest 66 ./../appx/SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx
 RunTest 66 ./../appx/SignedUntrustedCert-CERT_E_CHAINING.appx
-RunTest 0  ./../appx/StoreSigned_Desktop_x64_MoviesTV.appx
 RunTest 0 ./../appx/TestAppxPackage_Win32.appx -ss
 RunTest 0 ./../appx/TestAppxPackage_x64.appx -ss
 RunTest 18 ./../appx/UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
@@ -106,6 +121,11 @@ RunTest 87 ./../appx/bundles/PayloadPackageIsNotAppxPackage.appxbundle -ss
 #RunTest 0 ./../appx/bundles/PayloadPackageNotListedInManifest.appxbundle
 RunTest 66 ./../appx/bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle
 RunTest 0 ./../appx/bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
+
+RunTest 0  ./../appx/StoreSigned_Desktop_x64_MoviesTV.appx
+ValidateResult ExpectedResults/StoreSigned_Desktop_x64_MoviesTV.txt
+
+CleanupUnpackFolder
 
     echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if [ $TESTFAILED -ne 0 ]

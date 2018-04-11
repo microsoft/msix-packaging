@@ -82,22 +82,24 @@ namespace MSIX {
     } CATCH_RETURN();
 
     // IAppxBundleFactory
-    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept try
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept
     {
         return static_cast<HRESULT>(Error::NotImplemented);
-    } CATCH_RETURN();
+    }
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) noexcept try
     {
-        // TODO: Implement. Create helper that is called by CreateBundleReader and CreatePackageReader 
-        // and then verify that is a bundle.
-        return static_cast<HRESULT>(Error::NotImplemented);
+        ComPtr<IAppxPackageReader> reader;
+        ThrowHrIfFailed(CreatePackageReader(inputStream, &reader));
+        auto result = reader.As<IAppxBundleReader>();
+        *bundleReader = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept try
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept
     {
         return static_cast<HRESULT>(Error::NotImplemented);
-    } CATCH_RETURN();
+    }
 
     // IMSIXFactory
     HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result) noexcept try

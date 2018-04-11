@@ -70,6 +70,30 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
+MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    MSIX_VALIDATION_OPTION validationOption,
+    IStream* stream,
+    char* utf8Destination) noexcept try
+{
+    ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
+        (stream != nullptr && utf8Destination != nullptr), 
+        "Invalid parameters"
+    );
+
+    MSIX::ComPtr<IAppxFactory> factory;
+    // We don't need to use the caller's heap here because we're not marshalling any strings
+    // out to the caller.  So default to new / delete[] and be done with it!
+    ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, validationOption, &factory));
+
+    MSIX::ComPtr<IAppxPackageReader> reader;
+    ThrowHrIfFailed(factory->CreatePackageReader(stream, &reader));
+
+    auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
+    reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
 MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept try
 {
     ThrowErrorIf(MSIX::Error::InvalidParameter, (logText == nullptr || *logText != nullptr), "bad pointer" );
@@ -124,4 +148,26 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     #else
         return static_cast<HRESULT>(MSIX::Error::NotSupported);
     #endif
-}    
+}
+
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
+    COTASKMEMALLOC* memalloc,
+    COTASKMEMFREE* memfree,
+    MSIX_VALIDATION_OPTION validationOption,
+    IAppxBundleFactory** appxBundleFactory) noexcept try
+{
+    *appxBundleFactory = MSIX::ComPtr<IAppxBundleFactory>::Make<MSIX::AppxFactory>(validationOption, memalloc, memfree).Detach();
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
+// Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
+    MSIX_VALIDATION_OPTION validationOption,
+    IAppxBundleFactory** appxBundleFactory) noexcept
+{
+    #ifdef WIN32
+        return CoCreateAppxBundleFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxBundleFactory);
+    #else
+        return static_cast<HRESULT>(MSIX::Error::NotSupported);
+    #endif
+}
