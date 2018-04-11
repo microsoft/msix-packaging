@@ -22,6 +22,12 @@
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
 
+#define RETURN_IF_FAILED(a) \
+    {   HRESULT __hr = a;   \
+        if (FAILED(__hr))   \
+        {   return __hr; }  \
+    }
+
 // Stripped down ComPtr provided for those platforms that do not already have a ComPtr class.
 template <class T>
 class ComPtr
@@ -52,17 +58,6 @@ protected:
             temp->Release();
         }
     }    
-};
-
-class Text
-{
-public:
-    char** operator&() { return &content; }
-    ~Text() { Cleanup(); }
-
-    char* content = nullptr;
-protected:
-    void Cleanup() { if (content) { std::free(content); content = nullptr; } }
 };
 
 std::string utf16_to_utf8(const std::wstring& utf16string)
@@ -217,10 +212,10 @@ void Error(char* toolName)
                 // Restore original string
                 utf16Path[i] = L'\\'; /* TODO: paths coming in SHOULD have platform-appropriate path separators */
             }
-        }   
-        return 0;     
+        }
+        return 0;
     }
-#else     
+#else
     // not all POSIX implementations provide an implementation of mkdirp
     int mkdirp(std::wstring& utf16Path)
     {
@@ -285,7 +280,6 @@ FootprintFilesType<APPX_BUNDLE_FOOTPRINT_FILE_TYPE> bundleFootprintFilesType[Foo
 //
 HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
 {
-    HRESULT hr = S_OK;
     const int MaxFileNameLength = 200;
     #ifdef WIN32
     std::wstring fullFileName = path + std::wstring(L"\\") + fileName;
@@ -294,18 +288,29 @@ HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
     std::replace(fullFileName.begin(), fullFileName.end(), '\\', '/' );
     #endif
 
-    hr = HRESULT_FROM_WIN32(mkdirp(fullFileName));
+    RETURN_IF_FAILED(HRESULT_FROM_WIN32(mkdirp(fullFileName)));
     // Create stream for writing the file
-    if (SUCCEEDED(hr))
-    {
-        hr = CreateStreamOnFileUTF16(fullFileName.c_str(), false, stream);
-    }
-    return hr;
+    RETURN_IF_FAILED(CreateStreamOnFileUTF16(fullFileName.c_str(), false, stream));
+    return S_OK;
 }
 
 // Or you can use what-ever allocator/deallocator is best for your platform...
 LPVOID STDMETHODCALLTYPE MyAllocate(SIZE_T cb)  { return std::malloc(cb); }
 void STDMETHODCALLTYPE MyFree(LPVOID pv)        { std::free(pv); }
+
+// Helper class to free string buffers obtained from the packaging APIs.
+template<typename T>
+class Text
+{
+public:
+    T** operator&() { return &content; }
+    ~Text() { Cleanup(); }
+    T* Get() { return content; }
+
+    T* content = nullptr;
+protected:
+    void Cleanup() { if (content) { MyFree(content); content = nullptr; } }
+};
 
 //
 // Creates a cross-plat app package.
@@ -318,30 +323,24 @@ void STDMETHODCALLTYPE MyFree(LPVOID pv)        { std::free(pv); }
 //
 HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
 {
-    HRESULT hr = S_OK;
     ComPtr<IAppxFactory> appxFactory;
     ComPtr<IStream> inputStream;
     *package = nullptr;
-    hr = CreateStreamOnFileUTF16(state.packageName.c_str(), true, &inputStream);
-    if (SUCCEEDED(hr))
-    {
-        // On Win32 platforms CoCreateAppxFactory defaults to CoTaskMemAlloc/CoTaskMemFree
-        // On non-Win32 platforms CoCreateAppxFactory will return 0x80070032 (e.g. HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
-        // So on all platforms, it's always safe to call CoCreateAppxFactoryWithHeap, just be sure to bring your own heap!
-        hr = CoCreateAppxFactoryWithHeap(
+    RETURN_IF_FAILED(CreateStreamOnFileUTF16(state.packageName.c_str(), true, &inputStream));
+
+    // On Win32 platforms CoCreateAppxFactory defaults to CoTaskMemAlloc/CoTaskMemFree
+    // On non-Win32 platforms CoCreateAppxFactory will return 0x80070032 (e.g. HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
+    // So on all platforms, it's always safe to call CoCreateAppxFactoryWithHeap, just be sure to bring your own heap!
+    RETURN_IF_FAILED(CoCreateAppxFactoryWithHeap(
             MyAllocate,
             MyFree,
             state.validationOptions,
-            &appxFactory);
+            &appxFactory));
 
-        // Create a new package reader using the factory.  For 
-        // simplicity, we don't verify the digital signature of the package.
-        if (SUCCEEDED(hr))
-        {
-            hr = appxFactory->CreatePackageReader(inputStream.Get(), package);
-        }
-    }
-    return hr;
+    // Create a new package reader using the factory.  For 
+    // simplicity, we don't verify the digital signature of the package.
+    RETURN_IF_FAILED(appxFactory->CreatePackageReader(inputStream.Get(), package));
+    return S_OK;
 }
 
 //
@@ -355,46 +354,25 @@ HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
 //
 HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
 {
-    HRESULT hr = S_OK;
-    LPWSTR fileName = nullptr;
-    LPWSTR contentType = nullptr;
+    Text<WCHAR> fileName;
     UINT64 fileSize = 0;
     ComPtr<IStream> fileStream;
     ComPtr<IStream> outputStream;
     ULARGE_INTEGER fileSizeLargeInteger = { 0 };
 
     // Get basic info about the file
-    hr = file->GetName(&fileName);
-    if (SUCCEEDED(hr))
-    {
-        hr = file->GetSize(&fileSize);
-        fileSizeLargeInteger.QuadPart = fileSize;
-    }
-    if (SUCCEEDED(hr))
-    {
-        std::printf("\tFile name: %s\n" , utf16_to_utf8(fileName).c_str());
-        std::printf("\tSize: %llu bytes\n\n", fileSize);
-    }
+    RETURN_IF_FAILED(file->GetName(&fileName));
+    RETURN_IF_FAILED(file->GetSize(&fileSize));
+    fileSizeLargeInteger.QuadPart = fileSize;
+
+    std::printf("\tFile name: %s\n" , utf16_to_utf8(fileName.Get()).c_str());
+    std::printf("\tSize: %llu bytes\n\n", fileSize);
 
     // Write the file to disk
-    if (SUCCEEDED(hr))
-    {
-        hr = file->GetStream(&fileStream);
-    }
-    if (SUCCEEDED(hr))
-    {
-        hr = GetOutputStream(outputPath, fileName, &outputStream);
-    }
-    if (SUCCEEDED(hr))
-    {
-        hr = fileStream->CopyTo(outputStream.Get(), fileSizeLargeInteger, nullptr, nullptr);
-    }
-
-    // You must free string buffers obtained from the packaging APIs,
-    // the heap that you use is specified via CoCreateAppxFactoryWithHeap
-    std::free(fileName);
-    std::free(contentType);
-    return hr;
+    RETURN_IF_FAILED(file->GetStream(&fileStream));
+    RETURN_IF_FAILED(GetOutputStream(outputPath, fileName.Get(), &outputStream));
+    RETURN_IF_FAILED(fileStream->CopyTo(outputStream.Get(), fileSizeLargeInteger, nullptr, nullptr));
+    return S_OK;
 }
 
 //
@@ -408,27 +386,22 @@ HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
 //
 HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 {
-    HRESULT hr = S_OK;
     std::printf("Extracting footprint files from the package...\n");
-
-    for (int i = 0; SUCCEEDED(hr) && (i < FootprintFilesCount); i++)
+    for (int i = 0; i < FootprintFilesCount; i++)
     {
         ComPtr<IAppxFile> footprintFile;
-        hr = package->GetFootprintFile(footprintFilesType[i].fileType, &footprintFile);
+        HRESULT hr = package->GetFootprintFile(footprintFilesType[i].fileType, &footprintFile);
         if (SUCCEEDED(hr) && footprintFile.Get())
         {
-            hr = ExtractFile(footprintFile.Get(), outputPath);
+            RETURN_IF_FAILED(ExtractFile(footprintFile.Get(), outputPath));
         }
         else if (footprintFilesType[i].isRequired)
         {
             std::printf("The package does not contain a %s.\n", footprintFilesType[i].description);
-        }
-        else
-        {
-            hr = S_OK; // the footprint file was not required.
+            return hr;
         }
     }
-    return hr;
+    return S_OK;
 }
 
 //
@@ -442,34 +415,24 @@ HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 //
 HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 {
-    HRESULT hr = S_OK;
     ComPtr<IAppxFilesEnumerator> files;
     std::printf("Extracting payload files from the package...\n");
 
     // Get an enumerator of all payload files from the package reader and iterate
     // through all files.
-    hr = package->GetPayloadFiles(&files);
+    RETURN_IF_FAILED(package->GetPayloadFiles(&files));
 
-    if (SUCCEEDED(hr))
+    BOOL hasCurrent = FALSE;
+    RETURN_IF_FAILED(files->GetHasCurrent(&hasCurrent));
+
+    while (hasCurrent)
     {
-        BOOL hasCurrent = FALSE;
-        hr = files->GetHasCurrent(&hasCurrent);
-
-        while (SUCCEEDED(hr) && hasCurrent)
-        {
-            ComPtr<IAppxFile> file;
-            hr = files->GetCurrent(&file);
-            if (SUCCEEDED(hr))
-            {
-                hr = ExtractFile(file.Get(), outputPath);
-            }
-            if (SUCCEEDED(hr))
-            {
-                hr = files->MoveNext(&hasCurrent);
-            }
-        }
+        ComPtr<IAppxFile> file;
+        RETURN_IF_FAILED(files->GetCurrent(&file));
+        RETURN_IF_FAILED(ExtractFile(file.Get(), outputPath));
+        RETURN_IF_FAILED(files->MoveNext(&hasCurrent));
     }
-    return hr;
+    return S_OK;
 }
 
 //
@@ -484,13 +447,10 @@ HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 HRESULT ExtractPackage(IAppxPackageReader* package, LPCWSTR outputPath)
 {
     // Print information about all footprint files, and extract them to disk
-    HRESULT hr = ExtractFootprintFiles(package, outputPath);
+    RETURN_IF_FAILED(ExtractFootprintFiles(package, outputPath));
     // Print information about all payload files, and extract them to disk
-    if (SUCCEEDED(hr))
-    {
-        hr = ExtractPayloadFiles(package, outputPath);
-    }
-    return hr;
+    RETURN_IF_FAILED(ExtractPayloadFiles(package, outputPath));
+    return S_OK;
 }
 
 //
@@ -504,26 +464,22 @@ HRESULT ExtractPackage(IAppxPackageReader* package, LPCWSTR outputPath)
 //
 HRESULT ExtractFootprintFilesForBundle(IAppxBundleReader* bundle, LPCWSTR outputPath)
 {
-    HRESULT hr = S_OK;
     std::printf("Extracting footprint files from the bundle...\n");
-    for (int i = 0; SUCCEEDED(hr) && (i < BundleFootprintFilesCount); i++)
+    for (int i = 0; i < BundleFootprintFilesCount; i++)
     {
         ComPtr<IAppxFile> footprintFile;
-        hr = bundle->GetFootprintFile(bundleFootprintFilesType[i].fileType, &footprintFile);
+        HRESULT hr = bundle->GetFootprintFile(bundleFootprintFilesType[i].fileType, &footprintFile);
         if (SUCCEEDED(hr) && footprintFile.Get())
         {
-            hr = ExtractFile(footprintFile.Get(), outputPath);
+            RETURN_IF_FAILED(ExtractFile(footprintFile.Get(), outputPath));
         }
         else if (footprintFilesType[i].isRequired)
         {
             std::printf("The package does not contain a %s.\n", footprintFilesType[i].description);
-        }
-        else
-        {
-            hr = S_OK; // the footprint file was not required.
+            return hr;
         }
     }
-    return hr;
+    return S_OK;
 }
 
 //
@@ -536,54 +492,37 @@ HRESULT ExtractFootprintFilesForBundle(IAppxBundleReader* bundle, LPCWSTR output
 //      The path of the folder for the extracted payload packages.
 HRESULT ExtractPayloadPackages(IAppxBundleReader* bundle, State& state)
 {
-    HRESULT hr = S_OK;
     ComPtr<IAppxFilesEnumerator> packages;
     std::printf("Extracting payload files from the package...\n");
 
     // Get an enumerator of all payload packages from the bundle reader and iterate through all files.
-    hr = bundle->GetPayloadPackages(&packages);
-    if (SUCCEEDED(hr))
+    RETURN_IF_FAILED(bundle->GetPayloadPackages(&packages));
+    BOOL hasCurrent = FALSE;
+    RETURN_IF_FAILED(packages->GetHasCurrent(&hasCurrent));
+    while (hasCurrent)
     {
-        BOOL hasCurrent = FALSE;
-        hr = packages->GetHasCurrent(&hasCurrent);
-        while (SUCCEEDED(hr) && hasCurrent)
+        ComPtr<IAppxFile> package;
+        RETURN_IF_FAILED(packages->GetCurrent(&package));
+        if (state.recursiveUnpack)
         {
-            ComPtr<IAppxFile> package;
-            hr = packages->GetCurrent(&package);
-            if (SUCCEEDED(hr))
-            {
-                if (state.recursiveUnpack)
-                {
-                    ComPtr<IStream> packageStream;
-                    ComPtr<IAppxPackageReader> packageReader;
-                    LPWSTR fileName = nullptr;
-                    
-                    hr = package->GetStream(&packageStream);
-                    if (SUCCEEDED(hr))
-                    {
-                        hr = package->GetName(&fileName);
-                    }
-                    if (SUCCEEDED(hr))
-                    {
-                        std::printf("Extracting package from bundle: %s\n" , utf16_to_utf8(fileName).c_str());
-                        // Pass MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER to avoid overwritting files.
-                        hr = UnpackPackageFromStream(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER,
-                            state.validationOptions, packageStream.Get(), const_cast<char*>(utf16_to_utf8(state.directoryName).c_str()));
-                    }
-                    std::free(fileName);
-                }
-                else
-                {
-                    hr = ExtractFile(package.Get(), state.directoryName.c_str());
-                }
-            }
-            if (SUCCEEDED(hr))
-            {
-                hr = packages->MoveNext(&hasCurrent);
-            }
+            ComPtr<IStream> packageStream;
+            ComPtr<IAppxPackageReader> packageReader;
+            Text<WCHAR> fileName;
+            RETURN_IF_FAILED(package->GetStream(&packageStream));
+            RETURN_IF_FAILED(package->GetName(&fileName));
+
+            std::printf("Extracting package from bundle: %s\n" , utf16_to_utf8(fileName.Get()).c_str());
+            // Pass MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER to avoid overwritting files.
+            RETURN_IF_FAILED(UnpackPackageFromStream(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER,
+                            state.validationOptions, packageStream.Get(), const_cast<char*>(utf16_to_utf8(state.directoryName).c_str())));
         }
+        else
+        {
+            RETURN_IF_FAILED(ExtractFile(package.Get(), state.directoryName.c_str()));
+        }
+        RETURN_IF_FAILED(packages->MoveNext(&hasCurrent));
     }
-    return hr;
+    return S_OK;
 }
 
 //
@@ -598,13 +537,10 @@ HRESULT ExtractPayloadPackages(IAppxBundleReader* bundle, State& state)
 HRESULT ExtractBundle(IAppxBundleReader* bundle, State& state)
 {
     // Print information about all footprint files, and extract them to disk
-    HRESULT hr = ExtractFootprintFilesForBundle(bundle, state.directoryName.c_str());
+    RETURN_IF_FAILED(ExtractFootprintFilesForBundle(bundle, state.directoryName.c_str()));
     // Print information about all payload bundles, and extract them to disk
-    if (SUCCEEDED(hr))
-    {
-        hr = ExtractPayloadPackages(bundle, state);
-    }
-    return hr;
+    RETURN_IF_FAILED(ExtractPayloadPackages(bundle, state));
+    return S_OK;
 }
 
 // Parses argc/argv input via commands into state, and extract the package.
@@ -692,7 +628,7 @@ int main(int argc, char* argv[])
     if (result != 0)
     {
         std::cout << "Error: " << std::hex << result << " while extracting the appx package" <<std::endl;
-        Text text;
+        Text<char> text;
         auto logResult = GetLogTextUTF8(MyAllocate, &text);
         if (0 == logResult)
         {   std::cout << "LOG:" << std::endl << text.content << std::endl;
