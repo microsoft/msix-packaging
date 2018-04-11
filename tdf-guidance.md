@@ -1,5 +1,5 @@
 
-# Developer Guidance to target MSIX Packaging SDK
+#Developer Guidance to target MSIX Packaging SDK
 
 ## Build a package to target the SDK 
 
@@ -9,6 +9,14 @@ To take advantage of the new SDK and the ability to distribute your package cont
 
 The following table shows the target device families to declare in the manifest:
 
+
+<style type="text/css">
+.tg  {border-collapse:collapse;border-spacing:0;border-color:#ccc;}
+.tg td{font-family:Arial, sans-serif;font-size:14px;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#fff;}
+.tg th{font-family:Arial, sans-serif;font-size:14px;font-weight:normal;padding:10px 5px;border-style:solid;border-width:1px;overflow:hidden;word-break:normal;border-color:#ccc;color:#333;background-color:#f0f0f0;}
+.tg .tg-baqh{text-align:center;vertical-align:top}
+.tg .tg-yw4l{vertical-align:top}
+</style>
 <table class="tg">
   <tr>
     <th class="tg-yw4l">Platform</th>
