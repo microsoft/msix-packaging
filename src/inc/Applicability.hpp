@@ -7,6 +7,8 @@
 #include <set>
 #include <string>
 
+#include "AppxPackaging.hpp"
+
 namespace MSIX {
 
     class Applicability

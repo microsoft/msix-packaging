@@ -6,6 +6,9 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <set>
 
+#include "Applicability.hpp"
+#include "Exceptions.hpp"
+
 namespace MSIX {
 
     MSIX_PLATFORM Applicability::GetPlatform()
@@ -31,8 +34,7 @@ namespace MSIX {
             char buffer[valueSize];
             if(CFStringGetCString(value, buffer, valueSize, kCFStringEncodingUTF8))
             {
-                // TODO: verify if this API returns zh-Hans-CN or zh-CN
-                languages.insert(std::string(buffer));
+                result.insert(std::string(buffer));
             }
         }
         CFRelease(preferredLanguages);
