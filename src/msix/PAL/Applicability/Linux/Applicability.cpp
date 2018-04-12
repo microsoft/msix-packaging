@@ -7,7 +7,6 @@
 #include <unicode/utypes.h>
 #include <set>
 
-#include "AppxPackaging.hpp"
 #include "Applicability.hpp"
 #include "Exceptions.hpp"
 
