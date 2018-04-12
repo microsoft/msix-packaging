@@ -8,9 +8,8 @@
 #include <wrl\client.h>
 #include <windows.system.userprofile.h>
 
-#include "AppxPackaging.hpp"
-#include "Exceptions.hpp"
 #include "Applicability.hpp"
+#include "Exceptions.hpp"
 #include "ComHelper.hpp"
 #include "UnicodeConversion.hpp"
 
