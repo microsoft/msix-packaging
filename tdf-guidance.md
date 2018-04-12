@@ -1,5 +1,5 @@
 
-#Developer Guidance to target MSIX Packaging SDK
+# Developer Guidance to target MSIX Packaging SDK
 
 ## Build a package to target the SDK 
 
