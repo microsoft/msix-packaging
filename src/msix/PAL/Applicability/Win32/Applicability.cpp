@@ -16,7 +16,7 @@
 
 #include <set>
 #include <map>
-#include <iostream> 
+
 using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::System::UserProfile;
 using namespace Microsoft::WRL::Wrappers;
@@ -107,7 +107,7 @@ namespace MSIX {
             std::wstring languagesWin7;
             ThrowHrIfFalse(GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numOfLangs, nullptr, &size),
                 "Failed GetUserPreferredUILanguages");
-            languagesWin7.resize(size+1); // +1 for null terminator
+            languagesWin7.resize(size);
             ThrowHrIfFalse(GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numOfLangs, &languagesWin7.front(), &size),
                 "Failed GetUserPreferredUILanguages");
 
