@@ -8,7 +8,7 @@
    packages for the purposes of distribution from either the Microsoft Store, or their own content distribution networks.  
     
    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
-   documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).  See ./sample/ExtractContentsSample/ExtratContentsSample.cpp for additional details.
+   documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).  See [sample/ExtractContentsSample/ExtractContentsSample.cpp](/sample/ExtractContentsSample/ExtractContentsSample.cpp) for additional details.
 
 
 ## Overview
