@@ -15,7 +15,8 @@
 #include "UnicodeConversion.hpp"
 
 #include <set>
-#include <iostream>
+#include <map>
+#include <iostream> 
 using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::System::UserProfile;
 using namespace Microsoft::WRL::Wrappers;
@@ -23,6 +24,49 @@ using namespace Windows::Foundation;
 
 
 namespace MSIX {
+
+    // This is not an exhaustive list and it doesn't include LIP languages
+    // but covers the most common Win7 MUIs out there.
+    const std::map<std::wstring, std::string> muiToBcp47 {
+        {L"ar-SA", "ar-SA"},
+        {L"bg-BG", "bg"},
+        {L"cs-CZ", "cs"},
+        {L"da-DK", "da"},
+        {L"de-DE", "de-DE"},
+        {L"el-GR", "el"},
+        {L"en-US", "en-US"},
+        {L"es-ES", "es-ES"},
+        {L"et-EE", "et"},
+        {L"fi-FI", "fi"},
+        {L"fr-FR", "fr-FR"},
+        {L"he-IL", "he"},
+        {L"hi-IN", "hi"},
+        {L"hr-HR", "hr-HR"},
+        {L"hu-HU", "hu"},
+        {L"it-IT", "it-IT"},
+        {L"ja-JP", "ja"},
+        {L"ko-KR", "ko"},
+        {L"lt-LT", "lt"},
+        {L"lv-LV", "lv"},
+        {L"nb-NO", "nb"},
+        {L"nl-NL", "nl-NL"},
+        {L"pl-PL", "pl"},
+        {L"ps-PS", "ps-PS"},
+        {L"pt-BR", "pt-BR"},
+        {L"pt-PT", "pt-PT"},
+        {L"ro-RO", "ro-RO"},
+        {L"ru-RU", "ru"},
+        {L"sk-SK", "sk"},
+        {L"sl-SI", "sl"},
+        {L"sr-Latn-CS", "sr-Latn-CS"},
+        {L"sv-SE", "sv-SE"},
+        {L"th-TH", "th"},
+        {L"tr-TR", "tr"},
+        {L"uk-UA", "uk"},
+        {L"zh-CN", "zh-Hans-CN"},
+        {L"zh-HK", "zh-Hant-HK"},
+        {L"zh-TW", "zh-Hant-TW"},
+    };
 
     #define ThrowHrIfFalse(a, m)                                                                               \
     {   BOOL _result = a;                                                                                      \
@@ -63,10 +107,28 @@ namespace MSIX {
             std::wstring languagesWin7;
             ThrowHrIfFalse(GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numOfLangs, nullptr, &size),
                 "Failed GetUserPreferredUILanguages");
-            languagesWin7.resize(size);
+            languagesWin7.resize(size+1); // +1 for null terminator
             ThrowHrIfFalse(GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numOfLangs, &languagesWin7.front(), &size),
                 "Failed GetUserPreferredUILanguages");
-            // TODO: split languagesWin7 by /0 and add the table with MUI to BCP47 conversion
+
+            std::wistringstream tokenStream(languagesWin7);
+            wchar_t delimiter = '\0';
+            ULONG processedTags = 0;
+            std::wstring muiTag;
+            while (std::getline(tokenStream, muiTag, delimiter))
+            {
+                if (processedTags == numOfLangs) { break; }
+                auto it = muiToBcp47.find(muiTag);
+                if (it != muiToBcp47.end())
+                {
+                    result.insert(it->second);
+                }
+                else
+                {   // Is not well known, luckily the tag will be the same (probably not) :)
+                    result.insert(utf16_to_utf8(muiTag));
+                }
+                processedTags++;
+            }
         }
         else
         {
