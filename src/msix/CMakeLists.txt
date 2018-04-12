@@ -35,10 +35,20 @@ ELSE()
         SET(CMAKE_C_VISIBILITY_PRESET           hidden)    
         SET(CMAKE_CXX_VISIBILITY_PRESET         hidden)            
         SET(DEFINE_EXPORTS                      "-exported_symbols_list ${CMAKE_PROJECT_ROOT}/src/msix/exports.def")    
+        # used to get the languages of the device
+        FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation)
+        IF(NOT COREFOUNDATION_LIBRARY)
+            MESSAGE(FATAL_ERROR "CoreFoundation not found")
+        ENDIF()
+        SET (Applicability PAL/Applicability/Apple/Applicability.cpp)
     ELSE()
         # on Linux and linux-derived platforms, you use a version script to achieve similar ends.
         SET(CMAKE_C_FLAGS                       "${CMAKE_C_FLAGS} -fvisibility=hidden")
         SET(DEFINE_EXPORTS                      "-Wl,--version-script=${CMAKE_PROJECT_ROOT}/src/msix/symbol.map")
+        IF(LINUX)
+            FIND_PACKAGE(ICU COMPONENTS uc)
+            SET (Applicability PAL/Applicability/Linux/Applicability.cpp)
+        ENDIF()
     ENDIF()
     MESSAGE(STATUS "Using export flag: ${DEFINE_EXPORTS}")
     SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DEFINE_EXPORTS}")
@@ -173,12 +183,33 @@ IF(AOSP)
     TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE -latomic)
 ENDIF()
 
+IF((IOS) OR (MACOS))
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${COREFOUNDATION_LIBRARY})
+ENDIF()
+
+IF(LINUX)
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ICU_LIBRARIES})
+ENDIF()
+
 IF(OpenSSL_FOUND)
     # include the libraries needed to use OpenSSL
     TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE crypto)
 ENDIF()
 
 if(WIN32)
-    SET_PROPERTY(TARGET ${BINARY_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib)
+    SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
+    SET(FLAGS)
+    GET_PROPERTY(FLAGS TARGET ${PROJECT_NAME} PROPERTY LINK_FLAGS)
+    # Delayload any dlls that are not present on Win7
+    LIST(APPEND FLAGS
+        "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll"
+        "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll"
+        "/DELAYLOAD:api-ms-win-crt-runtime-l1-1-0.dll"
+        "/DELAYLOAD:api-ms-win-crt-convert-l1-1-0.dll"
+        "/DELAYLOAD:api-ms-win-crt-string-l1-1-0.dll"
+        "/DELAYLOAD:api-ms-win-crt-stdio-l1-1-0.dll"
+        "/DELAYLOAD:api-ms-win-crt-heap-l1-1-0.dll")
+    STRING(REPLACE ";" " " FLAGS "${FLAGS}")
+    SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY LINK_FLAGS "${FLAGS}")
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib delayimp.lib)
 endif()
