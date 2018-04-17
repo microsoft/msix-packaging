@@ -22,6 +22,7 @@
         IID_IAppxFilesEnumerator;
         IID_IAppxFile;
         IID_IStream;
+        JNI_OnLoad;
     local:
         *;
 };
