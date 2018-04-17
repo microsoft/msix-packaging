@@ -34,7 +34,7 @@ namespace MSIX {
             char buffer[valueSize];
             if(CFStringGetCString(value, buffer, valueSize, kCFStringEncodingUTF8))
             {
-                result.insert(std::string(buffer));
+                result.insert(buffer);
             }
         }
         CFRelease(preferredLanguages);
