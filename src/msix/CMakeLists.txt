@@ -49,6 +49,9 @@ ELSE()
             FIND_PACKAGE(ICU COMPONENTS uc)
             SET (Applicability PAL/Applicability/Linux/Applicability.cpp)
         ENDIF()
+        IF(AOSP)
+            SET (Applicability PAL/Applicability/AOSP/Applicability.cpp)
+        ENDIF()
     ENDIF()
     MESSAGE(STATUS "Using export flag: ${DEFINE_EXPORTS}")
     SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DEFINE_EXPORTS}")
@@ -180,7 +183,20 @@ IF (XML_PARSER MATCHES xerces)
 ENDIF()
 
 IF(AOSP)
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE -latomic)
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE -latomic log)
+    FIND_PACKAGE(Java REQUIRED)
+    IF(NOT DEFINED ENV{ANDROID_HOME})
+        MESSAGE(FATAL_ERROR "ANDROID_HOME enviroment variable not found.")
+    ENDIF()
+    INCLUDE(UseJava)
+    ADD_JAR(${PROJECT_NAME}-jni
+        SOURCES
+            PAL/java/com/microsoft/msix/JniHelper.java
+        INCLUDE_JARS
+            $ENV{ANDROID_HOME}/platforms/android-${CMAKE_SYSTEM_VERSION}/android.jar
+        OUTPUT_DIR
+            ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        )
 ENDIF()
 
 IF((IOS) OR (MACOS))
