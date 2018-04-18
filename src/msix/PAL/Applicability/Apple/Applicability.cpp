@@ -4,7 +4,7 @@
 //
 
 #include <CoreFoundation/CoreFoundation.h>
-#include <set>
+#include <vector>
 
 #include "Applicability.hpp"
 #include "Exceptions.hpp"
@@ -22,9 +22,9 @@ namespace MSIX {
     #endif
     }
 
-    std::set<std::string> Applicability::GetLanguages()
+    std::vector<std::string> Applicability::GetLanguages()
     {
-        std::set<std::string> result;
+        std::vector<std::string> result;
         CFArrayRef preferredLanguages = CFLocaleCopyPreferredLanguages();
         CFIndex size = CFArrayGetCount(preferredLanguages);
         for(int i = 0; i < size; i++)
@@ -34,7 +34,7 @@ namespace MSIX {
             char buffer[valueSize];
             if(CFStringGetCString(value, buffer, valueSize, kCFStringEncodingUTF8))
             {
-                result.insert(buffer);
+                result.push_back(buffer);
             }
         }
         CFRelease(preferredLanguages);
