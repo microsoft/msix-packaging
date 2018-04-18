@@ -207,3 +207,12 @@ namespace MSIX {
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
 
 #define ThrowHrIfFailed(a) MSIX::RaiseExceptionIfFailed(a, __LINE__, __FILE__);
+
+#ifdef WIN32
+    #define ThrowHrIfFalse(a, m)                                                                               \
+    {   BOOL _result = a;                                                                                      \
+        if (!_result)                                                                                          \
+        {   MSIX::RaiseException<MSIX::Exception> (__LINE__, __FILE__, m, HRESULT_FROM_WIN32(GetLastError())); \
+        }                                                                                                      \
+    }
+#endif
