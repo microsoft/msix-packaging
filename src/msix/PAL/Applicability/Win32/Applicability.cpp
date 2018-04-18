@@ -15,6 +15,7 @@
 
 #include <set>
 #include <map>
+#include <iostream>
 
 using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::System::UserProfile;
@@ -110,13 +111,13 @@ namespace MSIX {
             ThrowHrIfFalse(GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numOfLangs, &languagesWin7.front(), &size),
                 "Failed GetUserPreferredUILanguages");
 
-            std::wistringstream tokenStream(languagesWin7);
-            wchar_t delimiter = '\0';
+            size_t position = 0;
             ULONG processedTags = 0;
-            std::wstring muiTag;
-            while (std::getline(tokenStream, muiTag, delimiter))
+            wchar_t delimiter = '\0';
+            auto found = languagesWin7.find(delimiter);
+            while(found != std::string::npos && processedTags < numOfLangs)
             {
-                if (processedTags == numOfLangs) { break; }
+                auto muiTag = languagesWin7.substr(position, found - position);
                 auto it = muiToBcp47.find(muiTag);
                 if (it != muiToBcp47.end())
                 {
@@ -126,7 +127,9 @@ namespace MSIX {
                 {   // Is not well known, luckily the tag will be the same (probably not) :)
                     result.insert(utf16_to_utf8(muiTag));
                 }
+                position = found+1;
                 processedTags++;
+                found = languagesWin7.find(delimiter, position);
             }
         }
         else
