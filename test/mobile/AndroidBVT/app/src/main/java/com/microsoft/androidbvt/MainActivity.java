@@ -33,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         tv.setText(RunTests(mgr, this.getFilesDir().toString()));
 
         // Terminate app
-        //this.finishAffinity();
+        this.finishAffinity();
     }
 
     /**

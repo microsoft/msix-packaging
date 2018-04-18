@@ -510,7 +510,6 @@ namespace MSIX {
 
     void AppxPackageObject::Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to)
     {
-        auto x = Applicability::GetLanguages();
         auto fileNames = GetFileNames(FileNameOptions::All);
         for (const auto& fileName : fileNames)
         {   // Don't extract packages files
