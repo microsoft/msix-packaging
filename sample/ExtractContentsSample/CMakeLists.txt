@@ -8,21 +8,21 @@ project (makemsix)
 set(BINARY_NAME ExtractContentsSample)
 
 if(WIN32)
-	set(DESCRIPTION "makemsix manifest")
-	configure_file(../../manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest CRLF)
-	set(MANIFEST ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest)
+    set(DESCRIPTION "makemsix manifest")
+    configure_file(../../manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest CRLF)
+    set(MANIFEST ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest)
 endif()
 
 
 include_directories(
-	${include_directories}
-	${CMAKE_PROJECT_ROOT}/src/inc
-	)
+    ${include_directories}
+    ${CMAKE_PROJECT_ROOT}/src/inc
+    )
 
 add_executable(${BINARY_NAME}
-	ExtractContentsSample.cpp
-	${MANIFEST}
-	)
+    ExtractContentsSample.cpp
+    ${MANIFEST}
+    )
 
 # specify that this binary is to be built with C++14
 set_property(TARGET ${BINARY_NAME} PROPERTY CXX_STANDARD 14)

@@ -70,7 +70,7 @@ ELSE()
         RETURN()
     ENDIF()
 
-	SET (DirectoryObject PAL/FileSystem/POSIX/DirectoryObject.cpp)
+    SET (DirectoryObject PAL/FileSystem/POSIX/DirectoryObject.cpp)
 ENDIF()
 
 IF(USE_VALIDATION_PARSER)
@@ -154,15 +154,15 @@ SET_PROPERTY(TARGET ${LIBRARY_NAME} PROPERTY CXX_STANDARD 14)
 # Set the build version. It will be used in the name of the lib, with corresponding
 # symlinks created. SOVERSION could also be specified for api version.
 SET_TARGET_PROPERTIES(${LIBRARY_NAME} PROPERTIES
-	VERSION ${VERSION}  # ${VERSION} was defined in the main CMakeLists.
-	FRAMEWORK FALSE
-	PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
+    VERSION ${VERSION}  # ${VERSION} was defined in the main CMakeLists.
+    FRAMEWORK FALSE
+    PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
 )
 
 INCLUDE_DIRECTORIES(
-	${include_directories}
-	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
-	${CMAKE_PROJECT_ROOT}/lib/zlib
+    ${include_directories}
+    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
+    ${CMAKE_PROJECT_ROOT}/lib/zlib
 )
 IF(USE_SHARED_ZLIB)
     MESSAGE(STATUS "MSIX takes a static dependency on zlib")
@@ -213,7 +213,9 @@ IF(OpenSSL_FOUND)
 ENDIF()
 
 if(WIN32)
-    SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY VS_WINRT_COMPONENT TRUE)
+    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
+        COMPILE_FLAGS "/source-charset:utf-8"
+        VS_WINRT_COMPONENT TRUE)
     SET(FLAGS)
     GET_PROPERTY(FLAGS TARGET ${PROJECT_NAME} PROPERTY LINK_FLAGS)
     # Delayload any dlls that are not present on Win7

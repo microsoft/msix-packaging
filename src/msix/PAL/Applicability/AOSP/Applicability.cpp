@@ -4,6 +4,7 @@
 //
 #include <vector>
 #include <algorithm>
+#include <iterator>
 
 #include "Applicability.hpp"
 #include "Exceptions.hpp"
@@ -14,6 +15,25 @@
 static JavaVM* g_JavaVM = nullptr;
 
 namespace MSIX {
+
+    struct Bcp47Entry
+    {
+        const char* icu;
+        const char* bcp47;
+
+        Bcp47Entry(const char* i, const char* b) : icu(i), bcp47(b) {}
+
+        inline bool operator==(const Bcp47Entry& rhs) const {
+            return 0 == strcmp(icu, rhs.icu);
+        }
+    };
+
+    // ICU locale were introduced in API level 24. Add here any inconsistencies.
+    static const Bcp47Entry bcp47List[] = {
+        Bcp47Entry("zh_CN", "zh-Hans-CN"),
+        Bcp47Entry("zh_HK", "zh-Hant-HK"),
+        Bcp47Entry("zh_TW", "zh-Hant-TW"),
+    };
 
     MSIX_PLATFORM Applicability::GetPlatform() { return MSIX_PLATFORM_AOSP; }
 
@@ -36,15 +56,23 @@ namespace MSIX {
         jstring javaLanguage = reinterpret_cast<jstring>(env->CallStaticObjectMethod(javaClass, languageFunc));
         const char* language = env->GetStringUTFChars(javaLanguage, nullptr);
         ThrowErrorIf(Error::Unexpected, !language, "Failed getting langauge from the system.");
-        languages.push_back(language);
+        // BCP47 format
+        const auto& tag = std::find(std::begin(bcp47List), std::end(bcp47List), Bcp47Entry(language, nullptr));
+        if (tag == std::end(bcp47List))
+        {
+            std::string bcp47(language);
+            std::replace(bcp47.begin(), bcp47.end(), '_', '-');
+            languages.push_back(bcp47);
+        }
+        else
+        {
+            languages.push_back((*tag).bcp47);
+
+        }
         env->ReleaseStringUTFChars(javaLanguage, language);
         if (isThreadAttached)
         {
             g_JavaVM->DetachCurrentThread();
-        }
-        for (auto l : languages)
-        {   // BCP47 format
-            std::replace(l.begin(), l.end(), '_', '-');
         }
         return languages;
     }
