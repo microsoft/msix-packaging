@@ -13,7 +13,7 @@
 #include "ComHelper.hpp"
 #include "UnicodeConversion.hpp"
 
-#include <set>
+#include <vector>
 #include <map>
 
 using namespace ABI::Windows::Foundation::Collections;
@@ -21,50 +21,64 @@ using namespace ABI::Windows::System::UserProfile;
 using namespace Microsoft::WRL::Wrappers;
 using namespace Windows::Foundation;
 
-
 namespace MSIX {
+
+    struct MuiToBcp47Entry
+    {
+        const wchar_t* mui;
+        const char*    bcp47;
+
+        MuiToBcp47Entry(const wchar_t* m, const char* b) : mui(m), bcp47(b) {}
+
+        inline bool operator==(const MuiToBcp47Entry& rhs) const {
+            return 0 == wcscmp(mui, rhs.mui);
+        }
+    };
+    typedef std::vector<MuiToBcp47Entry> MuiToBcp47Manager;
 
     // This is not an exhaustive list and it doesn't include LIP languages
     // but covers the most common Win7 MUIs out there.
-    const std::map<std::wstring, std::string> muiToBcp47 {
-        {L"ar-SA", "ar-SA"},
-        {L"bg-BG", "bg"},
-        {L"cs-CZ", "cs"},
-        {L"da-DK", "da"},
-        {L"de-DE", "de-DE"},
-        {L"el-GR", "el"},
-        {L"en-US", "en-US"},
-        {L"es-ES", "es-ES"},
-        {L"et-EE", "et"},
-        {L"fi-FI", "fi"},
-        {L"fr-FR", "fr-FR"},
-        {L"he-IL", "he"},
-        {L"hi-IN", "hi"},
-        {L"hr-HR", "hr-HR"},
-        {L"hu-HU", "hu"},
-        {L"it-IT", "it-IT"},
-        {L"ja-JP", "ja"},
-        {L"ko-KR", "ko"},
-        {L"lt-LT", "lt"},
-        {L"lv-LV", "lv"},
-        {L"nb-NO", "nb"},
-        {L"nl-NL", "nl-NL"},
-        {L"pl-PL", "pl"},
-        {L"ps-PS", "ps-PS"},
-        {L"pt-BR", "pt-BR"},
-        {L"pt-PT", "pt-PT"},
-        {L"ro-RO", "ro-RO"},
-        {L"ru-RU", "ru"},
-        {L"sk-SK", "sk"},
-        {L"sl-SI", "sl"},
-        {L"sr-Latn-CS", "sr-Latn-CS"},
-        {L"sv-SE", "sv-SE"},
-        {L"th-TH", "th"},
-        {L"tr-TR", "tr"},
-        {L"uk-UA", "uk"},
-        {L"zh-CN", "zh-Hans-CN"},
-        {L"zh-HK", "zh-Hant-HK"},
-        {L"zh-TW", "zh-Hant-TW"},
+    static const MuiToBcp47Manager muiToBcp47List[] = {
+    {
+        MuiToBcp47Entry(L"ar-SA", "ar-SA"),
+        MuiToBcp47Entry(L"bg-BG", "bg"),
+        MuiToBcp47Entry(L"cs-CZ", "cs"),
+        MuiToBcp47Entry(L"da-DK", "da"),
+        MuiToBcp47Entry(L"de-DE", "de-DE"),
+        MuiToBcp47Entry(L"el-GR", "el"),
+        MuiToBcp47Entry(L"en-US", "en-US"),
+        MuiToBcp47Entry(L"es-ES", "es-ES"),
+        MuiToBcp47Entry(L"et-EE", "et"),
+        MuiToBcp47Entry(L"fi-FI", "fi"),
+        MuiToBcp47Entry(L"fr-FR", "fr-FR"),
+        MuiToBcp47Entry(L"he-IL", "he"),
+        MuiToBcp47Entry(L"hi-IN", "hi"),
+        MuiToBcp47Entry(L"hr-HR", "hr-HR"),
+        MuiToBcp47Entry(L"hu-HU", "hu"),
+        MuiToBcp47Entry(L"it-IT", "it-IT"),
+        MuiToBcp47Entry(L"ja-JP", "ja"),
+        MuiToBcp47Entry(L"ko-KR", "ko"),
+        MuiToBcp47Entry(L"lt-LT", "lt"),
+        MuiToBcp47Entry(L"lv-LV", "lv"),
+        MuiToBcp47Entry(L"nb-NO", "nb"),
+        MuiToBcp47Entry(L"nl-NL", "nl-NL"),
+        MuiToBcp47Entry(L"pl-PL", "pl"),
+        MuiToBcp47Entry(L"ps-PS", "ps-PS"),
+        MuiToBcp47Entry(L"pt-BR", "pt-BR"),
+        MuiToBcp47Entry(L"pt-PT", "pt-PT"),
+        MuiToBcp47Entry(L"ro-RO", "ro-RO"),
+        MuiToBcp47Entry(L"ru-RU", "ru"),
+        MuiToBcp47Entry(L"sk-SK", "sk"),
+        MuiToBcp47Entry(L"sl-SI", "sl"),
+        MuiToBcp47Entry(L"sr-Latn-CS", "sr-Latn-CS"),
+        MuiToBcp47Entry(L"sv-SE", "sv-SE"),
+        MuiToBcp47Entry(L"th-TH", "th"),
+        MuiToBcp47Entry(L"tr-TR", "tr"),
+        MuiToBcp47Entry(L"uk-UA", "uk"),
+        MuiToBcp47Entry(L"zh-CN", "zh-Hans-CN"),
+        MuiToBcp47Entry(L"zh-HK", "zh-Hant-HK"),
+        MuiToBcp47Entry(L"zh-TW", "zh-Hant-TW"),
+    },
     };
 
     #define ThrowHrIfFalse(a, m)                                                                               \
@@ -95,9 +109,9 @@ namespace MSIX {
         UNEXPECTED;
     }
 
-    std::set<std::string> Applicability::GetLanguages()
+    std::vector<std::string> Applicability::GetLanguages()
     {
-        std::set<std::string> result;
+        std::vector<std::string> result;
 
         if (MSIX_PLATFORM_WINDOWS7 == GetPlatform())
         {
@@ -117,14 +131,14 @@ namespace MSIX {
             while(found != std::string::npos && processedTags < numOfLangs)
             {
                 auto muiTag = languagesWin7.substr(position, found - position);
-                auto it = muiToBcp47.find(muiTag);
-                if (it != muiToBcp47.end())
-                {
-                    result.insert(it->second);
+                const auto& tag = std::find(muiToBcp47List[0].begin(), muiToBcp47List[0].end(), MuiToBcp47Entry(muiTag.c_str(), nullptr));
+                if (tag == muiToBcp47List[0].end())
+                {   // Is not well known, luckily the tag will be the same (probably not) :)
+                    result.push_back(utf16_to_utf8(muiTag));
                 }
                 else
-                {   // Is not well known, luckily the tag will be the same (probably not) :)
-                    result.insert(utf16_to_utf8(muiTag));
+                {
+                    result.push_back((*tag).bcp47);  
                 }
                 position = found+1;
                 processedTags++;
@@ -146,7 +160,7 @@ namespace MSIX {
             {
                 HString hstring;
                 ThrowHrIfFailed(languages->GetAt(i, hstring.GetAddressOf()));
-                result.insert(utf16_to_utf8(hstring.GetRawBuffer(nullptr)));
+                result.push_back(utf16_to_utf8(hstring.GetRawBuffer(nullptr)));
             }
         }
         return result;

@@ -4,7 +4,7 @@
 // 
 #pragma once
 
-#include <set>
+#include <vector>
 #include <string>
 
 #include "AppxPackaging.hpp"
@@ -15,6 +15,6 @@ namespace MSIX {
     {
     public:
         static MSIX_PLATFORM GetPlatform();
-        static std::set<std::string> GetLanguages();
+        static std::vector<std::string> GetLanguages();
     };
 }
