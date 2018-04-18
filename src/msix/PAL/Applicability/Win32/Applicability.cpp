@@ -15,6 +15,8 @@
 
 #include <vector>
 #include <map>
+#include <iterator>
+#include <algorithm>
 
 using namespace ABI::Windows::Foundation::Collections;
 using namespace ABI::Windows::System::UserProfile;
@@ -34,59 +36,49 @@ namespace MSIX {
             return 0 == wcscmp(mui, rhs.mui);
         }
     };
-    typedef std::vector<MuiToBcp47Entry> MuiToBcp47Manager;
 
     // This is not an exhaustive list and it doesn't include LIP languages
     // but covers the most common Win7 MUIs out there.
-    static const MuiToBcp47Manager muiToBcp47List[] = {
-    {
-        MuiToBcp47Entry(L"ar-SA", "ar-SA"),
-        MuiToBcp47Entry(L"bg-BG", "bg"),
-        MuiToBcp47Entry(L"cs-CZ", "cs"),
-        MuiToBcp47Entry(L"da-DK", "da"),
-        MuiToBcp47Entry(L"de-DE", "de-DE"),
-        MuiToBcp47Entry(L"el-GR", "el"),
-        MuiToBcp47Entry(L"en-US", "en-US"),
-        MuiToBcp47Entry(L"es-ES", "es-ES"),
-        MuiToBcp47Entry(L"et-EE", "et"),
-        MuiToBcp47Entry(L"fi-FI", "fi"),
-        MuiToBcp47Entry(L"fr-FR", "fr-FR"),
-        MuiToBcp47Entry(L"he-IL", "he"),
-        MuiToBcp47Entry(L"hi-IN", "hi"),
-        MuiToBcp47Entry(L"hr-HR", "hr-HR"),
-        MuiToBcp47Entry(L"hu-HU", "hu"),
-        MuiToBcp47Entry(L"it-IT", "it-IT"),
-        MuiToBcp47Entry(L"ja-JP", "ja"),
-        MuiToBcp47Entry(L"ko-KR", "ko"),
-        MuiToBcp47Entry(L"lt-LT", "lt"),
-        MuiToBcp47Entry(L"lv-LV", "lv"),
-        MuiToBcp47Entry(L"nb-NO", "nb"),
-        MuiToBcp47Entry(L"nl-NL", "nl-NL"),
-        MuiToBcp47Entry(L"pl-PL", "pl"),
-        MuiToBcp47Entry(L"ps-PS", "ps-PS"),
-        MuiToBcp47Entry(L"pt-BR", "pt-BR"),
-        MuiToBcp47Entry(L"pt-PT", "pt-PT"),
-        MuiToBcp47Entry(L"ro-RO", "ro-RO"),
-        MuiToBcp47Entry(L"ru-RU", "ru"),
-        MuiToBcp47Entry(L"sk-SK", "sk"),
-        MuiToBcp47Entry(L"sl-SI", "sl"),
-        MuiToBcp47Entry(L"sr-Latn-CS", "sr-Latn-CS"),
-        MuiToBcp47Entry(L"sv-SE", "sv-SE"),
-        MuiToBcp47Entry(L"th-TH", "th"),
-        MuiToBcp47Entry(L"tr-TR", "tr"),
-        MuiToBcp47Entry(L"uk-UA", "uk"),
-        MuiToBcp47Entry(L"zh-CN", "zh-Hans-CN"),
-        MuiToBcp47Entry(L"zh-HK", "zh-Hant-HK"),
-        MuiToBcp47Entry(L"zh-TW", "zh-Hant-TW"),
-    },
+    static const MuiToBcp47Entry muiToBcp47List[] = {
+        MuiToBcp47Entry(L"ar-SA", u8"ar-SA"),
+        MuiToBcp47Entry(L"bg-BG", u8"bg"),
+        MuiToBcp47Entry(L"cs-CZ", u8"cs"),
+        MuiToBcp47Entry(L"da-DK", u8"da"),
+        MuiToBcp47Entry(L"de-DE", u8"de-DE"),
+        MuiToBcp47Entry(L"el-GR", u8"el"),
+        MuiToBcp47Entry(L"en-US", u8"en-US"),
+        MuiToBcp47Entry(L"es-ES", u8"es-ES"),
+        MuiToBcp47Entry(L"et-EE", u8"et"),
+        MuiToBcp47Entry(L"fi-FI", u8"fi"),
+        MuiToBcp47Entry(L"fr-FR", u8"fr-FR"),
+        MuiToBcp47Entry(L"he-IL", u8"he"),
+        MuiToBcp47Entry(L"hi-IN", u8"hi"),
+        MuiToBcp47Entry(L"hr-HR", u8"hr-HR"),
+        MuiToBcp47Entry(L"hu-HU", u8"hu"),
+        MuiToBcp47Entry(L"it-IT", u8"it-IT"),
+        MuiToBcp47Entry(L"ja-JP", u8"ja"),
+        MuiToBcp47Entry(L"ko-KR", u8"ko"),
+        MuiToBcp47Entry(L"lt-LT", u8"lt"),
+        MuiToBcp47Entry(L"lv-LV", u8"lv"),
+        MuiToBcp47Entry(L"nb-NO", u8"nb"),
+        MuiToBcp47Entry(L"nl-NL", u8"nl-NL"),
+        MuiToBcp47Entry(L"pl-PL", u8"pl"),
+        MuiToBcp47Entry(L"ps-PS", u8"ps-PS"),
+        MuiToBcp47Entry(L"pt-BR", u8"pt-BR"),
+        MuiToBcp47Entry(L"pt-PT", u8"pt-PT"),
+        MuiToBcp47Entry(L"ro-RO", u8"ro-RO"),
+        MuiToBcp47Entry(L"ru-RU", u8"ru"),
+        MuiToBcp47Entry(L"sk-SK", u8"sk"),
+        MuiToBcp47Entry(L"sl-SI", u8"sl"),
+        MuiToBcp47Entry(L"sr-Latn-CS", u8"sr-Latn-CS"),
+        MuiToBcp47Entry(L"sv-SE", u8"sv-SE"),
+        MuiToBcp47Entry(L"th-TH", u8"th"),
+        MuiToBcp47Entry(L"tr-TR", u8"tr"),
+        MuiToBcp47Entry(L"uk-UA", u8"uk"),
+        MuiToBcp47Entry(L"zh-CN", u8"zh-Hans-CN"),
+        MuiToBcp47Entry(L"zh-HK", u8"zh-Hant-HK"),
+        MuiToBcp47Entry(L"zh-TW", u8"zh-Hant-TW"),
     };
-
-    #define ThrowHrIfFalse(a, m)                                                                               \
-    {   BOOL _result = a;                                                                                      \
-        if (!_result)                                                                                          \
-        {   MSIX::RaiseException<MSIX::Exception> (__LINE__, __FILE__, m, HRESULT_FROM_WIN32(GetLastError())); \
-        }                                                                                                      \
-    }
 
     MSIX_PLATFORM Applicability::GetPlatform()
     {
@@ -121,24 +113,24 @@ namespace MSIX {
             ThrowHrIfFalse(GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numOfLangs, nullptr, &size),
                 "Failed GetUserPreferredUILanguages");
             languagesWin7.resize(size);
-            ThrowHrIfFalse(GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numOfLangs, &languagesWin7.front(), &size),
+            ThrowHrIfFalse(GetUserPreferredUILanguages(MUI_LANGUAGE_NAME, &numOfLangs, const_cast<PZZWSTR>(languagesWin7.data()), &size),
                 "Failed GetUserPreferredUILanguages");
 
             size_t position = 0;
             ULONG processedTags = 0;
-            wchar_t delimiter = '\0';
+            auto delimiter = L'\0';
             auto found = languagesWin7.find(delimiter);
             while(found != std::string::npos && processedTags < numOfLangs)
             {
                 auto muiTag = languagesWin7.substr(position, found - position);
-                const auto& tag = std::find(muiToBcp47List[0].begin(), muiToBcp47List[0].end(), MuiToBcp47Entry(muiTag.c_str(), nullptr));
-                if (tag == muiToBcp47List[0].end())
+                const auto& tag = std::find(std::begin(muiToBcp47List), std::end(muiToBcp47List), MuiToBcp47Entry(muiTag.c_str(), nullptr));
+                if (tag == std::end(muiToBcp47List))
                 {   // Is not well known, luckily the tag will be the same (probably not) :)
                     result.push_back(utf16_to_utf8(muiTag));
                 }
                 else
                 {
-                    result.push_back((*tag).bcp47);  
+                    result.push_back((*tag).bcp47);
                 }
                 position = found+1;
                 processedTags++;
