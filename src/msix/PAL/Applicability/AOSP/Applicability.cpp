@@ -2,7 +2,7 @@
 //  Copyright (C) 2017 Microsoft.  All rights reserved.
 //  See LICENSE file in the project root for full license information.
 //
-#include <set>
+#include <vector>
 #include <algorithm>
 
 #include "Applicability.hpp"
@@ -10,7 +10,6 @@
 
 // Android includes
 #include <jni.h>
-#include <android/log.h>
 
 static JavaVM* g_JavaVM = nullptr;
 
@@ -18,9 +17,9 @@ namespace MSIX {
 
     MSIX_PLATFORM Applicability::GetPlatform() { return MSIX_PLATFORM_AOSP; }
 
-    std::set<std::string> Applicability::GetLanguages()
+    std::vector<std::string> Applicability::GetLanguages()
     {
-        std::set<std::string> languages;
+        std::vector<std::string> languages;
         JNIEnv* env;
         bool isThreadAttached = false;
         int result = g_JavaVM->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6);
@@ -37,7 +36,7 @@ namespace MSIX {
         jstring javaLanguage = reinterpret_cast<jstring>(env->CallStaticObjectMethod(javaClass, languageFunc));
         const char* language = env->GetStringUTFChars(javaLanguage, nullptr);
         ThrowErrorIf(Error::Unexpected, !language, "Failed getting langauge from the system.");
-        languages.insert(language);
+        languages.push_back(language);
         env->ReleaseStringUTFChars(javaLanguage, language);
         if (isThreadAttached)
         {
