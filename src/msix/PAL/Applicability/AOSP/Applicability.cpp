@@ -24,7 +24,7 @@ namespace MSIX {
         Bcp47Entry(const char* i, const char* b) : icu(i), bcp47(b) {}
 
         inline bool operator==(const char* otherIcu) const {
-            return 0 == strcmp(icu, rhs.icu);
+            return 0 == strcmp(icu, otherIcu);
         }
     };
 
