@@ -25,10 +25,9 @@ typedef struct _IID
 
 #endif // __IID_DEFINED__
 
+#define PUBLIC_INTERFACE
 #ifndef WIN32
 #define PUBLIC_INTERFACE __attribute__((visibility("default")))
-#else
-#define PUBLIC_INTERFACE
 #endif
 
 #define MIDL_DEFINE_GUID(type,name,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) \
