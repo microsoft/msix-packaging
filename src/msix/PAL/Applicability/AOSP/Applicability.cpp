@@ -30,9 +30,9 @@ namespace MSIX {
 
     // ICU locale were introduced in API level 24. Add here any inconsistencies.
     static const Bcp47Entry bcp47List[] = {
-        Bcp47Entry("zh_CN", "zh-Hans-CN"),
-        Bcp47Entry("zh_HK", "zh-Hant-HK"),
-        Bcp47Entry("zh_TW", "zh-Hant-TW"),
+        Bcp47Entry(u8"zh_CN", u8"zh-Hans-CN"),
+        Bcp47Entry(u8"zh_HK", u8"zh-Hant-HK"),
+        Bcp47Entry(u8"zh_TW", u8"zh-Hant-TW"),
     };
 
     MSIX_PLATFORM Applicability::GetPlatform() { return MSIX_PLATFORM_AOSP; }

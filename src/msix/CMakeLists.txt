@@ -248,7 +248,7 @@ if(WIN32)
     SET(FLAGS)
     GET_PROPERTY(FLAGS TARGET ${PROJECT_NAME} PROPERTY LINK_FLAGS)
     # Delayload any dlls that are not present on Win7
-    LIST(APPEND FLAGS
+    LIST(APPEND DELAYLOAD_FLAGS
         "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll"
         "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll"
         "/DELAYLOAD:api-ms-win-crt-runtime-l1-1-0.dll"
@@ -256,7 +256,8 @@ if(WIN32)
         "/DELAYLOAD:api-ms-win-crt-string-l1-1-0.dll"
         "/DELAYLOAD:api-ms-win-crt-stdio-l1-1-0.dll"
         "/DELAYLOAD:api-ms-win-crt-heap-l1-1-0.dll")
-    STRING(REPLACE ";" " " FLAGS "${FLAGS}")
+    STRING(REPLACE ";" " " DELAYLOAD_FLAGS "${DELAYLOAD_FLAGS}")
+    STRING(APPEND FLAGS " ${DELAYLOAD_FLAGS}")
     SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY LINK_FLAGS "${FLAGS}")
     TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib delayimp.lib)
 endif()
