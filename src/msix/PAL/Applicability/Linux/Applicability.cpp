@@ -28,9 +28,9 @@ namespace MSIX {
 
     // We've seen cases were uloc_toLanguageTag returns zh-CN. Add here any inconsistencies.
     static const Bcp47Entry bcp47List[] = {
-        Bcp47Entry("zh-CN", "zh-Hans-CN"),
-        Bcp47Entry("zh-HK", "zh-Hant-HK"),
-        Bcp47Entry("zh-TW", "zh-Hant-TW"),
+        Bcp47Entry(u8"zh-CN", u8"zh-Hans-CN"),
+        Bcp47Entry(u8"zh-HK", u8"zh-Hant-HK"),
+        Bcp47Entry(u8"zh-TW", u8"zh-Hant-TW"),
     };
 
     MSIX_PLATFORM Applicability::GetPlatform() { return MSIX_PLATFORM_LINUX; }
@@ -41,9 +41,12 @@ namespace MSIX {
         UErrorCode status = U_ZERO_ERROR;
         char bcp47[ULOC_FULLNAME_CAPACITY] = {};
         int bcp47Length = uloc_toLanguageTag(uloc_getDefault(), bcp47, ULOC_FULLNAME_CAPACITY, true, &status);
-        std::ostringstream builder;
-        builder << "Failure obtaining system langauge " << u_errorName(status);
-        ThrowErrorIf(Error::Unexpected, U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING, builder.str().c_str());
+        if (U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING)
+        {
+            std::ostringstream builder;
+            builder << "Failure obtaining system langauge " << u_errorName(status);
+            ThrowErrorAndLog(Error::Unexpected, builder.str().c_str());
+        }
         const auto& tag = std::find(std::begin(bcp47List), std::end(bcp47List), bcp47);
         if (tag == std::end(bcp47List))
         {
