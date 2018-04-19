@@ -1,0 +1,6 @@
+{
+    global:
+        ${MSIX_EXPORTS}
+    local:
+        *;
+};
