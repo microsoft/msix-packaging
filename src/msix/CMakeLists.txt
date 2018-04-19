@@ -42,16 +42,45 @@ ELSE()
         ENDIF()
         SET (Applicability PAL/Applicability/Apple/Applicability.cpp)
     ELSE()
-        # on Linux and linux-derived platforms, you use a version script to achieve similar ends.
-        SET(CMAKE_C_FLAGS                       "${CMAKE_C_FLAGS} -fvisibility=hidden")
-        SET(DEFINE_EXPORTS                      "-Wl,--version-script=${CMAKE_PROJECT_ROOT}/src/msix/symbol.map")
+        SET(MSIX_EXPORTS
+            "CoCreateAppxFactory;
+             CoCreateAppxFactoryWithHeap;
+             CreateStreamOnFile;
+             CreateStreamOnFileUTF16;
+             GetLogTextUTF8;
+             UnpackPackage;
+             UnpackPackageFromStream;
+             CoCreateAppxBundleFactory;
+             CoCreateAppxBundleWithHeap;
+             IID_IUnknown;
+             IID_IAppxBlockMapBlock;
+             IID_IAppxBlockMapBlocksEnumerator;
+             IID_IAppxBlockMapFile;
+             IID_IAppxBlockMapFilesEnumerator;
+             IID_IAppxBlockMapReader;
+             IID_IAppxFactory;
+             IID_IAppxBundleFactory;
+             IID_IAppxPackageReader;
+             IID_IAppxBundleReader;
+             IID_IAppxFilesEnumerator;
+             IID_IAppxFile;
+             IID_IStream;"
+        )
         IF(LINUX)
             FIND_PACKAGE(ICU COMPONENTS uc)
             SET (Applicability PAL/Applicability/Linux/Applicability.cpp)
         ENDIF()
         IF(AOSP)
+            # add here any exports specific for android
+            STRING(APPEND MSIX_EXPORTS
+                "JNI_OnLoad;"
+            )
             SET (Applicability PAL/Applicability/AOSP/Applicability.cpp)
         ENDIF()
+        # on Linux and linux-derived platforms, you use a version script to achieve similar ends.
+        SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fvisibility=hidden")
+        CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/symbol.map.cmakein ${CMAKE_CURRENT_BINARY_DIR}/symbol.map CRLF)
+        SET(DEFINE_EXPORTS "-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/symbol.map")
     ENDIF()
     MESSAGE(STATUS "Using export flag: ${DEFINE_EXPORTS}")
     SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DEFINE_EXPORTS}")
