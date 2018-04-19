@@ -42,6 +42,21 @@ function CleanupUnpackFolder {
     }
 }
 
+function ValidateResult([string] $EXPECTED) {
+    write-host "Validating extracted files with $EXPECTED"
+    foreach ($file in (Get-ChildItem ".\..\unpack" -file -recurse)) { Add-Content output.txt "$($file.Length) $($file.Name)"}
+    if(Compare-Object -ReferenceObject $(Get-Content "output.txt") -DifferenceObject $(Get-Content $EXPECTED))
+    {
+        write-host  "FAILED comparing extracted files"
+        $global:TESTFAILED=1
+    }
+    else
+    {
+        write-host  "succeeded comparing extracted files"
+    }
+    Remove-Item output.txt
+}
+
 function RunTest([int] $SUCCESSCODE, [string] $PACKAGE, [string] $OPT) {
     CleanupUnpackFolder
     $OPTIONS = "unpack -d .\..\unpack -p $PACKAGE $OPT"
@@ -77,7 +92,6 @@ RunTest 0x8bad0042 .\..\appx\SignedTamperedCD-TRUST_E_BAD_DIGEST.appx
 RunTest 0x8bad0042 .\..\appx\SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx
 RunTest 0x8bad0042 .\..\appx\SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx
 RunTest 0x8bad0042 .\..\appx\SignedUntrustedCert-CERT_E_CHAINING.appx
-RunTest 0x00000000 .\..\appx\StoreSigned_Desktop_x64_MoviesTV.appx
 RunTest 0x00000000 .\..\appx\TestAppxPackage_Win32.appx "-ss"
 RunTest 0x00000000 .\..\appx\TestAppxPackage_x64.appx "-ss"
 RunTest 0x8bad0012 .\..\appx\UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
@@ -93,6 +107,38 @@ RunTest 0x8bad0033 .\..\appx\BlockMap\No_blockmap.appx "-ss"
 RunTest 0x8bad1003 .\..\appx\BlockMap\Bad_Namespace_Blockmap.appx "-ss"
 RunTest 0x8bad0051 .\..\appx\BlockMap\Duplicate_file_in_blockmap.appx "-ss"
 RunTest 0x00000000 .\..\appx\sdx\en-us_win32.appx
+
+# Bundle tests
+RunTest 0x8bad0051 .\..\appx\bundles\BlockMapContainsPayloadPackage.appxbundle "-ss"
+RunTest 0x8bad0033 .\..\appx\bundles\BlockMapIsMissing.appxbundle "-ss"
+RunTest 0x8bad1002 .\..\appx\bundles\BlockMapViolatesSchema.appxbundle "-ss"
+#RunTest 0x00000000 .\..\appx\bundles\ContainsNeutralAndX86AppPackages.appxbundle
+RunTest 0x8bad1002 .\..\appx\bundles\ContainsNoPayload.appxbundle "-ss"
+RunTest 0x8bad0061 .\..\appx\bundles\ContainsOnlyResourcePackages.appxbundle "-ss"
+#RunTest 0x00000000 .\..\appx\bundles\ContainsTwoNeutralAppPackages.appxbundle
+RunTest 0x00000000 .\..\appx\bundles\MainBundle.appxbundle "-ss"
+#RunTest 0x00000000 .\..\appx\bundles\ManifestDeclaresAppPackageForResourcePackage.appxbundle
+#RunTest 0x00000000 .\..\appx\bundles\ManifestDeclaresResourcePackageForAppPackage.appxbundle
+#RunTest 0x00000000 .\..\appx\bundles\ManifestHasExtraPackage.appxbundle
+RunTest 0x8bad0034 .\..\appx\bundles\ManifestIsMissing.appxbundle "-ss"
+# RunTest 0x8bad0061 .\..\appx\bundles\ManifestPackageHasIncorrectArchitecture.appxbundle "-ss" ### WIN8-era package
+# RunTest 0x8bad0061 .\..\appx\bundles\ManifestPackageHasIncorrectName.appxbundle "-ss" ### WIN8-era package
+# RunTest 0x8bad0061 .\..\appx\bundles\ManifestPackageHasIncorrectPublisher.appxbundle "-ss" ### WIN8-era package
+RunTest 0x8bad0061 .\..\appx\bundles\ManifestPackageHasIncorrectSize.appxbundle "-ss"
+# RunTest 0x8bad0061 .\..\appx\bundles\ManifestPackageHasIncorrectVersion.appxbundle "-ss" ### WIN8-era package
+#RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasInvalidOffset.appxbundle
+#RunTest 0x00000000 .\..\appx\bundles\ManifestPackageHasInvalidRange.appxbundle
+RunTest 0x8bad1002 .\..\appx\bundles\ManifestViolatesSchema.appxbundle "-ss"
+RunTest 0x8bad0061 .\..\appx\bundles\PayloadPackageHasNonAppxExtension.appxbundle "-ss"
+RunTest 0x8bad0061 .\..\appx\bundles\PayloadPackageIsCompressed.appxbundle "-ss"
+RunTest 0x8bad0003 .\..\appx\bundles\PayloadPackageIsEmpty.appxbundle "-ss"
+RunTest 0x80070057 .\..\appx\bundles\PayloadPackageIsNotAppxPackage.appxbundle "-ss"
+#RunTest 0x00000000 .\..\appx\bundles\PayloadPackageNotListedInManifest.appxbundle
+RunTest 0x8bad0042 .\..\appx\bundles\SignedUntrustedCert-CERT_E_CHAINING.appxbundle
+RunTest 0x00000000 .\..\appx\bundles\StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
+
+RunTest 0x00000000 .\..\appx\StoreSigned_Desktop_x64_MoviesTV.appx
+ValidateResult ExpectedResults\StoreSigned_Desktop_x64_MoviesTV.txt
 
 CleanupUnpackFolder
 

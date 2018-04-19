@@ -10,6 +10,6 @@ static std::stringstream g_content;
 
 void Append(const std::string& comment) { ((!comment.empty()) ? g_content << '\n' : g_content) << comment; }
 std::string Text() { return g_content.str(); }
-void Clear() { g_content.clear(); }
+void Clear() { g_content.str(""), g_content.clear(); }
 
 } /* log */ } /* Global */ } /* msix */

@@ -3,7 +3,7 @@
 # Copyright (C) 2017 Microsoft.  All rights reserved.
 # See LICENSE file in the project root for full license information.
 #
-# This file defines the list of c-style exports for msix shared library 
+# This file defines the list of c-style exports for msix shared library
 # do not remove, reorder, or overload, these exported functions as doing so
 # will break the ABI contract with clients.
 # ---------------------------------------------------------------------------
@@ -13,4 +13,19 @@ _CreateStreamOnFile
 _CreateStreamOnFileUTF16
 _GetLogTextUTF8
 _UnpackPackage
-
+_UnpackPackageFromStream
+_CoCreateAppxBundleFactory
+_CoCreateAppxBundleFactoryWithHeap
+_IID_IUnknown
+_IID_IAppxBlockMapBlock
+_IID_IAppxBlockMapBlocksEnumerator
+_IID_IAppxBlockMapFile
+_IID_IAppxBlockMapFilesEnumerator
+_IID_IAppxBlockMapReader
+_IID_IAppxFactory
+_IID_IAppxBundleFactory
+_IID_IAppxPackageReader
+_IID_IAppxBundleReader
+_IID_IAppxFilesEnumerator
+_IID_IAppxFile
+_IID_IStream

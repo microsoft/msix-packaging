@@ -47,22 +47,31 @@ SpecializeUuidOfImpl(IXercesElement);
 namespace MSIX {
 
 static std::map<XmlQueryName, std::string> xPaths = {
-    {XmlQueryName::Package_Identity                             ,"/Package/Identity"},
-    {XmlQueryName::BlockMap_File                                ,"/BlockMap/File"},
-    {XmlQueryName::BlockMap_File_Block                          ,"./Block"},
+    {XmlQueryName::Package_Identity                               ,"/Package/Identity"},
+    {XmlQueryName::BlockMap_File                                  ,"/BlockMap/File"},
+    {XmlQueryName::BlockMap_File_Block                            ,"./Block"},
+    {XmlQueryName::Bundle_Identity                                ,"/Bundle/Identity"},
+    {XmlQueryName::Bundle_Packages_Package                        ,"/Bundle/Packages/Package"},
+    {XmlQueryName::Bundle_Packages_Package_Resources_Resource     ,"./Resources/Resource"},
 };
 
 static std::map<XmlAttributeName, std::string> attributeNames = {
-    {XmlAttributeName::Package_Identity_Name                    ,"Name"},
-    {XmlAttributeName::Package_Identity_ProcessorArchitecture   ,"ProcessorArchitecture"},
-    {XmlAttributeName::Package_Identity_Publisher               ,"Publisher"},
-    {XmlAttributeName::Package_Identity_Version                 ,"Version"},
-    {XmlAttributeName::Package_Identity_ResourceId              ,"ResourceId"},
+    {XmlAttributeName::Name                                       ,"Name"},
+    {XmlAttributeName::ResourceId                                 ,"ResourceId"},
+    {XmlAttributeName::Version                                    ,"Version"},
+    {XmlAttributeName::Size                                       ,"Size"},
 
-    {XmlAttributeName::BlockMap_File_Name                       ,"Name"},
-    {XmlAttributeName::BlockMap_File_LocalFileHeaderSize        ,"LfhSize"},
-    {XmlAttributeName::BlockMap_File_Block_Size                 ,"Size"},
-    {XmlAttributeName::BlockMap_File_Block_Hash                 ,"Hash"},
+    {XmlAttributeName::Identity_ProcessorArchitecture             ,"ProcessorArchitecture"},
+    {XmlAttributeName::Identity_Publisher                         ,"Publisher"},
+
+    {XmlAttributeName::BlockMap_File_LocalFileHeaderSize          ,"LfhSize"},    
+    {XmlAttributeName::BlockMap_File_Block_Hash                   ,"Hash"},
+
+    {XmlAttributeName::Bundle_Package_FileName                    ,"FileName"},
+    {XmlAttributeName::Bundle_Package_Offset                      ,"Offset"},
+    {XmlAttributeName::Bundle_Package_Type                        ,"Type"},
+    {XmlAttributeName::Bundle_Package_Architecture                ,"Architecture"},
+    {XmlAttributeName::Bundle_Package_Resources_Resource_Language ,"Language"},
 };
 
 class ParsingException final : public XERCES_CPP_NAMESPACE::ErrorHandler
@@ -268,6 +277,8 @@ public:
         auto grammarPool = std::make_unique<XERCES_CPP_NAMESPACE::XMLGrammarPoolImpl>(XERCES_CPP_NAMESPACE::XMLPlatformUtils::fgMemoryManager);
         m_parser = std::make_unique<XERCES_CPP_NAMESPACE::XercesDOMParser>(nullptr, XERCES_CPP_NAMESPACE::XMLPlatformUtils::fgMemoryManager, grammarPool.get());
         
+        // For Non validation parser GetResources will return an empty vector for the ContentType, BlockMap and AppxBundleManifest.
+        // XercesDom will only parse the schemas if the vector is not empty. If not, it will only see that it is valid xml.
         bool HasSchemas = ((schemas != nullptr) && (schemas->begin() != schemas->end()));
         m_parser->setValidationScheme(HasSchemas ? 
             XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Always : 
@@ -368,6 +379,10 @@ public:
             case XmlContentType::ContentTypeXml:
             {   auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
                 return ComPtr<IXmlDom>::Make<XercesDom>(stream, &contentTypeSchema);
+            }
+            case XmlContentType::AppxBundleManifestXml:
+            {   // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
+                return ComPtr<IXmlDom>::Make<XercesDom>(stream);
             }
         }
         ThrowError(Error::InvalidParameter);

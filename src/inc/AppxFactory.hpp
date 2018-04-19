@@ -15,7 +15,7 @@
 #include <vector>
 
 namespace MSIX {
-    class AppxFactory final : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory>
+    class AppxFactory final : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory, IAppxBundleFactory>
     {
     public:
         AppxFactory(MSIX_VALIDATION_OPTION validationOptions, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
@@ -43,6 +43,11 @@ namespace MSIX {
             IStream* blockMapStream,
             LPCWSTR signatureFileName,
             IAppxBlockMapReader** blockMapReader) noexcept override;
+
+        // IAppxBundleFactory
+        HRESULT STDMETHODCALLTYPE CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept override;
+        HRESULT STDMETHODCALLTYPE CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) noexcept override;
+        HRESULT STDMETHODCALLTYPE CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept override;
 
         // IMSIXFactory
         HRESULT MarshalOutString(std::string& internal, LPWSTR *result) noexcept override;
