@@ -23,7 +23,7 @@ namespace MSIX {
 
         Bcp47Entry(const char* i, const char* b) : icu(i), bcp47(b) {}
 
-        inline bool operator==(const Bcp47Entry& rhs) const {
+        inline bool operator==(const char* otherIcu) const {
             return 0 == strcmp(icu, rhs.icu);
         }
     };
@@ -57,7 +57,7 @@ namespace MSIX {
         const char* language = env->GetStringUTFChars(javaLanguage, nullptr);
         ThrowErrorIf(Error::Unexpected, !language, "Failed getting langauge from the system.");
         // BCP47 format
-        const auto& tag = std::find(std::begin(bcp47List), std::end(bcp47List), Bcp47Entry(language, nullptr));
+        const auto& tag = std::find(std::begin(bcp47List), std::end(bcp47List), language);
         if (tag == std::end(bcp47List))
         {
             std::string bcp47(language);

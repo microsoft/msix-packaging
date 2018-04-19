@@ -62,8 +62,8 @@ struct SchemaEntry
 
     SchemaEntry(const wchar_t* u, const wchar_t* a, const char* s) : uri(u), alias(a), schema(s) {}
 
-    inline bool operator==(const SchemaEntry& rhs) const {
-        return 0 == wcscmp(uri, rhs.uri);
+    inline bool operator==(const wchar_t* otherUri) const {
+        return 0 == wcscmp(uri, otherUri);
     }
 };
 
@@ -452,7 +452,7 @@ public:
                     std::wstring uri(reinterpret_cast<WCHAR*>(attributeValue.Get().bstrVal));
                     std::transform(uri.begin(), uri.end(), uri.begin(), ::tolower);
                     // next we look for that uri against our namespace manager                    
-                    const auto& result = std::find(namespaces.begin(), namespaces.end(), SchemaEntry(uri.c_str(), nullptr, nullptr));
+                    const auto& result = std::find(namespaces.begin(), namespaces.end(), uri.c_str());
                     if (result == namespaces.end())
                     {   // the namespace specified is unknown to us.  remove everything with the specified alias!
                         std::wostringstream xPath;

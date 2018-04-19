@@ -21,8 +21,8 @@ namespace MSIX {
 
         Bcp47Entry(const char* i, const char* b) : icu(i), bcp47(b) {}
 
-        inline bool operator==(const Bcp47Entry& rhs) const {
-            return 0 == strcmp(icu, rhs.icu);
+        inline bool operator==(const char* otherIcui) const {
+            return 0 == strcmp(icu, otherIcui);
         }
     };
 
@@ -44,7 +44,7 @@ namespace MSIX {
         std::ostringstream builder;
         builder << "Failure obtaining system langauge " << u_errorName(status);
         ThrowErrorIf(Error::Unexpected, U_FAILURE(status) || status == U_STRING_NOT_TERMINATED_WARNING, builder.str().c_str());
-        const auto& tag = std::find(std::begin(bcp47List), std::end(bcp47List), Bcp47Entry(bcp47, nullptr));
+        const auto& tag = std::find(std::begin(bcp47List), std::end(bcp47List), bcp47);
         if (tag == std::end(bcp47List))
         {
             result.push_back(bcp47);
