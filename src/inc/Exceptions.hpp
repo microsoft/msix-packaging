@@ -165,8 +165,8 @@ namespace MSIX {
     catch (...)                                                             \
     {   return static_cast<HRESULT>(MSIX::Error::Unexpected);               \
     }
-#endif              
-                                             
+#endif
+
     template <typename E, class C>
     #ifdef WIN32
     __declspec(noinline)
@@ -175,7 +175,7 @@ namespace MSIX {
     void 
     #ifndef WIN32
     __attribute__(( noinline, cold, noreturn )) 
-    #endif    
+    #endif
     RaiseException(const int line, const char* const file, const char* details, C c)
     {
         assert(false);
@@ -192,7 +192,7 @@ namespace MSIX {
     void 
     #ifndef WIN32
     __attribute__(( noinline)) 
-    #endif    
+    #endif
     RaiseExceptionIfFailed(HRESULT hr, const int line, const char* const file);
 }
 
@@ -205,6 +205,7 @@ namespace MSIX {
 #define ThrowErrorIfNot(c, a, m)      if (!(a)) { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, m, c); }
 #define ThrowWin32ErrorIfNot(c, a, m) if (!(a)) { MSIX::RaiseException<MSIX::Win32Exception>(__LINE__, __FILE__, m, c); }
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
+#define ThrowErrorAndLog(c, m) { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, m, c); }
 
 #define ThrowHrIfFailed(a) MSIX::RaiseExceptionIfFailed(a, __LINE__, __FILE__);
 
