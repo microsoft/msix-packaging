@@ -32,8 +32,8 @@ namespace MSIX {
 
         MuiToBcp47Entry(const wchar_t* m, const char* b) : mui(m), bcp47(b) {}
 
-        inline bool operator==(const MuiToBcp47Entry& rhs) const {
-            return 0 == wcscmp(mui, rhs.mui);
+        inline bool operator==(const wchar_t* otherMui) const {
+            return 0 == wcscmp(mui, otherMui);
         }
     };
 
@@ -123,7 +123,7 @@ namespace MSIX {
             while(found != std::string::npos && processedTags < numOfLangs)
             {
                 auto muiTag = languagesWin7.substr(position, found - position);
-                const auto& tag = std::find(std::begin(muiToBcp47List), std::end(muiToBcp47List), MuiToBcp47Entry(muiTag.c_str(), nullptr));
+                const auto& tag = std::find(std::begin(muiToBcp47List), std::end(muiToBcp47List), muiTag.c_str());
                 if (tag == std::end(muiToBcp47List))
                 {   // Is not well known, luckily the tag will be the same (probably not) :)
                     result.push_back(utf16_to_utf8(muiTag));
