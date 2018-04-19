@@ -6,7 +6,8 @@
 #include <unicode/uloc.h>
 #include <unicode/utypes.h>
 #include <vector>
-#include <iterator> 
+#include <iterator>
+#include <algorithm>
 
 #include "Applicability.hpp"
 #include "Exceptions.hpp"
