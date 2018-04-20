@@ -39,7 +39,7 @@ ELSE()
         "UnpackPackage"
         "UnpackPackageFromStream"
         "CoCreateAppxBundleFactory"
-        "CoCreateAppxBundleWithHeap"
+        "CoCreateAppxBundleFactoryWithHeap"
         "IID_IUnknown"
         "IID_IAppxBlockMapBlock"
         "IID_IAppxBlockMapBlocksEnumerator"
