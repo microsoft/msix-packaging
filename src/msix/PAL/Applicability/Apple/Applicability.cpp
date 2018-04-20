@@ -32,10 +32,9 @@ namespace MSIX {
             CFStringRef value = static_cast<CFStringRef>(CFArrayGetValueAtIndex(preferredLanguages, i));
             CFIndex valueSize = CFStringGetLength(value) + 1; // +1 for null termination
             char buffer[valueSize];
-            if(CFStringGetCString(value, buffer, valueSize, kCFStringEncodingUTF8))
-            {
-                result.push_back(buffer);
-            }
+            ThrowErrorIfNot(Error::Unexpected, CFStringGetCString(value, buffer, valueSize, kCFStringEncodingUTF8),
+                "CFStringGetCString conversion failed");
+            result.push_back(buffer);
         }
         CFRelease(preferredLanguages);
         return result;
