@@ -29,12 +29,40 @@ IF(WIN32)
     SET (Applicability PAL/Applicability/Win32/Applicability.cpp)
 ELSE()
     # Visibility variables for non-win32 platforms
+    SET(MSIX_EXPORTS)
+    LIST(APPEND MSIX_EXPORTS
+        "CoCreateAppxFactory"
+        "CoCreateAppxFactoryWithHeap"
+        "CreateStreamOnFile"
+        "CreateStreamOnFileUTF16"
+        "GetLogTextUTF8"
+        "UnpackPackage"
+        "UnpackPackageFromStream"
+        "CoCreateAppxBundleFactory"
+        "CoCreateAppxBundleWithHeap"
+        "IID_IUnknown"
+        "IID_IAppxBlockMapBlock"
+        "IID_IAppxBlockMapBlocksEnumerator"
+        "IID_IAppxBlockMapFile"
+        "IID_IAppxBlockMapFilesEnumerator"
+        "IID_IAppxBlockMapReader"
+        "IID_IAppxFactory"
+        "IID_IAppxBundleFactory"
+        "IID_IAppxPackageReader"
+        "IID_IAppxBundleReader"
+        "IID_IAppxFilesEnumerator"
+        "IID_IAppxFile"
+        "IID_IStream"
+    )
     IF((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported
         SET(CMAKE_VISIBILITY_INLINES_HIDDEN     1)
-        SET(CMAKE_C_VISIBILITY_PRESET           hidden)    
-        SET(CMAKE_CXX_VISIBILITY_PRESET         hidden)            
-        SET(DEFINE_EXPORTS                      "-exported_symbols_list ${CMAKE_PROJECT_ROOT}/src/msix/exports.def")    
+        SET(CMAKE_C_VISIBILITY_PRESET           hidden)
+        SET(CMAKE_CXX_VISIBILITY_PRESET         hidden)
+        # iOS and Mac exports start with '_' .The first '_' is be in the exports.def.cmakein
+        STRING(REGEX REPLACE ";" "\n_" MSIX_EXPORTS "${MSIX_EXPORTS}")
+        CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/exports.def.cmakein ${CMAKE_CURRENT_BINARY_DIR}/exports.def CRLF)
+        SET(DEFINE_EXPORTS  "-exported_symbols_list ${CMAKE_CURRENT_BINARY_DIR}/exports.def")    
         # used to get the languages of the device
         FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation)
         IF(NOT COREFOUNDATION_LIBRARY)
@@ -42,43 +70,21 @@ ELSE()
         ENDIF()
         SET (Applicability PAL/Applicability/Apple/Applicability.cpp)
     ELSE()
-        SET(MSIX_EXPORTS
-            "CoCreateAppxFactory;
-             CoCreateAppxFactoryWithHeap;
-             CreateStreamOnFile;
-             CreateStreamOnFileUTF16;
-             GetLogTextUTF8;
-             UnpackPackage;
-             UnpackPackageFromStream;
-             CoCreateAppxBundleFactory;
-             CoCreateAppxBundleWithHeap;
-             IID_IUnknown;
-             IID_IAppxBlockMapBlock;
-             IID_IAppxBlockMapBlocksEnumerator;
-             IID_IAppxBlockMapFile;
-             IID_IAppxBlockMapFilesEnumerator;
-             IID_IAppxBlockMapReader;
-             IID_IAppxFactory;
-             IID_IAppxBundleFactory;
-             IID_IAppxPackageReader;
-             IID_IAppxBundleReader;
-             IID_IAppxFilesEnumerator;
-             IID_IAppxFile;
-             IID_IStream;"
-        )
         IF(LINUX)
             FIND_PACKAGE(ICU COMPONENTS uc)
             SET (Applicability PAL/Applicability/Linux/Applicability.cpp)
         ENDIF()
         IF(AOSP)
             # add here any exports specific for android
-            STRING(APPEND MSIX_EXPORTS
-                "JNI_OnLoad;"
+            LIST(APPEND MSIX_EXPORTS
+                "JNI_OnLoad"
             )
             SET (Applicability PAL/Applicability/AOSP/Applicability.cpp)
         ENDIF()
         # on Linux and linux-derived platforms, you use a version script to achieve similar ends.
         SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fvisibility=hidden")
+        # Make it look readable. The last ; is in the symbol.map.cmakein file
+        STRING(REGEX REPLACE ";" ";\n\t" MSIX_EXPORTS "${MSIX_EXPORTS}")
         CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/symbol.map.cmakein ${CMAKE_CURRENT_BINARY_DIR}/symbol.map CRLF)
         SET(DEFINE_EXPORTS "-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/symbol.map")
     ENDIF()
@@ -245,19 +251,5 @@ if(WIN32)
     SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
         COMPILE_FLAGS "/source-charset:utf-8"
         VS_WINRT_COMPONENT TRUE)
-    SET(FLAGS)
-    GET_PROPERTY(FLAGS TARGET ${PROJECT_NAME} PROPERTY LINK_FLAGS)
-    # Delayload any dlls that are not present on Win7
-    LIST(APPEND DELAYLOAD_FLAGS
-        "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll"
-        "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll"
-        "/DELAYLOAD:api-ms-win-crt-runtime-l1-1-0.dll"
-        "/DELAYLOAD:api-ms-win-crt-convert-l1-1-0.dll"
-        "/DELAYLOAD:api-ms-win-crt-string-l1-1-0.dll"
-        "/DELAYLOAD:api-ms-win-crt-stdio-l1-1-0.dll"
-        "/DELAYLOAD:api-ms-win-crt-heap-l1-1-0.dll")
-    STRING(REPLACE ";" " " DELAYLOAD_FLAGS "${DELAYLOAD_FLAGS}")
-    STRING(APPEND FLAGS " ${DELAYLOAD_FLAGS}")
-    SET_PROPERTY(TARGET ${PROJECT_NAME} PROPERTY LINK_FLAGS "${FLAGS}")
     TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib delayimp.lib)
 endif()
