@@ -30,6 +30,7 @@ enum class XmlQueryName : std::uint8_t
     Bundle_Identity                            = 3,
     Bundle_Packages_Package                    = 4,
     Bundle_Packages_Package_Resources_Resource = 5,
+    Package_Dependencies_TargetDeviceFamily    = 6,
 };
 
 // defines attribute names for use in IXmlElement-> [GetAttributeValue|GetBase64DecodedAttributeValue]

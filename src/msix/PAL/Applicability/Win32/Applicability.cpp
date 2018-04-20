@@ -86,11 +86,7 @@ namespace MSIX {
         {
             return MSIX_PLATFORM_WINDOWS10;
         }
-        else if (IsWindows8Point1OrGreater())
-        {
-            return MSIX_PLATFORM_WINDOWS8POINT1;
-        }
-        else if (IsWindows8OrGreater())
+        else if (IsWindows8Point1OrGreater() || IsWindows8OrGreater())
         {
             return MSIX_PLATFORM_WINDOWS8;
         }

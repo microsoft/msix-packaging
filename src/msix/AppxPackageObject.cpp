@@ -45,6 +45,44 @@ namespace MSIX {
         APPXSIGNATURE_P7X,
     };
 
+    struct TargetDeviceFamilyEntry
+    {
+        const char* tdf;
+        const MSIX_PLATFORM platform;
+
+        TargetDeviceFamilyEntry(const char* t, const MSIX_PLATFORM p) : tdf(t), platform(p) {}
+
+        inline bool operator==(const char* otherTdf) const {
+            return 0 != strcmp(tdf, otherTdf);
+        }
+    };
+
+    static const TargetDeviceFamilyEntry targetDeviceFamilyList[] = {
+        TargetDeviceFamilyEntry(u8"Windows.Universal",      MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"Windows.Mobile",         MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"Windows.Desktop",        MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"Windows.Xbox",           MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"Windows.Team",           MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"Windows.Holographic",    MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"Windows.IoT",            MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"Apple.Ios.All",          MSIX_PLATFORM_IOS),
+        TargetDeviceFamilyEntry(u8"Apple.Ios.Phone",        MSIX_PLATFORM_IOS),
+        TargetDeviceFamilyEntry(u8"Apple.Ios.Tablet",       MSIX_PLATFORM_IOS),
+        TargetDeviceFamilyEntry(u8"Apple.Ios.TV",           MSIX_PLATFORM_IOS),
+        TargetDeviceFamilyEntry(u8"Apple.Ios.Watch",        MSIX_PLATFORM_IOS),
+        TargetDeviceFamilyEntry(u8"Apple.MacOS.All",        MSIX_PLATFORM_MACOS),
+        TargetDeviceFamilyEntry(u8"Google.Android.All",     MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"Google.Android.Phone",   MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"Google.Android.Tablet",  MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"Google.Android.Desktop", MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"Google.Android.TV",      MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"Google.Android.Watch",   MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"Windows7.Desktop",       MSIX_PLATFORM_WINDOWS7),
+        TargetDeviceFamilyEntry(u8"Windows8.Desktop",       MSIX_PLATFORM_WINDOWS8),
+        TargetDeviceFamilyEntry(u8"Linux.All",              MSIX_PLATFORM_LINUX),
+        TargetDeviceFamilyEntry(u8"Platform.All",           static_cast<MSIX_PLATFORM>(MSIX_PLATFORM_ALL)),
+    };
+
     static const std::size_t PercentangeEncodingTableSize = 0x7E;
     static const std::array<const char*, PercentangeEncodingTableSize> PercentangeEncoding =
     {   nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
@@ -194,7 +232,7 @@ namespace MSIX {
     }
 
     AppxManifestObject::AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)
-    {      
+    {
         auto dom = factory->CreateDomFromStream(XmlContentType::AppxManifestXml, stream);
         XmlVisitor visitor(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& identityNode)->bool
         {
@@ -214,6 +252,18 @@ namespace MSIX {
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Package_Identity, visitor);
         // Have to check for this semantically as not all validating parsers can validate this via schema
         ThrowErrorIfNot(Error::AppxManifestSemanticError, m_packageId, "No Identity element in AppxManifest.xml");
+
+        XmlVisitor visitorTDF(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& tdfNode)->bool
+        {
+            AppxManifestObject* self = reinterpret_cast<AppxManifestObject*>(s);
+            const auto& name  = tdfNode->GetAttributeValue(XmlAttributeName::Name);
+            const auto& tdfEntry = std::find(std::begin(targetDeviceFamilyList), std::end(targetDeviceFamilyList), name.c_str());
+            ThrowErrorIf(Error::AppxManifestSemanticError, (tdfEntry == std::end(targetDeviceFamilyList)), "Unrecognized TargetDeviceFamily");
+            self->m_packageId->Platform = static_cast<MSIX_PLATFORM>(self->m_packageId->Platform | (*tdfEntry).platform);
+            return true;
+        });
+        dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Package_Dependencies_TargetDeviceFamily, visitorTDF);
+        ThrowErrorIf(Error::AppxManifestSemanticError, m_packageId->Platform == MSIX_PLATFORM_NONE , "Couldn't find TargetDeviceFamily element in AppxManifest.xml");
     }
 
     AppxBundleManifestObject::AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)

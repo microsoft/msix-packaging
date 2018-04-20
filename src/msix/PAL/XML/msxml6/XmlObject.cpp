@@ -121,6 +121,7 @@ static const wchar_t* xPaths[] = {
     /* Bundle_Identity                            */L"/*[local-name()='Bundle']/*[local-name()='Identity']",
     /* Bundle_Packages_Package                    */L"/*[local-name()='Bundle']/*[local-name()='Packages']/*[local-name()='Package']",
     /* Bundle_Packages_Package_Resources_Resource */L"*[local-name()='Resources']/*[local-name()='Resource']",
+    /* Package_Dependencies_TargetDeviceFamily    */L"/*[local-name()='Package']/*[local-name()='Dependencies']/*[local-name()='TargetDeviceFamily']",
 };    
 
 // must remain in same order as XmlAttributeName
