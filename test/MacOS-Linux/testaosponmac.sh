@@ -44,10 +44,12 @@ function StartEmulator {
 function CreateApp {
 	# Prepare package and compile
 	cd $projectdir/../mobile/AndroidBVT
-	mkdir app/src/main/assets
+	mkdir -p app/src/main/assets
 	cp -R $projectdir/../appx/* app/src/main/assets
 	mkdir -p app/src/main/jniLibs/x86
 	cp $projectdir/../../.vs/lib/libmsix.so app/src/main/jniLibs/x86
+	mkdir -p app/src/main/libs
+	cp $projectdir/../../.vs/lib/msix-jni.jar app/src/main/libs
 	rm -r build app/build
 	sh ./gradlew assembleDebug
 }

@@ -2010,6 +2010,20 @@ enum MSIX_PACKUNPACK_OPTION
         MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER  = 0x1
     }   MSIX_PACKUNPACK_OPTION;
 
+typedef /* [v1_enum] */
+enum MSIX_PLATFORM
+    {
+        MSIX_PLATFORM_ALL            = 0x0,
+        MSIX_PLATFORM_WINDOWS10      = 0x1,
+        MSIX_PLATFORM_WINDOWS8POINT1 = 0x2,
+        MSIX_PLATFORM_WINDOWS8       = 0x4,
+        MSIX_PLATFORM_WINDOWS7       = 0x8,
+        MSIX_PLATFORM_MACOS          = 0x10,
+        MSIX_PLATFORM_IOS            = 0x20,
+        MSIX_PLATFORM_AOSP           = 0x40,
+        MSIX_PLATFORM_LINUX          = 0x80,
+    }   MSIX_PLATFORM;
+
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,

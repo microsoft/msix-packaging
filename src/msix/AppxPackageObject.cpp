@@ -11,6 +11,7 @@
 #include "UnicodeConversion.hpp"
 #include "IXml.hpp"
 #include "MSIXResource.hpp"
+#include "Applicability.hpp"
 
 #include <string>
 #include <vector>

@@ -23,21 +23,70 @@ IF (XML_PARSER MATCHES msxml6)
 ENDIF()
 
 IF(WIN32)
-    SET (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.CPP)
-    SET (SHA256 PAL/SHA256/Win32/SHA256.CPP)
+    SET (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
+    SET (SHA256 PAL/SHA256/Win32/SHA256.cpp)
     SET (Signature PAL/Signature/Win32/SignatureValidator.cpp)
+    SET (Applicability PAL/Applicability/Win32/Applicability.cpp)
 ELSE()
     # Visibility variables for non-win32 platforms
+    SET(MSIX_EXPORTS)
+    LIST(APPEND MSIX_EXPORTS
+        "CoCreateAppxFactory"
+        "CoCreateAppxFactoryWithHeap"
+        "CreateStreamOnFile"
+        "CreateStreamOnFileUTF16"
+        "GetLogTextUTF8"
+        "UnpackPackage"
+        "UnpackPackageFromStream"
+        "CoCreateAppxBundleFactory"
+        "CoCreateAppxBundleFactoryWithHeap"
+        "IID_IUnknown"
+        "IID_IAppxBlockMapBlock"
+        "IID_IAppxBlockMapBlocksEnumerator"
+        "IID_IAppxBlockMapFile"
+        "IID_IAppxBlockMapFilesEnumerator"
+        "IID_IAppxBlockMapReader"
+        "IID_IAppxFactory"
+        "IID_IAppxBundleFactory"
+        "IID_IAppxPackageReader"
+        "IID_IAppxBundleReader"
+        "IID_IAppxFilesEnumerator"
+        "IID_IAppxFile"
+        "IID_IStream"
+    )
     IF((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported
         SET(CMAKE_VISIBILITY_INLINES_HIDDEN     1)
-        SET(CMAKE_C_VISIBILITY_PRESET           hidden)    
-        SET(CMAKE_CXX_VISIBILITY_PRESET         hidden)            
-        SET(DEFINE_EXPORTS                      "-exported_symbols_list ${CMAKE_PROJECT_ROOT}/src/msix/exports.def")    
+        SET(CMAKE_C_VISIBILITY_PRESET           hidden)
+        SET(CMAKE_CXX_VISIBILITY_PRESET         hidden)
+        # iOS and Mac exports start with '_' .The first '_' is be in the exports.def.cmakein
+        STRING(REGEX REPLACE ";" "\n_" MSIX_EXPORTS "${MSIX_EXPORTS}")
+        CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/exports.def.cmakein ${CMAKE_CURRENT_BINARY_DIR}/exports.def CRLF)
+        SET(DEFINE_EXPORTS  "-exported_symbols_list ${CMAKE_CURRENT_BINARY_DIR}/exports.def")    
+        # used to get the languages of the device
+        FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation)
+        IF(NOT COREFOUNDATION_LIBRARY)
+            MESSAGE(FATAL_ERROR "CoreFoundation not found")
+        ENDIF()
+        SET (Applicability PAL/Applicability/Apple/Applicability.cpp)
     ELSE()
+        IF(LINUX)
+            FIND_PACKAGE(ICU COMPONENTS uc)
+            SET (Applicability PAL/Applicability/Linux/Applicability.cpp)
+        ENDIF()
+        IF(AOSP)
+            # add here any exports specific for android
+            LIST(APPEND MSIX_EXPORTS
+                "JNI_OnLoad"
+            )
+            SET (Applicability PAL/Applicability/AOSP/Applicability.cpp)
+        ENDIF()
         # on Linux and linux-derived platforms, you use a version script to achieve similar ends.
-        SET(CMAKE_C_FLAGS                       "${CMAKE_C_FLAGS} -fvisibility=hidden")
-        SET(DEFINE_EXPORTS                      "-Wl,--version-script=${CMAKE_PROJECT_ROOT}/src/msix/symbol.map")
+        SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fvisibility=hidden")
+        # Make it look readable. The last ; is in the symbol.map.cmakein file
+        STRING(REGEX REPLACE ";" ";\n\t" MSIX_EXPORTS "${MSIX_EXPORTS}")
+        CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/symbol.map.cmakein ${CMAKE_CURRENT_BINARY_DIR}/symbol.map CRLF)
+        SET(DEFINE_EXPORTS "-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/symbol.map")
     ENDIF()
     MESSAGE(STATUS "Using export flag: ${DEFINE_EXPORTS}")
     SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DEFINE_EXPORTS}")
@@ -56,7 +105,7 @@ ELSE()
         RETURN()
     ENDIF()
 
-	SET (DirectoryObject PAL/FileSystem/POSIX/DirectoryObject.cpp)
+    SET (DirectoryObject PAL/FileSystem/POSIX/DirectoryObject.cpp)
 ENDIF()
 
 IF(USE_VALIDATION_PARSER)
@@ -71,6 +120,7 @@ MESSAGE (STATUS "PAL: XML             = ${XmlParser}")
 MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
 MESSAGE (STATUS "PAL: SHA256          = ${SHA256}")
 MESSAGE (STATUS "PAL: Signature       = ${Signature}")
+MESSAGE (STATUS "PAL: Applicability   = ${Applicability}")
 
 include(msix_resources)
 
@@ -80,6 +130,7 @@ SET(LIB_PUBLIC_HEADERS
 )
 
 SET(LIB_PRIVATE_HEADERS
+    ../inc/Applicability.hpp
     ../inc/AppxBlockMapObject.hpp
     ../inc/AppxFactory.hpp
     ../inc/AppxPackageInfo.hpp
@@ -122,6 +173,7 @@ SET(LIB_SOURCES
     ${SHA256}
     ${Signature}
     ${XmlParser}
+    ${Applicability}
 )
 
 # Copy out public headers
@@ -137,15 +189,15 @@ SET_PROPERTY(TARGET ${LIBRARY_NAME} PROPERTY CXX_STANDARD 14)
 # Set the build version. It will be used in the name of the lib, with corresponding
 # symlinks created. SOVERSION could also be specified for api version.
 SET_TARGET_PROPERTIES(${LIBRARY_NAME} PROPERTIES
-	VERSION ${VERSION}  # ${VERSION} was defined in the main CMakeLists.
-	FRAMEWORK FALSE
-	PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
+    VERSION ${VERSION}  # ${VERSION} was defined in the main CMakeLists.
+    FRAMEWORK FALSE
+    PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
 )
 
 INCLUDE_DIRECTORIES(
-	${include_directories}
-	${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
-	${CMAKE_PROJECT_ROOT}/lib/zlib
+    ${include_directories}
+    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
+    ${CMAKE_PROJECT_ROOT}/lib/zlib
 )
 IF(USE_SHARED_ZLIB)
     MESSAGE(STATUS "MSIX takes a static dependency on zlib")
@@ -167,6 +219,27 @@ ENDIF()
 
 IF(AOSP)
     TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE -latomic)
+    FIND_PACKAGE(Java REQUIRED)
+    IF(NOT DEFINED ENV{ANDROID_HOME})
+        MESSAGE(FATAL_ERROR "ANDROID_HOME enviroment variable not found.")
+    ENDIF()
+    INCLUDE(UseJava)
+    ADD_JAR(${PROJECT_NAME}-jni
+        SOURCES
+            PAL/java/com/microsoft/msix/JniHelper.java
+        INCLUDE_JARS
+            $ENV{ANDROID_HOME}/platforms/android-${CMAKE_SYSTEM_VERSION}/android.jar
+        OUTPUT_DIR
+            ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        )
+ENDIF()
+
+IF((IOS) OR (MACOS))
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${COREFOUNDATION_LIBRARY})
+ENDIF()
+
+IF(LINUX)
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ICU_LIBRARIES})
 ENDIF()
 
 IF(OpenSSL_FOUND)
@@ -175,5 +248,8 @@ IF(OpenSSL_FOUND)
 ENDIF()
 
 if(WIN32)
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust)
+    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
+        COMPILE_FLAGS "/source-charset:utf-8"
+        VS_WINRT_COMPONENT TRUE)
+    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib delayimp.lib)
 endif()
