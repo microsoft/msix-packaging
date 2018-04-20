@@ -53,7 +53,7 @@ namespace MSIX {
         TargetDeviceFamilyEntry(const char* t, const MSIX_PLATFORM p) : tdf(t), platform(p) {}
 
         inline bool operator==(const char* otherTdf) const {
-            return 0 != strcmp(tdf, otherTdf);
+            return 0 == strcmp(tdf, otherTdf);
         }
     };
 
