@@ -44,20 +44,24 @@ namespace MSIX {
         APPXSIGNATURE_P7X,
     };
 
-    static const std::size_t PercentangeEncodingTableSize = 0x5E;
+    static const std::size_t PercentangeEncodingTableSize = 0x7E;
     static const std::array<const char*, PercentangeEncodingTableSize> PercentangeEncoding =
     {   nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        "%20",   "%21",   nullptr, "%23",   "%24",   "%25",   "%26",   "%27", // [space] ! # $ % & '
+        "%20",   "%21",   nullptr, "%23",   "%24",   "%25",   "%26",   "%27",   // [space] ! # $ % & '
         "%28",   "%29",   nullptr, "%2B",   "%2C",   nullptr, nullptr, nullptr, // ( ) + ,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, "%3B",   nullptr, "%3D",   nullptr, nullptr,   // ; =
         "%40",   nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // @
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, "%5B",   nullptr, "%5D" // [ ]
+        nullptr, nullptr, nullptr, "%5B",   nullptr, "%5D",   nullptr, nullptr, // [ ]
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, "%7B",   nullptr, "%7D",                     // { }
     };
 
     // Douglas Crockford's base 32 alphabet variant is 0-9, A-Z except for i, l, o, and u.
@@ -79,7 +83,7 @@ namespace MSIX {
         EncodingChar("25", '%'), EncodingChar("26", '&'), EncodingChar("27", '\''), EncodingChar("28", '('),
         EncodingChar("29", ')'), EncodingChar("25", '+'), EncodingChar("2B", '%'),  EncodingChar("2C", ','),
         EncodingChar("3B", ';'), EncodingChar("3D", '='), EncodingChar("40", '@'),  EncodingChar("5B", '['),
-        EncodingChar("5D", ']')
+        EncodingChar("5D", ']'), EncodingChar("7B", '{'), EncodingChar("7D", '}')
     };
 
     static std::string EncodeFileName(std::string fileName)
