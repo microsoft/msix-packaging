@@ -1,0 +1,10 @@
+# exports.def
+#
+# Copyright (C) 2017 Microsoft.  All rights reserved.
+# See LICENSE file in the project root for full license information.
+#
+# This file defines the list of c-style exports for msix shared library
+# do not remove, reorder, or overload, these exported functions as doing so
+# will break the ABI contract with clients.
+# ---------------------------------------------------------------------------
+_${MSIX_EXPORTS}

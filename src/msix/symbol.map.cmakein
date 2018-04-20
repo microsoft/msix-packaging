@@ -1,6 +1,6 @@
 {
     global:
-        ${MSIX_EXPORTS}
+        ${MSIX_EXPORTS};
     local:
         *;
 };
