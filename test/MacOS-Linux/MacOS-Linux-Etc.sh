@@ -83,11 +83,11 @@ RunTest 18 ./../appx/UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
 RunTest 1 ./../appx/FileDoesNotExist.appx -ss
 RunTest 81 ./../appx/BlockMap/Missing_Manifest_in_blockmap.appx -ss
 RunTest 81 ./../appx/BlockMap/ContentTypes_in_blockmap.appx -ss
-RunTest 81 ./../appx/BlockMap/Invalid_Bad_Block.appx -ss
-RunTest 81 ./../appx/BlockMap/Size_wrong_uncompressed.appx -ss
-RunTest 0 ./../appx/BlockMap/HelloWorld.appx -ss
-RunTest 2 ./../appx/BlockMap/Extra_file_in_blockmap.appx -ss
-RunTest 81 ./../appx/BlockMap/File_missing_from_blockmap.appx -ss
+#RunTest 81 ./../appx/BlockMap/Invalid_Bad_Block.appx -ss           ### WIN8-era package
+#RunTest 81 ./../appx/BlockMap/Size_wrong_uncompressed.appx -ss     ### WIN8-era package
+#RunTest 0 ./../appx/BlockMap/HelloWorld.appx -ss                   ### WIN8-era package
+#RunTest 2 ./../appx/BlockMap/Extra_file_in_blockmap.appx -ss       ### WIN8-era package
+#RunTest 81 ./../appx/BlockMap/File_missing_from_blockmap.appx -ss  ### WIN8-era package
 RunTest 51 ./../appx/BlockMap/No_blockmap.appx -ss
 RunTest 3 ./../appx/BlockMap/Bad_Namespace_Blockmap.appx -ss
 RunTest 81 ./../appx/BlockMap/Duplicate_file_in_blockmap.appx -ss
