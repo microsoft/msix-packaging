@@ -53,6 +53,7 @@ static std::map<XmlQueryName, std::string> xPaths = {
     {XmlQueryName::Bundle_Identity                                ,"/Bundle/Identity"},
     {XmlQueryName::Bundle_Packages_Package                        ,"/Bundle/Packages/Package"},
     {XmlQueryName::Bundle_Packages_Package_Resources_Resource     ,"./Resources/Resource"},
+    {XmlQueryName::Package_Dependencies_TargetDeviceFamily        ,"/Package/Dependencies/TargetDeviceFamily"},
 };
 
 static std::map<XmlAttributeName, std::string> attributeNames = {

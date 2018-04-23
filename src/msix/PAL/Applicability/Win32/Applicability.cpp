@@ -80,17 +80,13 @@ namespace MSIX {
         MuiToBcp47Entry(L"zh-TW", u8"zh-Hant-TW"),
     };
 
-    MSIX_PLATFORM Applicability::GetPlatform()
+    MSIX_PLATFORMS Applicability::GetPlatform()
     {
         if (IsWindows10OrGreater())
         {
             return MSIX_PLATFORM_WINDOWS10;
         }
-        else if (IsWindows8Point1OrGreater())
-        {
-            return MSIX_PLATFORM_WINDOWS8POINT1;
-        }
-        else if (IsWindows8OrGreater())
+        else if (IsWindows8Point1OrGreater() || IsWindows8OrGreater())
         {
             return MSIX_PLATFORM_WINDOWS8;
         }
