@@ -265,11 +265,11 @@ namespace MSIX {
             const auto& name  = tdfNode->GetAttributeValue(XmlAttributeName::Name);
             const auto& tdfEntry = std::find(std::begin(targetDeviceFamilyList), std::end(targetDeviceFamilyList), name.c_str());
             ThrowErrorIf(Error::AppxManifestSemanticError, (tdfEntry == std::end(targetDeviceFamilyList)), "Unrecognized TargetDeviceFamily");
-            self->m_packageId->Platform = static_cast<MSIX_PLATFORM>(self->m_packageId->Platform | (*tdfEntry).platform);
+            self->m_platform = static_cast<MSIX_PLATFORM>(self->m_platform | (*tdfEntry).platform);
             return true;
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Package_Dependencies_TargetDeviceFamily, visitorTDF);
-        ThrowErrorIf(Error::AppxManifestSemanticError, m_packageId->Platform == MSIX_PLATFORM_NONE , "Couldn't find TargetDeviceFamily element in AppxManifest.xml");
+        ThrowErrorIf(Error::AppxManifestSemanticError, m_platform == MSIX_PLATFORM_NONE , "Couldn't find TargetDeviceFamily element in AppxManifest.xml");
     }
 
     AppxBundleManifestObject::AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream) : m_stream(stream)

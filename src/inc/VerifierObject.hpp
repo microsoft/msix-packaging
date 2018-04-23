@@ -31,6 +31,7 @@ public:
     virtual const std::string& GetVersion() = 0;
     virtual const std::string& GetName() = 0;
     virtual const std::string& GetArchitecture() = 0;
+    virtual const MSIX_PLATFORM GetPlatform() = 0;
 };
 
 SpecializeUuidOfImpl(IVerifierObject);
