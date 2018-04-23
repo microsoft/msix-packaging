@@ -21,7 +21,7 @@ namespace MSIX {
             const std::string& resourceId,
             const std::string& architecture,
             const std::string& publisherId) :
-            Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), PublisherId(publisherId), Platform(MSIX_PLATFORM_NONE)
+            Name(name), Version(version), ResourceId(resourceId), Architecture(architecture), PublisherId(publisherId)
         {
             // Only name, publisherId and version are required.
             ThrowErrorIf(Error::AppxManifestSemanticError, (Name.empty() || Version.empty() || PublisherId.empty()), "Invalid Identity element");
@@ -33,7 +33,6 @@ namespace MSIX {
         std::string ResourceId;
         std::string Architecture;
         std::string PublisherId;
-        MSIX_PLATFORM Platform;
 
         std::string GetPackageFullName()
         {
