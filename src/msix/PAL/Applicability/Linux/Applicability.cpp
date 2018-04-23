@@ -33,7 +33,7 @@ namespace MSIX {
         Bcp47Entry(u8"zh-TW", u8"zh-Hant-TW"),
     };
 
-    MSIX_PLATFORM Applicability::GetPlatform() { return MSIX_PLATFORM_LINUX; }
+    MSIX_PLATFORMS Applicability::GetPlatform() { return MSIX_PLATFORM_LINUX; }
 
     std::vector<std::string> Applicability::GetLanguages()
     {

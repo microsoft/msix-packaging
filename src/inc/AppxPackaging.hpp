@@ -2011,7 +2011,7 @@ enum MSIX_PACKUNPACK_OPTION
     }   MSIX_PACKUNPACK_OPTION;
 
 typedef /* [v1_enum] */
-enum MSIX_PLATFORM
+enum MSIX_PLATFORMS
     {
         MSIX_PLATFORM_NONE      = 0x0,
         MSIX_PLATFORM_WINDOWS10 = 0x1,
@@ -2022,7 +2022,7 @@ enum MSIX_PLATFORM
         MSIX_PLATFORM_AOSP      = 0x20,
         MSIX_PLATFORM_LINUX     = 0x40,
         MSIX_PLATFORM_WEB       = 0x80,
-    }   MSIX_PLATFORM;
+    }   MSIX_PLATFORMS;
 
 #define MSIX_PLATFORM_ALL MSIX_PLATFORM_WINDOWS10      | \
                           MSIX_PLATFORM_WINDOWS10      | \
