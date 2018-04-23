@@ -80,7 +80,7 @@ namespace MSIX {
         MuiToBcp47Entry(L"zh-TW", u8"zh-Hant-TW"),
     };
 
-    MSIX_PLATFORM Applicability::GetPlatform()
+    MSIX_PLATFORMS Applicability::GetPlatform()
     {
         if (IsWindows10OrGreater())
         {
