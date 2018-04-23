@@ -2021,6 +2021,7 @@ enum MSIX_PLATFORM
         MSIX_PLATFORM_IOS       = 0x10,
         MSIX_PLATFORM_AOSP      = 0x20,
         MSIX_PLATFORM_LINUX     = 0x40,
+        MSIX_PLATFORM_WEB       = 0x80,
     }   MSIX_PLATFORM;
 
 #define MSIX_PLATFORM_ALL MSIX_PLATFORM_WINDOWS10      | \
@@ -2030,7 +2031,8 @@ enum MSIX_PLATFORM
                           MSIX_PLATFORM_MACOS          | \
                           MSIX_PLATFORM_IOS            | \
                           MSIX_PLATFORM_AOSP           | \
-                          MSIX_PLATFORM_LINUX            \
+                          MSIX_PLATFORM_LINUX          | \
+                          MSIX_PLATFORM_WEB              \
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
