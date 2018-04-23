@@ -263,7 +263,7 @@ namespace MSIX {
         XmlVisitor visitorTDF(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& tdfNode)->bool
         {
             AppxManifestObject* self = reinterpret_cast<AppxManifestObject*>(s);
-            auto& name = tdfNode->GetAttributeValue(XmlAttributeName::Name);
+            auto name = tdfNode->GetAttributeValue(XmlAttributeName::Name);
             std::transform(name.begin(), name.end(), name.begin(), ::tolower);
             const auto& tdfEntry = std::find(std::begin(targetDeviceFamilyList), std::end(targetDeviceFamilyList), name.c_str());
             ThrowErrorIf(Error::AppxManifestSemanticError, (tdfEntry == std::end(targetDeviceFamilyList)), "Unrecognized TargetDeviceFamily");
