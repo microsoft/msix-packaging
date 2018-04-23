@@ -74,12 +74,14 @@ namespace MSIX {
         const std::string& GetVersion() override { return GetPackageId()->Version; }
         const std::string& GetName() override { return GetPackageId()->Name; }
         const std::string& GetArchitecture() override { return GetPackageId()->Architecture; }
+        const MSIX_PLATFORM GetPlatform() override { return m_platform; }
 
         AppxPackageId* GetPackageId() { return m_packageId.get(); }
 
     protected:
         ComPtr<IStream> m_stream;
         std::unique_ptr<AppxPackageId> m_packageId;
+        MSIX_PLATFORM m_platform = MSIX_PLATFORM_NONE;
     };
 
     class AppxBundleManifestObject final : public ComClass<AppxBundleManifestObject, IVerifierObject, IBundleInfo>
@@ -96,6 +98,7 @@ namespace MSIX {
         const std::string& GetVersion() override { return GetPackageId()->Version; }
         const std::string& GetName() override { return GetPackageId()->Name; }
         const std::string& GetArchitecture() override { NOTSUPPORTED; }
+        const MSIX_PLATFORM GetPlatform() override { NOTSUPPORTED; }
 
         AppxPackageId* GetPackageId() { return m_packageId.get(); }
 

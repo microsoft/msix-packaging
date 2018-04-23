@@ -222,6 +222,7 @@ namespace MSIX {
         const std::string& GetVersion() override { NOTSUPPORTED; }
         const std::string& GetName() override { NOTSUPPORTED; }
         const std::string& GetArchitecture() override { NOTSUPPORTED; }
+        const MSIX_PLATFORM GetPlatform() override { NOTSUPPORTED; }
 
         // IAppxBlockMapReader
         HRESULT STDMETHODCALLTYPE GetFile(LPCWSTR filename, IAppxBlockMapFile **file) noexcept override;
