@@ -80,6 +80,12 @@ namespace MSIX {
         TargetDeviceFamilyEntry(u8"Windows7.Desktop",       MSIX_PLATFORM_WINDOWS7),
         TargetDeviceFamilyEntry(u8"Windows8.Desktop",       MSIX_PLATFORM_WINDOWS8),
         TargetDeviceFamilyEntry(u8"Linux.All",              MSIX_PLATFORM_LINUX),
+        TargetDeviceFamilyEntry(u8"Web.Edge.All",           MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"Web.Blink.All",          MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"Web.Chromium.All",       MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"Web.Webkit.All",         MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"Web.Safari.All",         MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"Web.All",                MSIX_PLATFORM_WEB),
         TargetDeviceFamilyEntry(u8"Platform.All",           static_cast<MSIX_PLATFORM>(MSIX_PLATFORM_ALL)),
     };
 
