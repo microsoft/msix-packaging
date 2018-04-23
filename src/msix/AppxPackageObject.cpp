@@ -1,7 +1,7 @@
 //
 //  Copyright (C) 2017 Microsoft.  All rights reserved.
 //  See LICENSE file in the project root for full license information.
-// 
+//
 #include "AppxPackaging.hpp"
 #include "Exceptions.hpp"
 #include "ComHelper.hpp"
@@ -31,7 +31,7 @@ namespace MSIX {
     #define CONTENT_TYPES_XML      "[Content_Types].xml"
     #define APPXBUNDLEMANIFEST_XML "AppxMetadata/AppxBundleManifest.xml"
 
-    static const std::array<const char*, 4> footprintFiles = 
+    static const std::array<const char*, 4> footprintFiles =
     {   APPXMANIFEST_XML,
         APPXBLOCKMAP_XML,
         APPXSIGNATURE_P7X,
@@ -48,45 +48,46 @@ namespace MSIX {
     struct TargetDeviceFamilyEntry
     {
         const char* tdf;
-        const MSIX_PLATFORM platform;
+        const MSIX_PLATFORMS platform;
 
-        TargetDeviceFamilyEntry(const char* t, const MSIX_PLATFORM p) : tdf(t), platform(p) {}
+        TargetDeviceFamilyEntry(const char* t, const MSIX_PLATFORMS p) : tdf(t), platform(p) {}
 
         inline bool operator==(const char* otherTdf) const {
-            return 0 == strcmp(tdf, otherTdf);
+            return 0 == _stricmp(tdf, otherTdf);
         }
     };
 
+    // ALL THE TargetDeviceFamily ENTRIES MUST BE LOWER-CASE
     static const TargetDeviceFamilyEntry targetDeviceFamilyList[] = {
-        TargetDeviceFamilyEntry(u8"Windows.Universal",      MSIX_PLATFORM_WINDOWS10),
-        TargetDeviceFamilyEntry(u8"Windows.Mobile",         MSIX_PLATFORM_WINDOWS10),
-        TargetDeviceFamilyEntry(u8"Windows.Desktop",        MSIX_PLATFORM_WINDOWS10),
-        TargetDeviceFamilyEntry(u8"Windows.Xbox",           MSIX_PLATFORM_WINDOWS10),
-        TargetDeviceFamilyEntry(u8"Windows.Team",           MSIX_PLATFORM_WINDOWS10),
-        TargetDeviceFamilyEntry(u8"Windows.Holographic",    MSIX_PLATFORM_WINDOWS10),
-        TargetDeviceFamilyEntry(u8"Windows.IoT",            MSIX_PLATFORM_WINDOWS10),
-        TargetDeviceFamilyEntry(u8"Apple.Ios.All",          MSIX_PLATFORM_IOS),
-        TargetDeviceFamilyEntry(u8"Apple.Ios.Phone",        MSIX_PLATFORM_IOS),
-        TargetDeviceFamilyEntry(u8"Apple.Ios.Tablet",       MSIX_PLATFORM_IOS),
-        TargetDeviceFamilyEntry(u8"Apple.Ios.TV",           MSIX_PLATFORM_IOS),
-        TargetDeviceFamilyEntry(u8"Apple.Ios.Watch",        MSIX_PLATFORM_IOS),
-        TargetDeviceFamilyEntry(u8"Apple.MacOS.All",        MSIX_PLATFORM_MACOS),
-        TargetDeviceFamilyEntry(u8"Google.Android.All",     MSIX_PLATFORM_AOSP),
-        TargetDeviceFamilyEntry(u8"Google.Android.Phone",   MSIX_PLATFORM_AOSP),
-        TargetDeviceFamilyEntry(u8"Google.Android.Tablet",  MSIX_PLATFORM_AOSP),
-        TargetDeviceFamilyEntry(u8"Google.Android.Desktop", MSIX_PLATFORM_AOSP),
-        TargetDeviceFamilyEntry(u8"Google.Android.TV",      MSIX_PLATFORM_AOSP),
-        TargetDeviceFamilyEntry(u8"Google.Android.Watch",   MSIX_PLATFORM_AOSP),
-        TargetDeviceFamilyEntry(u8"Windows7.Desktop",       MSIX_PLATFORM_WINDOWS7),
-        TargetDeviceFamilyEntry(u8"Windows8.Desktop",       MSIX_PLATFORM_WINDOWS8),
-        TargetDeviceFamilyEntry(u8"Linux.All",              MSIX_PLATFORM_LINUX),
-        TargetDeviceFamilyEntry(u8"Web.Edge.All",           MSIX_PLATFORM_WEB),
-        TargetDeviceFamilyEntry(u8"Web.Blink.All",          MSIX_PLATFORM_WEB),
-        TargetDeviceFamilyEntry(u8"Web.Chromium.All",       MSIX_PLATFORM_WEB),
-        TargetDeviceFamilyEntry(u8"Web.Webkit.All",         MSIX_PLATFORM_WEB),
-        TargetDeviceFamilyEntry(u8"Web.Safari.All",         MSIX_PLATFORM_WEB),
-        TargetDeviceFamilyEntry(u8"Web.All",                MSIX_PLATFORM_WEB),
-        TargetDeviceFamilyEntry(u8"Platform.All",           static_cast<MSIX_PLATFORM>(MSIX_PLATFORM_ALL)),
+        TargetDeviceFamilyEntry(u8"windows.universal",      MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"windows.mobile",         MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"windows.desktop",        MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"windows.xbox",           MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"windows.team",           MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"windows.holographic",    MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"windows.iot",            MSIX_PLATFORM_WINDOWS10),
+        TargetDeviceFamilyEntry(u8"apple.ios.all",          MSIX_PLATFORM_IOS),
+        TargetDeviceFamilyEntry(u8"apple.ios.phone",        MSIX_PLATFORM_IOS),
+        TargetDeviceFamilyEntry(u8"apple.ios.tablet",       MSIX_PLATFORM_IOS),
+        TargetDeviceFamilyEntry(u8"apple.ios.tv",           MSIX_PLATFORM_IOS),
+        TargetDeviceFamilyEntry(u8"apple.ios.watch",        MSIX_PLATFORM_IOS),
+        TargetDeviceFamilyEntry(u8"apple.macos.all",        MSIX_PLATFORM_MACOS),
+        TargetDeviceFamilyEntry(u8"google.android.all",     MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"google.android.phone",   MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"google.android.tablet",  MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"google.android.desktop", MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"google.android.tv",      MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"google.android.watch",   MSIX_PLATFORM_AOSP),
+        TargetDeviceFamilyEntry(u8"windows7.desktop",       MSIX_PLATFORM_WINDOWS7),
+        TargetDeviceFamilyEntry(u8"windows8.desktop",       MSIX_PLATFORM_WINDOWS8),
+        TargetDeviceFamilyEntry(u8"linux.all",              MSIX_PLATFORM_LINUX),
+        TargetDeviceFamilyEntry(u8"web.edge.all",           MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"web.blink.all",          MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"web.chromium.all",       MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"web.webkit.all",         MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"web.safari.all",         MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"web.all",                MSIX_PLATFORM_WEB),
+        TargetDeviceFamilyEntry(u8"platform.all",           static_cast<MSIX_PLATFORMS>(MSIX_PLATFORM_ALL)),
     };
 
     static const std::size_t PercentangeEncodingTableSize = 0x7E;
@@ -120,10 +121,10 @@ namespace MSIX {
         bool operator==(const std::string& rhs) const {
             return rhs == encode;
         }
-        EncodingChar(const char* e, char d) : encode(e), decode(d) {} 
+        EncodingChar(const char* e, char d) : encode(e), decode(d) {}
     };
 
-    static const EncodingChar EncodingToChar[] = 
+    static const EncodingChar EncodingToChar[] =
     {   EncodingChar("20", ' '), EncodingChar("21", '!'), EncodingChar("23", '#'),  EncodingChar("24", '$'),
         EncodingChar("25", '%'), EncodingChar("26", '&'), EncodingChar("27", '\''), EncodingChar("28", '('),
         EncodingChar("29", ')'), EncodingChar("25", '+'), EncodingChar("2B", '%'),  EncodingChar("2C", ','),
@@ -171,7 +172,7 @@ namespace MSIX {
         static const size_t publisherIdSize = 13;
         static const size_t byteCount = 8;
 
-        // Consider groups of five bytes.  This is the smallest number of bytes that has a number of bits 
+        // Consider groups of five bytes.  This is the smallest number of bytes that has a number of bits
         // that's evenly divisible by five.
         // Every five bits starting with the most significant of the first byte are made into a base32 value.
         // Each value is used to index into the alphabet array to produce a base32 digit.
@@ -185,7 +186,7 @@ namespace MSIX {
         //
         // Combo of byte    a & F8    a & 07    b & 3E    b & 01    c & 0F    d & 7C   d & 03   e & 1F
         // values except              b & C0              c & F0    d & 80             e & E0
-        // for shifting 
+        // for shifting
 
         // Make sure the following math doesn't overflow.
         char output[publisherIdSize+1] = "";
@@ -253,7 +254,7 @@ namespace MSIX {
             ThrowErrorIf(Error::AppxManifestSemanticError, (publisher.empty()), "Invalid Identity element");
             auto publisherId = ComputePublisherId(publisher);
             self->m_packageId = std::make_unique<AppxPackageId>(name, version, resourceId, architecture, publisherId);
-            return true;             
+            return true;
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Package_Identity, visitor);
         // Have to check for this semantically as not all validating parsers can validate this via schema
@@ -262,10 +263,11 @@ namespace MSIX {
         XmlVisitor visitorTDF(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& tdfNode)->bool
         {
             AppxManifestObject* self = reinterpret_cast<AppxManifestObject*>(s);
-            const auto& name  = tdfNode->GetAttributeValue(XmlAttributeName::Name);
+            auto& name = tdfNode->GetAttributeValue(XmlAttributeName::Name);
+            std::transform(name.begin(), name.end(), name.begin(), ::tolower);
             const auto& tdfEntry = std::find(std::begin(targetDeviceFamilyList), std::end(targetDeviceFamilyList), name.c_str());
             ThrowErrorIf(Error::AppxManifestSemanticError, (tdfEntry == std::end(targetDeviceFamilyList)), "Unrecognized TargetDeviceFamily");
-            self->m_platform = static_cast<MSIX_PLATFORM>(self->m_platform | (*tdfEntry).platform);
+            self->m_platform = static_cast<MSIX_PLATFORMS>(self->m_platform | (*tdfEntry).platform);
             return true;
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Package_Dependencies_TargetDeviceFamily, visitorTDF);
@@ -286,7 +288,7 @@ namespace MSIX {
             ThrowErrorIf(Error::AppxManifestSemanticError, (publisher.empty()), "Invalid Identity element");
             auto publisherId = ComputePublisherId(publisher);
             self->m_packageId = std::make_unique<AppxPackageId>(name, version, "", "", publisherId);
-            return true;             
+            return true;
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Identity, visitorIdentity);
 
@@ -317,12 +319,12 @@ namespace MSIX {
             const auto& type           = packageNode->GetAttributeValue(XmlAttributeName::Bundle_Package_Type);
             const auto size            = GetNumber<std::uint64_t>(packageNode, XmlAttributeName::Size, 0);
             const auto offset          = GetNumber<std::uint64_t>(packageNode, XmlAttributeName::Bundle_Package_Offset, 0);
-            
+
             bool isResourcePackage = (type.empty() || type == "resource"); // default value is resource
             auto package = std::make_unique<AppxPackageInBundle>(
                 name, context->self->m_packageId.get()->Name, version, size, offset, resourceId,
                 architecture, context->self->m_packageId.get()->PublisherId, isResourcePackage);
-            
+
             std::set<std::string> languages;
             XmlVisitor visitor(static_cast<void*>(&languages), [](void* l, const ComPtr<IXmlElement>& resourceNode)->bool
             {
@@ -346,7 +348,7 @@ namespace MSIX {
                 context->self->m_packages.push_back(std::move(package));
                 context->mainPackages++;
             }
-            return true;             
+            return true;
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Packages_Package, visitorPackages);
         ThrowErrorIf(Error::XmlError, (context.packageNames.size() == 0), "No packages in AppxBundleManifest.xml");
@@ -359,7 +361,7 @@ namespace MSIX {
         m_container(container)
     {
         ComPtr<IXmlFactory> xmlFactory;
-        ThrowHrIfFailed(factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));        
+        ThrowHrIfFailed(factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));
 
         // 1. Get the appx signature from the container and parse it
         // TODO: pass validation flags and other necessary goodness through.
@@ -373,10 +375,10 @@ namespace MSIX {
         // 2. Get content type using signature object for validation
         file = m_container->GetFile(CONTENT_TYPES_XML);
         ThrowErrorIfNot(Error::MissingContentTypesXML, file, "[Content_Types].xml not in archive!");
-        ComPtr<IStream> stream = m_appxSignature->GetValidationStream(CONTENT_TYPES_XML, file);        
+        ComPtr<IStream> stream = m_appxSignature->GetValidationStream(CONTENT_TYPES_XML, file);
         auto contentType = xmlFactory->CreateDomFromStream(XmlContentType::ContentTypeXml, stream);
 
-        // 3. Get blockmap object using signature object for validation        
+        // 3. Get blockmap object using signature object for validation
         file = m_container->GetFile(APPXBLOCKMAP_XML);
         ThrowErrorIfNot(Error::MissingAppxBlockMapXML, file, "AppxBlockMap.xml not in archive!");
         stream = m_appxSignature->GetValidationStream(APPXBLOCKMAP_XML, file);
@@ -386,10 +388,10 @@ namespace MSIX {
         // TODO: pass validation flags and other necessary goodness through.
         auto appxManifestInContainer = m_container->GetFile(APPXMANIFEST_XML);
         auto appxBundleManifestInContainer = m_container->GetFile(APPXBUNDLEMANIFEST_XML);
-        
-        ThrowErrorIfNot(Error::MissingAppxManifestXML, (appxManifestInContainer || appxBundleManifestInContainer) , 
+
+        ThrowErrorIfNot(Error::MissingAppxManifestXML, (appxManifestInContainer || appxBundleManifestInContainer) ,
             "AppxManifest.xml or AppxBundleManifest.xml not in archive!");
-        ThrowErrorIf(Error::MissingAppxManifestXML, (appxManifestInContainer && appxBundleManifestInContainer) , 
+        ThrowErrorIf(Error::MissingAppxManifestXML, (appxManifestInContainer && appxBundleManifestInContainer) ,
             "AppxManifest.xml and AppxBundleManifest.xml in archive!");
         // We already validate that there's at least one and not both
         if(appxManifestInContainer)
@@ -456,7 +458,7 @@ namespace MSIX {
             // There should only be one file in the blockmap for bundles. We validate that the block map contains
             // AppxMetadata/AppxBundleManifest.xml before, so just check the size.
             ThrowErrorIfNot(Error::BlockMapSemanticError, ((blockMapFiles.size() == 1)), "Block map contains invalid files.");
-            
+
             auto bundleInfo = m_appxBundleManifest.As<IBundleInfo>();
             auto appxFactory = m_factory.As<IAppxFactory>();
             for (const auto& package : bundleInfo->GetPackages())
@@ -475,23 +477,23 @@ namespace MSIX {
                 auto appxPackage = reader.As<IPackage>();
                 auto appxManifest = appxPackage->GetAppxManifestObject();
                 ThrowErrorIfNot(Error::Unexpected, appxManifest, "Error getting the AppxManifest object"); // is this even possible?
-                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                ThrowErrorIf(Error::AppxManifestSemanticError,
                     (appxManifest->GetPublisher() != package.get()->PackageId->PublisherId),
                     "AppxBundleManifest.xml and AppxManifest.xml publisher mismatch");
-                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                ThrowErrorIf(Error::AppxManifestSemanticError,
                     (appxManifest->GetVersion() != package.get()->PackageId->Version),
-                    "AppxBundleManifest.xml and AppxManifest.xml version mismatch");       
-                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                    "AppxBundleManifest.xml and AppxManifest.xml version mismatch");
+                ThrowErrorIf(Error::AppxManifestSemanticError,
                     (appxManifest->GetName() != package.get()->PackageId->Name),
                     "AppxBundleManifest.xml and AppxManifest.xml name mismatch");
-                ThrowErrorIf(Error::AppxManifestSemanticError, 
+                ThrowErrorIf(Error::AppxManifestSemanticError,
                     (appxManifest->GetArchitecture() != package.get()->PackageId->Architecture) &&
                     !(appxManifest->GetArchitecture().empty() && (package.get()->PackageId->Architecture == "neutral")),
                     "AppxBundleManifest.xml and AppxManifest.xml architecture mismatch");
                 m_payloadPackagesNames.push_back(packageName);
                 m_payloadPackages.push_back(std::move(reader)); // TODO: add only applicable packages to m_payloadPackages
                 m_streams[packageName] = std::move(fileStream);
-                // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like 
+                // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
                 // resource packages that are not languages packages.
             }
         }
@@ -518,12 +520,12 @@ namespace MSIX {
 
     // Verify file in OPC and BlockMap
     void AppxPackageObject::VerifyFile(const ComPtr<IStream>& stream, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal)
-    {    
+    {
         ComPtr<IAppxFile> appxFile = stream.As<IAppxFile>();;
         APPX_COMPRESSION_OPTION compressionOpt;
         ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
         bool isUncompressed = (compressionOpt == APPX_COMPRESSION_OPTION_NONE);
-                
+
         ComPtr<IAppxFileInternal> appxFileInternal = stream.As<IAppxFileInternal>();
         auto sizeOnZip = appxFileInternal->GetCompressedSize();
 
@@ -538,7 +540,7 @@ namespace MSIX {
         }
 
         if(isUncompressed)
-        {   
+        {
             UINT64 blockMapFileSize;
             auto blockMapFile = blockMapInternal->GetFile(fileName);
             ThrowHrIfFailed(blockMapFile->GetUncompressedSize(&blockMapFileSize));
@@ -546,20 +548,20 @@ namespace MSIX {
                 "Uncompressed size of the file in the block map and the OPC container don't match");
         }
         else
-        {   
+        {
             // From Windows code:
             // The file item is compressed. There are 2 cases here:
             // 1. The compressed size of the file is the same as the total size of all compressed blocks.
             // 2. The compressed size of the file is 2 bytes more than the total size of all compressed blocks.
-            // It depends on how the block compression is done. MakeAppx block compression implementation will end up 
+            // It depends on how the block compression is done. MakeAppx block compression implementation will end up
             // with case 2. However, we shouldn't block the first case since it is totally valid and 3rd party
             // implementation may end up with it.
-            // The reason we created compressed file item with 2 extra bytes (03 00) is because we use Z_FULL_FLUSH 
+            // The reason we created compressed file item with 2 extra bytes (03 00) is because we use Z_FULL_FLUSH
             // flag to compress every block. If we use Z_FINISH flag to compress the last block, these 2 extra bytes will
             // not be generated. The AddBlock()-->... -->AddBlock()-->Close() pattern in OPC push stack prevents the
             // deflator from knowing whether the current block is the last block. So it cannot use Z_FINISH flag for
             // the last block of the file. Note that removing the 2 extra bytes from the compressed file data will make
-            // it invalid when consumed by popular zip tools like WinZip and ShellZip. So they are required for the 
+            // it invalid when consumed by popular zip tools like WinZip and ShellZip. So they are required for the
             // packages we created.
             ThrowErrorIfNot(Error::BlockMapSemanticError,
                 (blocksSize == sizeOnZip ) // case 1
@@ -579,11 +581,11 @@ namespace MSIX {
                 std::string targetName;
                 if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
                 {   // Don't use to->GetPathSeparator(). DirectoryObject::OpenFile created directories
-                    // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with 
+                    // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with
                     // the package full name won't be created on Windows, but it will on other platforms.
                     // This means that we have different behaviors in non-Win platforms.
                     // TODO: have the same behavior on Windows and other platforms.
-                    targetName = m_appxManifest->GetPackageFullName() + "/" + fileName;
+                    targetName = m_appxManifest.As<IAppxManifestObject>()->GetPackageFullName() + "/" + fileName;
                 }
                 else
                 {   targetName = DecodeFileName(fileName);
@@ -648,7 +650,7 @@ namespace MSIX {
     {
         return static_cast<HRESULT>(Error::NotImplemented);
     }
-   
+
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file) noexcept try
     {
         if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
@@ -658,7 +660,7 @@ namespace MSIX {
         ComPtr<IStream> stream = GetFile(footprint);
         ThrowErrorIfNot(Error::FileNotFound, stream, "requested footprint file not in package")
         // Clients expect the stream's pointer to be at the start of the file!
-        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
+        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
         auto result = stream.As<IAppxFile>();
         *file = result.Detach();
         return static_cast<HRESULT>(Error::OK);
@@ -672,7 +674,7 @@ namespace MSIX {
         ComPtr<IStream> stream = GetFile(name);
         ThrowErrorIfNot(Error::FileNotFound, stream, "requested file not in package")
         // Clients expect the stream's pointer to be at the start of the file!
-        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
+        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
         auto result = stream.As<IAppxFile>();
         *file = result.Detach();
         return static_cast<HRESULT>(Error::OK);
@@ -705,7 +707,7 @@ namespace MSIX {
         ComPtr<IStream> stream = GetFile(footprint);
         ThrowErrorIfNot(Error::FileNotFound, stream, "requested footprint file not in bundle")
         // Clients expect the stream's pointer to be at the start of the file!
-        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
+        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
         auto result = stream.As<IAppxFile>();
         *footprintFile = result.Detach();
         return static_cast<HRESULT>(Error::OK);
@@ -730,14 +732,14 @@ namespace MSIX {
         ComPtr<IStream> stream = GetFile(name);
         ThrowErrorIfNot(Error::FileNotFound, stream, "requested package not in bundle")
         // Clients expect the stream's pointer to be at the start of the file!
-        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr)); 
+        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
         auto result = stream.As<IAppxFile>();
         *payloadPackage = result.Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxBundleManifestReader **manifestReader) noexcept
-    {   
+    {
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 }

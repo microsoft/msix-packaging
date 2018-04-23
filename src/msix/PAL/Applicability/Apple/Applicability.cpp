@@ -11,7 +11,7 @@
 
 namespace MSIX {
 
-    MSIX_PLATFORM Applicability::GetPlatform()
+    MSIX_PLATFORMS Applicability::GetPlatform()
     {
     #ifdef IOS
         return MSIX_PLATFORM_IOS;

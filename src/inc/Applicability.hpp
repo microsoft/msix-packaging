@@ -14,7 +14,7 @@ namespace MSIX {
     class Applicability
     {
     public:
-        static MSIX_PLATFORM GetPlatform();
+        static MSIX_PLATFORMS GetPlatform();
         static std::vector<std::string> GetLanguages();
     };
 }
