@@ -287,7 +287,8 @@ namespace MSIX {
             const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Version);
             ThrowErrorIf(Error::AppxManifestSemanticError, (publisher.empty()), "Invalid Identity element");
             auto publisherId = ComputePublisherId(publisher);
-            self->m_packageId = std::make_unique<AppxPackageId>(name, version, "", "", publisherId);
+            // Bundles don't have a ResourceId attribute in their manifest, but is always ~ for the package identity.
+            self->m_packageId = std::make_unique<AppxPackageId>(name, version, "~", "", publisherId);
             return true;
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::Bundle_Identity, visitorIdentity);
