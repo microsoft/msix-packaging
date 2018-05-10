@@ -4,10 +4,15 @@
 // 
 #pragma once
 
+#include "Encoding.hpp"
 #include "Exceptions.hpp"
+#include "SHA256.hpp"
+#include "UnicodeConversion.hpp"
+#include "Applicability.hpp"
+
 #include <string>
 #include <array>
-#include <set>
+#include <vector>
 #include <memory>
 #include <regex>
 
@@ -16,58 +21,28 @@ namespace MSIX {
     // Used for validation of AppxPackageId name and resourceId
     static const std::size_t ProhibitedStringsSize = 24;
     static const std::array<const char*, ProhibitedStringsSize> ProhibitedStrings = {
-        u8".",
-        u8"..",
-        u8"con",
-        u8"prn",
-        u8"aux",
-        u8"nul",
-        u8"com1",
-        u8"com2",
-        u8"com3",
-        u8"com4",
-        u8"com5",
-        u8"com6",
-        u8"com7",
-        u8"com8",
-        u8"com9",
-        u8"lpt1",
-        u8"lpt2",
-        u8"lpt3",
-        u8"lpt4",
-        u8"lpt5",
-        u8"lpt6",
-        u8"lpt7",
-        u8"lpt8",
-        u8"lpt9",
+        u8".",    u8"..",   u8"con",  u8"prn",  u8"aux",  u8"nul",  u8"com1", u8"com2",
+        u8"com3", u8"com4", u8"com5", u8"com6", u8"com7", u8"com8", u8"com9", u8"lpt1",
+        u8"lpt2", u8"lpt3", u8"lpt4", u8"lpt5", u8"lpt6", u8"lpt7", u8"lpt8", u8"lpt9",
     };
 
     static const std::size_t ProhibitedStringsBeginWithSize = 23;
     static const std::array<const char*, ProhibitedStringsBeginWithSize> ProhibitedStringsBeginWith = {
-        u8"con.",
-        u8"prn.",
-        u8"aux.",
-        u8"nul.",
-        u8"com1.",
-        u8"com2.",
-        u8"com3.",
-        u8"com4.",
-        u8"com5.",
-        u8"com6.",
-        u8"com7.",
-        u8"com8.",
-        u8"com9.",
-        u8"lpt1.",
-        u8"lpt2.",
-        u8"lpt3.",
-        u8"lpt4.",
-        u8"lpt5.",
-        u8"lpt6.",
-        u8"lpt7.",
-        u8"lpt8.",
-        u8"lpt9.",
-        u8"xn--",
+        u8"con.",  u8"prn.",  u8"aux.",  u8"nul.",  u8"com1.", u8"com2.", u8"com3.", u8"com4.",
+        u8"com5.", u8"com6.", u8"com7.", u8"com8.", u8"com9.", u8"lpt1.", u8"lpt2.", u8"lpt3.",
+        u8"lpt4.", u8"lpt5.", u8"lpt6.", u8"lpt7.", u8"lpt8.", u8"lpt9.", u8"xn--",
     };
+
+    static std::string ComputePublisherId(const std::string& publisher)
+    {
+        auto wpublisher = utf8_to_u16string(publisher);
+        std::vector<std::uint8_t> buffer(wpublisher.size() * sizeof(char16_t));
+        memcpy(buffer.data(), &wpublisher[0], wpublisher.size() * sizeof(char16_t));
+
+        std::vector<std::uint8_t> hash;
+        ThrowErrorIfNot(Error::Unexpected, SHA256::ComputeHash(buffer.data(), buffer.size(), hash),  "Failed computing publisherId");
+        return Base32Encoding(hash);
+    }
 
     // The 5-tuple that describes the identity of a package
     struct AppxPackageId
@@ -164,7 +139,7 @@ namespace MSIX {
         std::unique_ptr<AppxPackageId> PackageId;
         std::uint64_t Size;
         std::uint64_t Offset;
-        std::set<std::string> Languages;
+        std::vector<Bcp47Tag> Languages;
         bool IsResourcePackage;
     };  
 }

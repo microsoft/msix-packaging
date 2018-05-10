@@ -97,9 +97,9 @@ namespace MSIX {
         UNEXPECTED;
     }
 
-    std::vector<std::string> Applicability::GetLanguages()
+    std::vector<Bcp47Tag> Applicability::GetLanguages()
     {
-        std::vector<std::string> result;
+        std::vector<Bcp47Tag> result;
 
         if (MSIX_PLATFORM_WINDOWS7 == GetPlatform())
         {
@@ -126,7 +126,7 @@ namespace MSIX {
                 }
                 else
                 {
-                    result.push_back((*tag).bcp47);
+                    result.push_back(Bcp47Tag((*tag).bcp47));
                 }
                 position = found+1;
                 processedTags++;
