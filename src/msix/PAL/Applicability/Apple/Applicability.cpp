@@ -22,9 +22,9 @@ namespace MSIX {
     #endif
     }
 
-    std::vector<std::string> Applicability::GetLanguages()
+    std::vector<Bcp47Tag> Applicability::GetLanguages()
     {
-        std::vector<std::string> result;
+        std::vector<Bcp47Tag> result;
         CFArrayRef preferredLanguages = CFLocaleCopyPreferredLanguages();
         CFIndex size = CFArrayGetCount(preferredLanguages);
         for(int i = 0; i < size; i++)
@@ -34,7 +34,7 @@ namespace MSIX {
             char buffer[valueSize];
             ThrowErrorIfNot(Error::Unexpected, CFStringGetCString(value, buffer, valueSize, kCFStringEncodingUTF8),
                 "CFStringGetCString conversion failed");
-            result.push_back(buffer);
+            result.push_back(Bcp47Tag(buffer));
         }
         CFRelease(preferredLanguages);
         return result;

@@ -133,11 +133,13 @@ SET(LIB_PRIVATE_HEADERS
     ../inc/Applicability.hpp
     ../inc/AppxBlockMapObject.hpp
     ../inc/AppxFactory.hpp
+    ../inc/AppxManifestObject.hpp
     ../inc/AppxPackageInfo.hpp
     ../inc/AppxPackageObject.hpp
     ../inc/AppxSignature.hpp
     ../inc/ComHelper.hpp
     ../inc/DirectoryObject.hpp
+    ../inc/Encoding.hpp
     ../inc/Exceptions.hpp
     ../inc/FileStream.hpp
     ../inc/InflateStream.hpp
@@ -160,6 +162,7 @@ SET(LIB_PRIVATE_HEADERS
 SET(LIB_SOURCES
     AppxBlockMapObject.cpp
     AppxFactory.cpp
+    AppxManifestObject.cpp
     AppxPackageObject.cpp
     AppxPackaging_i.cpp
     AppxSignature.cpp
@@ -251,5 +254,16 @@ if(WIN32)
     SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
         COMPILE_FLAGS "/source-charset:utf-8"
         VS_WINRT_COMPONENT TRUE)
+    # Using /DELAYLOAD as linker option will use a helper funtion provided by 
+    # Visual C++ that will load the dll at runtime by calling LoadLibrary and GetProcAddress.
+    # This dlls are NOT supposed to be loaded ever on Win7. See Exceptions.cpp 
+    # on how we handle failure of delayloading these.
+    # https://docs.microsoft.com/en-us/cpp/build/reference/error-handling-and-notification
+    SET(DELAYFLAGS)
+    LIST(APPEND DELAYFLAGS
+            "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll"
+            "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll")
+    STRING(REPLACE ";" " " DELAYFLAGS "${DELAYFLAGS}")
+    SET_PROPERTY(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "${DELAYFLAGS}")
     TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib delayimp.lib)
 endif()
