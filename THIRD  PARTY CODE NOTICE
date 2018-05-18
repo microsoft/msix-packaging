@@ -1,0 +1,275 @@
+This file is based on or incorporates material from the projects listed below 
+(Third Party IP). The original copyright notice and the license under which 
+Microsoft received such Third Party IP, are set forth below. Such licenses and 
+notices are provided for informational purposes only. Microsoft licenses the 
+Third Party IP to you under the licensing terms for the Microsoft product. 
+Microsoft reserves all other rights not expressly granted under this agreement,
+whether by implication, estoppel or otherwise.
+
+Third Party Programs: The software may include third party programs that 
+Microsoft, not the third party, licenses to you under this agreement. Notices, 
+if any, for the third party programs are included for your information only.
+
+Provided for Informational Purposes Only
+Apache 2.0 License
+
+Licensed under the Apache License, Version 2.0 (the License); you may not use 
+this file except in compliance with the License. You may obtain a copy of the 
+License at http://www.apache.org/licenses/LICENSE-2.0
+
+THIS CODE IS PROVIDED ON AN *AS IS* BASIS, WITHOUT WARRANTIES OR CONDITIONS OF
+ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING WITHOUT LIMITATION ANY IMPLIED 
+WARRANTIES OR CONDITIONS OF TITLE, FITNESS FOR A PARTICULAR PURPOSE, 
+MERCHANTABLITY OR NON-INFRINGEMENT.
+
+See the Apache Version 2.0 License for specific language governing permissions 
+and limitations under the License.
+
+OpenSSL 
+
+  LICENSE ISSUES
+  ==============
+
+  The OpenSSL toolkit stays under a double license, i.e. both the conditions of
+  the OpenSSL License and the original SSLeay license apply to the toolkit.
+  See below for the actual license texts. Actually both licenses are BSD-style
+  Open Source licenses. In case of any license issues related to OpenSSL
+  please contact openssl-core@openssl.org.
+
+  OpenSSL License
+  ---------------
+
+/* ====================================================================
+* Copyright (c) 1998-2017 The OpenSSL Project.  All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+*
+* 1. Redistributions of source code must retain the above copyright
+*    notice, this list of conditions and the following disclaimer.
+*
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in
+*    the documentation and/or other materials provided with the
+*    distribution.
+*
+* 3. All advertising materials mentioning features or use of this
+*    software must display the following acknowledgment:
+*    "This product includes software developed by the OpenSSL Project
+*    for use in the OpenSSL Toolkit. (http://www.openssl.org/)"
+*
+* 4. The names "OpenSSL Toolkit" and "OpenSSL Project" must not be used to
+*    endorse or promote products derived from this software without
+*    prior written permission. For written permission, please contact
+*    openssl-core@openssl.org.
+*
+* 5. Products derived from this software may not be called "OpenSSL"
+*    nor may "OpenSSL" appear in their names without prior written
+*    permission of the OpenSSL Project.
+*
+* 6. Redistributions of any form whatsoever must retain the following
+*    acknowledgment:
+*    "This product includes software developed by the OpenSSL Project
+*    for use in the OpenSSL Toolkit (http://www.openssl.org/)"
+*
+* THIS SOFTWARE IS PROVIDED BY THE OpenSSL PROJECT ``AS IS'' AND ANY
+* EXPRESSED OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+* PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE OpenSSL PROJECT OR
+* ITS CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+* SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT
+* NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+* STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+* ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
+* OF THE POSSIBILITY OF SUCH DAMAGE.
+* ====================================================================
+*
+* This product includes cryptographic software written by Eric Young
+* (eay@cryptsoft.com).  This product includes software written by Tim
+* Hudson (tjh@cryptsoft.com).
+*
+*/
+
+Original SSLeay License
+-----------------------
+
+/* Copyright (C) 1995-1998 Eric Young (eay@cryptsoft.com)
+* All rights reserved.
+*
+* This package is an SSL implementation written
+* by Eric Young (eay@cryptsoft.com).
+* The implementation was written so as to conform with Netscapes SSL.
+*
+* This library is free for commercial and non-commercial use as long as
+* the following conditions are aheared to.  The following conditions
+* apply to all code found in this distribution, be it the RC4, RSA,
+* lhash, DES, etc., code; not just the SSL code.  The SSL documentation
+* included with this distribution is covered by the same copyright terms
+* except that the holder is Tim Hudson (tjh@cryptsoft.com).
+*
+* Copyright remains Eric Young's, and as such any Copyright notices in
+* the code are not to be removed.
+* If this package is used in a product, Eric Young should be given attribution
+* as the author of the parts of the library used.
+* This can be in the form of a textual message at program startup or
+* in documentation (online or textual) provided with the package.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions
+* are met:
+* 1. Redistributions of source code must retain the copyright
+*    notice, this list of conditions and the following disclaimer.
+* 2. Redistributions in binary form must reproduce the above copyright
+*    notice, this list of conditions and the following disclaimer in the
+*    documentation and/or other materials provided with the distribution.
+* 3. All advertising materials mentioning features or use of this software
+*    must display the following acknowledgement:
+*    "This product includes cryptographic software written by
+*     Eric Young (eay@cryptsoft.com)"
+*    The word 'cryptographic' can be left out if the rouines from the library
+*    being used are not cryptographic related :-).
+* 4. If you include any Windows specific code (or a derivative thereof) from
+*    the apps directory (application code) you must include an acknowledgement:
+*    "This product includes software written by Tim Hudson (tjh@cryptsoft.com)"
+*
+* THIS SOFTWARE IS PROVIDED BY ERIC YOUNG ``AS IS'' AND
+* ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+* IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+* ARE DISCLAIMED.  IN NO EVENT SHALL THE AUTHOR OR CONTRIBUTORS BE LIABLE
+* FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+* DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+* OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+* HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
+* LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
+* OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+* SUCH DAMAGE.
+*
+* The licence and distribution terms for any publically available version or
+* derivative of this code cannot be changed.  i.e. this code cannot simply be
+* copied and put under another distribution licence
+* [including the GNU Public Licence.]
+
+Xerces-C
+
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one or more
+ * contributor license agreements.  See the NOTICE file distributed with
+ * this work for additional information regarding copyright ownership.
+ * The ASF licenses this file to You under the Apache License, Version 2.0
+ * (the "License"); you may not use this file except in compliance with
+ * the License.  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+ 
+    =========================================================================
+   ==  NOTICE file corresponding to section 4(d) of the Apache License,   ==
+   ==  Version 2.0, in this case for the Apache Xerces distribution.      ==
+   =========================================================================
+
+   This product includes software developed by
+   The Apache Software Foundation (http://www.apache.org/).
+
+   Portions of this software were originally based on the following:
+     - software copyright (c) 1999, IBM Corporation., http://www.ibm.com.
+
+Includes material from material from Unicode Standard Annex #27
+
+UNICODE, INC. LICENSE AGREEMENT - DATA FILES AND SOFTWARE
+
+Unicode Data Files include all data files under the directories
+http://www.unicode.org/Public/, http://www.unicode.org/reports/,
+http://www.unicode.org/cldr/data/, http://source.icu-project.org/repos/icu/, and
+http://www.unicode.org/utility/trac/browser/.
+
+Unicode Data Files do not include PDF online code charts under the
+directory http://www.unicode.org/Public/.
+
+Software includes any source code published in the Unicode Standard
+or under the directories
+http://www.unicode.org/Public/, http://www.unicode.org/reports/,
+http://www.unicode.org/cldr/data/, http://source.icu-project.org/repos/icu/, and
+http://www.unicode.org/utility/trac/browser/.
+
+NOTICE TO USER: Carefully read the following legal agreement.
+BY DOWNLOADING, INSTALLING, COPYING OR OTHERWISE USING UNICODE INC.'S
+DATA FILES ("DATA FILES"), AND/OR SOFTWARE ("SOFTWARE"),
+YOU UNEQUIVOCALLY ACCEPT, AND AGREE TO BE BOUND BY, ALL OF THE
+TERMS AND CONDITIONS OF THIS AGREEMENT.
+IF YOU DO NOT AGREE, DO NOT DOWNLOAD, INSTALL, COPY, DISTRIBUTE OR USE
+THE DATA FILES OR SOFTWARE.
+
+COPYRIGHT AND PERMISSION NOTICE
+
+Copyright © 1991-2017 Unicode, Inc. All rights reserved.
+Distributed under the Terms of Use in http://www.unicode.org/copyright.html.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of the Unicode data files and any associated documentation
+(the "Data Files") or Unicode software and any associated documentation
+(the "Software") to deal in the Data Files or Software
+without restriction, including without limitation the rights to use,
+copy, modify, merge, publish, distribute, and/or sell copies of
+the Data Files or Software, and to permit persons to whom the Data Files
+or Software are furnished to do so, provided that either
+(a) this copyright and permission notice appear with all copies
+of the Data Files or Software, or
+(b) this copyright and permission notice appear in associated
+Documentation.
+
+THE DATA FILES AND SOFTWARE ARE PROVIDED "AS IS", WITHOUT WARRANTY OF
+ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT OF THIRD PARTY RIGHTS.
+IN NO EVENT SHALL THE COPYRIGHT HOLDER OR HOLDERS INCLUDED IN THIS
+NOTICE BE LIABLE FOR ANY CLAIM, OR ANY SPECIAL INDIRECT OR CONSEQUENTIAL
+DAMAGES, OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE,
+DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER
+TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THE DATA FILES OR SOFTWARE.
+
+Except as contained in this notice, the name of a copyright holder
+shall not be used in advertising or otherwise to promote the sale,
+use or other dealings in these Data Files or Software without prior
+written authorization of the copyright holder.
+
+Zlib
+
+/* zlib.h -- interface of the 'zlib' general purpose compression library
+  version 1.2.11, January 15th, 2017
+
+  Copyright (C) 1995-2017 Jean-loup Gailly and Mark Adler
+
+  This software is provided 'as-is', without any express or implied
+  warranty.  In no event will the authors be held liable for any damages
+  arising from the use of this software.
+
+  Permission is granted to anyone to use this software for any purpose,
+  including commercial applications, and to alter it and redistribute it
+  freely, subject to the following restrictions:
+
+  1. The origin of this software must not be misrepresented; you must not
+     claim that you wrote the original software. If you use this software
+     in a product, an acknowledgment in the product documentation would be
+     appreciated but is not required.
+  2. Altered source versions must be plainly marked as such, and must not be
+     misrepresented as being the original software.
+  3. This notice may not be removed or altered from any source distribution.
+
+  Jean-loup Gailly        Mark Adler
+  jloup@gzip.org          madler@alumni.caltech.edu
+
+
+  The data format used by the zlib library is described by RFCs (Request for
+  Comments) 1950 to 1952 in the files http://tools.ietf.org/html/rfc1950
+  (zlib format), rfc1951 (deflate format) and rfc1952 (gzip format).
+*/
