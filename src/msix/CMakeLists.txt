@@ -38,21 +38,36 @@ ELSE()
         "GetLogTextUTF8"
         "UnpackPackage"
         "UnpackPackageFromStream"
+        "UnpackBundle"
+        "UnpackBundleFromStream"
         "CoCreateAppxBundleFactory"
         "CoCreateAppxBundleFactoryWithHeap"
         "IID_IUnknown"
-        "IID_IAppxBlockMapBlock"
-        "IID_IAppxBlockMapBlocksEnumerator"
+        "IID_IStream"
+        "IID_IAppxFactory"
+        "IID_IAppxPackageReader"
+        "IID_IAppxFile"
+        "IID_IAppxFilesEnumerator"
+        "IID_IAppxBlockMapReader"
         "IID_IAppxBlockMapFile"
         "IID_IAppxBlockMapFilesEnumerator"
-        "IID_IAppxBlockMapReader"
-        "IID_IAppxFactory"
+        "IID_IAppxBlockMapBlock"
+        "IID_IAppxBlockMapBlocksEnumerator"
+        "IID_IAppxManifestReader"
+        "IID_IAppxManifestReader2"
+        "IID_IAppxManifestReader3"
+        "IID_IAppxManifestPackageId"
+        "IID_IAppxManifestTargetDeviceFamiliesEnumerator"
+        "IID_IAppxManifestTargetDeviceFamily"
+        "IID_IAppxManifestApplicationsEnumerator"
+        "IID_IAppxManifestApplication"
+        "IID_IAppxManifestQualifiedResourcesEnumerator"
+        "IID_IAppxManifestQualifiedResource"
         "IID_IAppxBundleFactory"
-        "IID_IAppxPackageReader"
         "IID_IAppxBundleReader"
-        "IID_IAppxFilesEnumerator"
-        "IID_IAppxFile"
-        "IID_IStream"
+        "IID_IAppxBundleManifestReader"
+        "IID_IAppxBundleManifestPackageInfoEnumerator"
+        "IID_IAppxBundleManifestPackageInfo"
     )
     IF((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported
@@ -69,13 +84,20 @@ ELSE()
             MESSAGE(FATAL_ERROR "CoreFoundation not found")
         ENDIF()
         SET (Applicability PAL/Applicability/Apple/Applicability.cpp)
+        if(IOS)
+            add_definitions(-DIOS)
+        else()
+            add_definitions(-DMACOS)
+        endif()
     ELSE()
         IF(LINUX)
+            add_definitions(-DLINUX)
             FIND_PACKAGE(ICU COMPONENTS uc)
             SET (Applicability PAL/Applicability/Linux/Applicability.cpp)
         ENDIF()
         IF(AOSP)
             # add here any exports specific for android
+            add_definitions(-DAOSP)
             LIST(APPEND MSIX_EXPORTS
                 "JNI_OnLoad"
             )
@@ -140,6 +162,7 @@ SET(LIB_PRIVATE_HEADERS
     ../inc/ComHelper.hpp
     ../inc/DirectoryObject.hpp
     ../inc/Encoding.hpp
+    ../inc/Enumerators.hpp
     ../inc/Exceptions.hpp
     ../inc/FileStream.hpp
     ../inc/InflateStream.hpp
@@ -164,6 +187,7 @@ SET(LIB_SOURCES
     AppxFactory.cpp
     AppxManifestObject.cpp
     AppxPackageObject.cpp
+    AppxPackageInfo.cpp
     AppxPackaging_i.cpp
     AppxSignature.cpp
     Exceptions.cpp
