@@ -46,7 +46,7 @@ namespace MSIX {
     // For now, we only support Bcp47 tags that contains language, script and region,
     // which covers the basic Bcp47 language matching.  We need a proper Bcp47
     // language matching API that handle all the special cases and the full Bcp47 format.
-    class Bcp47Tag 
+    class Bcp47Tag final
     {
     public:
         Bcp47Tag(const std::string& fullTag)

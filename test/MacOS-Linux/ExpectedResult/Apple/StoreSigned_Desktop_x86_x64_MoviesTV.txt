@@ -1,5 +1,5 @@
 AppxMetadata
-Microsoft.ZuneVideo_3.6.25071.0__resources.language-es_8wekyb3d8bbwe
+Microsoft.ZuneVideo_3.6.25071.0_neutral_resources.language-es_8wekyb3d8bbwe
 Microsoft.ZuneVideo_3.6.25071.0_x64__8wekyb3d8bbwe
 Microsoft.ZuneVideo_3.6.25071.0_x86__8wekyb3d8bbwe
 340 AppxBlockMap.xml

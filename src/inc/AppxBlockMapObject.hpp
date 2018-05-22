@@ -17,6 +17,7 @@
 #include "AppxFactory.hpp"
 #include "IXml.hpp"
 #include "BlockMapStream.hpp"
+#include "Enumerators.hpp"
 
 // internal interface
 EXTERN_C const IID IID_IAppxBlockMapInternal;
@@ -61,43 +62,8 @@ namespace MSIX {
         } CATCH_RETURN();
 
     private:
-        IMSIXFactory*   m_factory;
-        Block*          m_block;
-    };
-
-    class AppxBlockMapBlocksEnumerator final : public MSIX::ComClass<AppxBlockMapBlocksEnumerator, IAppxBlockMapBlocksEnumerator>
-    {
-    protected:
-        std::vector<ComPtr<IAppxBlockMapBlock>>* m_blocks;
-        std::size_t                              m_cursor = 0;
-
-    public:
-        AppxBlockMapBlocksEnumerator(std::vector<ComPtr<IAppxBlockMapBlock>>* blocks) :
-            m_blocks(blocks)
-        {}
-
-        // IAppxBlockMapBlocksEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxBlockMapBlock** block) noexcept override try
-        {
-            ThrowErrorIf(Error::InvalidParameter, (block == nullptr || *block != nullptr), "bad pointer");
-            *block = m_blocks->at(m_cursor).Get();
-            (*block)->AddRef();
-            return static_cast<HRESULT>(Error::OK);
-        } CATCH_RETURN();
-
-        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) noexcept override try
-        {   
-            ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
-            *hasCurrent = (m_cursor != m_blocks->size()) ? TRUE : FALSE;
-            return static_cast<HRESULT>(Error::OK);
-        } CATCH_RETURN();
-
-        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) noexcept override try
-        {
-            ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
-            *hasNext = (++m_cursor != m_blocks->size()) ? TRUE : FALSE;
-            return static_cast<HRESULT>(Error::OK);
-        } CATCH_RETURN();
+        IMSIXFactory* m_factory;
+        Block*        m_block;
     };
 
     class AppxBlockMapFile final : public MSIX::ComClass<AppxBlockMapFile, IAppxBlockMapFile>
@@ -127,13 +93,14 @@ namespace MSIX {
                     m_blocks->begin(),
                     m_blocks->end(),
                     std::back_inserter(m_blockMapBlocks),
-                    [&](auto item){
+                    [&](auto& item){
                         return ComPtr<IAppxBlockMapBlock>::Make<AppxBlockMapBlock>(m_factory, &item);
                     }
                 );
             }
             ThrowErrorIf(Error::InvalidParameter, (blocks == nullptr || *blocks != nullptr), "bad pointer.");
-            *blocks = ComPtr<IAppxBlockMapBlocksEnumerator>::Make<AppxBlockMapBlocksEnumerator>(&m_blockMapBlocks).Detach();
+            *blocks = ComPtr<IAppxBlockMapBlocksEnumerator>::
+                Make<EnumeratorCom<IAppxBlockMapBlocksEnumerator, IAppxBlockMapBlock>>(m_blockMapBlocks).Detach();
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
@@ -163,48 +130,12 @@ namespace MSIX {
         }
 
     private:
-
         std::vector<ComPtr<IAppxBlockMapBlock>> m_blockMapBlocks;
         std::vector<Block>* m_blocks;
         IMSIXFactory*       m_factory;
         std::uint32_t       m_localFileHeaderSize;
         std::string         m_name;
         std::uint64_t       m_uncompressedSize;
-    };
-
-    class AppxBlockMapFilesEnumerator final : public MSIX::ComClass<AppxBlockMapFilesEnumerator, IAppxBlockMapFilesEnumerator>
-    {
-    protected:
-        ComPtr<IAppxBlockMapReader> m_reader;
-        std::vector<std::string>    m_files;
-        std::size_t                 m_cursor = 0;
-
-    public:
-        AppxBlockMapFilesEnumerator(const ComPtr<IAppxBlockMapReader>& reader, std::vector<std::string>&& files) :
-            m_reader(reader), m_files(files)
-        {}
-
-        // IAppxBlockMapFilesEnumerator
-        HRESULT STDMETHODCALLTYPE GetCurrent(IAppxBlockMapFile** block) noexcept override try
-        {
-            ThrowErrorIf(Error::Unexpected, (m_cursor >= m_files.size()), "index out of range");
-            ThrowHrIfFailed(m_reader->GetFile(utf8_to_wstring(m_files.at(m_cursor)).c_str(), block));
-            return static_cast<HRESULT>(Error::OK);
-        } CATCH_RETURN();
-
-        HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) noexcept override try
-        {
-            ThrowErrorIfNot(Error::InvalidParameter, (hasCurrent), "bad pointer");
-            *hasCurrent = (m_cursor != m_files.size()) ? TRUE : FALSE;
-            return static_cast<HRESULT>(Error::OK);
-        } CATCH_RETURN();
-
-        HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) noexcept override try
-        {
-            ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
-            *hasNext = (++m_cursor != m_files.size()) ? TRUE : FALSE;
-            return static_cast<HRESULT>(Error::OK);
-        } CATCH_RETURN();
     };
 
     // Object backed by AppxBlockMap.xml

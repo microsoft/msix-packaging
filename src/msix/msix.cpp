@@ -94,6 +94,59 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
+MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
+    char* utf8SourcePackage,
+    char* utf8Destination) noexcept try
+{
+    ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
+        (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
+        "Invalid parameters"
+    );
+
+    MSIX::ComPtr<IAppxBundleFactory> factory;
+    // We don't need to use the caller's heap here because we're not marshalling any strings
+    // out to the caller.  So default to new / delete[] and be done with it!
+    ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, validationOption, applicabilityOptions, &factory));
+
+    MSIX::ComPtr<IStream> stream;
+    ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
+
+    MSIX::ComPtr<IAppxBundleReader> reader;
+    ThrowHrIfFailed(factory->CreateBundleReader(stream.Get(), &reader));
+
+    auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
+    reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
+MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
+    IStream* stream,
+    char* utf8Destination) noexcept try
+{
+    ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
+        (stream != nullptr && utf8Destination != nullptr), 
+        "Invalid parameters"
+    );
+
+    MSIX::ComPtr<IAppxBundleFactory> factory;
+    // We don't need to use the caller's heap here because we're not marshalling any strings
+    // out to the caller.  So default to new / delete[] and be done with it!
+    ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, validationOption, applicabilityOptions, &factory));
+
+    MSIX::ComPtr<IAppxBundleReader> reader;
+    ThrowHrIfFailed(factory->CreateBundleReader(stream, &reader));
+
+    auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
+    reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
 MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept try
 {
     ThrowErrorIf(MSIX::Error::InvalidParameter, (logText == nullptr || *logText != nullptr), "bad pointer" );
@@ -134,7 +187,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     MSIX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory) noexcept try
 {
-    *appxFactory = MSIX::ComPtr<IAppxFactory>::Make<MSIX::AppxFactory>(validationOption, memalloc, memfree).Detach();
+    *appxFactory = MSIX::ComPtr<IAppxFactory>::Make<MSIX::AppxFactory>(validationOption, MSIX_APPLICABILITY_OPTION_FULL, memalloc, memfree).Detach();
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
@@ -154,19 +207,21 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     MSIX_VALIDATION_OPTION validationOption,
+    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     IAppxBundleFactory** appxBundleFactory) noexcept try
 {
-    *appxBundleFactory = MSIX::ComPtr<IAppxBundleFactory>::Make<MSIX::AppxFactory>(validationOption, memalloc, memfree).Detach();
+    *appxBundleFactory = MSIX::ComPtr<IAppxBundleFactory>::Make<MSIX::AppxFactory>(validationOption, applicabilityOptions, memalloc, memfree).Detach();
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
     MSIX_VALIDATION_OPTION validationOption,
+    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     IAppxBundleFactory** appxBundleFactory) noexcept
 {
     #ifdef WIN32
-        return CoCreateAppxBundleFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxBundleFactory);
+        return CoCreateAppxBundleFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, applicabilityOptions, appxBundleFactory);
     #else
         return static_cast<HRESULT>(MSIX::Error::NotSupported);
     #endif
