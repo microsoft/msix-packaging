@@ -38,7 +38,6 @@ class IPackage : public IUnknown
 public:
     virtual void Unpack(MSIX_PACKUNPACK_OPTION options, const MSIX::ComPtr<IStorageObject>& to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
-    virtual MSIX::ComPtr<IAppxManifestObject> GetAppxManifestObject() = 0;
 };
 
 SpecializeUuidOfImpl(IPackage);
@@ -51,7 +50,7 @@ namespace MSIX {
     class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader>
     {
     public:
-        AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container);
+        AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, MSIX_APPLICABILITY_OPTIONS applicabilityOptions, const ComPtr<IStorageObject>& container);
         ~AppxPackageObject() {}
 
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) noexcept override
@@ -85,13 +84,18 @@ namespace MSIX {
                 AddRef();
                 return S_OK;
             }
+            if (riid == UuidOfImpl<IUnknown>::iid)
+            {
+                *ppvObject = static_cast<void*>(reinterpret_cast<IUnknown*>(this));
+                AddRef();
+                return S_OK;
+            }
             return static_cast<HRESULT>(MSIX::Error::NoInterface);
         }
 
         // internal IPackage methods
         void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to) override;
         std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
-        ComPtr<IAppxManifestObject> GetAppxManifestObject() override { return m_appxManifest.As<IAppxManifestObject>(); }
 
         // IAppxPackageReader
         HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept override;
@@ -121,6 +125,7 @@ namespace MSIX {
         std::map<std::string, ComPtr<IStream>> m_streams;
 
         MSIX_VALIDATION_OPTION      m_validation = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
+        MSIX_APPLICABILITY_OPTIONS  m_applicability = MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL;
         ComPtr<IMSIXFactory>        m_factory;
         ComPtr<IVerifierObject>     m_appxSignature;
         ComPtr<IVerifierObject>     m_appxBlockMap;
@@ -130,8 +135,7 @@ namespace MSIX {
         
         std::vector<std::string>    m_payloadFiles;
         std::vector<std::string>    m_footprintFiles;
-        std::vector<std::string>    m_payloadPackagesNames;
-
+        std::vector<std::string>    m_applicablePackagesNames;
         std::vector<ComPtr<IAppxPackageReader>> m_applicablePackages;
         bool                        m_isBundle = false;
     };

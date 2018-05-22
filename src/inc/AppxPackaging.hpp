@@ -28,12 +28,8 @@ interface IUnknown;
 interface ISequentialStream;
 interface IStream;
 interface IAppxFactory;
-interface IAppxFactory2;
 interface IAppxPackageReader;
-interface IAppxPackageReader2;
 interface IAppxPackageWriter;
-interface IAppxPackageWriter2;
-//interface IAppxPackageWriter3;
 interface IAppxFile;
 interface IAppxFilesEnumerator;
 interface IAppxBlockMapReader;
@@ -44,20 +40,12 @@ interface IAppxBlockMapBlocksEnumerator;
 interface IAppxManifestReader;
 interface IAppxManifestReader2;
 interface IAppxManifestReader3;
-interface IAppxManifestReader4;
-interface IAppxManifestReader5;
-//interface IAppxManifestReader6;
-interface IAppxManifestOptionalPackageInfo;
-interface IAppxManifestMainPackageDependenciesEnumerator;
-interface IAppxManifestMainPackageDependency;
 interface IAppxManifestPackageId;
-//interface IAppxManifestPackageId2;
 interface IAppxManifestProperties;
 interface IAppxManifestTargetDeviceFamiliesEnumerator;
 interface IAppxManifestTargetDeviceFamily;
 interface IAppxManifestPackageDependenciesEnumerator;
 interface IAppxManifestPackageDependency;
-interface IAppxManifestPackageDependency2;
 interface IAppxManifestResourcesEnumerator;
 interface IAppxManifestDeviceCapabilitiesEnumerator;
 interface IAppxManifestCapabilitiesEnumerator;
@@ -67,33 +55,10 @@ interface IAppxManifestQualifiedResourcesEnumerator;
 interface IAppxManifestQualifiedResource;
 interface IAppxBundleFactory;
 interface IAppxBundleWriter;
-interface IAppxBundleWriter2;
-//interface IAppxBundleWriter3;
-//interface IAppxBundleWriter4;
 interface IAppxBundleReader;
 interface IAppxBundleManifestReader;
-interface IAppxBundleManifestReader2;
 interface IAppxBundleManifestPackageInfoEnumerator;
 interface IAppxBundleManifestPackageInfo;
-//interface IAppxBundleManifestPackageInfo2;
-interface IAppxBundleManifestOptionalBundleInfoEnumerator;
-interface IAppxBundleManifestOptionalBundleInfo;
-interface IAppxContentGroupFilesEnumerator;
-interface IAppxContentGroup;
-interface IAppxContentGroupsEnumerator;
-interface IAppxContentGroupMapReader;
-interface IAppxSourceContentGroupMapReader;
-interface IAppxContentGroupMapWriter;
-interface IAppxEncryptionFactory;
-interface IAppxEncryptionFactory2;
-interface IAppxEncryptionFactory3;
-//interface IAppxEncryptionFactory4;
-interface IAppxEncryptedPackageWriter;
-//interface IAppxEncryptedPackageWriter2;
-interface IAppxEncryptedBundleWriter;
-interface IAppxEncryptedBundleWriter2;
-//interface IAppxEncryptedBundleWriter3;
-//interface IAppxPackageEditor;
 
 extern "C"{
 
@@ -249,14 +214,6 @@ enum tagLOCKTYPE
         APPX_COMPRESSION_OPTION_SUPERFAST = 4
     } 	APPX_COMPRESSION_OPTION;
 
-    typedef struct APPX_PACKAGE_WRITER_PAYLOAD_STREAM
-    {
-        IStream *inputStream;
-        LPCWSTR fileName;
-        LPCWSTR contentType;
-        APPX_COMPRESSION_OPTION compressionOption;
-    } 	APPX_PACKAGE_WRITER_PAYLOAD_STREAM;
-
     typedef /* [v1_enum] */
         enum APPX_FOOTPRINT_FILE_TYPE
     {
@@ -376,32 +333,6 @@ EXTERN_C const IID IID_IAppxFactory;
     };
 #endif  /* __IAppxFactory_INTERFACE_DEFINED__ */
 
-#ifndef __IAppxFactory2_INTERFACE_DEFINED__
-#define __IAppxFactory2_INTERFACE_DEFINED__
-
-/* interface IAppxFactory2 */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxFactory2;
-
-    // {f1346df2-c282-4e22-b918-743a929a8d55}
-    interface IAppxFactory2 : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE CreateContentGroupMapReader(
-            /* [in] */  IStream *inputStream,
-            /* [retval][out] */  IAppxContentGroupMapReader **contentGroupMapReader) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE CreateSourceContentGroupMapReader(
-            /* [in] */  IStream *inputStream,
-            /* [retval][out] */  IAppxSourceContentGroupMapReader **reader) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE CreateContentGroupMapWriter(
-            /* [in] */  IStream *stream,
-            /* [retval][out] */  IAppxContentGroupMapWriter **contentGroupMapWriter) = 0;
-
-    };
-#endif 	/* __IAppxFactory2_INTERFACE_DEFINED__ */
-
 #ifndef __IAppxPackageReader_INTERFACE_DEFINED__
 #define __IAppxPackageReader_INTERFACE_DEFINED__
 
@@ -433,23 +364,6 @@ EXTERN_C const IID IID_IAppxPackageReader;
     };
 #endif 	/* __IAppxPackageReader_INTERFACE_DEFINED__ */
 
-#ifndef __IAppxPackageReader2_INTERFACE_DEFINED__
-#define __IAppxPackageReader2_INTERFACE_DEFINED__
-
-/* interface IAppxPackageReader2 */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxPackageReader2;
-
-    // {37e8d3d5-1aea-4204-9c50-ff715932c249}
-    interface IAppxPackageReader2 : public IAppxPackageReader
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetContentGroupMap(
-            /* [retval][out] */  IAppxContentGroupMapReader **contentGroupMapReader) = 0;
-
-    };
-#endif 	/* __IAppxPackageReader2_INTERFACE_DEFINED__ */
-
 #ifndef __IAppxPackageWriter_INTERFACE_DEFINED__
 #define __IAppxPackageWriter_INTERFACE_DEFINED__
 
@@ -472,43 +386,6 @@ EXTERN_C const IID IID_IAppxPackageWriter;
 
     };
 #endif 	/* __IAppxPackageWriter_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxPackageWriter2_INTERFACE_DEFINED__
-#define __IAppxPackageWriter2_INTERFACE_DEFINED__
-
-/* interface IAppxPackageWriter2 */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxPackageWriter2;
-
-    // {2cf5c4fd-e54c-4ea5-ba4e-f8c4b105a8c8}
-    interface IAppxPackageWriter2 : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE Close(
-            /* [in] */  IStream *manifest,
-            /* [in] */  IStream *contentGroupMap) = 0;
-
-    };
-#endif 	/* __IAppxPackageWriter2_INTERFACE_DEFINED__ */
-
-//#ifndef __IAppxPackageWriter3_INTERFACE_DEFINED__
-//#define __IAppxPackageWriter3_INTERFACE_DEFINED__
-//
-///* interface IAppxPackageWriter3 */
-///* [ref][uuid][object] */
-//EXTERN_C const IID IID_IAppxPackageWriter3;
-//
-//    MIDL_INTERFACE("a83aacd3-41c0-4501-b8a3-74164f50b2fd")
-//    interface IAppxPackageWriter3 : public IUnknown
-//    {
-//    public:
-//        virtual HRESULT STDMETHODCALLTYPE AddPayloadFiles(
-//            /* [in] */ UINT32 fileCount,
-//            /* [size_is][in] */ APPX_PACKAGE_WRITER_PAYLOAD_STREAM *payloadFiles,
-//            /* [in] */ UINT64 memoryLimit) = 0;
-//
-//    };
-//#endif 	/* __IAppxPackageWriter3_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxFile_INTERFACE_DEFINED__
 #define __IAppxFile_INTERFACE_DEFINED__
@@ -766,123 +643,6 @@ EXTERN_C const IID IID_IAppxManifestReader3;
     };
 #endif 	/* __IAppxManifestReader3_INTERFACE_DEFINED__ */
 
-#ifndef __IAppxManifestReader4_INTERFACE_DEFINED__
-#define __IAppxManifestReader4_INTERFACE_DEFINED__
-
-/* interface IAppxManifestReader4 */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxManifestReader4;
-
-    // {4579bb7c-741d-4161-b5a1-47bd3b78ad9b}
-    interface IAppxManifestReader4 : public IAppxManifestReader3
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetOptionalPackageInfo(
-            /* [retval][out] */  IAppxManifestOptionalPackageInfo **optionalPackageInfo) = 0;
-
-    };
-#endif 	/* __IAppxManifestReader4_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxManifestReader5_INTERFACE_DEFINED__
-#define __IAppxManifestReader5_INTERFACE_DEFINED__
-
-/* interface IAppxManifestReader5 */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxManifestReader5;
-
-    // {8d7ae132-a690-4c00-b75a-6aae1feaac80}
-    interface IAppxManifestReader5 : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetMainPackageDependencies(
-            /* [retval][out] */  IAppxManifestMainPackageDependenciesEnumerator **mainPackageDependencies) = 0;
-
-    };
-#endif 	/* __IAppxManifestReader5_INTERFACE_DEFINED__ */
-
-//#ifndef __IAppxManifestReader6_INTERFACE_DEFINED__
-//#define __IAppxManifestReader6_INTERFACE_DEFINED__
-//
-///* interface IAppxManifestReader6 */
-///* [ref][uuid][object] */
-//EXTERN_C const IID IID_IAppxManifestReader6;
-//
-//    MIDL_INTERFACE("34DEACA4-D3C0-4E3E-B312-E42625E3807E")
-//    interface IAppxManifestReader6 : public IUnknown
-//    {
-//    public:
-//        virtual HRESULT STDMETHODCALLTYPE GetIsNonQualifiedResourcePackage(
-//            /* [retval][out] */  BOOL *isNonQualifiedResourcePackage) = 0;
-//
-//    };
-//#endif 	/* __IAppxManifestReader6_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
-#define __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
-
-/* interface IAppxManifestOptionalPackageInfo */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxManifestOptionalPackageInfo;
-
-    // {2634847d-5b5d-4fe5-a243-002ff95edc7e}
-    interface IAppxManifestOptionalPackageInfo : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetIsOptionalPackage(
-            /* [retval][out] */  BOOL *isOptionalPackage) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetMainPackageName(
-            /* [retval][string][out] */ LPWSTR *mainPackageName) = 0;
-
-    };
-#endif 	/* __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxManifestMainPackageDependenciesEnumerator_INTERFACE_DEFINED__
-#define __IAppxManifestMainPackageDependenciesEnumerator_INTERFACE_DEFINED__
-
-/* interface IAppxManifestMainPackageDependenciesEnumerator */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxManifestMainPackageDependenciesEnumerator;
-
-    // {a99c4f00-51d2-4f0f-ba46-7ed5255ebdff}
-    interface IAppxManifestMainPackageDependenciesEnumerator : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetCurrent(
-            /* [retval][out] */  IAppxManifestMainPackageDependency **mainPackageDependency) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(
-            /* [retval][out] */  BOOL *hasCurrent) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE MoveNext(
-            /* [retval][out] */  BOOL *hasNext) = 0;
-
-    };
-#endif 	/* __IAppxManifestMainPackageDependenciesEnumerator_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxManifestMainPackageDependency_INTERFACE_DEFINED__
-#define __IAppxManifestMainPackageDependency_INTERFACE_DEFINED__
-
-/* interface IAppxManifestMainPackageDependency */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxManifestMainPackageDependency;
-
-    // {05d0611c-bc29-46d5-97e2-84b9c79bd8ae}
-    interface IAppxManifestMainPackageDependency : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetName(
-            /* [retval][string][out] */ LPWSTR *name) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetPublisher(
-            /* [retval][string][out] */ LPWSTR *publisher) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetPackageFamilyName(
-            /* [retval][string][out] */ LPWSTR *packageFamilyName) = 0;
-
-    };
-#endif 	/* __IAppxManifestMainPackageDependency_INTERFACE_DEFINED__ */
-
 #ifndef __IAppxManifestPackageId_INTERFACE_DEFINED__
 #define __IAppxManifestPackageId_INTERFACE_DEFINED__
 
@@ -921,23 +681,6 @@ EXTERN_C const IID IID_IAppxManifestPackageId;
 
     };
 #endif 	/* __IAppxManifestPackageId_INTERFACE_DEFINED__ */
-
-//#ifndef __IAppxManifestPackageId2_INTERFACE_DEFINED__
-//#define __IAppxManifestPackageId2_INTERFACE_DEFINED__
-//
-///* interface IAppxManifestPackageId2 */
-///* [ref][uuid][object] */
-//EXTERN_C const IID IID_IAppxManifestPackageId2;
-//
-//    MIDL_INTERFACE("2256999d-d617-42f1-880e-0ba4542319d5")
-//    interface IAppxManifestPackageId2 : public IAppxManifestPackageId
-//    {
-//    public:
-//        virtual HRESULT STDMETHODCALLTYPE GetArchitecture2(
-//            /* [retval][out] */  APPX_PACKAGE_ARCHITECTURE2 *architecture) = 0;
-//
-//    };
-//#endif 	/* __IAppxManifestPackageId2_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestProperties_INTERFACE_DEFINED__
 #define __IAppxManifestProperties_INTERFACE_DEFINED__
@@ -1029,46 +772,6 @@ EXTERN_C const IID IID_IAppxManifestPackageDependenciesEnumerator;
 
     };
 #endif 	/* __IAppxManifestPackageDependenciesEnumerator_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxManifestPackageDependency_INTERFACE_DEFINED__
-#define __IAppxManifestPackageDependency_INTERFACE_DEFINED__
-
-/* interface IAppxManifestPackageDependency */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxManifestPackageDependency;
-
-    // {e4946b59-733e-43f0-a724-3bde4c1285a0}
-    interface IAppxManifestPackageDependency : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetName(
-            /* [retval][string][out] */ LPWSTR *name) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetPublisher(
-            /* [retval][string][out] */ LPWSTR *publisher) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetMinVersion(
-            /* [retval][out] */  UINT64 *minVersion) = 0;
-
-    };
-#endif 	/* __IAppxManifestPackageDependency_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxManifestPackageDependency2_INTERFACE_DEFINED__
-#define __IAppxManifestPackageDependency2_INTERFACE_DEFINED__
-
-/* interface IAppxManifestPackageDependency2 */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxManifestPackageDependency2;
-
-    // {dda0b713-f3ff-49d3-898a-2786780c5d98}
-    interface IAppxManifestPackageDependency2 : public IAppxManifestPackageDependency
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetMaxMajorVersionTested(
-            /* [retval][out] */  UINT16 *maxMajorVersionTested) = 0;
-
-    };
-#endif 	/* __IAppxManifestPackageDependency2_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestResourcesEnumerator_INTERFACE_DEFINED__
 #define __IAppxManifestResourcesEnumerator_INTERFACE_DEFINED__
@@ -1275,75 +978,6 @@ EXTERN_C const IID IID_IAppxBundleWriter;
 
     };
 #endif 	/* __IAppxBundleWriter_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxBundleWriter2_INTERFACE_DEFINED__
-#define __IAppxBundleWriter2_INTERFACE_DEFINED__
-
-/* interface IAppxBundleWriter2 */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxBundleWriter2;
-
-    // {6d8fe971-01cc-49a0-b685-233851279962}
-    interface IAppxBundleWriter2 : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE AddExternalPackageReference(
-            /* [string][in] */  LPCWSTR fileName,
-            /* [in] */  IStream *inputStream) = 0;
-
-    };
-#endif 	/* __IAppxBundleWriter2_INTERFACE_DEFINED__ */
-
-//#ifndef __IAppxBundleWriter3_INTERFACE_DEFINED__
-//#define __IAppxBundleWriter3_INTERFACE_DEFINED__
-//
-///* interface IAppxBundleWriter3 */
-///* [ref][uuid][object] */
-//EXTERN_C const IID IID_IAppxBundleWriter3;
-//
-//    MIDL_INTERFACE("AD711152-F969-4193-82D5-9DDF2786D21A")
-//    interface IAppxBundleWriter3 : public IUnknown
-//    {
-//    public:
-//        virtual HRESULT STDMETHODCALLTYPE AddPackageReference(
-//            /* [string][in] */  LPCWSTR fileName,
-//            /* [in] */  IStream *inputStream) = 0;
-//
-//        virtual HRESULT STDMETHODCALLTYPE Close(
-//            /* [string][in] */  LPCWSTR hashMethodString) = 0;
-//
-//    };
-//#endif 	/* __IAppxBundleWriter3_INTERFACE_DEFINED__ */
-
-// #ifndef __IAppxBundleWriter4_INTERFACE_DEFINED__
-// #define __IAppxBundleWriter4_INTERFACE_DEFINED__
-//
-// /* interface IAppxBundleWriter4 */
-// /* [ref][uuid][object] */ 
-// EXTERN_C const IID IID_IAppxBundleWriter4;
-//
-//     // {9CD9D523-5009-4C01-9882-DC029FBD47A3}
-//     interface IAppxBundleWriter4 : public IUnknown
-//     {
-//     public:
-//         virtual HRESULT STDMETHODCALLTYPE AddPayloadPackage( 
-//             /* [string][in] */ __RPC__in_string LPCWSTR fileName,
-//             /* [in] */ __RPC__in_opt IStream *packageStream,
-//             /* [in] */ BOOL isDefaultApplicablePackage) = 0;
-//           
-//         virtual HRESULT STDMETHODCALLTYPE AddPackageReference( 
-//             /* [string][in] */ __RPC__in_string LPCWSTR fileName,
-//             /* [in] */ __RPC__in_opt IStream *inputStream,
-//             /* [in] */ BOOL isDefaultApplicablePackage) = 0;
-//            
-//         virtual HRESULT STDMETHODCALLTYPE AddExternalPackageReference( 
-//             /* [string][in] */ __RPC__in_string LPCWSTR fileName,
-//             /* [in] */ __RPC__in_opt IStream *inputStream,
-//             /* [in] */ BOOL isDefaultApplicablePackage) = 0;
-//            
-//     };
-// #endif 	/* __IAppxBundleWriter4_INTERFACE_DEFINED__ */
-
 #ifndef __IAppxBundleReader_INTERFACE_DEFINED__
 #define __IAppxBundleReader_INTERFACE_DEFINED__
 
@@ -1398,22 +1032,28 @@ EXTERN_C const IID IID_IAppxBundleManifestReader;
     };
 #endif 	/* __IAppxBundleManifestReader_INTERFACE_DEFINED__ */
 
-#ifndef __IAppxBundleManifestReader2_INTERFACE_DEFINED__
-#define __IAppxBundleManifestReader2_INTERFACE_DEFINED__
+#ifndef __IAppxManifestPackageDependency_INTERFACE_DEFINED__
+#define __IAppxManifestPackageDependency_INTERFACE_DEFINED__
 
-/* interface IAppxBundleManifestReader2 */
+/* interface IAppxManifestPackageDependency */
 /* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxBundleManifestReader2;
+EXTERN_C const IID IID_IAppxManifestPackageDependency;
 
-    // {5517df70-033f-4af2-8213-87d766805c02}
-    interface IAppxBundleManifestReader2 : public IUnknown
+    // {e4946b59-733e-43f0-a724-3bde4c1285a0}
+    interface IAppxManifestPackageDependency : public IUnknown
     {
     public:
-        virtual HRESULT STDMETHODCALLTYPE GetOptionalBundles(
-            /* [retval][out] */  IAppxBundleManifestOptionalBundleInfoEnumerator **optionalBundles) = 0;
+        virtual HRESULT STDMETHODCALLTYPE GetName(
+            /* [retval][string][out] */ LPWSTR *name) = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE GetPublisher(
+            /* [retval][string][out] */ LPWSTR *publisher) = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE GetMinVersion(
+            /* [retval][out] */  UINT64 *minVersion) = 0;
 
     };
-#endif 	/* __IAppxBundleManifestReader2_INTERFACE_DEFINED__ */
+#endif 	/* __IAppxManifestPackageDependency_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBundleManifestPackageInfoEnumerator_INTERFACE_DEFINED__
 #define __IAppxBundleManifestPackageInfoEnumerator_INTERFACE_DEFINED__
@@ -1470,524 +1110,6 @@ EXTERN_C const IID IID_IAppxBundleManifestPackageInfo;
     };
 #endif 	/* __IAppxBundleManifestPackageInfo_INTERFACE_DEFINED__ */
 
-//#ifndef __IAppxBundleManifestPackageInfo2_INTERFACE_DEFINED__
-//#define __IAppxBundleManifestPackageInfo2_INTERFACE_DEFINED__
-//
-///* interface IAppxBundleManifestPackageInfo2 */
-///* [ref][uuid][object] */
-//EXTERN_C const IID IID_IAppxBundleManifestPackageInfo2;
-//
-//    //{44C2ACBC-B2CF-4CCB-BBDB-9C6DA8C3BC9E}
-//    interface IAppxBundleManifestPackageInfo2 : public IUnknown
-//    {
-//    public:
-//        virtual HRESULT STDMETHODCALLTYPE GetIsPackageReference(
-//            /* [retval][out] */  BOOL *isPackageReference) = 0;
-//
-//        virtual HRESULT STDMETHODCALLTYPE GetIsNonQualifiedResourcePackage(
-//            /* [retval][out] */  BOOL *isNonQualifiedResourcePackage) = 0;
-//
-//        virtual HRESULT STDMETHODCALLTYPE GetIsDefaultApplicablePackage(
-//            /* [retval][out] */  BOOL *isDefaultApplicablePackage) = 0;
-//
-//    };
-//#endif 	/* __IAppxBundleManifestPackageInfo2_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxBundleManifestOptionalBundleInfoEnumerator_INTERFACE_DEFINED__
-#define __IAppxBundleManifestOptionalBundleInfoEnumerator_INTERFACE_DEFINED__
-
-/* interface IAppxBundleManifestOptionalBundleInfoEnumerator */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxBundleManifestOptionalBundleInfoEnumerator;
-
-    // {9a178793-f97e-46ac-aaca-dd5ba4c177c8}
-    interface IAppxBundleManifestOptionalBundleInfoEnumerator : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetCurrent(
-            /* [retval][out] */  IAppxBundleManifestOptionalBundleInfo **optionalBundle) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(
-            /* [retval][out] */  BOOL *hasCurrent) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE MoveNext(
-            /* [retval][out] */  BOOL *hasNext) = 0;
-
-    };
-#endif 	/* __IAppxBundleManifestOptionalBundleInfoEnumerator_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxBundleManifestOptionalBundleInfo_INTERFACE_DEFINED__
-#define __IAppxBundleManifestOptionalBundleInfo_INTERFACE_DEFINED__
-
-/* interface IAppxBundleManifestOptionalBundleInfo */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxBundleManifestOptionalBundleInfo;
-
-    // {515bf2e8-bcb0-4d69-8c48-e383147b6e12}
-    interface IAppxBundleManifestOptionalBundleInfo : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetPackageId(
-            /* [retval][out] */  IAppxManifestPackageId **packageId) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetFileName(
-            /* [retval][string][out] */  LPWSTR *fileName) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetPackageInfoItems(
-            /* [retval][out] */  IAppxBundleManifestPackageInfoEnumerator **packageInfoItems) = 0;
-
-    };
-#endif 	/* __IAppxBundleManifestOptionalBundleInfo_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxContentGroupFilesEnumerator_INTERFACE_DEFINED__
-#define __IAppxContentGroupFilesEnumerator_INTERFACE_DEFINED__
-
-/* interface IAppxContentGroupFilesEnumerator */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxContentGroupFilesEnumerator;
-
-    // {1a09a2fd-7440-44eb-8c84-848205a6a1cc}
-    interface IAppxContentGroupFilesEnumerator : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetCurrent(
-            /* [retval][out] */  LPWSTR *file) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(
-            /* [retval][out] */  BOOL *hasCurrent) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE MoveNext(
-            /* [retval][out] */  BOOL *hasNext) = 0;
-
-    };
-#endif 	/* __IAppxContentGroupFilesEnumerator_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxContentGroup_INTERFACE_DEFINED__
-#define __IAppxContentGroup_INTERFACE_DEFINED__
-
-/* interface IAppxContentGroup */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxContentGroup;
-
-    // {328f6468-c04f-4e3c-b6fa-6b8d27f3003a}
-    interface IAppxContentGroup : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetName(
-            /* [retval][string][out] */  LPWSTR *groupName) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetFiles(
-            /* [retval][out] */  IAppxContentGroupFilesEnumerator **enumerator) = 0;
-
-    };
-#endif 	/* __IAppxContentGroup_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxContentGroupsEnumerator_INTERFACE_DEFINED__
-#define __IAppxContentGroupsEnumerator_INTERFACE_DEFINED__
-
-/* interface IAppxContentGroupsEnumerator */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxContentGroupsEnumerator;
-
-    // {3264e477-16d1-4d63-823e-7d2984696634}
-    interface IAppxContentGroupsEnumerator : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetCurrent(
-            /* [retval][out] */  IAppxContentGroup **stream) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(
-            /* [retval][out] */  BOOL *hasCurrent) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE MoveNext(
-            /* [retval][out] */  BOOL *hasNext) = 0;
-
-    };
-#endif 	/* __IAppxContentGroupsEnumerator_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxContentGroupMapReader_INTERFACE_DEFINED__
-#define __IAppxContentGroupMapReader_INTERFACE_DEFINED__
-
-/* interface IAppxContentGroupMapReader */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxContentGroupMapReader;
-
-    // {418726d8-dd99-4f5d-9886-157add20de01}
-    interface IAppxContentGroupMapReader : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetRequiredGroup(
-            /* [retval][out] */  IAppxContentGroup **requiredGroup) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetAutomaticGroups(
-            /* [retval][out] */  IAppxContentGroupsEnumerator **automaticGroupsEnumerator) = 0;
-
-    };
-#endif 	/* __IAppxContentGroupMapReader_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxSourceContentGroupMapReader_INTERFACE_DEFINED__
-#define __IAppxSourceContentGroupMapReader_INTERFACE_DEFINED__
-
-/* interface IAppxSourceContentGroupMapReader */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxSourceContentGroupMapReader;
-
-    // {f329791d-540b-4a9f-bc75-3282b7d73193}
-    interface IAppxSourceContentGroupMapReader : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE GetRequiredGroup(
-            /* [retval][out] */  IAppxContentGroup **requiredGroup) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE GetAutomaticGroups(
-            /* [retval][out] */  IAppxContentGroupsEnumerator **automaticGroupsEnumerator) = 0;
-
-    };
-#endif 	/* __IAppxSourceContentGroupMapReader_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxContentGroupMapWriter_INTERFACE_DEFINED__
-#define __IAppxContentGroupMapWriter_INTERFACE_DEFINED__
-
-/* interface IAppxContentGroupMapWriter */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxContentGroupMapWriter;
-
-    // {d07ab776-a9de-4798-8c14-3db31e687c78}
-    interface IAppxContentGroupMapWriter : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE AddAutomaticGroup(
-            /* [string][in] */  LPCWSTR groupName) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE AddAutomaticFile(
-            /* [string][in] */  LPCWSTR fileName) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE Close( void) = 0;
-
-    };
-#endif 	/* __IAppxContentGroupMapWriter_INTERFACE_DEFINED__ */
-
-typedef struct APPX_ENCRYPTED_PACKAGE_SETTINGS
-    {
-    UINT32 keyLength;
-    LPCWSTR encryptionAlgorithm;
-    BOOL useDiffusion;
-    IUri *blockMapHashAlgorithm;
-    } 	APPX_ENCRYPTED_PACKAGE_SETTINGS;
-
-typedef /* [v1_enum] */
-enum APPX_ENCRYPTED_PACKAGE_OPTIONS
-    {
-        APPX_ENCRYPTED_PACKAGE_OPTION_NONE	= 0,
-        APPX_ENCRYPTED_PACKAGE_OPTION_DIFFUSION	= 0x1,
-        APPX_ENCRYPTED_PACKAGE_OPTION_PAGE_HASHING	= 0x2
-    } 	APPX_ENCRYPTED_PACKAGE_OPTIONS;
-
-typedef struct APPX_ENCRYPTED_PACKAGE_SETTINGS2
-    {
-    UINT32 keyLength;
-    LPCWSTR encryptionAlgorithm;
-    IUri *blockMapHashAlgorithm;
-    DWORD options;
-    } 	APPX_ENCRYPTED_PACKAGE_SETTINGS2;
-
-typedef struct APPX_KEY_INFO
-    {
-    UINT32 keyLength;
-    UINT32 keyIdLength;
-    /* [size_is] */ BYTE *key;
-    /* [size_is] */ BYTE *keyId;
-    } 	APPX_KEY_INFO;
-
-typedef struct APPX_ENCRYPTED_EXEMPTIONS
-    {
-    UINT32 count;
-    /* [unique][size_is] */ LPCWSTR *plainTextFiles;
-    } 	APPX_ENCRYPTED_EXEMPTIONS;
-
-#ifndef __IAppxEncryptionFactory_INTERFACE_DEFINED__
-#define __IAppxEncryptionFactory_INTERFACE_DEFINED__
-
-/* interface IAppxEncryptionFactory */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxEncryptionFactory;
-
-    // {80e8e04d-8c88-44ae-a011-7cadf6fb2e72}
-    interface IAppxEncryptionFactory : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE EncryptPackage(
-            /* [in] */  IStream *inputStream,
-            /* [in] */  IStream *outputStream,
-            /* [in] */  const APPX_ENCRYPTED_PACKAGE_SETTINGS *settings,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [in] */  const APPX_ENCRYPTED_EXEMPTIONS *exemptedFiles) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE DecryptPackage(
-            /* [in] */  IStream *inputStream,
-            /* [in] */  IStream *outputStream,
-            /* [in] */  const APPX_KEY_INFO *keyInfo) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE CreateEncryptedPackageWriter(
-            /* [in] */  IStream *outputStream,
-            /* [in] */  IStream *manifestStream,
-            /* [in] */  const APPX_ENCRYPTED_PACKAGE_SETTINGS *settings,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [in] */  const APPX_ENCRYPTED_EXEMPTIONS *exemptedFiles,
-            /* [retval][out] */  IAppxEncryptedPackageWriter **packageWriter) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE CreateEncryptedPackageReader(
-            /* [in] */  IStream *inputStream,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [retval][out] */  IAppxPackageReader **packageReader) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE EncryptBundle(
-            /* [in] */  IStream *inputStream,
-            /* [in] */  IStream *outputStream,
-            /* [in] */  const APPX_ENCRYPTED_PACKAGE_SETTINGS *settings,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [in] */  const APPX_ENCRYPTED_EXEMPTIONS *exemptedFiles) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE DecryptBundle(
-            /* [in] */  IStream *inputStream,
-            /* [in] */  IStream *outputStream,
-            /* [in] */  const APPX_KEY_INFO *keyInfo) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE CreateEncryptedBundleWriter(
-            /* [in] */  IStream *outputStream,
-            /* [in] */ UINT64 bundleVersion,
-            /* [in] */  const APPX_ENCRYPTED_PACKAGE_SETTINGS *settings,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [in] */  const APPX_ENCRYPTED_EXEMPTIONS *exemptedFiles,
-            /* [retval][out] */  IAppxEncryptedBundleWriter **bundleWriter) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE CreateEncryptedBundleReader(
-            /* [in] */  IStream *inputStream,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [retval][out] */  IAppxBundleReader **bundleReader) = 0;
-
-    };
-#endif 	/* __IAppxEncryptionFactory_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxEncryptionFactory2_INTERFACE_DEFINED__
-#define __IAppxEncryptionFactory2_INTERFACE_DEFINED__
-
-/* interface IAppxEncryptionFactory2 */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxEncryptionFactory2;
-
-    // {c1b11eee-c4ba-4ab2-a55d-d015fe8ff64f}
-    interface IAppxEncryptionFactory2 : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE CreateEncryptedPackageWriter(
-            /* [in] */  IStream *outputStream,
-            /* [in] */  IStream *manifestStream,
-            /* [in] */  IStream *contentGroupMapStream,
-            /* [in] */  const APPX_ENCRYPTED_PACKAGE_SETTINGS *settings,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [in] */  const APPX_ENCRYPTED_EXEMPTIONS *exemptedFiles,
-            /* [retval][out] */  IAppxEncryptedPackageWriter **packageWriter) = 0;
-
-    };
-#endif 	/* __IAppxEncryptionFactory2_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxEncryptionFactory3_INTERFACE_DEFINED__
-#define __IAppxEncryptionFactory3_INTERFACE_DEFINED__
-
-/* interface IAppxEncryptionFactory3 */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxEncryptionFactory3;
-
-    // {09edca37-cd64-47d6-b7e8-1cb11d4f7e05}
-    interface IAppxEncryptionFactory3 : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE EncryptPackage(
-            /* [in] */  IStream *inputStream,
-            /* [in] */  IStream *outputStream,
-            /* [in] */  const APPX_ENCRYPTED_PACKAGE_SETTINGS2 *settings,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [in] */  const APPX_ENCRYPTED_EXEMPTIONS *exemptedFiles) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE CreateEncryptedPackageWriter(
-            /* [in] */  IStream *outputStream,
-            /* [in] */  IStream *manifestStream,
-            /* [in] */  IStream *contentGroupMapStream,
-            /* [in] */  const APPX_ENCRYPTED_PACKAGE_SETTINGS2 *settings,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [in] */  const APPX_ENCRYPTED_EXEMPTIONS *exemptedFiles,
-            /* [retval][out] */  IAppxEncryptedPackageWriter **packageWriter) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE EncryptBundle(
-            /* [in] */  IStream *inputStream,
-            /* [in] */  IStream *outputStream,
-            /* [in] */  const APPX_ENCRYPTED_PACKAGE_SETTINGS2 *settings,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [in] */  const APPX_ENCRYPTED_EXEMPTIONS *exemptedFiles) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE CreateEncryptedBundleWriter(
-            /* [in] */  IStream *outputStream,
-            /* [in] */ UINT64 bundleVersion,
-            /* [in] */  const APPX_ENCRYPTED_PACKAGE_SETTINGS2 *settings,
-            /* [in] */  const APPX_KEY_INFO *keyInfo,
-            /* [in] */  const APPX_ENCRYPTED_EXEMPTIONS *exemptedFiles,
-            /* [retval][out] */  IAppxEncryptedBundleWriter **bundleWriter) = 0;
-
-    };
-#endif 	/* __IAppxEncryptionFactory3_INTERFACE_DEFINED__ */
-
-//#ifndef __IAppxEncryptionFactory4_INTERFACE_DEFINED__
-//#define __IAppxEncryptionFactory4_INTERFACE_DEFINED__
-//
-///* interface IAppxEncryptionFactory4 */
-///* [ref][uuid][object] */
-//EXTERN_C const IID IID_IAppxEncryptionFactory4;
-//
-//    //{A879611F-12FD-41fe-85D5-06AE779BBAF5}
-//    interface IAppxEncryptionFactory4 : public IUnknown
-//    {
-//    public:
-//        virtual HRESULT STDMETHODCALLTYPE EncryptPackage(
-//            /* [in] */  IStream *inputStream,
-//            /* [in] */  IStream *outputStream,
-//            /* [in] */  const APPX_ENCRYPTED_PACKAGE_SETTINGS2 *settings,
-//            /* [in] */  const APPX_KEY_INFO *keyInfo,
-//            /* [in] */  const APPX_ENCRYPTED_EXEMPTIONS *exemptedFiles,
-//            /* [in] */ UINT64 memoryLimit) = 0;
-//
-//    };
-//#endif 	/* __IAppxEncryptionFactory4_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxEncryptedPackageWriter_INTERFACE_DEFINED__
-#define __IAppxEncryptedPackageWriter_INTERFACE_DEFINED__
-
-/* interface IAppxEncryptedPackageWriter */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxEncryptedPackageWriter;
-
-    // {f43d0b0b-1379-40e2-9b29-682ea2bf42af}
-    interface IAppxEncryptedPackageWriter : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE AddPayloadFileEncrypted(
-            /* [string][in] */  LPCWSTR fileName,
-            /* [in] */ APPX_COMPRESSION_OPTION compressionOption,
-            /* [in] */  IStream *inputStream) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE Close( void) = 0;
-
-    };
-#endif 	/* __IAppxEncryptedPackageWriter_INTERFACE_DEFINED__ */
-
-//#ifndef __IAppxEncryptedPackageWriter2_INTERFACE_DEFINED__
-//#define __IAppxEncryptedPackageWriter2_INTERFACE_DEFINED__
-//
-///* interface IAppxEncryptedPackageWriter2 */
-///* [ref][uuid][object] */
-//EXTERN_C const IID IID_IAppxEncryptedPackageWriter2;
-//
-//    //{3E475447-3A25-40b5-8AD2-F953AE50C92D}
-//    interface IAppxEncryptedPackageWriter2 : public IUnknown
-//    {
-//    public:
-//        virtual HRESULT STDMETHODCALLTYPE AddPayloadFilesEncrypted(
-//            /* [in] */ UINT32 fileCount,
-//            /* [size_is][in] */  APPX_PACKAGE_WRITER_PAYLOAD_STREAM *payloadFiles,
-//            /* [in] */ UINT64 memoryLimit) = 0;
-//
-//    };
-//#endif 	/* __IAppxEncryptedPackageWriter2_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxEncryptedBundleWriter_INTERFACE_DEFINED__
-#define __IAppxEncryptedBundleWriter_INTERFACE_DEFINED__
-
-/* interface IAppxEncryptedBundleWriter */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxEncryptedBundleWriter;
-
-    // {80b0902f-7bf0-4117-b8c6-4279ef81ee77}
-    interface IAppxEncryptedBundleWriter : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE AddPayloadPackageEncrypted(
-            /* [string][in] */  LPCWSTR fileName,
-            /* [in] */  IStream *packageStream) = 0;
-
-        virtual HRESULT STDMETHODCALLTYPE Close( void) = 0;
-
-    };
-#endif 	/* __IAppxEncryptedBundleWriter_INTERFACE_DEFINED__ */
-
-#ifndef __IAppxEncryptedBundleWriter2_INTERFACE_DEFINED__
-#define __IAppxEncryptedBundleWriter2_INTERFACE_DEFINED__
-
-/* interface IAppxEncryptedBundleWriter2 */
-/* [ref][uuid][object] */
-EXTERN_C const IID IID_IAppxEncryptedBundleWriter2;
-
-    // {e644be82-f0fa-42b8-a956-8d1cb48ee379}
-    interface IAppxEncryptedBundleWriter2 : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE AddExternalPackageReference(
-            /* [string][in] */  LPCWSTR fileName,
-            /* [in] */  IStream *inputStream) = 0;
-
-    };
-#endif 	/* __IAppxEncryptedBundleWriter2_INTERFACE_DEFINED__ */
-
-//#ifndef __IAppxEncryptedBundleWriter3_INTERFACE_DEFINED__
-//#define __IAppxEncryptedBundleWriter3_INTERFACE_DEFINED__
-//
-/* interface IAppxEncryptedBundleWriter3 */
-/* [ref][uuid][object] */ 
-//EXTERN_C const IID IID_IAppxEncryptedBundleWriter3;
-//
-//      //{0D34DEB3-5CAE-4DD3-977C-504932A51D31}
-//      interface IAppxEncryptedBundleWriter3 : public IUnknown
-//      {
-//      public:
-//          virtual HRESULT STDMETHODCALLTYPE AddPayloadPackageEncrypted( 
-//             /* [string][in] */ __RPC__in_string LPCWSTR fileName,
-//             /* [in] */ __RPC__in_opt IStream *packageStream,
-//             /* [in] */ BOOL isDefaultApplicablePackage) = 0;
-//        
-//          virtual HRESULT STDMETHODCALLTYPE AddExternalPackageReference( 
-//             /* [string][in] */ __RPC__in_string LPCWSTR fileName,
-//             /* [in] */ __RPC__in_opt IStream *inputStream,
-//             /* [in] */ BOOL isDefaultApplicablePackage) = 0;
-//        
-//     };
-//#endif 	/* __IAppxEncryptedBundleWriter3_INTERFACE_DEFINED__ */
-
-//#ifndef __IAppxPackageEditor_INTERFACE_DEFINED__
-//#define __IAppxPackageEditor_INTERFACE_DEFINED__
-//
-///* interface IAppxPackageEditor */
-///* [ref][uuid][object] */
-//EXTERN_C const IID IID_IAppxPackageEditor;
-//
-//    //{E2ADB6DC-5E71-4416-86B6-86E5F5291A6B}
-//    interface IAppxPackageEditor : public IUnknown
-//    {
-//    public:
-//        virtual HRESULT STDMETHODCALLTYPE CreateDeltaPackage(
-//            /* [in] */  IStream *updatedPackageStream,
-//            /* [in] */  IStream *baselinePackageStream,
-//            /* [in] */  IStream *deltaPackageStream,
-//            /* [string][in] */  LPCWSTR workingDirectory) = 0;
-//
-//        virtual HRESULT STDMETHODCALLTYPE CreateDeltaPackageUsingBaselineBlockMap(
-//            /* [in] */  IStream *updatedPackageStream,
-//            /* [in] */  IStream *baselineBlockMapStream,
-//            /* [string][in] */  LPCWSTR baselinePackageFullName,
-//            /* [in] */  IStream *deltaPackageStream,
-//            /* [string][in] */  LPCWSTR workingDirectory) = 0;
-//
-//    };
-//#endif 	/* __IAppxPackageEditor_INTERFACE_DEFINED__ */
-
 } // extern "C"
 #endif // #ifdef WIN32
 
@@ -2000,7 +1122,7 @@ enum MSIX_VALIDATION_OPTION
         MSIX_VALIDATION_OPTION_FULL                        = 0x0,
         MSIX_VALIDATION_OPTION_SKIPSIGNATURE               = 0x1,
         MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN = 0x2,
-        MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST            = 0x4
+        MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST            = 0x4,
     }   MSIX_VALIDATION_OPTION;
 
 typedef /* [v1_enum] */
@@ -2023,6 +1145,14 @@ enum MSIX_PLATFORMS
         MSIX_PLATFORM_LINUX     = 0x40,
         MSIX_PLATFORM_WEB       = 0x80,
     }   MSIX_PLATFORMS;
+
+typedef /* [v1_enum] */
+enum MSIX_APPLICABILITY_OPTIONS
+    {
+        MSIX_APPLICABILITY_OPTION_FULL         = 0x0,
+        MSIX_APPLICABILITY_OPTION_SKIPPLATFORM = 0x1,
+        MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE = 0x2,
+    }   MSIX_APPLICABILITY_OPTIONS;
 
 #define MSIX_PLATFORM_ALL MSIX_PLATFORM_WINDOWS10      | \
                           MSIX_PLATFORM_WINDOWS10      | \
@@ -2048,6 +1178,22 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
     char* utf8Destination
 ) noexcept;
 
+MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
+    char* utf8SourcePackage,
+    char* utf8Destination
+) noexcept;
+
+MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
+    IStream* stream,
+    char* utf8Destination
+) noexcept;
+
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying 
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.
 typedef LPVOID STDMETHODCALLTYPE COTASKMEMALLOC(SIZE_T cb);
@@ -2068,12 +1214,14 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
 
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
     MSIX_VALIDATION_OPTION validationOption,
+    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     IAppxBundleFactory** appxBundleFactory) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     MSIX_VALIDATION_OPTION validationOption,
+    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     IAppxBundleFactory** appxBundleFactory) noexcept;
 
 // provided as a helper for platforms that do not have an implementation of SHCreateStreamOnFileEx
@@ -2113,11 +1261,8 @@ SpecializeUuidOfImpl(IUnknown);
 SpecializeUuidOfImpl(ISequentialStream);
 SpecializeUuidOfImpl(IStream);
 SpecializeUuidOfImpl(IAppxFactory);
-SpecializeUuidOfImpl(IAppxFactory2);
 SpecializeUuidOfImpl(IAppxPackageReader);
-SpecializeUuidOfImpl(IAppxPackageReader2);
 SpecializeUuidOfImpl(IAppxPackageWriter);
-SpecializeUuidOfImpl(IAppxPackageWriter2);
 SpecializeUuidOfImpl(IAppxFile);
 SpecializeUuidOfImpl(IAppxFilesEnumerator);
 SpecializeUuidOfImpl(IAppxBlockMapReader);
@@ -2128,18 +1273,12 @@ SpecializeUuidOfImpl(IAppxBlockMapBlocksEnumerator);
 SpecializeUuidOfImpl(IAppxManifestReader);
 SpecializeUuidOfImpl(IAppxManifestReader2);
 SpecializeUuidOfImpl(IAppxManifestReader3);
-SpecializeUuidOfImpl(IAppxManifestReader4);
-SpecializeUuidOfImpl(IAppxManifestReader5);
-SpecializeUuidOfImpl(IAppxManifestOptionalPackageInfo);
-SpecializeUuidOfImpl(IAppxManifestMainPackageDependenciesEnumerator);
-SpecializeUuidOfImpl(IAppxManifestMainPackageDependency);
 SpecializeUuidOfImpl(IAppxManifestPackageId);
 SpecializeUuidOfImpl(IAppxManifestProperties);
 SpecializeUuidOfImpl(IAppxManifestTargetDeviceFamiliesEnumerator);
 SpecializeUuidOfImpl(IAppxManifestTargetDeviceFamily);
 SpecializeUuidOfImpl(IAppxManifestPackageDependenciesEnumerator);
 SpecializeUuidOfImpl(IAppxManifestPackageDependency);
-SpecializeUuidOfImpl(IAppxManifestPackageDependency2);
 SpecializeUuidOfImpl(IAppxManifestResourcesEnumerator);
 SpecializeUuidOfImpl(IAppxManifestDeviceCapabilitiesEnumerator);
 SpecializeUuidOfImpl(IAppxManifestCapabilitiesEnumerator);
@@ -2149,25 +1288,9 @@ SpecializeUuidOfImpl(IAppxManifestQualifiedResourcesEnumerator);
 SpecializeUuidOfImpl(IAppxManifestQualifiedResource);
 SpecializeUuidOfImpl(IAppxBundleFactory);
 SpecializeUuidOfImpl(IAppxBundleWriter);
-SpecializeUuidOfImpl(IAppxBundleWriter2);
 SpecializeUuidOfImpl(IAppxBundleReader);
 SpecializeUuidOfImpl(IAppxBundleManifestReader);
-SpecializeUuidOfImpl(IAppxBundleManifestReader2);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoEnumerator);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfo);
-SpecializeUuidOfImpl(IAppxBundleManifestOptionalBundleInfoEnumerator);
-SpecializeUuidOfImpl(IAppxBundleManifestOptionalBundleInfo);
-SpecializeUuidOfImpl(IAppxContentGroupFilesEnumerator);
-SpecializeUuidOfImpl(IAppxContentGroup);
-SpecializeUuidOfImpl(IAppxContentGroupsEnumerator);
-SpecializeUuidOfImpl(IAppxContentGroupMapReader);
-SpecializeUuidOfImpl(IAppxSourceContentGroupMapReader);
-SpecializeUuidOfImpl(IAppxContentGroupMapWriter);
-SpecializeUuidOfImpl(IAppxEncryptionFactory);
-SpecializeUuidOfImpl(IAppxEncryptionFactory2);
-SpecializeUuidOfImpl(IAppxEncryptionFactory3);
-SpecializeUuidOfImpl(IAppxEncryptedPackageWriter);
-SpecializeUuidOfImpl(IAppxEncryptedBundleWriter);
-SpecializeUuidOfImpl(IAppxEncryptedBundleWriter2);
 
 #endif //__appxpackaging_hpp__

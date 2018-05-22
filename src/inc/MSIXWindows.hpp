@@ -20,7 +20,7 @@
     #endif
 
     #define UNICODE
-    #define NOMINMAX    
+    #define NOMINMAX
     #include <windows.h>
     // Windows.h defines max and min, which does NOT play nice at all with std::min / std::max usage from <algorithm>
     #undef max
@@ -32,7 +32,7 @@
     #ifndef STDMETHODCALLTYPE
     #define STDMETHODCALLTYPE
     #endif
-    
+
     #undef MSIX_API
     #define MSIX_API extern "C"
 
@@ -110,7 +110,7 @@
 
     #ifndef _BYTE_DEFINED
     #define _BYTE_DEFINED
-    typedef char BYTE;
+    typedef unsigned char BYTE;
     #endif
 
     #ifndef _BOOL_DEFINED

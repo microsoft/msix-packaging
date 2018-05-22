@@ -1,5 +1,10 @@
+//
+//  Copyright (C) 2017 Microsoft.  All rights reserved.
+//  See LICENSE file in the project root for full license information.
+//
+
 #include <cstdlib>
-#include <cwchar> 
+#include <cwchar>
 #include <string>
 #include <locale>
 #include <codecvt>
@@ -51,13 +56,13 @@ protected:
 
     inline void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
     inline void InternalRelease()
-    {   
+    {
         T* temp = m_ptr;
         if (temp)
         {   m_ptr = nullptr;
             temp->Release();
         }
-    }    
+    }
 };
 
 std::string utf16_to_utf8(const std::wstring& utf16string)
@@ -73,7 +78,7 @@ std::wstring utf8_to_utf16(const std::string& utf8string)
     #ifdef WIN32
     auto converted = std::wstring_convert<std::codecvt_utf8_utf16<unsigned short>, unsigned short>{}.from_bytes(utf8string.data());
     #else
-    auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data()); 
+    auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data());
     #endif
     std::wstring result(converted.begin(), converted.end());
     return result;
@@ -192,7 +197,7 @@ void Error(char* toolName)
             {
                 break;
             }
-            else if (utf16Path[i] == L'\\') 
+            else if (utf16Path[i] == L'\\')
             {
                 // Temporarily set string to terminate at the '\' character
                 // to obtain name of the subdirectory to create
@@ -227,7 +232,7 @@ void Error(char* toolName)
         while (*p != '\0')
         {
             while (*p != '\0' && *p != '/') { p++; }
-            
+
             char v = *p;
             *p = '\0';
             if (-1 == mkdir(path.c_str(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH) && errno != EEXIST)
@@ -255,7 +260,7 @@ FootprintFilesType<APPX_FOOTPRINT_FILE_TYPE> footprintFilesType[FootprintFilesCo
     {APPX_FOOTPRINT_FILE_TYPE_MANIFEST, "manifest", true },
     {APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP, "block map", true },
     {APPX_FOOTPRINT_FILE_TYPE_SIGNATURE, "digital signature", true },
-    {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY, "CI catalog", false }, // this is ONLY required if there exists 1+ PEs 
+    {APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY, "CI catalog", false }, // this is ONLY required if there exists 1+ PEs
 };
 
 // Types of footprint files in a bundle package
@@ -269,7 +274,7 @@ FootprintFilesType<APPX_BUNDLE_FOOTPRINT_FILE_TYPE> bundleFootprintFilesType[Foo
 //
 // Helper function to create a writable IStream over a file with the specified name
 // under the specified path.  This function will also create intermediate
-// subdirectories if necessary.  
+// subdirectories if necessary.
 //
 // Parameters:
 // path - Path of the folder containing the file to be opened.  This should NOT
@@ -316,9 +321,9 @@ protected:
 // Creates a cross-plat app package.
 //
 // Parameters:
-//   state  
+//   state
 //     Contains the information for package name and validation options.
-//   reader 
+//   reader
 //     On success, receives the created instance of IAppxPackageReader.
 //
 HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
@@ -337,7 +342,7 @@ HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
             state.validationOptions,
             &appxFactory));
 
-    // Create a new package reader using the factory.  For 
+    // Create a new package reader using the factory.  For
     // simplicity, we don't verify the digital signature of the package.
     RETURN_IF_FAILED(appxFactory->CreatePackageReader(inputStream.Get(), package));
     return S_OK;
@@ -347,9 +352,9 @@ HRESULT GetPackageReader(State& state, IAppxPackageReader** package)
 // Prints basic info about a footprint or payload file and writes the file to disk.
 //
 // Parameters:
-//   file 
+//   file
 //      The IAppxFile interface that represents a footprint or payload file in the package.
-//   outputPath 
+//   outputPath
 //      The path of the folder for the extracted files.
 //
 HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
@@ -381,7 +386,7 @@ HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
 // Parameters:
 //   package
 //      The package reader for the app package.
-//   outputPath 
+//   outputPath
 //      The path of the folder for the extracted footprint files.
 //
 HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
@@ -408,9 +413,9 @@ HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 // Extracts all payload files from a package.
 //
 // Parameters:
-//   package 
+//   package
 //      The package reader for the app package.
-//   outputPath 
+//   outputPath
 //      The path of the folder for the extracted payload files.
 //
 HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
@@ -439,9 +444,9 @@ HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath)
 // Extracts all files from a package.
 //
 // Parameters:
-//   package 
+//   package
 //      The package reader for the app package.
-//   outputPath 
+//   outputPath
 //      The path of the folder for the extracted payload files.
 //
 HRESULT ExtractPackage(IAppxPackageReader* package, LPCWSTR outputPath)
@@ -457,9 +462,9 @@ HRESULT ExtractPackage(IAppxPackageReader* package, LPCWSTR outputPath)
 // Extracts all footprint files from a bundle.
 //
 // Parameters:
-//   bundle 
+//   bundle
 //      The bundle reader for the app bundle.
-//   outputPath 
+//   outputPath
 //      The path of the folder for the extracted footprint files.
 //
 HRESULT ExtractFootprintFilesForBundle(IAppxBundleReader* bundle, LPCWSTR outputPath)
@@ -486,9 +491,9 @@ HRESULT ExtractFootprintFilesForBundle(IAppxBundleReader* bundle, LPCWSTR output
 // Extracts all payload packages from a bundle.
 //
 // Parameters:
-//   bundle 
+//   bundle
 //      The bundle reader for the app bundle.
-//   outputPath 
+//   outputPath
 //      The path of the folder for the extracted payload packages.
 HRESULT ExtractPayloadPackages(IAppxBundleReader* bundle, State& state)
 {
@@ -529,9 +534,9 @@ HRESULT ExtractPayloadPackages(IAppxBundleReader* bundle, State& state)
 // Extracts all files from a bundle.
 //
 // Parameters:
-//   bundle 
+//   bundle
 //      The package reader for the app package.
-//   outputPath 
+//   outputPath
 //      The path of the folder for the extracted payload files.
 //
 HRESULT ExtractBundle(IAppxBundleReader* bundle, State& state)
@@ -569,7 +574,7 @@ int ParseAndRun(std::map<std::string, Option>& options, State& state, int argc, 
     {   Error(argv[0]);
         return -1;
     }
-    
+
     HRESULT hr = S_OK;
     // Create a package using the file name in argv[1]
     ComPtr<IAppxPackageReader> package;
@@ -596,8 +601,6 @@ int ParseAndRun(std::map<std::string, Option>& options, State& state, int argc, 
 
 int main(int argc, char* argv[])
 {
-    HRESULT hr = S_OK;
-
     State state;
     std::map<std::string, Option> options = {
         { "-p", Option(true, "REQUIRED, specify input package name.",
@@ -610,7 +613,7 @@ int main(int argc, char* argv[])
             [&](const std::string&) { return state.AllowSignatureOriginUnknown(); })
         },
         { "-ss", Option(false, "Skips enforcement of signed packages.  By default packages must be signed.",
-            [&](const std::string&) 
+            [&](const std::string&)
             {   footprintFilesType[2].isRequired = false;
                 bundleFootprintFilesType[2].isRequired = false;
                 return state.SkipSignature();

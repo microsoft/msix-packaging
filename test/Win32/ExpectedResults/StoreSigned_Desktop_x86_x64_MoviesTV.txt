@@ -1,11 +1,19 @@
 AppxMetadata
+Microsoft.ZuneVideo_3.6.25071.0_neutral_resources.language-es_8wekyb3d8bbwe
+Microsoft.ZuneVideo_3.6.25071.0_neutral_resources.language-zh-hans_8wekyb3d8bbwe
 Microsoft.ZuneVideo_3.6.25071.0_x64__8wekyb3d8bbwe
 Microsoft.ZuneVideo_3.6.25071.0_x86__8wekyb3d8bbwe
-Microsoft.ZuneVideo_3.6.25071.0__resources.language-es_8wekyb3d8bbwe
-Microsoft.ZuneVideo_3.6.25071.0__resources.language-zh-hans_8wekyb3d8bbwe
 340 AppxBlockMap.xml
 10583 AppxSignature.p7x
 26712 AppxBundleManifest.xml
+598 AppxBlockMap.xml
+902 AppxManifest.xml
+10586 AppxSignature.p7x
+185624 resources.pri
+523 AppxBlockMap.xml
+854 AppxManifest.xml
+10586 AppxSignature.p7x
+87368 resources.pri
 59403 AppxBlockMap.xml
 13627 AppxManifest.xml
 10622 AppxSignature.p7x
@@ -270,11 +278,3 @@ Microsoft.ZuneVideo_3.6.25071.0__resources.language-zh-hans_8wekyb3d8bbwe
 650 WideLogo.scale-100_contrast-white.png
 15392 BlankImage.png
 47352 SegMVR2.ttf
-598 AppxBlockMap.xml
-902 AppxManifest.xml
-10586 AppxSignature.p7x
-185624 resources.pri
-523 AppxBlockMap.xml
-854 AppxManifest.xml
-10586 AppxSignature.p7x
-87368 resources.pri

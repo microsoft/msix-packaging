@@ -1,10 +1,10 @@
 //
 //  Copyright (C) 2017 Microsoft.  All rights reserved.
 //  See LICENSE file in the project root for full license information.
-// 
+//
 #pragma once
 #include <cstddef>
-#include <memory> 
+#include <memory>
 #include <atomic>
 #include <type_traits>
 #include <utility>
@@ -13,6 +13,26 @@
 #include "AppxPackaging.hpp"
 
 namespace MSIX {
+
+    template <typename I0, typename I1, typename ...Interfaces>
+    struct ChainInterfaces
+    {
+        static_assert(std::is_base_of<I1, I0>::value, "Interface has to derive from I0");
+        static bool Includes(REFIID riid)
+        {
+            return riid == UuidOfImpl<I0>::iid || ChainInterfaces<I0, Interfaces...>::Includes(riid);
+        }
+    };
+
+    template <typename I0, typename I1>
+    struct ChainInterfaces<I0, I1>
+    {
+        static_assert(std::is_base_of<I1, I0>::value, "Interface has to derive from I0");
+        static bool Includes(REFIID riid)
+        {
+            return riid == UuidOfImpl<I1>::iid;
+        }
+    };
 
     template <typename ...Interfaces>
     struct QIHelper;
@@ -25,10 +45,24 @@ namespace MSIX {
         {
             if (riid == UuidOfImpl<I0>::iid)
             {
-                *ppvObject = static_cast<void*>(static_cast<I0*>(this));
+                *ppvObject = static_cast<I0*>(this);
                 return true;
             }
             return QIHelper<Interfaces...>::Matches(riid, ppvObject);
+        }
+    };
+
+    template <typename I0, typename ...Chain, typename ...Interfaces>
+    struct QIHelper<ChainInterfaces<I0, Chain...>, Interfaces...> : QIHelper<I0, Interfaces...>
+    {
+        bool Matches(REFIID riid, void** ppvObject)
+        {
+            if(ChainInterfaces<I0, Chain...>::Includes(riid))
+            {
+                *ppvObject = reinterpret_cast<I0*>(this);
+                return true;
+            }
+            return QIHelper<I0, Interfaces...>::Matches(riid, ppvObject);
         }
     };
 
@@ -86,7 +120,7 @@ namespace MSIX {
         }
 
         ComPtr& operator=(ComPtr &&right)
-        {   
+        {
             ComPtr(std::move(right)).Swap(*this);
             return *this;
         }
@@ -119,7 +153,7 @@ namespace MSIX {
 
         template <class U>
         ComPtr<U> As() const
-        {   
+        {
             ComPtr<U> out;
             ThrowHrIfFailed(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(&out)));
             return out;
@@ -148,7 +182,7 @@ namespace MSIX {
 
         virtual ULONG STDMETHODCALLTYPE AddRef() override { return ++m_ref; }
         virtual ULONG STDMETHODCALLTYPE Release() override
-        {   
+        {
             if (--m_ref == 0)
             {   delete this;
                 return 0;
@@ -166,6 +200,12 @@ namespace MSIX {
             *ppvObject = nullptr;
             if (QIHelper<Interfaces...>::Matches(riid, ppvObject))
             {
+                AddRef();
+                return S_OK;
+            }
+            if (riid == UuidOfImpl<IUnknown>::iid)
+            {
+                *ppvObject = static_cast<void*>(reinterpret_cast<IUnknown*>(this));
                 AddRef();
                 return S_OK;
             }

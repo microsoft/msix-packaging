@@ -54,6 +54,7 @@ static std::map<XmlQueryName, std::string> xPaths = {
     {XmlQueryName::Bundle_Packages_Package                        ,"/Bundle/Packages/Package"},
     {XmlQueryName::Bundle_Packages_Package_Resources_Resource     ,"./Resources/Resource"},
     {XmlQueryName::Package_Dependencies_TargetDeviceFamily        ,"/Package/Dependencies/TargetDeviceFamily"},
+    {XmlQueryName::Package_Applications_Application               ,"/Package/Applications/Application"},
 };
 
 static std::map<XmlAttributeName, std::string> attributeNames = {
@@ -73,6 +74,11 @@ static std::map<XmlAttributeName, std::string> attributeNames = {
     {XmlAttributeName::Bundle_Package_Type                        ,"Type"},
     {XmlAttributeName::Bundle_Package_Architecture                ,"Architecture"},
     {XmlAttributeName::Bundle_Package_Resources_Resource_Language ,"Language"},
+
+    {XmlAttributeName::Dependencies_Tdf_MinVersion                ,"MinVersion"},
+    {XmlAttributeName::Dependencies_Tdf_MaxVersionTested          ,"MaxVersionTested"},
+
+    {XmlAttributeName::Package_Applications_Application_Id        ,"Id"},
 };
 
 class ParsingException final : public XERCES_CPP_NAMESPACE::ErrorHandler

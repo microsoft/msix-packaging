@@ -8,6 +8,7 @@
 #include "IXml.hpp"
 #include "BlockMapStream.hpp"
 #include "MSIXResource.hpp"
+#include "Enumerators.hpp"
 
 /* Example XML:
 <?xml version="1.0" encoding="UTF-8"?>
@@ -30,10 +31,20 @@
 
 namespace MSIX {
 
-    static Block GetBlock(const ComPtr<IXmlElement>& element)
+    static Block GetBlock(const ComPtr<IXmlElement>& element, std::uint64_t fallbackSize)
     {
         Block result {0};
-        result.compressedSize = GetNumber<std::uint64_t>(element, XmlAttributeName::Size, BLOCKMAP_BLOCK_SIZE);
+        auto sizeAttr = GetNumber<std::uint64_t>(element, XmlAttributeName::Size, -1);
+        if (sizeAttr == -1)
+        {
+            result.blockSize = BLOCKMAP_BLOCK_SIZE;
+            result.compressedSize = fallbackSize;
+        }
+        else
+        {
+            result.blockSize = sizeAttr;
+            result.compressedSize = sizeAttr;
+        }
         result.hash = element->GetBase64DecodedAttributeValue(XmlAttributeName::BlockMap_File_Block_Hash);
         return result;
     }
@@ -41,7 +52,7 @@ namespace MSIX {
     AppxBlockMapObject::AppxBlockMapObject(IMSIXFactory* factory, const ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
     {
         ComPtr<IXmlFactory> xmlFactory;
-        ThrowHrIfFailed(factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));        
+        ThrowHrIfFailed(factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));
         auto dom = xmlFactory->CreateDomFromStream(XmlContentType::AppxBlockMapXml, stream);
 
         struct _context
@@ -63,18 +74,25 @@ namespace MSIX {
             builder << "Duplicate file: '" << name << "' specified in AppxBlockMap.xml.";
             ThrowErrorIf(Error::BlockMapSemanticError, (context->self->m_blockMap.find(name) != context->self->m_blockMap.end()), builder.str().c_str());
 
+            std::uint64_t sizeAttribute = GetNumber<std::uint64_t>(fileNode, XmlAttributeName::Size, BLOCKMAP_BLOCK_SIZE);
+
             std::vector<Block> blocks;
-            XmlVisitor visitor(static_cast<void*>(&blocks), [](void* b, const ComPtr<IXmlElement>& blockNode)->bool
+            struct _contextBlock
             {
-                std::vector<Block>* blocks = reinterpret_cast<std::vector<Block>*>(b);       
-                blocks->push_back(GetBlock(blockNode));
+                std::vector<Block>* blocks;
+                std::uint64_t fallbackSize;
+            };
+            _contextBlock contextBlock = { &blocks, sizeAttribute};
+            XmlVisitor visitor(static_cast<void*>(&contextBlock), [](void* c, const ComPtr<IXmlElement>& blockNode)->bool
+            {
+                _contextBlock* contextBlock = reinterpret_cast<_contextBlock*>(c);
+                contextBlock->blocks->push_back(GetBlock(blockNode, contextBlock->fallbackSize));
                 return true;
             });
             context->dom->ForEachElementIn(fileNode, XmlQueryName::BlockMap_File_Block, visitor);
 
-            std::uint64_t sizeAttribute = GetNumber<std::uint64_t>(fileNode, XmlAttributeName::Size, BLOCKMAP_BLOCK_SIZE);
             ThrowErrorIf(Error::BlockMapSemanticError, (0 == blocks.size() && 0 != sizeAttribute), "If size is non-zero, then there must be 1+ blocks.");
-            
+
             context->self->m_blockMap.insert(std::make_pair(name, std::move(blocks)));
             context->self->m_blockMapFiles.insert(std::make_pair(name,
                 ComPtr<IAppxBlockMapFile>::Make<AppxBlockMapFile>(
@@ -84,8 +102,8 @@ namespace MSIX {
                     name,
                     sizeAttribute
                 )));
-            context->countFilesFound++;    
-            return true;            
+            context->countFilesFound++;
+            return true;
         });
         dom->ForEachElementIn(dom->GetDocument(), XmlQueryName::BlockMap_File, visitor);
         ThrowErrorIf(Error::XmlError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
@@ -116,11 +134,14 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFiles(IAppxBlockMapFilesEnumerator **enumerator) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (enumerator == nullptr || *enumerator != nullptr), "bad pointer");
-        ComPtr<IAppxBlockMapReader> self;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IAppxBlockMapReader>::iid, reinterpret_cast<void**>(&self)));
-        *enumerator = ComPtr<IAppxBlockMapFilesEnumerator>::Make<AppxBlockMapFilesEnumerator>(
-            self,
-            std::move(GetFileNames())).Detach();
+        std::vector<ComPtr<IAppxBlockMapFile>> blockMapFiles;
+        for(const auto& file : m_blockMapFiles)
+        {
+            auto blockFile = file.second;
+            blockMapFiles.push_back(std::move(blockFile));
+        }
+        *enumerator = ComPtr<IAppxBlockMapFilesEnumerator>::
+                Make<EnumeratorCom<IAppxBlockMapFilesEnumerator, IAppxBlockMapFile>>(blockMapFiles).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
@@ -153,7 +174,7 @@ namespace MSIX {
     }
 
     std::vector<Block> AppxBlockMapObject::GetBlocks(const std::string& fileName)
-    {   
+    {
         auto index = m_blockMap.find(fileName);
         ThrowErrorIf(Error::FileNotFound, (index == m_blockMap.end()), "File not in blockmap");
         return index->second;

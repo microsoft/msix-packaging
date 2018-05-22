@@ -7,5 +7,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/../cmake)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
 add_subdirectory(ExtractContentsSample)
+add_subdirectory(BundleSample)
 
-ADD_DEPENDENCIES(ExtractContentsSample msix)
+add_dependencies(ExtractContentsSample msix)
+add_dependencies(BundleSample msix)

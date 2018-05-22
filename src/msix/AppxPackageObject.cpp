@@ -14,6 +14,7 @@
 #include "Applicability.hpp"
 #include "AppxManifestObject.hpp"
 #include "Encoding.hpp"
+#include "Enumerators.hpp"
 
 #include <string>
 #include <vector>
@@ -47,9 +48,10 @@ namespace MSIX {
         APPXSIGNATURE_P7X,
     };
 
-    AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container) :
+    AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, MSIX_APPLICABILITY_OPTIONS applicability, const ComPtr<IStorageObject>& container) :
         m_factory(factory),
         m_validation(validation),
+        m_applicability(applicability),
         m_container(container)
     {
         ComPtr<IXmlFactory> xmlFactory;
@@ -89,24 +91,40 @@ namespace MSIX {
         if(appxManifestInContainer)
         {
             stream = m_appxBlockMap->GetValidationStream(APPXMANIFEST_XML, appxManifestInContainer);
-            m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(xmlFactory.Get(), stream);
+            m_appxManifest = ComPtr<IVerifierObject>::Make<AppxManifestObject>(factory, stream);
         }
         else
         {
             std::string pathInWindows(APPXBUNDLEMANIFEST_XML);
             std::replace(pathInWindows.begin(), pathInWindows.end(), '/', '\\');
             stream = m_appxBlockMap->GetValidationStream(pathInWindows, appxBundleManifestInContainer);
-            m_appxBundleManifest = ComPtr<IVerifierObject>::Make<AppxBundleManifestObject>(xmlFactory.Get(), stream);
+            m_appxBundleManifest = ComPtr<IVerifierObject>::Make<AppxBundleManifestObject>(factory, stream);
             m_isBundle = true;
         }
 
         if ((m_validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
         {
-            auto publisherFromSignature = ComputePublisherId(m_appxSignature->GetPublisher());
-            auto publisherFromManifest = (m_isBundle) ? m_appxBundleManifest->GetPublisher() : m_appxManifest->GetPublisher();
-            std::string reason = "Publisher mismatch: '" + publisherFromManifest + "' != '" + publisherFromSignature + "'";
-            ThrowErrorIfNot(Error::PublisherMismatch,
-                    (0 == publisherFromManifest.compare(publisherFromSignature)), reason.c_str());
+            ComPtr<IAppxManifestPackageId> packageId;
+            if (m_isBundle)
+            {
+                auto manifest = m_appxBundleManifest.As<IAppxBundleManifestReader>();
+                ThrowHrIfFailed(manifest->GetPackageId(&packageId));
+            }
+            else
+            {
+                auto manifest = m_appxManifest.As<IAppxManifestReader>();
+                ThrowHrIfFailed(manifest->GetPackageId(&packageId));
+            }
+            auto publisherFromSignature = m_appxSignature->GetPublisher();
+            BOOL isSame = FALSE;
+            ThrowHrIfFailed(packageId->ComparePublisher(
+                reinterpret_cast<LPCWSTR>(utf8_to_wstring(publisherFromSignature).c_str()), &isSame));
+            if(!isSame)
+            {
+                auto internal = packageId.As<IAppxManifestPackageIdInternal>();
+                std::string reason = "Publisher mismatch: '" + internal->GetPublisher() + "' != '" + publisherFromSignature + "'";
+                ThrowErrorAndLog(Error::PublisherMismatch, reason.c_str());
+            }
         }
 
         struct Config
@@ -155,11 +173,12 @@ namespace MSIX {
             auto appxFactory = m_factory.As<IAppxFactory>();
             bool hasExactLanguageMatch = false;
             bool matchApplicationPackage = false;
-            std::vector<ComPtr<IAppxPackageReader>> variantFormPackages;
-            std::vector<ComPtr<IAppxPackageReader>> extraApplicationPackages;
+            std::vector<std::pair<std::string, ComPtr<IAppxPackageReader>>> variantFormPackages;
+            std::vector<std::pair<std::string, ComPtr<IAppxPackageReader>>> extraApplicationPackages;
             for (const auto& package : bundleInfo->GetPackages())
             {
-                auto packageName = package.get()->FileName;
+                auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
+                auto packageName = bundleInfoInternal->GetFileName();
                 auto fileStream = m_container->GetFile(packageName);
                 ThrowErrorIfNot(Error::FileNotFound, fileStream, "Package is not in container"); // This will change when we support flat bundles
 
@@ -169,112 +188,144 @@ namespace MSIX {
                 ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
                 ThrowErrorIf(Error::AppxManifestSemanticError, (compressionOpt != APPX_COMPRESSION_OPTION_NONE), "Packages cannot be compressed");
                 ComPtr<IAppxFileInternal> appxFileInternal = fileStream.As<IAppxFileInternal>();
-                ThrowErrorIf(Error::AppxManifestSemanticError, (appxFileInternal->GetCompressedSize() != package.get()->Size),
+                UINT64 size;
+                ThrowHrIfFailed(package->GetSize(&size));
+                ThrowErrorIf(Error::AppxManifestSemanticError, (appxFileInternal->GetCompressedSize()) != size,
                     "Size mistmach of package between AppxManifestBundle.appx and container");
 
                 // Validate the package
                 ComPtr<IAppxPackageReader> reader;
                 ThrowHrIfFailed(appxFactory->CreatePackageReader(fileStream.Get(), &reader));
-                auto appxPackage = reader.As<IPackage>();
-                auto appxManifest = appxPackage->GetAppxManifestObject();
-                ThrowErrorIfNot(Error::Unexpected, appxManifest, "Error getting the AppxManifest object");
+                ComPtr<IAppxManifestReader> innerPackageManifest;
+                ThrowHrIfFailed(reader->GetManifest(&innerPackageManifest));
                 // Do semantic checks to validate the relationship between the AppxBundleManifest and the AppxManifest.
+                ComPtr<IAppxManifestPackageId> bundlePackageId;
+                ThrowHrIfFailed(package->GetPackageId(&bundlePackageId));
+                auto bundlePackageIdInternal = bundlePackageId.As<IAppxManifestPackageIdInternal>();
+
+                ComPtr<IAppxManifestPackageId> innerPackageId;
+                ThrowHrIfFailed(innerPackageManifest->GetPackageId(&innerPackageId));
+                auto innerPackageIdInternal = innerPackageId.As<IAppxManifestPackageIdInternal>();
                 ThrowErrorIf(Error::AppxManifestSemanticError,
-                    (appxManifest->GetPublisher() != package.get()->PackageId->PublisherId),
+                    (innerPackageIdInternal->GetPublisher() != bundlePackageIdInternal->GetPublisher()),
                     "AppxBundleManifest.xml and AppxManifest.xml publisher mismatch");
+                UINT64 bundlePackageVersion = 0;
+                UINT64 innerPackageVersion = 0;
+                ThrowHrIfFailed(bundlePackageId->GetVersion(&bundlePackageVersion));
+                ThrowHrIfFailed(innerPackageId->GetVersion(&innerPackageVersion));
                 ThrowErrorIf(Error::AppxManifestSemanticError,
-                    (appxManifest->GetVersion() != package.get()->PackageId->Version),
+                    (innerPackageVersion != bundlePackageVersion),
                     "AppxBundleManifest.xml and AppxManifest.xml version mismatch");
                 ThrowErrorIf(Error::AppxManifestSemanticError,
-                    (appxManifest->GetName() != package.get()->PackageId->Name),
+                    (innerPackageIdInternal->GetName() != bundlePackageIdInternal->GetName()),
                     "AppxBundleManifest.xml and AppxManifest.xml name mismatch");
                 ThrowErrorIf(Error::AppxManifestSemanticError,
-                    (appxManifest->GetArchitecture() != package.get()->PackageId->Architecture) &&
-                    !(appxManifest->GetArchitecture().empty() && (package.get()->PackageId->Architecture == "neutral")),
+                    (innerPackageIdInternal->GetArchitecture() != bundlePackageIdInternal->GetArchitecture()) &&
+                    !(innerPackageIdInternal->GetArchitecture().empty() && (bundlePackageIdInternal->GetArchitecture() == "neutral")),
                     "AppxBundleManifest.xml and AppxManifest.xml architecture mismatch");
 
+                APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType;
+                ThrowHrIfFailed(package->GetPackageType(&packageType));
                 // Validation is done, now see if the package is applicable.
-                //if (appxManifest->GetPlatform() | Applicability::GetPlatform()) // temporary disable until we have bundles for all platforms
+
+                MSIX_PLATFORMS platform = (m_applicability & MSIX_APPLICABILITY_OPTION_SKIPPLATFORM) ?
+                    static_cast<MSIX_PLATFORMS>(MSIX_PLATFORM_ALL) : Applicability::GetPlatform();
+                //if (innerPackageManifest->GetPlatform() & platform) // temporary disable until we have bundles for all platforms
                 //{
-                    bool hasMatch = false;
-                    bool hasVariantMatch = false;
-                    for (auto& systemLanguage : Applicability::GetLanguages())
+                    if (m_applicability & MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE)
                     {
-                        for (auto& packageLanguage : package.get()->Languages)
+                        m_applicablePackages.push_back(std::move(reader));
+                        m_applicablePackagesNames.push_back(packageName);
+                    }
+                    else
+                    {
+                        bool hasMatch = false;
+                        bool hasVariantMatch = false;
+                        for (auto& systemLanguage : Applicability::GetLanguages())
                         {
-                            auto closeness = systemLanguage.Compare(packageLanguage);
-                            if (closeness == Bcp47ClosenessMeasure::ExactMatch)
+                            for (auto& packageLanguage : bundleInfoInternal->GetLanguages())
                             {
-                                // If this is an exact match we can stop looking
-                                hasExactLanguageMatch = true;
-                                hasMatch = true;
-                                break;
-                            }
-                            else if ((closeness == Bcp47ClosenessMeasure::AnyMatchWithScript) || (closeness == Bcp47ClosenessMeasure::AnyMatch))
-                            {   // matching und-* packages always get deployed
-                                hasMatch = true;
-                            }
-                            else if (closeness >= Bcp47ClosenessMeasure::LanguagesScriptsMatch)
-                            {
-                                closeness = systemLanguage.CompareNeutral(packageLanguage);
+                                auto closeness = systemLanguage.Compare(packageLanguage);
                                 if (closeness == Bcp47ClosenessMeasure::ExactMatch)
                                 {
+                                    // If this is an exact match we can stop looking
+                                    hasExactLanguageMatch = true;
+                                    hasMatch = true;
+                                    break;
+                                }
+                                else if ((closeness == Bcp47ClosenessMeasure::AnyMatchWithScript) || (closeness == Bcp47ClosenessMeasure::AnyMatch))
+                                {   // matching und-* packages always get deployed
                                     hasMatch = true;
                                 }
-                                else
+                                else if (closeness >= Bcp47ClosenessMeasure::LanguagesScriptsMatch)
                                 {
-                                    hasVariantMatch = true;
+                                    closeness = systemLanguage.CompareNeutral(packageLanguage);
+                                    if (closeness == Bcp47ClosenessMeasure::ExactMatch)
+                                    {
+                                        hasMatch = true;
+                                    }
+                                    else
+                                    {
+                                        hasVariantMatch = true;
+                                    }
                                 }
                             }
+                            // If we know this package is applicable there's no need to keep looking
+                            // for other system languages
+                            if (hasMatch)
+                            {
+                                m_applicablePackages.push_back(std::move(reader));
+                                m_applicablePackagesNames.push_back(packageName);
+                                break;
+                            }
+                            if (hasVariantMatch)
+                            {
+                                variantFormPackages.push_back(std::make_pair(packageName, std::move(reader)));
+                                break;
+                            }
                         }
-                        // If we know this package is applicable there's no need to keep looking
-                        // for other system languages
-                        if (hasMatch)
+                        if (packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
                         {
-                            m_applicablePackages.push_back(std::move(reader));
-                            break;
-                        }
-                        if (hasVariantMatch)
-                        {
-                            variantFormPackages.push_back(std::move(reader));
-                            break;
-                        }
-                    }
-                    if (!package.get()->IsResourcePackage) // is an application package
-                    {
-                        if (!hasMatch && !hasVariantMatch)
-                        {   // If we are here the package is an application package that targets the 
-                            // current platform, but it doesn't contain a language match. Save it just in case
-                            // there are no application packages that match, so we don't end up only with resources.
-                            extraApplicationPackages.push_back(std::move(reader));
-                        }
-                        else
-                        {
-                            matchApplicationPackage = true;
+                            if (!hasMatch && !hasVariantMatch)
+                            {   // If we are here the package is an application package that targets the 
+                                // current platform, but it doesn't contain a language match. Save it just in case
+                                // there are no application packages that match, so we don't end up only with resources.
+                                extraApplicationPackages.push_back(std::make_pair(packageName, std::move(reader)));
+                            }
+                            else
+                            {
+                                matchApplicationPackage = true;
+                            }
                         }
                     }
                 //}
-                m_payloadPackagesNames.push_back(packageName);
                 m_streams[packageName] = std::move(fileStream);
                 // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
                 // resource packages that are not languages packages.
             }
-            // If we don't have an exact match, we have to add all of the variants, too.
-            if (!hasExactLanguageMatch)
+
+            if (!(m_validation & MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE))
             {
-                for(auto& variantFormPackage : variantFormPackages)
+                // If we don't have an exact match, we have to add all of the variants, too.
+                if (!hasExactLanguageMatch)
                 {
-                    m_applicablePackages.push_back(std::move(variantFormPackage));
+                    for(auto& variantFormPackage : variantFormPackages)
+                    {
+                        m_applicablePackages.push_back(std::move(variantFormPackage.second));
+                        m_applicablePackagesNames.push_back(variantFormPackage.first);
+                    }
+                }
+                // If we don't have an application package add the ones we have
+                if (!matchApplicationPackage)
+                {
+                    for(auto& applicationPackage : extraApplicationPackages)
+                    {
+                        m_applicablePackages.push_back(std::move(applicationPackage.second));
+                        m_applicablePackagesNames.push_back(applicationPackage.first);
+                    }
                 }
             }
-            // If we don't have an application package add the ones we have
-            if (!matchApplicationPackage)
-            {
-                for(auto& applicationPackage : extraApplicationPackages)
-                {
-                    m_applicablePackages.push_back(std::move(applicationPackage));
-                }
-            }
+
         }
         else
         {
@@ -313,9 +364,9 @@ namespace MSIX {
         for(auto& block : blocks)
         {   // For Block elements that don't have a Size attribute, we always set its size as BLOCKMAP_BLOCK_SIZE
             // (even for the last one). The Size attribute isn't specified if the file is not compressed.
-            ThrowErrorIf(Error::BlockMapSemanticError, isUncompressed && (block.compressedSize != BLOCKMAP_BLOCK_SIZE),
+            ThrowErrorIf(Error::BlockMapSemanticError, isUncompressed && (block.blockSize != BLOCKMAP_BLOCK_SIZE),
                 "An uncompressed file has a size attribute in its Block elements");
-            blocksSize += block.compressedSize;
+            blocksSize += block.blockSize;
         }
 
         if(isUncompressed)
@@ -354,8 +405,8 @@ namespace MSIX {
         auto fileNames = GetFileNames(FileNameOptions::All);
         for (const auto& fileName : fileNames)
         {   // Don't extract packages files
-            auto file = std::find(std::begin(m_payloadPackagesNames), std::end(m_payloadPackagesNames), fileName);
-            if (file == std::end(m_payloadPackagesNames))
+            auto file = std::find(std::begin(m_applicablePackagesNames), std::end(m_applicablePackagesNames), fileName);
+            if (file == std::end(m_applicablePackagesNames))
             {
                 std::string targetName;
                 if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
@@ -364,7 +415,10 @@ namespace MSIX {
                     // the package full name won't be created on Windows, but it will on other platforms.
                     // This means that we have different behaviors in non-Win platforms.
                     // TODO: have the same behavior on Windows and other platforms.
-                    targetName = m_appxManifest.As<IAppxManifestObject>()->GetPackageFullName() + "/" + fileName;
+                    auto manifest = m_appxManifest.As<IAppxManifestReader>();
+                    ComPtr<IAppxManifestPackageId> packageId;
+                    ThrowHrIfFailed(manifest->GetPackageId(&packageId));
+                    targetName = packageId.As<IAppxManifestPackageIdInternal>()->GetPackageFullName() + "/" + fileName;
                 }
                 else
                 {   targetName = DecodeFileName(fileName);
@@ -402,7 +456,7 @@ namespace MSIX {
         {
             if (m_isBundle)
             {
-                result.insert(result.end(), m_payloadPackagesNames.begin(), m_payloadPackagesNames.end());
+                result.insert(result.end(), m_applicablePackagesNames.begin(), m_applicablePackagesNames.end());
             }
             else
             {
@@ -425,10 +479,12 @@ namespace MSIX {
     ComPtr<IStream> AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) { NOTIMPLEMENTED; }
 
     // IAppxPackageReader
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept try
     {
-        return static_cast<HRESULT>(Error::NotImplemented);
-    }
+        ThrowErrorIf(Error::InvalidParameter, (blockMapReader == nullptr || *blockMapReader != nullptr), "bad pointer");
+        *blockMapReader = m_appxBlockMap.As<IAppxBlockMapReader>().Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_FOOTPRINT_FILE_TYPE type, IAppxFile** file) noexcept try
     {
@@ -450,7 +506,7 @@ namespace MSIX {
         if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
         ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
         std::string name = utf16_to_utf8(fileName);
-        ComPtr<IStream> stream = GetFile(name);
+        ComPtr<IStream> stream = GetFile(EncodeFileName(name));
         ThrowErrorIfNot(Error::FileNotFound, stream, "requested file not in package")
         // Clients expect the stream's pointer to be at the start of the file!
         ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
@@ -463,18 +519,24 @@ namespace MSIX {
     {
         if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
         ThrowErrorIf(Error::InvalidParameter,(filesEnumerator == nullptr || *filesEnumerator != nullptr), "bad pointer");
-
-        ComPtr<IStorageObject> storage;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, reinterpret_cast<void**>(&storage)));
-        auto result = ComPtr<IAppxFilesEnumerator>::Make<AppxFilesEnumerator>(storage.Get());
-        *filesEnumerator = result.Detach();
+        std::vector<ComPtr<IAppxFile>> files;
+        for (const auto& fileName : GetFileNames(FileNameOptions::PayloadOnly))
+        {
+            auto file = GetFile(fileName).As<IAppxFile>();
+            files.push_back(std::move(file));
+        }
+        *filesEnumerator = ComPtr<IAppxFilesEnumerator>::
+            Make<EnumeratorCom<IAppxFilesEnumerator, IAppxFile>>(files).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxManifestReader** manifestReader) noexcept
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxManifestReader** manifestReader) noexcept try
     {
-        return static_cast<HRESULT>(Error::NotImplemented);
-    }
+        if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
+        ThrowErrorIf(Error::InvalidParameter,(manifestReader == nullptr || *manifestReader != nullptr), "bad pointer");
+        *manifestReader = m_appxManifest.As<IAppxManifestReader>().Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     // IAppxBundleReader
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetFootprintFile(APPX_BUNDLE_FOOTPRINT_FILE_TYPE fileType, IAppxFile **footprintFile) noexcept try
@@ -484,7 +546,7 @@ namespace MSIX {
         ThrowErrorIf(Error::FileNotFound, (static_cast<size_t>(fileType) > bundleFootprintFiles.size()), "unknown footprint file type");
         std::string footprint (bundleFootprintFiles[fileType]);
         ComPtr<IStream> stream = GetFile(footprint);
-        ThrowErrorIfNot(Error::FileNotFound, stream, "requested footprint file not in bundle")
+        ThrowErrorIfNot(Error::FileNotFound, stream, "Requested footprint file not in bundle")
         // Clients expect the stream's pointer to be at the start of the file!
         ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
         auto result = stream.As<IAppxFile>();
@@ -496,10 +558,14 @@ namespace MSIX {
     {
         if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
         ThrowErrorIf(Error::InvalidParameter,(payloadPackages == nullptr || *payloadPackages != nullptr), "bad pointer");
-        ComPtr<IStorageObject> storage;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IStorageObject>::iid, reinterpret_cast<void**>(&storage)));
-        auto result = ComPtr<IAppxFilesEnumerator>::Make<AppxFilesEnumerator>(storage.Get());
-        *payloadPackages = result.Detach();
+        std::vector<ComPtr<IAppxFile>> packages;
+        for (const auto& fileName : GetFileNames(FileNameOptions::PayloadOnly))
+        {
+            auto package = GetFile(fileName).As<IAppxFile>();
+            packages.push_back(std::move(package));
+        }
+        *payloadPackages = ComPtr<IAppxFilesEnumerator>::
+            Make<EnumeratorCom<IAppxFilesEnumerator, IAppxFile>>(packages).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
@@ -509,7 +575,7 @@ namespace MSIX {
         ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || payloadPackage == nullptr || *payloadPackage != nullptr), "bad pointer");
         std::string name = utf16_to_utf8(fileName);
         ComPtr<IStream> stream = GetFile(name);
-        ThrowErrorIfNot(Error::FileNotFound, stream, "requested package not in bundle")
+        ThrowErrorIfNot(Error::FileNotFound, stream, "Requested package not in bundle")
         // Clients expect the stream's pointer to be at the start of the file!
         ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
         auto result = stream.As<IAppxFile>();
@@ -519,6 +585,9 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxBundleManifestReader **manifestReader) noexcept
     {
-        return static_cast<HRESULT>(Error::NotImplemented);
+        if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
+        ThrowErrorIf(Error::InvalidParameter,(manifestReader == nullptr || *manifestReader != nullptr), "bad pointer");
+        *manifestReader = m_appxBundleManifest.As<IAppxBundleManifestReader>().Detach();
+        return static_cast<HRESULT>(Error::OK);
     }
 }
