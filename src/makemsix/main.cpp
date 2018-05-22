@@ -184,8 +184,8 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
         std::cout << "    named as the package full name." << std::endl;
         break;
     case UserSpecified::Unbundle:
-        command = std::find(commands.begin(), commands.end(), "unpack");
-        std::cout << "    " << toolName << " unpack -p <bundle> -d <directory> [options] " << std::endl;
+        command = std::find(commands.begin(), commands.end(), "unbundle");
+        std::cout << "    " << toolName << " unbundle -p <bundle> -d <directory> [options] " << std::endl;
         std::cout << std::endl;
         std::cout << "Description:" << std::endl;
         std::cout << "------------" << std::endl;
