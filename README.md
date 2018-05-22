@@ -8,8 +8,7 @@
    packages for the purposes of distribution from either the Microsoft Store, or their own content distribution networks.  
     
    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
-   documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).  See [sample/ExtractContentsSample/ExtractContentsSample.cpp](/sample/ExtractContentsSample/ExtractContentsSample.cpp) for additional details.
-
+   documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).
 
 ## Overview
 -----------
@@ -17,8 +16,8 @@ The MSIX Packaging SDK project includes cross platform API support for unpacking
 
 |                                      |                                 |
 |--------------------------------------|---------------------------------|
-| **msix**      | A shared library (DLL on Win32, dylib on MacOs, SO on Linux and Android) that exports a subset of the functionality contained within appxpackaging.dll on Windows. See [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) for additional details. On all platforms instead of CoCreating IAppxFactory, a c-style export: CoCreateAppxFactory is provided.  See sample folder at root of package for cross platform consumption examples.                <br /><br /> Finally, there is one export 'Unpack' that provides an simplified unpackage implementation.|
-| **makemsix**  | A command line wrapper over the Unpack implementation.  This tool exists primarily as a means of validating the implementation of the MSIX Packaging SDK internal routines and is compiled for Win32, MacOS, and Linux platforms.|
+| **msix**      | A shared library (DLL on Win32, dylib on MacOs, SO on Linux and Android) that exports a subset of the functionality contained within appxpackaging.dll on Windows. See [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) for additional details.<br />On all platforms instead of CoCreating IAppxFactory, a C-style export: CoCreateAppxFactory is provided. Similarly, the CoCreateAppxBundleFactory export is equivalent as CoCreating IAppxBundleFactory.<br /><br /> The 'UnpackPackage' and 'UnpackBundle' exports that provide a simplified unpackage implementation. See the [samples directory](sample) for usage of the SDK.|
+| **makemsix**  | A command line wrapper over the UnpackPackage and UnpackBundle implementations.  This tool exists primarily as a means of validating the implementation of the MSIX Packaging SDK internal routines and is compiled for Win32, MacOS, and Linux platforms.|
 
 Guidance on how to package your app contents and construct your app manifest such that it can take advantage of the cross platform support of this SDK is [here](tdf-guidance.md).
 ## Setup Instructions
@@ -89,6 +88,7 @@ File->Open->navigate to project root/build and select "Project.xcodeproj"
 See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode) for additional details
 
 ## Build
+----------
 ### On Windows using Visual Studio 2017 nmake:
 ```
    makewin32.cmd
@@ -137,6 +137,11 @@ The following native platforms are in development now:
 | MacOS | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/23627/badge) |
 | Linux | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/23627/badge) |
 
+## Windows 7 support
+----------
+The MSIX Packaging SDK is fully supported and tested on Windows 7. However, an Application Manifest **_MUST_**  be included to any executable that is expected to run on Windows 7 and uses msix.dll. Specifically, the Application Manifest **_MUST_**  include the supportedOS flags for Windows 7. The manifest is not included on msix.dll because the compat manifest doesn't matter on DLLs.
+See the [manifest](manifest.cmakein) that is used for makemsix and samples of this project as example. The Windows 7 machine might also require the [Microsoft Visual C++ Redistributable](https://www.visualstudio.com/downloads/) binaries installed to run properly.
+
 ## Testing
 ----------
 Unit tests should be run on builds that have the "Release" or "RelWithDebug" CMAKE switch. 
@@ -147,7 +152,7 @@ First build the project, then:
   From within powershell, navigate to test\Win32, and run ".\Win32.ps1"
 
   On Mac & Linux:
-  From within bash, navigate to test/MacOS-Linux, and run "./MacOS-Linux-Etc.sh
+  From within bash, navigate to test/MacOS-Linux, and run "./MacOS-Linux-Etc.sh [Apple|Linux]"
 
 Testing on mobile platforms:
 
