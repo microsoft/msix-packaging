@@ -32,16 +32,20 @@ namespace MSIX {
         }
         jclass javaClass = env->FindClass("com/microsoft/msix/JniHelper");
         ThrowErrorIf(Error::Unexpected, !javaClass, "Failed looking for our java class.");
-        jmethodID languageFunc = env->GetStaticMethodID(javaClass, "getLanguage", "()Ljava/lang/String;");
-        ThrowErrorIf(Error::Unexpected, !languageFunc, "Failed calling getLanguage().");
-        jstring javaLanguage = reinterpret_cast<jstring>(env->CallStaticObjectMethod(javaClass, languageFunc));
-        const char* language = env->GetStringUTFChars(javaLanguage, nullptr);
-        ThrowErrorIf(Error::Unexpected, !language, "Failed getting langauge from the system.");
-        // BCP47 format
-        std::string bcp47(language);
-        std::replace(bcp47.begin(), bcp47.end(), '_', '-');
-        languages.push_back(Bcp47Tag(bcp47));
-        env->ReleaseStringUTFChars(javaLanguage, language);
+        jmethodID languageFunc = env->GetStaticMethodID(javaClass, "getLanguages", "()[Ljava/lang/String;");
+        ThrowErrorIf(Error::Unexpected, !languageFunc, "Failed calling getLanguages().");
+        jobjectArray javaLanguages = reinterpret_cast<jobjectArray>(env->CallStaticObjectMethod(javaClass, languageFunc));
+        for(int i = 0; i < env->GetArrayLength(javaLanguages); i++)
+        {
+            jstring javaLanguage = reinterpret_cast<jstring>(env->GetObjectArrayElement(javaLanguages, i));
+            const char* language = env->GetStringUTFChars(javaLanguage, nullptr);
+            ThrowErrorIf(Error::Unexpected, !language, "Failed getting langauge from the system.");
+            // BCP47 format
+            std::string bcp47(language);
+            std::replace(bcp47.begin(), bcp47.end(), '_', '-');
+            languages.push_back(Bcp47Tag(bcp47));
+            env->ReleaseStringUTFChars(javaLanguage, language);
+        }
         if (isThreadAttached)
         {
             g_JavaVM->DetachCurrentThread();
