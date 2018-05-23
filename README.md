@@ -142,6 +142,13 @@ The following native platforms are in development now:
 The MSIX Packaging SDK is fully supported and tested on Windows 7. However, an Application Manifest **_MUST_**  be included to any executable that is expected to run on Windows 7 and uses msix.dll. Specifically, the Application Manifest **_MUST_**  include the supportedOS flags for Windows 7. The manifest is not included on msix.dll because the compat manifest doesn't matter on DLLs.
 See the [manifest](manifest.cmakein) that is used for makemsix and samples of this project as example. The Windows 7 machine might also require the [Microsoft Visual C++ Redistributable](https://www.visualstudio.com/downloads/) binaries installed to run properly.
 
+## Android support
+The MSIX Packaging SDK minimum supported for Android is API Level 19.
+
+We also produce msix-jni.jar which acts as a helper to get the languages from the Android device. Because of it, we expect either a -DANDROID_SDK and -DANDROID_SDK_VERSION on the cmake command and, if not present, we default to $ANDROID_HOME and 24 respectively.
+The default level for the SDK level is 24 because we use the [Configuration class](https://developer.android.com/reference/android/content/res/Configuration) and, depending on the version of the device, we either use the locale attribute (deprecated as of API level 24) or getLocales.
+We recommend using the [makeaosp](makeaosp) script to build for Android on non-Windows devices.
+
 ## Testing
 ----------
 Unit tests should be run on builds that have the "Release" or "RelWithDebug" CMAKE switch. 
@@ -161,7 +168,7 @@ Testing on mobile platforms:
   and then launch the iPhone simulator.
 
   On Android:
-  From within bash, navigate to test/MacOS-Linux, and run "./testaosponmac.sh". The test assumes there's an Android emulator named Nexus_5X_API_19_x86.
+  From within bash, navigate to test/MacOS-Linux, and run "./testaosponmac.sh". The test assumes there's an Android emulator named Nexus_5X_API_19_x86 and the build output is on a .vs directory at the root of the project.
 
 ## Releasing
 ------------

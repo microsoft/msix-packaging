@@ -5,17 +5,24 @@
 package com.microsoft.msix;
 
 import android.content.res.Resources;
+import android.os.LocaleList;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class JniHelper {
 
-    static public String getLanguage() {
-        // TODO: Change the signature of this method to return an array,
-        //       Find out the API level of the system and make the corresponding
-        //       call and use Configuration.getLocales() if possible.
-        //       Configuration.locale was deprecated in API level 24, 
-        //       but MSIX min API level is 19
-        return Resources.getSystem().getConfiguration().locale.toString();
+    static public String[] getLanguages() {
+        List<String> languageList = new ArrayList<String>();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+            LocaleList ll = Resources.getSystem().getConfiguration().getLocales();
+            for(int i = 0; i < ll.size(); i++) {
+                languageList.add(ll.get(i).toString());
+            }
+        } else {
+            languageList.add(Resources.getSystem().getConfiguration().locale.toString());
+        }
+        return languageList.toArray(new String[0]);
     }
 
 }
-
