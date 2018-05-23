@@ -247,15 +247,25 @@ ENDIF()
 IF(AOSP)
     TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE -latomic)
     FIND_PACKAGE(Java REQUIRED)
-    IF(NOT DEFINED ENV{ANDROID_HOME})
-        MESSAGE(FATAL_ERROR "ANDROID_HOME enviroment variable not found.")
+    IF(NOT ANDROID_SDK)
+        IF(NOT DEFINED ENV{ANDROID_HOME})
+            MESSAGE(FATAL_ERROR "ANDROID_HOME enviroment variable not found.")
+        ENDIF()
+        SET(ANDROID_SDK $ENV{ANDROID_HOME})
+    ENDIF()
+    IF(NOT ANDROID_SDK_VERSION)
+        SET(ANDROID_SDK_VERSION 24)
+    ENDIF()
+    IF(ANDROID_SDK_VERSION LESS 24)
+        MESSAGE(FATAL_ERROR "MSIX minimum Android SDK is 24")
     ENDIF()
     INCLUDE(UseJava)
+    MESSAGE(STATUS "Android SDK = ${ANDROID_SDK}")
     ADD_JAR(${PROJECT_NAME}-jni
         SOURCES
             PAL/java/com/microsoft/msix/JniHelper.java
         INCLUDE_JARS
-            $ENV{ANDROID_HOME}/platforms/android-${CMAKE_SYSTEM_VERSION}/android.jar
+            ${ANDROID_SDK}/platforms/android-${ANDROID_SDK_VERSION}/android.jar
         OUTPUT_DIR
             ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
         )
