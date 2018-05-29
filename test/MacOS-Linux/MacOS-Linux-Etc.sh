@@ -98,33 +98,35 @@ RunTest 81 ./../appx/BlockMap/Duplicate_file_in_blockmap.appx -ss
 RunTest 81 ./../appx/bundles/BlockMapContainsPayloadPackage.appxbundle -ss
 RunTest 51 ./../appx/bundles/BlockMapIsMissing.appxbundle -ss
 RunTest 2 ./../appx/bundles/BlockMapViolatesSchema.appxbundle -ss
-#RunTest 0 ./../appx/bundles/ContainsNeutralAndX86AppPackages.appxbundle
+# RunTest 0 ./../appx/bundles/ContainsNeutralAndX86AppPackages.appxbundle
 RunTest 2 ./../appx/bundles/ContainsNoPayload.appxbundle -ss
 RunTest 97 ./../appx/bundles/ContainsOnlyResourcePackages.appxbundle -ss
-#RunTest 0 ./../appx/bundles/ContainsTwoNeutralAppPackages.appxbundle
+# RunTest 0 ./../appx/bundles/ContainsTwoNeutralAppPackages.appxbundle
 RunTest 0 ./../appx/bundles/MainBundle.appxbundle -ss
-#RunTest 0 ./../appx/bundles/ManifestDeclaresAppPackageForResourcePackage.appxbundle
-#RunTest 0 ./../appx/bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle
-#RunTest 0 ./../appx/bundles/ManifestHasExtraPackage.appxbundle
+# RunTest 0 ./../appx/bundles/ManifestDeclaresAppPackageForResourcePackage.appxbundle
+# RunTest 0 ./../appx/bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle
+# RunTest 0 ./../appx/bundles/ManifestHasExtraPackage.appxbundle
 RunTest 52 ./../appx/bundles/ManifestIsMissing.appxbundle -ss
 RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectArchitecture.appxbundle -ss
 RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectName.appxbundle -ss
 RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectPublisher.appxbundle -ss
 RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectSize.appxbundle -ss
 RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectVersion.appxbundle -ss
-#RunTest 0 ./../appx/bundles/ManifestPackageHasInvalidOffset.appxbundle
-#RunTest 0 ./../appx/bundles/ManifestPackageHasInvalidRange.appxbundle
+# RunTest 0 ./../appx/bundles/ManifestPackageHasInvalidOffset.appxbundle
+# RunTest 0 ./../appx/bundles/ManifestPackageHasInvalidRange.appxbundle
 RunTest 2 ./../appx/bundles/ManifestViolatesSchema.appxbundle -ss
 RunTest 97 ./../appx/bundles/PayloadPackageHasNonAppxExtension.appxbundle -ss
 RunTest 97 ./../appx/bundles/PayloadPackageIsCompressed.appxbundle -ss
 RunTest 3 ./../appx/bundles/PayloadPackageIsEmpty.appxbundle -ss
 RunTest 87 ./../appx/bundles/PayloadPackageIsNotAppxPackage.appxbundle -ss
-#RunTest 0 ./../appx/bundles/PayloadPackageNotListedInManifest.appxbundle
+# RunTest 0 ./../appx/bundles/PayloadPackageNotListedInManifest.appxbundle
 RunTest 66 ./../appx/bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle
-RunTest 0 ./../appx/bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
 
 RunTest 0  ./../appx/StoreSigned_Desktop_x64_MoviesTV.appx
-ValidateResult ExpectedResults/StoreSigned_Desktop_x64_MoviesTV.txt
+ValidateResult ExpectedResult/$directory/StoreSigned_Desktop_x64_MoviesTV.txt
+
+RunTest 0 ./../appx/bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
+ValidateResult ExpectedResult/$directory/StoreSigned_Desktop_x86_x64_MoviesTV.txt
 
 CleanupUnpackFolder
 
