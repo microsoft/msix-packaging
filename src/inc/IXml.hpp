@@ -30,6 +30,8 @@ enum class XmlQueryName : std::uint8_t
     Bundle_Identity                            = 3,
     Bundle_Packages_Package                    = 4,
     Bundle_Packages_Package_Resources_Resource = 5,
+    Package_Dependencies_TargetDeviceFamily    = 6,
+    Package_Applications_Application           = 7,
 };
 
 // defines attribute names for use in IXmlElement-> [GetAttributeValue|GetBase64DecodedAttributeValue]
@@ -51,6 +53,11 @@ enum class XmlAttributeName : std::uint8_t
     Bundle_Package_Type                        = 10,
     Bundle_Package_Architecture                = 11,
     Bundle_Package_Resources_Resource_Language = 12,
+
+    Dependencies_Tdf_MinVersion                = 13,
+    Dependencies_Tdf_MaxVersionTested          = 14,
+
+    Package_Applications_Application_Id        = 15,
 };
 
 EXTERN_C const IID IID_IXmlElement;

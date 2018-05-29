@@ -15,7 +15,7 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxFactory::CreatePackageWriter (
         IStream* outputStream,
         APPX_PACKAGE_SETTINGS* ,//settings, TODO: plumb this through
-        IAppxPackageWriter** packageWriter)
+        IAppxPackageWriter** packageWriter) noexcept
     {
         return static_cast<HRESULT>(Error::NotImplemented);
     }
@@ -29,7 +29,7 @@ namespace MSIX {
         ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
         ComPtr<IStream> input(inputStream);
         auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), input);
-        auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, zip);
+        auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, m_applicability, zip);
         *packageReader = result.Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -105,14 +105,18 @@ namespace MSIX {
     HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
-        auto intermediate = utf8_to_wstring(internal);
-        std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
-        *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
-        ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");
-        std::memset(reinterpret_cast<void*>(*result), 0, countBytes);
-        std::memcpy(reinterpret_cast<void*>(*result),
-                    reinterpret_cast<void*>(const_cast<wchar_t*>(intermediate.c_str())),
-                    countBytes - sizeof(wchar_t));
+        *result = nullptr;
+        if (!internal.empty())
+        {
+            auto intermediate = utf8_to_wstring(internal);
+            std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
+            *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
+            ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");
+            std::memset(reinterpret_cast<void*>(*result), 0, countBytes);
+            std::memcpy(reinterpret_cast<void*>(*result),
+                        reinterpret_cast<void*>(const_cast<wchar_t*>(intermediate.c_str())),
+                        countBytes - sizeof(wchar_t));
+        }
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 

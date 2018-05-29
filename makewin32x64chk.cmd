@@ -7,6 +7,6 @@ echo %cd%
 set currentpath=%cd%
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
 cd /D %currentpath%
-echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=MinSizeRel %1 %2 -G"NMake Makefiles" ..
+echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=Debug %1 %2 -G"NMake Makefiles" ..
 cmake -DWIN32=on -DCMAKE_BUILD_TYPE=Debug %1 %2 -G"NMake Makefiles" ..
 nmake

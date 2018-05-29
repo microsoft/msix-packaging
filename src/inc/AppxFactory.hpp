@@ -18,8 +18,8 @@ namespace MSIX {
     class AppxFactory final : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory, IAppxBundleFactory>
     {
     public:
-        AppxFactory(MSIX_VALIDATION_OPTION validationOptions, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
-            m_validationOptions(validationOptions), m_memalloc(memalloc), m_memfree(memfree)
+        AppxFactory(MSIX_VALIDATION_OPTION validationOptions, MSIX_APPLICABILITY_OPTIONS applicability, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
+            m_validationOptions(validationOptions), m_applicability(applicability), m_memalloc(memalloc), m_memfree(memfree)
         {
             ThrowErrorIf(Error::InvalidParameter, (m_memalloc == nullptr || m_memfree == nullptr), "allocator/deallocator pair not specified.")
             ComPtr<IMSIXFactory> self;
@@ -30,10 +30,7 @@ namespace MSIX {
         ~AppxFactory() {}
 
         // IAppxFactory
-        HRESULT STDMETHODCALLTYPE CreatePackageWriter (
-            IStream* outputStream,
-            APPX_PACKAGE_SETTINGS* ,//settings, TODO: plumb this through
-            IAppxPackageWriter** packageWriter) override;           
+        HRESULT STDMETHODCALLTYPE CreatePackageWriter(IStream* outputStream, APPX_PACKAGE_SETTINGS* , IAppxPackageWriter** packageWriter) noexcept override;           
 
         HRESULT STDMETHODCALLTYPE CreatePackageReader (IStream* inputStream, IAppxPackageReader** packageReader) noexcept override;
         HRESULT STDMETHODCALLTYPE CreateManifestReader(IStream* inputStream, IAppxManifestReader** manifestReader) noexcept override ;
@@ -67,5 +64,6 @@ namespace MSIX {
         MSIX_VALIDATION_OPTION m_validationOptions;
         ComPtr<IStorageObject> m_resourcezip;
         std::vector<std::uint8_t> m_resourcesVector;
+        MSIX_APPLICABILITY_OPTIONS m_applicability;
     };
 }

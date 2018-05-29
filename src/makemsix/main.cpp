@@ -17,7 +17,8 @@ enum class UserSpecified
 {
     Nothing,
     Help,
-    Unpack
+    Unpack,
+    Unbundle
 };
 
 // Tracks the state of the current parse operation as well as implements input validation
@@ -58,6 +59,18 @@ struct State
         return true;
     }
 
+    bool SkipLanguage()
+    {
+        applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE);
+        return true;
+    }
+
+    bool SkipPlatform()
+    {
+        applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_SKIPPLATFORM);
+        return true;
+    }
+
     bool SetPackageName(const std::string& name)
     {
         if (!packageName.empty() || name.empty()) { return false; }
@@ -76,7 +89,8 @@ struct State
     {
         switch (specified)
         {
-        case UserSpecified::Unpack:            
+        case UserSpecified::Unpack:
+        case UserSpecified::Unbundle:
             if (packageName.empty() || directoryName.empty()) {
                 return false;
             }
@@ -91,6 +105,7 @@ struct State
     UserSpecified specified                  = UserSpecified::Nothing;
     MSIX_VALIDATION_OPTION validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
     MSIX_PACKUNPACK_OPTION unpackOptions     = MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE;
+    MSIX_APPLICABILITY_OPTIONS applicability = MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL;
 };
 
 // describes an option to a command that the user may specify
@@ -163,8 +178,20 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
         std::cout << "Description:" << std::endl;
         std::cout << "------------" << std::endl;
         std::cout << "    Extracts all files within an app package at the input <package> name to the" << std::endl;
-        std::cout << "    specified output <directory>.  The output has the same directory structure " << std::endl;
-        std::cout << "    as the package." << std::endl;
+        std::cout << "    specified output <directory>. The output has the same directory structure " << std::endl;
+        std::cout << "    as the package. If <package> is a bundle, it extract its contests with full" << std::endl;
+        std::cout << "    applicability validations and its packages will be unpacked in a directory " << std::endl;
+        std::cout << "    named as the package full name." << std::endl;
+        break;
+    case UserSpecified::Unbundle:
+        command = std::find(commands.begin(), commands.end(), "unbundle");
+        std::cout << "    " << toolName << " unbundle -p <bundle> -d <directory> [options] " << std::endl;
+        std::cout << std::endl;
+        std::cout << "Description:" << std::endl;
+        std::cout << "------------" << std::endl;
+        std::cout << "    Extracts all files and packages within the bundle at the input <bundle> name to the" << std::endl;
+        std::cout << "    specified output <directory>. The output has the same directory structure " << std::endl;
+        std::cout << "    as the package. its packages will be unpacked in a directory named as the package full name" << std::endl;
         break;
     }
     std::cout << std::endl;
@@ -242,6 +269,12 @@ int ParseAndRun(std::vector<Command>& commands, int argc, char* argv[])
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
         );
+    case UserSpecified::Unbundle:
+        return UnpackBundle(state.unpackOptions, state.validationOptions,
+            state.applicability,
+            const_cast<char*>(state.packageName.c_str()),
+            const_cast<char*>(state.directoryName.c_str())
+        );
     }
     return -1; // should never end up here.
 }
@@ -281,6 +314,29 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return state.AllowSignatureOriginUnknown(); }),
                 Option("-ss", false, "Skips enforcement of signed packages.  By default packages must be signed.",
                     [](State& state, const std::string&) { return state.SkipSignature(); }),
+                Option("-?", false, "Displays this help text.",
+                    [](State& state, const std::string&) { return false; })                
+            })
+        },
+        {   Command("unbundle", "Unpack files from a package to disk",
+                [](State& state) { return state.Specify(UserSpecified::Unbundle); },
+            {   
+                Option("-p", true, "REQUIRED, specify input package name.",
+                    [](State& state, const std::string& name) { return state.SetPackageName(name); }),
+                Option("-d", true, "REQUIRED, specify output directory name.",
+                    [](State& state, const std::string& name) { return state.SetDirectoryName(name); }),
+                Option("-pfn", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
+                    [](State& state, const std::string&) {return state.CreatePackageSubfolder(); }),
+                Option("-mv", false, "Skips manifest validation.  By default manifest validation is enabled.",
+                    [](State& state, const std::string&) { return state.SkipManifestValidation(); }),
+                Option("-sv", false, "Skips signature validation.  By default signature validation is enabled.",
+                    [](State& state, const std::string&) { return state.AllowSignatureOriginUnknown(); }),
+                Option("-ss", false, "Skips enforcement of signed packages.  By default packages must be signed.",
+                    [](State& state, const std::string&) { return state.SkipSignature(); }),
+                Option("-sl", false, "Only for bundles. Skips matching packages with the language of the system. By default unpacked resources packages will match the system languages.",
+                    [](State& state, const std::string&) { return state.SkipLanguage(); }),
+                Option("-sp", false, "Only for bundles. Skips matching packages with of the same system. By default unpacked application packages will only match the platform.",
+                    [](State& state, const std::string&) { return state.SkipPlatform(); }),
                 Option("-?", false, "Displays this help text.",
                     [](State& state, const std::string&) { return false; })                
             })

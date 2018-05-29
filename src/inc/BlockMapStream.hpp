@@ -26,6 +26,7 @@ namespace MSIX {
     typedef struct Block
     {
         std::uint64_t compressedSize;
+        std::uint64_t blockSize;
         std::vector<std::uint8_t> hash;
     } Block;
 

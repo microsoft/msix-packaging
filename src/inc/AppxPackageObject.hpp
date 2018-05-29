@@ -22,6 +22,7 @@
 #include "AppxSignature.hpp"
 #include "AppxFactory.hpp"
 #include "AppxPackageInfo.hpp"
+#include "AppxManifestObject.hpp"
 
 // internal interface
 EXTERN_C const IID IID_IPackage;
@@ -37,84 +38,19 @@ class IPackage : public IUnknown
 public:
     virtual void Unpack(MSIX_PACKUNPACK_OPTION options, const MSIX::ComPtr<IStorageObject>& to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
-    virtual MSIX::ComPtr<IVerifierObject> GetAppxManifestObject() = 0;
-};
-
-EXTERN_C const IID IID_IBundleInfo;
-#ifndef WIN32
-// {ff82ffcd-747a-4df9-8879-853ab9dd15a1}
-interface IBundleInfo : public IUnknown
-#else
-#include "Unknwn.h"
-#include "Objidl.h"
-class IBundleInfo : public IUnknown
-#endif
-{
-public:
-    virtual std::vector<std::unique_ptr<MSIX::AppxPackageInBundle>>& GetPackages() = 0;
 };
 
 SpecializeUuidOfImpl(IPackage);
-SpecializeUuidOfImpl(IBundleInfo);
+
 
 namespace MSIX {
-
-    // Object backed by AppxManifest.xml
-    class AppxManifestObject final : public ComClass<AppxManifestObject, IVerifierObject>
-    {
-    public:
-        AppxManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
-
-        // IVerifierObject
-        const std::string& GetPublisher() override { return GetPackageId()->PublisherId; }
-        bool HasStream() override { return !!m_stream; }
-        ComPtr<IStream> GetStream() override { return m_stream; }
-        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
-        const std::string GetPackageFullName() override { return m_packageId->GetPackageFullName(); }
-        const std::string& GetVersion() override { return GetPackageId()->Version; }
-        const std::string& GetName() override { return GetPackageId()->Name; }
-        const std::string& GetArchitecture() override { return GetPackageId()->Architecture; }
-
-        AppxPackageId* GetPackageId() { return m_packageId.get(); }
-
-    protected:
-        ComPtr<IStream> m_stream;
-        std::unique_ptr<AppxPackageId> m_packageId;
-    };
-
-    class AppxBundleManifestObject final : public ComClass<AppxBundleManifestObject, IVerifierObject, IBundleInfo>
-    {
-    public:
-        AppxBundleManifestObject(IXmlFactory* factory, const ComPtr<IStream>& stream);
-
-         // IVerifierObject
-        const std::string& GetPublisher() override { return GetPackageId()->PublisherId; }
-        bool HasStream() override { return !!m_stream; }
-        ComPtr<IStream> GetStream() override { return m_stream; }
-        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
-        const std::string GetPackageFullName() override { NOTSUPPORTED; }
-        const std::string& GetVersion() override { return GetPackageId()->Version; }
-        const std::string& GetName() override { return GetPackageId()->Name; }
-        const std::string& GetArchitecture() override { NOTSUPPORTED; }
-
-        AppxPackageId* GetPackageId() { return m_packageId.get(); }
-
-        // IBundleInfo
-        std::vector<std::unique_ptr<AppxPackageInBundle>>& GetPackages() override { return m_packages; }
-
-    protected:
-        ComPtr<IStream> m_stream;
-        std::unique_ptr<AppxPackageId> m_packageId;
-        std::vector<std::unique_ptr<AppxPackageInBundle>> m_packages;
-    };
-
     // Storage object representing the entire AppxPackage
     // Note: This class has is own implmentation of QueryInterface, if a new interface is implemented
     // AppxPackageObject::QueryInterface must also be modified too.
     class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader>
     {
     public:
-        AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, const ComPtr<IStorageObject>& container);
+        AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, MSIX_APPLICABILITY_OPTIONS applicabilityOptions, const ComPtr<IStorageObject>& container);
         ~AppxPackageObject() {}
 
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) noexcept override
@@ -148,13 +84,18 @@ namespace MSIX {
                 AddRef();
                 return S_OK;
             }
+            if (riid == UuidOfImpl<IUnknown>::iid)
+            {
+                *ppvObject = static_cast<void*>(reinterpret_cast<IUnknown*>(this));
+                AddRef();
+                return S_OK;
+            }
             return static_cast<HRESULT>(MSIX::Error::NoInterface);
         }
 
         // internal IPackage methods
         void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to) override;
         std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
-        ComPtr<IVerifierObject> GetAppxManifestObject() override { return m_appxManifest; }
 
         // IAppxPackageReader
         HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept override;
@@ -184,6 +125,7 @@ namespace MSIX {
         std::map<std::string, ComPtr<IStream>> m_streams;
 
         MSIX_VALIDATION_OPTION      m_validation = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
+        MSIX_APPLICABILITY_OPTIONS  m_applicability = MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL;
         ComPtr<IMSIXFactory>        m_factory;
         ComPtr<IVerifierObject>     m_appxSignature;
         ComPtr<IVerifierObject>     m_appxBlockMap;
@@ -193,9 +135,8 @@ namespace MSIX {
         
         std::vector<std::string>    m_payloadFiles;
         std::vector<std::string>    m_footprintFiles;
-        std::vector<std::string>    m_payloadPackagesNames;
-
-        std::vector<ComPtr<IAppxPackageReader>> m_payloadPackages;
+        std::vector<std::string>    m_applicablePackagesNames;
+        std::vector<ComPtr<IAppxPackageReader>> m_applicablePackages;
         bool                        m_isBundle = false;
     };
 

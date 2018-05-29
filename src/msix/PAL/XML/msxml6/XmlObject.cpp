@@ -62,8 +62,8 @@ struct SchemaEntry
 
     SchemaEntry(const wchar_t* u, const wchar_t* a, const char* s) : uri(u), alias(a), schema(s) {}
 
-    inline bool operator==(const SchemaEntry& rhs) const {
-        return 0 == wcscmp(uri, rhs.uri);
+    inline bool operator==(const wchar_t* otherUri) const {
+        return 0 == wcscmp(uri, otherUri);
     }
 };
 
@@ -121,6 +121,8 @@ static const wchar_t* xPaths[] = {
     /* Bundle_Identity                            */L"/*[local-name()='Bundle']/*[local-name()='Identity']",
     /* Bundle_Packages_Package                    */L"/*[local-name()='Bundle']/*[local-name()='Packages']/*[local-name()='Package']",
     /* Bundle_Packages_Package_Resources_Resource */L"*[local-name()='Resources']/*[local-name()='Resource']",
+    /* Package_Dependencies_TargetDeviceFamily    */L"/*[local-name()='Package']/*[local-name()='Dependencies']/*[local-name()='TargetDeviceFamily']",
+    /* Package_Applications_Application           */L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']",
 };    
 
 // must remain in same order as XmlAttributeName
@@ -141,6 +143,11 @@ static const wchar_t* attributeNames[] = {
     /* Bundle_Package_Type                        */L"Type",
     /* Bundle_Package_Architecture                */L"Architecture",
     /* Bundle_Package_Resources_Resource_Language */L"Language",
+
+    /* Dependencies_Tdf_MinVersion                */L"MinVersion",
+    /* Dependencies_Tdf_MaxVersionTested          */L"MaxVersionTested",
+
+    /* Package_Applications_Application_Id        */L"Id",
 };
 
 // --------------------------------------------------------
@@ -452,7 +459,7 @@ public:
                     std::wstring uri(reinterpret_cast<WCHAR*>(attributeValue.Get().bstrVal));
                     std::transform(uri.begin(), uri.end(), uri.begin(), ::tolower);
                     // next we look for that uri against our namespace manager                    
-                    const auto& result = std::find(namespaces.begin(), namespaces.end(), SchemaEntry(uri.c_str(), nullptr, nullptr));
+                    const auto& result = std::find(namespaces.begin(), namespaces.end(), uri.c_str());
                     if (result == namespaces.end())
                     {   // the namespace specified is unknown to us.  remove everything with the specified alias!
                         std::wostringstream xPath;

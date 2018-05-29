@@ -1,3 +1,7 @@
+AppxMetadata
+Assets
+Images
+Resources
 59403 AppxBlockMap.xml
 13627 AppxManifest.xml
 10622 AppxSignature.p7x
