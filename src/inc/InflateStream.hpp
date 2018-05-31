@@ -19,6 +19,7 @@
 #include <string>
 #include <map>
 #include <functional>
+#include <vector>
 
 namespace MSIX {
 
@@ -62,7 +63,6 @@ namespace MSIX {
 
         void Cleanup();
 
-        static const ULONG BUFFERSIZE = 4096;
         enum class State : size_t
         {
             UNINITIALIZED = 0,
@@ -87,7 +87,7 @@ namespace MSIX {
         z_stream        m_zstrm;
         int             m_zret;
 
-        std::uint8_t    m_compressedBuffer[InflateStream::BUFFERSIZE];
-        std::uint8_t    m_inflateWindow[InflateStream::BUFFERSIZE];
+        std::unique_ptr<std::vector<std::uint8_t>> m_compressedBuffer;
+        std::unique_ptr<std::vector<std::uint8_t>> m_inflateWindow;
     };
 }

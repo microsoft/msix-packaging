@@ -49,6 +49,7 @@ function ValidateResult([string] $EXPECTED) {
     if(Compare-Object -ReferenceObject $(Get-Content "output.txt") -DifferenceObject $(Get-Content $EXPECTED))
     {
         write-host  "FAILED comparing extracted files"
+        Get-Content output.txt
         $global:TESTFAILED=1
     }
     else
