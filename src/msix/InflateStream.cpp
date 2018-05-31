@@ -15,6 +15,11 @@
 #include <utility>
 
 namespace MSIX {
+
+    // Buffer size used for compressed buffer and inflate window.
+    // See zlib's updatewindow comment.
+    static const size_t BufferSize = 32*1024;
+
     struct InflateHandler
     {
         typedef std::pair<bool, InflateStream::State>(*lambda)(InflateStream* self, void* buffer, ULONG countBytes);
@@ -42,19 +47,21 @@ namespace MSIX {
         {
             ThrowErrorIfNot(Error::InflateRead,(self->m_zstrm.avail_in == 0), "uninflated bytes overwritten");
             ULONG available = 0;
-            ThrowHrIfFailed(self->m_stream->Read(self->m_compressedBuffer, InflateStream::BUFFERSIZE, &available));
+            self->m_compressedBuffer = std::make_unique<std::vector<std::uint8_t>>(BufferSize);
+            ThrowHrIfFailed(self->m_stream->Read(self->m_compressedBuffer->data(), self->m_compressedBuffer->size(), &available));
             ThrowErrorIf(Error::FileRead, (available == 0), "Getting nothing back is unexpected here.");
             self->m_zstrm.avail_in = static_cast<uInt>(available);
-            self->m_zstrm.next_in = self->m_compressedBuffer;
+            self->m_zstrm.next_in = self->m_compressedBuffer->data();
             return std::make_pair(true, InflateStream::State::READY_TO_INFLATE);
         }), // State::READY_TO_READ
 
         // State::READY_TO_INFLATE
         InflateHandler([](InflateStream* self, void*, ULONG)
         {
+            self->m_inflateWindow = std::make_unique<std::vector<std::uint8_t>>(BufferSize);
             self->m_inflateWindowPosition = 0;
-            self->m_zstrm.avail_out = InflateStream::BUFFERSIZE;
-            self->m_zstrm.next_out = self->m_inflateWindow;
+            self->m_zstrm.avail_out = self->m_inflateWindow->size();
+            self->m_zstrm.next_out = self->m_inflateWindow->data();
             self->m_zret = inflate(&(self->m_zstrm), Z_NO_FLUSH);
             switch (self->m_zret)
             {
@@ -65,7 +72,7 @@ namespace MSIX {
                 ThrowErrorIfNot(Error::InflateCorruptData, false, "inflate failed unexpectedly.");
             case Z_STREAM_END:
             default:
-                self->m_fileCurrentWindowPositionEnd += (InflateStream::BUFFERSIZE - self->m_zstrm.avail_out);
+                self->m_fileCurrentWindowPositionEnd += (BufferSize - self->m_zstrm.avail_out);
                 return std::make_pair(true, InflateStream::State::READY_TO_COPY);
             }
         }), // State::READY_TO_INFLATE
@@ -94,7 +101,7 @@ namespace MSIX {
 
             // Calculate the difference between the beginning of the window and the seek position.
             // if there's nothing left in the window to copy, then we need to fetch another window.
-            ULONG bytesRemainingInWindow = (InflateStream::BUFFERSIZE - self->m_zstrm.avail_out) - self->m_inflateWindowPosition;
+            ULONG bytesRemainingInWindow = (BufferSize - self->m_zstrm.avail_out) - self->m_inflateWindowPosition;
             if (bytesRemainingInWindow == 0)
             {
                 return std::make_pair(true, (self->m_zstrm.avail_in == 0) ? InflateStream::State::READY_TO_READ : InflateStream::State::READY_TO_INFLATE);
@@ -103,7 +110,7 @@ namespace MSIX {
             ULONG bytesToCopy = std::min(countBytes, bytesRemainingInWindow);
             if (bytesToCopy > 0)
             {
-                memcpy(buffer, &(self->m_inflateWindow[self->m_inflateWindowPosition]), bytesToCopy);
+                memcpy(buffer, &(self->m_inflateWindow->at(self->m_inflateWindowPosition)), bytesToCopy);
                 self->m_bytesRead             += bytesToCopy;
                 self->m_seekPosition          += bytesToCopy;
                 self->m_inflateWindowPosition += bytesToCopy;
