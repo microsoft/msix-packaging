@@ -32,7 +32,7 @@ list(APPEND RESOURCES_BLOCKMAP
     "AppxPackaging/BlockMap/schema/BlockMapSchema2017.xsd")
 
 # AppxManifests 
-if(HAVE_MSXML6)
+if(XML_PARSER MATCHES msxml6)
     # Used by AppxManifest and AppxBundleManifest
     list(APPEND RESOURCES_APPXTYPES
     "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd")
