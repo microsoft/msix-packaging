@@ -227,10 +227,10 @@ INCLUDE_DIRECTORIES(
     ${CMAKE_PROJECT_ROOT}/lib/zlib
 )
 IF(USE_SHARED_ZLIB)
-    MESSAGE(STATUS "MSIX takes a static dependency on zlib")
+    MESSAGE(STATUS "MSIX takes a dynamic dependency on zlib")
     TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zlib)
 else()
-    MESSAGE(STATUS "MSIX takes a dynamic dependency on zlib")
+    MESSAGE(STATUS "MSIX takes a static dependency on zlib")
     TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zlibstatic)
 endif()
 

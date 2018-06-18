@@ -152,7 +152,11 @@ ENDIF()
 
 # Enforce build libraries
 IF(NOT USE_SHARED_ZLIB)
-    MESSAGE (STATUS "Choose the type of dependency of zlib, Use the -DUSE_SHARED_ZLIB=on to have a shared dependency.  Default is 'off' (static)")
+    MESSAGE (STATUS "Choose the type of dependency for zlib, Use the -DUSE_SHARED_ZLIB=on to have a shared dependency.  Default is 'off' (static)")
+ENDIF()
+
+IF(NOT USE_SHARED_OPENSSL)
+    MESSAGE (STATUS "Choose the type of dependency for openssl, Use the -DUSE_SHARED_OPENSSL=on to have a shared dependency.  Default is 'off' (static)")
 ENDIF()
 
 MESSAGE (STATUS "Build type: ${CMAKE_BUILD_TYPE}")

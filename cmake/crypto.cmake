@@ -23,8 +23,9 @@ file( COPY ${OpenSSL_SOURCE_PATH}/e_os2.h DESTINATION ${OpenSLL_INCLUDE_PATH}/op
 # we do this as we need to copy headers else the lib will not build.
 set( XSRC "" )
 set( XINC "" )
+set( XSRC_SHARED "")
 
-# OpenSSL Has a lot of source files so we seperated it.
+# OpenSSL Has a lot of source files so we separated it.
 include( crypto_sources )
 
 file( COPY ${XINC} DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl FILES_MATCHING REGEX "\.h$" )
@@ -54,12 +55,17 @@ set( BuildInfH "
 " )
 file( WRITE ${OpenSLL_INCLUDE_PATH}/buildinf.h "${BuildInfH}" )
 
-set( TARGET_SOURCES ${XSRC} ${XINC} )
+set(TARGET_SOURCES ${XSRC} ${XINC})
 
 # OpenSSL is not the best when it comes to how it handles headers.  
 # Where they are we need to create the projects include dir and copy stuff into it!
-
-add_library( crypto STATIC ${TARGET_SOURCES} )
+if(USE_SHARED_OPENSSL)
+    message(STATUS "MSIX takes a dynamic dependency on openssl")
+    add_library(crypto SHARED ${TARGET_SOURCES} ${XSRC_SHARED})
+else()
+    message(STATUS "MSIX takes a static dependency on openssl")
+    add_library(crypto STATIC ${TARGET_SOURCES})
+endif()
 
 # specify that this library is to be built with C++14
 set_property(TARGET crypto PROPERTY CXX_STANDARD 14)
