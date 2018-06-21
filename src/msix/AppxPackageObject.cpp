@@ -414,7 +414,6 @@ namespace MSIX {
                     // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with
                     // the package full name won't be created on Windows, but it will on other platforms.
                     // This means that we have different behaviors in non-Win platforms.
-                    // TODO: have the same behavior on Windows and other platforms.
                     auto manifest = m_appxManifest.As<IAppxManifestReader>();
                     ComPtr<IAppxManifestPackageId> packageId;
                     ThrowHrIfFailed(manifest->GetPackageId(&packageId));

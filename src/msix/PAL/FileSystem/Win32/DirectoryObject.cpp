@@ -121,28 +121,21 @@ namespace MSIX {
             std::vector<std::string>(directories.begin() + 1, directories.end()).swap(directories);
             return result;
         };
-        auto PopBack = [&directories]()
-        {
-            auto result = directories.at(directories.size() - 1);
-            directories.pop_back();
-            return result;
-        };
 
-        // Build a list of directory names to ensure exist
-        std::istringstream stream(fileName);
+        // Add the root directory and build a list of directory names to ensure exist
+        std::istringstream stream(m_root + "/" + fileName);
         std::string directory;
         while (getline(stream, directory, '/'))
         {
             directories.push_back(std::move(directory));
         }
-        auto name = PopBack(); // remove the actual file name from the list of directories, but keep just the name
 
         // Enforce that directory structure exists before creating file at specified location.
         bool found = false;
-        std::string path = m_root;
-        while (directories.size() != 0)
+        std::string path = PopFirst();
+        do
         {
-            WalkDirectory<WalkOptions::Directories>(path + GetPathSeparator() + directories.front(), [&](
+            WalkDirectory<WalkOptions::Directories>(path, [&](
                 std::string,
                 WalkOptions option,
                 std::string&& name)
@@ -157,9 +150,9 @@ namespace MSIX {
                 return true;
             });
 
-            if (!found)
+            if(!found)
             {
-                std::wstring utf16Name = utf8_to_wstring(path + GetPathSeparator() + directories.front());
+                std::wstring utf16Name = utf8_to_wstring(path);
                 if (!CreateDirectory(utf16Name.c_str(), nullptr))
                 {
                     auto lastError = GetLastError();
@@ -169,8 +162,8 @@ namespace MSIX {
             path = path + GetPathSeparator() + PopFirst();
             found = false;
         }
-        name = path + GetPathSeparator() + name;
-        auto result = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
+        while(directories.size() > 0);
+        auto result = ComPtr<IStream>::Make<FileStream>(std::move(path), mode);
         return result;
     }
 }
