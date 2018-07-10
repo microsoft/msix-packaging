@@ -1115,6 +1115,57 @@ EXTERN_C const IID IID_IAppxBundleManifestPackageInfo;
 
 // MSIX specific
 
+// MSIX public interfaces
+interface IMSIXDocumentElement;
+interface IMSIXElement;
+interface IMSIXElementEnumerator;
+
+#ifndef __IMSIXDocumentElement_INTERFACE_DEFINED__
+#define __IMSIXDocumentElement_INTERFACE_DEFINED__
+
+EXTERN_C DECLSPEC_SELECTANY const IID IID_IMSIXDocumentElement;
+
+    // {07f33ab5-cf2c-43bf-a72c-3525313fcff3}
+    interface IMSIXDocumentElement : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetDocumentElement(IMSIXElement** documentElement) = 0;
+    };
+
+#endif  /* __IMSIXDocumentElement_INTERFACE_DEFINED__ */
+
+#ifndef __IMSIXElement_INTERFACE_DEFINED__
+#define __IMSIXElement_INTERFACE_DEFINED__
+
+EXTERN_C DECLSPEC_SELECTANY const IID IID_IMSIXElement;
+
+    // {448d1d3e-186d-485b-9e42-82f0808ff5d6}
+    interface IMSIXElement : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) = 0;
+        virtual HRESULT STDMETHODCALLTYPE GetText(LPWSTR* value) = 0;
+        virtual HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMSIXElementEnumerator** elements) = 0;
+    };
+
+#endif  /* __IMSIXElement_INTERFACE_DEFINED__ */
+
+#ifndef __IMSIXElementEnumerator_INTERFACE_DEFINED__
+#define __IMSIXElementEnumerator_INTERFACE_DEFINED__
+
+EXTERN_C DECLSPEC_SELECTANY const IID IID_IMSIXElementEnumerator;
+
+    // {2173d338-77ce-4427-9b12-d3e8e7f8a732}
+    interface IMSIXElementEnumerator : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetCurrent(IMSIXElement** element) = 0;
+        virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) = 0;
+        virtual HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) = 0;
+    };
+
+#endif  /* __IMSIXElementEnumerator_INTERFACE_DEFINED__ */
+
 extern "C++" {
 typedef /* [v1_enum] */
 enum MSIX_VALIDATION_OPTION
@@ -1292,5 +1343,8 @@ SpecializeUuidOfImpl(IAppxBundleReader);
 SpecializeUuidOfImpl(IAppxBundleManifestReader);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoEnumerator);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfo);
+SpecializeUuidOfImpl(IMSIXDocumentElement);
+SpecializeUuidOfImpl(IMSIXElement);
+SpecializeUuidOfImpl(IMSIXElementEnumerator);
 
 #endif //__appxpackaging_hpp__

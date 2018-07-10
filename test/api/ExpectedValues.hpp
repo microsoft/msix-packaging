@@ -12,6 +12,13 @@ static const char* packageToTest = "..\\test\\appx\\TestAppxPackage_Win32.appx";
 static const char* packageToTest = "../test/appx/TestAppxPackage_Win32.appx";
 #endif
 
+#ifdef USING_XERCES
+static const wchar_t* ApplicationXpath = L"/Package/Applications/Application";
+#else
+static const wchar_t* ApplicationXpath = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']";
+#endif
+
+
 const int ExpectedPayloadFilesSize = 10;
 static const std::array<const wchar_t*, ExpectedPayloadFilesSize> ExpectedPayloadFiles = {
     L"Assets\\LockScreenLogo.scale-200.png",

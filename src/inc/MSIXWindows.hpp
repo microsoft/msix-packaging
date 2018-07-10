@@ -12,7 +12,8 @@
 
 #ifdef WIN32
     #define STDMETHODCALLTYPE __stdcall
-    #define MSIX_API extern "C" __declspec(dllexport) 
+    #define MSIX_API extern "C" __declspec(dllexport)
+    #define DECLSPEC_SELECTANY __declspec(selectany)
 
     // UNICODE MUST be defined before you include Windows.h if you want the non-ascii versions of APIs (and you do)
     #ifdef UNICODE
@@ -35,6 +36,9 @@
 
     #undef MSIX_API
     #define MSIX_API extern "C"
+
+    #undef DECLSPEC_SELECTANY
+    #define DECLSPEC_SELECTANY
 
     #ifndef interface
     #define interface struct
@@ -240,6 +244,10 @@
 
     #ifndef E_NOINTERFACE
     #define E_NOINTERFACE 0x80004002
+    #endif
+
+    #ifndef E_INVALIDARG
+    #define E_INVALIDARG 0x80070057
     #endif
 
     #if !defined (_SYS_GUID_OPERATORS_)

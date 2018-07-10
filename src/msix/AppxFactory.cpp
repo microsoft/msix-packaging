@@ -147,4 +147,22 @@ namespace MSIX {
         ThrowErrorIfNot(Error::FileNotFound, file, resource.c_str());
         return file;
     }
+
+    HRESULT AppxFactory::MarshalOutWstring(std::wstring& internal, LPWSTR *result) noexcept try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
+        *result = nullptr;
+        if (!internal.empty())
+        {
+            //auto intermediate = utf8_to_wstring(internal);
+            std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
+            *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
+            ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");
+            std::memset(reinterpret_cast<void*>(*result), 0, countBytes);
+            std::memcpy(reinterpret_cast<void*>(*result),
+                        reinterpret_cast<void*>(const_cast<wchar_t*>(internal.c_str())),
+                        countBytes - sizeof(wchar_t));
+        }
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 } // namespace MSIX 
