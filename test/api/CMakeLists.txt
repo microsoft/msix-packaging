@@ -7,12 +7,19 @@ project(apitest)
 # Define two variables in order not to repeat ourselves.
 set(BINARY_NAME apitest)
 
+IF (XML_PARSER MATCHES xerces)
+    add_definitions(-DUSING_XERCES=1)
+ENDIF()
+
+IF (XML_PARSER MATCHES msxml6)
+    add_definitions(-DUSING_MSXML=1)
+ENDIF()
+
 if(WIN32)
     set(DESCRIPTION "apitest manifest")
     configure_file(../../manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest CRLF)
     set(MANIFEST ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest)
 endif()
-
 
 include_directories(
     ${include_directories}

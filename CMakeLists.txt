@@ -155,7 +155,7 @@ IF(NOT USE_SHARED_ZLIB)
     MESSAGE (STATUS "Choose the type of dependency for zlib, Use the -DUSE_SHARED_ZLIB=on to have a shared dependency.  Default is 'off' (static)")
 ENDIF()
 
-IF(NOT USE_SHARED_OPENSSL)
+IF((NOT USE_SHARED_OPENSSL) AND (NOT WIN32))
     MESSAGE (STATUS "Choose the type of dependency for openssl, Use the -DUSE_SHARED_OPENSSL=on to have a shared dependency.  Default is 'off' (static)")
 ENDIF()
 

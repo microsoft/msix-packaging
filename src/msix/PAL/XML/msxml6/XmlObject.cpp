@@ -17,6 +17,7 @@
 #include "IXml.hpp"
 #include "UnicodeConversion.hpp"
 #include "MSIXResource.hpp"
+#include "Enumerators.hpp"
 
 #include <msxml6.h>
 
@@ -123,31 +124,37 @@ static const wchar_t* xPaths[] = {
     /* Bundle_Packages_Package_Resources_Resource */L"*[local-name()='Resources']/*[local-name()='Resource']",
     /* Package_Dependencies_TargetDeviceFamily    */L"/*[local-name()='Package']/*[local-name()='Dependencies']/*[local-name()='TargetDeviceFamily']",
     /* Package_Applications_Application           */L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']",
-};    
+    /* Package_Properties                         */L"/*[local-name()='Package']/*[local-name()='Properties']",
+    /* Package_Properties_Description             */L"*[local-name()='Description']",
+    /* Package_Properties_DisplayName             */L"*[local-name()='DisplayName']",
+    /* Package_Properties_PublisherDisplayName    */L"*[local-name()='PublisherDisplayName']",
+    /* Package_Properties_Logo                    */L"*[local-name()='Logo']",
+    /* Package_Properties_Framework               */L"*[local-name()='Framework']",
+    /* Package_Properties_ResourcePackage         */L"*[local-name()='ResourcePackage']",
+    /* Package_Properties_AllowExecution          */L"*[local-name()='AllowExecution']",
+    /* Package_Dependencies_PackageDependency     */L"/*[local-name()='Package']/*[local-name()='Dependencies']/*[local-name()='PackageDependency']",
+    /* Package_Capabilities_Capability            */L"/*[local-name()='Package']/*[local-name()='Capabilities']/*[local-name()='Capability']",
+    /* Package_Resources_Resource                 */L"/*[local-name()='Package']/*[local-name()='Resources']/*[local-name()='Resource']",
+};
 
 // must remain in same order as XmlAttributeName
 static const wchar_t* attributeNames[] = {
-    /* Name                                       */L"Name",
-    /* ResourceId                                 */L"ResourceId",
-    /* Version                                    */L"Version",
-    /* Size                                       */L"Size",
-
-    /* Package_Identity_ProcessorArchitecture     */L"ProcessorArchitecture",
-    /* Package_Identity_Publisher                 */L"Publisher",
-    
-    /* BlockMap_File_LocalFileHeaderSize          */L"LfhSize",
-    /* BlockMap_File_Block_Hash                   */L"Hash",
-
-    /* Bundle_Package_FileName                    */L"FileName",
-    /* Bundle_Package_Offset                      */L"Offset",
-    /* Bundle_Package_Type                        */L"Type",
-    /* Bundle_Package_Architecture                */L"Architecture",
-    /* Bundle_Package_Resources_Resource_Language */L"Language",
-
-    /* Dependencies_Tdf_MinVersion                */L"MinVersion",
-    /* Dependencies_Tdf_MaxVersionTested          */L"MaxVersionTested",
-
-    /* Package_Applications_Application_Id        */L"Id",
+    /* Name                                   */L"Name",
+    /* ResourceId                             */L"ResourceId",
+    /* Version                                */L"Version",
+    /* Size                                   */L"Size",
+    /* Package_Identity_ProcessorArchitecture */L"ProcessorArchitecture",
+    /* Publisher                              */L"Publisher",
+    /* BlockMap_File_LocalFileHeaderSize      */L"LfhSize",
+    /* BlockMap_File_Block_Hash               */L"Hash",
+    /* Bundle_Package_FileName                */L"FileName",
+    /* Bundle_Package_Offset                  */L"Offset",
+    /* Bundle_Package_Type                    */L"Type",
+    /* Bundle_Package_Architecture            */L"Architecture",
+    /* Language                               */L"Language",
+    /* MinVersion                             */L"MinVersion",
+    /* Dependencies_Tdf_MaxVersionTested      */L"MaxVersionTested",
+    /* Package_Applications_Application_Id    */L"Id",
 };
 
 // --------------------------------------------------------
@@ -240,11 +247,11 @@ public:
     VARIANT& Get() { return m_variant; }
 };
 
-class MSXMLElement final : public ComClass<MSXMLElement, IXmlElement, IMSXMLElement>
+class MSXMLElement final : public ComClass<MSXMLElement, IXmlElement, IMSXMLElement, IMSIXElement>
 {
-    std::pair<bool, Variant> GetAttribute(XmlAttributeName attribute)
+    std::pair<bool, Variant> GetAttribute(std::wstring attribute)
     {
-        Bstr name(attributeNames[static_cast<std::uint8_t>(attribute)]);
+        Bstr name(attribute);
         Variant value;
         ThrowHrIfFailed(m_element->getAttribute(name, value.AddressOf()));
         if (value.Get().vt == VT_BSTR)
@@ -255,12 +262,12 @@ class MSXMLElement final : public ComClass<MSXMLElement, IXmlElement, IMSXMLElem
     }
 
 public:
-    MSXMLElement(ComPtr<IXMLDOMElement>& element) : m_element(element) {}
+    MSXMLElement(IMSIXFactory* factory, ComPtr<IXMLDOMElement>& element) : m_factory(factory), m_element(element) {}
 
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        auto value = GetAttribute(attribute);
+        auto value = GetAttribute(attributeNames[static_cast<std::uint8_t>(attribute)]);
         if (value.first)
         {   return utf16_to_utf8(static_cast<WCHAR*>(value.second.Get().bstrVal));
         }
@@ -300,16 +307,83 @@ public:
         return result;
     }
 
+    std::string GetText() override
+    {
+        ComPtr<IXMLDOMNode> node;
+        ThrowHrIfFailed(m_element->QueryInterface(__uuidof(IXMLDOMNode), reinterpret_cast<void**>(&node)));
+        Bstr value;
+        ThrowHrIfFailed(node->get_text(value.AddressOf()));
+        if (value.Get() != nullptr)
+        {
+            return utf16_to_utf8(static_cast<WCHAR*>(value.Get()));
+        }
+        return "";
+    }
+
     // IMSXMLElement
     ComPtr<IXMLDOMNodeList> SelectNodes(XmlQueryName query) override
     {
         Bstr xPath(xPaths[static_cast<std::uint8_t>(query)]);
         ComPtr<IXMLDOMNodeList> list;
-        ThrowHrIfFailed(m_element->selectNodes(xPath, &list));        
+        ThrowHrIfFailed(m_element->selectNodes(xPath, &list));
         return list;
     }
 
+    // IMSIXElement
+    HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        *value = nullptr;
+        auto attribute = GetAttribute(name);
+        if (attribute.first)
+        {
+            auto intermediate = std::wstring(static_cast<WCHAR*>(attribute.second.Get().bstrVal));
+            ThrowHrIfFailed(m_factory->MarshalOutWstring(intermediate, value));
+        }
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetText(LPWSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        ComPtr<IXMLDOMNode> node;
+        ThrowHrIfFailed(m_element->QueryInterface(__uuidof(IXMLDOMNode), reinterpret_cast<void**>(&node)));
+        Bstr text;
+        ThrowHrIfFailed(node->get_text(text.AddressOf()));
+        if (text.Get() != nullptr)
+        {
+            auto intermediate = std::wstring(static_cast<WCHAR*>(text.Get()));
+            ThrowHrIfFailed(m_factory->MarshalOutWstring(intermediate, value));
+        }
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMSIXElementEnumerator** elements) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
+        ComPtr<IXMLDOMNodeList> list;
+        Bstr xPath(name);
+        ThrowHrIfFailed(m_element->selectNodes(xPath, &list));
+
+        long count = 0;
+        ThrowHrIfFailed(list->get_length(&count));
+        std::vector<ComPtr<IMSIXElement>> elementsEnum;
+        for(long index=0; index < count; index++)
+        {
+            ComPtr<IXMLDOMNode> node;
+            ThrowHrIfFailed(list->get_item(index, &node));
+            ComPtr<IXMLDOMElement> elementItem;
+            ThrowHrIfFailed(node->QueryInterface(__uuidof(IXMLDOMElement), reinterpret_cast<void**>(&elementItem)));
+            auto item = ComPtr<IMSIXElement>::Make<MSXMLElement>(m_factory, elementItem);
+            elementsEnum.push_back(std::move(item));
+        }
+        *elements = ComPtr<IMSIXElementEnumerator>::
+            Make<EnumeratorCom<IMSIXElementEnumerator,IMSIXElement>>(elementsEnum).Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
 protected:
+    IMSIXFactory* m_factory;
     ComPtr<IXMLDOMElement> m_element;
 };
 
@@ -332,7 +406,7 @@ protected:
 class MSXMLDom final : public ComClass<MSXMLDom, IXmlDom, IMSXMLDom>
 {
 public:
-    MSXMLDom(const ComPtr<IStream>& stream, const NamespaceManager& namespaces, IMSIXFactory* factory = nullptr, bool stripIgnorableNamespaces = false)
+    MSXMLDom(const ComPtr<IStream>& stream, const NamespaceManager& namespaces, IMSIXFactory* factory = nullptr, bool stripIgnorableNamespaces = false) : m_factory(factory)
     {
         ThrowHrIfFailed(CoCreateInstance(__uuidof(DOMDocument60), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_xmlDocument)));
         ThrowHrIfFailed(m_xmlDocument->put_async(VARIANT_FALSE));
@@ -341,7 +415,7 @@ public:
         Bstr property(L"NewParser"); // see https://msdn.microsoft.com/en-us/library/ms767616%28v=vs.85%29.aspx?f=255&MSPPError=-2147217396
         ThrowHrIfFailed(m_xmlDocument->setProperty(property.Get(), vTrue.Get()));
 
-        if (nullptr != factory && !namespaces.empty())
+        if (nullptr != m_factory && !namespaces.empty())
         {   // Create and populate schema cache
             ComPtr<IXMLDOMSchemaCollection2> cache;       
             ThrowHrIfFailed(CoCreateInstance(__uuidof(XMLSchemaCache60), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&cache)));
@@ -356,7 +430,7 @@ public:
                 value << L"xmlns:" << item.alias << LR"(=")" << uri << LR"(")";
                 // Process schema XSD for current namespace
                 NamespaceManager emptyManager;                
-                ComPtr<IStream> resource(factory->GetResource(item.schema));
+                ComPtr<IStream> resource(m_factory->GetResource(item.schema));
                 auto schema = ComPtr<IMSXMLDom>::Make<MSXMLDom>(resource, emptyManager)->GetDomDocument();
 
                 long readyState = 0;                
@@ -376,12 +450,12 @@ public:
             ThrowHrIfFailedWithIErrorInfo(cache->validate());
             Variant schemasVariant(cache);
             ThrowHrIfFailed(m_xmlDocument->putref_schemas(schemasVariant.Get()));            
-        }               
+        }
 
-        // Now parse the XML document            
-        VARIANT_BOOL success(VARIANT_FALSE);        
+        // Now parse the XML document
+        VARIANT_BOOL success(VARIANT_FALSE);
         if (!stripIgnorableNamespaces)
-        {   
+        {
             Variant var(stream);
             ThrowHrIfFailed(m_xmlDocument->load(var, &success));
         }
@@ -410,7 +484,7 @@ public:
             // Now tell the DOM to not validate (as we'll do that later), but instead only parse our input
             ThrowHrIfFailed(m_xmlDocument->put_validateOnParse(VARIANT_FALSE));            
             ThrowHrIfFailed(m_xmlDocument->load(var, &success));
-                        
+
             if (VARIANT_TRUE == success)
             {   // Now that the DOM has been parsed, we can go about stripping ignorable namespaces
                 ComPtr<IXMLDOMElement> element;
@@ -534,7 +608,7 @@ public:
     {
         ComPtr<IXMLDOMElement> element;
         ThrowHrIfFailed(m_xmlDocument->get_documentElement(&element));
-        return ComPtr<IXmlElement>::Make<MSXMLElement>(element);
+        return ComPtr<IXmlElement>::Make<MSXMLElement>(m_factory, element);
     }
     
     bool ForEachElementIn(const ComPtr<IXmlElement>& root, XmlQueryName query, XmlVisitor& visitor) override
@@ -550,7 +624,7 @@ public:
             ThrowHrIfFailed(list->get_item(index, &node));
             ComPtr<IXMLDOMElement> elementItem;
             ThrowHrIfFailed(node->QueryInterface(__uuidof(IXMLDOMElement), reinterpret_cast<void**>(&elementItem)));
-            auto item = ComPtr<IXmlElement>::Make<MSXMLElement>(elementItem);
+            auto item = ComPtr<IXmlElement>::Make<MSXMLElement>(m_factory, elementItem);
             if (!visitor.Callback(visitor.context, item))
             {
                 return false;
@@ -561,6 +635,7 @@ public:
 
 protected:
     ComPtr<IXMLDOMDocument2> m_xmlDocument;
+    IMSIXFactory* m_factory;
 };
 
 class MSXMLFactory final : public ComClass<MSXMLFactory, IXmlFactory>

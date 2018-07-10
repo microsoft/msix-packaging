@@ -127,10 +127,10 @@ void LogSucceed(int nLogs...)
 
 // Macros used for testing
 #define VERIFY_SUCCEEDED(__hr)         { if (FAILED(__hr)) { throw Exception(__hr, S_OK, __LINE__); } else { LogSucceed(1, #__hr); } }
-#define VERIFY_HR(__exp, __hr)         { if (__exp != __hr)            { throw Exception(__hr, __exp, __LINE__); } else { LogSucceed(3, #__hr, " == ", #__exp); } }
+#define VERIFY_HR(__exp, __hr)         { if (__exp != __hr) { throw Exception(__hr, __exp, __LINE__); } else { LogSucceed(3, #__hr, " == ", #__exp); } }
 #define VERIFY_WSTR(__res, __exp)      { if(!Compare(__res, __exp)) { throw Exception(utf16_to_utf8(__res), utf16_to_utf8(__exp), __LINE__); } else { LogSucceed(3, #__res, " == ", #__exp); } }
-#define VERIFY_ARE_EQUAL(__res, __exp) { if(__res != __exp)         { throw Exception(std::to_string(__res), std::to_string(__exp), __LINE__); } else { LogSucceed(3, #__res, " == ", #__exp); } }
-#define VERIFY_ARE_SAME(__res, __exp)  { if(__res != __exp)         { throw Exception(#__res, #__exp, __LINE__); } else { LogSucceed(3, #__res, " == ", #__exp); } }
-#define VERIFY_NOT_NULL(__res)         { if(__res == nullptr)            { throw Exception(#__res, "pointer is null", __LINE__); } else { LogSucceed(2, #__res, " not null"); } }
-#define VERIFY_IS_NULL(__res)          { if(__res != nullptr)            { throw Exception(#__res, "pointer is not null", __LINE__); } else { LogSucceed(2, #__res, " is null"); } }
-#define VERIFY_IS_TRUE(__res)          { if(!__res)                      { throw Exception(#__res, "is false", __LINE__); } else { LogSucceed(2, #__res, " is true"); } }
+#define VERIFY_ARE_EQUAL(__res, __exp) { if(__res != __exp) { throw Exception(std::to_string(__res), std::to_string(__exp), __LINE__); } else { LogSucceed(3, #__res, " == ", #__exp); } }
+#define VERIFY_ARE_SAME(__res, __exp)  { if(__res != __exp) { throw Exception(#__res, #__exp, __LINE__); } else { LogSucceed(3, #__res, " == ", #__exp); } }
+#define VERIFY_NOT_NULL(__res)         { if(__res == nullptr) { throw Exception(#__res, "pointer is null", __LINE__); } else { LogSucceed(2, #__res, " not null"); } }
+#define VERIFY_IS_NULL(__res)          { if(__res != nullptr) { throw Exception(#__res, "pointer is not null", __LINE__); } else { LogSucceed(2, #__res, " is null"); } }
+#define VERIFY_IS_TRUE(__res)          { if(!__res) { throw Exception(#__res, "is false", __LINE__); } else { LogSucceed(2, #__res, " is true"); } }

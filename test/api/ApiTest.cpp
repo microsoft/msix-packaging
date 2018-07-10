@@ -133,6 +133,75 @@ void TestAppxManifestReader(IAppxManifestReader* manifestReader)
     }
     VERIFY_ARE_EQUAL(nAumids, 1);
 
+    ComPtr<IAppxManifestProperties> properties;
+    VERIFY_SUCCEEDED(manifestReader->GetProperties(&properties));
+    BOOL value = TRUE;
+    VERIFY_SUCCEEDED(properties->GetBoolValue(L"Framework", &value));
+    VERIFY_IS_TRUE(value == FALSE);
+    value = FALSE;
+    VERIFY_SUCCEEDED(properties->GetBoolValue(L"ResourcePackage", &value));
+    VERIFY_IS_TRUE(!value);
+    value = FALSE;
+    VERIFY_SUCCEEDED(properties->GetBoolValue(L"AllowExecution", &value));
+    VERIFY_IS_TRUE(value);
+    VERIFY_HR(E_INVALIDARG, properties->GetBoolValue(L"NotValid", &value))
+
+    Text displayName;
+    VERIFY_SUCCEEDED(properties->GetStringValue(L"DisplayName", &displayName));
+    VERIFY_WSTR(displayName.Get(), L"ms-resource:appName");
+    Text publisherDisplayName;
+    VERIFY_SUCCEEDED(properties->GetStringValue(L"PublisherDisplayName", &publisherDisplayName));
+    VERIFY_WSTR(publisherDisplayName.Get(), L"Microsoft Corporation");
+    Text logo;
+    VERIFY_SUCCEEDED(properties->GetStringValue(L"Logo", &logo));
+    VERIFY_WSTR(logo.Get(), L"Assets\\StoreLogo.png");
+    Text description;
+    VERIFY_SUCCEEDED(properties->GetStringValue(L"Description", &description));
+    VERIFY_IS_NULL(description.Get());
+    VERIFY_HR(E_INVALIDARG, properties->GetStringValue(L"NotValid", &description))
+
+    ComPtr<IAppxManifestPackageDependenciesEnumerator> dependencies;
+    VERIFY_SUCCEEDED(manifestReader->GetPackageDependencies(&dependencies));
+    hasCurrent = FALSE;
+    VERIFY_SUCCEEDED(dependencies->GetHasCurrent(&hasCurrent));
+    int nDependencies = 0;
+    while (hasCurrent)
+    {
+        ComPtr<IAppxManifestPackageDependency> dependency;
+        VERIFY_SUCCEEDED(dependencies->GetCurrent(&dependency));
+        Text name;
+        VERIFY_SUCCEEDED(dependency->GetName(&name));
+        VERIFY_WSTR(name.Get(), L"Microsoft.VCLibs.140.00");
+        UINT64 min = 0;
+        VERIFY_SUCCEEDED(dependency->GetMinVersion(&min));
+        VERIFY_ARE_EQUAL(min, 3940651254874112);
+        Text publisher;
+        VERIFY_SUCCEEDED(dependency->GetPublisher(&publisher));
+        VERIFY_WSTR(publisher.Get(), L"CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US");
+        VERIFY_SUCCEEDED(dependencies->MoveNext(&hasCurrent));
+        nDependencies++;
+    }
+    VERIFY_ARE_EQUAL(nDependencies, 1);
+
+    APPX_CAPABILITIES capabilities;
+    VERIFY_SUCCEEDED(manifestReader->GetCapabilities(&capabilities));
+    VERIFY_ARE_EQUAL(capabilities, APPX_CAPABILITIES::APPX_CAPABILITY_INTERNET_CLIENT);
+
+    ComPtr<IAppxManifestResourcesEnumerator> resources;
+    VERIFY_SUCCEEDED(manifestReader->GetResources(&resources));
+    hasCurrent = FALSE;
+    VERIFY_SUCCEEDED(resources->GetHasCurrent(&hasCurrent));
+    int nRes = 0;
+    while (hasCurrent)
+    {
+        Text resource;
+        VERIFY_SUCCEEDED(resources->GetCurrent(&resource));
+        VERIFY_WSTR(resource.Get(), L"EN-US");
+        VERIFY_SUCCEEDED(resources->MoveNext(&hasCurrent));
+        nRes++;
+    }
+    VERIFY_ARE_EQUAL(nRes, 1);
+
     ComPtr<IAppxManifestReader3> manifestReader3;
     VERIFY_SUCCEEDED(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader3>::iid, reinterpret_cast<void**>(&manifestReader3)));
     ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfEnum;
@@ -157,6 +226,36 @@ void TestAppxManifestReader(IAppxManifestReader* manifestReader)
         nTdf++;
     }
     VERIFY_ARE_EQUAL(nTdf, 1);
+
+    ComPtr<IMSIXDocumentElement> msixDocument;
+    VERIFY_SUCCEEDED(manifestReader->QueryInterface(UuidOfImpl<IMSIXDocumentElement>::iid, reinterpret_cast<void**>(&msixDocument)));
+    ComPtr<IMSIXElement> manifestElement;
+    VERIFY_SUCCEEDED(msixDocument->GetDocumentElement(&manifestElement));
+    Text ignorableNamespaces;
+    VERIFY_SUCCEEDED(manifestElement->GetAttributeValue(L"IgnorableNamespaces", &ignorableNamespaces))
+    VERIFY_NOT_NULL(ignorableNamespaces.Get());
+    VERIFY_WSTR(ignorableNamespaces.Get(), L"uap mp build");
+
+    Text fakeAttribute;
+    VERIFY_SUCCEEDED(manifestElement->GetAttributeValue(L"Fake", &fakeAttribute))
+    VERIFY_IS_NULL(fakeAttribute.Get());
+
+    ComPtr<IMSIXElementEnumerator> elementEnum;
+    VERIFY_SUCCEEDED(manifestElement->GetElements(ApplicationXpath, &elementEnum));
+    hasCurrent = FALSE;
+    VERIFY_SUCCEEDED(elementEnum->GetHasCurrent(&hasCurrent));
+    int nElements = 0;
+    while (hasCurrent)
+    {
+        ComPtr<IMSIXElement> element;
+        VERIFY_SUCCEEDED(elementEnum->GetCurrent(&element));
+        Text entryPoint;
+        VERIFY_SUCCEEDED(element->GetAttributeValue(L"EntryPoint", &entryPoint))
+        VERIFY_WSTR(entryPoint.Get(), L"TestAppxPackage.App");
+        VERIFY_SUCCEEDED(elementEnum->MoveNext(&hasCurrent));
+        nElements++;
+    }
+    VERIFY_ARE_EQUAL(nElements, 1);
 
     ComPtr<IAppxManifestPackageId> packageId;
     VERIFY_SUCCEEDED(manifestReader->GetPackageId(&packageId));

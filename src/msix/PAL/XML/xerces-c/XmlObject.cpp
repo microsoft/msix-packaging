@@ -12,6 +12,8 @@
 #include "IXml.hpp"
 #include "StreamHelper.hpp"
 #include "MSIXResource.hpp"
+#include "UnicodeConversion.hpp"
+#include "Enumerators.hpp"
 
 // Mandatory for using any feature of Xerces.
 #include "xercesc/dom/DOM.hpp"
@@ -55,6 +57,17 @@ static std::map<XmlQueryName, std::string> xPaths = {
     {XmlQueryName::Bundle_Packages_Package_Resources_Resource     ,"./Resources/Resource"},
     {XmlQueryName::Package_Dependencies_TargetDeviceFamily        ,"/Package/Dependencies/TargetDeviceFamily"},
     {XmlQueryName::Package_Applications_Application               ,"/Package/Applications/Application"},
+    {XmlQueryName::Package_Properties                             ,"/Package/Properties"},
+    {XmlQueryName::Package_Properties_Description                 ,"./Description"},
+    {XmlQueryName::Package_Properties_DisplayName                 ,"./DisplayName"},
+    {XmlQueryName::Package_Properties_PublisherDisplayName        ,"./PublisherDisplayName"},
+    {XmlQueryName::Package_Properties_Logo                        ,"./Logo"},
+    {XmlQueryName::Package_Properties_Framework                   ,"./Framework"},
+    {XmlQueryName::Package_Properties_ResourcePackage             ,"./ResourcePackage"},
+    {XmlQueryName::Package_Properties_AllowExecution              ,"./AllowExecution"},
+    {XmlQueryName::Package_Dependencies_PackageDependency         ,"/Package/Dependencies/PackageDependency"},
+    {XmlQueryName::Package_Capabilities_Capability                ,"/Package/Capabilities/Capability"},
+    {XmlQueryName::Package_Resources_Resource                     ,"/Package/Resources/Resource"},
 };
 
 static std::map<XmlAttributeName, std::string> attributeNames = {
@@ -62,22 +75,17 @@ static std::map<XmlAttributeName, std::string> attributeNames = {
     {XmlAttributeName::ResourceId                                 ,"ResourceId"},
     {XmlAttributeName::Version                                    ,"Version"},
     {XmlAttributeName::Size                                       ,"Size"},
-
     {XmlAttributeName::Identity_ProcessorArchitecture             ,"ProcessorArchitecture"},
-    {XmlAttributeName::Identity_Publisher                         ,"Publisher"},
-
+    {XmlAttributeName::Publisher                                  ,"Publisher"},
     {XmlAttributeName::BlockMap_File_LocalFileHeaderSize          ,"LfhSize"},    
     {XmlAttributeName::BlockMap_File_Block_Hash                   ,"Hash"},
-
     {XmlAttributeName::Bundle_Package_FileName                    ,"FileName"},
     {XmlAttributeName::Bundle_Package_Offset                      ,"Offset"},
     {XmlAttributeName::Bundle_Package_Type                        ,"Type"},
     {XmlAttributeName::Bundle_Package_Architecture                ,"Architecture"},
-    {XmlAttributeName::Bundle_Package_Resources_Resource_Language ,"Language"},
-
-    {XmlAttributeName::Dependencies_Tdf_MinVersion                ,"MinVersion"},
+    {XmlAttributeName::Language                                   ,"Language"},
+    {XmlAttributeName::MinVersion                                 ,"MinVersion"},
     {XmlAttributeName::Dependencies_Tdf_MaxVersionTested          ,"MaxVersionTested"},
-
     {XmlAttributeName::Package_Applications_Application_Id        ,"Id"},
 };
 
@@ -187,11 +195,11 @@ public:
         if (this != reinterpret_cast<XercesXMLChPtr*>(&reinterpret_cast<std::int8_t&>(right)))
         {   Swap(right);
         }
-    }         
+    }
 
     void InternalRelease()
     {   XERCES_CPP_NAMESPACE::XMLString::release(&m_ptr);
-        m_ptr = nullptr;            
+        m_ptr = nullptr;
     }
 
     XercesXMLChPtr& operator=(XercesXMLChPtr&& right)
@@ -237,17 +245,27 @@ protected:
     XMLByte* m_ptr = nullptr;             
 };    
 
-class XercesElement final : public ComClass<XercesElement, IXmlElement, IXercesElement>
+class XercesElement final : public ComClass<XercesElement, IXmlElement, IXercesElement, IMSIXElement>
 {
+private:
+    std::string GetAttributeValue(std::string& attributeName)
+    {
+        XercesXMLChPtr nameAttr(XMLString::transcode(attributeName.c_str()));
+        XercesCharPtr value(XMLString::transcode(m_element->getAttribute(nameAttr.Get())));
+        return std::string(value.Get());
+    }
+
 public:
-    XercesElement(DOMElement* element) : m_element(element) {}
+    XercesElement(IMSIXFactory* factory, DOMElement* element, XERCES_CPP_NAMESPACE::XercesDOMParser* parser) :
+        m_factory(factory), m_element(element), m_parser(parser)
+    {
+        m_resolver = XercesPtr<DOMXPathNSResolver>(m_parser->getDocument()->createNSResolver(m_parser->getDocument()));
+    }
     
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        XercesXMLChPtr nameAttr(XMLString::transcode(attributeNames[attribute].c_str()));
-        XercesCharPtr value(XMLString::transcode(m_element->getAttribute(nameAttr.Get())));
-        return std::string(value.Get());
+        return GetAttributeValue(attributeNames[attribute]);
     }
 
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
@@ -261,20 +279,75 @@ public:
         for(XMLSize_t index=0; index < len; index++)
         {   result[index] = static_cast<std::uint8_t>(decodedData.Get()[index]);
         }
-        return result;        
+        return result;
+    }
+
+    std::string GetText() override
+    {
+        DOMNode* node = dynamic_cast<DOMNode*>(m_element);
+        XercesCharPtr value(XMLString::transcode(node->getTextContent()));
+        return std::string(value.Get());
     }
 
     // IXercesElement
     DOMElement* GetElement() override { return m_element; }
 
+     // IMSIXElement
+    HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        auto intermediate = utf16_to_utf8(name);
+        auto attributeValue = GetAttributeValue(intermediate);
+        return m_factory->MarshalOutString(attributeValue, value);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetText(LPWSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        auto text = GetText();
+        return m_factory->MarshalOutString(text, value);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMSIXElementEnumerator** elements) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
+
+        // Note: getElementsByTagName only returns the childs of a DOMElement and doesn't 
+        // support xPath. For this reason we need the XercesDomParser in this object.
+        auto intermediate = utf16_to_utf8(name);
+        XercesXMLChPtr xPath(XMLString::transcode(intermediate.c_str()));
+        XercesPtr<DOMXPathResult> result(m_parser->getDocument()->evaluate(
+            xPath.Get(),
+            m_element,
+            m_resolver.Get(),
+            DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
+            nullptr));
+
+        std::vector<ComPtr<IMSIXElement>> elementsEnum;
+        for (XMLSize_t i = 0; i < result->getSnapshotLength(); i++)
+        {
+            result->snapshotItem(i);
+            auto node = static_cast<DOMElement*>(result->getNodeValue());
+            auto item = ComPtr<IMSIXElement>::Make<XercesElement>(m_factory, node, m_parser);
+            elementsEnum.push_back(std::move(item));
+        }
+        *elements = ComPtr<IMSIXElementEnumerator>::
+            Make<EnumeratorCom<IMSIXElementEnumerator,IMSIXElement>>(elementsEnum).Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
 protected:
+    IMSIXFactory* m_factory = nullptr;
     DOMElement* m_element = nullptr;
+    XERCES_CPP_NAMESPACE::XercesDOMParser* m_parser;
+    XercesPtr<DOMXPathNSResolver> m_resolver;
 };
 
 class XercesDom final : public ComClass<XercesDom, IXmlDom>
 {
 public:
-    XercesDom(const ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :  m_stream(stream)
+    XercesDom(IMSIXFactory* factory, const ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :
+        m_factory(factory), m_stream(stream)
     {
         auto buffer = Helper::CreateBufferFromStream(stream);
         std::unique_ptr<XERCES_CPP_NAMESPACE::MemBufInputSource> source = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
@@ -317,13 +390,15 @@ public:
         // Set the error handler for the parser
         auto errorHandler = std::make_unique<ParsingException>();
         m_parser->setErrorHandler(errorHandler.get());
-        m_parser->parse(*source);            
+        m_parser->parse(*source);
+
+        m_resolver = XercesPtr<DOMXPathNSResolver>(m_parser->getDocument()->createNSResolver(m_parser->getDocument()));
     }
 
     // IXmlDom
     MSIX::ComPtr<IXmlElement> GetDocument() override
     {
-        return ComPtr<IXmlElement>::Make<XercesElement>(m_parser->getDocument()->getDocumentElement());
+        return ComPtr<IXmlElement>::Make<XercesElement>(m_factory, m_parser->getDocument()->getDocumentElement(), m_parser.get());
     }
 
     bool ForEachElementIn(const ComPtr<IXmlElement>& root, XmlQueryName query, XmlVisitor& visitor) override
@@ -332,12 +407,10 @@ public:
         ThrowHrIfFailed(root->QueryInterface(UuidOfImpl<IXercesElement>::iid, reinterpret_cast<void**>(&element)));
 
         XercesXMLChPtr xPath(XMLString::transcode(xPaths[query].c_str()));
-        // TODO: Do we need to always create a resolver, or can we reuse it once we create one?
-        XercesPtr<DOMXPathNSResolver> resolver(m_parser->getDocument()->createNSResolver(m_parser->getDocument()));
         XercesPtr<DOMXPathResult> result(m_parser->getDocument()->evaluate(
             xPath.Get(),
             element->GetElement(),
-            resolver.Get(),
+            m_resolver.Get(),
             DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
             nullptr));
         
@@ -345,7 +418,7 @@ public:
         {
             result->snapshotItem(i);
             auto node = static_cast<DOMElement*>(result->getNodeValue());
-            auto item = ComPtr<IXmlElement>::Make<XercesElement>(node);
+            auto item = ComPtr<IXmlElement>::Make<XercesElement>(m_factory, node, m_parser.get());
             if (!visitor.Callback(visitor.context, item))
             {
                 return false;
@@ -355,8 +428,10 @@ public:
     }
 
 protected:
+    IMSIXFactory* m_factory;
     std::unique_ptr<XERCES_CPP_NAMESPACE::XercesDOMParser> m_parser;
-    ComPtr<IStream> m_stream;    
+    XercesPtr<DOMXPathNSResolver> m_resolver;
+    ComPtr<IStream> m_stream;
 };
 
 class XercesFactory final : public ComClass<XercesFactory, IXmlFactory>
@@ -378,18 +453,18 @@ public:
         {
             case XmlContentType::AppxBlockMapXml:
             {   auto blockMapSchema = GetResources(m_factory, Resource::Type::BlockMap);
-                return ComPtr<IXmlDom>::Make<XercesDom>(stream, &blockMapSchema);
+                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream, &blockMapSchema);
             }
             case XmlContentType::AppxManifestXml:
                 // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
-                return ComPtr<IXmlDom>::Make<XercesDom>(stream);
+                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream);
             case XmlContentType::ContentTypeXml:
             {   auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
-                return ComPtr<IXmlDom>::Make<XercesDom>(stream, &contentTypeSchema);
+                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream, &contentTypeSchema);
             }
             case XmlContentType::AppxBundleManifestXml:
             {   // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
-                return ComPtr<IXmlDom>::Make<XercesDom>(stream);
+                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream);
             }
         }
         ThrowError(Error::InvalidParameter);
