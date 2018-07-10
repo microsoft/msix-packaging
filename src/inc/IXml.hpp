@@ -32,6 +32,17 @@ enum class XmlQueryName : std::uint8_t
     Bundle_Packages_Package_Resources_Resource = 5,
     Package_Dependencies_TargetDeviceFamily    = 6,
     Package_Applications_Application           = 7,
+    Package_Properties                         = 8,
+    Package_Properties_Description             = 9,
+    Package_Properties_DisplayName             = 10,
+    Package_Properties_PublisherDisplayName    = 11,
+    Package_Properties_Logo                    = 12,
+    Package_Properties_Framework               = 13,
+    Package_Properties_ResourcePackage         = 14,
+    Package_Properties_AllowExecution          = 15,
+    Package_Dependencies_PackageDependency     = 16,
+    Package_Capabilities_Capability            = 17,
+    Package_Resources_Resource                 = 18,
 };
 
 // defines attribute names for use in IXmlElement-> [GetAttributeValue|GetBase64DecodedAttributeValue]
@@ -41,22 +52,17 @@ enum class XmlAttributeName : std::uint8_t
     ResourceId                                 = 1,
     Version                                    = 2,
     Size                                       = 3,
-
     Identity_ProcessorArchitecture             = 4,
-    Identity_Publisher                         = 5,
-
+    Publisher                                  = 5,
     BlockMap_File_LocalFileHeaderSize          = 6,
     BlockMap_File_Block_Hash                   = 7,
-
     Bundle_Package_FileName                    = 8,
     Bundle_Package_Offset                      = 9,
     Bundle_Package_Type                        = 10,
     Bundle_Package_Architecture                = 11,
-    Bundle_Package_Resources_Resource_Language = 12,
-
-    Dependencies_Tdf_MinVersion                = 13,
+    Language                                   = 12,
+    MinVersion                                 = 13,
     Dependencies_Tdf_MaxVersionTested          = 14,
-
     Package_Applications_Application_Id        = 15,
 };
 
@@ -77,6 +83,7 @@ class IXmlElement : public IUnknown
 public:
     virtual std::string               GetAttributeValue(XmlAttributeName attribute) = 0;
     virtual std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) = 0;
+    virtual std::string               GetText() = 0;
 };
 
 struct XmlVisitor

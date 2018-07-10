@@ -87,6 +87,7 @@ namespace MSIX {
         // IAppxBlockMapFile
         HRESULT STDMETHODCALLTYPE GetBlocks(IAppxBlockMapBlocksEnumerator **blocks) noexcept override try
         {
+            ThrowErrorIf(Error::InvalidParameter, (blocks == nullptr || *blocks != nullptr), "bad pointer.");
             if (m_blockMapBlocks.empty())
             {   m_blockMapBlocks.reserve(m_blocks->size());
                 std::transform(
@@ -98,7 +99,6 @@ namespace MSIX {
                     }
                 );
             }
-            ThrowErrorIf(Error::InvalidParameter, (blocks == nullptr || *blocks != nullptr), "bad pointer.");
             *blocks = ComPtr<IAppxBlockMapBlocksEnumerator>::
                 Make<EnumeratorCom<IAppxBlockMapBlocksEnumerator, IAppxBlockMapBlock>>(m_blockMapBlocks).Detach();
             return static_cast<HRESULT>(Error::OK);

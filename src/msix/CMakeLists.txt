@@ -57,8 +57,12 @@ ELSE()
         "IID_IAppxManifestReader2"
         "IID_IAppxManifestReader3"
         "IID_IAppxManifestPackageId"
+        "IID_IAppxManifestProperties"
         "IID_IAppxManifestTargetDeviceFamiliesEnumerator"
         "IID_IAppxManifestTargetDeviceFamily"
+        "IID_IAppxManifestPackageDependenciesEnumerator"
+        "IID_IAppxManifestPackageDependency"
+        "IID_IAppxManifestResourcesEnumerator"
         "IID_IAppxManifestApplicationsEnumerator"
         "IID_IAppxManifestApplication"
         "IID_IAppxManifestQualifiedResourcesEnumerator"
@@ -68,6 +72,9 @@ ELSE()
         "IID_IAppxBundleManifestReader"
         "IID_IAppxBundleManifestPackageInfoEnumerator"
         "IID_IAppxBundleManifestPackageInfo"
+        "IID_IMSIXDocumentElement"
+        "IID_IMSIXElement"
+        "IID_IMSIXElementEnumerator"
     )
     IF((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported

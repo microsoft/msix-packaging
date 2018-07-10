@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <map>
 
 #include "AppxPackaging.hpp"
 #include "AppxPackageInfo.hpp"
@@ -15,6 +16,7 @@
 #include "ComHelper.hpp"
 #include "VerifierObject.hpp"
 #include "IXml.hpp"
+#include "UnicodeConversion.hpp"
 
 EXTERN_C const IID IID_IAppxManifestObject;
 #ifndef WIN32
@@ -107,8 +109,81 @@ namespace MSIX {
         std::string m_aumid;
     };
 
+    class AppxManifestProperties final : public ComClass<AppxManifestProperties, IAppxManifestProperties>
+    {
+    public:
+        AppxManifestProperties(IMSIXFactory* factory, std::map<std::string, std::string> stringValues, std::map<std::string, bool> boolValues) :
+            m_factory(factory), m_stringValues(stringValues), m_boolValues(boolValues)
+        {}
+
+        HRESULT STDMETHODCALLTYPE GetBoolValue(LPCWSTR name, BOOL* value) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer");
+            auto result  = m_boolValues.find(utf16_to_utf8(name));
+            if (result != m_boolValues.end())
+            {
+                *value = result->second ? TRUE : FALSE;
+                return static_cast<HRESULT>(Error::OK);
+            }
+            return static_cast<HRESULT>(Error::InvalidParameter);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetStringValue(LPCWSTR name, LPWSTR* value) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (value == nullptr || *value != nullptr), "bad pointer");
+            auto result  = m_stringValues.find(utf16_to_utf8(name));
+            if (result != m_stringValues.end())
+            {
+                return m_factory->MarshalOutString(result->second, value);
+            }
+            return static_cast<HRESULT>(Error::InvalidParameter);
+        } CATCH_RETURN();
+
+        protected:
+            IMSIXFactory* m_factory;
+            std::map<std::string, std::string> m_stringValues;
+            std::map<std::string, bool> m_boolValues;
+    };
+
+    // TODO: add IAppxManifestPackageDependency2 if needed
+    class AppxManifestPackageDependency final : public ComClass<AppxManifestPackageDependency, IAppxManifestPackageDependency>
+    {
+    public:
+        AppxManifestPackageDependency(IMSIXFactory* factory, std::string& minVersion, std::string& name, std::string& publisher) :
+            m_factory(factory), m_name(name), m_publisher(publisher)
+        {
+            m_minVersion = DecodeVersionNumber(minVersion);
+        }
+
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* name) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (name == nullptr || *name != nullptr), "bad pointer");
+            return m_factory->MarshalOutString(m_name, name);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetPublisher(LPWSTR* publisher) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (publisher == nullptr || *publisher != nullptr), "bad pointer");
+            return m_factory->MarshalOutString(m_publisher, publisher);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetMinVersion(UINT64* minVersion) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (minVersion == nullptr), "bad pointer");
+            *minVersion = m_minVersion;
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
+    protected:
+        IMSIXFactory* m_factory;
+        UINT64 m_minVersion;
+        std::string m_publisher;
+        std::string m_name;
+    };
+
     // Object backed by AppxManifest.xml
-    class AppxManifestObject final : public ComClass<AppxManifestObject, ChainInterfaces<IAppxManifestReader3, IAppxManifestReader2, IAppxManifestReader>, IVerifierObject, IAppxManifestObject>
+    class AppxManifestObject final : public ComClass<AppxManifestObject, ChainInterfaces<IAppxManifestReader3, IAppxManifestReader2, IAppxManifestReader>,
+                                                     IVerifierObject, IAppxManifestObject, IMSIXDocumentElement>
     {
     public:
         AppxManifestObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);
@@ -142,13 +217,16 @@ namespace MSIX {
         // IAppxManifestObject
         const MSIX_PLATFORMS GetPlatform() override { return m_platform; }
 
+        // IMSIXDocumentElement
+        HRESULT STDMETHODCALLTYPE GetDocumentElement(IMSIXElement** documentElement) noexcept override;
+
     protected:
         IMSIXFactory* m_factory;
         ComPtr<IStream> m_stream;
         ComPtr<IAppxManifestPackageId> m_packageId;
         MSIX_PLATFORMS m_platform = MSIX_PLATFORM_NONE;
         std::vector<ComPtr<IAppxManifestTargetDeviceFamily>> m_tdf;
-        std::vector<ComPtr<IAppxManifestApplication>> m_applications;
+        ComPtr<IXmlDom> m_dom;
     };
 
     class AppxBundleManifestObject final : public ComClass<AppxBundleManifestObject, IAppxBundleManifestReader, IVerifierObject, IBundleInfo>
