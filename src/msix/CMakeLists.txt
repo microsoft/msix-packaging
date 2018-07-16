@@ -10,27 +10,27 @@ set(LIBRARY_NAME msix)
 project(${LIBRARY_NAME})
 
 # Define PALs
-IF (XML_PARSER MATCHES xerces)
-    MESSAGE (STATUS "XML_PARSER defined.  Using XERCES-C XML parser." )
-    SET (XmlParser PAL/XML/xerces-c/XmlObject.cpp)
+if(XML_PARSER MATCHES xerces)
+    message(STATUS "XML_PARSER defined.  Using XERCES-C XML parser." )
+    set(XmlParser PAL/XML/xerces-c/XmlObject.cpp)
     add_definitions(-DUSING_XERCES=1)
-ENDIF()
+endif()
 
-IF (XML_PARSER MATCHES msxml6)
-    MESSAGE (STATUS "XML_PARSER defined.  Using MSXML6 XML parser." )
-    SET (XmlParser PAL/XML/msxml6/XmlObject.cpp)
+if(XML_PARSER MATCHES msxml6)
+    message(STATUS "XML_PARSER defined.  Using MSXML6 XML parser." )
+    set(XmlParser PAL/XML/msxml6/XmlObject.cpp)
     add_definitions(-DUSING_MSXML=1)
-ENDIF()
+endif()
 
-IF(WIN32)
-    SET (DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
-    SET (SHA256 PAL/SHA256/Win32/SHA256.cpp)
-    SET (Signature PAL/Signature/Win32/SignatureValidator.cpp)
-    SET (Applicability PAL/Applicability/Win32/Applicability.cpp)
-ELSE()
+if(WIN32)
+    set(DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
+    set(SHA256 PAL/SHA256/Win32/SHA256.cpp)
+    set(Signature PAL/Signature/Win32/SignatureValidator.cpp)
+    set(Applicability PAL/Applicability/Win32/Applicability.cpp)
+else()
     # Visibility variables for non-win32 platforms
-    SET(MSIX_EXPORTS)
-    LIST(APPEND MSIX_EXPORTS
+    set(MSIX_EXPORTS)
+    list(APPEND MSIX_EXPORTS
         "CoCreateAppxFactory"
         "CoCreateAppxFactoryWithHeap"
         "CreateStreamOnFile"
@@ -76,89 +76,88 @@ ELSE()
         "IID_IMSIXElement"
         "IID_IMSIXElementEnumerator"
     )
-    IF((IOS) OR (MACOS))
+    if((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported
-        SET(CMAKE_VISIBILITY_INLINES_HIDDEN     1)
-        SET(CMAKE_C_VISIBILITY_PRESET           hidden)
-        SET(CMAKE_CXX_VISIBILITY_PRESET         hidden)
+        set(CMAKE_VISIBILITY_INLINES_HIDDEN     1)
+        set(CMAKE_C_VISIBILITY_PRESET           hidden)
+        set(CMAKE_CXX_VISIBILITY_PRESET         hidden)
         # iOS and Mac exports start with '_' .The first '_' is be in the exports.def.cmakein
-        STRING(REGEX REPLACE ";" "\n_" MSIX_EXPORTS "${MSIX_EXPORTS}")
-        CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/exports.def.cmakein ${CMAKE_CURRENT_BINARY_DIR}/exports.def CRLF)
-        SET(DEFINE_EXPORTS  "-exported_symbols_list ${CMAKE_CURRENT_BINARY_DIR}/exports.def")    
+        string(REGEX REPLACE ";" "\n_" MSIX_EXPORTS "${MSIX_EXPORTS}")
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/exports.def.cmakein ${CMAKE_CURRENT_BINARY_DIR}/exports.def CRLF)
+        set(DEFINE_EXPORTS  "-exported_symbols_list ${CMAKE_CURRENT_BINARY_DIR}/exports.def")    
         # used to get the languages of the device
-        FIND_LIBRARY(COREFOUNDATION_LIBRARY CoreFoundation)
-        IF(NOT COREFOUNDATION_LIBRARY)
-            MESSAGE(FATAL_ERROR "CoreFoundation not found")
-        ENDIF()
-        SET (Applicability PAL/Applicability/Apple/Applicability.cpp)
+        find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+        if(NOT COREFOUNDATION_LIBRARY)
+            message(FATAL_ERROR "CoreFoundation not found")
+        endif()
+        set(Applicability PAL/Applicability/Apple/Applicability.cpp)
         if(IOS)
             add_definitions(-DIOS)
         else()
             add_definitions(-DMACOS)
         endif()
-    ELSE()
-        IF(LINUX)
+    else()
+        if(LINUX)
             add_definitions(-DLINUX)
-            FIND_PACKAGE(ICU COMPONENTS uc)
-            SET (Applicability PAL/Applicability/Linux/Applicability.cpp)
-        ENDIF()
-        IF(AOSP)
+            find_package(ICU COMPONENTS uc)
+            set(Applicability PAL/Applicability/Linux/Applicability.cpp)
+        endif()
+        if(AOSP)
             # add here any exports specific for android
             add_definitions(-DAOSP)
-            LIST(APPEND MSIX_EXPORTS
+            list(APPEND MSIX_EXPORTS
                 "JNI_OnLoad"
             )
-            SET (Applicability PAL/Applicability/AOSP/Applicability.cpp)
-        ENDIF()
+            set(Applicability PAL/Applicability/AOSP/Applicability.cpp)
+        endif()
         # on Linux and linux-derived platforms, you use a version script to achieve similar ends.
-        SET(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fvisibility=hidden")
+        set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fvisibility=hidden")
         # Make it look readable. The last ; is in the symbol.map.cmakein file
-        STRING(REGEX REPLACE ";" ";\n\t" MSIX_EXPORTS "${MSIX_EXPORTS}")
-        CONFIGURE_FILE(${CMAKE_CURRENT_SOURCE_DIR}/symbol.map.cmakein ${CMAKE_CURRENT_BINARY_DIR}/symbol.map CRLF)
-        SET(DEFINE_EXPORTS "-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/symbol.map")
-    ENDIF()
-    MESSAGE(STATUS "Using export flag: ${DEFINE_EXPORTS}")
-    SET(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DEFINE_EXPORTS}")
+        string(REGEX REPLACE ";" ";\n\t" MSIX_EXPORTS "${MSIX_EXPORTS}")
+        configure_file(${CMAKE_CURRENT_SOURCE_DIR}/symbol.map.cmakein ${CMAKE_CURRENT_BINARY_DIR}/symbol.map CRLF)
+        set(DEFINE_EXPORTS "-Wl,--version-script=${CMAKE_CURRENT_BINARY_DIR}/symbol.map")
+    endif()
+    message(STATUS "Using export flag: ${DEFINE_EXPORTS}")
+    set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DEFINE_EXPORTS}")
 
-    IF(OpenSSL_FOUND)
-        MESSAGE (STATUS "Using OpenSSL ${OpenSLL_VERSION}")
-        INCLUDE_DIRECTORIES(
+    if(OpenSSL_FOUND)
+        message(STATUS "Using OpenSSL ${OpenSLL_VERSION}")
+        include_directories(
             ${include_directories}
             ${OpenSLL_INCLUDE_PATH}
         )
-        SET (SHA256    PAL/SHA256/OpenSSL/SHA256.cpp)
-        SET (Signature PAL/Signature/OpenSSL/SignatureValidator.cpp)
-    ELSE()
+        set(SHA256    PAL/SHA256/OpenSSL/SHA256.cpp)
+        set(Signature PAL/Signature/OpenSSL/SignatureValidator.cpp)
+    else()
         # ... and were done here...  :/
-        MESSAGE (STATUS "OpenSSL NOT FOUND!")
-        RETURN()
-    ENDIF()
+        message(STATUS "OpenSSL NOT FOUND!")
+        return()
+    endif()
+    set(DirectoryObject PAL/FileSystem/POSIX/DirectoryObject.cpp)
+endif()
 
-    SET (DirectoryObject PAL/FileSystem/POSIX/DirectoryObject.cpp)
-ENDIF()
-
-IF(USE_VALIDATION_PARSER)
-    MESSAGE (STATUS "PAL: VALIDATING parser" )
+if(USE_VALIDATION_PARSER)
+    message(STATUS "PAL: VALIDATING parser" )
     add_definitions(-DVALIDATING=1)
-ELSE()
-    MESSAGE (STATUS "PAL: non-validating parser" )
+else()
+    message(STATUS "PAL: non-validating parser" )
     add_definitions(-DVALIDATING=0)
-ENDIF()
+endif()
 
-MESSAGE (STATUS "PAL: XML             = ${XmlParser}")
-MESSAGE (STATUS "PAL: DirectoryObject = ${DirectoryObject}")
-MESSAGE (STATUS "PAL: SHA256          = ${SHA256}")
-MESSAGE (STATUS "PAL: Signature       = ${Signature}")
-MESSAGE (STATUS "PAL: Applicability   = ${Applicability}")
+message(STATUS "PAL: XML             = ${XmlParser}")
+message(STATUS "PAL: DirectoryObject = ${DirectoryObject}")
+message(STATUS "PAL: SHA256          = ${SHA256}")
+message(STATUS "PAL: Signature       = ${Signature}")
+message(STATUS "PAL: Applicability   = ${Applicability}")
 
 include(msix_resources)
 
-SET(LIB_PUBLIC_HEADERS
+set(LIB_PUBLIC_HEADERS
     ../inc/AppxPackaging.hpp
     ../inc/MSIXWindows.hpp
 )
 
-SET(LIB_PRIVATE_HEADERS
+set(LIB_PRIVATE_HEADERS
     ../inc/Applicability.hpp
     ../inc/AppxBlockMapObject.hpp
     ../inc/AppxFactory.hpp
@@ -189,7 +188,7 @@ SET(LIB_PRIVATE_HEADERS
     ../inc/ZipObject.hpp
 )
 
-SET(LIB_SOURCES
+set(LIB_SOURCES
     AppxBlockMapObject.cpp
     AppxFactory.cpp
     AppxManifestObject.cpp
@@ -211,88 +210,14 @@ SET(LIB_SOURCES
 )
 
 # Copy out public headers
-CONFIGURE_FILE(../inc/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
-CONFIGURE_FILE(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
+configure_file(../inc/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
+configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
 
 # Define the library
-ADD_LIBRARY(${LIBRARY_NAME} SHARED ${LIB_SOURCES} ${LIB_PUBLIC_HEADERS} ${LIB_PRIVATE_HEADERS})
-
-# specify that this library is to be built with C++14
-SET_PROPERTY(TARGET ${LIBRARY_NAME} PROPERTY CXX_STANDARD 14)
-
-# Set the build version. It will be used in the name of the lib, with corresponding
-# symlinks created. SOVERSION could also be specified for api version.
-SET_TARGET_PROPERTIES(${LIBRARY_NAME} PROPERTIES
-    VERSION ${VERSION}  # ${VERSION} was defined in the main CMakeLists.
-    FRAMEWORK FALSE
-    PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
-)
-
-INCLUDE_DIRECTORIES(
-    ${include_directories}
-    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
-    ${CMAKE_PROJECT_ROOT}/lib/zlib
-)
-IF(USE_SHARED_ZLIB)
-    MESSAGE(STATUS "MSIX takes a dynamic dependency on zlib")
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zlib)
-else()
-    MESSAGE(STATUS "MSIX takes a static dependency on zlib")
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE zlibstatic)
-endif()
-
-IF (XML_PARSER MATCHES xerces)
-    MESSAGE(STATUS "MSIX takes a static dependency on xerces")
-    INCLUDE_DIRECTORIES(
-        ${include_directories}
-        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
-        ${CMAKE_PROJECT_ROOT}/lib/xerces/src
-    )
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE xerces-c)
-ENDIF()
-
-IF(AOSP)
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE -latomic)
-    FIND_PACKAGE(Java REQUIRED)
-    IF(NOT ANDROID_SDK)
-        IF(NOT DEFINED ENV{ANDROID_HOME})
-            MESSAGE(FATAL_ERROR "ANDROID_HOME enviroment variable not found.")
-        ENDIF()
-        SET(ANDROID_SDK $ENV{ANDROID_HOME})
-    ENDIF()
-    IF(NOT ANDROID_SDK_VERSION)
-        SET(ANDROID_SDK_VERSION 24)
-    ENDIF()
-    IF(ANDROID_SDK_VERSION LESS 24)
-        MESSAGE(FATAL_ERROR "MSIX minimum Android SDK is 24")
-    ENDIF()
-    INCLUDE(UseJava)
-    MESSAGE(STATUS "Android SDK = ${ANDROID_SDK}")
-    ADD_JAR(${PROJECT_NAME}-jni
-        SOURCES
-            PAL/java/com/microsoft/msix/JniHelper.java
-        INCLUDE_JARS
-            ${ANDROID_SDK}/platforms/android-${ANDROID_SDK_VERSION}/android.jar
-        OUTPUT_DIR
-            ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-        )
-ENDIF()
-
-IF((IOS) OR (MACOS))
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${COREFOUNDATION_LIBRARY})
-ENDIF()
-
-IF(LINUX)
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE ${ICU_LIBRARIES})
-ENDIF()
-
-IF(OpenSSL_FOUND)
-    # include the libraries needed to use OpenSSL
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE crypto)
-ENDIF()
+add_library(${LIBRARY_NAME} SHARED ${LIB_SOURCES} ${LIB_PUBLIC_HEADERS} ${LIB_PRIVATE_HEADERS})
 
 if(WIN32)
-    SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES
+    set_target_properties(${PROJECT_NAME} PROPERTIES
         COMPILE_FLAGS "/source-charset:utf-8"
         VS_WINRT_COMPONENT TRUE)
     # Using /DELAYLOAD as linker option will use a helper funtion provided by 
@@ -300,11 +225,88 @@ if(WIN32)
     # This dlls are NOT supposed to be loaded ever on Win7. See Exceptions.cpp 
     # on how we handle failure of delayloading these.
     # https://docs.microsoft.com/en-us/cpp/build/reference/error-handling-and-notification
-    SET(DELAYFLAGS)
-    LIST(APPEND DELAYFLAGS
+    set(DELAYFLAGS)
+    list(APPEND DELAYFLAGS
             "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll"
             "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll")
-    STRING(REPLACE ";" " " DELAYFLAGS "${DELAYFLAGS}")
-    SET_PROPERTY(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "${DELAYFLAGS}")
-    TARGET_LINK_LIBRARIES(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib delayimp.lib)
+    string(REPLACE ";" " " DELAYFLAGS "${DELAYFLAGS}")
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "${DELAYFLAGS}")
+    if(USE_STATIC_MSVC)
+        set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB:MSVCRT")
+    endif()
+    target_link_libraries(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib delayimp.lib)
+endif()
+
+# specify that this library is to be built with C++14
+set_property(TARGET ${LIBRARY_NAME} PROPERTY CXX_STANDARD 14)
+
+# Set the build version. It will be used in the name of the lib, with corresponding
+# symlinks created. SOVERSION could also be specified for api version.
+set_target_properties(${LIBRARY_NAME} PROPERTIES
+    VERSION ${VERSION}  # ${VERSION} was defined in the main CMakeLists.
+    FRAMEWORK FALSE
+    PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
+)
+
+include_directories(
+    ${include_directories}
+    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
+    ${CMAKE_PROJECT_ROOT}/lib/zlib
+)
+if(USE_SHARED_ZLIB)
+    message(STATUS "MSIX takes a dynamic dependency on zlib")
+    target_link_libraries(${PROJECT_NAME} PRIVATE zlib)
+else()
+    message(STATUS "MSIX takes a static dependency on zlib")
+    target_link_libraries(${PROJECT_NAME} PRIVATE zlibstatic)
+endif()
+
+if(XML_PARSER MATCHES xerces)
+    message(STATUS "MSIX takes a static dependency on xerces")
+    include_directories(
+        ${include_directories}
+        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
+        ${CMAKE_PROJECT_ROOT}/lib/xerces/src
+    )
+    target_link_libraries(${PROJECT_NAME} PRIVATE xerces-c)
+endif()
+
+if(AOSP)
+    target_link_libraries(${PROJECT_NAME} PRIVATE -latomic)
+    find_package(Java REQUIRED)
+    if(NOT ANDROID_SDK)
+        if(NOT DEFINED ENV{ANDROID_HOME})
+            message(FATAL_ERROR "ANDROID_HOME enviroment variable not found.")
+        endif()
+        set(ANDROID_SDK $ENV{ANDROID_HOME})
+    endif()
+    if(NOT ANDROID_SDK_VERSION)
+        SET(ANDROID_SDK_VERSION 24)
+    endif()
+    if(ANDROID_SDK_VERSION LESS 24)
+        message(FATAL_ERROR "MSIX minimum Android SDK is 24")
+    endif()
+    include(UseJava)
+    message(STATUS "Android SDK = ${ANDROID_SDK}")
+    add_jar(${PROJECT_NAME}-jni
+        SOURCES
+            PAL/java/com/microsoft/msix/JniHelper.java
+        INCLUDE_JARS
+            ${ANDROID_SDK}/platforms/android-${ANDROID_SDK_VERSION}/android.jar
+        OUTPUT_DIR
+            ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+        )
+endif()
+
+if((IOS) OR (MACOS))
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${COREFOUNDATION_LIBRARY})
+endif()
+
+if(LINUX)
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${ICU_LIBRARIES})
+endif()
+
+if(OpenSSL_FOUND)
+    # include the libraries needed to use OpenSSL
+    target_link_libraries(${PROJECT_NAME} PRIVATE crypto)
 endif()
