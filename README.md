@@ -91,7 +91,7 @@ See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-inte
 ----------
 ### On Windows using Visual Studio 2017 nmake:
 ```
-   makewin32.cmd
+   makewin.cmd
 ```
 
 ### On Mac using make:
