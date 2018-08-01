@@ -1,9 +1,9 @@
 
-# Developer Guidance to target MSIX Packaging SDK
+# Developer Guidance to target MSIX SDK
 
 ## Build a package to target the SDK 
 
-The MSIX Packaging SDK offers developers a universal way to distribute package contents to client devices regardless of the OS platform on the client device. This enables developers to package their app content once instead of having to package for each platform. 
+The MSIX SDK offers developers a universal way to distribute package contents to client devices regardless of the OS platform on the client device. This enables developers to package their app content once instead of having to package for each platform. 
 
 To take advantage of the new SDK and the ability to distribute your package contents to multiple platforms, we are providing a way to specify the target platforms where you want your packages to extract to. This means, the app developers can ensure that the package contents are being extracted from the package only as desired. 
 
@@ -228,11 +228,11 @@ If you would like to use the package for all platforms(Windows 10 and non-Window
   </Dependencies>
 ```
 
-**MinVersion** and **MaxVersionTested** are required fields in the manifest and they need to conform the quad notation(#.#.#.#). If you are only using the MSIX packaging SDK for only non-Windows 10 platforms, you can simply use '0.0.0.0' as the **MinVersion** and **MaxVersionTested** as the versions. 
+**MinVersion** and **MaxVersionTested** are required fields in the manifest and they need to conform the quad notation(#.#.#.#). If you are only using the MSIX SDK for only non-Windows 10 platforms, you can simply use '0.0.0.0' as the **MinVersion** and **MaxVersionTested** as the versions. 
 
 ## How to effectively use the same package on all platforms (Windows 10 and non-Windows 10)
 
-To make the most of the MSIX Packaging SDK, you will need to build the package in a way that will be deployed like an app package on Windows 10 and at the same time supported on other platforms. On Windows 10, you can build the package as an app extension. To find more information about App Extensions and how they can help make your app extensible - [you will find it here](https://blogs.msdn.microsoft.com/appinstaller/2017/05/01/introduction-to-app-extensions/). 
+To make the most of the MSIX SDK, you will need to build the package in a way that will be deployed like an app package on Windows 10 and at the same time supported on other platforms. On Windows 10, you can build the package as an app extension. To find more information about App Extensions and how they can help make your app extensible - [you will find it here](https://blogs.msdn.microsoft.com/appinstaller/2017/05/01/introduction-to-app-extensions/). 
 
 In the above manifest file, you will notice within the AppExtension element, there is a section for Properties. There is no validation performed in this section of the manifest file. This allows developers to specify the required metadata between extension and host/client app. 
 
