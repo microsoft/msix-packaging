@@ -5,19 +5,22 @@ cmake_minimum_required(VERSION 3.4.0 FATAL_ERROR)
 
 ADD_CUSTOM_TARGET(LIBS)
 
-# ZLIB
-#   set(AMD64             OFF CACHE BOOL "Disable building i686 assembly implementation"  FORCE)
-#   set(ASM686            OFF CACHE BOOL "Disable building amd64 assembly implementation" FORCE)
-set(MINGW               OFF CACHE BOOL "Only build the static lib"                      FORCE)
-set(HAVE_OFF64_T        OFF CACHE BOOL "no need to build zlib tests as part of build"   FORCE)
-set(SKIP_INSTALL_SHARED ON  CACHE BOOL "Don't install zlib.dll"                         FORCE)
-set(ZLIB_TESTS          OFF CACHE BOOL "Don't build zlib tests/examples"                FORCE)
-IF(USE_SHARED_ZLIB)
-    set(BUILD_SHARED_LIBS   ON  CACHE BOOL  "Build dll"                                 FORCE)
-ELSE()
-    set(BUILD_SHARED_LIBS   OFF CACHE BOOL  "Build dll"                                 FORCE)
+IF((NOT ((MACOS) OR (IOS))) OR USE_ZLIB)
+    # For mac and ios we use inbox libcompression apis.
+    # ZLIB
+    #   set(AMD64             OFF CACHE BOOL "Disable building i686 assembly implementation"  FORCE)
+    #   set(ASM686            OFF CACHE BOOL "Disable building amd64 assembly implementation" FORCE)
+    set(MINGW               OFF CACHE BOOL "Only build the static lib"                      FORCE)
+    set(HAVE_OFF64_T        OFF CACHE BOOL "no need to build zlib tests as part of build"   FORCE)
+    set(SKIP_INSTALL_SHARED ON  CACHE BOOL "Don't install zlib.dll"                         FORCE)
+    set(ZLIB_TESTS          OFF CACHE BOOL "Don't build zlib tests/examples"                FORCE)
+    IF(USE_SHARED_ZLIB)
+        set(BUILD_SHARED_LIBS   ON  CACHE BOOL  "Build dll"                                 FORCE)
+    ELSE()
+        set(BUILD_SHARED_LIBS   OFF CACHE BOOL  "Build dll"                                 FORCE)
+    ENDIF()
+    add_subdirectory(zlib)
 ENDIF()
-add_subdirectory(zlib)
 
 # Xerces
 IF(XML_PARSER MATCHES xerces)
