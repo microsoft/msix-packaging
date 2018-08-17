@@ -190,7 +190,7 @@ public:
     Bstr() {m_bstr = nullptr;}
     Bstr(std::wstring text)
     {
-        m_bstr = ::SysAllocStringLen(text.c_str(), text.length()); 
+        m_bstr = ::SysAllocStringLen(text.c_str(), static_cast<UINT>(text.length())); 
         ThrowErrorIf(Error::OutOfMemory, (m_bstr == nullptr), "SysAllocStringLen failed!");
     }
     ~Bstr() { ::SysFreeString(m_bstr);}
@@ -212,6 +212,12 @@ public:
     operator VARIANT() && = delete;
     operator VARIANT() & { return m_variant; }
     Variant() : m_clear(true) { VariantInit(&m_variant); }
+    Variant(const Variant&) = delete;
+    Variant(Variant&& other) : m_clear(other.m_clear)
+    {
+        other.m_clear = false;
+        std::swap(m_variant, other.m_variant);
+    }
     Variant(bool value) : m_clear(true)
     {
         VariantInit(&m_variant);
@@ -249,16 +255,11 @@ public:
 
 class MSXMLElement final : public ComClass<MSXMLElement, IXmlElement, IMSXMLElement, IMSIXElement>
 {
-    std::pair<bool, Variant> GetAttribute(std::wstring attribute)
+    bool GetAttribute(const std::wstring& attribute, VARIANT* variant)
     {
         Bstr name(attribute);
-        Variant value;
-        ThrowHrIfFailed(m_element->getAttribute(name, value.AddressOf()));
-        if (value.Get().vt == VT_BSTR)
-        {
-            return std::make_pair(true, std::move(value));
-        }
-        return std::make_pair<bool, Variant>(false, Variant());
+        ThrowHrIfFailed(m_element->getAttribute(name, variant));
+        return (variant->vt == VT_BSTR);
     }
 
 public:
@@ -267,9 +268,10 @@ public:
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        auto value = GetAttribute(attributeNames[static_cast<std::uint8_t>(attribute)]);
-        if (value.first)
-        {   return utf16_to_utf8(static_cast<WCHAR*>(value.second.Get().bstrVal));
+        Variant value;
+        if (GetAttribute(attributeNames[static_cast<std::uint8_t>(attribute)], value.AddressOf()))
+        {
+            return utf16_to_utf8(static_cast<WCHAR*>(value.Get().bstrVal));
         }
         return "";
     }
@@ -334,10 +336,10 @@ public:
     {
         ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
         *value = nullptr;
-        auto attribute = GetAttribute(name);
-        if (attribute.first)
+        Variant attribute;
+        if (GetAttribute(name, attribute.AddressOf()))
         {
-            auto intermediate = std::wstring(static_cast<WCHAR*>(attribute.second.Get().bstrVal));
+            auto intermediate = std::wstring(static_cast<WCHAR*>(attribute.Get().bstrVal));
             ThrowHrIfFailed(m_factory->MarshalOutWstring(intermediate, value));
         }
         return static_cast<HRESULT>(Error::OK);
