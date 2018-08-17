@@ -157,6 +157,14 @@ set(LIB_PUBLIC_HEADERS
     ../inc/MSIXWindows.hpp
 )
 
+if (((IOS) OR (MACOS)) AND (NOT USE_ZLIB))
+    set(InflateStreamCpp    PAL/DataCompression/Apple/InflateStream.cpp)
+    set(InflateStreamHpp    PAL/DataCompression/Apple/InflateStream.hpp)
+else()
+    set(InflateStreamCpp    PAL/DataCompression/Zlib/InflateStream.cpp)
+    set(InflateStreamHpp    PAL/DataCompression/Zlib/InflateStream.hpp)
+endif()
+
 set(LIB_PRIVATE_HEADERS
     ../inc/Applicability.hpp
     ../inc/AppxBlockMapObject.hpp
@@ -171,7 +179,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/Enumerators.hpp
     ../inc/Exceptions.hpp
     ../inc/FileStream.hpp
-    ../inc/InflateStream.hpp
+    ${InflateStreamHpp}
     ../inc/Log.hpp
     ../inc/MSIXFactory.hpp
     ../inc/MSIXResource.hpp
@@ -197,7 +205,7 @@ set(LIB_SOURCES
     AppxPackaging_i.cpp
     AppxSignature.cpp
     Exceptions.cpp
-    InflateStream.cpp
+    ${InflateStreamCpp}
     Log.cpp
     UnicodeConversion.cpp
     msix.cpp
@@ -247,18 +255,25 @@ set_target_properties(${LIBRARY_NAME} PROPERTIES
     FRAMEWORK FALSE
     PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
 )
-
-include_directories(
-    ${include_directories}
-    ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
-    ${CMAKE_PROJECT_ROOT}/lib/zlib
-)
-if(USE_SHARED_ZLIB)
-    message(STATUS "MSIX takes a dynamic dependency on zlib")
-    target_link_libraries(${PROJECT_NAME} PRIVATE zlib)
+      
+if (((IOS) OR (MACOS)) AND (NOT USE_ZLIB))
+    # for macos and ios use the inbox libcompression zlib apis instead of zlib, unless zlib is explicitly requested.
+    target_link_libraries(${PROJECT_NAME} PRIVATE libcompression.dylib)
+    include_directories(${include_directories}  ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Apple)
 else()
-    message(STATUS "MSIX takes a static dependency on zlib")
-    target_link_libraries(${PROJECT_NAME} PRIVATE zlibstatic)
+    include_directories(
+            ${include_directories}
+            ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
+            ${CMAKE_PROJECT_ROOT}/lib/zlib
+            ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Zlib
+        )
+    if(USE_SHARED_ZLIB)
+        message(STATUS "MSIX takes a dynamic dependency on zlib")
+        target_link_libraries(${PROJECT_NAME} PRIVATE zlib)
+    else()
+        message(STATUS "MSIX takes a static dependency on zlib")
+        target_link_libraries(${PROJECT_NAME} PRIVATE zlibstatic)
+    endif()
 endif()
 
 if(XML_PARSER MATCHES xerces)
