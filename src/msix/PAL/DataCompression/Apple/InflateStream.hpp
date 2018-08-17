@@ -3,17 +3,11 @@
 //  See LICENSE file in the project root for full license information.
 // 
 #pragma once
-#ifdef WIN32
-#include "zlib.h"
-#else
-#include <zlib.h>
-#endif
-
+#include "Compression.h"
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "ComHelper.hpp"
 
-// Windows.h defines max and min... 
 #undef max
 #undef min
 #include <string>
@@ -84,8 +78,9 @@ namespace MSIX {
         ULONG           m_inflateWindowPosition = 0;
         ULONGLONG       m_fileCurrentWindowPositionEnd = 0;
         ULONGLONG       m_fileCurrentPosition = 0;
-        z_stream        m_zstrm;
-        int             m_zret;
+
+        compression_stream m_compressionStream;
+        compression_status m_compressionStatus;
 
         std::unique_ptr<std::vector<std::uint8_t>> m_compressedBuffer;
         std::unique_ptr<std::vector<std::uint8_t>> m_inflateWindow;

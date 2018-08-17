@@ -2,7 +2,6 @@
 //  Copyright (C) 2017 Microsoft.  All rights reserved.
 //  See LICENSE file in the project root for full license information.
 // 
-#define NOMINMAX /* windows.h, or more correctly windef.h, defines min as a macro... */
 #include "Exceptions.hpp"
 #include "ZipFileStream.hpp"
 #include "InflateStream.hpp"
@@ -33,25 +32,25 @@ namespace MSIX {
         InflateHandler([](InflateStream* self, void*, ULONG)
         {
             ThrowHrIfFailed(self->m_stream->Seek({0}, StreamBase::START, nullptr));
-            self->m_zstrm = { 0 };
+            self->m_compressionStream = { 0 };
             self->m_fileCurrentPosition = 0;
             self->m_fileCurrentWindowPositionEnd = 0;
 
-            int ret = inflateInit2(&(self->m_zstrm), -MAX_WBITS);
-            ThrowErrorIfNot(Error::InflateInitialize, (ret == Z_OK), "inflateInit2 failed");
+            self->m_compressionStatus = compression_stream_init(&(self->m_compressionStream), COMPRESSION_STREAM_DECODE, COMPRESSION_ZLIB);
+            ThrowErrorIfNot(Error::InflateInitialize, (self->m_compressionStatus == COMPRESSION_STATUS_OK), "compression_stream_init failed");
             return std::make_pair(true, InflateStream::State::READY_TO_READ);
         }), // State::UNINITIALIZED
 
         // State::READY_TO_READ
         InflateHandler([](InflateStream* self, void*, ULONG)
         {
-            ThrowErrorIfNot(Error::InflateRead,(self->m_zstrm.avail_in == 0), "uninflated bytes overwritten");
+            ThrowErrorIfNot(Error::InflateRead,(self->m_compressionStream.src_size == 0), "uninflated bytes overwritten");
             ULONG available = 0;
             self->m_compressedBuffer = std::make_unique<std::vector<std::uint8_t>>(BufferSize);
             ThrowHrIfFailed(self->m_stream->Read(self->m_compressedBuffer->data(), self->m_compressedBuffer->size(), &available));
             ThrowErrorIf(Error::FileRead, (available == 0), "Getting nothing back is unexpected here.");
-            self->m_zstrm.avail_in = static_cast<uInt>(available);
-            self->m_zstrm.next_in = self->m_compressedBuffer->data();
+            self->m_compressionStream.src_size = static_cast<size_t>(available);
+            self->m_compressionStream.src_ptr = self->m_compressedBuffer->data();
             return std::make_pair(true, InflateStream::State::READY_TO_INFLATE);
         }), // State::READY_TO_READ
 
@@ -60,19 +59,19 @@ namespace MSIX {
         {
             self->m_inflateWindow = std::make_unique<std::vector<std::uint8_t>>(BufferSize);
             self->m_inflateWindowPosition = 0;
-            self->m_zstrm.avail_out = self->m_inflateWindow->size();
-            self->m_zstrm.next_out = self->m_inflateWindow->data();
-            self->m_zret = inflate(&(self->m_zstrm), Z_NO_FLUSH);
-            switch (self->m_zret)
+            self->m_compressionStream.dst_size = self->m_inflateWindow->size();
+            self->m_compressionStream.dst_ptr = self->m_inflateWindow->data();
+            self->m_compressionStatus = compression_stream_process(&(self->m_compressionStream), 0);
+            switch (self->m_compressionStatus)
             {
-            case Z_NEED_DICT:
-            case Z_DATA_ERROR:
-            case Z_MEM_ERROR:
+            case COMPRESSION_STATUS_ERROR:
                 self->Cleanup();
                 ThrowErrorIfNot(Error::InflateCorruptData, false, "inflate failed unexpectedly.");
-            case Z_STREAM_END:
+                break;
+            case COMPRESSION_STATUS_OK:
+            case COMPRESSION_STATUS_END:
             default:
-                self->m_fileCurrentWindowPositionEnd += (BufferSize - self->m_zstrm.avail_out);
+                self->m_fileCurrentWindowPositionEnd += (BufferSize - self->m_compressionStream.dst_size);
                 return std::make_pair(true, InflateStream::State::READY_TO_COPY);
             }
         }), // State::READY_TO_INFLATE
@@ -83,15 +82,15 @@ namespace MSIX {
             // Check if we're actually at the end of stream.
             if (self->m_fileCurrentPosition >= self->m_uncompressedSize)
             {
-                ThrowErrorIfNot(Error::InflateCorruptData, ((self->m_zret == Z_STREAM_END) && (self->m_zstrm.avail_in == 0)), "unexpected extra data");
+                ThrowErrorIfNot(Error::InflateCorruptData, ((self->m_compressionStatus == COMPRESSION_STATUS_END) && (self->m_compressionStream.src_size == 0)), "unexpected extra data");
                 return std::make_pair(true, InflateStream::State::CLEANUP);
             }
 
             // If the end of the current window position is less than the seek position, keep inflating
             if (self->m_fileCurrentWindowPositionEnd < self->m_seekPosition)
             {
-                self->m_fileCurrentPosition += self->m_zstrm.avail_out;
-                return std::make_pair(true, (self->m_zstrm.avail_in == 0) ? InflateStream::State::READY_TO_READ : InflateStream::State::READY_TO_INFLATE);
+                self->m_fileCurrentPosition = self->m_fileCurrentWindowPositionEnd;
+                return std::make_pair(true, (self->m_compressionStream.dst_size == 0) ? InflateStream::State::READY_TO_INFLATE : InflateStream::State::READY_TO_READ);
             }
 
             // now that we're within the window between current file position and seek position
@@ -101,10 +100,10 @@ namespace MSIX {
 
             // Calculate the difference between the beginning of the window and the seek position.
             // if there's nothing left in the window to copy, then we need to fetch another window.
-            ULONG bytesRemainingInWindow = (BufferSize - self->m_zstrm.avail_out) - self->m_inflateWindowPosition;
+            ULONG bytesRemainingInWindow = (BufferSize - self->m_compressionStream.dst_size) - self->m_inflateWindowPosition;
             if (bytesRemainingInWindow == 0)
             {
-                return std::make_pair(true, (self->m_zstrm.avail_in == 0) ? InflateStream::State::READY_TO_READ : InflateStream::State::READY_TO_INFLATE);
+                return std::make_pair(true, (self->m_compressionStream.dst_size == 0) ? InflateStream::State::READY_TO_INFLATE : InflateStream::State::READY_TO_READ);
             }
 
             ULONG bytesToCopy = std::min(countBytes, bytesRemainingInWindow);
@@ -122,7 +121,9 @@ namespace MSIX {
                 self->Cleanup();
                 return std::make_pair(false, InflateStream::State::UNINITIALIZED);
             }
+            
             return std::make_pair(countBytes != 0, InflateStream::State::READY_TO_COPY);
+            
         }), // State::READY_TO_COPY
 
         // State::CLEANUP    
@@ -139,7 +140,7 @@ namespace MSIX {
         m_state(State::UNINITIALIZED),
         m_uncompressedSize(uncompressedSize)
     {
-        m_zstrm = {0};
+        m_compressionStream = {0};
     }
 
     InflateStream::~InflateStream()
@@ -208,7 +209,7 @@ namespace MSIX {
     {
         if (m_state != State::UNINITIALIZED)
         {
-            inflateEnd(&m_zstrm);
+            compression_stream_destroy(&m_compressionStream);
             m_state = State::UNINITIALIZED;
         }
     }
