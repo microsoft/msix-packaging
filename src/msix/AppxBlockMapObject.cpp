@@ -49,7 +49,7 @@ namespace MSIX {
         return result;
     }
 
-    AppxBlockMapObject::AppxBlockMapObject(IMSIXFactory* factory, const ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
+    AppxBlockMapObject::AppxBlockMapObject(IMsixFactory* factory, const ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
     {
         ComPtr<IXmlFactory> xmlFactory;
         ThrowHrIfFailed(factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));
@@ -58,7 +58,7 @@ namespace MSIX {
         struct _context
         {
             AppxBlockMapObject* self;
-            IMSIXFactory*       factory;
+            IMsixFactory*       factory;
             size_t              countFilesFound;
             IXmlDom*            dom;
         };

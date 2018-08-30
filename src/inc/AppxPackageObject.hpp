@@ -50,7 +50,7 @@ namespace MSIX {
     class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader>
     {
     public:
-        AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, MSIX_APPLICABILITY_OPTIONS applicabilityOptions, const ComPtr<IStorageObject>& container);
+        AppxPackageObject(IMsixFactory* factory, MSIX_VALIDATION_OPTION validation, MSIX_APPLICABILITY_OPTIONS applicabilityOptions, const ComPtr<IStorageObject>& container);
         ~AppxPackageObject() {}
 
         HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) noexcept override
@@ -113,20 +113,21 @@ namespace MSIX {
         // HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override; 
 
         // IStorageObject methods
-        const char*               GetPathSeparator() override;
-        std::vector<std::string>  GetFileNames(FileNameOptions options) override;
-        ComPtr<IStream>           GetFile(const std::string& fileName) override;
-        ComPtr<IStream>           OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
+        const char* GetPathSeparator() override;
+        std::vector<std::string> GetFileNames(FileNameOptions options) override;
+        ComPtr<IStream> GetFile(const std::string& fileName) override;
+        ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
+        std::string GetFileName() override;
 
     protected:
         // Helper methods
         void VerifyFile(const ComPtr<IStream>& stream, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal);
+        ComPtr<IAppxFile> GetAppxFile(const std::string& fileName);
 
-        std::map<std::string, ComPtr<IStream>> m_streams;
+        std::map<std::string, ComPtr<IAppxFile>> m_files;
 
         MSIX_VALIDATION_OPTION      m_validation = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
-        MSIX_APPLICABILITY_OPTIONS  m_applicability = MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL;
-        ComPtr<IMSIXFactory>        m_factory;
+        ComPtr<IMsixFactory>        m_factory;
         ComPtr<IVerifierObject>     m_appxSignature;
         ComPtr<IVerifierObject>     m_appxBlockMap;
         ComPtr<IVerifierObject>     m_appxManifest;

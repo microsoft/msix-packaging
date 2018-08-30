@@ -9,14 +9,14 @@
 #include <vector>
 
 // internal interface
-EXTERN_C const IID IID_IMSIXFactory;   
+EXTERN_C const IID IID_IMsixFactory;   
 #ifndef WIN32
 // {1f850db4-32b8-4db6-8bf4-5a897eb611f1}
-interface IMSIXFactory : public IUnknown
+interface IMsixFactory : public IUnknown
 #else
 #include "UnKnwn.h"
 #include "Objidl.h"
-class IMSIXFactory : public IUnknown
+class IMsixFactory : public IUnknown
 #endif
 {
 public:
@@ -27,4 +27,4 @@ public:
     virtual HRESULT MarshalOutWstring(std::wstring& internal, LPWSTR* result) = 0;
 };
 
-SpecializeUuidOfImpl(IMSIXFactory);
+SpecializeUuidOfImpl(IMsixFactory);

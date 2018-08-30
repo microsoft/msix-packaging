@@ -21,7 +21,7 @@ namespace MSIX {
     class InflateStream final : public StreamBase
     {
     public:
-        InflateStream(IStream* stream, std::uint64_t uncompressedSize);
+        InflateStream(const ComPtr<IStream>& stream, std::uint64_t uncompressedSize);
         ~InflateStream();
 
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override;

@@ -766,7 +766,12 @@ ComPtr<IStream> ZipObject::GetFile(const std::string& fileName)
     return result->second;
 }
 
-ZipObject::ZipObject(IMSIXFactory* appxFactory, const ComPtr<IStream>& stream) : m_factory(appxFactory), m_stream(stream)
+std::string ZipObject::GetFileName()
+{
+    return m_stream.As<IAppxFileInternal>()->GetName();
+}
+
+ZipObject::ZipObject(IMsixFactory* appxFactory, const ComPtr<IStream>& stream) : m_factory(appxFactory), m_stream(stream)
 {   // Confirm that the file IS the correct format
     EndCentralDirectoryRecord endCentralDirectoryRecord;
     LARGE_INTEGER pos = {0};
@@ -832,13 +837,13 @@ ZipObject::ZipObject(IMSIXFactory* appxFactory, const ComPtr<IStream>& stream) :
             m_factory,
             localFileHeader->GetCompressionType() == CompressionType::Deflate,
             centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
-            localFileHeader->GetCompressedSize(),                
+            localFileHeader->GetCompressedSize(),
             m_stream
             );
 
         if (localFileHeader->GetCompressionType() == CompressionType::Deflate)
         {
-            fileStream = ComPtr<IStream>::Make<InflateStream>(fileStream.Get(), localFileHeader->GetUncompressedSize());
+            fileStream = ComPtr<IStream>::Make<InflateStream>(std::move(fileStream), localFileHeader->GetUncompressedSize());
         }
 
         m_streams.insert(std::make_pair(centralFileHeader.second->GetFileName(), std::move(fileStream)));

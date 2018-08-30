@@ -65,7 +65,7 @@ void AppxSignatureObject::ValidateDigestHeader(DigestHeader* header, std::size_t
     ThrowErrorIf(Error::SignatureInvalid, (digestsFound != 4 && digestsFound != 5), "Digest hashes missing entries");
 }
 
-AppxSignatureObject::AppxSignatureObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validationOptions, const ComPtr<IStream>& stream) : 
+AppxSignatureObject::AppxSignatureObject(IMsixFactory* factory, MSIX_VALIDATION_OPTION validationOptions, const ComPtr<IStream>& stream) : 
     m_stream(stream), 
     m_validationOptions(validationOptions)
 {

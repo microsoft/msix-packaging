@@ -54,7 +54,7 @@ namespace MSIX {
     class AppxManifestTargetDeviceFamily final : public ComClass<AppxManifestTargetDeviceFamily, IAppxManifestTargetDeviceFamily>
     {
     public:
-        AppxManifestTargetDeviceFamily(IMSIXFactory* factory, std::string& name, std::string& minVersion, std::string& maxVersion) :
+        AppxManifestTargetDeviceFamily(IMsixFactory* factory, std::string& name, std::string& minVersion, std::string& maxVersion) :
             m_factory(factory), m_name(name)
         {
             m_minVersion = DecodeVersionNumber(minVersion);
@@ -81,7 +81,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
     protected:
-        IMSIXFactory* m_factory;
+        IMsixFactory* m_factory;
         std::string m_name;
         std::uint64_t m_minVersion;
         std::uint64_t m_maxVersion;
@@ -90,7 +90,7 @@ namespace MSIX {
     class AppxManifestApplication final : public ComClass<AppxManifestApplication, IAppxManifestApplication>
     {
     public:
-        AppxManifestApplication(IMSIXFactory* factory, std::string& aumid) :
+        AppxManifestApplication(IMsixFactory* factory, std::string& aumid) :
             m_factory(factory), m_aumid(aumid)
         {}
 
@@ -105,14 +105,14 @@ namespace MSIX {
         } CATCH_RETURN();
 
     protected:
-        IMSIXFactory* m_factory;
+        IMsixFactory* m_factory;
         std::string m_aumid;
     };
 
     class AppxManifestProperties final : public ComClass<AppxManifestProperties, IAppxManifestProperties>
     {
     public:
-        AppxManifestProperties(IMSIXFactory* factory, std::map<std::string, std::string> stringValues, std::map<std::string, bool> boolValues) :
+        AppxManifestProperties(IMsixFactory* factory, std::map<std::string, std::string> stringValues, std::map<std::string, bool> boolValues) :
             m_factory(factory), m_stringValues(stringValues), m_boolValues(boolValues)
         {}
 
@@ -140,7 +140,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
         protected:
-            IMSIXFactory* m_factory;
+            IMsixFactory* m_factory;
             std::map<std::string, std::string> m_stringValues;
             std::map<std::string, bool> m_boolValues;
     };
@@ -149,7 +149,7 @@ namespace MSIX {
     class AppxManifestPackageDependency final : public ComClass<AppxManifestPackageDependency, IAppxManifestPackageDependency>
     {
     public:
-        AppxManifestPackageDependency(IMSIXFactory* factory, std::string& minVersion, std::string& name, std::string& publisher) :
+        AppxManifestPackageDependency(IMsixFactory* factory, std::string& minVersion, std::string& name, std::string& publisher) :
             m_factory(factory), m_name(name), m_publisher(publisher)
         {
             m_minVersion = DecodeVersionNumber(minVersion);
@@ -175,7 +175,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
     protected:
-        IMSIXFactory* m_factory;
+        IMsixFactory* m_factory;
         UINT64 m_minVersion;
         std::string m_publisher;
         std::string m_name;
@@ -183,10 +183,10 @@ namespace MSIX {
 
     // Object backed by AppxManifest.xml
     class AppxManifestObject final : public ComClass<AppxManifestObject, ChainInterfaces<IAppxManifestReader3, IAppxManifestReader2, IAppxManifestReader>,
-                                                     IVerifierObject, IAppxManifestObject, IMSIXDocumentElement>
+                                                     IVerifierObject, IAppxManifestObject, IMsixDocumentElement>
     {
     public:
-        AppxManifestObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);
+        AppxManifestObject(IMsixFactory* factory, const ComPtr<IStream>& stream);
 
         // IAppxManifestReader
         HRESULT STDMETHODCALLTYPE GetPackageId(IAppxManifestPackageId **packageId) noexcept override;
@@ -217,11 +217,11 @@ namespace MSIX {
         // IAppxManifestObject
         const MSIX_PLATFORMS GetPlatform() override { return m_platform; }
 
-        // IMSIXDocumentElement
-        HRESULT STDMETHODCALLTYPE GetDocumentElement(IMSIXElement** documentElement) noexcept override;
+        // IMsixDocumentElement
+        HRESULT STDMETHODCALLTYPE GetDocumentElement(IMsixElement** documentElement) noexcept override;
 
     protected:
-        IMSIXFactory* m_factory;
+        IMsixFactory* m_factory;
         ComPtr<IStream> m_stream;
         ComPtr<IAppxManifestPackageId> m_packageId;
         MSIX_PLATFORMS m_platform = MSIX_PLATFORM_NONE;
@@ -232,7 +232,7 @@ namespace MSIX {
     class AppxBundleManifestObject final : public ComClass<AppxBundleManifestObject, IAppxBundleManifestReader, IVerifierObject, IBundleInfo>
     {
     public:
-        AppxBundleManifestObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);
+        AppxBundleManifestObject(IMsixFactory* factory, const ComPtr<IStream>& stream);
 
          // IVerifierObject
         bool HasStream() override { return !!m_stream; }
@@ -249,7 +249,7 @@ namespace MSIX {
         std::vector<ComPtr<IAppxBundleManifestPackageInfo>>& GetPackages() override { return m_packages; }
 
     protected:
-        IMSIXFactory* m_factory;
+        IMsixFactory* m_factory;
         ComPtr<IStream> m_stream;
         ComPtr<IAppxManifestPackageId> m_packageId;
         std::vector<ComPtr<IAppxBundleManifestPackageInfo>> m_packages;

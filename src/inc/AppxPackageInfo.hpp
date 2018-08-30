@@ -46,6 +46,8 @@ class IAppxBundleManifestPackageInfoInternal : public IUnknown
 public:
     virtual const std::string& GetFileName() = 0;
     virtual const std::vector<MSIX::Bcp47Tag>& GetLanguages() = 0;
+    virtual const std::uint64_t GetOffset() = 0;
+    virtual bool HasQualifiedResources() = 0;
 };
 
 SpecializeUuidOfImpl(IAppxManifestPackageIdInternal);
@@ -105,7 +107,7 @@ namespace MSIX {
     {
     public:
         AppxManifestPackageId(
-            IMSIXFactory* factory,
+            IMsixFactory* factory,
             const std::string& name,
             const std::string& version,
             const std::string& resourceId,
@@ -142,7 +144,7 @@ namespace MSIX {
         std::string ComputePublisherId(const std::string& publisher);
 
     protected:
-        IMSIXFactory* m_factory;
+        IMsixFactory* m_factory;
         std::string   m_name;
         std::string   m_version;
         std::string   m_resourceId;
@@ -154,7 +156,7 @@ namespace MSIX {
     class AppxBundleQualifiedResource final : public MSIX::ComClass<AppxBundleQualifiedResource, IAppxManifestQualifiedResource>
     {
     public:
-        AppxBundleQualifiedResource(IMSIXFactory* factory, const std::string& language) : m_factory(factory), m_language(language) {}
+        AppxBundleQualifiedResource(IMsixFactory* factory, const std::string& language) : m_factory(factory), m_language(language) {}
 
         // IAppxManifestQualifiedResource
         HRESULT STDMETHODCALLTYPE GetLanguage(LPWSTR *language) noexcept override try
@@ -174,7 +176,7 @@ namespace MSIX {
         }
 
     protected:
-        IMSIXFactory* m_factory;
+        IMsixFactory* m_factory;
         std::string m_language;
     };
 
@@ -182,7 +184,7 @@ namespace MSIX {
     {
     public:
         AppxBundleManifestPackageInfo(
-            IMSIXFactory* factory,
+            IMsixFactory* factory,
             const std::string& name,
             const std::string& bundleName,
             const std::string& version,
@@ -205,9 +207,11 @@ namespace MSIX {
         // IAppxBundleManifestPackageInfoInternal
         const std::string& GetFileName() override { return m_fileName; }
         const std::vector<Bcp47Tag>& GetLanguages() override { return m_languages; }
+        const std::uint64_t GetOffset() override { return m_offset; }
+        bool HasQualifiedResources() override { return !m_languages.empty(); }
 
     private:
-        IMSIXFactory* m_factory;
+        IMsixFactory* m_factory;
         std::string m_fileName;
         ComPtr<IAppxManifestPackageId> m_packageId;
         std::uint64_t m_size;

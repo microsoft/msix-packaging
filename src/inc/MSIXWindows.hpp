@@ -250,6 +250,10 @@
     #define E_INVALIDARG 0x80070057
     #endif
 
+    #ifndef E_NOTIMPL
+    #define E_NOTIMPL 0x80004001
+    #endif
+
     #if !defined (_SYS_GUID_OPERATORS_)
     #define _SYS_GUID_OPERATORS_
 

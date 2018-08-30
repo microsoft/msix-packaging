@@ -72,9 +72,11 @@ else()
         "IID_IAppxBundleManifestReader"
         "IID_IAppxBundleManifestPackageInfoEnumerator"
         "IID_IAppxBundleManifestPackageInfo"
-        "IID_IMSIXDocumentElement"
-        "IID_IMSIXElement"
-        "IID_IMSIXElementEnumerator"
+        "IID_IMsixDocumentElement"
+        "IID_IMsixElement"
+        "IID_IMsixElementEnumerator"
+        "IID_IMsixFactoryOverrides"
+        "IID_IMsixStreamFactory"
     )
     if((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported
@@ -169,6 +171,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/Applicability.hpp
     ../inc/AppxBlockMapObject.hpp
     ../inc/AppxFactory.hpp
+    ../inc/AppxFile.hpp
     ../inc/AppxManifestObject.hpp
     ../inc/AppxPackageInfo.hpp
     ../inc/AppxPackageObject.hpp
@@ -210,6 +213,7 @@ set(LIB_SOURCES
     UnicodeConversion.cpp
     msix.cpp
     ZipObject.cpp
+    ApplicabilityCommon.cpp
     ${DirectoryObject}
     ${SHA256}
     ${Signature}

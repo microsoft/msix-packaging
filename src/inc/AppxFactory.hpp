@@ -15,15 +15,15 @@
 #include <vector>
 
 namespace MSIX {
-    class AppxFactory final : public ComClass<AppxFactory, IMSIXFactory, IAppxFactory, IXmlFactory, IAppxBundleFactory>
+    class AppxFactory final : public ComClass<AppxFactory, IMsixFactory, IAppxFactory, IXmlFactory, IAppxBundleFactory, IMsixFactoryOverrides>
     {
     public:
         AppxFactory(MSIX_VALIDATION_OPTION validationOptions, MSIX_APPLICABILITY_OPTIONS applicability, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
-            m_validationOptions(validationOptions), m_applicability(applicability), m_memalloc(memalloc), m_memfree(memfree)
+            m_validationOptions(validationOptions), m_applicabilityFlags(applicability), m_memalloc(memalloc), m_memfree(memfree)
         {
             ThrowErrorIf(Error::InvalidParameter, (m_memalloc == nullptr || m_memfree == nullptr), "allocator/deallocator pair not specified.")
-            ComPtr<IMSIXFactory> self;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
+            ComPtr<IMsixFactory> self;
+            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
             m_xmlFactory = CreateXmlFactory(self.Get());
         }
 
@@ -46,7 +46,7 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) noexcept override;
         HRESULT STDMETHODCALLTYPE CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept override;
 
-        // IMSIXFactory
+        // IMsixFactory
         HRESULT MarshalOutString(std::string& internal, LPWSTR *result) noexcept override;
         HRESULT MarshalOutBytes(std::vector<std::uint8_t>& data, UINT32* size, BYTE** buffer) noexcept override;
         MSIX_VALIDATION_OPTION GetValidationOptions() override { return m_validationOptions; }
@@ -59,12 +59,17 @@ namespace MSIX {
             return m_xmlFactory->CreateDomFromStream(footPrintType, stream);
         }
 
+        // IMsixFactoryOverrides
+        HRESULT STDMETHODCALLTYPE SpecifyExtension(MSIX_FACTORY_EXTENSION name, IUnknown* extension) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetCurrentSpecifiedExtension(MSIX_FACTORY_EXTENSION name, IUnknown** extension) noexcept override;
+
         ComPtr<IXmlFactory> m_xmlFactory;
         COTASKMEMALLOC* m_memalloc;
         COTASKMEMFREE*  m_memfree;
         MSIX_VALIDATION_OPTION m_validationOptions;
         ComPtr<IStorageObject> m_resourcezip;
         std::vector<std::uint8_t> m_resourcesVector;
-        MSIX_APPLICABILITY_OPTIONS m_applicability;
+        MSIX_APPLICABILITY_OPTIONS m_applicabilityFlags;
+        ComPtr<IMsixStreamFactory> m_streamFactory;
     };
 }

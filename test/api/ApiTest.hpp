@@ -133,4 +133,4 @@ void LogSucceed(int nLogs...)
 #define VERIFY_ARE_SAME(__res, __exp)  { if(__res != __exp) { throw Exception(#__res, #__exp, __LINE__); } else { LogSucceed(3, #__res, " == ", #__exp); } }
 #define VERIFY_NOT_NULL(__res)         { if(__res == nullptr) { throw Exception(#__res, "pointer is null", __LINE__); } else { LogSucceed(2, #__res, " not null"); } }
 #define VERIFY_IS_NULL(__res)          { if(__res != nullptr) { throw Exception(#__res, "pointer is not null", __LINE__); } else { LogSucceed(2, #__res, " is null"); } }
-#define VERIFY_IS_TRUE(__res)          { if(!__res) { throw Exception(#__res, "is false", __LINE__); } else { LogSucceed(2, #__res, " is true"); } }
+#define VERIFY_IS_TRUE(__res)          { if(!(__res)) { throw Exception(#__res, "is false", __LINE__); } else { LogSucceed(2, #__res, " is true"); } }

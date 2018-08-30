@@ -19,16 +19,17 @@ namespace MSIX {
     class ZipObject final : public ComClass<ZipObject, IStorageObject>
     {
     public:
-        ZipObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);
+        ZipObject(IMsixFactory* factory, const ComPtr<IStream>& stream);
 
-        // StorageObject methods
-        const char*                 GetPathSeparator() override { return "/"; }
-        std::vector<std::string>    GetFileNames(FileNameOptions options) override;
-        ComPtr<IStream>             GetFile(const std::string& fileName) override;
-        ComPtr<IStream>             OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override { NOTIMPLEMENTED; }
+        // IStorageObject methods
+        const char* GetPathSeparator() override { return "/"; }
+        std::vector<std::string> GetFileNames(FileNameOptions options) override;
+        ComPtr<IStream> GetFile(const std::string& fileName) override;
+        ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override { NOTIMPLEMENTED; }
+        std::string GetFileName() override;
 
     protected:
-        IMSIXFactory*                          m_factory;
+        IMsixFactory*                          m_factory;
         ComPtr<IStream>                        m_stream;
         std::map<std::string, ComPtr<IStream>> m_streams;
     };//class ZipObject
