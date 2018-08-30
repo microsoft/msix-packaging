@@ -81,6 +81,7 @@ namespace MSIX {
             ThrowHrIfFailed(Seek(li, STREAM_SEEK_SET, nullptr));
         }
 
+        // IStream
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override try
         {
             LARGE_INTEGER newPos = { 0 };
@@ -141,6 +142,7 @@ namespace MSIX {
             return (countBytes == bytesRead) ? S_OK : S_FALSE;
         } CATCH_RETURN();
 
+        // IAppxFile
         HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override try
         {
             return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption);
