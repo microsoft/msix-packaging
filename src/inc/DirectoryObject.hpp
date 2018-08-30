@@ -22,11 +22,11 @@ namespace MSIX {
         DirectoryObject(std::string root) : m_root(std::move(root)) {}
 
         // StorageObject methods
-        const char*              GetPathSeparator() override;
+        const char* GetPathSeparator() override;
         std::vector<std::string> GetFileNames(FileNameOptions options) override;
-        ComPtr<IStream>          GetFile(const std::string& fileName) override;
-
-        ComPtr<IStream>          OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
+        ComPtr<IStream> GetFile(const std::string& fileName) override;
+        ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
+        std::string GetFileName() override { NOTIMPLEMENTED; }
 
     protected:
         std::string m_root;

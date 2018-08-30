@@ -15,6 +15,7 @@
 #include "AppxManifestObject.hpp"
 #include "Encoding.hpp"
 #include "Enumerators.hpp"
+#include "AppxFile.hpp"
 
 #include <string>
 #include <vector>
@@ -48,10 +49,10 @@ namespace MSIX {
         APPXSIGNATURE_P7X,
     };
 
-    AppxPackageObject::AppxPackageObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validation, MSIX_APPLICABILITY_OPTIONS applicability, const ComPtr<IStorageObject>& container) :
+    AppxPackageObject::AppxPackageObject(IMsixFactory* factory, MSIX_VALIDATION_OPTION validation,
+        MSIX_APPLICABILITY_OPTIONS applicabilityFlags, const ComPtr<IStorageObject>& container) :
         m_factory(factory),
         m_validation(validation),
-        m_applicability(applicability),
         m_container(container)
     {
         ComPtr<IXmlFactory> xmlFactory;
@@ -63,7 +64,6 @@ namespace MSIX {
         if ((validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
         {   ThrowErrorIfNot(Error::MissingAppxSignatureP7X, file, "AppxSignature.p7x not in archive!");
         }
-
         m_appxSignature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(factory, validation, file);
 
         // 2. Get content type using signature object for validation
@@ -141,12 +141,37 @@ namespace MSIX {
         };
 
         static const Config footPrintFileNames[] = {
-            Config(APPXBLOCKMAP_XML,       [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBLOCKMAP_XML);  return self->m_appxBlockMap->GetStream();}),
-            Config(APPXMANIFEST_XML,       [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXMANIFEST_XML);  return self->m_appxManifest->GetStream();}),
-            Config(APPXSIGNATURE_P7X,      [](AppxPackageObject* self){ if (self->m_appxSignature->HasStream()){self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);} return self->m_appxSignature->GetStream();}),
-            Config(CODEINTEGRITY_CAT,      [](AppxPackageObject* self){ self->m_footprintFiles.push_back(CODEINTEGRITY_CAT); auto file = self->m_container->GetFile(CODEINTEGRITY_CAT); return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, file);}),
-            Config(CONTENT_TYPES_XML,      [](AppxPackageObject*)->ComPtr<IStream>{ return ComPtr<IStream>();}), // content types is never implicitly unpacked
-            Config(APPXBUNDLEMANIFEST_XML, [](AppxPackageObject* self){ self->m_footprintFiles.push_back(APPXBUNDLEMANIFEST_XML); return self->m_appxBundleManifest->GetStream();}),
+            Config(APPXBLOCKMAP_XML, [](AppxPackageObject* self)
+            {
+                self->m_footprintFiles.push_back(APPXBLOCKMAP_XML);
+                return self->m_appxBlockMap->GetStream();
+            }),
+            Config(APPXMANIFEST_XML, [](AppxPackageObject* self)
+            {
+                self->m_footprintFiles.push_back(APPXMANIFEST_XML);
+                return self->m_appxManifest->GetStream();
+            }),
+            Config(APPXSIGNATURE_P7X, [](AppxPackageObject* self)
+            {
+                if (self->m_appxSignature->HasStream())
+                {
+                    self->m_footprintFiles.push_back(APPXSIGNATURE_P7X);
+                    return self->m_appxSignature->GetStream();
+                }
+                return ComPtr<IStream>();
+            }),
+            Config(CODEINTEGRITY_CAT, [](AppxPackageObject* self)
+            {
+                self->m_footprintFiles.push_back(CODEINTEGRITY_CAT);
+                auto file = self->m_container->GetFile(CODEINTEGRITY_CAT);
+                return self->m_appxSignature->GetValidationStream(CODEINTEGRITY_CAT, file);
+            }),
+            Config(CONTENT_TYPES_XML, [](AppxPackageObject*)->ComPtr<IStream>{ return ComPtr<IStream>();}), // content types is never implicitly unpacked
+            Config(APPXBUNDLEMANIFEST_XML, [](AppxPackageObject* self)
+            {
+                self->m_footprintFiles.push_back(APPXBUNDLEMANIFEST_XML);
+                return self->m_appxBundleManifest->GetStream();
+            }),
         };
 
         // 5. Ensure that the stream collection contains streams wired up for their appropriate validation
@@ -156,7 +181,11 @@ namespace MSIX {
         for (const auto& fileName : m_container->GetFileNames(FileNameOptions::FootPrintOnly))
         {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
             if (footPrintFile != std::end(footPrintFileNames))
-            {   m_streams[fileName] = footPrintFile->GetValidationStream(this);
+            {
+                if (fileName != CONTENT_TYPES_XML)
+                {
+                    m_files[fileName] = footPrintFile->GetValidationStream(this).As<IAppxFile>();
+                }
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
             }
         }
@@ -171,26 +200,65 @@ namespace MSIX {
 
             auto bundleInfo = m_appxBundleManifest.As<IBundleInfo>();
             auto appxFactory = m_factory.As<IAppxFactory>();
-            bool hasExactLanguageMatch = false;
-            bool matchApplicationPackage = false;
-            std::vector<std::pair<std::string, ComPtr<IAppxPackageReader>>> variantFormPackages;
-            std::vector<std::pair<std::string, ComPtr<IAppxPackageReader>>> extraApplicationPackages;
+
+            Applicability applicability(applicabilityFlags);
             for (const auto& package : bundleInfo->GetPackages())
             {
                 auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
                 auto packageName = bundleInfoInternal->GetFileName();
                 auto fileStream = m_container->GetFile(packageName);
-                ThrowErrorIfNot(Error::FileNotFound, fileStream, "Package is not in container"); // This will change when we support flat bundles
 
-                // Do semantic checks
-                auto appxFile = fileStream.As<IAppxFile>();
+                ComPtr<IAppxFile> appxFile;
+                if(!fileStream && (bundleInfoInternal->GetOffset() == 0)) // This is a flat bundle.
+                {
+                    // We should only do this for flat bundles. If we do it for normal bundles and the user specify a 
+                    // stream factory we will basically unpack any package the user wants with the same name as the package
+                    // we are looking, which sounds dangerous.
+                    auto factoryOverrides = m_factory.As<IMsixFactoryOverrides>();
+                    ComPtr<IUnknown> streamFactoryUnk;
+                    ThrowHrIfFailed(factoryOverrides->GetCurrentSpecifiedExtension(MSIX_FACTORY_EXTENSION_STREAM_FACTORY, &streamFactoryUnk));
+
+                    ComPtr<IStream> packageStream;
+                    if(streamFactoryUnk.Get() != nullptr)
+                    {
+                        auto streamFactory = streamFactoryUnk.As<IMsixStreamFactory>();
+                        ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePath(utf8_to_wstring(packageName).c_str(), &packageStream));
+                    }
+                    else
+                    {   // User didn't specify a stream factory implementation. Assume packages are in the same location
+                        // as the bundle.
+                        auto containerName = GetFileName();
+                        #ifdef WIN32
+                        auto lastSeparator = containerName.find_last_of('\\');
+                        #else
+                        auto lastSeparator = containerName.find_last_of('/');
+                        #endif
+                        auto expandedPackageName = containerName.substr(0, lastSeparator + 1 ) + packageName;
+                        ThrowHrIfFailed(CreateStreamOnFile(const_cast<char*>(expandedPackageName.c_str()), true, &packageStream));
+                    }
+                    ThrowErrorIfNot(Error::FileNotFound, packageStream, "Package from a flat bundle is not present");
+                    appxFile = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
+                    ThrowHrIfFailed(appxFile->GetStream(&fileStream));
+                }
+                else
+                {
+                    ThrowErrorIfNot(Error::FileNotFound, fileStream, "Package is not in container");
+                    appxFile = fileStream.As<IAppxFile>();
+                }
+
+                // Do semantic checks.
                 APPX_COMPRESSION_OPTION compressionOpt;
                 ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
                 ThrowErrorIf(Error::AppxManifestSemanticError, (compressionOpt != APPX_COMPRESSION_OPTION_NONE), "Packages cannot be compressed");
-                ComPtr<IAppxFileInternal> appxFileInternal = fileStream.As<IAppxFileInternal>();
+
+                LARGE_INTEGER start = { 0 };
+                ULARGE_INTEGER end = { 0 };
+                ThrowHrIfFailed(fileStream->Seek(start, StreamBase::Reference::END, &end));
+                ThrowHrIfFailed(fileStream->Seek(start, StreamBase::Reference::START, nullptr));
+                
                 UINT64 size;
                 ThrowHrIfFailed(package->GetSize(&size));
-                ThrowErrorIf(Error::AppxManifestSemanticError, (appxFileInternal->GetCompressedSize()) != size,
+                ThrowErrorIf(Error::AppxManifestSemanticError, end.u.LowPart != size,
                     "Size mistmach of package between AppxManifestBundle.appx and container");
 
                 // Validate the package
@@ -226,105 +294,16 @@ namespace MSIX {
 
                 APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType;
                 ThrowHrIfFailed(package->GetPackageType(&packageType));
+                
                 // Validation is done, now see if the package is applicable.
+                applicability.AddPackageIfApplicable(reader, packageName, bundleInfoInternal->GetLanguages(),
+                    packageType, bundleInfoInternal->HasQualifiedResources());
 
-                MSIX_PLATFORMS platform = (m_applicability & MSIX_APPLICABILITY_OPTION_SKIPPLATFORM) ?
-                    static_cast<MSIX_PLATFORMS>(MSIX_PLATFORM_ALL) : Applicability::GetPlatform();
-                //if (innerPackageManifest->GetPlatform() & platform) // temporary disable until we have bundles for all platforms
-                //{
-                    if (m_applicability & MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE)
-                    {
-                        m_applicablePackages.push_back(std::move(reader));
-                        m_applicablePackagesNames.push_back(packageName);
-                    }
-                    else
-                    {
-                        bool hasMatch = false;
-                        bool hasVariantMatch = false;
-                        for (auto& systemLanguage : Applicability::GetLanguages())
-                        {
-                            for (auto& packageLanguage : bundleInfoInternal->GetLanguages())
-                            {
-                                auto closeness = systemLanguage.Compare(packageLanguage);
-                                if (closeness == Bcp47ClosenessMeasure::ExactMatch)
-                                {
-                                    // If this is an exact match we can stop looking
-                                    hasExactLanguageMatch = true;
-                                    hasMatch = true;
-                                    break;
-                                }
-                                else if ((closeness == Bcp47ClosenessMeasure::AnyMatchWithScript) || (closeness == Bcp47ClosenessMeasure::AnyMatch))
-                                {   // matching und-* packages always get deployed
-                                    hasMatch = true;
-                                }
-                                else if (closeness >= Bcp47ClosenessMeasure::LanguagesScriptsMatch)
-                                {
-                                    closeness = systemLanguage.CompareNeutral(packageLanguage);
-                                    if (closeness == Bcp47ClosenessMeasure::ExactMatch)
-                                    {
-                                        hasMatch = true;
-                                    }
-                                    else
-                                    {
-                                        hasVariantMatch = true;
-                                    }
-                                }
-                            }
-                            // If we know this package is applicable there's no need to keep looking
-                            // for other system languages
-                            if (hasMatch)
-                            {
-                                m_applicablePackages.push_back(std::move(reader));
-                                m_applicablePackagesNames.push_back(packageName);
-                                break;
-                            }
-                            if (hasVariantMatch)
-                            {
-                                variantFormPackages.push_back(std::make_pair(packageName, std::move(reader)));
-                                break;
-                            }
-                        }
-                        if (packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
-                        {
-                            if (!hasMatch && !hasVariantMatch)
-                            {   // If we are here the package is an application package that targets the 
-                                // current platform, but it doesn't contain a language match. Save it just in case
-                                // there are no application packages that match, so we don't end up only with resources.
-                                extraApplicationPackages.push_back(std::make_pair(packageName, std::move(reader)));
-                            }
-                            else
-                            {
-                                matchApplicationPackage = true;
-                            }
-                        }
-                    }
-                //}
-                m_streams[packageName] = std::move(fileStream);
+                m_files[packageName] = std::move(appxFile);
                 // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
                 // resource packages that are not languages packages.
             }
-
-            if (!(m_validation & MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE))
-            {
-                // If we don't have an exact match, we have to add all of the variants, too.
-                if (!hasExactLanguageMatch)
-                {
-                    for(auto& variantFormPackage : variantFormPackages)
-                    {
-                        m_applicablePackages.push_back(std::move(variantFormPackage.second));
-                        m_applicablePackagesNames.push_back(variantFormPackage.first);
-                    }
-                }
-                // If we don't have an application package add the ones we have
-                if (!matchApplicationPackage)
-                {
-                    for(auto& applicationPackage : extraApplicationPackages)
-                    {
-                        m_applicablePackages.push_back(std::move(applicationPackage.second));
-                        m_applicablePackagesNames.push_back(applicationPackage.first);
-                    }
-                }
-            }
+            applicability.GetApplicablePackages(&m_applicablePackages, &m_applicablePackagesNames);
 
         }
         else
@@ -337,7 +316,7 @@ namespace MSIX {
                     auto fileStream = m_container->GetFile(containerFileName);
                     ThrowErrorIfNot(Error::FileNotFound, fileStream, "File described in blockmap not contained in OPC container");
                     VerifyFile(fileStream, fileName, blockMapInternal);
-                    m_streams[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream);
+                    m_files[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream.As<IStream>()).As<IAppxFile>();
                     filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
                 }
             }
@@ -356,8 +335,8 @@ namespace MSIX {
         ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
         bool isUncompressed = (compressionOpt == APPX_COMPRESSION_OPTION_NONE);
 
-        ComPtr<IAppxFileInternal> appxFileInternal = stream.As<IAppxFileInternal>();
-        auto sizeOnZip = appxFileInternal->GetCompressedSize();
+        auto streamInternal = appxFile.As<IAppxFileInternal>();
+        auto sizeOnZip = streamInternal->GetCompressedSize();
 
         auto blocks = blockMapInternal->GetBlocks(fileName);
         std::uint64_t blocksSize = 0;
@@ -424,7 +403,7 @@ namespace MSIX {
                 }
 
                 auto targetFile = to->OpenFile(targetName, MSIX::FileStream::Mode::WRITE_UPDATE);
-                auto sourceFile = GetFile(fileName);
+                auto sourceFile = GetFile(fileName).As<IStream>();
 
                 ULARGE_INTEGER bytesCount = {0};
                 bytesCount.QuadPart = std::numeric_limits<std::uint64_t>::max();
@@ -441,6 +420,7 @@ namespace MSIX {
         }
     }
 
+    // IStorageObject
     const char* AppxPackageObject::GetPathSeparator() { return "/"; }
 
     std::vector<std::string> AppxPackageObject::GetFileNames(FileNameOptions options)
@@ -467,15 +447,25 @@ namespace MSIX {
 
     ComPtr<IStream> AppxPackageObject::GetFile(const std::string& fileName)
     {
-        auto result = m_streams.find(fileName);
-        if (result == m_streams.end())
+        auto appxFile = GetAppxFile(fileName);
+        ComPtr<IStream> stream;
+        ThrowHrIfFailed(appxFile->GetStream(&stream));
+        return stream;
+    }
+
+    ComPtr<IAppxFile> AppxPackageObject::GetAppxFile(const std::string& fileName)
+    {
+        auto result = m_files.find(fileName);
+        if (result == m_files.end())
         {
-            return ComPtr<IStream>();
+            return ComPtr<IAppxFile>();
         }
         return result->second;
     }
 
     ComPtr<IStream> AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) { NOTIMPLEMENTED; }
+
+    std::string AppxPackageObject::GetFileName() { return m_container->GetFileName(); }
 
     // IAppxPackageReader
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept try
@@ -491,11 +481,12 @@ namespace MSIX {
         ThrowErrorIf(Error::InvalidParameter, (file == nullptr || *file != nullptr), "bad pointer");
         ThrowErrorIf(Error::FileNotFound, (static_cast<size_t>(type) > footprintFiles.size()), "unknown footprint file type");
         std::string footprint (footprintFiles[type]);
-        ComPtr<IStream> stream = GetFile(footprint);
-        ThrowErrorIfNot(Error::FileNotFound, stream, "requested footprint file not in package")
+        auto result = GetAppxFile(footprint);
+        ThrowErrorIfNot(Error::FileNotFound, result, "requested footprint file not in package")
         // Clients expect the stream's pointer to be at the start of the file!
+        ComPtr<IStream> stream;
+        ThrowHrIfFailed(result->GetStream(&stream));
         ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
-        auto result = stream.As<IAppxFile>();
         *file = result.Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -505,11 +496,12 @@ namespace MSIX {
         if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
         ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
         std::string name = utf16_to_utf8(fileName);
-        ComPtr<IStream> stream = GetFile(EncodeFileName(name));
-        ThrowErrorIfNot(Error::FileNotFound, stream, "requested file not in package")
+        auto result = GetAppxFile(EncodeFileName(name));
+        ThrowErrorIfNot(Error::FileNotFound, result, "requested file not in package")
         // Clients expect the stream's pointer to be at the start of the file!
+        ComPtr<IStream> stream;
+        ThrowHrIfFailed(result->GetStream(&stream));
         ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
-        auto result = stream.As<IAppxFile>();
         *file = result.Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -521,7 +513,11 @@ namespace MSIX {
         std::vector<ComPtr<IAppxFile>> files;
         for (const auto& fileName : GetFileNames(FileNameOptions::PayloadOnly))
         {
-            auto file = GetFile(fileName).As<IAppxFile>();
+            auto file = GetAppxFile(fileName);
+            // Clients expect the stream's pointer to be at the start of the file!
+            ComPtr<IStream> stream;
+            ThrowHrIfFailed(file->GetStream(&stream));
+            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
             files.push_back(std::move(file));
         }
         *filesEnumerator = ComPtr<IAppxFilesEnumerator>::
@@ -544,11 +540,12 @@ namespace MSIX {
         ThrowErrorIf(Error::InvalidParameter, (footprintFile == nullptr || *footprintFile != nullptr), "bad pointer");
         ThrowErrorIf(Error::FileNotFound, (static_cast<size_t>(fileType) > bundleFootprintFiles.size()), "unknown footprint file type");
         std::string footprint (bundleFootprintFiles[fileType]);
-        ComPtr<IStream> stream = GetFile(footprint);
-        ThrowErrorIfNot(Error::FileNotFound, stream, "Requested footprint file not in bundle")
+        auto result = GetAppxFile(footprint);
+        ThrowErrorIfNot(Error::FileNotFound, result, "Requested footprint file not in bundle")
         // Clients expect the stream's pointer to be at the start of the file!
+        ComPtr<IStream> stream;
+        ThrowHrIfFailed(result->GetStream(&stream));
         ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
-        auto result = stream.As<IAppxFile>();
         *footprintFile = result.Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -560,7 +557,10 @@ namespace MSIX {
         std::vector<ComPtr<IAppxFile>> packages;
         for (const auto& fileName : GetFileNames(FileNameOptions::PayloadOnly))
         {
-            auto package = GetFile(fileName).As<IAppxFile>();
+            auto package = GetAppxFile(fileName);
+            ComPtr<IStream> stream;
+            ThrowHrIfFailed(package->GetStream(&stream));
+            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
             packages.push_back(std::move(package));
         }
         *payloadPackages = ComPtr<IAppxFilesEnumerator>::
@@ -573,11 +573,12 @@ namespace MSIX {
         if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
         ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || payloadPackage == nullptr || *payloadPackage != nullptr), "bad pointer");
         std::string name = utf16_to_utf8(fileName);
-        ComPtr<IStream> stream = GetFile(name);
-        ThrowErrorIfNot(Error::FileNotFound, stream, "Requested package not in bundle")
+        auto result = GetAppxFile(name);
+        ThrowErrorIfNot(Error::FileNotFound, result, "Requested package not in bundle")
         // Clients expect the stream's pointer to be at the start of the file!
+        ComPtr<IStream> stream;
+        ThrowHrIfFailed(result->GetStream(&stream));
         ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
-        auto result = stream.As<IAppxFile>();
         *payloadPackage = result.Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();

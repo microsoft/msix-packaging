@@ -1116,55 +1116,94 @@ EXTERN_C const IID IID_IAppxBundleManifestPackageInfo;
 // MSIX specific
 
 // MSIX public interfaces
-interface IMSIXDocumentElement;
-interface IMSIXElement;
-interface IMSIXElementEnumerator;
+interface IMsixDocumentElement;
+interface IMsixElement;
+interface IMsixElementEnumerator;
+interface IMsixFactoryOverrides;
+interface IMsixStreamFactory;
 
-#ifndef __IMSIXDocumentElement_INTERFACE_DEFINED__
-#define __IMSIXDocumentElement_INTERFACE_DEFINED__
 
-EXTERN_C DECLSPEC_SELECTANY const IID IID_IMSIXDocumentElement;
+#ifndef __IMsixDocumentElement_INTERFACE_DEFINED__
+#define __IMsixDocumentElement_INTERFACE_DEFINED__
+
+EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixDocumentElement;
 
     // {07f33ab5-cf2c-43bf-a72c-3525313fcff3}
-    interface IMSIXDocumentElement : public IUnknown
+    interface IMsixDocumentElement : public IUnknown
     {
     public:
-        virtual HRESULT STDMETHODCALLTYPE GetDocumentElement(IMSIXElement** documentElement) = 0;
+        virtual HRESULT STDMETHODCALLTYPE GetDocumentElement(IMsixElement** documentElement) = 0;
     };
 
-#endif  /* __IMSIXDocumentElement_INTERFACE_DEFINED__ */
+#endif  /* __IMsixDocumentElement_INTERFACE_DEFINED__ */
 
-#ifndef __IMSIXElement_INTERFACE_DEFINED__
-#define __IMSIXElement_INTERFACE_DEFINED__
+#ifndef __IMsixElement_INTERFACE_DEFINED__
+#define __IMsixElement_INTERFACE_DEFINED__
 
-EXTERN_C DECLSPEC_SELECTANY const IID IID_IMSIXElement;
+EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixElement;
 
     // {448d1d3e-186d-485b-9e42-82f0808ff5d6}
-    interface IMSIXElement : public IUnknown
+    interface IMsixElement : public IUnknown
     {
     public:
         virtual HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) = 0;
         virtual HRESULT STDMETHODCALLTYPE GetText(LPWSTR* value) = 0;
-        virtual HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMSIXElementEnumerator** elements) = 0;
+        virtual HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMsixElementEnumerator** elements) = 0;
     };
 
-#endif  /* __IMSIXElement_INTERFACE_DEFINED__ */
+#endif  /* __IMsixElement_INTERFACE_DEFINED__ */
 
-#ifndef __IMSIXElementEnumerator_INTERFACE_DEFINED__
-#define __IMSIXElementEnumerator_INTERFACE_DEFINED__
+#ifndef __IMsixElementEnumerator_INTERFACE_DEFINED__
+#define __IMsixElementEnumerator_INTERFACE_DEFINED__
 
-EXTERN_C DECLSPEC_SELECTANY const IID IID_IMSIXElementEnumerator;
+EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixElementEnumerator;
 
     // {2173d338-77ce-4427-9b12-d3e8e7f8a732}
-    interface IMSIXElementEnumerator : public IUnknown
+    interface IMsixElementEnumerator : public IUnknown
     {
     public:
-        virtual HRESULT STDMETHODCALLTYPE GetCurrent(IMSIXElement** element) = 0;
+        virtual HRESULT STDMETHODCALLTYPE GetCurrent(IMsixElement** element) = 0;
         virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(BOOL* hasCurrent) = 0;
         virtual HRESULT STDMETHODCALLTYPE MoveNext(BOOL* hasNext) = 0;
     };
 
-#endif  /* __IMSIXElementEnumerator_INTERFACE_DEFINED__ */
+#endif  /* __IMsixElementEnumerator_INTERFACE_DEFINED__ */
+
+#ifndef __IMsixFactoryOverrides_INTERFACE_DEFINED__
+#define __IMsixFactoryOverrides_INTERFACE_DEFINED__
+
+EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixFactoryOverrides;
+
+    typedef /* [v1_enum] */
+        enum MSIX_FACTORY_EXTENSION
+    {
+        MSIX_FACTORY_EXTENSION_STREAM_FACTORY = 0x1,
+    } 	MSIX_FACTORY_EXTENSION;
+
+    // {0acedbdb-57cd-4aca-8cee-33fa52394316}
+    interface IMsixFactoryOverrides : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE SpecifyExtension(MSIX_FACTORY_EXTENSION name, IUnknown* extension) = 0;
+        virtual HRESULT STDMETHODCALLTYPE GetCurrentSpecifiedExtension(MSIX_FACTORY_EXTENSION name, IUnknown** extension) = 0;
+    };
+
+#endif  /* __IMsixFactoryOverrides_INTERFACE_DEFINED__ */
+
+#ifndef __IMsixStreamFactory_INTERFACE_DEFINED__
+#define __IMsixStreamFactory_INTERFACE_DEFINED__
+
+EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixStreamFactory;
+
+    // {c74f4821-3b82-4ad5-98ea-3d52681aff56}
+    interface IMsixStreamFactory : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE CreateStreamOnRelativePath(LPCWSTR relativePath, IStream** stream) = 0;
+    };
+
+#endif  /* __IMsixStreamFactory_INTERFACE_DEFINED__ */
+
 
 extern "C++" {
 typedef /* [v1_enum] */
@@ -1343,8 +1382,10 @@ SpecializeUuidOfImpl(IAppxBundleReader);
 SpecializeUuidOfImpl(IAppxBundleManifestReader);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoEnumerator);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfo);
-SpecializeUuidOfImpl(IMSIXDocumentElement);
-SpecializeUuidOfImpl(IMSIXElement);
-SpecializeUuidOfImpl(IMSIXElementEnumerator);
+SpecializeUuidOfImpl(IMsixDocumentElement);
+SpecializeUuidOfImpl(IMsixElement);
+SpecializeUuidOfImpl(IMsixElementEnumerator);
+SpecializeUuidOfImpl(IMsixFactoryOverrides);
+SpecializeUuidOfImpl(IMsixStreamFactory);
 
 #endif //__appxpackaging_hpp__

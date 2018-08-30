@@ -61,7 +61,7 @@ namespace MSIX {
     {
     public:
 
-        AppxSignatureObject(IMSIXFactory* factory, MSIX_VALIDATION_OPTION validationOptions,const ComPtr<IStream>& stream);
+        AppxSignatureObject(IMsixFactory* factory, MSIX_VALIDATION_OPTION validationOptions,const ComPtr<IStream>& stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override  { return m_publisher; }

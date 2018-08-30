@@ -8,6 +8,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
 add_subdirectory(ExtractContentsSample)
 add_subdirectory(BundleSample)
+add_subdirectory(OverrideStreamSample)
 
 add_dependencies(ExtractContentsSample msix)
 add_dependencies(BundleSample msix)
+add_dependencies(OverrideStreamSample msix)

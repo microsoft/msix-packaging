@@ -25,11 +25,11 @@ namespace MSIX {
         IAppxPackageReader** packageReader) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
-        ComPtr<IMSIXFactory> self;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
+        ComPtr<IMsixFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         ComPtr<IStream> input(inputStream);
         auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), input);
-        auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, m_applicability, zip);
+        auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, m_applicabilityFlags, zip);
         *packageReader = result.Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -51,8 +51,8 @@ namespace MSIX {
             *blockMapReader != nullptr
         ),"bad pointer.");
 
-        ComPtr<IMSIXFactory> self;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
+        ComPtr<IMsixFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         ComPtr<IStream> stream(inputStream);
         *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), stream).Detach();
         return static_cast<HRESULT>(Error::OK);
@@ -71,8 +71,8 @@ namespace MSIX {
             *blockMapReader != nullptr
         ),"bad pointer.");
 
-        ComPtr<IMSIXFactory> self;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
+        ComPtr<IMsixFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         auto stream = ComPtr<IStream>::Make<FileStream>(utf16_to_utf8(signatureFileName), FileStream::Mode::READ);
         auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream);
         ComPtr<IStream> input(inputStream);
@@ -101,7 +101,7 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 
-    // IMSIXFactory
+    // IMsixFactory
     HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
@@ -136,8 +136,8 @@ namespace MSIX {
     {
         if(!m_resourcezip) // Initialize it when first needed.
         {
-            ComPtr<IMSIXFactory> self;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMSIXFactory>::iid, reinterpret_cast<void**>(&self)));
+            ComPtr<IMsixFactory> self;
+            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
             // Get stream of the resource zip file generated at CMake processing.
             m_resourcesVector = std::vector<std::uint8_t>(Resource::resourceByte, Resource::resourceByte + Resource::resourceLength);
             auto resourceStream = ComPtr<IStream>::Make<VectorStream>(&m_resourcesVector);
@@ -154,7 +154,6 @@ namespace MSIX {
         *result = nullptr;
         if (!internal.empty())
         {
-            //auto intermediate = utf8_to_wstring(internal);
             std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
             *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
             ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");
@@ -165,4 +164,41 @@ namespace MSIX {
         }
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
+
+    // IMsixFactoryOverrides
+    HRESULT STDMETHODCALLTYPE AppxFactory::SpecifyExtension(MSIX_FACTORY_EXTENSION name, IUnknown* extension) noexcept try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (extension == nullptr), "Invalid parameter");
+
+        if (name == MSIX_FACTORY_EXTENSION_STREAM_FACTORY)
+        {
+            ThrowHrIfFailed(extension->QueryInterface(UuidOfImpl<IMsixStreamFactory>::iid, reinterpret_cast<void**>(&m_streamFactory)));
+        }
+        else
+        {
+            return static_cast<HRESULT>(Error::InvalidParameter);
+        }
+
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxFactory::GetCurrentSpecifiedExtension(MSIX_FACTORY_EXTENSION name, IUnknown** extension) noexcept try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (extension == nullptr || *extension != nullptr), "Invalid parameter");
+
+        if (name == MSIX_FACTORY_EXTENSION_STREAM_FACTORY)
+        {
+            if (m_streamFactory.Get() != nullptr)
+            {
+                *extension = m_streamFactory.As<IUnknown>().Detach();
+            }
+        }
+        else
+        {
+            return static_cast<HRESULT>(Error::InvalidParameter);
+        }
+
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
 } // namespace MSIX 

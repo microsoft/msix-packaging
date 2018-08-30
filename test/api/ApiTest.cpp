@@ -227,9 +227,9 @@ void TestAppxManifestReader(IAppxManifestReader* manifestReader)
     }
     VERIFY_ARE_EQUAL(nTdf, 1);
 
-    ComPtr<IMSIXDocumentElement> msixDocument;
-    VERIFY_SUCCEEDED(manifestReader->QueryInterface(UuidOfImpl<IMSIXDocumentElement>::iid, reinterpret_cast<void**>(&msixDocument)));
-    ComPtr<IMSIXElement> manifestElement;
+    ComPtr<IMsixDocumentElement> msixDocument;
+    VERIFY_SUCCEEDED(manifestReader->QueryInterface(UuidOfImpl<IMsixDocumentElement>::iid, reinterpret_cast<void**>(&msixDocument)));
+    ComPtr<IMsixElement> manifestElement;
     VERIFY_SUCCEEDED(msixDocument->GetDocumentElement(&manifestElement));
     Text ignorableNamespaces;
     VERIFY_SUCCEEDED(manifestElement->GetAttributeValue(L"IgnorableNamespaces", &ignorableNamespaces))
@@ -240,14 +240,14 @@ void TestAppxManifestReader(IAppxManifestReader* manifestReader)
     VERIFY_SUCCEEDED(manifestElement->GetAttributeValue(L"Fake", &fakeAttribute))
     VERIFY_IS_NULL(fakeAttribute.Get());
 
-    ComPtr<IMSIXElementEnumerator> elementEnum;
+    ComPtr<IMsixElementEnumerator> elementEnum;
     VERIFY_SUCCEEDED(manifestElement->GetElements(ApplicationXpath, &elementEnum));
     hasCurrent = FALSE;
     VERIFY_SUCCEEDED(elementEnum->GetHasCurrent(&hasCurrent));
     int nElements = 0;
     while (hasCurrent)
     {
-        ComPtr<IMSIXElement> element;
+        ComPtr<IMsixElement> element;
         VERIFY_SUCCEEDED(elementEnum->GetCurrent(&element));
         Text entryPoint;
         VERIFY_SUCCEEDED(element->GetAttributeValue(L"EntryPoint", &entryPoint))

@@ -21,7 +21,7 @@ namespace MSIX {
         ZipFileStream(
             std::string name,
             std::string contentType,
-            IMSIXFactory* factory,
+            IMsixFactory* factory,
             bool isCompressed,
             std::uint64_t offset,
             std::uint64_t size,
@@ -50,9 +50,10 @@ namespace MSIX {
 
         // IAppxFileInternal
         std::uint64_t GetCompressedSize() override { return m_compressedSize; }
+        std::string GetName() override { return m_name; }
 
     protected:
-        IMSIXFactory*   m_factory;
+        IMsixFactory*   m_factory;
         std::string     m_name;
         std::string     m_contentType;
         bool            m_isCompressed = false;

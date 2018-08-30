@@ -253,7 +253,7 @@ public:
     VARIANT& Get() { return m_variant; }
 };
 
-class MSXMLElement final : public ComClass<MSXMLElement, IXmlElement, IMSXMLElement, IMSIXElement>
+class MSXMLElement final : public ComClass<MSXMLElement, IXmlElement, IMSXMLElement, IMsixElement>
 {
     bool GetAttribute(const std::wstring& attribute, VARIANT* variant)
     {
@@ -263,7 +263,7 @@ class MSXMLElement final : public ComClass<MSXMLElement, IXmlElement, IMSXMLElem
     }
 
 public:
-    MSXMLElement(IMSIXFactory* factory, ComPtr<IXMLDOMElement>& element) : m_factory(factory), m_element(element) {}
+    MSXMLElement(IMsixFactory* factory, ComPtr<IXMLDOMElement>& element) : m_factory(factory), m_element(element) {}
 
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
@@ -331,7 +331,7 @@ public:
         return list;
     }
 
-    // IMSIXElement
+    // IMsixElement
     HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) noexcept override try
     {
         ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
@@ -360,7 +360,7 @@ public:
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMSIXElementEnumerator** elements) noexcept override try
+    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMsixElementEnumerator** elements) noexcept override try
     {
         ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
         ComPtr<IXMLDOMNodeList> list;
@@ -369,23 +369,23 @@ public:
 
         long count = 0;
         ThrowHrIfFailed(list->get_length(&count));
-        std::vector<ComPtr<IMSIXElement>> elementsEnum;
+        std::vector<ComPtr<IMsixElement>> elementsEnum;
         for(long index=0; index < count; index++)
         {
             ComPtr<IXMLDOMNode> node;
             ThrowHrIfFailed(list->get_item(index, &node));
             ComPtr<IXMLDOMElement> elementItem;
             ThrowHrIfFailed(node->QueryInterface(__uuidof(IXMLDOMElement), reinterpret_cast<void**>(&elementItem)));
-            auto item = ComPtr<IMSIXElement>::Make<MSXMLElement>(m_factory, elementItem);
+            auto item = ComPtr<IMsixElement>::Make<MSXMLElement>(m_factory, elementItem);
             elementsEnum.push_back(std::move(item));
         }
-        *elements = ComPtr<IMSIXElementEnumerator>::
-            Make<EnumeratorCom<IMSIXElementEnumerator,IMSIXElement>>(elementsEnum).Detach();
+        *elements = ComPtr<IMsixElementEnumerator>::
+            Make<EnumeratorCom<IMsixElementEnumerator,IMsixElement>>(elementsEnum).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
 protected:
-    IMSIXFactory* m_factory;
+    IMsixFactory* m_factory;
     ComPtr<IXMLDOMElement> m_element;
 };
 
@@ -408,7 +408,7 @@ protected:
 class MSXMLDom final : public ComClass<MSXMLDom, IXmlDom, IMSXMLDom>
 {
 public:
-    MSXMLDom(const ComPtr<IStream>& stream, const NamespaceManager& namespaces, IMSIXFactory* factory = nullptr, bool stripIgnorableNamespaces = false) : m_factory(factory)
+    MSXMLDom(const ComPtr<IStream>& stream, const NamespaceManager& namespaces, IMsixFactory* factory = nullptr, bool stripIgnorableNamespaces = false) : m_factory(factory)
     {
         ThrowHrIfFailed(CoCreateInstance(__uuidof(DOMDocument60), nullptr, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&m_xmlDocument)));
         ThrowHrIfFailed(m_xmlDocument->put_async(VARIANT_FALSE));
@@ -637,13 +637,13 @@ public:
 
 protected:
     ComPtr<IXMLDOMDocument2> m_xmlDocument;
-    IMSIXFactory* m_factory;
+    IMsixFactory* m_factory;
 };
 
 class MSXMLFactory final : public ComClass<MSXMLFactory, IXmlFactory>
 {
 public:
-    MSXMLFactory(IMSIXFactory* factory) : m_factory(factory), m_CoInitialized(false)
+    MSXMLFactory(IMsixFactory* factory) : m_factory(factory), m_CoInitialized(false)
     {
         HRESULT result = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
         m_CoInitialized = SUCCEEDED(result);
@@ -675,8 +675,8 @@ public:
 
 protected:
     bool            m_CoInitialized;
-    IMSIXFactory*   m_factory;
+    IMsixFactory*   m_factory;
 };
 
-ComPtr<IXmlFactory> CreateXmlFactory(IMSIXFactory* factory) { return ComPtr<IXmlFactory>::Make<MSXMLFactory>(factory); }
+ComPtr<IXmlFactory> CreateXmlFactory(IMsixFactory* factory) { return ComPtr<IXmlFactory>::Make<MSXMLFactory>(factory); }
 } // namespace MSIX

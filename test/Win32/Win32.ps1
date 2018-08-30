@@ -84,6 +84,8 @@ function RunTest([int] $SUCCESSCODE, [string] $PACKAGE, [string] $OPT) {
 }
 
 FindBinFolder
+
+# Normal package
 RunTest 0x8bad0002 .\..\appx\Empty.appx "-sv"
 RunTest 0x00000000 .\..\appx\HelloWorld.appx "-ss"
 RunTest 0x8bad0042 .\..\appx\SignatureNotLastPart-ERROR_BAD_FORMAT.appx
@@ -109,7 +111,11 @@ RunTest 0x8bad0033 .\..\appx\BlockMap\No_blockmap.appx "-ss"
 RunTest 0x8bad1003 .\..\appx\BlockMap\Bad_Namespace_Blockmap.appx "-ss"
 RunTest 0x8bad0051 .\..\appx\BlockMap\Duplicate_file_in_blockmap.appx "-ss"
 
-# Bundle tests
+RunTest 0x00000000 .\..\appx\StoreSigned_Desktop_x64_MoviesTV.appx
+ValidateResult ExpectedResults\StoreSigned_Desktop_x64_MoviesTV.txt
+
+# IMPORTANT! These tests assumes that English, Spanish and Simplified Chinese are in the machine.
+# Bundle tests.
 RunTest 0x8bad0051 .\..\appx\bundles\BlockMapContainsPayloadPackage.appxbundle "-ss"
 RunTest 0x8bad0033 .\..\appx\bundles\BlockMapIsMissing.appxbundle "-ss"
 RunTest 0x8bad1002 .\..\appx\bundles\BlockMapViolatesSchema.appxbundle "-ss"
@@ -137,11 +143,16 @@ RunTest 0x80070057 .\..\appx\bundles\PayloadPackageIsNotAppxPackage.appxbundle "
 # RunTest 0x00000000 .\..\appx\bundles\PayloadPackageNotListedInManifest.appxbundle
 RunTest 0x8bad0042 .\..\appx\bundles\SignedUntrustedCert-CERT_E_CHAINING.appxbundle
 
-RunTest 0x00000000 .\..\appx\StoreSigned_Desktop_x64_MoviesTV.appx
-ValidateResult ExpectedResults\StoreSigned_Desktop_x64_MoviesTV.txt
-
 RunTest 0x00000000 .\..\appx\bundles\StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
 ValidateResult ExpectedResults\StoreSigned_Desktop_x86_x64_MoviesTV.txt
+
+# Flat bundles
+move ..\appx\flat\assets.appx ..\appx\flat\assets_back.appx
+RunTest 0x8bad0001 .\..\appx\flat\FlatBundleWithAsset.appxbundle "-ss"
+move ..\appx\flat\assets_back.appx ..\appx\flat\assets.appx
+
+RunTest 0x00000000 .\..\appx\flat\FlatBundleWithAsset.appxbundle "-ss"
+ValidateResult ExpectedResults\FlatBundleWithAsset.txt
 
 CleanupUnpackFolder
 

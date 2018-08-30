@@ -27,6 +27,7 @@ class IAppxFileInternal : public IUnknown
 {
 public:
     virtual std::uint64_t GetCompressedSize() = 0;
+    virtual std::string GetName() = 0;
 };
 
 SpecializeUuidOfImpl(IAppxFileInternal);
@@ -41,10 +42,7 @@ namespace MSIX {
 
         virtual ~StreamBase() {}
 
-        //
         // IStream methods
-        //
-
         // Creates a new stream object with its own seek pointer that references the same bytes as the original stream.
         virtual HRESULT STDMETHODCALLTYPE Clone(IStream**) noexcept override { return static_cast<HRESULT>(Error::NotSupported); }
 
@@ -122,9 +120,7 @@ namespace MSIX {
         // Writes a specified number of bytes into the stream object starting at the current seek pointer.
         virtual HRESULT STDMETHODCALLTYPE Write(const void*, ULONG, ULONG*) noexcept override { return static_cast<HRESULT>(Error::NotImplemented); }
 
-        //
         // IAppxFile methods
-        //
         virtual HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override
         {
             if (compressionOption) { *compressionOption = APPX_COMPRESSION_OPTION_NONE; }
@@ -153,6 +149,7 @@ namespace MSIX {
 
         // IAppxFileInternal
         virtual std::uint64_t GetCompressedSize() override { NOTIMPLEMENTED; }
+        virtual std::string GetName() override { NOTIMPLEMENTED; }
 
         template <class T>
         static ULONG Read(const ComPtr<IStream>& stream, T* value)

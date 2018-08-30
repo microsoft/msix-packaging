@@ -138,7 +138,7 @@ namespace MSIX {
         const std::uint8_t resourceByte[resourceLength] = {0x${RESOURCE_BYTES}};
     }
 
-    inline std::vector<ComPtr<IStream>> GetResources(IMSIXFactory* factory, Resource::Type type)
+    inline std::vector<ComPtr<IStream>> GetResources(IMsixFactory* factory, Resource::Type type)
     {
         std::vector<ComPtr<IStream>> result;
         switch(type)

@@ -71,7 +71,7 @@ namespace MSIX {
         Entry<APPX_CAPABILITIES>(u8"contacts",                   APPX_CAPABILITY_CONTACTS),
     };
 
-    AppxManifestObject::AppxManifestObject(IMSIXFactory* factory, const ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
+    AppxManifestObject::AppxManifestObject(IMsixFactory* factory, const ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
     {
         ComPtr<IXmlFactory> xmlFactory;
         ThrowHrIfFailed(m_factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));
@@ -369,15 +369,15 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    // IMSIXDocumentElement
-    HRESULT STDMETHODCALLTYPE AppxManifestObject::GetDocumentElement(IMSIXElement** documentElement) noexcept try
+    // IMsixDocumentElement
+    HRESULT STDMETHODCALLTYPE AppxManifestObject::GetDocumentElement(IMsixElement** documentElement) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (documentElement == nullptr || *documentElement != nullptr), "bad pointer");
-        *documentElement = m_dom->GetDocument().As<IMSIXElement>().Detach();
+        *documentElement = m_dom->GetDocument().As<IMsixElement>().Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    AppxBundleManifestObject::AppxBundleManifestObject(IMSIXFactory* factory, const ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
+    AppxBundleManifestObject::AppxBundleManifestObject(IMsixFactory* factory, const ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
     {
         ComPtr<IXmlFactory> xmlFactory;
         ThrowHrIfFailed(m_factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));
@@ -429,17 +429,23 @@ namespace MSIX {
             APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = (type.empty() || type == "resource") ?
                 APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE : APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
 
-            std::vector<Bcp47Tag> languages;
-            XmlVisitor visitor(static_cast<void*>(&languages), [](void* l, const ComPtr<IXmlElement>& resourceNode)->bool
+            struct _resourcesContext
             {
-                std::vector<Bcp47Tag>* languages = reinterpret_cast<std::vector<Bcp47Tag>*>(l);
+                std::vector<Bcp47Tag> languages;
+                bool                  hasResources;
+            };
+            _resourcesContext resourcesContext = { {}, false};
+            XmlVisitor visitor(static_cast<void*>(&resourcesContext), [](void* c, const ComPtr<IXmlElement>& resourceNode)->bool
+            {
+                _resourcesContext* resourcesContext = reinterpret_cast<_resourcesContext*>(c);
                 const auto& language = resourceNode->GetAttributeValue(XmlAttributeName::Language);
-                if (!language.empty()) { languages->push_back(Bcp47Tag(language)); }
+                if (!language.empty()) { resourcesContext->languages.push_back(Bcp47Tag(language)); }
+                resourcesContext->hasResources = true;
                 return true;
             });
             context->dom->ForEachElementIn(packageNode, XmlQueryName::Bundle_Packages_Package_Resources_Resource, visitor);
 
-            if ((packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE) && languages.empty())
+            if ((packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE) && resourcesContext.languages.empty() && resourcesContext.hasResources)
             {   // For now, we only support languages resource packages
                 return true;
             }
@@ -447,7 +453,7 @@ namespace MSIX {
             ComPtr<IAppxManifestPackageIdInternal> packageIdInternal = context->self->m_packageId.As<IAppxManifestPackageIdInternal>();
             auto package = ComPtr<IAppxBundleManifestPackageInfo>::Make<AppxBundleManifestPackageInfo>(
                 context->self->m_factory, name, packageIdInternal->GetName(), version, size, offset, resourceId,
-                architecture, packageIdInternal->GetPublisher(), languages, packageType);
+                architecture, packageIdInternal->GetPublisher(), resourcesContext.languages, packageType);
             context->self->m_packages.push_back(std::move(package));
 
             if(packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)

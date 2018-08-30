@@ -17,18 +17,25 @@ namespace MSIX {
     public:
         enum Mode { READ = 0, WRITE, APPEND, READ_UPDATE, WRITE_UPDATE, APPEND_UPDATE };
 
-        FileStream(const std::string& path, Mode mode)
+        FileStream(const std::string& name, Mode mode) : m_name(name)
         {
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
             #ifdef WIN32
-            errno_t err = fopen_s(&file, path.c_str(), modes[mode]);
+            errno_t err = fopen_s(&m_file, name.c_str(), modes[mode]);
             std::ostringstream builder;
-            builder << "file: '" << path << "' does not exist.";
+            builder << "file: '" << name << "' does not exist.";
             ThrowErrorIfNot(Error::FileOpen, (err==0), builder.str().c_str());
             #else
-            file = std::fopen(path.c_str(), modes[mode]);
-            ThrowErrorIfNot(Error::FileOpen, (file), path.c_str());
-            #endif            
+            m_file = std::fopen(name.c_str(), modes[mode]);
+            ThrowErrorIfNot(Error::FileOpen, (m_file), name.c_str());
+            #endif
+
+            // Get size of the file
+            LARGE_INTEGER start = { 0 };
+            ULARGE_INTEGER end = { 0 };
+            ThrowHrIfFailed(Seek(start, StreamBase::Reference::END, &end));
+            ThrowHrIfFailed(Seek(start, StreamBase::Reference::START, nullptr));
+            m_size = end.u.LowPart;
         }
 
         virtual ~FileStream() override
@@ -38,28 +45,28 @@ namespace MSIX {
 
         void Close()
         {
-            if (file)
+            if (m_file)
             {   // the most we would ever do w.r.t. a failure from fclose is *maybe* log something...
-                std::fclose(file);
-                file = nullptr;
+                std::fclose(m_file);
+                m_file = nullptr;
             }
         }
 
-        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override try
+        HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER* newPosition) noexcept override try
         {
-            int rc = std::fseek(file, (long)move.QuadPart, origin);
+            int rc = std::fseek(m_file, static_cast<long>(move.QuadPart), origin);
             ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
-            offset = Ftell();
-            if (newPosition) { newPosition->QuadPart = offset; }
+            m_offset = Ftell();
+            if (newPosition) { newPosition->QuadPart = m_offset; }
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
         HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
         {
             if (bytesRead) { *bytesRead = 0; }
-            ULONG result = static_cast<ULONG>(std::fread(buffer, sizeof(std::uint8_t), countBytes, file));
+            ULONG result = static_cast<ULONG>(std::fread(buffer, sizeof(std::uint8_t), countBytes, m_file));
             ThrowErrorIfNot(Error::FileRead, (result == countBytes || Feof()), "read failed");
-            offset = Ftell();
+            m_offset = Ftell();
             if (bytesRead) { *bytesRead = result; }
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
@@ -67,26 +74,31 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept override try
         {
             if (bytesWritten) { *bytesWritten = 0; }
-            ULONG result = static_cast<ULONG>(std::fwrite(buffer, sizeof(std::uint8_t), countBytes, file));
+            ULONG result = static_cast<ULONG>(std::fwrite(buffer, sizeof(std::uint8_t), countBytes, m_file));
             ThrowErrorIfNot(Error::FileWrite, (result == countBytes), "write failed");
-            offset = Ftell();
+            m_offset = Ftell();
             if (bytesWritten) { *bytesWritten = result; }
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
+        // IAppxFileInternal
+        std::uint64_t GetCompressedSize() override { return m_size; } // This is not compressed
+        std::string GetName() override { return m_name; }
+
     protected:
-        inline int Ferror() { return std::ferror(file); }
-        inline bool Feof()  { return 0 != std::feof(file); }
-        inline void Flush() { std::fflush(file); }
+        inline int Ferror() { return std::ferror(m_file); }
+        inline bool Feof()  { return 0 != std::feof(m_file); }
+        inline void Flush() { std::fflush(m_file); }
 
         inline std::uint64_t Ftell()
         {
-            auto result = ftell(file);
+            auto result = std::ftell(m_file);
             return static_cast<std::uint64_t>(result);
         }
 
-        std::uint64_t offset = 0;
-        std::string name;
-        FILE* file;
+        std::uint64_t m_offset = 0;
+        std::uint64_t m_size = 0;
+        std::string m_name;
+        FILE* m_file;
     };
 }

@@ -56,7 +56,7 @@ namespace MSIX {
     class EnumeratorString final : public MSIX::ComClass<EnumeratorString<EnumeratorInterface>, EnumeratorInterface>
     {
     public:
-        EnumeratorString(IMSIXFactory* factory, std::vector<std::string>& values) :
+        EnumeratorString(IMsixFactory* factory, std::vector<std::string>& values) :
             m_factory(factory), m_values(values)
         {}
 
@@ -83,7 +83,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
     protected:
-        IMSIXFactory* m_factory;
+        IMsixFactory* m_factory;
         std::vector<std::string> m_values;
         std::size_t m_cursor = 0;
     };
