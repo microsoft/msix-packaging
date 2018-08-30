@@ -88,7 +88,7 @@ HRESULT ShowInformationOfPackage(IAppxFile* packageFile)
     RETURN_IF_FAILED(CoCreateAppxFactoryWithHeap(
         MyAllocate,
         MyFree,
-        MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL,
+        MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE,
         &factory));
 
     // Get stream of the package and package reader
@@ -151,7 +151,7 @@ HRESULT ShowInformationOfBundle(char* bundleName)
     RETURN_IF_FAILED(CoCreateAppxBundleFactoryWithHeap(
         MyAllocate,
         MyFree,
-        MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL,
+        MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE,
         MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL,
         &bundleFactory));
 
@@ -251,7 +251,15 @@ int main(int argc, char* argv[])
 
     if (FAILED(hr))
     {
-        std::wcout << L"Error: " << std::hex << hr << L" while extracting the appx package" <<std::endl;
+        std::cout << "Error: " << std::hex << hr << " while extracting the appx package" <<std::endl;
+        Text<char> text;
+        auto logResult = GetLogTextUTF8(MyAllocate, &text);
+        if (0 == logResult)
+        {   std::cout << "LOG:" << std::endl << text.content << std::endl;
+        }
+        else
+        {   std::cout << "UNABLE TO GET LOG WITH HR=" << std::hex << logResult << std::endl;
+        }
     }
 
     return 0;

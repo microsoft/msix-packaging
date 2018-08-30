@@ -130,7 +130,7 @@ SpecializeUuidOfImpl(IXmlDom);
 SpecializeUuidOfImpl(IXmlFactory);
 
 namespace MSIX {
-    MSIX::ComPtr<IXmlFactory> CreateXmlFactory(IMSIXFactory* factory);
+    MSIX::ComPtr<IXmlFactory> CreateXmlFactory(IMsixFactory* factory);
 
     template <class T>
     static T GetNumber(const ComPtr<IXmlElement>& element, XmlAttributeName attribute, T defaultValue)

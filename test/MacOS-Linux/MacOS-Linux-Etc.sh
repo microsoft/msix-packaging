@@ -95,6 +95,10 @@ RunTest 3 ./../appx/BlockMap/Bad_Namespace_Blockmap.appx -ss
 RunTest 81 ./../appx/BlockMap/Duplicate_file_in_blockmap.appx -ss
 RunTest 0  ./../appx/sdx/en-us_win32.appx
 
+RunTest 0  ./../appx/StoreSigned_Desktop_x64_MoviesTV.appx
+ValidateResult ExpectedResult/$directory/StoreSigned_Desktop_x64_MoviesTV.txt
+
+# IMPORTANT! For Linux we expect English. For MacOs, English (US) and Spanish (MX)
 # Bundle tests
 RunTest 81 ./../appx/bundles/BlockMapContainsPayloadPackage.appxbundle -ss
 RunTest 51 ./../appx/bundles/BlockMapIsMissing.appxbundle -ss
@@ -123,11 +127,15 @@ RunTest 87 ./../appx/bundles/PayloadPackageIsNotAppxPackage.appxbundle -ss
 # RunTest 0 ./../appx/bundles/PayloadPackageNotListedInManifest.appxbundle
 RunTest 66 ./../appx/bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle
 
-RunTest 0  ./../appx/StoreSigned_Desktop_x64_MoviesTV.appx
-ValidateResult ExpectedResult/$directory/StoreSigned_Desktop_x64_MoviesTV.txt
-
 RunTest 0 ./../appx/bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
 ValidateResult ExpectedResult/$directory/StoreSigned_Desktop_x86_x64_MoviesTV.txt
+
+#Flat bundles
+mv ./../appx/flat/assets.appx ./../appx/flat/assets_back.appx
+RunTest 1 ./../appx/flat/FlatBundleWithAsset.appxbundle -ss
+mv ./../appx/flat/assets_back.appx ./../appx/flat/assets.appx
+RunTest 0 ./../appx/flat/FlatBundleWithAsset.appxbundle -ss
+ValidateResult ExpectedResult/$directory/FlatBundleWithAsset.txt
 
 CleanupUnpackFolder
 

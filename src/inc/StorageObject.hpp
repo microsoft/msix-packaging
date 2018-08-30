@@ -55,6 +55,9 @@ public:
     // or read + update, then nullptr is returned.  If the file is opened with write and it does not exist, 
     // then the file is created and an empty stream to the file is handed back to the caller.
     virtual MSIX::ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) = 0;
+
+    // Returns the file name of the storage object.
+    virtual std::string GetFileName() = 0;
 };
 
 SpecializeUuidOfImpl(IStorageObject);

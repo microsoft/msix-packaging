@@ -42,7 +42,7 @@ namespace MSIX {
     class AppxBlockMapBlock final : public MSIX::ComClass<AppxBlockMapBlock, IAppxBlockMapBlock>
     {
     public:
-        AppxBlockMapBlock(IMSIXFactory* factory, Block* block) :
+        AppxBlockMapBlock(IMsixFactory* factory, Block* block) :
             m_factory(factory),
             m_block(block)
         {}
@@ -62,7 +62,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
     private:
-        IMSIXFactory* m_factory;
+        IMsixFactory* m_factory;
         Block*        m_block;
     };
 
@@ -70,7 +70,7 @@ namespace MSIX {
     {
     public:
         AppxBlockMapFile(
-            IMSIXFactory* factory,
+            IMsixFactory* factory,
             std::vector<Block>* blocks,
             std::uint32_t localFileHeaderSize,
             const std::string& name,
@@ -132,7 +132,7 @@ namespace MSIX {
     private:
         std::vector<ComPtr<IAppxBlockMapBlock>> m_blockMapBlocks;
         std::vector<Block>* m_blocks;
-        IMSIXFactory*       m_factory;
+        IMsixFactory*       m_factory;
         std::uint32_t       m_localFileHeaderSize;
         std::string         m_name;
         std::uint64_t       m_uncompressedSize;
@@ -142,7 +142,7 @@ namespace MSIX {
     class AppxBlockMapObject final : public MSIX::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IAppxBlockMapInternal>
     {
     public:
-        AppxBlockMapObject(IMSIXFactory* factory, const ComPtr<IStream>& stream);
+        AppxBlockMapObject(IMsixFactory* factory, const ComPtr<IStream>& stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override { NOTSUPPORTED; }
@@ -164,7 +164,7 @@ namespace MSIX {
     protected:
         std::map<std::string, std::vector<Block>>        m_blockMap;
         std::map<std::string, ComPtr<IAppxBlockMapFile>> m_blockMapFiles;
-        IMSIXFactory*   m_factory;
+        IMsixFactory*   m_factory;
         ComPtr<IStream> m_stream;
     };
 }

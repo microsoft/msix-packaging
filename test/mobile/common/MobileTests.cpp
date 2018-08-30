@@ -169,6 +169,13 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle", unpackFolder, full, 66);
     hr = RunTest(source + "bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle", unpackFolder, full, 0);
 
+    // Flat
+    hr = RunTest(source + "flat/FlatBundleWithAsset.appxbundle", unpackFolder, ss, 0);
+
+    // TODO: add validation that all the files extracted are correct for Android and iOS and add test
+    //       that removes a payload package from a flat bundle in the device flat bundle and 
+    //       verify that it fails properly.
+
     std::cout << "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=" << std::endl;
     if(g_TestFailed)
     {   std::cout << "                           FAILED                                 " << std::endl;

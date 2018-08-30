@@ -16,7 +16,7 @@ namespace MSIX {
     {
     public:
         static bool Validate(
-            IMSIXFactory* factory,
+            IMsixFactory* factory,
             MSIX_VALIDATION_OPTION option, 
             const ComPtr<IStream>& stream,
             AppxSignatureObject* signatureObject,

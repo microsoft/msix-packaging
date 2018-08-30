@@ -38,6 +38,46 @@
 		4C7F378720783FD2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376C20783FC2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle */; };
 		4C7F3789207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4C7F378B20784901002942F4 /* libmsix.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		4CAC1C2E2135DCC0005C3B2C /* assets.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1A2135DCC0005C3B2C /* assets.appx */; };
+		4CAC1C2F2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1B2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle */; };
+		4CAC1C302135DCC0005C3B2C /* language-de.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1C2135DCC0005C3B2C /* language-de.appx */; };
+		4CAC1C312135DCC0005C3B2C /* language-en.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1D2135DCC0005C3B2C /* language-en.appx */; };
+		4CAC1C322135DCC0005C3B2C /* language-es.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1E2135DCC0005C3B2C /* language-es.appx */; };
+		4CAC1C332135DCC0005C3B2C /* language-fr.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1F2135DCC0005C3B2C /* language-fr.appx */; };
+		4CAC1C342135DCC0005C3B2C /* language-it.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C202135DCC0005C3B2C /* language-it.appx */; };
+		4CAC1C352135DCC0005C3B2C /* language-ja.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C212135DCC0005C3B2C /* language-ja.appx */; };
+		4CAC1C362135DCC0005C3B2C /* language-ko.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C222135DCC0005C3B2C /* language-ko.appx */; };
+		4CAC1C372135DCC0005C3B2C /* language-pt.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C232135DCC0005C3B2C /* language-pt.appx */; };
+		4CAC1C382135DCC0005C3B2C /* language-ru.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C242135DCC0005C3B2C /* language-ru.appx */; };
+		4CAC1C392135DCC0005C3B2C /* language-uk.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C252135DCC0005C3B2C /* language-uk.appx */; };
+		4CAC1C3A2135DCC0005C3B2C /* language-zh-hans.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C262135DCC0005C3B2C /* language-zh-hans.appx */; };
+		4CAC1C3B2135DCC0005C3B2C /* language-zh-hant.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C272135DCC0005C3B2C /* language-zh-hant.appx */; };
+		4CAC1C3C2135DCC0005C3B2C /* main_ARM.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C282135DCC0005C3B2C /* main_ARM.appx */; };
+		4CAC1C3D2135DCC0005C3B2C /* main_x64.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C292135DCC0005C3B2C /* main_x64.appx */; };
+		4CAC1C3E2135DCC0005C3B2C /* main_x86.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C2A2135DCC0005C3B2C /* main_x86.appx */; };
+		4CAC1C3F2135DCC0005C3B2C /* scale-140.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C2B2135DCC0005C3B2C /* scale-140.appx */; };
+		4CAC1C402135DCC0005C3B2C /* scale-180.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C2C2135DCC0005C3B2C /* scale-180.appx */; };
+		4CAC1C412135DCC0005C3B2C /* scale-240.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C2D2135DCC0005C3B2C /* scale-240.appx */; };
+		4CAC1C422135DCDA005C3B2C /* assets.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C1A2135DCC0005C3B2C /* assets.appx */; };
+		4CAC1C432135DCDA005C3B2C /* FlatBundleWithAsset.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C1B2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle */; };
+		4CAC1C442135DCDA005C3B2C /* language-de.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C1C2135DCC0005C3B2C /* language-de.appx */; };
+		4CAC1C452135DCDA005C3B2C /* language-en.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C1D2135DCC0005C3B2C /* language-en.appx */; };
+		4CAC1C462135DCDA005C3B2C /* language-es.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C1E2135DCC0005C3B2C /* language-es.appx */; };
+		4CAC1C472135DCDA005C3B2C /* language-fr.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C1F2135DCC0005C3B2C /* language-fr.appx */; };
+		4CAC1C482135DCDA005C3B2C /* language-it.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C202135DCC0005C3B2C /* language-it.appx */; };
+		4CAC1C492135DCDA005C3B2C /* language-ja.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C212135DCC0005C3B2C /* language-ja.appx */; };
+		4CAC1C4A2135DCDA005C3B2C /* language-ko.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C222135DCC0005C3B2C /* language-ko.appx */; };
+		4CAC1C4B2135DCDA005C3B2C /* language-pt.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C232135DCC0005C3B2C /* language-pt.appx */; };
+		4CAC1C4C2135DCDA005C3B2C /* language-ru.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C242135DCC0005C3B2C /* language-ru.appx */; };
+		4CAC1C4D2135DCDA005C3B2C /* language-uk.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C252135DCC0005C3B2C /* language-uk.appx */; };
+		4CAC1C4E2135DCDA005C3B2C /* language-zh-hans.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C262135DCC0005C3B2C /* language-zh-hans.appx */; };
+		4CAC1C4F2135DCDA005C3B2C /* language-zh-hant.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C272135DCC0005C3B2C /* language-zh-hant.appx */; };
+		4CAC1C502135DCDA005C3B2C /* main_ARM.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C282135DCC0005C3B2C /* main_ARM.appx */; };
+		4CAC1C512135DCDA005C3B2C /* main_x64.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C292135DCC0005C3B2C /* main_x64.appx */; };
+		4CAC1C522135DCDA005C3B2C /* main_x86.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C2A2135DCC0005C3B2C /* main_x86.appx */; };
+		4CAC1C532135DCDA005C3B2C /* scale-140.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C2B2135DCC0005C3B2C /* scale-140.appx */; };
+		4CAC1C542135DCDA005C3B2C /* scale-180.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C2C2135DCC0005C3B2C /* scale-180.appx */; };
+		4CAC1C552135DCDA005C3B2C /* scale-240.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C2D2135DCC0005C3B2C /* scale-240.appx */; };
 		EEE4055020225CDF007B25CE /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4054F20225CDF007B25CE /* AppDelegate.m */; };
 		EEE4055320225CDF007B25CE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4055220225CDF007B25CE /* ViewController.m */; };
 		EEE4055620225CDF007B25CE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEE4055420225CDF007B25CE /* Main.storyboard */; };
@@ -149,6 +189,35 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4CAC1C182135DC9A005C3B2C /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = flat;
+			dstSubfolderSpec = 7;
+			files = (
+				4CAC1C422135DCDA005C3B2C /* assets.appx in CopyFiles */,
+				4CAC1C432135DCDA005C3B2C /* FlatBundleWithAsset.appxbundle in CopyFiles */,
+				4CAC1C442135DCDA005C3B2C /* language-de.appx in CopyFiles */,
+				4CAC1C452135DCDA005C3B2C /* language-en.appx in CopyFiles */,
+				4CAC1C462135DCDA005C3B2C /* language-es.appx in CopyFiles */,
+				4CAC1C472135DCDA005C3B2C /* language-fr.appx in CopyFiles */,
+				4CAC1C482135DCDA005C3B2C /* language-it.appx in CopyFiles */,
+				4CAC1C492135DCDA005C3B2C /* language-ja.appx in CopyFiles */,
+				4CAC1C4A2135DCDA005C3B2C /* language-ko.appx in CopyFiles */,
+				4CAC1C4B2135DCDA005C3B2C /* language-pt.appx in CopyFiles */,
+				4CAC1C4C2135DCDA005C3B2C /* language-ru.appx in CopyFiles */,
+				4CAC1C4D2135DCDA005C3B2C /* language-uk.appx in CopyFiles */,
+				4CAC1C4E2135DCDA005C3B2C /* language-zh-hans.appx in CopyFiles */,
+				4CAC1C4F2135DCDA005C3B2C /* language-zh-hant.appx in CopyFiles */,
+				4CAC1C502135DCDA005C3B2C /* main_ARM.appx in CopyFiles */,
+				4CAC1C512135DCDA005C3B2C /* main_x64.appx in CopyFiles */,
+				4CAC1C522135DCDA005C3B2C /* main_x86.appx in CopyFiles */,
+				4CAC1C532135DCDA005C3B2C /* scale-140.appx in CopyFiles */,
+				4CAC1C542135DCDA005C3B2C /* scale-180.appx in CopyFiles */,
+				4CAC1C552135DCDA005C3B2C /* scale-240.appx in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EEE4056820225E11007B25CE /* CopyFiles */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -239,6 +308,26 @@
 		4C7F376C20783FC2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle; sourceTree = "<group>"; };
 		4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsixtestcommon.0.0.0.dylib; path = ../../../.vs/lib/libmsixtestcommon.0.0.0.dylib; sourceTree = "<group>"; };
 		4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsix.0.0.0.dylib; path = ../../../.vs/lib/libmsix.0.0.0.dylib; sourceTree = "<group>"; };
+		4CAC1C1A2135DCC0005C3B2C /* assets.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = assets.appx; sourceTree = "<group>"; };
+		4CAC1C1B2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlatBundleWithAsset.appxbundle; sourceTree = "<group>"; };
+		4CAC1C1C2135DCC0005C3B2C /* language-de.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-de.appx"; sourceTree = "<group>"; };
+		4CAC1C1D2135DCC0005C3B2C /* language-en.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-en.appx"; sourceTree = "<group>"; };
+		4CAC1C1E2135DCC0005C3B2C /* language-es.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-es.appx"; sourceTree = "<group>"; };
+		4CAC1C1F2135DCC0005C3B2C /* language-fr.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-fr.appx"; sourceTree = "<group>"; };
+		4CAC1C202135DCC0005C3B2C /* language-it.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-it.appx"; sourceTree = "<group>"; };
+		4CAC1C212135DCC0005C3B2C /* language-ja.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-ja.appx"; sourceTree = "<group>"; };
+		4CAC1C222135DCC0005C3B2C /* language-ko.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-ko.appx"; sourceTree = "<group>"; };
+		4CAC1C232135DCC0005C3B2C /* language-pt.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-pt.appx"; sourceTree = "<group>"; };
+		4CAC1C242135DCC0005C3B2C /* language-ru.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-ru.appx"; sourceTree = "<group>"; };
+		4CAC1C252135DCC0005C3B2C /* language-uk.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-uk.appx"; sourceTree = "<group>"; };
+		4CAC1C262135DCC0005C3B2C /* language-zh-hans.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-zh-hans.appx"; sourceTree = "<group>"; };
+		4CAC1C272135DCC0005C3B2C /* language-zh-hant.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-zh-hant.appx"; sourceTree = "<group>"; };
+		4CAC1C282135DCC0005C3B2C /* main_ARM.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = main_ARM.appx; sourceTree = "<group>"; };
+		4CAC1C292135DCC0005C3B2C /* main_x64.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = main_x64.appx; sourceTree = "<group>"; };
+		4CAC1C2A2135DCC0005C3B2C /* main_x86.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = main_x86.appx; sourceTree = "<group>"; };
+		4CAC1C2B2135DCC0005C3B2C /* scale-140.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "scale-140.appx"; sourceTree = "<group>"; };
+		4CAC1C2C2135DCC0005C3B2C /* scale-180.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "scale-180.appx"; sourceTree = "<group>"; };
+		4CAC1C2D2135DCC0005C3B2C /* scale-240.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "scale-240.appx"; sourceTree = "<group>"; };
 		EEE4054B20225CDF007B25CE /* iOSBVT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSBVT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EEE4054E20225CDF007B25CE /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		EEE4054F20225CDF007B25CE /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -336,9 +425,38 @@
 			path = ../../appx/bundles;
 			sourceTree = "<group>";
 		};
+		4CAC1C192135DCC0005C3B2C /* flat */ = {
+			isa = PBXGroup;
+			children = (
+				4CAC1C1A2135DCC0005C3B2C /* assets.appx */,
+				4CAC1C1B2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle */,
+				4CAC1C1C2135DCC0005C3B2C /* language-de.appx */,
+				4CAC1C1D2135DCC0005C3B2C /* language-en.appx */,
+				4CAC1C1E2135DCC0005C3B2C /* language-es.appx */,
+				4CAC1C1F2135DCC0005C3B2C /* language-fr.appx */,
+				4CAC1C202135DCC0005C3B2C /* language-it.appx */,
+				4CAC1C212135DCC0005C3B2C /* language-ja.appx */,
+				4CAC1C222135DCC0005C3B2C /* language-ko.appx */,
+				4CAC1C232135DCC0005C3B2C /* language-pt.appx */,
+				4CAC1C242135DCC0005C3B2C /* language-ru.appx */,
+				4CAC1C252135DCC0005C3B2C /* language-uk.appx */,
+				4CAC1C262135DCC0005C3B2C /* language-zh-hans.appx */,
+				4CAC1C272135DCC0005C3B2C /* language-zh-hant.appx */,
+				4CAC1C282135DCC0005C3B2C /* main_ARM.appx */,
+				4CAC1C292135DCC0005C3B2C /* main_x64.appx */,
+				4CAC1C2A2135DCC0005C3B2C /* main_x86.appx */,
+				4CAC1C2B2135DCC0005C3B2C /* scale-140.appx */,
+				4CAC1C2C2135DCC0005C3B2C /* scale-180.appx */,
+				4CAC1C2D2135DCC0005C3B2C /* scale-240.appx */,
+			);
+			name = flat;
+			path = ../../appx/flat;
+			sourceTree = "<group>";
+		};
 		EEE4054220225CDE007B25CE = {
 			isa = PBXGroup;
 			children = (
+				4CAC1C192135DCC0005C3B2C /* flat */,
 				4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */,
 				4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */,
 				4C7F375120783FC2002942F4 /* bundles */,
@@ -433,6 +551,7 @@
 				EEE405B520227ECB007B25CE /* Copy Files */,
 				4C11C9CB2048C60500F6BE01 /* CopyFiles */,
 				4C7F375020783F90002942F4 /* CopyFiles */,
+				4CAC1C182135DC9A005C3B2C /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -483,34 +602,54 @@
 			files = (
 				EEE4059C20225EF5007B25CE /* SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx in Resources */,
 				EEE4059620225EF5007B25CE /* InvalidSignatureInvalidCodeIntegrityXML.appx in Resources */,
+				4CAC1C352135DCC0005C3B2C /* language-ja.appx in Resources */,
 				EEE4059020225EF5007B25CE /* No_blockmap.appx in Resources */,
 				EEE4058D20225EF5007B25CE /* HelloWorld.appx in Resources */,
 				EEE4059720225EF5007B25CE /* OPC_E_ZIP_CORRUPTED_ARCHIVE.appx in Resources */,
+				4CAC1C2E2135DCC0005C3B2C /* assets.appx in Resources */,
 				EEE4059420225EF5007B25CE /* HelloWorld.appx in Resources */,
+				4CAC1C302135DCC0005C3B2C /* language-de.appx in Resources */,
 				EEE4058A20225EF5007B25CE /* Duplicate_file_in_blockmap.appx in Resources */,
+				4CAC1C312135DCC0005C3B2C /* language-en.appx in Resources */,
+				4CAC1C332135DCC0005C3B2C /* language-fr.appx in Resources */,
+				4CAC1C3C2135DCC0005C3B2C /* main_ARM.appx in Resources */,
 				EEE4059D20225EF5007B25CE /* SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx in Resources */,
 				EEE4059B20225EF5007B25CE /* SignedTamperedCD-TRUST_E_BAD_DIGEST.appx in Resources */,
+				4CAC1C3A2135DCC0005C3B2C /* language-zh-hans.appx in Resources */,
 				EEE4055B20225CDF007B25CE /* LaunchScreen.storyboard in Resources */,
 				EEE405A220225EF5007B25CE /* UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx in Resources */,
 				EEE4059120225EF5007B25CE /* Size_wrong_uncompressed.appx in Resources */,
+				4CAC1C382135DCC0005C3B2C /* language-ru.appx in Resources */,
 				EEE4059320225EF5007B25CE /* Empty.appx in Resources */,
+				4CAC1C362135DCC0005C3B2C /* language-ko.appx in Resources */,
+				4CAC1C3B2135DCC0005C3B2C /* language-zh-hant.appx in Resources */,
+				4CAC1C3D2135DCC0005C3B2C /* main_x64.appx in Resources */,
+				4CAC1C3F2135DCC0005C3B2C /* scale-140.appx in Resources */,
 				EEE405A120225EF5007B25CE /* TestAppxPackage_x64.appx in Resources */,
 				EEE4058C20225EF5007B25CE /* File_missing_from_blockmap.appx in Resources */,
 				EEE4059920225EF5007B25CE /* SignedMismatchedPublisherName-ERROR_BAD_FORMAT.appx in Resources */,
+				4CAC1C392135DCC0005C3B2C /* language-uk.appx in Resources */,
 				EEE4058F20225EF5007B25CE /* Missing_Manifest_in_blockmap.appx in Resources */,
 				EEE4058820225EF5007B25CE /* Bad_Namespace_Blockmap.appx in Resources */,
 				EEE405A020225EF5007B25CE /* TestAppxPackage_Win32.appx in Resources */,
 				EEE4059820225EF5007B25CE /* SignatureNotLastPart-ERROR_BAD_FORMAT.appx in Resources */,
 				EEE4055820225CDF007B25CE /* Assets.xcassets in Resources */,
+				4CAC1C322135DCC0005C3B2C /* language-es.appx in Resources */,
+				4CAC1C402135DCC0005C3B2C /* scale-180.appx in Resources */,
 				EEE4059520225EF5007B25CE /* InvalidSignatureBadCodeIntegrity.appx in Resources */,
+				4CAC1C372135DCC0005C3B2C /* language-pt.appx in Resources */,
 				EEE4059F20225EF5007B25CE /* StoreSigned_Desktop_x64_MoviesTV.appx in Resources */,
 				EEE4058920225EF5007B25CE /* ContentTypes_in_blockmap.appx in Resources */,
 				EEE4058B20225EF5007B25CE /* Extra_file_in_blockmap.appx in Resources */,
 				EEE4059A20225EF5007B25CE /* SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx in Resources */,
+				4CAC1C342135DCC0005C3B2C /* language-it.appx in Resources */,
+				4CAC1C2F2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle in Resources */,
 				EEE4059E20225EF5007B25CE /* SignedUntrustedCert-CERT_E_CHAINING.appx in Resources */,
 				EEE4059220225EF5007B25CE /* CentennialCoffee.appx in Resources */,
 				EEE4058E20225EF5007B25CE /* Invalid_Bad_Block.appx in Resources */,
+				4CAC1C412135DCC0005C3B2C /* scale-240.appx in Resources */,
 				4C11C9D12048C7C700F6BE01 /* en-us_win32.appx in Resources */,
+				4CAC1C3E2135DCC0005C3B2C /* main_x86.appx in Resources */,
 				EEE4055620225CDF007B25CE /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

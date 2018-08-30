@@ -245,7 +245,7 @@ protected:
     XMLByte* m_ptr = nullptr;             
 };    
 
-class XercesElement final : public ComClass<XercesElement, IXmlElement, IXercesElement, IMSIXElement>
+class XercesElement final : public ComClass<XercesElement, IXmlElement, IXercesElement, IMsixElement>
 {
 private:
     std::string GetAttributeValue(std::string& attributeName)
@@ -256,7 +256,7 @@ private:
     }
 
 public:
-    XercesElement(IMSIXFactory* factory, DOMElement* element, XERCES_CPP_NAMESPACE::XercesDOMParser* parser) :
+    XercesElement(IMsixFactory* factory, DOMElement* element, XERCES_CPP_NAMESPACE::XercesDOMParser* parser) :
         m_factory(factory), m_element(element), m_parser(parser)
     {
         m_resolver = XercesPtr<DOMXPathNSResolver>(m_parser->getDocument()->createNSResolver(m_parser->getDocument()));
@@ -292,7 +292,7 @@ public:
     // IXercesElement
     DOMElement* GetElement() override { return m_element; }
 
-     // IMSIXElement
+     // IMsixElement
     HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) noexcept override try
     {
         ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
@@ -308,7 +308,7 @@ public:
         return m_factory->MarshalOutString(text, value);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMSIXElementEnumerator** elements) noexcept override try
+    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMsixElementEnumerator** elements) noexcept override try
     {
         ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
 
@@ -323,21 +323,21 @@ public:
             DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
             nullptr));
 
-        std::vector<ComPtr<IMSIXElement>> elementsEnum;
+        std::vector<ComPtr<IMsixElement>> elementsEnum;
         for (XMLSize_t i = 0; i < result->getSnapshotLength(); i++)
         {
             result->snapshotItem(i);
             auto node = static_cast<DOMElement*>(result->getNodeValue());
-            auto item = ComPtr<IMSIXElement>::Make<XercesElement>(m_factory, node, m_parser);
+            auto item = ComPtr<IMsixElement>::Make<XercesElement>(m_factory, node, m_parser);
             elementsEnum.push_back(std::move(item));
         }
-        *elements = ComPtr<IMSIXElementEnumerator>::
-            Make<EnumeratorCom<IMSIXElementEnumerator,IMSIXElement>>(elementsEnum).Detach();
+        *elements = ComPtr<IMsixElementEnumerator>::
+            Make<EnumeratorCom<IMsixElementEnumerator,IMsixElement>>(elementsEnum).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
 protected:
-    IMSIXFactory* m_factory = nullptr;
+    IMsixFactory* m_factory = nullptr;
     DOMElement* m_element = nullptr;
     XERCES_CPP_NAMESPACE::XercesDOMParser* m_parser;
     XercesPtr<DOMXPathNSResolver> m_resolver;
@@ -346,7 +346,7 @@ protected:
 class XercesDom final : public ComClass<XercesDom, IXmlDom>
 {
 public:
-    XercesDom(IMSIXFactory* factory, const ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :
+    XercesDom(IMsixFactory* factory, const ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :
         m_factory(factory), m_stream(stream)
     {
         auto buffer = Helper::CreateBufferFromStream(stream);
@@ -428,7 +428,7 @@ public:
     }
 
 protected:
-    IMSIXFactory* m_factory;
+    IMsixFactory* m_factory;
     std::unique_ptr<XERCES_CPP_NAMESPACE::XercesDOMParser> m_parser;
     XercesPtr<DOMXPathNSResolver> m_resolver;
     ComPtr<IStream> m_stream;
@@ -437,7 +437,7 @@ protected:
 class XercesFactory final : public ComClass<XercesFactory, IXmlFactory>
 {
 public:
-    XercesFactory(IMSIXFactory* factory) : m_factory(factory)
+    XercesFactory(IMsixFactory* factory) : m_factory(factory)
     {
         XERCES_CPP_NAMESPACE::XMLPlatformUtils::Initialize();
     }
@@ -470,9 +470,9 @@ public:
         ThrowError(Error::InvalidParameter);
     }
 protected:
-    IMSIXFactory* m_factory;
+    IMsixFactory* m_factory;
 };
 
-ComPtr<IXmlFactory> CreateXmlFactory(IMSIXFactory* factory) { return ComPtr<IXmlFactory>::Make<XercesFactory>(factory); }
+ComPtr<IXmlFactory> CreateXmlFactory(IMsixFactory* factory) { return ComPtr<IXmlFactory>::Make<XercesFactory>(factory); }
 
 } // namespace MSIX

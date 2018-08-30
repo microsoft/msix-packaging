@@ -135,7 +135,7 @@ namespace MSIX {
     };
 
     InflateStream::InflateStream(
-        IStream* stream, std::uint64_t uncompressedSize
+        const ComPtr<IStream>& stream, std::uint64_t uncompressedSize
     ) : m_stream(stream),
         m_state(State::UNINITIALIZED),
         m_uncompressedSize(uncompressedSize)

@@ -31,7 +31,7 @@ namespace MSIX {
     };
 
     AppxManifestPackageId::AppxManifestPackageId(
-        IMSIXFactory* factory,
+        IMsixFactory* factory,
         const std::string& name,
         const std::string& version,
         const std::string& resourceId,
@@ -174,7 +174,7 @@ namespace MSIX {
     }
 
     AppxBundleManifestPackageInfo::AppxBundleManifestPackageInfo(
-        IMSIXFactory* factory,
+        IMsixFactory* factory,
         const std::string& name,
         const std::string& bundleName,
         const std::string& version,
