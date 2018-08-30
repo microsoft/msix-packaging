@@ -86,7 +86,7 @@ else()
         # iOS and Mac exports start with '_' .The first '_' is be in the exports.def.cmakein
         string(REGEX REPLACE ";" "\n_" MSIX_EXPORTS "${MSIX_EXPORTS}")
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/exports.def.cmakein ${CMAKE_CURRENT_BINARY_DIR}/exports.def CRLF)
-        set(DEFINE_EXPORTS  "-exported_symbols_list ${CMAKE_CURRENT_BINARY_DIR}/exports.def")    
+        set(DEFINE_EXPORTS  "-exported_symbols_list ${CMAKE_CURRENT_BINARY_DIR}/exports.def")
         # used to get the languages of the device
         find_library(COREFOUNDATION_LIBRARY CoreFoundation)
         if(NOT COREFOUNDATION_LIBRARY)
@@ -232,9 +232,9 @@ if(WIN32)
     set_target_properties(${PROJECT_NAME} PROPERTIES
         COMPILE_FLAGS "/source-charset:utf-8"
         VS_WINRT_COMPONENT TRUE)
-    # Using /DELAYLOAD as linker option will use a helper funtion provided by 
+    # Using /DELAYLOAD as linker option will use a helper funtion provided by
     # Visual C++ that will load the dll at runtime by calling LoadLibrary and GetProcAddress.
-    # This dlls are NOT supposed to be loaded ever on Win7. See Exceptions.cpp 
+    # This dlls are NOT supposed to be loaded ever on Win7. See Exceptions.cpp
     # on how we handle failure of delayloading these.
     # https://docs.microsoft.com/en-us/cpp/build/reference/error-handling-and-notification
     set(DELAYFLAGS)
@@ -244,7 +244,11 @@ if(WIN32)
     string(REPLACE ";" " " DELAYFLAGS "${DELAYFLAGS}")
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "${DELAYFLAGS}")
     if(USE_STATIC_MSVC)
-        set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB:MSVCRT")
+        if(CMAKE_BUILD_TYPE MATCHES Debug)
+            set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB:MSVCRTD")
+        else()
+            set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB:MSVCRT")
+        endif()
     endif()
     target_link_libraries(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib delayimp.lib)
 endif()

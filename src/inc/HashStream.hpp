@@ -50,15 +50,15 @@ namespace MSIX {
             if (m_validated) { return; }
 
             // read stream into cache buffer
-            m_cacheBuffer = std::make_unique<std::vector<std::uint8_t>>(m_streamSize);            
+            m_cacheBuffer = std::make_unique<std::vector<std::uint8_t>>(m_streamSize);
             ULONG bytesRead = 0;
-            ThrowHrIfFailed(m_stream->Read(m_cacheBuffer->data(), m_cacheBuffer->size(), &bytesRead));
+            ThrowHrIfFailed(m_stream->Read(m_cacheBuffer->data(), static_cast<ULONG>(m_cacheBuffer->size()), &bytesRead));
             ThrowErrorIfNot(MSIX::Error::SignatureInvalid, bytesRead == m_streamSize, "read failed");
-            
+
             // compute digest and compare against expected digest
             std::vector<std::uint8_t> hash;
             ThrowErrorIfNot(MSIX::Error::SignatureInvalid, 
-                MSIX::SHA256::ComputeHash(m_cacheBuffer->data(), m_cacheBuffer->size(), hash), 
+                MSIX::SHA256::ComputeHash(m_cacheBuffer->data(), static_cast<uint32_t>(m_cacheBuffer->size()), hash), 
                 "Invalid signature");
             ThrowErrorIfNot(MSIX::Error::SignatureInvalid, m_expectedHash.size() == hash.size(), "Signature is corrupt");
             ThrowErrorIfNot(
