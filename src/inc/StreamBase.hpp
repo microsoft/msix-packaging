@@ -109,7 +109,17 @@ namespace MSIX {
         virtual HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER) noexcept override { return static_cast<HRESULT>(Error::NotSupported); }
 
         // Retrieves the STATSTG structure for this stream.
-        virtual HRESULT STDMETHODCALLTYPE Stat(STATSTG* , DWORD) noexcept override { return static_cast<HRESULT>(Error::NotSupported); }
+        virtual HRESULT STDMETHODCALLTYPE Stat(STATSTG* statStg, DWORD /*grfStatFlag*/) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, statStg == nullptr, "bad pointer");
+            LARGE_INTEGER start = { 0 };
+            ULARGE_INTEGER end = { 0 };
+            ThrowHrIfFailed(Seek(start, StreamBase::Reference::END, &end));
+            ThrowHrIfFailed(Seek(start, StreamBase::Reference::START, nullptr));
+            statStg->type = STGTY_STREAM;
+            statStg->cbSize.QuadPart = end.u.LowPart;
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
 
         // Removes the access restriction on a range of bytes previously restricted with IStream::LockRegion.
         virtual HRESULT STDMETHODCALLTYPE UnlockRegion(ULARGE_INTEGER, ULARGE_INTEGER, DWORD) noexcept override

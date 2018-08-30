@@ -87,14 +87,8 @@ struct State
 
     bool Validate()
     {
-        switch (specified)
-        {
-        case UserSpecified::Unpack:
-        case UserSpecified::Unbundle:
-            if (packageName.empty() || directoryName.empty()) {
-                return false;
-            }
-            break;
+        if (packageName.empty() || directoryName.empty()) {
+            return false;
         }
         return true;
     }
@@ -295,7 +289,7 @@ public:
 // Defines the grammar of commands and each command's associated options,
 int main(int argc, char* argv[])
 {
-    std::cout << "Microsoft (R) " << argv[0] << " version " << std::endl; // TODO: specify version
+    std::cout << "Microsoft (R) makemsix version " << SDK_VERSION << std::endl;
     std::cout << "Copyright (C) 2017 Microsoft.  All rights reserved." << std::endl;
 
     std::vector<Command> commands = {

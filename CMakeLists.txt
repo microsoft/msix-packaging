@@ -75,6 +75,7 @@ endif()
 set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 message(STATUS "MSIX Packaging SDK version ${VERSION}")
 message(STATUS "MSIX Packaging SDK branch name ${GIT_BRANCH_NAME}")
+add_definitions(-DSDK_VERSION="${VERSION}")
 
 # Configure Package.nuspec
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Package.nuspec.cmakein ${CMAKE_CURRENT_BINARY_DIR}/Package.nuspec CRLF)
