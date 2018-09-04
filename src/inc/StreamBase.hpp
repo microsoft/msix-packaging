@@ -15,25 +15,26 @@
 #include "Exceptions.hpp"
 #include "ComHelper.hpp"
 
-EXTERN_C const IID IID_IAppxFileInternal;
+EXTERN_C const IID IID_IStreamInternal;
 #ifndef WIN32
-// {cd24e5d3-4a35-4497-ba7e-d68df05c582c}
-interface IAppxFileInternal : public IUnknown
+// {44d2a7a8-a165-4a6e-a56f-c7c24de7505c}
+interface IStreamInternal : public IUnknown
 #else
 #include "Unknwn.h"
 #include "Objidl.h"
-class IAppxFileInternal : public IUnknown
+class IStreamInternal : public IUnknown
 #endif
 {
 public:
-    virtual std::uint64_t GetCompressedSize() = 0;
+    virtual std::uint64_t GetSizeOnZip() = 0;
+    virtual bool IsCompressed() = 0;
     virtual std::string GetName() = 0;
 };
 
-SpecializeUuidOfImpl(IAppxFileInternal);
+SpecializeUuidOfImpl(IStreamInternal);
 
 namespace MSIX {
-    class StreamBase : public MSIX::ComClass<StreamBase, IAppxFile, IStream, IAppxFileInternal>
+    class StreamBase : public MSIX::ComClass<StreamBase, IStream, IStreamInternal>
     {
     public:
         // These are the same values as STREAM_SEEK. See 
@@ -130,35 +131,9 @@ namespace MSIX {
         // Writes a specified number of bytes into the stream object starting at the current seek pointer.
         virtual HRESULT STDMETHODCALLTYPE Write(const void*, ULONG, ULONG*) noexcept override { return static_cast<HRESULT>(Error::NotImplemented); }
 
-        // IAppxFile methods
-        virtual HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override
-        {
-            if (compressionOption) { *compressionOption = APPX_COMPRESSION_OPTION_NONE; }
-            return static_cast<HRESULT>(Error::OK);
-        }
-
-        virtual HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override
-        {
-            return static_cast<HRESULT>(Error::NotImplemented);
-        }
-
-        virtual HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override
-        {
-            return static_cast<HRESULT>(Error::NotImplemented);
-        }
-
-        virtual HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override
-        {
-            return static_cast<HRESULT>(Error::NotImplemented);
-        }
-
-        virtual HRESULT STDMETHODCALLTYPE GetStream(IStream** stream) noexcept override
-        {
-            return QueryInterface(UuidOfImpl<IStream>::iid, reinterpret_cast<void**>(stream));
-        }
-
-        // IAppxFileInternal
-        virtual std::uint64_t GetCompressedSize() override { NOTIMPLEMENTED; }
+        // IStreamInternal
+        virtual std::uint64_t GetSizeOnZip() override { NOTIMPLEMENTED; }
+        virtual bool IsCompressed() override { NOTIMPLEMENTED; }
         virtual std::string GetName() override { NOTIMPLEMENTED; }
 
         template <class T>

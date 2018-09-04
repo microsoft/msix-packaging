@@ -30,26 +30,9 @@ namespace MSIX {
         {
         }
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override try
-        {
-            return m_factory->MarshalOutString(m_name, fileName);
-        } CATCH_RETURN();
-
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override try
-        {
-            return m_factory->MarshalOutString(m_contentType, contentType);
-        } CATCH_RETURN();
-
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override
-        {
-            if (compressionOption) { *compressionOption = IsCompressed() ? APPX_COMPRESSION_OPTION_NORMAL : APPX_COMPRESSION_OPTION_NONE; }
-            return static_cast<HRESULT>(Error::OK);
-        }
-
-        inline bool IsCompressed() { return m_isCompressed; }
-
-        // IAppxFileInternal
-        std::uint64_t GetCompressedSize() override { return m_compressedSize; }
+        // IStreamInternal
+        std::uint64_t GetSizeOnZip() override { return m_compressedSize; }
+        bool IsCompressed() override { return m_isCompressed; }
         std::string GetName() override { return m_name; }
 
     protected:

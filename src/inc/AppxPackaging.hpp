@@ -1122,13 +1122,12 @@ interface IMsixElementEnumerator;
 interface IMsixFactoryOverrides;
 interface IMsixStreamFactory;
 
-
 #ifndef __IMsixDocumentElement_INTERFACE_DEFINED__
 #define __IMsixDocumentElement_INTERFACE_DEFINED__
 
 EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixDocumentElement;
 
-    // {07f33ab5-cf2c-43bf-a72c-3525313fcff3}
+    // {E8900E0E-1DFD-4728-8352-AADAEBBF0065}
     interface IMsixDocumentElement : public IUnknown
     {
     public:
@@ -1142,7 +1141,7 @@ EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixDocumentElement;
 
 EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixElement;
 
-    // {448d1d3e-186d-485b-9e42-82f0808ff5d6}
+    // {5B6786FF-6145-4F0E-B8C9-8E03AACB60D0}
     interface IMsixElement : public IUnknown
     {
     public:
@@ -1158,7 +1157,7 @@ EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixElement;
 
 EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixElementEnumerator;
 
-    // {2173d338-77ce-4427-9b12-d3e8e7f8a732}
+    // {7E7EA105-A4F9-4C12-9EFA-98EF1895418A}
     interface IMsixElementEnumerator : public IUnknown
     {
     public:

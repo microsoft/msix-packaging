@@ -123,26 +123,5 @@ namespace MSIX {
             }
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
-
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override try
-        {
-            return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption);
-        } CATCH_RETURN();
-
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override try
-        {
-            return m_stream.As<IAppxFile>()->GetName(fileName);
-        } CATCH_RETURN();
-
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override try
-        {
-            return m_stream.As<IAppxFile>()->GetContentType(contentType);
-        } CATCH_RETURN();
-        
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override try
-        {
-            if (size) { *size = m_streamSize; }
-            return static_cast<HRESULT>(Error::OK);
-        } CATCH_RETURN();
     };
 }
