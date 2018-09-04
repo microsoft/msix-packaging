@@ -452,13 +452,13 @@ namespace MSIX
         ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::START, &uli));
 
         ULONG actualRead = 0;
-        ThrowHrIfFailed(stream->Read(p7x.data(), p7x.size(), &actualRead));
+        ThrowHrIfFailed(stream->Read(p7x.data(), static_cast<ULONG>(p7x.size()), &actualRead));
         ThrowErrorIf(Error::SignatureInvalid,
             ((actualRead != p7x.size() || (*(DWORD*)p7x.data() != P7X_FILE_ID))),
             "Failed to read p7x or p7x header mismatch");
 
         BYTE *p7s = p7x.data() + sizeof(DWORD);
-        std::uint32_t p7sSize = p7x.size() - sizeof(DWORD);
+        std::uint32_t p7sSize = static_cast<uint32_t>(p7x.size() - sizeof(DWORD));
 
         // Decode the ASN.1 structure
         CRYPT_CONTENT_INFO* contentInfo = nullptr;
