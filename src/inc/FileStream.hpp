@@ -52,6 +52,7 @@ namespace MSIX {
             }
         }
 
+        // IStream
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER* newPosition) noexcept override try
         {
             int rc = std::fseek(m_file, static_cast<long>(move.QuadPart), origin);
@@ -81,8 +82,7 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        // IAppxFileInternal
-        std::uint64_t GetCompressedSize() override { return m_size; } // This is not compressed
+        // IStreamInternal
         std::string GetName() override { return m_name; }
 
     protected:

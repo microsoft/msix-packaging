@@ -768,7 +768,7 @@ ComPtr<IStream> ZipObject::GetFile(const std::string& fileName)
 
 std::string ZipObject::GetFileName()
 {
-    return m_stream.As<IAppxFileInternal>()->GetName();
+    return m_stream.As<IStreamInternal>()->GetName();
 }
 
 ZipObject::ZipObject(IMsixFactory* appxFactory, const ComPtr<IStream>& stream) : m_factory(appxFactory), m_stream(stream)

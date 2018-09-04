@@ -17,15 +17,14 @@
 #include "ComHelper.hpp"
 #include "FileStream.hpp"
 #include "UnicodeConversion.hpp"
+#include "StreamBase.hpp"
 
 namespace MSIX {
-    class AppxFile : public MSIX::ComClass<AppxFile, IAppxFile, IAppxFileInternal>
+    class AppxFile : public ComClass<AppxFile, IAppxFile>
     {
     public:
         AppxFile(IMsixFactory* factory, const std::string& name, const ComPtr<IStream>& stream) : m_factory(factory), m_name(name), m_stream(stream)
         {
-            // Get the size calling the Seek. This stream might be a third party stream
-            // that doesn't implement IAppxFileInternal
             LARGE_INTEGER start = { 0 };
             ULARGE_INTEGER end = { 0 };
             ThrowHrIfFailed(m_stream->Seek(start, StreamBase::Reference::END, &end));
@@ -36,7 +35,16 @@ namespace MSIX {
         // IAppxFile methods
         virtual HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override
         {
-            if (compressionOption) { *compressionOption = APPX_COMPRESSION_OPTION_NONE; }
+            if (compressionOption)
+            {
+                *compressionOption = APPX_COMPRESSION_OPTION_NONE;
+                ComPtr<IStreamInternal> streamInt;
+                HRESULT hr = m_stream->QueryInterface(UuidOfImpl<IStreamInternal>::iid, reinterpret_cast<void**>(&streamInt));
+                if (SUCCEEDED(hr))
+                {
+                    *compressionOption = streamInt->IsCompressed() ? APPX_COMPRESSION_OPTION_NORMAL : APPX_COMPRESSION_OPTION_NONE;
+                }
+            }
             return static_cast<HRESULT>(Error::OK);
         }
 
@@ -65,10 +73,6 @@ namespace MSIX {
             *stream = m_stream.As<IStream>().Detach();
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
-
-        // IAppxFileInternal
-        std::uint64_t GetCompressedSize() override { return m_size; }
-        std::string GetName() override { return m_name; }
 
     protected:
         std::string m_name;

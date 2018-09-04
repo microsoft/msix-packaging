@@ -142,27 +142,21 @@ namespace MSIX {
             return (countBytes == bytesRead) ? S_OK : S_FALSE;
         } CATCH_RETURN();
 
-        // IAppxFile
-        HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override try
-        {
-            return m_stream.As<IAppxFile>()->GetCompressionOption(compressionOption);
-        } CATCH_RETURN();
+        // IStreamInternal
+        std::uint64_t GetSizeOnZip() override
+        {   // The underlying ZipFileStream/InflateStream object knows, so go ask it.
+            return m_stream.As<IStreamInternal>()->GetSizeOnZip();
+        }
 
-        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* fileName) noexcept override try
-        {
-            return m_factory->MarshalOutString(m_decodedName, fileName);
-        } CATCH_RETURN();
+        bool IsCompressed() override
+        {   // The underlying ZipFileStream/InflateStream object knows, so go ask it.
+            return m_stream.As<IStreamInternal>()->IsCompressed();
+        }
 
-        HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override try
-        {
-            return m_stream.As<IAppxFile>()->GetContentType(contentType);
-        } CATCH_RETURN();
-        
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override try
-        {
-            if (size) { *size = m_streamSize; }
-            return static_cast<HRESULT>(Error::OK);
-        } CATCH_RETURN();
+        std::string GetName() override
+        {   // The underlying ZipFileStream/InflateStream object knows, so go ask it.
+            return m_stream.As<IStreamInternal>()->GetName();
+        }
       
     protected:
         std::vector<BlockPlusStream>::iterator m_currentBlock;

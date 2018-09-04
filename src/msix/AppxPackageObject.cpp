@@ -184,7 +184,8 @@ namespace MSIX {
             {
                 if (fileName != CONTENT_TYPES_XML)
                 {
-                    m_files[fileName] = footPrintFile->GetValidationStream(this).As<IAppxFile>();
+                    auto stream = footPrintFile->GetValidationStream(this);
+                    m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(stream));;
                 }
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
             }
@@ -206,10 +207,14 @@ namespace MSIX {
             {
                 auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
                 auto packageName = bundleInfoInternal->GetFileName();
-                auto fileStream = m_container->GetFile(packageName);
+                auto packageStream = m_container->GetFile(packageName);
 
-                ComPtr<IAppxFile> appxFile;
-                if(!fileStream && (bundleInfoInternal->GetOffset() == 0)) // This is a flat bundle.
+                if (packageStream)
+                {   // The package is in the bundle. Verify is not compressed.
+                    auto zipStream = packageStream.As<IStreamInternal>();
+                    ThrowErrorIf(Error::AppxManifestSemanticError, zipStream->IsCompressed(), "Packages cannot be compressed");
+                }
+                else if (!packageStream && (bundleInfoInternal->GetOffset() == 0)) // This is a flat bundle.
                 {
                     // We should only do this for flat bundles. If we do it for normal bundles and the user specify a 
                     // stream factory we will basically unpack any package the user wants with the same name as the package
@@ -218,7 +223,6 @@ namespace MSIX {
                     ComPtr<IUnknown> streamFactoryUnk;
                     ThrowHrIfFailed(factoryOverrides->GetCurrentSpecifiedExtension(MSIX_FACTORY_EXTENSION_STREAM_FACTORY, &streamFactoryUnk));
 
-                    ComPtr<IStream> packageStream;
                     if(streamFactoryUnk.Get() != nullptr)
                     {
                         auto streamFactory = streamFactoryUnk.As<IMsixStreamFactory>();
@@ -237,24 +241,17 @@ namespace MSIX {
                         ThrowHrIfFailed(CreateStreamOnFile(const_cast<char*>(expandedPackageName.c_str()), true, &packageStream));
                     }
                     ThrowErrorIfNot(Error::FileNotFound, packageStream, "Package from a flat bundle is not present");
-                    appxFile = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
-                    ThrowHrIfFailed(appxFile->GetStream(&fileStream));
                 }
                 else
                 {
-                    ThrowErrorIfNot(Error::FileNotFound, fileStream, "Package is not in container");
-                    appxFile = fileStream.As<IAppxFile>();
+                    ThrowErrorIfNot(Error::FileNotFound, packageStream, "Package is not in container");
                 }
 
-                // Do semantic checks.
-                APPX_COMPRESSION_OPTION compressionOpt;
-                ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
-                ThrowErrorIf(Error::AppxManifestSemanticError, (compressionOpt != APPX_COMPRESSION_OPTION_NONE), "Packages cannot be compressed");
-
+                // Semantic checks
                 LARGE_INTEGER start = { 0 };
                 ULARGE_INTEGER end = { 0 };
-                ThrowHrIfFailed(fileStream->Seek(start, StreamBase::Reference::END, &end));
-                ThrowHrIfFailed(fileStream->Seek(start, StreamBase::Reference::START, nullptr));
+                ThrowHrIfFailed(packageStream->Seek(start, StreamBase::Reference::END, &end));
+                ThrowHrIfFailed(packageStream->Seek(start, StreamBase::Reference::START, nullptr));
                 
                 UINT64 size;
                 ThrowHrIfFailed(package->GetSize(&size));
@@ -263,7 +260,7 @@ namespace MSIX {
 
                 // Validate the package
                 ComPtr<IAppxPackageReader> reader;
-                ThrowHrIfFailed(appxFactory->CreatePackageReader(fileStream.Get(), &reader));
+                ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream.Get(), &reader));
                 ComPtr<IAppxManifestReader> innerPackageManifest;
                 ThrowHrIfFailed(reader->GetManifest(&innerPackageManifest));
                 // Do semantic checks to validate the relationship between the AppxBundleManifest and the AppxManifest.
@@ -299,7 +296,7 @@ namespace MSIX {
                 applicability.AddPackageIfApplicable(reader, packageName, bundleInfoInternal->GetLanguages(),
                     packageType, bundleInfoInternal->HasQualifiedResources());
 
-                m_files[packageName] = std::move(appxFile);
+                m_files[packageName] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
                 // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
                 // resource packages that are not languages packages.
             }
@@ -311,12 +308,14 @@ namespace MSIX {
             for (const auto& fileName : blockMapFiles)
             {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
                 if (footPrintFile == std::end(footPrintFileNames))
-                {   std::string containerFileName = EncodeFileName(fileName);
+                {
+                    auto containerFileName = EncodeFileName(fileName);
                     m_payloadFiles.push_back(containerFileName);
                     auto fileStream = m_container->GetFile(containerFileName);
                     ThrowErrorIfNot(Error::FileNotFound, fileStream, "File described in blockmap not contained in OPC container");
                     VerifyFile(fileStream, fileName, blockMapInternal);
-                    m_files[containerFileName] = m_appxBlockMap->GetValidationStream(fileName, fileStream.As<IStream>()).As<IAppxFile>();
+                    auto blockMapStream = m_appxBlockMap->GetValidationStream(fileName, fileStream);
+                    m_files[containerFileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(blockMapStream));
                     filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
                 }
             }
@@ -330,33 +329,21 @@ namespace MSIX {
     // Verify file in OPC and BlockMap
     void AppxPackageObject::VerifyFile(const ComPtr<IStream>& stream, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal)
     {
-        ComPtr<IAppxFile> appxFile = stream.As<IAppxFile>();;
-        APPX_COMPRESSION_OPTION compressionOpt;
-        ThrowHrIfFailed(appxFile->GetCompressionOption(&compressionOpt));
-        bool isUncompressed = (compressionOpt == APPX_COMPRESSION_OPTION_NONE);
-
-        auto streamInternal = appxFile.As<IAppxFileInternal>();
-        auto sizeOnZip = streamInternal->GetCompressedSize();
+        auto zipStream = stream.As<IStreamInternal>();
+        auto sizeOnZip = zipStream->GetSizeOnZip();
+        bool isCompressed = zipStream->IsCompressed();
 
         auto blocks = blockMapInternal->GetBlocks(fileName);
         std::uint64_t blocksSize = 0;
         for(auto& block : blocks)
         {   // For Block elements that don't have a Size attribute, we always set its size as BLOCKMAP_BLOCK_SIZE
             // (even for the last one). The Size attribute isn't specified if the file is not compressed.
-            ThrowErrorIf(Error::BlockMapSemanticError, isUncompressed && (block.blockSize != BLOCKMAP_BLOCK_SIZE),
+            ThrowErrorIf(Error::BlockMapSemanticError, (!isCompressed) && (block.blockSize != BLOCKMAP_BLOCK_SIZE),
                 "An uncompressed file has a size attribute in its Block elements");
             blocksSize += block.blockSize;
         }
 
-        if(isUncompressed)
-        {
-            UINT64 blockMapFileSize;
-            auto blockMapFile = blockMapInternal->GetFile(fileName);
-            ThrowHrIfFailed(blockMapFile->GetUncompressedSize(&blockMapFileSize));
-            ThrowErrorIf(Error::BlockMapSemanticError, (blockMapFileSize != sizeOnZip ),
-                "Uncompressed size of the file in the block map and the OPC container don't match");
-        }
-        else
+        if(isCompressed)
         {
             // From Windows code:
             // The file item is compressed. There are 2 cases here:
@@ -376,6 +363,14 @@ namespace MSIX {
                 (blocksSize == sizeOnZip ) // case 1
                 || (blocksSize == sizeOnZip - 2), // case 2
                 "Compressed size of the file in the block map and the OPC container don't match");
+        }
+        else
+        {
+            UINT64 blockMapFileSize;
+            auto blockMapFile = blockMapInternal->GetFile(fileName);
+            ThrowHrIfFailed(blockMapFile->GetUncompressedSize(&blockMapFileSize));
+            ThrowErrorIf(Error::BlockMapSemanticError, (blockMapFileSize != sizeOnZip ),
+                "Uncompressed size of the file in the block map and the OPC container don't match");
         }
     }
 

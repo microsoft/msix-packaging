@@ -469,11 +469,13 @@ public:
             with deferred validation from the in memory copy; but first we need to compute the size of
             the buffer needed...
             */
-            auto file = stream.As<IAppxFile>();
-            UINT64 size = 0;
-            ThrowHrIfFailed(file->GetSize(&size));
+            LARGE_INTEGER start = { 0 };
+            ULARGE_INTEGER end = { 0 };
+            ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::END, &end));
+            ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
+
             ULARGE_INTEGER bytesCount = {0};
-            bytesCount.QuadPart = size;
+            bytesCount.QuadPart = end.u.LowPart;
             // Now create the in memory copy
             ComPtr<IStream> inMemoryCopy;    
             ThrowHrIfFailed(CreateStreamOnHGlobal(NULL, TRUE, &inMemoryCopy));                        

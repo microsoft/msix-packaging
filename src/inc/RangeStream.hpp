@@ -63,12 +63,6 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64* size) noexcept override try
-        {
-            if (size) { *size = m_size; }
-            return static_cast<HRESULT>(Error::OK);
-        } CATCH_RETURN();
-
         std::uint64_t Size() { return m_size; }
 
     protected:
