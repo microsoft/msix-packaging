@@ -7,16 +7,18 @@ build=MinSizeRel
 version=19
 sdk=
 sdkver=24
+dataCompressionLib=NDK_libz
 
 usage()
 {
-    echo "usage: makeaosp [-ndk ndk_path] [-arch arch] [-ndkver ndk_version] [-sdk sdk_path] [-sdkver sdk_version] [-b buildType]"
+    echo "usage: makeaosp [-ndk ndk_path] [-arch arch] [-ndkver ndk_version] [-sdk sdk_path] [-sdkver sdk_version] [-b buildType] [-xzlib]"
     echo $'\t' "-ndk Path to Android NDK. Default $ANDROID_NDK_ROOT or $ANDROID_NDK"
     echo $'\t' "-ndkver Android NDK version. Default/minimum 19."
     echo $'\t' "-sdk Path to Android SDK. Default $ANDROID_HOME."
     echo $'\t' "-sdkver Android SDK version. Default/minimum 24."
     echo $'\t' "-arch Architecture ABI. Default x86"
     echo $'\t' "-b Build type. Default MinSizeRel"
+    echo $'\t' "-xzlib Use MSIX SDK Zlib instead of inbox libz.so"
 }
 
 printsetup()
@@ -27,6 +29,7 @@ printsetup()
     echo "SDK Version:" $sdkver
     echo "Architecture:" $arch
     echo "Build Type:" $build
+    echo "Zlib:" $dataCompressionLib
 }
 
 while [ "$1" != "" ]; do
@@ -45,6 +48,9 @@ while [ "$1" != "" ]; do
                   ;;
         -h )      usage
                   exit
+                  ;;
+        -xzlib )  dataCompressionLib=MSIX_SDK_zlib
+                  zlib="-DUSE_MSIX_SDK_ZLIB=on"
                   ;;
         -sdk )    shift
                   sdk=$1
@@ -90,5 +96,5 @@ cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_ARCH_ABI="$arch" \
     -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
     -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_BUILD_TYPE="$build" -DAOSP=on ..
+    -DCMAKE_BUILD_TYPE="$build" $zlib -DAOSP=on ..
 make

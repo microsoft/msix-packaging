@@ -5,7 +5,7 @@ cmake_minimum_required(VERSION 3.4.0 FATAL_ERROR)
 
 ADD_CUSTOM_TARGET(LIBS)
 
-IF((NOT ((MACOS) OR (IOS))) OR USE_ZLIB)
+IF((NOT ((MACOS) OR (IOS) OR (AOSP))) OR USE_MSIX_SDK_ZLIB)
     # For mac and ios we use inbox libcompression apis.
     # ZLIB
     #   set(AMD64             OFF CACHE BOOL "Disable building i686 assembly implementation"  FORCE)

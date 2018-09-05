@@ -3,17 +3,11 @@
 //  See LICENSE file in the project root for full license information.
 // 
 #pragma once
-#ifdef WIN32
-#include "zlib.h"
-#else
-#include <zlib.h>
-#endif
-
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "ComHelper.hpp"
+#include "ICompressionObject.hpp"
 
-// Windows.h defines max and min... 
 #undef max
 #undef min
 #include <string>
@@ -52,9 +46,8 @@ namespace MSIX {
         {   // The underlying ZipFileStream object knows, so go ask it.
             return m_stream.As<IStreamInternal>()->GetName();
         }
-
         void Cleanup();
-        
+
         enum class State : size_t
         {
             UNINITIALIZED = 0,
@@ -77,8 +70,8 @@ namespace MSIX {
         ULONGLONG       m_fileCurrentWindowPositionEnd = 0;
         ULONGLONG       m_fileCurrentPosition = 0;
 
-        z_stream        m_zstrm;
-        int             m_zret;
+        std::unique_ptr<ICompressionObject> m_compressionObject;
+        CompressionStatus m_compressionStatus = CompressionStatus::Ok;
 
         std::unique_ptr<std::vector<std::uint8_t>> m_compressedBuffer;
         std::unique_ptr<std::vector<std::uint8_t>> m_inflateWindow;
