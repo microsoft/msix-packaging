@@ -34,6 +34,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Terminate app
         this.finishAffinity();
+        System.runFinalizersOnExit(true);
+        System.exit(0);
     }
 
     /**
