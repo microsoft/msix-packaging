@@ -159,12 +159,10 @@ set(LIB_PUBLIC_HEADERS
     ../inc/MSIXWindows.hpp
 )
 
-if (((IOS) OR (MACOS)) AND (NOT USE_ZLIB))
-    set(InflateStreamCpp    PAL/DataCompression/Apple/InflateStream.cpp)
-    set(InflateStreamHpp    PAL/DataCompression/Apple/InflateStream.hpp)
+if (((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
+    set(CompressionObjectCpp    PAL/DataCompression/Apple/CompressionObject.cpp)
 else()
-    set(InflateStreamCpp    PAL/DataCompression/Zlib/InflateStream.cpp)
-    set(InflateStreamHpp    PAL/DataCompression/Zlib/InflateStream.hpp)
+    set(CompressionObjectCpp    PAL/DataCompression/Zlib/CompressionObject.cpp)
 endif()
 
 set(LIB_PRIVATE_HEADERS
@@ -182,7 +180,8 @@ set(LIB_PRIVATE_HEADERS
     ../inc/Enumerators.hpp
     ../inc/Exceptions.hpp
     ../inc/FileStream.hpp
-    ${InflateStreamHpp}
+    ../inc/ICompressionObject.hpp
+    ../inc/InflateStream.hpp
     ../inc/Log.hpp
     ../inc/MSIXFactory.hpp
     ../inc/MSIXResource.hpp
@@ -208,7 +207,7 @@ set(LIB_SOURCES
     AppxPackaging_i.cpp
     AppxSignature.cpp
     Exceptions.cpp
-    ${InflateStreamCpp}
+    InflateStream.cpp
     Log.cpp
     UnicodeConversion.cpp
     msix.cpp
@@ -219,6 +218,7 @@ set(LIB_SOURCES
     ${Signature}
     ${XmlParser}
     ${Applicability}
+    ${CompressionObjectCpp}
 )
 
 # Copy out public headers
@@ -264,10 +264,14 @@ set_target_properties(${LIBRARY_NAME} PROPERTIES
     PUBLIC_HEADER "${LIB_HEADERS}" # specify the public headers
 )
       
-if (((IOS) OR (MACOS)) AND (NOT USE_ZLIB))
+if (((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
     # for macos and ios use the inbox libcompression zlib apis instead of zlib, unless zlib is explicitly requested.
     target_link_libraries(${PROJECT_NAME} PRIVATE libcompression.dylib)
     include_directories(${include_directories}  ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Apple)
+elseif ((AOSP) AND (NOT USE_MSIX_SDK_ZLIB))
+    # for AOSP, use the libz.so from the android ndk.
+    find_package(ZLIB REQUIRED)
+    target_link_libraries(${PROJECT_NAME} PRIVATE -lz)
 else()
     include_directories(
             ${include_directories}
