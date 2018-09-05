@@ -5,9 +5,9 @@ dataCompressionLib=libcompression
 
 usage()
 {
-    echo "usage: makemac [-b buildType] [-zlib]"
+    echo "usage: makemac [-b buildType] [-xzlib]"
     echo $'\t' "-b Build type. Default MinSizeRel"
-    echo $'\t' "-zlib Use Zlib instead of inbox libCompression api. Default on MacOS is libCompression."
+    echo $'\t' "-xzlib Use MSIX SDK Zlib instead of inbox libCompression api. Default on MacOS is libCompression."
 }
 
 printsetup()
@@ -21,9 +21,8 @@ while [ "$1" != "" ]; do
         -b )    shift
                 build=$1
                 ;;
-        -zlib ) shift
-                dataCompressionLib=zlib
-                zlib="-DUSE_ZLIB=on"
+        -xzlib )dataCompressionLib=MSIX_SDK_zlib
+                zlib="-DUSE_MSIX_SDK_ZLIB=on"
                 ;;
         -h )    usage
                 exit
