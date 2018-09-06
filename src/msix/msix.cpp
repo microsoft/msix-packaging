@@ -101,6 +101,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
     char* utf8SourcePackage,
     char* utf8Destination) noexcept try
 {
+#ifdef BUNDLE_SUPPORT
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
         (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
         "Invalid parameters"
@@ -120,6 +121,9 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
     auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
     return static_cast<HRESULT>(MSIX::Error::OK);
+#else
+    return static_cast<HRESULT>(MSIX::Error::NotSupported);
+#endif
 } CATCH_RETURN();
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
@@ -129,6 +133,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     IStream* stream,
     char* utf8Destination) noexcept try
 {
+#ifdef BUNDLE_SUPPORT
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
         (stream != nullptr && utf8Destination != nullptr), 
         "Invalid parameters"
@@ -145,6 +150,9 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
     return static_cast<HRESULT>(MSIX::Error::OK);
+#else
+    return static_cast<HRESULT>(MSIX::Error::NotSupported);
+#endif
 } CATCH_RETURN();
 
 MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept try
@@ -210,8 +218,12 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
     MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     IAppxBundleFactory** appxBundleFactory) noexcept try
 {
+#ifdef BUNDLE_SUPPORT
     *appxBundleFactory = MSIX::ComPtr<IAppxBundleFactory>::Make<MSIX::AppxFactory>(validationOption, applicabilityOptions, memalloc, memfree).Detach();
     return static_cast<HRESULT>(MSIX::Error::OK);
+#else
+    return static_cast<HRESULT>(MSIX::Error::NotSupported);
+#endif
 } CATCH_RETURN();
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
@@ -220,7 +232,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
     MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     IAppxBundleFactory** appxBundleFactory) noexcept
 {
-    #ifdef WIN32
+    #if defined(WIN32) && defined(BUNDLE_SUPPORT)
         return CoCreateAppxBundleFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, applicabilityOptions, appxBundleFactory);
     #else
         return static_cast<HRESULT>(MSIX::Error::NotSupported);
