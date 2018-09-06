@@ -28,7 +28,7 @@ add_executable(${BINARY_NAME}
 set_property(TARGET ${BINARY_NAME} PROPERTY CXX_STANDARD 14)
 
 ADD_DEPENDENCIES(${BINARY_NAME} msix)
-if (LINUX)
+if (LINUX OR AOSP)
     target_link_libraries(${BINARY_NAME} PRIVATE -latomic)
 endif()
 target_link_libraries(${BINARY_NAME} PRIVATE msix)

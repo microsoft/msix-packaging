@@ -22,6 +22,12 @@ if(XML_PARSER MATCHES msxml6)
     add_definitions(-DUSING_MSXML=1)
 endif()
 
+if(SKIP_BUNDLES)
+    message(STATUS "Bundle support disabled.")
+else()
+    add_definitions(-DBUNDLE_SUPPORT=1)
+endif()
+
 if(WIN32)
     set(DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
     set(SHA256 PAL/SHA256/Win32/SHA256.cpp)
@@ -165,8 +171,21 @@ else()
     set(CompressionObjectCpp    PAL/DataCompression/Zlib/CompressionObject.cpp)
 endif()
 
+set(BundleHeaders)
+set(BundleSources)
+if(NOT SKIP_BUNDLES)
+    list(APPEND BundleHeaders
+        ../inc/Applicability.hpp
+        ../inc/AppxBundleManifest.hpp
+    )
+    list(APPEND BundleSources
+        AppxBundleManifest.cpp
+        ApplicabilityCommon.cpp
+        ${Applicability}
+    )
+endif()
+
 set(LIB_PRIVATE_HEADERS
-    ../inc/Applicability.hpp
     ../inc/AppxBlockMapObject.hpp
     ../inc/AppxFactory.hpp
     ../inc/AppxFile.hpp
@@ -196,6 +215,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/IXml.hpp
     ../inc/ZipFileStream.hpp
     ../inc/ZipObject.hpp
+    ${BundleHeaders}
 )
 
 set(LIB_SOURCES
@@ -212,13 +232,12 @@ set(LIB_SOURCES
     UnicodeConversion.cpp
     msix.cpp
     ZipObject.cpp
-    ApplicabilityCommon.cpp
     ${DirectoryObject}
     ${SHA256}
     ${Signature}
     ${XmlParser}
-    ${Applicability}
     ${CompressionObjectCpp}
+    ${BundleSources}
 )
 
 # Copy out public headers
@@ -300,29 +319,31 @@ endif()
 
 if(AOSP)
     target_link_libraries(${PROJECT_NAME} PRIVATE -latomic)
-    find_package(Java REQUIRED)
-    if(NOT ANDROID_SDK)
-        if(NOT DEFINED ENV{ANDROID_HOME})
-            message(FATAL_ERROR "ANDROID_HOME enviroment variable not found.")
+    if(NOT SKIP_BUNDLES) # This will change when we have JNI functionality that is not bundle related.
+        find_package(Java REQUIRED)
+        if(NOT ANDROID_SDK)
+            if(NOT DEFINED ENV{ANDROID_HOME})
+                message(FATAL_ERROR "ANDROID_HOME enviroment variable not found.")
+            endif()
+            set(ANDROID_SDK $ENV{ANDROID_HOME})
         endif()
-        set(ANDROID_SDK $ENV{ANDROID_HOME})
+        if(NOT ANDROID_SDK_VERSION)
+            SET(ANDROID_SDK_VERSION 24)
+        endif()
+        if(ANDROID_SDK_VERSION LESS 24)
+            message(FATAL_ERROR "MSIX minimum Android SDK is 24")
+        endif()
+        include(UseJava)
+        message(STATUS "Android SDK = ${ANDROID_SDK}")
+        add_jar(${PROJECT_NAME}-jni
+            SOURCES
+                PAL/java/com/microsoft/msix/JniHelper.java
+            INCLUDE_JARS
+                ${ANDROID_SDK}/platforms/android-${ANDROID_SDK_VERSION}/android.jar
+            OUTPUT_DIR
+                ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
+            )
     endif()
-    if(NOT ANDROID_SDK_VERSION)
-        SET(ANDROID_SDK_VERSION 24)
-    endif()
-    if(ANDROID_SDK_VERSION LESS 24)
-        message(FATAL_ERROR "MSIX minimum Android SDK is 24")
-    endif()
-    include(UseJava)
-    message(STATUS "Android SDK = ${ANDROID_SDK}")
-    add_jar(${PROJECT_NAME}-jni
-        SOURCES
-            PAL/java/com/microsoft/msix/JniHelper.java
-        INCLUDE_JARS
-            ${ANDROID_SDK}/platforms/android-${ANDROID_SDK_VERSION}/android.jar
-        OUTPUT_DIR
-            ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}
-        )
 endif()
 
 if((IOS) OR (MACOS))
