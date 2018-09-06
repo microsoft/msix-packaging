@@ -29,6 +29,7 @@ set validationParser="-DUSE_VALIDATION_PARSER=off"
 set zlib="-DUSE_SHARED_ZLIB=off"
 set parser="-DXML_PARSER=msxml6"
 set msvc="-DUSE_STATIC_MSVC=off"
+set bundle="-DSKIP_BUNDLES=off"
 
 :parseArgs
 if /I "%~2" == "--debug" (
@@ -58,6 +59,12 @@ if /I "%~2" == "-sz" (
 if /I "%~2" == "-mt" (
     set msvc="-DUSE_STATIC_MSVC=on"
 )
+if /I "%~2" == "--skip-bundles" (
+    set bundle="-DSKIP_BUNDLES=on"
+)
+if /I "%~2" == "-sb" (
+    set bundle="-DSKIP_BUNDLES=on"
+)
 shift /2
 if not "%~2"=="" goto parseArgs
 
@@ -66,8 +73,8 @@ cd .vs
 if exist CMakeFiles rd /s /q CMakeFiles
 if exist CMakeCache.txt del CMakeCache.txt
 
-echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser%  %msvc% -G"NMake Makefiles" ..
-cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %msvc% -G"NMake Makefiles" ..
+echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %msvc% %bundle% -G"NMake Makefiles" ..
+cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %msvc% %bundle% -G"NMake Makefiles" ..
 nmake
 
 goto Exit
@@ -85,6 +92,7 @@ echo    --parser-xerces, -px     = use Xerces-C parser. Default MSXML6.
 echo    --validation-parser, -vp = enable XML schema validation.
 echo    --shared-zlib, -sz       = don't statically link zlib.
 echo    -mt                      = use compiler flag /MT to use static version of the run-time library.
+echo    --skip-bundles, -sb      = turn off bundle support.
 echo    --help, -h, /?           = print this usage information and exit.
 :Exit
 EXIT /B 0

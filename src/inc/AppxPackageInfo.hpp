@@ -7,10 +7,8 @@
 #include "ComHelper.hpp"
 #include "MSIXFactory.hpp"
 #include "Exceptions.hpp"
-#include "Applicability.hpp"
 
 #include <string>
-#include <vector>
 #include <memory>
 
 EXTERN_C const IID IID_IAppxManifestPackageIdInternal;
@@ -33,25 +31,7 @@ public:
     virtual const std::string GetPackageFamilyName() = 0;
 };
 
-EXTERN_C const IID IID_IAppxBundleManifestPackageInfoInternal;
-#ifndef WIN32
-// {32e6fcf0-729b-401d-9dbc-f927b494f9af}
-interface IAppxBundleManifestPackageInfoInternal : public IUnknown
-#else
-#include "Unknwn.h"
-#include "Objidl.h"
-class IAppxBundleManifestPackageInfoInternal : public IUnknown
-#endif
-{
-public:
-    virtual const std::string& GetFileName() = 0;
-    virtual const std::vector<MSIX::Bcp47Tag>& GetLanguages() = 0;
-    virtual const std::uint64_t GetOffset() = 0;
-    virtual bool HasQualifiedResources() = 0;
-};
-
 SpecializeUuidOfImpl(IAppxManifestPackageIdInternal);
-SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoInternal);
 
 namespace MSIX {
 
@@ -151,72 +131,5 @@ namespace MSIX {
         std::string   m_architecture;
         std::string   m_publisherId;
         std::string   m_publisher;
-    };
-
-    class AppxBundleQualifiedResource final : public MSIX::ComClass<AppxBundleQualifiedResource, IAppxManifestQualifiedResource>
-    {
-    public:
-        AppxBundleQualifiedResource(IMsixFactory* factory, const std::string& language) : m_factory(factory), m_language(language) {}
-
-        // IAppxManifestQualifiedResource
-        HRESULT STDMETHODCALLTYPE GetLanguage(LPWSTR *language) noexcept override try
-        {
-            return m_factory->MarshalOutString(m_language, language);
-        } CATCH_RETURN();
-
-        // For now we don't having other resources other than language
-        HRESULT STDMETHODCALLTYPE GetScale(UINT32 *scale) noexcept override
-        {
-            return static_cast<HRESULT>(Error::NotImplemented);
-        }
-
-        HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL *dxFeatureLevel) noexcept override
-        {
-            return static_cast<HRESULT>(Error::NotImplemented);
-        }
-
-    protected:
-        IMsixFactory* m_factory;
-        std::string m_language;
-    };
-
-    class AppxBundleManifestPackageInfo final : public ComClass<AppxBundleManifestPackageInfo, IAppxBundleManifestPackageInfo, IAppxBundleManifestPackageInfoInternal>
-    {
-    public:
-        AppxBundleManifestPackageInfo(
-            IMsixFactory* factory,
-            const std::string& name,
-            const std::string& bundleName,
-            const std::string& version,
-            const std::uint64_t size,
-            const std::uint64_t offset,
-            const std::string& resourceId,
-            const std::string& architecture,
-            const std::string& publisherId,
-            std::vector<Bcp47Tag>& languages,
-            APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType);
-
-        // IAppxBundleManifestPackageInfo
-        HRESULT STDMETHODCALLTYPE GetPackageType(APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE *packageType) noexcept override;
-        HRESULT STDMETHODCALLTYPE GetPackageId(IAppxManifestPackageId **packageId) noexcept override;
-        HRESULT STDMETHODCALLTYPE GetFileName(LPWSTR *fileName) noexcept override;
-        HRESULT STDMETHODCALLTYPE GetOffset(UINT64 *offset) noexcept override;
-        HRESULT STDMETHODCALLTYPE GetSize(UINT64 *size) noexcept override;
-        HRESULT STDMETHODCALLTYPE GetResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept override;
-
-        // IAppxBundleManifestPackageInfoInternal
-        const std::string& GetFileName() override { return m_fileName; }
-        const std::vector<Bcp47Tag>& GetLanguages() override { return m_languages; }
-        const std::uint64_t GetOffset() override { return m_offset; }
-        bool HasQualifiedResources() override { return !m_languages.empty(); }
-
-    private:
-        IMsixFactory* m_factory;
-        std::string m_fileName;
-        ComPtr<IAppxManifestPackageId> m_packageId;
-        std::uint64_t m_size;
-        std::uint64_t m_offset;
-        std::vector<Bcp47Tag> m_languages;
-        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE m_packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
     };
 }

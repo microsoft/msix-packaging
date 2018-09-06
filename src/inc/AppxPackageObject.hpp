@@ -78,12 +78,14 @@ namespace MSIX {
                 AddRef();
                 return S_OK;
             }
+            #ifdef BUNDLE_SUPPORT
             if (riid == UuidOfImpl<IAppxBundleReader>::iid && m_isBundle)
             {
                 *ppvObject = static_cast<void*>(static_cast<IAppxBundleReader*>(this));
                 AddRef();
                 return S_OK;
             }
+            #endif //BUNDLE_SUPPORT
             if (riid == UuidOfImpl<IUnknown>::iid)
             {
                 *ppvObject = static_cast<void*>(reinterpret_cast<IUnknown*>(this));

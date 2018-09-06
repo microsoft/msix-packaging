@@ -8,6 +8,7 @@ version=19
 sdk=
 sdkver=24
 dataCompressionLib=NDK_libz
+bundle=off
 
 usage()
 {
@@ -19,6 +20,7 @@ usage()
     echo $'\t' "-arch Architecture ABI. Default x86"
     echo $'\t' "-b Build type. Default MinSizeRel"
     echo $'\t' "-xzlib Use MSIX SDK Zlib instead of inbox libz.so"
+    echo $'\t' "-sb Skip bundle support."
 }
 
 printsetup()
@@ -30,6 +32,7 @@ printsetup()
     echo "Architecture:" $arch
     echo "Build Type:" $build
     echo "Zlib:" $dataCompressionLib
+    echo "Skip bundle support:" $bundle
 }
 
 while [ "$1" != "" ]; do
@@ -58,8 +61,10 @@ while [ "$1" != "" ]; do
         -sdkver ) shift
                   sdkver=$1
                   ;;
-        * )     usage
-                exit 1
+        -sb )     bundle="on"
+                  ;;
+        * )       usage
+                  exit 1
     esac
     shift
 done
@@ -96,5 +101,5 @@ cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_ARCH_ABI="$arch" \
     -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang \
     -DCMAKE_ANDROID_STL_TYPE=c++_shared \
-    -DCMAKE_BUILD_TYPE="$build" $zlib -DAOSP=on ..
+    -DCMAKE_BUILD_TYPE="$build" $zlib -DSKIP_BUNDLES=$bundle -DAOSP=on ..
 make

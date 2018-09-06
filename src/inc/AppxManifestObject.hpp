@@ -32,22 +32,8 @@ public:
     virtual const MSIX_PLATFORMS GetPlatform() = 0;
 };
 
-EXTERN_C const IID IID_IBundleInfo;
-#ifndef WIN32
-// {ff82ffcd-747a-4df9-8879-853ab9dd15a1}
-interface IBundleInfo : public IUnknown
-#else
-#include "Unknwn.h"
-#include "Objidl.h"
-class IBundleInfo : public IUnknown
-#endif
-{
-public:
-    virtual std::vector<MSIX::ComPtr<IAppxBundleManifestPackageInfo>>& GetPackages() = 0;
-};
 
 SpecializeUuidOfImpl(IAppxManifestObject);
-SpecializeUuidOfImpl(IBundleInfo);
 
 namespace MSIX {
 
@@ -227,31 +213,5 @@ namespace MSIX {
         MSIX_PLATFORMS m_platform = MSIX_PLATFORM_NONE;
         std::vector<ComPtr<IAppxManifestTargetDeviceFamily>> m_tdf;
         ComPtr<IXmlDom> m_dom;
-    };
-
-    class AppxBundleManifestObject final : public ComClass<AppxBundleManifestObject, IAppxBundleManifestReader, IVerifierObject, IBundleInfo>
-    {
-    public:
-        AppxBundleManifestObject(IMsixFactory* factory, const ComPtr<IStream>& stream);
-
-         // IVerifierObject
-        bool HasStream() override { return !!m_stream; }
-        ComPtr<IStream> GetStream() override { return m_stream; }
-        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
-        const std::string& GetPublisher() override { NOTSUPPORTED; }
-
-        // IAppxBundleManifestReader
-        HRESULT STDMETHODCALLTYPE GetPackageId(IAppxManifestPackageId **packageId) noexcept override;
-        HRESULT STDMETHODCALLTYPE GetPackageInfoItems(IAppxBundleManifestPackageInfoEnumerator **packageInfoItems) noexcept override;
-        HRESULT STDMETHODCALLTYPE GetStream(IStream **manifestStream) noexcept override;
-
-        // IBundleInfo
-        std::vector<ComPtr<IAppxBundleManifestPackageInfo>>& GetPackages() override { return m_packages; }
-
-    protected:
-        IMsixFactory* m_factory;
-        ComPtr<IStream> m_stream;
-        ComPtr<IAppxManifestPackageId> m_packageId;
-        std::vector<ComPtr<IAppxBundleManifestPackageInfo>> m_packages;
     };
 }
