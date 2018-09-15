@@ -21,7 +21,7 @@ option(USE_STATIC_MSVC "Windows only. Pass /MT as a compiler flag to use the sta
 option(SKIP_BUNDLES "Removes bundle functionality from the MSIX SDK. Default is 'off'" OFF)
 
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel.  Use the -DCMAKE_BUILD_TYPE=[option] to specify.")
-set(XML_PARSER "" CACHE STRING "Choose the type of parser, options are: [xerces, msxml6].  Use the -DXML_PARSER=[option] to specify.")
+set(XML_PARSER "" CACHE STRING "Choose the type of parser, options are: [xerces, msxml6, javaxml].  Use the -DXML_PARSER=[option] to specify.")
 
 # Default version is 0.0.0
 set(VERSION_MAJOR "0")
@@ -149,6 +149,8 @@ if(NOT XML_PARSER)
     check_include_file_cxx(msxml6.h HAVE_MSXML6)
     if(HAVE_MSXML6)
         set(XML_PARSER msxml6 CACHE STRING "Using msxml6." FORCE)
+    elseif (AOSP)
+        set(XML_PARSER javaxml CACHE STRING "Using javaxml." FORCE)
     else()
         set(XML_PARSER xerces CACHE STRING "Using xerces" FORCE)
     endif()

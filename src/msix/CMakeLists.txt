@@ -16,6 +16,12 @@ if(XML_PARSER MATCHES xerces)
     add_definitions(-DUSING_XERCES=1)
 endif()
 
+if(XML_PARSER MATCHES javaxml)
+    message(STATUS "XML_PARSER defined.  Using javaxml parser." )
+    set(XmlParser PAL/XML/AOSP/XmlObject.cpp)
+    add_definitions(-DUSING_JAVAXML=1)
+endif()
+
 if(XML_PARSER MATCHES msxml6)
     message(STATUS "XML_PARSER defined.  Using MSXML6 XML parser." )
     set(XmlParser PAL/XML/msxml6/XmlObject.cpp)
@@ -116,6 +122,9 @@ else()
             list(APPEND MSIX_EXPORTS
                 "JNI_OnLoad"
             )
+            include_directories(${CMAKE_CURRENT_SOURCE_DIR}/PAL/Interop/AOSP)
+            set(InteropHpp    PAL/Interop/AOSP/JniHelper.hpp)
+            set(InteropCpp    PAL/Interop/AOSP/JniHelper.cpp)
             set(Applicability PAL/Applicability/AOSP/Applicability.cpp)
         endif()
         # on Linux and linux-derived platforms, you use a version script to achieve similar ends.
@@ -215,6 +224,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/IXml.hpp
     ../inc/ZipFileStream.hpp
     ../inc/ZipObject.hpp
+    ${InteropHpp}
     ${BundleHeaders}
 )
 
@@ -237,6 +247,7 @@ set(LIB_SOURCES
     ${Signature}
     ${XmlParser}
     ${CompressionObjectCpp}
+    ${InteropCpp}
     ${BundleSources}
 )
 
@@ -319,7 +330,7 @@ endif()
 
 if(AOSP)
     target_link_libraries(${PROJECT_NAME} PRIVATE -latomic)
-    if(NOT SKIP_BUNDLES) # This will change when we have JNI functionality that is not bundle related.
+    if((NOT SKIP_BUNDLES) OR (XML_PARSER MATCHES javaxml))
         find_package(Java REQUIRED)
         if(NOT ANDROID_SDK)
             if(NOT DEFINED ENV{ANDROID_HOME})
@@ -335,9 +346,20 @@ if(AOSP)
         endif()
         include(UseJava)
         message(STATUS "Android SDK = ${ANDROID_SDK}")
+        set(jar_sources)
+        if(NOT SKIP_BUNDLES)
+            list(APPEND jar_sources PAL/java/com/microsoft/msix/Language.java)
+        endif()
+        if (XML_PARSER MATCHES javaxml)
+            list(APPEND jar_sources
+                PAL/java/com/microsoft/msix/XmlDom.java
+                PAL/java/com/microsoft/msix/XmlElement.java
+                PAL/java/com/microsoft/msix/JavaXmlErrorHandler.java
+                PAL/java/com/microsoft/msix/JavaXmlException.java)
+        endif()
         add_jar(${PROJECT_NAME}-jni
             SOURCES
-                PAL/java/com/microsoft/msix/JniHelper.java
+                ${jar_sources}
             INCLUDE_JARS
                 ${ANDROID_SDK}/platforms/android-${ANDROID_SDK_VERSION}/android.jar
             OUTPUT_DIR

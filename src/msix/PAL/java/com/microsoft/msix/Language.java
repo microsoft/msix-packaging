@@ -10,7 +10,7 @@ import android.os.LocaleList;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JniHelper {
+public class Language {
 
     static public String[] getLanguages() {
         List<String> languageList = new ArrayList<String>();
