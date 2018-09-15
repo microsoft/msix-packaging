@@ -48,47 +48,6 @@ SpecializeUuidOfImpl(IXercesElement);
 
 namespace MSIX {
 
-static std::map<XmlQueryName, std::string> xPaths = {
-    {XmlQueryName::Package_Identity                               ,"/Package/Identity"},
-    {XmlQueryName::BlockMap_File                                  ,"/BlockMap/File"},
-    {XmlQueryName::BlockMap_File_Block                            ,"./Block"},
-    {XmlQueryName::Bundle_Identity                                ,"/Bundle/Identity"},
-    {XmlQueryName::Bundle_Packages_Package                        ,"/Bundle/Packages/Package"},
-    {XmlQueryName::Bundle_Packages_Package_Resources_Resource     ,"./Resources/Resource"},
-    {XmlQueryName::Package_Dependencies_TargetDeviceFamily        ,"/Package/Dependencies/TargetDeviceFamily"},
-    {XmlQueryName::Package_Applications_Application               ,"/Package/Applications/Application"},
-    {XmlQueryName::Package_Properties                             ,"/Package/Properties"},
-    {XmlQueryName::Package_Properties_Description                 ,"./Description"},
-    {XmlQueryName::Package_Properties_DisplayName                 ,"./DisplayName"},
-    {XmlQueryName::Package_Properties_PublisherDisplayName        ,"./PublisherDisplayName"},
-    {XmlQueryName::Package_Properties_Logo                        ,"./Logo"},
-    {XmlQueryName::Package_Properties_Framework                   ,"./Framework"},
-    {XmlQueryName::Package_Properties_ResourcePackage             ,"./ResourcePackage"},
-    {XmlQueryName::Package_Properties_AllowExecution              ,"./AllowExecution"},
-    {XmlQueryName::Package_Dependencies_PackageDependency         ,"/Package/Dependencies/PackageDependency"},
-    {XmlQueryName::Package_Capabilities_Capability                ,"/Package/Capabilities/Capability"},
-    {XmlQueryName::Package_Resources_Resource                     ,"/Package/Resources/Resource"},
-};
-
-static std::map<XmlAttributeName, std::string> attributeNames = {
-    {XmlAttributeName::Name                                       ,"Name"},
-    {XmlAttributeName::ResourceId                                 ,"ResourceId"},
-    {XmlAttributeName::Version                                    ,"Version"},
-    {XmlAttributeName::Size                                       ,"Size"},
-    {XmlAttributeName::Identity_ProcessorArchitecture             ,"ProcessorArchitecture"},
-    {XmlAttributeName::Publisher                                  ,"Publisher"},
-    {XmlAttributeName::BlockMap_File_LocalFileHeaderSize          ,"LfhSize"},    
-    {XmlAttributeName::BlockMap_File_Block_Hash                   ,"Hash"},
-    {XmlAttributeName::Bundle_Package_FileName                    ,"FileName"},
-    {XmlAttributeName::Bundle_Package_Offset                      ,"Offset"},
-    {XmlAttributeName::Bundle_Package_Type                        ,"Type"},
-    {XmlAttributeName::Bundle_Package_Architecture                ,"Architecture"},
-    {XmlAttributeName::Language                                   ,"Language"},
-    {XmlAttributeName::MinVersion                                 ,"MinVersion"},
-    {XmlAttributeName::Dependencies_Tdf_MaxVersionTested          ,"MaxVersionTested"},
-    {XmlAttributeName::Package_Applications_Application_Id        ,"Id"},
-};
-
 class ParsingException final : public XERCES_CPP_NAMESPACE::ErrorHandler
 {
 public:
@@ -265,12 +224,13 @@ public:
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        return GetAttributeValue(attributeNames[attribute]);
+        auto attributeName = utf16_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]);
+        return GetAttributeValue(attributeName);
     }
 
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
     {
-        XercesXMLChPtr nameAttr(XMLString::transcode(attributeNames[attribute].c_str()));
+        XercesXMLChPtr nameAttr(XMLString::transcode(utf16_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]).c_str()));
         XMLSize_t len = 0;
         XercesXMLBytePtr decodedData(XERCES_CPP_NAMESPACE::Base64::decodeToXMLByte(
             m_element->getAttribute(nameAttr.Get()),
@@ -406,7 +366,7 @@ public:
         ComPtr<IXercesElement> element;
         ThrowHrIfFailed(root->QueryInterface(UuidOfImpl<IXercesElement>::iid, reinterpret_cast<void**>(&element)));
 
-        XercesXMLChPtr xPath(XMLString::transcode(xPaths[query].c_str()));
+        XercesXMLChPtr xPath(XMLString::transcode(xPaths[static_cast<uint8_t>(query)]));
         XercesPtr<DOMXPathResult> result(m_parser->getDocument()->evaluate(
             xPath.Get(),
             element->GetElement(),

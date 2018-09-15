@@ -15,6 +15,7 @@
 #include "Log.hpp"
 #include "StreamBase.hpp"
 #include "IXml.hpp"
+#include "Encoding.hpp"
 #include "UnicodeConversion.hpp"
 #include "MSIXResource.hpp"
 #include "Enumerators.hpp"
@@ -114,49 +115,6 @@ SchemaEntry(L"http://schemas.microsoft.com/appx/2016/bundle",                   
 SchemaEntry(L"http://schemas.microsoft.com/appx/2017/bundle",                                            L"b3",              "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd"),
 }};
 
-// must remain in same order as XmlQueryName
-static const wchar_t* xPaths[] = {
-    /* Package_Identity                           */L"/*[local-name()='Package']/*[local-name()='Identity']",
-    /* BlockMap_File                              */L"/*[local-name()='BlockMap']/*[local-name()='File']",
-    /* BlockMap_File_Block                        */L"*[local-name()='Block']",
-    /* Bundle_Identity                            */L"/*[local-name()='Bundle']/*[local-name()='Identity']",
-    /* Bundle_Packages_Package                    */L"/*[local-name()='Bundle']/*[local-name()='Packages']/*[local-name()='Package']",
-    /* Bundle_Packages_Package_Resources_Resource */L"*[local-name()='Resources']/*[local-name()='Resource']",
-    /* Package_Dependencies_TargetDeviceFamily    */L"/*[local-name()='Package']/*[local-name()='Dependencies']/*[local-name()='TargetDeviceFamily']",
-    /* Package_Applications_Application           */L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']",
-    /* Package_Properties                         */L"/*[local-name()='Package']/*[local-name()='Properties']",
-    /* Package_Properties_Description             */L"*[local-name()='Description']",
-    /* Package_Properties_DisplayName             */L"*[local-name()='DisplayName']",
-    /* Package_Properties_PublisherDisplayName    */L"*[local-name()='PublisherDisplayName']",
-    /* Package_Properties_Logo                    */L"*[local-name()='Logo']",
-    /* Package_Properties_Framework               */L"*[local-name()='Framework']",
-    /* Package_Properties_ResourcePackage         */L"*[local-name()='ResourcePackage']",
-    /* Package_Properties_AllowExecution          */L"*[local-name()='AllowExecution']",
-    /* Package_Dependencies_PackageDependency     */L"/*[local-name()='Package']/*[local-name()='Dependencies']/*[local-name()='PackageDependency']",
-    /* Package_Capabilities_Capability            */L"/*[local-name()='Package']/*[local-name()='Capabilities']/*[local-name()='Capability']",
-    /* Package_Resources_Resource                 */L"/*[local-name()='Package']/*[local-name()='Resources']/*[local-name()='Resource']",
-};
-
-// must remain in same order as XmlAttributeName
-static const wchar_t* attributeNames[] = {
-    /* Name                                   */L"Name",
-    /* ResourceId                             */L"ResourceId",
-    /* Version                                */L"Version",
-    /* Size                                   */L"Size",
-    /* Package_Identity_ProcessorArchitecture */L"ProcessorArchitecture",
-    /* Publisher                              */L"Publisher",
-    /* BlockMap_File_LocalFileHeaderSize      */L"LfhSize",
-    /* BlockMap_File_Block_Hash               */L"Hash",
-    /* Bundle_Package_FileName                */L"FileName",
-    /* Bundle_Package_Offset                  */L"Offset",
-    /* Bundle_Package_Type                    */L"Type",
-    /* Bundle_Package_Architecture            */L"Architecture",
-    /* Language                               */L"Language",
-    /* MinVersion                             */L"MinVersion",
-    /* Dependencies_Tdf_MaxVersionTested      */L"MaxVersionTested",
-    /* Package_Applications_Application_Id    */L"Id",
-};
-
 // --------------------------------------------------------
 // MSXML6 specific error codes
 // --------------------------------------------------------
@@ -168,18 +126,6 @@ static const wchar_t* attributeNames[] = {
 #define ELEMENT_EMPTY           0xc00ce011
 // XML_INVALID_CONTENT                 - Element content is invalid according to the DTD/Schema.
 #define INVALID_CONTENT         0xc00ce014
-
-static const std::uint8_t base64DecoderRing[128] =
-{
-    /*    0-15 */ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    /*   16-31 */ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    /*   32-47 */ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   62, 0xFF, 0xFF, 0xFF,   63,
-    /*   48-63 */   52,   53,   54,   55,   56,   57,   58,   59,   60,   61, 0xFF, 0xFF, 0xFF,   64, 0xFF, 0xFF,
-    /*   64-79 */ 0xFF,    0,    1,    2,    3,    4,    5,    6,    7,    8,    9,   10,   11,   12,   13,   14,
-    /*   80-95 */   15,   16,   17,   18,   19,   20,   21,   22,   23,   24,   25, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-    /*  96-111 */ 0xFF,   26,   27,   28,   29,   30,   31,   32,   33,   34,   35,   36,   37,   38,   39,   40,
-    /* 112-127 */   41,   42,   43,   44,   45,   46,   47,   48,   49,   50,   51, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-};
 
 class Bstr
 {
@@ -278,35 +224,8 @@ public:
 
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
     {
-        std::vector<std::uint8_t> result;
-
         auto intermediate = GetAttributeValue(attribute);
-        ThrowErrorIfNot(Error::InvalidParameter, (0 == (intermediate.length() % 4)), "invalid base64 encoding");
-        for(std::size_t index=0; index < intermediate.length(); index += 4)
-        {
-            ThrowErrorIf(Error::InvalidParameter,(
-            (intermediate[index+0] | intermediate[index+1] | intermediate[index+2] | intermediate[index+3]) >= 128
-            ), "invalid base64 encoding");
-
-            ULONG v1 = base64DecoderRing[intermediate[index+0]];
-            ULONG v2 = base64DecoderRing[intermediate[index+1]];
-            ULONG v3 = base64DecoderRing[intermediate[index+2]];
-            ULONG v4 = base64DecoderRing[intermediate[index+3]];
-
-            ThrowErrorIf(Error::InvalidParameter,(((v1 | v2) >= 64) || ((v3 | v4) == 0xFF)), "first two chars of a four char base64 sequence can't be ==, and must be valid");
-            ThrowErrorIf(Error::InvalidParameter,(v3 == 64 && v4 != 64), "if the third char is = then the fourth char must be =");
-            std::size_t byteCount = (v4 != 64 ? 3 : (v3 != 64 ? 2 : 1));
-            result.push_back(static_cast<std::uint8_t>(((v1 << 2) | ((v2 >> 4) & 0x03))));
-            if (byteCount >1)
-            {
-                result.push_back(static_cast<std::uint8_t>(((v2 << 4) | ((v3 >> 2) & 0x0F)) & 0xFF));
-                if (byteCount >2)
-                {
-                    result.push_back(static_cast<std::uint8_t>(((v3 << 6) | ((v4 >> 0) & 0x3F)) & 0xFF));
-                }
-            }
-        }
-        return result;
+        return GetBase64DecodedValue(intermediate);
     }
 
     std::string GetText() override
