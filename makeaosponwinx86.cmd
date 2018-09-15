@@ -11,6 +11,7 @@ cmake -DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang ^
     -DCMAKE_ANDROID_STL_TYPE=c++_shared ^
     -DCMAKE_BUILD_TYPE=Release ^
     -DAOSP=on ^
+    -DXML_PARSER=javaxml ^
     -G"Ninja" ..
 
 ninja

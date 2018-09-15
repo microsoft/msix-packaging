@@ -148,4 +148,48 @@ namespace MSIX {
         output[publisherIdSize] = '\0';
         return std::string(output);
     }
+
+    static const std::uint8_t base64DecoderRing[128] =
+    {
+        /*    0-15 */ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        /*   16-31 */ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        /*   32-47 */ 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,   62, 0xFF, 0xFF, 0xFF,   63,
+        /*   48-63 */   52,   53,   54,   55,   56,   57,   58,   59,   60,   61, 0xFF, 0xFF, 0xFF,   64, 0xFF, 0xFF,
+        /*   64-79 */ 0xFF,    0,    1,    2,    3,    4,    5,    6,    7,    8,    9,   10,   11,   12,   13,   14,
+        /*   80-95 */   15,   16,   17,   18,   19,   20,   21,   22,   23,   24,   25, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+        /*  96-111 */ 0xFF,   26,   27,   28,   29,   30,   31,   32,   33,   34,   35,   36,   37,   38,   39,   40,
+        /* 112-127 */   41,   42,   43,   44,   45,   46,   47,   48,   49,   50,   51, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
+    };
+
+    static std::vector<std::uint8_t> GetBase64DecodedValue(const std::string& value)
+    {
+        std::vector<std::uint8_t> result;
+
+        ThrowErrorIfNot(Error::InvalidParameter, (0 == (value.length() % 4)), "invalid base64 encoding");
+        for(std::size_t index=0; index < value.length(); index += 4)
+        {
+            ThrowErrorIf(Error::InvalidParameter,(
+            (value[index+0] | value[index+1] | value[index+2] | value[index+3]) >= 128
+            ), "invalid base64 encoding");
+
+            ULONG v1 = base64DecoderRing[value[index+0]];
+            ULONG v2 = base64DecoderRing[value[index+1]];
+            ULONG v3 = base64DecoderRing[value[index+2]];
+            ULONG v4 = base64DecoderRing[value[index+3]];
+
+            ThrowErrorIf(Error::InvalidParameter,(((v1 | v2) >= 64) || ((v3 | v4) == 0xFF)), "first two chars of a four char base64 sequence can't be ==, and must be valid");
+            ThrowErrorIf(Error::InvalidParameter,(v3 == 64 && v4 != 64), "if the third char is = then the fourth char must be =");
+            std::size_t byteCount = (v4 != 64 ? 3 : (v3 != 64 ? 2 : 1));
+            result.push_back(static_cast<std::uint8_t>(((v1 << 2) | ((v2 >> 4) & 0x03))));
+            if (byteCount >1)
+            {
+                result.push_back(static_cast<std::uint8_t>(((v2 << 4) | ((v3 >> 2) & 0x0F)) & 0xFF));
+                if (byteCount >2)
+                {
+                    result.push_back(static_cast<std::uint8_t>(((v3 << 6) | ((v4 >> 0) & 0x3F)) & 0xFF));
+                }
+            }
+        }
+        return result;
+    }
 }

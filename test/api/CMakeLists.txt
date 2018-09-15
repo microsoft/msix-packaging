@@ -11,6 +11,10 @@ IF (XML_PARSER MATCHES xerces)
     add_definitions(-DUSING_XERCES=1)
 ENDIF()
 
+if(XML_PARSER MATCHES javaxml)
+    add_definitions(-DUSING_JAVAXML=1)
+endif()
+
 IF (XML_PARSER MATCHES msxml6)
     add_definitions(-DUSING_MSXML=1)
 ENDIF()
