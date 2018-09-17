@@ -609,7 +609,7 @@ namespace MSIX {
         #endif
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxBundleManifestReader **manifestReader) noexcept
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxBundleManifestReader **manifestReader) noexcept try
     {
         #ifdef BUNDLE_SUPPORT
             if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
@@ -619,5 +619,5 @@ namespace MSIX {
         #else
             return static_cast<HRESULT>(MSIX::Error::NotSupported);
         #endif
-    }
+    } CATCH_RETURN();
 }
