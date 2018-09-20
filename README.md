@@ -20,6 +20,11 @@ The MSIX SDK project includes cross platform API support for unpacking of .msix/
 | **makemsix**  | A command line wrapper over the UnpackPackage and UnpackBundle implementations.  This tool exists primarily as a means of validating the implementation of the MSIX SDK internal routines and is compiled for Win32, MacOS, and Linux platforms.|
 
 Guidance on how to package your app contents and construct your app manifest such that it can take advantage of the cross platform support of this SDK is [here](tdf-guidance.md).
+
+## Release Notes
+----------------
+Release notes on the latest features and performance improvements made to the SDK are listed [here](https://docs.microsoft.com/en-us/windows/msix/sdk-release-notes-1.4)
+
 ## Setup Instructions
 ---------------------
 1. Clone the repository:
