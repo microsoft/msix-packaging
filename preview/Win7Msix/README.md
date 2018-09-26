@@ -4,11 +4,11 @@ Copyright (c) 2018 Microsoft Corp. All rights reserved.
 # Description 
 Win7Msix is a preview for the Windows 7 handler for MSIX. The codebase comprises of a Visual Studio solution file that builds Win7MSIXInstaller Application. 
 
-The current prototype includes a user interface that will initiate the extraction of the MSIX package. It will unpack the files in the VFS folder to the local computer, register the application in Add/Remove Programs, places a link to the executable in the Start Menu and generates an uninstallation script, which is an XML file that contains all the directories created, files unpacked and registry keys written. The application can then be uninstalled by removing it from Add\Remove Programs. 
+The current preview includes a user interface that will initiate the extraction of the MSIX package. It will unpack the files in the VFS folder to the local computer, register the application in Add/Remove Programs, places a link to the executable in the Start Menu and generates an uninstallation script, which is an XML file that contains all the directories created, files unpacked and registry keys written. The application can then be uninstalled by removing it from Add\Remove Programs. 
 
 The main folders of interest are the hidden WindowsApps and Uninstallers created in Program Files. WindowsApps contain the extracted packages that have been installed specifically with the directory name being packageFullName. Uninstallers contains all the uninstall scripts that will be used as a parameter for uninstalling the package.
 
-(NOTE: Uninstalling the application from Add/Remove Programs in the prototype requires the Win7MsixInstaller application to be installed using the default settings of the MSI project detailed below.)
+(NOTE: Uninstalling the application from Add/Remove Programs in the Win7Msix preview requires the Win7MsixInstaller application to be installed using the default settings of the MSI project detailed below.)
 
 # Prerequisites
 In order to create the MSI project in Visual Studio, the MSI Installer Projects for Visual Studio must be installed - 
