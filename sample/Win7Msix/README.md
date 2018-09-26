@@ -2,7 +2,7 @@
 Copyright (c) 2018 Microsoft Corp. All rights reserved.
 
 # Description 
-Win7Msix is a prototype for the Windows 7 handler for Msix. The codebase comprises of a Visual Studio solution file that builds Win7MSIXInstaller Application. 
+Win7Msix is a preview for the Windows 7 handler for MSIX. The codebase comprises of a Visual Studio solution file that builds Win7MSIXInstaller Application. 
 
 The current prototype includes a user interface that will initiate the extraction of the MSIX package. It will unpack the files in the VFS folder to the local computer, register the application in Add/Remove Programs, places a link to the executable in the Start Menu and generates an uninstallation script, which is an XML file that contains all the directories created, files unpacked and registry keys written. The application can then be uninstalled by removing it from Add\Remove Programs. 
 
