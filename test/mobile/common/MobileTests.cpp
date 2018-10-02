@@ -84,10 +84,6 @@ static HRESULT RunTest(std::string packageName, std::string unpackFolder, MSIX_V
     if(expectedResult == result)
     {   std::cout << "Succeeded" << std::endl;
     }
-    else if ((expectedResult == 4099) && (result == 4098))
-    {
-        std::cout << "Succeeded for AOSP JavaXml since it always returns 4098 for xml errors" << std::endl;
-    }
     else
     {   std::cout << "Failed" << std::endl;
         g_TestFailed = true;

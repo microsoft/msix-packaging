@@ -22,6 +22,24 @@ if(XML_PARSER MATCHES javaxml)
     add_definitions(-DUSING_JAVAXML=1)
 endif()
 
+if(XML_PARSER MATCHES applexml)
+    message(STATUS "XML_PARSER defined.  Using apple xml parser." )
+    set(XmlParser)
+    list(APPEND XmlParser
+        "PAL/XML/APPLE/XmlObject.cpp"
+        "PAL/XML/APPLE/NSXmlParserDelegateWrapper.mm"
+        "PAL/XML/APPLE/NSXmlParserWrapper.mm"
+        "PAL/XML/APPLE/XmlDocumentReader.cpp"
+    )
+    set(XmlParserHpp)
+    list(APPEND XmlParserHpp
+        "PAL/XML/APPLE/NSXmlParserDelegateWrapper.h"
+        "PAL/XML/APPLE/NSXmlParserWrapper.h"
+        "PAL/XML/APPLE/XmlDocumentReader.hpp"
+    )
+    add_definitions(-DUSING_APPLE_XML=1)
+endif()
+
 if(XML_PARSER MATCHES msxml6)
     message(STATUS "XML_PARSER defined.  Using MSXML6 XML parser." )
     set(XmlParser PAL/XML/msxml6/XmlObject.cpp)
@@ -102,8 +120,13 @@ else()
         # used to get the languages of the device
         find_library(COREFOUNDATION_LIBRARY CoreFoundation)
         if(NOT COREFOUNDATION_LIBRARY)
-            message(FATAL_ERROR "CoreFoundation not found")
+            message(FATAL_ERROR "CoreFoundation library not found")
         endif()
+        find_library(FOUNDATION_LIBRARY Foundation)
+        if(NOT FOUNDATION_LIBRARY)
+            message(FATAL_ERROR "Foundation library not found")
+        endif()
+        find_library (LIBSTDCXX NAMES stdc++)
         set(Applicability PAL/Applicability/Apple/Applicability.cpp)
         if(IOS)
             add_definitions(-DIOS)
@@ -226,6 +249,7 @@ set(LIB_PRIVATE_HEADERS
     ../inc/ZipObject.hpp
     ${InteropHpp}
     ${BundleHeaders}
+    ${XmlParserHpp}
 )
 
 set(LIB_SOURCES
@@ -369,7 +393,7 @@ if(AOSP)
 endif()
 
 if((IOS) OR (MACOS))
-    target_link_libraries(${PROJECT_NAME} PRIVATE ${COREFOUNDATION_LIBRARY})
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${COREFOUNDATION_LIBRARY} ${FOUNDATION_LIBRARY} ${LIBSTDCXX})
 endif()
 
 if(LINUX)

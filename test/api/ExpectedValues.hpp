@@ -12,10 +12,10 @@ static const char* packageToTest = "..\\test\\appx\\TestAppxPackage_Win32.appx";
 static const char* packageToTest = "../test/appx/TestAppxPackage_Win32.appx";
 #endif
 
-#if defined(USING_XERCES) || defined (USING_JAVAXML)
-static const wchar_t* ApplicationXpath = L"/Package/Applications/Application";
-#else
+#if defined(USING_MSXML) 
 static const wchar_t* ApplicationXpath = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']";
+#else
+static const wchar_t* ApplicationXpath = L"/Package/Applications/Application";
 #endif
 
 
