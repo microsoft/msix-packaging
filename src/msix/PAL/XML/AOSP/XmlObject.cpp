@@ -138,17 +138,18 @@ void CheckForJavaXmlParseException(JNIEnv* env)
         std::unique_ptr<_jclass, JObjectDeleter> javaXmlExceptionClass(env->FindClass("com/microsoft/msix/JavaXmlException"));
         if (env->IsInstanceOf(exc.get(), javaXmlExceptionClass.get()) == JNI_TRUE)
         {
-                jmethodID getErrorCodeFunc = env->GetMethodID(javaXmlExceptionClass.get(), "GetErrorCode", "()I");
-                jint errorCode = env->CallIntMethod(exc.get(), getErrorCodeFunc);
+            jmethodID getErrorCodeFunc = env->GetMethodID(javaXmlExceptionClass.get(), "GetErrorCode", "()I");
+            jint errorCode = env->CallIntMethod(exc.get(), getErrorCodeFunc);
 
-                if (errorCode == 0)
-                {
+            if (errorCode == 0)
+            {
                 ThrowError(MSIX::Error::XmlWarning);
-                }
-                else
-                {
-                ThrowError(MSIX::Error::XmlError);
-                }
+            }
+            else
+            {
+                // We treat all other parser errors as fatal.
+                ThrowError(MSIX::Error::XmlFatal);
+            }
         }
 
         std::unique_ptr<_jclass, JObjectDeleter> saxParseExceptionClass(env->FindClass("org/xml/sax/SAXParseException"));
@@ -202,8 +203,7 @@ public:
 
     bool ForEachElementIn(const ComPtr<IXmlElement>& root, XmlQueryName query, XmlVisitor& visitor) override
     {
-        ComPtr<IJavaXmlElement> element;
-        ThrowHrIfFailed(root->QueryInterface(UuidOfImpl<IJavaXmlElement>::iid, reinterpret_cast<void**>(&element)));
+        ComPtr<IJavaXmlElement> element = root.As<IJavaXmlElement>();
 
         std::unique_ptr<_jstring, JObjectDeleter> jquery(m_env->NewStringUTF(xPaths[static_cast<uint8_t>(query)]));
         std::unique_ptr<_jobjectArray, JObjectDeleter> javaElements(reinterpret_cast<jobjectArray>(m_env->CallObjectMethod(m_javaXmlDom.get(), getElementsFunc, element->GetJavaObject(), jquery.get())));
