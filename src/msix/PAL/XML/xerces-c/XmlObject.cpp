@@ -363,8 +363,7 @@ public:
 
     bool ForEachElementIn(const ComPtr<IXmlElement>& root, XmlQueryName query, XmlVisitor& visitor) override
     {
-        ComPtr<IXercesElement> element;
-        ThrowHrIfFailed(root->QueryInterface(UuidOfImpl<IXercesElement>::iid, reinterpret_cast<void**>(&element)));
+        ComPtr<IXercesElement> element = root.As<IXercesElement>();
 
         XercesXMLChPtr xPath(XMLString::transcode(xPaths[static_cast<uint8_t>(query)]));
         XercesPtr<DOMXPathResult> result(m_parser->getDocument()->evaluate(
