@@ -1,12 +1,17 @@
 # Copyright (C) 2017 Microsoft.  All rights reserved.
 # See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 3.1.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 message(STATUS "--------------------------------")
 message(STATUS "MSIX Packaging SDK")
 message(STATUS "--------------------------------")
+
+# specify that this binary is to be built with C++14
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Set build options
 option(WIN32 "Build for Win32"   OFF)
@@ -73,10 +78,10 @@ else()
 endif()
 
 # Set the version number of your project here (format is MAJOR.MINOR.PATCHLEVEL - e.g. 1.0.0)
-set(VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
-message(STATUS "MSIX Packaging SDK version ${VERSION}")
+set(MSIX_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
+message(STATUS "MSIX Packaging SDK version ${MSIX_VERSION}")
 message(STATUS "MSIX Packaging SDK branch name ${GIT_BRANCH_NAME}")
-add_definitions(-DSDK_VERSION="${VERSION}")
+add_definitions(-DSDK_VERSION="${MSIX_VERSION}")
 
 # Configure Package.nuspec
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Package.nuspec.cmakein ${CMAKE_CURRENT_BINARY_DIR}/Package.nuspec CRLF)
@@ -164,7 +169,6 @@ if((CMAKE_BUILD_TYPE MATCHES RelWithDebInfo) OR (CMAKE_BUILD_TYPE MATCHES Releas
 else()
     message(STATUS "NDEBUG NOT defined, assert should be turned-on" )
 endif()
-
 
 if((MACOS) OR (IOS))
     if ((CMAKE_BUILD_TYPE MATCHES Release) OR (CMAKE_BUILD_TYPE MATCHES MinSizeRel))
