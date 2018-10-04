@@ -31,48 +31,47 @@ list(APPEND RESOURCES_BLOCKMAP
     "AppxPackaging/BlockMap/schema/BlockMapSchema2015.xsd"
     "AppxPackaging/BlockMap/schema/BlockMapSchema2017.xsd")
 
-# AppxManifests 
+# AppxManifests. We only use the manifests schemas for Windows using msxml6
+# For other parsers and platforms we only validate is valid xml.
 if(XML_PARSER MATCHES msxml6)
     # Used by AppxManifest and AppxBundleManifest
     list(APPEND RESOURCES_APPXTYPES
-    "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd")
+        "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd")
 
     list(APPEND RESOURCES_APPXMANIFEST
-    "AppxPackaging/Manifest/Schema/2015/AppxPhoneManifestSchema2014.xsd"
-    "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2015/DesktopManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema_v2.xsd"
-    "AppxPackaging/Manifest/Schema/2015/HolographicManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2015/IotManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2015/MobileManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema_v2.xsd"
-    "AppxPackaging/Manifest/Schema/2015/ServerManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v2.xsd"
-    "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v3.xsd"
-    "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema_v2.xsd"
-    "AppxPackaging/Manifest/Schema/2015/XboxManifestSchema.xsd"
-    "AppxPackaging/Manifest/Schema/2016/DesktopManifestSchema_v2.xsd"
-    "AppxPackaging/Manifest/Schema/2016/RestrictedCapabilitiesManifestSchema_v3.xsd"
-    "AppxPackaging/Manifest/Schema/2016/UapManifestSchema_v4.xsd"
-    "AppxPackaging/Manifest/Schema/2016/WindowsCapabilitiesManifestSchema_v3.xsd"
-    "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"
-    "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v3.xsd"
-    "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v4.xsd"
-    "AppxPackaging/Manifest/Schema/2017/IotManifestSchema_v2.xsd"
-    "AppxPackaging/Manifest/Schema/2017/RestrictedCapabilitiesManifestSchema_v4.xsd"
-    "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"
-    "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd")
+        "AppxPackaging/Manifest/Schema/2015/AppxPhoneManifestSchema2014.xsd"
+        "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2015/DesktopManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema_v2.xsd"
+        "AppxPackaging/Manifest/Schema/2015/HolographicManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2015/IotManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2015/MobileManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema_v2.xsd"
+        "AppxPackaging/Manifest/Schema/2015/ServerManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v2.xsd"
+        "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v3.xsd"
+        "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema_v2.xsd"
+        "AppxPackaging/Manifest/Schema/2015/XboxManifestSchema.xsd"
+        "AppxPackaging/Manifest/Schema/2016/DesktopManifestSchema_v2.xsd"
+        "AppxPackaging/Manifest/Schema/2016/RestrictedCapabilitiesManifestSchema_v3.xsd"
+        "AppxPackaging/Manifest/Schema/2016/UapManifestSchema_v4.xsd"
+        "AppxPackaging/Manifest/Schema/2016/WindowsCapabilitiesManifestSchema_v3.xsd"
+        "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"
+        "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v3.xsd"
+        "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v4.xsd"
+        "AppxPackaging/Manifest/Schema/2017/IotManifestSchema_v2.xsd"
+        "AppxPackaging/Manifest/Schema/2017/RestrictedCapabilitiesManifestSchema_v4.xsd"
+        "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"
+        "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd")
 
     list(APPEND RESOURCES_APPXBUNDLEMANIFEST
-    "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"
-    "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"
-    "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd")
-else() # xerces
-    # TODO: make changes required to make the xsds WC3 compliant.
+        "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"
+        "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"
+        "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd")
 endif()
 
 endif(USE_VALIDATION_PARSER)

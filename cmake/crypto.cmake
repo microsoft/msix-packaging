@@ -1,4 +1,4 @@
-cmake_minimum_required( VERSION 3.4.0 )
+cmake_minimum_required( VERSION 3.8.0 )
 # kudos to https://github.com/madwax/3ndparty.cmake.openssl/
 
 include( CMakeParseArguments )
@@ -67,19 +67,11 @@ else()
     add_library(crypto STATIC ${TARGET_SOURCES})
 endif()
 
-# specify that this library is to be built with C++14
-set_property(TARGET crypto PROPERTY CXX_STANDARD 14)
-
-include_directories(
-  ${include_directories}
-  ${OpenSLL_INCLUDE_PATH}
-)
-
 target_include_directories( crypto PRIVATE ${TARGET_INCLUDE_DIRS} ${TARGET_INCLUDE_DIRS_PRIVATE} )
 target_compile_definitions( crypto PRIVATE ${TARGET_DEFINES} ${TARGET_DEFINES_PRIVATE} )
 target_link_libraries     ( crypto PRIVATE ${TARGET_LINK} ${TARGET_LINK_PRIVATE} )
 target_compile_options    ( crypto PRIVATE ${TARGET_COMPILE_FLAGS} ${TARGET_COMPILE_FLAGS_PRIVATE} )
-target_include_directories( crypto PUBLIC  ${TARGET_INCLUDE_DIRS} ${OpenSLL_INCLUDE_PATH}/openssl)
+target_include_directories( crypto PUBLIC  ${TARGET_INCLUDE_DIRS} ${OpenSLL_INCLUDE_PATH} ${OpenSLL_INCLUDE_PATH}/openssl)
 target_compile_definitions( crypto PUBLIC  ${TARGET_DEFINES} )
 target_link_libraries     ( crypto PUBLIC  ${TARGET_LINK} )
 target_compile_options    ( crypto PUBLIC  ${TARGET_COMPILE_FLAGS} )

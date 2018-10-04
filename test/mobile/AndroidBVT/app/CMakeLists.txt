@@ -1,9 +1,12 @@
-cmake_minimum_required(VERSION 3.4.1)
+# Copyright (C) 2017 Microsoft.  All rights reserved.
+# See LICENSE file in the project root for full license information.
+
+cmake_minimum_required(VERSION 3.6.0 FATAL_ERROR)
 
 include_directories(
-	${include_directories}
-	../../common
-	../../../../src/inc
+    ${include_directories}
+    ../../common
+    ../../../../src/inc
 )
 
 add_library(native-lib SHARED
