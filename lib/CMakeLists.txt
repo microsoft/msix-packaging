@@ -41,15 +41,7 @@ if(NOT WIN32)
     set(OpenSLL_BINARY_PATH  "${CMAKE_CURRENT_BINARY_DIR}" )
     set(OpenSLL_INCLUDE_PATH "${CMAKE_CURRENT_BINARY_DIR}" )
 
-    include(GetOpenSSLRevisionDescription)
-    get_openssl_describe(OpenSSL_DESCRIPTION)
-    message(STATUS "OpenSSL Description '${OpenSSL_DESCRIPTION}'" )
-
-    string(REGEX MATCH "OpenSSL_([0-9]*)_([0-9]*)_([0-9]*)" _dummy1 "${OpenSSL_DESCRIPTION}")
-    set(OpenSSL_MAJOR ${CMAKE_MATCH_1})
-    set(OpenSSL_MINOR ${CMAKE_MATCH_2})
-    set(OpenSSL_PATCH ${CMAKE_MATCH_3})
-    set(OpenSLL_VERSION "${OpenSSL_MAJOR}.${OpenSSL_MINOR}.${OpenSSL_PATCH}")
+    set(OpenSLL_VERSION "1.0.2")
 
     set(OpenSSL_COMPILER_DEFINES OPENSSL_NO_ASM)
     # we include which means you need to use "OpenSSL_X_PATH" for your paths.
