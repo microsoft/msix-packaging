@@ -2,8 +2,6 @@
 //  Copyright (C) 2017 Microsoft.  All rights reserved.
 //  See LICENSE file in the project root for full license information.
 // 
-// ONLY build on platforms other than Win32
-#ifndef WIN32
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "DirectoryObject.hpp"
@@ -13,7 +11,7 @@
 #include <fts.h>
 
 namespace MSIX {
-    
+
     std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
     {
         // TODO: Implement when standing-up the pack side for test validation purposes
@@ -27,7 +25,7 @@ namespace MSIX {
     }
     
     const char* DirectoryObject::GetPathSeparator() { return "/"; }
-    
+
     #define DEFAULT_MODE S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
     void mkdirp(std::string& path, mode_t mode = DEFAULT_MODE)
     {
@@ -44,7 +42,7 @@ namespace MSIX {
             p++;
         }
     }
-    
+
     ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
     {
         std::string name = m_root + "/" + fileName;
@@ -55,4 +53,3 @@ namespace MSIX {
         return result;
     }
 }
-#endif
