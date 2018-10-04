@@ -14,7 +14,7 @@
 0.12 -  Implement identity enforcement during signature validation, add logging mechanism specifically to
         reduce the cost associated with diagnosing BVT failures, plus various BVT test fixes and cleanup.
 
-0.13 -  Fixed a version numbering problem with releases in this text. Also, now with iOS builds, plus a number of other changes.
+0.13 -  Fixed a version numbering problem with releases in this text.  Also, now with iOS builds, plus a number of other changes:
 
 1.0  -  API rename, and small cleanup
 
@@ -25,6 +25,8 @@
 1.3  -  Improved bundle support/samples, implementation of some public interfaces from the AppxPackaging SDK and more general fixes.
 
 1.4  -  Support for FlatBundles. Use inbox implementation of zlib for MacOS/iOS and AOSP. General fixes and improvements.
+
+1.5  -  Use inbox implementation of parser for MacOS/iOS and AOSP.
     </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
     <tags>MSIX Appx AppxPackaging native</tags>
