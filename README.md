@@ -29,10 +29,6 @@ Release notes on the latest features and performance improvements made to the SD
 ---------------------
 1. Clone the repository:
         ```git clone [URL]```
-        
-2. Initialize git submodules:
-        ```git submodule init
-        git submodule update```
 
 ## Issues
 ---------
@@ -47,16 +43,13 @@ If you are using Visual Studio 2017 and you run into errors about not being able
 Depending on the platform for which the MSIX shared library (MSIX.DLL | libmsix.dylib | libmsix.so) is compiled, one or 
 more of the following dependencies may be statically linked into the binary:
 
-* [ZLib](https://github.com/madler/zlib)
-* [Xerces-C](https://github.com/apache/xerces-c)
-* [OpenSSL](https://github.com/openssl/openssl)
+* [ZLib Tag v1.2.11 Commit cacf7f1d4e3d44d871b605da3b647f07d718623f](https://github.com/madler/zlib/releases/tag/v1.2.11)
+* [Xerces-C Tag Xerces-C_3_2_0 Commit dffc3028df8ea44985c92f2df28115860e39e344](https://github.com/apache/xerces-c/releases/tag/Xerces-C_3_2_0)
+* [OpenSSL Tag OpenSSL_1_0_2m Commit 8b1549a153a62e9878327d05aa3b6622b416ec10](https://github.com/openssl/openssl/releases/tag/OpenSSL_1_0_2m)
 * [Android NDK](https://developer.android.com/ndk)
 
-For convinience, Zlib and Xerces-C are git-subtrees that are mapped in under the lib folder of this project.  Edits on top
-of these subtrees for build related optimizations are tracked within this repository.
-
-OpenSSL is mapped in under the lib folder as a git-submodule.  For a variety of reasons, the MSIX project only uses OpenSSL on
-non-Windows platforms, and only (at the time of creation) the latest version of the 1.0.2 release (specifically as tracked via tag "OpenSSL_1_0_2m").
+For convinience, Zlib, Xerces-C and OpenSSL are git-subtrees that are mapped in under the lib folder of this project.  Edits on top
+of these subtrees for build related optimizations are tracked within this repository. OpenSSL is only used on non-Windows platforms
 
 The Android NDK is only required for targeting the Android platform.
 
