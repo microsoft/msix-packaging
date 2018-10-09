@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>Microsoft.MSIX.Packaging</id>
-    <version>${VERSION}</version>
+    <version>${MSIX_VERSION}</version>
     <authors>psmith@microsoft.com, rubengu@microsoft.com, adrian.mascarenhas@microsoft.com</authors>
     <owners>MSIXPackagingOSSCustomerQs@service.microsoft.com</owners>
     <projectUrl>https://github.com/Microsoft/msix-packaging</projectUrl>
