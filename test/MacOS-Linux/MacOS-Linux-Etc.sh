@@ -138,6 +138,8 @@ ValidateResult ExpectedResult/$directory/FlatBundleWithAsset.txt
 
 CleanupUnpackFolder
 
+RunTest 0 ./../appx/महसुस/StoreSigned_Desktop_x64_MoviesTV.appx
+
 RunTest 0  ./../appx/StoreSigned_Desktop_x64_MoviesTV.appx
 ValidateResult ExpectedResult/$directory/StoreSigned_Desktop_x64_MoviesTV.txt
 

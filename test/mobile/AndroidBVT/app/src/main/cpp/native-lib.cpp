@@ -80,6 +80,7 @@ Java_com_microsoft_androidbvt_MainActivity_RunTests(JNIEnv* env, jobject /* this
     CopyFilesFromAssets(env, assetManager, filePath, "BlockMap");
     CopyFilesFromAssets(env, assetManager, filePath, "bundles");
     CopyFilesFromAssets(env, assetManager, filePath, "flat");
+    CopyFilesFromAssets(env, assetManager, filePath, "महसुस");
     signed long hr = RunTests(const_cast<char*>(filePath.c_str()), const_cast<char*>(filePath.c_str()));
     if(hr == 0)
     {

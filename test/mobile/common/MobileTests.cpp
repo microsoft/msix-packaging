@@ -125,6 +125,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
     hr = RunTest(source + "SignedUntrustedCert-CERT_E_CHAINING.appx", unpackFolder, full, 66);
     hr = RunTest(source + "StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, full, 0);
+    hr = RunTest(source + "महसुस/StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, full, 0);
     hr = RunTest(source + "TestAppxPackage_Win32.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "TestAppxPackage_x64.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx", unpackFolder, full, 18);
