@@ -112,6 +112,16 @@
     typedef const WCHAR* LPCWSTR;
     #endif
 
+    #ifndef _LPSTR_DEFINED
+    #define _LPSTR_DEFINED
+    typedef char* LPSTR;
+    #endif
+
+    #ifndef _LPCSTR_DEFINED
+    #define _LPCSTR_DEFINED
+    typedef const char* LPCSTR;
+    #endif
+
     #ifndef _BYTE_DEFINED
     #define _BYTE_DEFINED
     typedef unsigned char BYTE;
@@ -252,6 +262,10 @@
 
     #ifndef E_NOTIMPL
     #define E_NOTIMPL 0x80004001
+    #endif
+
+    #ifndef E_BOUNDS
+    #define E_BOUNDS 0x8000000b
     #endif
 
     #if !defined (_SYS_GUID_OPERATORS_)

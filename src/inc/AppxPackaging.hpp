@@ -1121,6 +1121,7 @@ interface IMsixElement;
 interface IMsixElementEnumerator;
 interface IMsixFactoryOverrides;
 interface IMsixStreamFactory;
+interface IMsixApplicabilityLanguagesEnumerator;
 
 #ifndef __IMsixDocumentElement_INTERFACE_DEFINED__
 #define __IMsixDocumentElement_INTERFACE_DEFINED__
@@ -1177,6 +1178,7 @@ EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixFactoryOverrides;
         enum MSIX_FACTORY_EXTENSION
     {
         MSIX_FACTORY_EXTENSION_STREAM_FACTORY = 0x1,
+        MSIX_FACTORY_EXTENSION_APPLICABILITY_LANGUAGES = 0x2,
     } 	MSIX_FACTORY_EXTENSION;
 
     // {0acedbdb-57cd-4aca-8cee-33fa52394316}
@@ -1203,6 +1205,25 @@ EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixStreamFactory;
 
 #endif  /* __IMsixStreamFactory_INTERFACE_DEFINED__ */
 
+#ifndef __IMsixApplicabilityLanguagesEnumerator_INTERFACE_DEFINED__
+#define __IMsixApplicabilityLanguagesEnumerator_INTERFACE_DEFINED__
+
+EXTERN_C DECLSPEC_SELECTANY const IID IID_IMsixApplicabilityLanguagesEnumerator;
+
+    // {BFC4655A-BE7A-456A-BC4E-2AF9481E8432}
+    interface IMsixApplicabilityLanguagesEnumerator : public IUnknown
+    {
+        virtual HRESULT STDMETHODCALLTYPE GetCurrent(
+            /* [retval][string][out] */ LPCSTR *bcp47Language) = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(
+            /* [retval][out] */  BOOL *hasCurrent) = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE MoveNext(
+            /* [retval][out] */  BOOL *hasNext) = 0;
+    };
+
+#endif  /* __IMsixApplicabilityLanguagesEnumerator_INTERFACE_DEFINED__ */
 
 extern "C++" {
 typedef /* [v1_enum] */
@@ -1386,5 +1407,6 @@ SpecializeUuidOfImpl(IMsixElement);
 SpecializeUuidOfImpl(IMsixElementEnumerator);
 SpecializeUuidOfImpl(IMsixFactoryOverrides);
 SpecializeUuidOfImpl(IMsixStreamFactory);
+SpecializeUuidOfImpl(IMsixApplicabilityLanguagesEnumerator);
 
 #endif //__appxpackaging_hpp__

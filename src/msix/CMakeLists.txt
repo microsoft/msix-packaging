@@ -98,6 +98,7 @@ else()
         "IID_IMsixElementEnumerator"
         "IID_IMsixFactoryOverrides"
         "IID_IMsixStreamFactory"
+        "IID_IMsixApplicabilityLanguagesEnumerator"
     )
     if((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported

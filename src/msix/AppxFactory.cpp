@@ -186,6 +186,10 @@ namespace MSIX {
         {
             ThrowHrIfFailed(extension->QueryInterface(UuidOfImpl<IMsixStreamFactory>::iid, reinterpret_cast<void**>(&m_streamFactory)));
         }
+        else if (name == MSIX_FACTORY_EXTENSION_APPLICABILITY_LANGUAGES)
+        {
+            ThrowHrIfFailed(extension->QueryInterface(UuidOfImpl<IMsixApplicabilityLanguagesEnumerator>::iid, reinterpret_cast<void**>(&m_applicabilityLanguagesEnumerator)));
+        }
         else
         {
             return static_cast<HRESULT>(Error::InvalidParameter);
@@ -203,6 +207,13 @@ namespace MSIX {
             if (m_streamFactory.Get() != nullptr)
             {
                 *extension = m_streamFactory.As<IUnknown>().Detach();
+            }
+        }
+        else if (name == MSIX_FACTORY_EXTENSION_APPLICABILITY_LANGUAGES)
+        {
+            if (m_applicabilityLanguagesEnumerator.Get() != nullptr)
+            {
+                *extension = m_applicabilityLanguagesEnumerator.As<IUnknown>().Detach();
             }
         }
         else
