@@ -190,6 +190,7 @@ include(msix_resources)
 set(LIB_PUBLIC_HEADERS
     ../inc/AppxPackaging.hpp
     ../inc/MSIXWindows.hpp
+    ../inc/MsixErrors.hpp
 )
 
 # Bundle specific files
@@ -229,6 +230,7 @@ add_library(${PROJECT_NAME} SHARED
 # Copy out public headers to <binary dir>/src/msix
 configure_file(../inc/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
 configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
+configure_file(../inc/MsixErrors.hpp ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
 
 # Linker and includes
 # Include MSIX headers
