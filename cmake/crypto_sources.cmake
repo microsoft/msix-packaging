@@ -6,7 +6,6 @@ list(APPEND XSRC
     ${CRYPTO}/cpt_err.c
     ${CRYPTO}/cryptlib.c
     ${CRYPTO}/cversion.c
-    ${CRYPTO}/ebcdic.c
     ${CRYPTO}/ex_data.c
     ${CRYPTO}/mem.c
     ${CRYPTO}/mem_clr.c
@@ -105,15 +104,8 @@ list(APPEND XSRC
     ${CRYPTO}/asn1/x_x509.c
     ${CRYPTO}/asn1/x_x509a.c
 
-    ${CRYPTO}/bf/bf_cfb64.c
-    ${CRYPTO}/bf/bf_ecb.c
-    ${CRYPTO}/bf/bf_enc.c
-    ${CRYPTO}/bf/bf_ofb64.c
-    ${CRYPTO}/bf/bf_skey.c
-
     ${CRYPTO}/bio/b_dump.c
     ${CRYPTO}/bio/b_print.c
-    ${CRYPTO}/bio/b_sock.c
     ${CRYPTO}/bio/bf_buff.c
     ${CRYPTO}/bio/bf_nbio.c
     ${CRYPTO}/bio/bf_null.c
@@ -123,21 +115,17 @@ list(APPEND XSRC
     ${CRYPTO}/bio/bss_acpt.c
     ${CRYPTO}/bio/bss_bio.c
     ${CRYPTO}/bio/bss_conn.c
-    ${CRYPTO}/bio/bss_dgram.c
     ${CRYPTO}/bio/bss_fd.c
     ${CRYPTO}/bio/bss_file.c
     ${CRYPTO}/bio/bss_log.c
     ${CRYPTO}/bio/bss_mem.c
     ${CRYPTO}/bio/bss_null.c
-    ${CRYPTO}/bio/bss_sock.c
-    # ${CRYPTO}/bio/bf_lbuf.c
 
     ${CRYPTO}/bn/bn_add.c
     ${CRYPTO}/bn/bn_asm.c
     ${CRYPTO}/bn/bn_blind.c
     ${CRYPTO}/bn/bn_const.c
     ${CRYPTO}/bn/bn_ctx.c
-    ${CRYPTO}/bn/bn_depr.c
     ${CRYPTO}/bn/bn_div.c
     ${CRYPTO}/bn/bn_err.c
     ${CRYPTO}/bn/bn_exp.c
@@ -164,42 +152,8 @@ list(APPEND XSRC
     ${CRYPTO}/buffer/buf_str.c
     ${CRYPTO}/buffer/buffer.c
 
-    ${CRYPTO}/camellia/camellia.c
-    ${CRYPTO}/camellia/cmll_cbc.c
-    ${CRYPTO}/camellia/cmll_cfb.c
-    ${CRYPTO}/camellia/cmll_ctr.c
-    ${CRYPTO}/camellia/cmll_ecb.c
-    ${CRYPTO}/camellia/cmll_misc.c
-    ${CRYPTO}/camellia/cmll_ofb.c
-    ${CRYPTO}/camellia/cmll_utl.c
-
-    ${CRYPTO}/cast/c_cfb64.c
-    ${CRYPTO}/cast/c_ecb.c
-    ${CRYPTO}/cast/c_enc.c
-    ${CRYPTO}/cast/c_ofb64.c
-    ${CRYPTO}/cast/c_skey.c
-
-    ${CRYPTO}/cmac/cm_ameth.c
-    ${CRYPTO}/cmac/cm_pmeth.c
-    ${CRYPTO}/cmac/cmac.c
-
-    ${CRYPTO}/cms/cms_asn1.c
-    ${CRYPTO}/cms/cms_att.c
-    ${CRYPTO}/cms/cms_cd.c
-    ${CRYPTO}/cms/cms_dd.c
-    ${CRYPTO}/cms/cms_enc.c
-    ${CRYPTO}/cms/cms_env.c
-    ${CRYPTO}/cms/cms_err.c
-    ${CRYPTO}/cms/cms_ess.c
-    ${CRYPTO}/cms/cms_io.c
-    ${CRYPTO}/cms/cms_kari.c
-    ${CRYPTO}/cms/cms_lib.c
-    ${CRYPTO}/cms/cms_pwri.c
-    ${CRYPTO}/cms/cms_sd.c
-    ${CRYPTO}/cms/cms_smime.c
 
     ${CRYPTO}/comp/c_rle.c
-    ${CRYPTO}/comp/c_zlib.c
     ${CRYPTO}/comp/comp_err.c
     ${CRYPTO}/comp/comp_lib.c
 
@@ -211,59 +165,6 @@ list(APPEND XSRC
     ${CRYPTO}/conf/conf_mod.c
     ${CRYPTO}/conf/conf_sap.c
 
-    ${CRYPTO}/des/cbc_cksm.c
-    ${CRYPTO}/des/cbc_enc.c
-    ${CRYPTO}/des/cfb64ede.c
-    ${CRYPTO}/des/cfb64enc.c
-    ${CRYPTO}/des/cfb_enc.c
-    ${CRYPTO}/des/des_enc.c
-    ${CRYPTO}/des/des_old.c
-    ${CRYPTO}/des/des_old2.c
-    ${CRYPTO}/des/ecb3_enc.c
-    ${CRYPTO}/des/ecb_enc.c
-    ${CRYPTO}/des/ede_cbcm_enc.c
-    ${CRYPTO}/des/enc_read.c
-    ${CRYPTO}/des/enc_writ.c
-    ${CRYPTO}/des/fcrypt.c
-    ${CRYPTO}/des/fcrypt_b.c
-    ${CRYPTO}/des/ofb64ede.c
-    ${CRYPTO}/des/ofb64enc.c
-    ${CRYPTO}/des/ofb_enc.c
-    ${CRYPTO}/des/pcbc_enc.c
-    ${CRYPTO}/des/qud_cksm.c
-    ${CRYPTO}/des/rand_key.c
-    ${CRYPTO}/des/read2pwd.c
-    ${CRYPTO}/des/rpc_enc.c
-    ${CRYPTO}/des/set_key.c
-    ${CRYPTO}/des/str2key.c
-    ${CRYPTO}/des/xcbc_enc.c
-
-    ${CRYPTO}/dh/dh_ameth.c
-    ${CRYPTO}/dh/dh_asn1.c
-    ${CRYPTO}/dh/dh_check.c
-    ${CRYPTO}/dh/dh_depr.c
-    ${CRYPTO}/dh/dh_err.c
-    ${CRYPTO}/dh/dh_gen.c
-    ${CRYPTO}/dh/dh_kdf.c
-    ${CRYPTO}/dh/dh_key.c
-    ${CRYPTO}/dh/dh_lib.c
-    ${CRYPTO}/dh/dh_pmeth.c
-    ${CRYPTO}/dh/dh_prn.c
-    ${CRYPTO}/dh/dh_rfc5114.c
-
-    ${CRYPTO}/dsa/dsa_ameth.c
-    ${CRYPTO}/dsa/dsa_asn1.c
-    ${CRYPTO}/dsa/dsa_depr.c
-    ${CRYPTO}/dsa/dsa_err.c
-    ${CRYPTO}/dsa/dsa_gen.c
-    ${CRYPTO}/dsa/dsa_key.c
-    ${CRYPTO}/dsa/dsa_lib.c
-    ${CRYPTO}/dsa/dsa_ossl.c
-    ${CRYPTO}/dsa/dsa_pmeth.c
-    ${CRYPTO}/dsa/dsa_prn.c
-    ${CRYPTO}/dsa/dsa_sign.c
-    ${CRYPTO}/dsa/dsa_vrf.c
-
     ${CRYPTO}/dso/dso_beos.c
     ${CRYPTO}/dso/dso_dl.c
     ${CRYPTO}/dso/dso_dlfcn.c
@@ -271,67 +172,6 @@ list(APPEND XSRC
     ${CRYPTO}/dso/dso_lib.c
     ${CRYPTO}/dso/dso_null.c
     ${CRYPTO}/dso/dso_openssl.c
-    # ${CRYPTO}/dso/dso_win32.c <- will use PKI stack instead
-
-    ${CRYPTO}/ec/ec2_mult.c
-    ${CRYPTO}/ec/ec2_oct.c
-    ${CRYPTO}/ec/ec2_smpl.c
-    ${CRYPTO}/ec/ec_ameth.c
-    ${CRYPTO}/ec/ec_asn1.c
-    ${CRYPTO}/ec/ec_check.c
-    ${CRYPTO}/ec/ec_curve.c
-    ${CRYPTO}/ec/ec_cvt.c
-    ${CRYPTO}/ec/ec_err.c
-    ${CRYPTO}/ec/ec_key.c
-    ${CRYPTO}/ec/ec_lib.c
-    ${CRYPTO}/ec/ec_mult.c
-    ${CRYPTO}/ec/ec_oct.c
-    ${CRYPTO}/ec/ec_pmeth.c
-    ${CRYPTO}/ec/ec_print.c
-    ${CRYPTO}/ec/eck_prn.c
-    ${CRYPTO}/ec/ecp_mont.c
-    ${CRYPTO}/ec/ecp_nist.c
-    ${CRYPTO}/ec/ecp_oct.c
-    ${CRYPTO}/ec/ecp_smpl.c
-
-    ${CRYPTO}/ecdh/ech_err.c
-    ${CRYPTO}/ecdh/ech_kdf.c
-    ${CRYPTO}/ecdh/ech_key.c
-    ${CRYPTO}/ecdh/ech_lib.c
-    ${CRYPTO}/ecdh/ech_ossl.c
-
-    ${CRYPTO}/ecdsa/ecs_asn1.c
-    ${CRYPTO}/ecdsa/ecs_err.c
-    ${CRYPTO}/ecdsa/ecs_lib.c
-    ${CRYPTO}/ecdsa/ecs_ossl.c
-    ${CRYPTO}/ecdsa/ecs_sign.c
-    ${CRYPTO}/ecdsa/ecs_vrf.c
-
-    ${CRYPTO}/engine/eng_all.c
-    ${CRYPTO}/engine/eng_cnf.c
-    ${CRYPTO}/engine/eng_cryptodev.c
-    ${CRYPTO}/engine/eng_ctrl.c
-    ${CRYPTO}/engine/eng_dyn.c
-    ${CRYPTO}/engine/eng_err.c
-    ${CRYPTO}/engine/eng_fat.c
-    ${CRYPTO}/engine/eng_init.c
-    ${CRYPTO}/engine/eng_lib.c
-    ${CRYPTO}/engine/eng_list.c
-    ${CRYPTO}/engine/eng_openssl.c
-    ${CRYPTO}/engine/eng_pkey.c
-    ${CRYPTO}/engine/eng_rdrand.c
-    ${CRYPTO}/engine/eng_table.c
-    ${CRYPTO}/engine/tb_asnmth.c
-    ${CRYPTO}/engine/tb_cipher.c
-    ${CRYPTO}/engine/tb_dh.c
-    ${CRYPTO}/engine/tb_digest.c
-    ${CRYPTO}/engine/tb_dsa.c
-    ${CRYPTO}/engine/tb_ecdh.c
-    ${CRYPTO}/engine/tb_ecdsa.c
-    ${CRYPTO}/engine/tb_pkmeth.c
-    ${CRYPTO}/engine/tb_rand.c
-    ${CRYPTO}/engine/tb_rsa.c
-    ${CRYPTO}/engine/tb_store.c
 
     ${CRYPTO}/err/err.c
     ${CRYPTO}/err/err_all.c
@@ -348,20 +188,9 @@ list(APPEND XSRC
     ${CRYPTO}/evp/e_aes.c
     ${CRYPTO}/evp/e_aes_cbc_hmac_sha1.c
     ${CRYPTO}/evp/e_aes_cbc_hmac_sha256.c
-    ${CRYPTO}/evp/e_bf.c
-    ${CRYPTO}/evp/e_camellia.c
-    ${CRYPTO}/evp/e_cast.c
-    ${CRYPTO}/evp/e_des.c
-    ${CRYPTO}/evp/e_des3.c
-    ${CRYPTO}/evp/e_idea.c
-    ${CRYPTO}/evp/e_null.c
+     ${CRYPTO}/evp/e_null.c
     ${CRYPTO}/evp/e_old.c
-    ${CRYPTO}/evp/e_rc2.c
-    ${CRYPTO}/evp/e_rc4.c
     ${CRYPTO}/evp/e_rc4_hmac_md5.c
-    ${CRYPTO}/evp/e_rc5.c
-    ${CRYPTO}/evp/e_seed.c
-    ${CRYPTO}/evp/e_xcbc_d.c
     ${CRYPTO}/evp/encode.c
     ${CRYPTO}/evp/evp_acnf.c
     ${CRYPTO}/evp/evp_cnf.c
@@ -373,13 +202,8 @@ list(APPEND XSRC
     ${CRYPTO}/evp/evp_pkey.c
     ${CRYPTO}/evp/m_dss.c
     ${CRYPTO}/evp/m_dss1.c
-    ${CRYPTO}/evp/m_ecdsa.c
-    ${CRYPTO}/evp/m_md2.c
-    ${CRYPTO}/evp/m_md4.c
     ${CRYPTO}/evp/m_md5.c
-    ${CRYPTO}/evp/m_mdc2.c
     ${CRYPTO}/evp/m_null.c
-    ${CRYPTO}/evp/m_ripemd.c
     ${CRYPTO}/evp/m_sha.c
     ${CRYPTO}/evp/m_sha1.c
     ${CRYPTO}/evp/m_sigver.c
@@ -402,25 +226,11 @@ list(APPEND XSRC
     ${CRYPTO}/hmac/hm_pmeth.c
     ${CRYPTO}/hmac/hmac.c
 
-    ${CRYPTO}/idea/i_cbc.c
-    ${CRYPTO}/idea/i_cfb64.c
-    ${CRYPTO}/idea/i_ecb.c
-    ${CRYPTO}/idea/i_ofb64.c
-    ${CRYPTO}/idea/i_skey.c
-
-    ${CRYPTO}/krb5/krb5_asn.c
-
     ${CRYPTO}/lhash/lh_stats.c
     ${CRYPTO}/lhash/lhash.c
 
-    ${CRYPTO}/md4/md4_dgst.c
-    ${CRYPTO}/md4/md4_one.c
-
     ${CRYPTO}/md5/md5_dgst.c
     ${CRYPTO}/md5/md5_one.c
-
-    ${CRYPTO}/mdc2/mdc2_one.c
-    ${CRYPTO}/mdc2/mdc2dgst.c
 
     ${CRYPTO}/modes/cbc128.c
     ${CRYPTO}/modes/ccm128.c
@@ -440,13 +250,8 @@ list(APPEND XSRC
 
     ${CRYPTO}/ocsp/ocsp_asn.c
     ${CRYPTO}/ocsp/ocsp_cl.c
-    ${CRYPTO}/ocsp/ocsp_err.c
-    ${CRYPTO}/ocsp/ocsp_ext.c
     ${CRYPTO}/ocsp/ocsp_ht.c
     ${CRYPTO}/ocsp/ocsp_lib.c
-    ${CRYPTO}/ocsp/ocsp_prn.c
-    ${CRYPTO}/ocsp/ocsp_srv.c
-    ${CRYPTO}/ocsp/ocsp_vfy.c
 
     ${CRYPTO}/pem/pem_all.c
     ${CRYPTO}/pem/pem_err.c
@@ -459,7 +264,6 @@ list(APPEND XSRC
     ${CRYPTO}/pem/pem_sign.c
     ${CRYPTO}/pem/pem_x509.c
     ${CRYPTO}/pem/pem_xaux.c
-    ${CRYPTO}/pem/pvkfmt.c
 
     ${CRYPTO}/pkcs12/p12_add.c
     ${CRYPTO}/pkcs12/p12_asn.c
@@ -492,36 +296,13 @@ list(APPEND XSRC
     ${CRYPTO}/rand/rand_egd.c
     ${CRYPTO}/rand/rand_err.c
     ${CRYPTO}/rand/rand_lib.c
-    ${CRYPTO}/rand/rand_nw.c
-    ${CRYPTO}/rand/rand_os2.c
     ${CRYPTO}/rand/rand_unix.c
     ${CRYPTO}/rand/randfile.c
-    #${CRYPTO}/rand/rand_win.c <- will use PKI stack instead
-
-    ${CRYPTO}/rc2/rc2_cbc.c
-    ${CRYPTO}/rc2/rc2_ecb.c
-    ${CRYPTO}/rc2/rc2_skey.c
-    ${CRYPTO}/rc2/rc2cfb64.c
-    ${CRYPTO}/rc2/rc2ofb64.c
-
-    ${CRYPTO}/rc4/rc4_enc.c
-    ${CRYPTO}/rc4/rc4_skey.c
-    ${CRYPTO}/rc4/rc4_utl.c
-
-    ${CRYPTO}/rc5/rc5_ecb.c
-    ${CRYPTO}/rc5/rc5_enc.c
-    ${CRYPTO}/rc5/rc5_skey.c
-    ${CRYPTO}/rc5/rc5cfb64.c
-    ${CRYPTO}/rc5/rc5ofb64.c
-
-    ${CRYPTO}/ripemd/rmd_dgst.c
-    ${CRYPTO}/ripemd/rmd_one.c
 
     ${CRYPTO}/rsa/rsa_ameth.c
     ${CRYPTO}/rsa/rsa_asn1.c
     ${CRYPTO}/rsa/rsa_chk.c
     ${CRYPTO}/rsa/rsa_crpt.c
-    ${CRYPTO}/rsa/rsa_depr.c
     ${CRYPTO}/rsa/rsa_eay.c
     ${CRYPTO}/rsa/rsa_err.c
     ${CRYPTO}/rsa/rsa_gen.c
@@ -538,21 +319,12 @@ list(APPEND XSRC
     ${CRYPTO}/rsa/rsa_ssl.c
     ${CRYPTO}/rsa/rsa_x931.c
 
-    ${CRYPTO}/seed/seed.c
-    ${CRYPTO}/seed/seed_cbc.c
-    ${CRYPTO}/seed/seed_cfb.c
-    ${CRYPTO}/seed/seed_ecb.c
-    ${CRYPTO}/seed/seed_ofb.c
-
     ${CRYPTO}/sha/sha1_one.c
     ${CRYPTO}/sha/sha1dgst.c
     ${CRYPTO}/sha/sha256.c
     ${CRYPTO}/sha/sha512.c
     ${CRYPTO}/sha/sha_dgst.c
     ${CRYPTO}/sha/sha_one.c
-
-    ${CRYPTO}/srp/srp_lib.c
-    ${CRYPTO}/srp/srp_vfy.c
 
     ${CRYPTO}/stack/stack.c
 
@@ -568,16 +340,11 @@ list(APPEND XSRC
     ${CRYPTO}/ts/ts_rsp_verify.c
     ${CRYPTO}/ts/ts_verify_ctx.c
 
-    ${CRYPTO}/txt_db/txt_db.c
-
     ${CRYPTO}/ui/ui_compat.c
     ${CRYPTO}/ui/ui_err.c
     ${CRYPTO}/ui/ui_lib.c
     ${CRYPTO}/ui/ui_openssl.c
     ${CRYPTO}/ui/ui_util.c
-
-    ${CRYPTO}/whrlpool/wp_block.c
-    ${CRYPTO}/whrlpool/wp_dgst.c
 
     ${CRYPTO}/x509/by_dir.c
     ${CRYPTO}/x509/by_file.c
@@ -610,11 +377,9 @@ list(APPEND XSRC
     ${CRYPTO}/x509v3/pcy_map.c
     ${CRYPTO}/x509v3/pcy_node.c
     ${CRYPTO}/x509v3/pcy_tree.c
-    ${CRYPTO}/x509v3/v3_addr.c
     ${CRYPTO}/x509v3/v3_akey.c
     ${CRYPTO}/x509v3/v3_akeya.c
     ${CRYPTO}/x509v3/v3_alt.c
-    ${CRYPTO}/x509v3/v3_asid.c
     ${CRYPTO}/x509v3/v3_bcons.c
     ${CRYPTO}/x509v3/v3_bitst.c
     ${CRYPTO}/x509v3/v3_conf.c
@@ -643,36 +408,6 @@ list(APPEND XSRC
     ${CRYPTO}/x509v3/v3err.c
 )
 
-list(APPEND XSRC_SHARED
-    ${OpenSSL_SOURCE_PATH}/engines/e_4758cca.c
-    ${OpenSSL_SOURCE_PATH}/engines/e_aep.c
-    ${OpenSSL_SOURCE_PATH}/engines/e_atalla.c
-    ${OpenSSL_SOURCE_PATH}/engines/e_cswift.c
-    ${OpenSSL_SOURCE_PATH}/engines/e_gmp.c
-    ${OpenSSL_SOURCE_PATH}/engines/e_chil.c
-    ${OpenSSL_SOURCE_PATH}/engines/e_nuron.c
-    ${OpenSSL_SOURCE_PATH}/engines/e_sureware.c
-    ${OpenSSL_SOURCE_PATH}/engines/e_ubsec.c
-    ${OpenSSL_SOURCE_PATH}/engines/e_padlock.c
-    ${OpenSSL_SOURCE_PATH}/engines/e_capi.c
-
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/e_gost_err.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost2001.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost2001_keyx.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost89.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost94_keyx.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost_ameth.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost_asn1.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost_crypt.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost_ctl.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost_eng.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gosthash.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost_keywrap.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost_md.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost_params.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost_pmeth.c
-    ${OpenSSL_SOURCE_PATH}/engines/ccgost/gost_sign.c
-)
 
 ###########################################################################################
 # INC
@@ -680,42 +415,28 @@ list(APPEND XSRC_SHARED
 list(APPEND XINC
     ${CRYPTO}/crypto.h
     ${CRYPTO}/opensslv.h
-    ${CRYPTO}/ebcdic.h
-    ${CRYPTO}/symhacks.h
+     ${CRYPTO}/symhacks.h
     ${CRYPTO}/ossl_typ.h
     ${CRYPTO}/aes/aes.h
     ${CRYPTO}/asn1/asn1.h
     ${CRYPTO}/asn1/asn1_mac.h
     ${CRYPTO}/asn1/asn1t.h
-    ${CRYPTO}/bf/blowfish.h
-    ${CRYPTO}/bio/bio.h
+     ${CRYPTO}/bio/bio.h
     ${CRYPTO}/bn/bn.h
     ${CRYPTO}/buffer/buffer.h
-    ${CRYPTO}/camellia/camellia.h
-    ${CRYPTO}/cast/cast.h
-    ${CRYPTO}/cmac/cmac.h
-    ${CRYPTO}/cms/cms.h
     ${CRYPTO}/comp/comp.h
     ${CRYPTO}/conf/conf.h
     ${CRYPTO}/conf/conf_api.h
     ${CRYPTO}/des/des.h
     ${CRYPTO}/des/des_old.h
-    ${CRYPTO}/dh/dh.h
-    ${CRYPTO}/dsa/dsa.h
     ${CRYPTO}/dso/dso.h
-    ${CRYPTO}/ec/ec.h
-    ${CRYPTO}/ecdh/ecdh.h
-    ${CRYPTO}/ecdsa/ecdsa.h
     ${CRYPTO}/engine/engine.h
     ${CRYPTO}/err/err.h
     ${CRYPTO}/evp/evp.h
     ${CRYPTO}/hmac/hmac.h
-    ${CRYPTO}/idea/idea.h
-    ${CRYPTO}/krb5/krb5_asn.h
     ${CRYPTO}/lhash/lhash.h
     ${CRYPTO}/md4/md4.h
     ${CRYPTO}/md5/md5.h
-    ${CRYPTO}/mdc2/mdc2.h
     ${CRYPTO}/modes/modes.h
     ${CRYPTO}/objects/objects.h
     ${CRYPTO}/objects/obj_mac.h
@@ -726,23 +447,15 @@ list(APPEND XINC
     ${CRYPTO}/pkcs7/pkcs7.h
     ${CRYPTO}/pqueue/pqueue.h
     ${CRYPTO}/rand/rand.h
-    ${CRYPTO}/rc2/rc2.h
-    ${CRYPTO}/rc4/rc4.h
     ${CRYPTO}/rc5/rc5.h
-    ${CRYPTO}/ripemd/ripemd.h
     ${CRYPTO}/rsa/rsa.h
     ${CRYPTO}/seed/seed.h
     ${CRYPTO}/sha/sha.h
-    ${CRYPTO}/srp/srp.h
-    ${CRYPTO}/srp/srp_grps.h
-    ${CRYPTO}/srp/srp_lcl.h
     ${CRYPTO}/stack/stack.h
     ${CRYPTO}/stack/safestack.h
     ${CRYPTO}/ts/ts.h
-    ${CRYPTO}/txt_db/txt_db.h
     ${CRYPTO}/ui/ui.h
     ${CRYPTO}/ui/ui_compat.h
-    ${CRYPTO}/whrlpool/whrlpool.h
     ${CRYPTO}/x509/x509.h
     ${CRYPTO}/x509/x509_vfy.h
     ${CRYPTO}/x509v3/x509v3.h
