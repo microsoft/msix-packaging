@@ -1,9 +1,7 @@
 # MSIX SDK 
---------------------
    Copyright (c) 2017 Microsoft Corp.  All rights reserved.
 
 ## Description
---------------
    The MSIX SDK project is an effort to enable developers on a variety of platforms to unpack 
    packages for the purposes of distribution from either the Microsoft Store, or their own content distribution networks.  
     
@@ -11,7 +9,6 @@
    documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).
 
 ## Overview
------------
 The MSIX SDK project includes cross platform API support for unpacking of .msix/.appx packages
 
 |                                      |                                 |
@@ -22,16 +19,13 @@ The MSIX SDK project includes cross platform API support for unpacking of .msix/
 Guidance on how to package your app contents and construct your app manifest such that it can take advantage of the cross platform support of this SDK is [here](tdf-guidance.md).
 
 ## Release Notes
-----------------
 Release notes on the latest features and performance improvements made to the SDK are listed [here](https://docs.microsoft.com/en-us/windows/msix/sdk-release-notes-1.4)
 
 ## Setup Instructions
----------------------
 1. Clone the repository:
         ```git clone [URL]```
 
 ## Issues
----------
 If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset:
 1. Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
 2. Start -> visual studio installer -> Visual Studio Build Tools 2017 -> Modify the 2014 toolset -> individual components 
@@ -39,7 +33,6 @@ If you are using Visual Studio 2017 and you run into errors about not being able
 4. Close, then re-open the solution.
 
 ## Dependencies
----------------
 Depending on the platform for which the MSIX shared library (MSIX.DLL | libmsix.dylib | libmsix.so) is compiled, one or 
 more of the following dependencies may be statically linked into the binary:
 
@@ -54,7 +47,6 @@ of these subtrees for build related optimizations are tracked within this reposi
 The Android NDK is only required for targeting the Android platform.
 
 ## Prerequisites
-----------------
 Make sure that you have CMAKE installed on your machine 
 
    * https://cmake.org/download/
@@ -86,7 +78,6 @@ File->Open->navigate to project root/build and select "Project.xcodeproj"
 See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode) for additional details
 
 ## Build
-----------
 ### On Windows using Visual Studio 2017 nmake:
 ```
    makewin.cmd
@@ -148,7 +139,6 @@ The default level for the SDK level is 24 because we use the [Configuration clas
 We recommend using the [makeaosp](makeaosp) script to build for Android on non-Windows devices.
 
 ## Testing
-----------
 Unit tests should be run on builds that have the "Release" or "RelWithDebug" CMAKE switch. 
 
 First build the project, then:
@@ -169,7 +159,6 @@ Testing on mobile platforms:
   From within bash, navigate to test/MacOS-Linux, and run "./testaosponmac.sh". The test assumes there's an Android emulator named Nexus_5X_API_19_x86 and the build output is on a .vs directory at the root of the project.
 
 ## Releasing
-------------
 If you are the current maintainer of this project:
 
   1. Pull latest payload to release in master
@@ -178,7 +167,6 @@ If you are the current maintainer of this project:
   4. Confirm that new branch called "release_v1.xxx" where "xxx" is the next incremental version is created
   
 ## Contributing
----------------
 This project welcomes contributions and suggestions. Most contributions require you to
 agree to a Contributor License Agreement (CLA) declaring that you have the right to,
 and actually do, grant us the rights to use your contribution. For details, visit
@@ -197,7 +185,6 @@ or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any addi
 questions or comments.
 
 ## Report a Computer Security Vulnerability
--------------------------------------------
 If you are a security researcher and believe you have found a security vulnerability that meets
 the [definition of a security vulnerability](https://technet.microsoft.com/library/cc751383.aspx) that is not resolved by the [10 Immutable Laws of Security](https://technet.microsoft.com/library/cc722487.aspx),
 please send e-mail to us at secure@microsoft.com. To help us to better understand the nature and
