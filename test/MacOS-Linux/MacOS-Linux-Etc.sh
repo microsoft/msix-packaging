@@ -72,6 +72,7 @@ FindBinFolder
 
 RunTest 2  ./../appx/Empty.appx -sv
 RunTest 0  ./../appx/HelloWorld.appx -ss
+RunTest 0  ./../appx/NotepadPlusPlus.appx -ss
 RunTest 66 ./../appx/SignatureNotLastPart-ERROR_BAD_FORMAT.appx
 RunTest 66 ./../appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
 RunTest 65 ./../appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx -sv

@@ -88,6 +88,7 @@ FindBinFolder
 # Normal package
 RunTest 0x8bad0002 .\..\appx\Empty.appx "-sv"
 RunTest 0x00000000 .\..\appx\HelloWorld.appx "-ss"
+RunTest 0x00000000 .\..\appx\NotepadPlusPlus.appx "-ss"
 RunTest 0x8bad0042 .\..\appx\SignatureNotLastPart-ERROR_BAD_FORMAT.appx
 # RunTest 0x134 .\appx\SignedMismatchedPublisherName-ERROR_BAD_FORMAT.appx
 RunTest 0x8bad0042 .\..\appx\SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx

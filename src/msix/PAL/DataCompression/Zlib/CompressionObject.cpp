@@ -73,11 +73,13 @@ namespace MSIX {
         {
             switch (status)
             {
+                case Z_BUF_ERROR:
+                    // Since we do not use Z_FINISH, Z_BUF_ERROR just means there is nothing to do.
+                    //__fallthrough;
                 case Z_OK:
                     return CompressionStatus::Ok;
                 case Z_DATA_ERROR:
                 case Z_MEM_ERROR:
-                case Z_BUF_ERROR:
                 case Z_STREAM_ERROR:
                 case Z_ERRNO:
                     return CompressionStatus::Error;
