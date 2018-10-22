@@ -10,6 +10,7 @@
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
+#include "UnicodeConversion.hpp"
 
 namespace MSIX {
     class FileStream final : public StreamBase
@@ -30,6 +31,28 @@ namespace MSIX {
             ThrowErrorIfNot(Error::FileOpen, (m_file), name.c_str());
             #endif
 
+            // Get size of the file
+            LARGE_INTEGER start = { 0 };
+            ULARGE_INTEGER end = { 0 };
+            ThrowHrIfFailed(Seek(start, StreamBase::Reference::END, &end));
+            ThrowHrIfFailed(Seek(start, StreamBase::Reference::START, nullptr));
+            m_size = end.u.LowPart;
+        }
+
+        FileStream(const std::wstring& name, Mode mode)
+        {
+            m_name = utf16_to_utf8(name);
+            #ifdef WIN32
+            static const wchar_t* modes[] = { L"rb", L"wb", L"ab", L"r+b", L"w+b", L"a+b" };
+            errno_t err = _wfopen_s(&m_file, name.c_str(), modes[mode]);
+            std::wostringstream builder;
+            builder << L"file: '" << name << L"' does not exist.";
+            ThrowErrorIfNot(Error::FileOpen, (err==0), "change this");
+            #else
+            static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
+            m_file = std::fopen(m_name.c_str(), modes[mode]);
+            ThrowErrorIfNot(Error::FileOpen, (m_file), m_name.c_str());
+            #endif
             // Get size of the file
             LARGE_INTEGER start = { 0 };
             ULARGE_INTEGER end = { 0 };

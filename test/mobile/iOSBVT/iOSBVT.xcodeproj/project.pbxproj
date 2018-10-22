@@ -1,4 +1,4 @@
-// !$*UTF8*$!
+﻿// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -38,6 +38,8 @@
 		4C7F378720783FD2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376C20783FC2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle */; };
 		4C7F3789207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4C7F378B20784901002942F4 /* libmsix.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		4C80CD9E216EE2B7008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4C80CD9D216EE2B7008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx */; };
+		4C80CDA0216EE32A008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C80CD9D216EE2B7008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx */; };
 		4CAC1C2E2135DCC0005C3B2C /* assets.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1A2135DCC0005C3B2C /* assets.appx */; };
 		4CAC1C2F2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1B2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle */; };
 		4CAC1C302135DCC0005C3B2C /* language-de.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1C2135DCC0005C3B2C /* language-de.appx */; };
@@ -78,6 +80,7 @@
 		4CAC1C532135DCDA005C3B2C /* scale-140.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C2B2135DCC0005C3B2C /* scale-140.appx */; };
 		4CAC1C542135DCDA005C3B2C /* scale-180.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C2C2135DCC0005C3B2C /* scale-180.appx */; };
 		4CAC1C552135DCDA005C3B2C /* scale-240.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C2D2135DCC0005C3B2C /* scale-240.appx */; };
+		6A0FC3D72179413E003B606A /* NotepadPlusPlus.appx in Resources */ = {isa = PBXBuildFile; fileRef = 6A0FC3D62179413E003B606A /* NotepadPlusPlus.appx */; };
 		EEE4055020225CDF007B25CE /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4054F20225CDF007B25CE /* AppDelegate.m */; };
 		EEE4055320225CDF007B25CE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4055220225CDF007B25CE /* ViewController.m */; };
 		EEE4055620225CDF007B25CE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEE4055420225CDF007B25CE /* Main.storyboard */; };
@@ -186,6 +189,16 @@
 				4C7F378520783FD2002942F4 /* PayloadPackageNotListedInManifest.appxbundle in CopyFiles */,
 				4C7F378620783FD2002942F4 /* SignedUntrustedCert-CERT_E_CHAINING.appxbundle in CopyFiles */,
 				4C7F378720783FD2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		4C80CD9F216EE301008E3292 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "महसुस";
+			dstSubfolderSpec = 7;
+			files = (
+				4C80CDA0216EE32A008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -307,6 +320,7 @@
 		4C7F376C20783FC2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle; sourceTree = "<group>"; };
 		4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsixtestcommon.0.0.0.dylib; path = ../../../.vs/lib/libmsixtestcommon.0.0.0.dylib; sourceTree = "<group>"; };
 		4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsix.0.0.0.dylib; path = ../../../.vs/lib/libmsix.0.0.0.dylib; sourceTree = "<group>"; };
+		4C80CD9D216EE2B7008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = StoreSigned_Desktop_x64_MoviesTV.appx; sourceTree = "<group>"; };
 		4CAC1C1A2135DCC0005C3B2C /* assets.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = assets.appx; sourceTree = "<group>"; };
 		4CAC1C1B2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = FlatBundleWithAsset.appxbundle; sourceTree = "<group>"; };
 		4CAC1C1C2135DCC0005C3B2C /* language-de.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "language-de.appx"; sourceTree = "<group>"; };
@@ -327,6 +341,7 @@
 		4CAC1C2B2135DCC0005C3B2C /* scale-140.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "scale-140.appx"; sourceTree = "<group>"; };
 		4CAC1C2C2135DCC0005C3B2C /* scale-180.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "scale-180.appx"; sourceTree = "<group>"; };
 		4CAC1C2D2135DCC0005C3B2C /* scale-240.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "scale-240.appx"; sourceTree = "<group>"; };
+		6A0FC3D62179413E003B606A /* NotepadPlusPlus.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = NotepadPlusPlus.appx; sourceTree = "<group>"; };
 		EEE4054B20225CDF007B25CE /* iOSBVT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSBVT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EEE4054E20225CDF007B25CE /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		EEE4054F20225CDF007B25CE /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -424,6 +439,14 @@
 			path = ../../appx/bundles;
 			sourceTree = "<group>";
 		};
+		4C80CD9C216EE2B7008E3292 /* महसुस */ = {
+			isa = PBXGroup;
+			children = (
+				4C80CD9D216EE2B7008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx */,
+			);
+			path = "महसुस";
+			sourceTree = "<group>";
+		};
 		4CAC1C192135DCC0005C3B2C /* flat */ = {
 			isa = PBXGroup;
 			children = (
@@ -494,10 +517,12 @@
 		EEE4056B20225EF5007B25CE /* appx */ = {
 			isa = PBXGroup;
 			children = (
+				4C80CD9C216EE2B7008E3292 /* महसुस */,
 				EEE4056C20225EF5007B25CE /* BlockMap */,
 				EEE4057720225EF5007B25CE /* CentennialCoffee.appx */,
 				EEE4057820225EF5007B25CE /* Empty.appx */,
 				EEE4057920225EF5007B25CE /* HelloWorld.appx */,
+				6A0FC3D62179413E003B606A /* NotepadPlusPlus.appx */,
 				EEE4057A20225EF5007B25CE /* InvalidSignatureBadCodeIntegrity.appx */,
 				EEE4057B20225EF5007B25CE /* InvalidSignatureInvalidCodeIntegrityXML.appx */,
 				EEE4057C20225EF5007B25CE /* OPC_E_ZIP_CORRUPTED_ARCHIVE.appx */,
@@ -550,6 +575,7 @@
 				4C11C9CB2048C60500F6BE01 /* CopyFiles */,
 				4C7F375020783F90002942F4 /* CopyFiles */,
 				4CAC1C182135DC9A005C3B2C /* CopyFiles */,
+				4C80CD9F216EE301008E3292 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -602,7 +628,9 @@
 				EEE4059620225EF5007B25CE /* InvalidSignatureInvalidCodeIntegrityXML.appx in Resources */,
 				4CAC1C352135DCC0005C3B2C /* language-ja.appx in Resources */,
 				EEE4059020225EF5007B25CE /* No_blockmap.appx in Resources */,
+				6A0FC3D72179413E003B606A /* NotepadPlusPlus.appx in Resources */,
 				EEE4058D20225EF5007B25CE /* HelloWorld.appx in Resources */,
+				4C80CD9E216EE2B7008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx in Resources */,
 				EEE4059720225EF5007B25CE /* OPC_E_ZIP_CORRUPTED_ARCHIVE.appx in Resources */,
 				4CAC1C2E2135DCC0005C3B2C /* assets.appx in Resources */,
 				EEE4059420225EF5007B25CE /* HelloWorld.appx in Resources */,

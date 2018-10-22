@@ -9,8 +9,9 @@ set( TARGET_INCLUDE_DIRS ${OpenSLL_INCLUDE_PATH} )
 set( TARGET_INCLUDE_DIRS_PRIVATE "${TARGET_SOURCE_DIR_TRUE}" "${TARGET_SOURCE_DIR_TRUE}/asn1" "${TARGET_SOURCE_DIR_TRUE}/evp" "${TARGET_SOURCE_DIR_TRUE}/modes")
 set( TARGET_DEFINES "OPENSSL_THREADS" )
 set( TARGET_DEFINES_PRIVATE "${OpenSSL_COMPILER_DEFINES}" )
-set( TARGET_COMPILE_FLAGS "" )
-set( TARGET_COMPILE_FLAGS_PRIVATE "" )
+set( TARGET_COMPILE_FLAGS -fno-rtti -fno-stack-protector -O1 -fno-unwind-tables -fno-asynchronous-unwind-tables
+    -fno-math-errno -fno-unroll-loops -fmerge-all-constants)
+set( TARGET_COMPILE_FLAGS_PRIVATE -ffunction-sections -fdata-sections)
 set( TARGET_LINK "" )
 set( TARGET_LINK_PRIVATE "" )
 set( TARGET_SOURCES "" )
@@ -42,6 +43,36 @@ set( CONF "
 #define OPENSSL_NO_DYNAMIC_ENGINE
 #define OPENSSL_NO_SCTP
 #define OPENSSL_NO_EC_NISTP_64_GCC_128
+#define OPENSSL_NO_CAMELLIA
+#define OPENSSL_NO_RIPEMD
+#define OPENSSL_NO_RC5
+#define OPENSSL_NO_BF
+#define OPENSSL_NO_IDEA
+#define OPENSSL_NO_ENGINE
+#define OPENSSL_NO_DES
+#define OPENSSL_NO_MDC2
+#define OPENSSL_NO_SEED
+#define OPENSSL_NO_DEPRECATED
+#define OPENSSL_NO_DSA
+#define OPENSSL_NO_DH
+#define OPENSSL_NO_EC
+#define OPENSSL_NO_ECDSA
+#define OPENSSL_NO_ECDH
+#define OPENSSL_NO_WHIRLPOOL
+#define OPENSSL_NO_RC4
+#define OPENSSL_NO_RC2
+#define OPENSSL_NO_SSL2
+#define OPENSSL_NO_SSL3
+#define OPENSSL_NO_CAST
+#define OPENSSL_NO_CMAC
+#define OPENSSL_NO_ZLIB
+#define OPENSSL_NO_DGRAM
+#define OPENSSL_NO_SOCK
+#define OPENSSL_NO_BF
+#define OPENSSL_NO_MD4
+#define OPENSSL_NO_CMS
+#define OPENSSL_NO_OCSP
+#define OPENSSL_NO_SRP
 ${CONF}" )
 file( WRITE "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h" "${CONF}" )
 
@@ -59,19 +90,12 @@ set(TARGET_SOURCES ${XSRC} ${XINC})
 
 # OpenSSL is not the best when it comes to how it handles headers.  
 # Where they are we need to create the projects include dir and copy stuff into it!
-if(USE_SHARED_OPENSSL)
-    message(STATUS "MSIX takes a dynamic dependency on openssl")
-    add_library(crypto SHARED ${TARGET_SOURCES} ${XSRC_SHARED})
-else()
-    message(STATUS "MSIX takes a static dependency on openssl")
-    add_library(crypto STATIC ${TARGET_SOURCES})
-endif()
+message(STATUS "MSIX takes a static dependency on openssl")
+add_library(crypto STATIC ${TARGET_SOURCES})
 
 target_include_directories( crypto PRIVATE ${TARGET_INCLUDE_DIRS} ${TARGET_INCLUDE_DIRS_PRIVATE} )
 target_compile_definitions( crypto PRIVATE ${TARGET_DEFINES} ${TARGET_DEFINES_PRIVATE} )
-target_link_libraries     ( crypto PRIVATE ${TARGET_LINK} ${TARGET_LINK_PRIVATE} )
-target_compile_options    ( crypto PRIVATE ${TARGET_COMPILE_FLAGS} ${TARGET_COMPILE_FLAGS_PRIVATE} )
+target_compile_options    ( crypto PRIVATE ${TARGET_COMPILE_FLAGS} ${TARGET_COMPILE_FLAGS_PRIVATE})
 target_include_directories( crypto PUBLIC  ${TARGET_INCLUDE_DIRS} ${OpenSLL_INCLUDE_PATH} ${OpenSLL_INCLUDE_PATH}/openssl)
 target_compile_definitions( crypto PUBLIC  ${TARGET_DEFINES} )
-target_link_libraries     ( crypto PUBLIC  ${TARGET_LINK} )
-target_compile_options    ( crypto PUBLIC  ${TARGET_COMPILE_FLAGS} )
+target_compile_options    ( crypto PUBLIC  ${TARGET_COMPILE_FLAGS})

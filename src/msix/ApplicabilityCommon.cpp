@@ -136,6 +136,25 @@ namespace MSIX {
         return result;
     }
 
+    void Applicability::InitializeLanguages()
+    {
+        m_languages = GetLanguages();
+    }
+
+    void Applicability::InitializeLanguages(IMsixApplicabilityLanguagesEnumerator* languagesEnumerator)
+    {
+        BOOL hasNext = FALSE;
+        ThrowHrIfFailed(languagesEnumerator->GetHasCurrent(&hasNext));
+        while (hasNext)
+        {
+            LPCSTR language = nullptr;
+            ThrowHrIfFailed(languagesEnumerator->GetCurrent(&language));
+            m_languages.push_back(std::string(language));
+
+            ThrowHrIfFailed(languagesEnumerator->MoveNext(&hasNext));
+        }
+    }
+
     void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, std::string& packageName, 
         const std::vector<Bcp47Tag>& packageLanguages, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, bool hasQualifiedResources)
     {
@@ -158,7 +177,7 @@ namespace MSIX {
 
             bool hasMatch = false;
             bool hasVariantMatch = false;
-            for (auto& systemLanguage : GetLanguages())
+            for (auto& systemLanguage : m_languages)
             {
                 for (auto& packageLanguage : packageLanguages)
                 {

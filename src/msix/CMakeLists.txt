@@ -98,6 +98,7 @@ else()
         "IID_IMsixElementEnumerator"
         "IID_IMsixFactoryOverrides"
         "IID_IMsixStreamFactory"
+        "IID_IMsixApplicabilityLanguagesEnumerator"
     )
     if((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported
@@ -189,6 +190,7 @@ include(msix_resources)
 set(LIB_PUBLIC_HEADERS
     ../inc/AppxPackaging.hpp
     ../inc/MSIXWindows.hpp
+    ../inc/MsixErrors.hpp
 )
 
 # Bundle specific files
@@ -228,6 +230,7 @@ add_library(${PROJECT_NAME} SHARED
 # Copy out public headers to <binary dir>/src/msix
 configure_file(../inc/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
 configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
+configure_file(../inc/MsixErrors.hpp ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
 
 # Linker and includes
 # Include MSIX headers
@@ -236,8 +239,9 @@ target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/inc
 
 
 if(WIN32)
+    string(REPLACE "/GR" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     set_target_properties(${PROJECT_NAME} PROPERTIES
-        COMPILE_FLAGS "/source-charset:utf-8"
+        COMPILE_FLAGS "/source-charset:utf-8 /Gw /GL /GR-"
         VS_WINRT_COMPONENT TRUE)
     # Using /DELAYLOAD as linker option will use a helper funtion provided by
     # Visual C++ that will load the dll at runtime by calling LoadLibrary and GetProcAddress.
@@ -249,7 +253,7 @@ if(WIN32)
             "/DELAYLOAD:api-ms-win-core-winrt-string-l1-1-0.dll"
             "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll")
     string(REPLACE ";" " " DELAYFLAGS "${DELAYFLAGS}")
-    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "${DELAYFLAGS}")
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "${DELAYFLAGS} /LTCG")
     if(USE_STATIC_MSVC)
         if(CMAKE_BUILD_TYPE MATCHES Debug)
             set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB:MSVCRTD")
@@ -363,5 +367,9 @@ endif()
 if(OpenSSL_FOUND)
     # include the libraries needed to use OpenSSL
     target_include_directories(${PROJECT_NAME} PRIVATE ${OpenSLL_INCLUDE_PATH})
-    target_link_libraries(${PROJECT_NAME} PRIVATE crypto)
+    if((IOS) OR (MACOS))
+        target_link_libraries(${PROJECT_NAME} PRIVATE crypto -Wl,-dead_strip)
+    else()
+        target_link_libraries(${PROJECT_NAME} PRIVATE crypto -Wl,--gc-sections)
+    endif()
 endif()

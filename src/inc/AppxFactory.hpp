@@ -71,5 +71,6 @@ namespace MSIX {
         std::vector<std::uint8_t> m_resourcesVector;
         MSIX_APPLICABILITY_OPTIONS m_applicabilityFlags;
         ComPtr<IMsixStreamFactory> m_streamFactory;
+        ComPtr<IMsixApplicabilityLanguagesEnumerator> m_applicabilityLanguagesEnumerator;
     };
 }

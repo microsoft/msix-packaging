@@ -50,6 +50,9 @@ namespace MSIX {
         Applicability(MSIX_APPLICABILITY_OPTIONS applicabilityFlags) : m_applicabilityFlags(applicabilityFlags)
         {}
 
+        void InitializeLanguages();
+        void InitializeLanguages(IMsixApplicabilityLanguagesEnumerator* languagesEnumerator);
+
         void AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, std::string& packageName, 
             const std::vector<Bcp47Tag>& packageLanguages, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, bool hasQualifiedResources);
 
@@ -65,5 +68,6 @@ namespace MSIX {
         std::vector<std::pair<std::string, ComPtr<IAppxPackageReader>>> m_variantFormPackages;
         std::vector<std::pair<std::string, ComPtr<IAppxPackageReader>>> m_extraApplicationPackages;
         MSIX_APPLICABILITY_OPTIONS m_applicabilityFlags = MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL;
+        std::vector<Bcp47Tag> m_languages;
     };
 }

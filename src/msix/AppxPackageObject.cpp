@@ -216,6 +216,21 @@ namespace MSIX {
             auto appxFactory = m_factory.As<IAppxFactory>();
 
             Applicability applicability(applicabilityFlags);
+
+            auto factoryOverrides = m_factory.As<IMsixFactoryOverrides>();
+            ComPtr<IUnknown> applicabilityLanguagesUnk;
+            ThrowHrIfFailed(factoryOverrides->GetCurrentSpecifiedExtension(MSIX_FACTORY_EXTENSION_APPLICABILITY_LANGUAGES, &applicabilityLanguagesUnk));
+
+            if (applicabilityLanguagesUnk.Get() != nullptr)
+            {
+                auto applicabilityLanguagesEnumerator = applicabilityLanguagesUnk.As<IMsixApplicabilityLanguagesEnumerator>();
+                applicability.InitializeLanguages(applicabilityLanguagesEnumerator.Get());
+            }
+            else
+            {
+                applicability.InitializeLanguages();
+            }
+
             for (const auto& package : bundleInfo->GetPackages())
             {
                 auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
@@ -232,7 +247,6 @@ namespace MSIX {
                     // We should only do this for flat bundles. If we do it for normal bundles and the user specify a 
                     // stream factory we will basically unpack any package the user wants with the same name as the package
                     // we are looking, which sounds dangerous.
-                    auto factoryOverrides = m_factory.As<IMsixFactoryOverrides>();
                     ComPtr<IUnknown> streamFactoryUnk;
                     ThrowHrIfFailed(factoryOverrides->GetCurrentSpecifiedExtension(MSIX_FACTORY_EXTENSION_STREAM_FACTORY, &streamFactoryUnk));
 

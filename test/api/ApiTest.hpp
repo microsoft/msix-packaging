@@ -32,7 +32,7 @@ public:
         m_line(line)
     {
         m_actual = std::to_string(static_cast<std::uint32_t>(actual));
-        m_expected = std::to_string(static_cast<std::uint32_t>(actual));
+        m_expected = std::to_string(static_cast<std::uint32_t>(expected));
     }
 
     std::string& Actual()   { return m_actual; }

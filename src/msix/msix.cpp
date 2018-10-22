@@ -185,7 +185,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     IStream** stream) noexcept try
 {
     MSIX::FileStream::Mode mode = forRead ? MSIX::FileStream::Mode::READ : MSIX::FileStream::Mode::WRITE_UPDATE;
-    *stream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(MSIX::utf16_to_utf8(utf16File), mode).Detach();
+    *stream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(utf16File, mode).Detach();
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
