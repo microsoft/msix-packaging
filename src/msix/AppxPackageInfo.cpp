@@ -170,6 +170,6 @@ namespace MSIX {
 
         std::vector<std::uint8_t> hash;
         ThrowErrorIfNot(Error::Unexpected, SHA256::ComputeHash(buffer.data(), static_cast<uint32_t>(buffer.size()), hash),  "Failed computing publisherId");
-        return Base32Encoding(hash);
+        return Encoding::Base32Encoding(hash);
     }
 }

@@ -80,6 +80,10 @@
 		4CAC1C532135DCDA005C3B2C /* scale-140.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C2B2135DCC0005C3B2C /* scale-140.appx */; };
 		4CAC1C542135DCDA005C3B2C /* scale-180.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C2C2135DCC0005C3B2C /* scale-180.appx */; };
 		4CAC1C552135DCDA005C3B2C /* scale-240.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CAC1C2D2135DCC0005C3B2C /* scale-240.appx */; };
+		4CDE14A221A493960085A796 /* IntlPackage.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CDE14A121A493960085A796 /* IntlPackage.appx */; };
+		4CDE14A321A493B00085A796 /* IntlPackage.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CDE14A121A493960085A796 /* IntlPackage.appx */; };
+		4CDE14A521ACC9CB0085A796 /* BundleWithIntlPackage.appxbundle in Resources */ = {isa = PBXBuildFile; fileRef = 4CDE14A421ACC9CB0085A796 /* BundleWithIntlPackage.appxbundle */; };
+		4CDE14A621ACC9EA0085A796 /* BundleWithIntlPackage.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CDE14A421ACC9CB0085A796 /* BundleWithIntlPackage.appxbundle */; };
 		6A0FC3D72179413E003B606A /* NotepadPlusPlus.appx in Resources */ = {isa = PBXBuildFile; fileRef = 6A0FC3D62179413E003B606A /* NotepadPlusPlus.appx */; };
 		EEE4055020225CDF007B25CE /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4054F20225CDF007B25CE /* AppDelegate.m */; };
 		EEE4055320225CDF007B25CE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4055220225CDF007B25CE /* ViewController.m */; };
@@ -162,6 +166,7 @@
 			dstPath = bundles;
 			dstSubfolderSpec = 7;
 			files = (
+				4CDE14A621ACC9EA0085A796 /* BundleWithIntlPackage.appxbundle in CopyFiles */,
 				4C7F376D20783FD2002942F4 /* BlockMapContainsPayloadPackage.appxbundle in CopyFiles */,
 				4C7F376E20783FD2002942F4 /* BlockMapIsMissing.appxbundle in CopyFiles */,
 				4C7F376F20783FD2002942F4 /* BlockMapViolatesSchema.appxbundle in CopyFiles */,
@@ -248,6 +253,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 7;
 			files = (
+				4CDE14A321A493B00085A796 /* IntlPackage.appx in CopyFiles */,
 				EEE405A420227EC1007B25CE /* CentennialCoffee.appx in CopyFiles */,
 				EEE405A520227EC1007B25CE /* Empty.appx in CopyFiles */,
 				EEE405A620227EC1007B25CE /* HelloWorld.appx in CopyFiles */,
@@ -341,6 +347,8 @@
 		4CAC1C2B2135DCC0005C3B2C /* scale-140.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "scale-140.appx"; sourceTree = "<group>"; };
 		4CAC1C2C2135DCC0005C3B2C /* scale-180.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "scale-180.appx"; sourceTree = "<group>"; };
 		4CAC1C2D2135DCC0005C3B2C /* scale-240.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = "scale-240.appx"; sourceTree = "<group>"; };
+		4CDE14A121A493960085A796 /* IntlPackage.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = IntlPackage.appx; sourceTree = "<group>"; };
+		4CDE14A421ACC9CB0085A796 /* BundleWithIntlPackage.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = BundleWithIntlPackage.appxbundle; sourceTree = "<group>"; };
 		6A0FC3D62179413E003B606A /* NotepadPlusPlus.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = NotepadPlusPlus.appx; sourceTree = "<group>"; };
 		EEE4054B20225CDF007B25CE /* iOSBVT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSBVT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EEE4054E20225CDF007B25CE /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
@@ -407,6 +415,7 @@
 		4C7F375120783FC2002942F4 /* bundles */ = {
 			isa = PBXGroup;
 			children = (
+				4CDE14A421ACC9CB0085A796 /* BundleWithIntlPackage.appxbundle */,
 				4C7F375220783FC2002942F4 /* BlockMapContainsPayloadPackage.appxbundle */,
 				4C7F375320783FC2002942F4 /* BlockMapIsMissing.appxbundle */,
 				4C7F375420783FC2002942F4 /* BlockMapViolatesSchema.appxbundle */,
@@ -517,6 +526,7 @@
 		EEE4056B20225EF5007B25CE /* appx */ = {
 			isa = PBXGroup;
 			children = (
+				4CDE14A121A493960085A796 /* IntlPackage.appx */,
 				4C80CD9C216EE2B7008E3292 /* महसुस */,
 				EEE4056C20225EF5007B25CE /* BlockMap */,
 				EEE4057720225EF5007B25CE /* CentennialCoffee.appx */,
@@ -662,6 +672,7 @@
 				EEE4055820225CDF007B25CE /* Assets.xcassets in Resources */,
 				4CAC1C322135DCC0005C3B2C /* language-es.appx in Resources */,
 				4CAC1C402135DCC0005C3B2C /* scale-180.appx in Resources */,
+				4CDE14A521ACC9CB0085A796 /* BundleWithIntlPackage.appxbundle in Resources */,
 				EEE4059520225EF5007B25CE /* InvalidSignatureBadCodeIntegrity.appx in Resources */,
 				4CAC1C372135DCC0005C3B2C /* language-pt.appx in Resources */,
 				EEE4059F20225EF5007B25CE /* StoreSigned_Desktop_x64_MoviesTV.appx in Resources */,
@@ -676,6 +687,7 @@
 				4CAC1C412135DCC0005C3B2C /* scale-240.appx in Resources */,
 				4C11C9D12048C7C700F6BE01 /* en-us_win32.appx in Resources */,
 				4CAC1C3E2135DCC0005C3B2C /* main_x86.appx in Resources */,
+				4CDE14A221A493960085A796 /* IntlPackage.appx in Resources */,
 				EEE4055620225CDF007B25CE /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

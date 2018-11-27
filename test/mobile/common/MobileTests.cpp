@@ -118,6 +118,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "Empty.appx", unpackFolder, sv, 2);
     hr = RunTest(source + "HelloWorld.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "NotepadPlusPlus.appx", unpackFolder, ss, 0);
+    hr = RunTest(source + "IntlPackage.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "SignatureNotLastPart-ERROR_BAD_FORMAT.appx", unpackFolder, full, 66);
     hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
     hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, sv, 65);
@@ -169,6 +170,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "bundles/PayloadPackageIsNotAppxPackage.appxbundle", unpackFolder, ss, 87);
     //hr = RunTest(source + "bundles/PayloadPackageNotListedInManifest.appxbundle", unpackFolder, full, 0);
     hr = RunTest(source + "bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle", unpackFolder, full, 66);
+    hr = RunTest(source + "bundles/BundleWithIntlPackage.appxbundle", unpackFolder, ss, 0);
     hr = RunTest(source + "bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle", unpackFolder, full, 0);
 
     // Flat
