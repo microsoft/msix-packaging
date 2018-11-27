@@ -89,6 +89,7 @@ FindBinFolder
 RunTest 0x8bad0002 .\..\appx\Empty.appx "-sv"
 RunTest 0x00000000 .\..\appx\HelloWorld.appx "-ss"
 RunTest 0x00000000 .\..\appx\NotepadPlusPlus.appx "-ss"
+RunTest 0x00000000 .\..\appx\IntlPackage.appx "-ss"
 RunTest 0x8bad0042 .\..\appx\SignatureNotLastPart-ERROR_BAD_FORMAT.appx
 # RunTest 0x134 .\appx\SignedMismatchedPublisherName-ERROR_BAD_FORMAT.appx
 RunTest 0x8bad0042 .\..\appx\SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
@@ -143,7 +144,7 @@ RunTest 0x8bad0003 .\..\appx\bundles\PayloadPackageIsEmpty.appxbundle "-ss"
 RunTest 0x80070057 .\..\appx\bundles\PayloadPackageIsNotAppxPackage.appxbundle "-ss"
 # RunTest 0x00000000 .\..\appx\bundles\PayloadPackageNotListedInManifest.appxbundle
 RunTest 0x8bad0042 .\..\appx\bundles\SignedUntrustedCert-CERT_E_CHAINING.appxbundle
-
+RunTest 0x00000000 .\..\appx\bundles\BundleWithIntlPackage.appxbundle "-ss"
 RunTest 0x00000000 .\..\appx\bundles\StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
 ValidateResult ExpectedResults\StoreSigned_Desktop_x86_x64_MoviesTV.txt
 

@@ -163,7 +163,7 @@ namespace MSIX {
             found = false;
         }
         while(directories.size() > 0);
-        auto result = ComPtr<IStream>::Make<FileStream>(std::move(path), mode);
+        auto result = ComPtr<IStream>::Make<FileStream>(std::move(utf8_to_wstring(path)), mode);
         return result;
     }
 }

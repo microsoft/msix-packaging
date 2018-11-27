@@ -235,7 +235,7 @@ namespace MSIX {
             {
                 auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
                 auto packageName = bundleInfoInternal->GetFileName();
-                auto packageStream = m_container->GetFile(packageName);
+                auto packageStream = m_container->GetFile(Encoding::EncodeFileName(packageName));
 
                 if (packageStream)
                 {   // The package is in the bundle. Verify is not compressed.
@@ -337,14 +337,14 @@ namespace MSIX {
             {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
                 if (footPrintFile == std::end(footPrintFileNames))
                 {
-                    auto containerFileName = EncodeFileName(fileName);
-                    m_payloadFiles.push_back(containerFileName);
-                    auto fileStream = m_container->GetFile(containerFileName);
+                    auto opcFileName = Encoding::EncodeFileName(fileName);
+                    m_payloadFiles.push_back(opcFileName);
+                    auto fileStream = m_container->GetFile(opcFileName);
                     ThrowErrorIfNot(Error::FileNotFound, fileStream, "File described in blockmap not contained in OPC container");
                     VerifyFile(fileStream, fileName, blockMapInternal);
                     auto blockMapStream = m_appxBlockMap->GetValidationStream(fileName, fileStream);
-                    m_files[containerFileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(blockMapStream));
-                    filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
+                    m_files[opcFileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(blockMapStream));
+                    filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), opcFileName), filesToProcess.end());
                 }
             }
 
@@ -424,7 +424,7 @@ namespace MSIX {
                     targetName = packageId.As<IAppxManifestPackageIdInternal>()->GetPackageFullName() + "/" + fileName;
                 }
                 else
-                {   targetName = DecodeFileName(fileName);
+                {   targetName = Encoding::DecodeFileName(fileName);
                 }
 
                 auto targetFile = to->OpenFile(targetName, MSIX::FileStream::Mode::WRITE_UPDATE);
@@ -508,8 +508,7 @@ namespace MSIX {
         if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
         ThrowErrorIf(Error::InvalidParameter, (file == nullptr || *file != nullptr), "bad pointer");
         ThrowErrorIf(Error::FileNotFound, (static_cast<size_t>(type) > footprintFiles.size()), "unknown footprint file type");
-        std::string footprint (footprintFiles[type]);
-        auto result = GetAppxFile(footprint);
+        auto result = GetAppxFile(footprintFiles[type]);
         ThrowErrorIfNot(Error::FileNotFound, result, "requested footprint file not in package")
         // Clients expect the stream's pointer to be at the start of the file!
         ComPtr<IStream> stream;
@@ -523,8 +522,7 @@ namespace MSIX {
     {
         if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
         ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
-        std::string name = utf16_to_utf8(fileName);
-        auto result = GetAppxFile(EncodeFileName(name));
+        auto result = GetAppxFile(Encoding::EncodeFileName(utf16_to_utf8(fileName)));
         ThrowErrorIfNot(Error::FileNotFound, result, "requested file not in package")
         // Clients expect the stream's pointer to be at the start of the file!
         ComPtr<IStream> stream;

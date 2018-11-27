@@ -212,6 +212,7 @@ add_library(${PROJECT_NAME} SHARED
     AppxPackageInfo.cpp
     AppxPackaging_i.cpp
     AppxSignature.cpp
+    Encoding.cpp
     Exceptions.cpp
     InflateStream.cpp
     Log.cpp

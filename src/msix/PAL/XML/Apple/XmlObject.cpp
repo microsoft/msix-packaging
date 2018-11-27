@@ -49,7 +49,7 @@ public:
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
     {
         auto intermediate = GetAttributeValue(attribute);
-        return GetBase64DecodedValue(intermediate);
+        return Encoding::GetBase64DecodedValue(intermediate);
     }
 
     std::string GetText() override
