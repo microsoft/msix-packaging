@@ -45,7 +45,7 @@ more of the following dependencies may be statically linked into the binary:
 
 * [ZLib Tag v1.2.11 Commit cacf7f1d4e3d44d871b605da3b647f07d718623f](https://github.com/madler/zlib/releases/tag/v1.2.11)
 * [Xerces-C Tag Xerces-C_3_2_0 Commit dffc3028df8ea44985c92f2df28115860e39e344](https://github.com/apache/xerces-c/releases/tag/Xerces-C_3_2_0)
-* [OpenSSL Tag OpenSSL_1_0_2m Commit 8b1549a153a62e9878327d05aa3b6622b416ec10](https://github.com/openssl/openssl/releases/tag/OpenSSL_1_0_2m)
+* [OpenSSL Tag OpenSSL_1_0_2q Commit 5707219a6aae8052cb98aa361d115be01b8fd894](https://github.com/openssl/openssl/releases/tag/OpenSSL_1_0_2q)
 * [Android NDK](https://developer.android.com/ndk)
 
 For convinience, Zlib, Xerces-C and OpenSSL are git-subtrees that are mapped in under the lib folder of this project.  Edits on top
