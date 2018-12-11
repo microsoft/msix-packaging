@@ -26,7 +26,7 @@ extern signed long RunTests(char* source, char* target);
     char* source = [sourcePath UTF8String];
     unsigned long result = RunTests(source, "tmp/");
     sprintf(str,"0x%08X", result);
-    
+    exit(0); // Maybe I wouldn't do this if there was an actual API to do this easily...
     return YES;
 }
 
