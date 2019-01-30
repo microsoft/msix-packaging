@@ -10,12 +10,18 @@ import org.w3c.dom.NodeList;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathFactory;
 
 public class XmlElement {
     private Element m_element;
+    private XPath m_xpath;
 
     public XmlElement(Element element) {
         m_element = element;
+        XPathFactory factory = XPathFactory.newInstance();
+        m_xpath = factory.newXPath();
     }
 
     public Element GetElement() {
@@ -40,6 +46,16 @@ public class XmlElement {
             }
         } catch(Exception e) {
             e.printStackTrace();
+        }
+        return elements.toArray(new XmlElement[0]);
+    }
+
+    public XmlElement[] GetElements(String query) throws Exception {
+        List<XmlElement> elements = new ArrayList<>();
+        NodeList results = (NodeList) m_xpath.evaluate(query, m_element, XPathConstants.NODESET);
+        for (int i = 0; i < results.getLength(); i++) {
+            XmlElement element = new XmlElement((Element) results.item(i));
+            elements.add(element);
         }
         return elements.toArray(new XmlElement[0]);
     }

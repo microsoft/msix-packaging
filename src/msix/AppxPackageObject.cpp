@@ -196,7 +196,18 @@ namespace MSIX {
                 if (fileName != CONTENT_TYPES_XML)
                 {
                     auto stream = footPrintFile->GetValidationStream(this);
-                    m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(stream));;
+                    if (fileName == CODEINTEGRITY_CAT)
+                    {
+                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), "AppxMetadata\\CodeIntegrity.cat", std::move(stream));;
+                    }
+                    else if (fileName == APPXBUNDLEMANIFEST_XML)
+                    {
+                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), "AppxMetadata\\AppxBundleManifest.xml", std::move(stream));;
+                    }
+                    else
+                    {
+                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(stream));;
+                    }
                 }
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
             }

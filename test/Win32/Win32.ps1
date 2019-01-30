@@ -83,6 +83,28 @@ function RunTest([int] $SUCCESSCODE, [string] $PACKAGE, [string] $OPT) {
     }
 }
 
+function RunApiTest([string] $FILE) {
+    $CURRENTLOCATION = "$PWD"
+    Set-Location $BINDIR\..\
+    $OPTIONS = "-f $FILE"
+    write-host  "------------------------------------------------------"
+    write-host  "apitest.exe $OPTIONS"
+    write-host  "------------------------------------------------------"
+
+    $p = Start-Process $BINDIR\apitest.exe -ArgumentList "$OPTIONS" -wait -NoNewWindow -PassThru
+    $ERRORCODE = $p.ExitCode
+    if ( $ERRORCODE -eq 0 )
+    {
+        write-host  "succeeded"
+    }
+    else
+    {
+        write-host  "FAILED"
+        $global:TESTFAILED=1
+    }
+    Set-Location $CURRENTLOCATION
+}
+
 FindBinFolder
 
 # Normal package
@@ -157,6 +179,8 @@ RunTest 0x00000000 .\..\appx\flat\FlatBundleWithAsset.appxbundle "-ss"
 ValidateResult ExpectedResults\FlatBundleWithAsset.txt
 
 CleanupUnpackFolder
+
+RunApiTest test\api\input\apitest_test_1.txt
 
 write-host "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if ( $global:TESTFAILED -eq 1 )

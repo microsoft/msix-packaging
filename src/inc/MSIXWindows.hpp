@@ -232,8 +232,8 @@
     #endif // !__IID_DEFINED__
 
     #ifndef S_OK
-    #define S_OK 0
-    #define S_FALSE 1
+    #define S_OK 0L
+    #define S_FALSE 1L
     #endif
 
     #ifndef SUCCEEDED
