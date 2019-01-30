@@ -50,6 +50,9 @@ public:
         getElementsByTagNameFunc = m_env->GetMethodID(
                 xmlElementClass.get(), "GetElementsByTagName",
                 "(Ljava/lang/String;)[Lcom/microsoft/msix/XmlElement;");
+        getElementsFunc = m_env->GetMethodID(
+                xmlElementClass.get(), "GetElements",
+                "(Ljava/lang/String;)[Lcom/microsoft/msix/XmlElement;");
     }
 
     // IXmlElement
@@ -97,7 +100,7 @@ public:
 
         auto intermediate = utf16_to_utf8(name);
         std::unique_ptr<_jstring, JObjectDeleter> jname(m_env->NewStringUTF(intermediate.c_str()));
-        std::unique_ptr<_jobjectArray, JObjectDeleter> javaElements(reinterpret_cast<jobjectArray>(m_env->CallObjectMethod(m_javaXmlElementObject.get(), getElementsByTagNameFunc, jname.get())));
+        std::unique_ptr<_jobjectArray, JObjectDeleter> javaElements(reinterpret_cast<jobjectArray>(m_env->CallObjectMethod(m_javaXmlElementObject.get(), getElementsFunc, jname.get())));
         std::vector<ComPtr<IMsixElement>> elementsEnum;
         // Note: if the number of elements are large, JNI might barf due to too many local refs alive. This should only be used for small lists.
         for(int i = 0; i < m_env->GetArrayLength(javaElements.get()); i++)
@@ -118,6 +121,7 @@ private:
     jmethodID getAttributeValueFunc = nullptr;
     jmethodID getTextContentFunc = nullptr;
     jmethodID getElementsByTagNameFunc = nullptr;
+    jmethodID getElementsFunc = nullptr;
     JNIEnv* m_env = nullptr;
 
     std::string GetAttributeValue(std::string& attributeName)

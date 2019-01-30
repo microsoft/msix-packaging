@@ -90,7 +90,7 @@ ComPtr<IStream>  AppxSignatureObject::GetValidationStream(const std::string& par
         {   // This stream implementation will throw if the underlying stream does not match the digest'
             return ComPtr<IStream>::Make<HashStream>(stream, this->GetContentTypesDigest());
         }
-        else if (part == std::string("CodeIntegrity.cat"))
+        else if (part == std::string("AppxMetadata/CodeIntegrity.cat"))
         {   // This stream implementation will throw if the underlying stream does not match the digest
             return ComPtr<IStream>::Make<HashStream>(stream, this->GetCodeIntegrityDigest());
         }

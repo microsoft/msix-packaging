@@ -65,6 +65,24 @@ function RunTest {
     fi
 }
 
+function RunApiTest {
+    local CURRENTLOCATION=`pwd`
+    cd $BINDIR/..
+    echo "------------------------------------------------------"
+    echo "bin/apitest.exe -f $1"
+    echo "------------------------------------------------------"
+    bin/apitest -f $1
+    local RESULT=$?
+    if [ $RESULT -eq 0 ]
+    then
+        echo "succeeded"
+    else
+        echo "FAILED"
+  	TESTFAILED=1
+    fi
+    cd $CURRENTLOCATION
+}
+
 FindBinFolder
 # return code is last two digits, but in decimal, not hex.  e.g. 0x8bad0002 == 2, 0x8bad0041 == 65, etc...
 # common codes:
@@ -185,6 +203,8 @@ RunTest 0 ./../appx/flat/FlatBundleWithAsset.appxbundle -ss
 ValidateResult ExpectedResult/$directory/FlatBundleWithAsset.txt
 
 CleanupUnpackFolder
+
+RunApiTest test/api/input/apitest_test_1.txt
 
     echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if [ $TESTFAILED -ne 0 ]

@@ -1,9 +1,8 @@
 #!/bin/bash
-
+testfailed=0
 device=7F47E071-9C15-4074-9837-03EC4588A562 # This is an iPhone 8 emulator
 project=../mobile/iOSBVT/iOSBVT.xcodeproj
 sdk=iphonesimulator11.4
-outputFile=/private/tmp/testResults.txt
 
 usage()
 {
@@ -97,17 +96,32 @@ echo "Uninstalling app and shuting down emulator"
 xcrun simctl uninstall booted $appId
 xcrun simctl shutdown $device
 
-if [ ! -f $outputFile ]
+function ParseResult {
+    local FILE="$1"
+    if [ ! -f $FILE ]
+    then
+        echo $FILE" not found!"
+        exit 1
+    fi
+    cat $FILE
+    if grep -q "FAILED" $FILE
+    then
+        echo "FAILED"
+        testfailed=1
+    else
+        echo "succeeded"
+    fi
+}
+
+ParseResult /private/tmp/testResults.txt
+ParseResult /private/tmp/testApiResults.txt
+
+echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+if [ $testfailed -ne 0 ]
 then
-    echo "testResults.txt not found!"
-    exit 1
-fi
-cat $outputFile
-if grep -q "passed" $outputFile
-then
-    echo $app " tests passed"
-    exit 0
+    echo "                           FAILED                                 "
+    exit $testfailed
 else
-    echo $app " tests failed."
-    exit 1
+    echo "                           passed                                 "
+    exit 0
 fi

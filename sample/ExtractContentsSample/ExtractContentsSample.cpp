@@ -371,7 +371,10 @@ HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
     fileSizeLargeInteger.QuadPart = fileSize;
 
     std::printf("\tFile name: %s\n" , utf16_to_utf8(fileName.Get()).c_str());
-    std::printf("\tSize: %llu bytes\n\n", fileSize);
+    std::printf("\tSize: %llu bytes\n", fileSize);
+    APPX_COMPRESSION_OPTION compressionOpt;
+    RETURN_IF_FAILED(file->GetCompressionOption(&compressionOpt));
+    std::printf("\tCompression option: %d\n\n", compressionOpt);
 
     // Write the file to disk
     RETURN_IF_FAILED(file->GetStream(&fileStream));

@@ -16,6 +16,8 @@
 
 #include "MobileTests.hpp"
 
+namespace MsixMobileTest {
+
 // Used for test results
 bool g_TestFailed = false;
 
@@ -193,7 +195,9 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     return S_OK;
 }
 
+} // MsixMobileTest
+
 __attribute__((visibility("default"))) signed long RunTests(char* source, char* target)
 {
-    return static_cast<signed long>(RunTestsInternal(source, target));
+    return static_cast<signed long>(MsixMobileTest::RunTestsInternal(source, target));
 }
