@@ -130,7 +130,7 @@ namespace MSIX { namespace Encoding {
             {   result.push_back(fileNameW[index]);
             }
         }
-        return utf16_to_utf8(result);
+        return wstring_to_utf8(result);
     }
 
     const EncodingChar EncodingToChar[] =
@@ -338,7 +338,7 @@ namespace MSIX { namespace Encoding {
             {   result += fileNameW[index];
             }
         }
-        return utf16_to_utf8(result);
+        return wstring_to_utf8(result);
     }
 
     // Douglas Crockford's base 32 alphabet variant is 0-9, A-Z except for i, l, o, and u.

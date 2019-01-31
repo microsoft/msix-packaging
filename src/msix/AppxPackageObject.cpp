@@ -533,7 +533,7 @@ namespace MSIX {
     {
         if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
         ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
-        auto result = GetAppxFile(Encoding::EncodeFileName(utf16_to_utf8(fileName)));
+        auto result = GetAppxFile(Encoding::EncodeFileName(wstring_to_utf8(fileName)));
         ThrowErrorIfNot(Error::FileNotFound, result, "requested file not in package")
         // Clients expect the stream's pointer to be at the start of the file!
         ComPtr<IStream> stream;
@@ -618,7 +618,7 @@ namespace MSIX {
         #ifdef BUNDLE_SUPPORT
             if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
             ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || payloadPackage == nullptr || *payloadPackage != nullptr), "bad pointer");
-            std::string name = utf16_to_utf8(fileName);
+            std::string name = wstring_to_utf8(fileName);
             auto result = GetAppxFile(name);
             ThrowErrorIfNot(Error::FileNotFound, result, "Requested package not in bundle")
             // Clients expect the stream's pointer to be at the start of the file!

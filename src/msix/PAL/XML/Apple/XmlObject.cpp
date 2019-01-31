@@ -42,7 +42,7 @@ public:
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        auto intermediate = utf16_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]);
+        auto intermediate = wstring_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]);
         return GetAttributeValue(intermediate);
     }
 
@@ -64,7 +64,7 @@ public:
     HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) noexcept override try
     {
         ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
-        auto intermediate = utf16_to_utf8(name);
+        auto intermediate = wstring_to_utf8(name);
         auto attributeValue = GetAttributeValue(intermediate);
         return m_factory->MarshalOutString(attributeValue, value);;
 
@@ -81,7 +81,7 @@ public:
     {
         ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
 
-        auto intermediate = utf16_to_utf8(name);
+        auto intermediate = wstring_to_utf8(name);
 
         auto elementsFound = m_xmlNode->FindElements(intermediate);
 

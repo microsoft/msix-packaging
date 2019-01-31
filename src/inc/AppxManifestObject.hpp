@@ -105,7 +105,7 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetBoolValue(LPCWSTR name, BOOL* value) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer");
-            auto result  = m_boolValues.find(utf16_to_utf8(name));
+            auto result  = m_boolValues.find(wstring_to_utf8(name));
             if (result != m_boolValues.end())
             {
                 *value = result->second ? TRUE : FALSE;
@@ -117,7 +117,7 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetStringValue(LPCWSTR name, LPWSTR* value) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (value == nullptr || *value != nullptr), "bad pointer");
-            auto result  = m_stringValues.find(utf16_to_utf8(name));
+            auto result  = m_stringValues.find(wstring_to_utf8(name));
             if (result != m_stringValues.end())
             {
                 return m_factory->MarshalOutString(result->second, value);

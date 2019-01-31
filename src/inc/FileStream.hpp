@@ -41,7 +41,7 @@ namespace MSIX {
 
         FileStream(const std::wstring& name, Mode mode)
         {
-            m_name = utf16_to_utf8(name);
+            m_name = wstring_to_utf8(name);
             #ifdef WIN32
             static const wchar_t* modes[] = { L"rb", L"wb", L"ab", L"r+b", L"w+b", L"a+b" };
             errno_t err = _wfopen_s(&m_file, name.c_str(), modes[mode]);

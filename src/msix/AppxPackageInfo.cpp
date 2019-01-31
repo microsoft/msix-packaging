@@ -110,7 +110,7 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidParameter, (isSame == nullptr), "bad pointer" );
         *isSame = FALSE;
-        if (0 == m_publisher.compare(utf16_to_utf8(other)))
+        if (0 == m_publisher.compare(wstring_to_utf8(other)))
         {
             *isSame = TRUE;
         }

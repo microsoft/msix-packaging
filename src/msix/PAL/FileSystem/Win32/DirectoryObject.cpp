@@ -61,7 +61,7 @@ namespace MSIX {
         do
         {
             utf16Name = std::wstring(findFileData.cFileName);
-            auto utf8Name = utf16_to_utf8(utf16Name);
+            auto utf8Name = wstring_to_utf8(utf16Name);
 
             if (((options & WalkOptions::Directories) == WalkOptions::Directories) &&
                 (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
