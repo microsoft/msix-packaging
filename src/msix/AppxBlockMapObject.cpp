@@ -124,7 +124,7 @@ namespace MSIX {
         ThrowErrorIf(Error::InvalidParameter, (
             filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
         ), "bad pointer");
-        auto blockMapFile = m_blockMapFiles.find(utf16_to_utf8(filename));
+        auto blockMapFile = m_blockMapFiles.find(wstring_to_utf8(filename));
         ThrowErrorIf(Error::InvalidParameter, (blockMapFile == m_blockMapFiles.end()), "File not found!");
         MSIX::ComPtr<IAppxBlockMapFile> result = blockMapFile->second;
         *file = result.Detach();

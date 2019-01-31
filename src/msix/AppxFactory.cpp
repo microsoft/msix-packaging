@@ -73,7 +73,7 @@ namespace MSIX {
 
         ComPtr<IMsixFactory> self;
         ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
-        auto stream = ComPtr<IStream>::Make<FileStream>(utf16_to_utf8(signatureFileName), FileStream::Mode::READ);
+        auto stream = ComPtr<IStream>::Make<FileStream>(wstring_to_utf8(signatureFileName), FileStream::Mode::READ);
         auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream);
         ComPtr<IStream> input(inputStream);
         auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", input);

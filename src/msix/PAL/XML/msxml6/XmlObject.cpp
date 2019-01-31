@@ -217,7 +217,7 @@ public:
         Variant value;
         if (GetAttribute(attributeNames[static_cast<std::uint8_t>(attribute)], value.AddressOf()))
         {
-            return utf16_to_utf8(static_cast<WCHAR*>(value.Get().bstrVal));
+            return wstring_to_utf8(static_cast<WCHAR*>(value.Get().bstrVal));
         }
         return "";
     }
@@ -236,7 +236,7 @@ public:
         ThrowHrIfFailed(node->get_text(value.AddressOf()));
         if (value.Get() != nullptr)
         {
-            return utf16_to_utf8(static_cast<WCHAR*>(value.Get()));
+            return wstring_to_utf8(static_cast<WCHAR*>(value.Get()));
         }
         return "";
     }
@@ -318,7 +318,7 @@ protected:
         if (errorInfo)                                                           \
         {   Bstr description;                                                    \
             ThrowHrIfFailed(errorInfo->GetDescription(description.AddressOf())); \
-            Global::Log::Append(utf16_to_utf8(description.Get()));               \
+            Global::Log::Append(wstring_to_utf8(description.Get()));               \
         }                                                                        \
         ThrowHrIfFailed(result);                                                 \
     }                                                                            \
@@ -501,7 +501,7 @@ public:
                 ThrowHrIfFailed(error->get_reason(reason.AddressOf()));
                 std::ostringstream message;            
                 message << "XML error: " << std::hex << errorCode << " on line " << std::dec << lineNumber << ", col " << columnNumber << ".";
-                if (nullptr != reason.Get()) { message << "  " << utf16_to_utf8(static_cast<wchar_t*>(reason.Get())); }
+                if (nullptr != reason.Get()) { message << "  " << wstring_to_utf8(static_cast<wchar_t*>(reason.Get())); }
 
                 // As necessary, translate MSXML6-specific errors w.r.t. malformed/non-schema-compliant 
                 // XML into generic Xml errors and leave the full details in the log.
