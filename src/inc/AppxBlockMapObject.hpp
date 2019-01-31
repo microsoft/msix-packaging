@@ -20,9 +20,8 @@
 #include "Enumerators.hpp"
 
 // internal interface
-EXTERN_C const IID IID_IAppxBlockMapInternal;
-#ifndef WIN32
 // {67fed21a-70ef-4175-8f12-415b213ab6d2}
+#ifndef WIN32
 interface IAppxBlockMapInternal : public IUnknown
 #else
 #include "Unknwn.h"
@@ -31,11 +30,11 @@ class IAppxBlockMapInternal : public IUnknown
 #endif
 {
 public:
-    virtual std::vector<std::string>  GetFileNames() = 0;
-    virtual std::vector<MSIX::Block>  GetBlocks(const std::string& fileName) = 0;
+    virtual std::vector<std::string> GetFileNames() = 0;
+    virtual std::vector<MSIX::Block> GetBlocks(const std::string& fileName) = 0;
     virtual MSIX::ComPtr<IAppxBlockMapFile> GetFile(const std::string& fileName) = 0;
 };
-SpecializeUuidOfImpl(IAppxBlockMapInternal);
+MSIX_INTERFACE(IAppxBlockMapInternal, 0x67fed21a,0x70ef,0x4175,0x8f,0x12,0x41,0x5b,0x21,0x3a,0xb6,0xd2);
 
 namespace MSIX {
 
@@ -66,7 +65,7 @@ namespace MSIX {
         Block*        m_block;
     };
 
-    class AppxBlockMapFile final : public MSIX::ComClass<AppxBlockMapFile, IAppxBlockMapFile>
+    class AppxBlockMapFile final : public MSIX::ComClass<AppxBlockMapFile, IAppxBlockMapFile, IAppxBlockMapFileUtf8 >
     {
     public:
         AppxBlockMapFile(
@@ -129,6 +128,13 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
+        // IAppxBlockMapFileUtf8
+        HRESULT STDMETHODCALLTYPE GetName(LPSTR *name) noexcept override try
+        {
+            ThrowHrIfFailed(m_factory->MarshalOutStringUtf8(m_name, name));
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
     private:
         std::vector<ComPtr<IAppxBlockMapBlock>> m_blockMapBlocks;
         std::vector<Block>* m_blocks;
@@ -139,7 +145,7 @@ namespace MSIX {
     };
 
     // Object backed by AppxBlockMap.xml
-    class AppxBlockMapObject final : public MSIX::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IAppxBlockMapInternal>
+    class AppxBlockMapObject final : public MSIX::ComClass<AppxBlockMapObject, IAppxBlockMapReader, IVerifierObject, IAppxBlockMapInternal, IAppxBlockMapReaderUtf8 >
     {
     public:
         AppxBlockMapObject(IMsixFactory* factory, const ComPtr<IStream>& stream);
@@ -160,6 +166,9 @@ namespace MSIX {
         std::vector<std::string>        GetFileNames() override;
         std::vector<Block>              GetBlocks(const std::string& fileName) override;
         MSIX::ComPtr<IAppxBlockMapFile> GetFile(const std::string& fileName) override;
+
+        // IAppxBlockMapReaderUtf8
+        HRESULT STDMETHODCALLTYPE GetFile(LPCSTR filename, IAppxBlockMapFile **file) noexcept override;
 
     protected:
         std::map<std::string, std::vector<Block>>        m_blockMap;

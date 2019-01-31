@@ -20,7 +20,7 @@
 #include "StreamBase.hpp"
 
 namespace MSIX {
-    class AppxFile : public ComClass<AppxFile, IAppxFile>
+    class AppxFile : public ComClass<AppxFile, IAppxFile, IAppxFileUtf8>
     {
     public:
         AppxFile(IMsixFactory* factory, const std::string& name, const ComPtr<IStream>& stream) : m_factory(factory), m_name(name), m_stream(stream)
@@ -72,6 +72,17 @@ namespace MSIX {
             ThrowErrorIf(Error::InvalidParameter, (stream == nullptr || *stream != nullptr), "bad pointer");
             *stream = m_stream.As<IStream>().Detach();
             return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
+        // IAppxFileUtf8
+        virtual HRESULT STDMETHODCALLTYPE GetContentType(LPSTR* contentType) noexcept override
+        {
+            return static_cast<HRESULT>(Error::NotImplemented);
+        }
+
+        virtual HRESULT STDMETHODCALLTYPE GetName(LPSTR* fileName) noexcept override try
+        {
+            return m_factory->MarshalOutStringUtf8(m_name, fileName);
         } CATCH_RETURN();
 
     protected:

@@ -32,9 +32,8 @@ inline constexpr FileNameOptions operator |(FileNameOptions a, FileNameOptions b
 }
 
 // internal interface
-EXTERN_C const IID IID_IStorageObject;   
-#ifndef WIN32
 // {ec25b96e-0db1-4483-bdb1-cab1109cb741}
+#ifndef WIN32
 interface IStorageObject : public IUnknown
 #else
 #include "Unknwn.h"
@@ -59,5 +58,4 @@ public:
     // Returns the file name of the storage object.
     virtual std::string GetFileName() = 0;
 };
-
-SpecializeUuidOfImpl(IStorageObject);
+MSIX_INTERFACE(IStorageObject, 0xec25b96e,0x0db1,0x4483,0xbd,0xb1,0xca,0xb1,0x10,0x9c,0xb7,0x41);

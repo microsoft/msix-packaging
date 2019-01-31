@@ -197,4 +197,11 @@ namespace MSIX {
             Make<EnumeratorCom<IAppxManifestQualifiedResourcesEnumerator, IAppxManifestQualifiedResource>>(languages).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
+
+    // IAppxBundleManifestPackageInfoUtf8
+    HRESULT STDMETHODCALLTYPE AppxBundleManifestPackageInfo::GetFileName(LPSTR* fileName) noexcept try
+    {
+        return m_factory->MarshalOutStringUtf8(m_fileName, fileName);
+    } CATCH_RETURN();
+
 }

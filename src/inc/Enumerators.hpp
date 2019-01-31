@@ -52,8 +52,8 @@ namespace MSIX {
 
     // Helper class for implementing any IAppx*Enumerator that has an string as an out parameter
     // for their GetCurrent method.
-    template<typename EnumeratorInterface>
-    class EnumeratorString final : public MSIX::ComClass<EnumeratorString<EnumeratorInterface>, EnumeratorInterface>
+    template<typename EnumeratorInterface, typename EnumeratorInterfaceUtf8>
+    class EnumeratorString final : public MSIX::ComClass<EnumeratorString<EnumeratorInterface, EnumeratorInterfaceUtf8>, EnumeratorInterface, EnumeratorInterfaceUtf8>
     {
     public:
         EnumeratorString(IMsixFactory* factory, std::vector<std::string>& values) :
@@ -79,6 +79,14 @@ namespace MSIX {
         {
             ThrowErrorIfNot(Error::InvalidParameter, (hasNext), "bad pointer");
             *hasNext = (++m_cursor != m_values.size()) ? TRUE : FALSE;
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
+        // IAppx*EnumeratorUtf8
+        HRESULT STDMETHODCALLTYPE GetCurrent(LPSTR* value) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (value == nullptr || *value != nullptr), "bad pointer");
+            return m_factory->MarshalOutStringUtf8(m_values.at(m_cursor), value);
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 

@@ -1,7 +1,7 @@
 //
 //  Copyright (C) 2017 Microsoft.  All rights reserved.
 //  See LICENSE file in the project root for full license information.
-// 
+//
 // This header defines the types used by Windows that are not defined in other platforms
 #ifndef __appxwindows_hpp__
 #define __appxwindows_hpp__
@@ -46,7 +46,7 @@
 
     #ifndef _WINDOWS_TYPES
     #define _WINDOWS_TYPES
-    
+
     #ifndef _HRESULT_DEFINED
     #define _HRESULT_DEFINED
     typedef signed long HRESULT;
@@ -271,14 +271,9 @@
     #if !defined (_SYS_GUID_OPERATORS_)
     #define _SYS_GUID_OPERATORS_
 
-    // Faster (but makes code fatter) inline version...use sparingly
     inline int IsEqualGUID(REFGUID rguid1, REFGUID rguid2)
     {
-        return (
-            ((unsigned long *)&rguid1)[0] == ((unsigned long *)&rguid2)[0] &&
-            ((unsigned long *)&rguid1)[1] == ((unsigned long *)&rguid2)[1] &&
-            ((unsigned long *)&rguid1)[2] == ((unsigned long *)&rguid2)[2] &&
-            ((unsigned long *)&rguid1)[3] == ((unsigned long *)&rguid2)[3]);
+        return !memcmp(&rguid1, &rguid2, sizeof(GUID));
     }
 
     // Same type, different name
@@ -298,6 +293,6 @@
     }
     #endif  // _SYS_GUID_OPERATOR_EQ_
     #endif  // _SYS_GUID_OPERATORS_
-
 #endif // #else of #ifdef WIN32
+
 #endif //__appxwindows_hpp__

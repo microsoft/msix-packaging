@@ -187,12 +187,12 @@ public:
 
     // IUnknown. 
     // This is the loong way. Look at ComClass<> in src\inc\ComHelper.hpp for an example on how to avoid implementing IUnknown without pain.
-    virtual ULONG STDMETHODCALLTYPE AddRef() override
+    virtual ULONG STDMETHODCALLTYPE AddRef() noexcept override
     {
         return ++m_ref;
     }
 
-    virtual ULONG STDMETHODCALLTYPE Release() override
+    virtual ULONG STDMETHODCALLTYPE Release() noexcept override
     {
         if (--m_ref == 0)
         {
@@ -342,12 +342,12 @@ public:
     MyStreamFactory(const std::wstring& path) : m_path(path), m_ref(1) {}
 
     // IUnknown
-    virtual ULONG STDMETHODCALLTYPE AddRef() override
+    virtual ULONG STDMETHODCALLTYPE AddRef() noexcept override
     {
         return ++m_ref;
     }
 
-    virtual ULONG STDMETHODCALLTYPE Release() override
+    virtual ULONG STDMETHODCALLTYPE Release() noexcept override
     {
         if (--m_ref == 0)
         {
@@ -383,15 +383,21 @@ public:
     // IMsixStreamFactory
     virtual HRESULT STDMETHODCALLTYPE CreateStreamOnRelativePath(LPCWSTR relativePath, IStream** stream) noexcept override
     {
+        return CreateStreamOnRelativePathUtf8(utf16_to_utf8(relativePath).c_str(), stream);
+    }
+
+    virtual HRESULT STDMETHODCALLTYPE CreateStreamOnRelativePathUtf8(LPCSTR relativePath, IStream** stream) noexcept override
+    {
         *stream =  nullptr;
         ComPtr<IStream> result;
+        auto path = utf16_to_utf8(m_path);
         #ifdef WIN32
-        std::wstring fullFileName = m_path + std::wstring(L"\\") + relativePath;
+        std::string fullFileName = path + std::string("\\") + relativePath;
         #else
-        std::wstring fullFileName = m_path + std::wstring(L"/") + relativePath;
+        std::string fullFileName = path + std::string("/") + relativePath;
         std::replace(fullFileName.begin(), fullFileName.end(), '\\', '/' );
         #endif
-        RETURN_IF_FAILED(ComPtr<IStream>::MakeAndInitialize<MyStream>(&result, utf16_to_utf8(fullFileName), MyStream::Mode::READ));
+        RETURN_IF_FAILED(ComPtr<IStream>::MakeAndInitialize<MyStream>(&result, fullFileName, MyStream::Mode::READ));
         if (result.Get() != nullptr)
         {
             *stream = result.Detach();

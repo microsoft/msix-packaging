@@ -114,12 +114,12 @@ public:
     OverrideLanguages(char** languages, int numLanguages) : m_languages(languages), m_numLanguages(numLanguages) {}
 
     // IUnknown
-    virtual ULONG STDMETHODCALLTYPE AddRef() override
+    virtual ULONG STDMETHODCALLTYPE AddRef() noexcept override
     {
         return ++m_ref;
     }
 
-    virtual ULONG STDMETHODCALLTYPE Release() override
+    virtual ULONG STDMETHODCALLTYPE Release() noexcept override
     {
         if (--m_ref == 0)
         {

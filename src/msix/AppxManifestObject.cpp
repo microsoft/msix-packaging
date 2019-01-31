@@ -293,7 +293,7 @@ namespace MSIX {
             return true;
         });
         m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Resources_Resource, visitorResource);
-        *resources = ComPtr<IAppxManifestResourcesEnumerator>::Make<EnumeratorString<IAppxManifestResourcesEnumerator>>(m_factory, appxResources).Detach();
+        *resources = ComPtr<IAppxManifestResourcesEnumerator>::Make<EnumeratorString<IAppxManifestResourcesEnumerator, IAppxManifestResourcesEnumeratorUtf8>>(m_factory, appxResources).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 

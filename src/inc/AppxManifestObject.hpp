@@ -18,9 +18,8 @@
 #include "IXml.hpp"
 #include "UnicodeConversion.hpp"
 
-EXTERN_C const IID IID_IAppxManifestObject;
-#ifndef WIN32
 // {eff6d561-a236-4058-9f1d-8f93633fba4b}
+#ifndef WIN32
 interface IAppxManifestObject : public IUnknown
 #else
 #include "Unknwn.h"
@@ -31,13 +30,11 @@ class IAppxManifestObject : public IUnknown
 public:
     virtual const MSIX_PLATFORMS GetPlatform() = 0;
 };
-
-
-SpecializeUuidOfImpl(IAppxManifestObject);
+MSIX_INTERFACE(IAppxManifestObject, 0xeff6d561,0xa236,0x4058,0x9f,0x1d,0x8f,0x93,0x63,0x3f,0xba,0x4b);
 
 namespace MSIX {
 
-    class AppxManifestTargetDeviceFamily final : public ComClass<AppxManifestTargetDeviceFamily, IAppxManifestTargetDeviceFamily>
+    class AppxManifestTargetDeviceFamily final : public ComClass<AppxManifestTargetDeviceFamily, IAppxManifestTargetDeviceFamily, IAppxManifestTargetDeviceFamilyUtf8>
     {
     public:
         AppxManifestTargetDeviceFamily(IMsixFactory* factory, std::string& name, std::string& minVersion, std::string& maxVersion) :
@@ -47,6 +44,7 @@ namespace MSIX {
             m_maxVersion = DecodeVersionNumber(maxVersion);
         }
 
+        // IAppxManifestTargetDeviceFamily
         HRESULT STDMETHODCALLTYPE GetName(LPWSTR* name) noexcept override try
         {
             return m_factory->MarshalOutString(m_name, name);
@@ -66,6 +64,12 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
+        // IAppxManifestTargetDeviceFamilyUtf8
+        HRESULT STDMETHODCALLTYPE GetName(LPSTR* name) noexcept override try
+        {
+            return m_factory->MarshalOutStringUtf8(m_name, name);
+        } CATCH_RETURN();
+
     protected:
         IMsixFactory* m_factory;
         std::string m_name;
@@ -73,14 +77,15 @@ namespace MSIX {
         std::uint64_t m_maxVersion;
     };
 
-    class AppxManifestApplication final : public ComClass<AppxManifestApplication, IAppxManifestApplication>
+    class AppxManifestApplication final : public ComClass<AppxManifestApplication, IAppxManifestApplication, IAppxManifestApplicationUtf8>
     {
     public:
         AppxManifestApplication(IMsixFactory* factory, std::string& aumid) :
             m_factory(factory), m_aumid(aumid)
         {}
 
-        HRESULT STDMETHODCALLTYPE GetStringValue(LPCWSTR name, LPWSTR* value) override
+        // IAppxManifestApplication
+        HRESULT STDMETHODCALLTYPE GetStringValue(LPCWSTR name, LPWSTR* value) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
@@ -90,28 +95,33 @@ namespace MSIX {
             return m_factory->MarshalOutString(m_aumid, appUserModelId);
         } CATCH_RETURN();
 
+        // IAppxManifestApplicationUtf8
+        HRESULT STDMETHODCALLTYPE GetStringValue(LPCSTR name, LPSTR* value) noexcept override
+        {
+            return static_cast<HRESULT>(Error::NotImplemented);
+        }
+
+        HRESULT STDMETHODCALLTYPE GetAppUserModelId(LPSTR* appUserModelId) noexcept override try
+        {
+            return m_factory->MarshalOutStringUtf8(m_aumid, appUserModelId);
+        } CATCH_RETURN();
+
     protected:
         IMsixFactory* m_factory;
         std::string m_aumid;
     };
 
-    class AppxManifestProperties final : public ComClass<AppxManifestProperties, IAppxManifestProperties>
+    class AppxManifestProperties final : public ComClass<AppxManifestProperties, IAppxManifestProperties, IAppxManifestPropertiesUtf8>
     {
     public:
         AppxManifestProperties(IMsixFactory* factory, std::map<std::string, std::string> stringValues, std::map<std::string, bool> boolValues) :
             m_factory(factory), m_stringValues(stringValues), m_boolValues(boolValues)
         {}
 
+        // IAppxManifestProperties
         HRESULT STDMETHODCALLTYPE GetBoolValue(LPCWSTR name, BOOL* value) noexcept override try
         {
-            ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer");
-            auto result  = m_boolValues.find(wstring_to_utf8(name));
-            if (result != m_boolValues.end())
-            {
-                *value = result->second ? TRUE : FALSE;
-                return static_cast<HRESULT>(Error::OK);
-            }
-            return static_cast<HRESULT>(Error::InvalidParameter);
+            return GetBoolValue(wstring_to_utf8(name).c_str(), value);
         } CATCH_RETURN();
 
         HRESULT STDMETHODCALLTYPE GetStringValue(LPCWSTR name, LPWSTR* value) noexcept override try
@@ -125,6 +135,30 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::InvalidParameter);
         } CATCH_RETURN();
 
+        // IAppxManifestPropertiesUtf8
+        HRESULT STDMETHODCALLTYPE GetBoolValue(LPCSTR name, BOOL* value) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer");
+            auto result  = m_boolValues.find(name);
+            if (result != m_boolValues.end())
+            {
+                *value = result->second ? TRUE : FALSE;
+                return static_cast<HRESULT>(Error::OK);
+            }
+            return static_cast<HRESULT>(Error::InvalidParameter);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetStringValue(LPCSTR name, LPSTR* value) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (value == nullptr || *value != nullptr), "bad pointer");
+            auto result  = m_stringValues.find(name);
+            if (result != m_stringValues.end())
+            {
+                return m_factory->MarshalOutStringUtf8(result->second, value);
+            }
+            return static_cast<HRESULT>(Error::InvalidParameter);
+        } CATCH_RETURN();
+
         protected:
             IMsixFactory* m_factory;
             std::map<std::string, std::string> m_stringValues;
@@ -132,7 +166,7 @@ namespace MSIX {
     };
 
     // TODO: add IAppxManifestPackageDependency2 if needed
-    class AppxManifestPackageDependency final : public ComClass<AppxManifestPackageDependency, IAppxManifestPackageDependency>
+    class AppxManifestPackageDependency final : public ComClass<AppxManifestPackageDependency, IAppxManifestPackageDependency, IAppxManifestPackageDependencyUtf8>
     {
     public:
         AppxManifestPackageDependency(IMsixFactory* factory, std::string& minVersion, std::string& name, std::string& publisher) :
@@ -141,6 +175,7 @@ namespace MSIX {
             m_minVersion = DecodeVersionNumber(minVersion);
         }
 
+        // IAppxManifestPackageDependency
         HRESULT STDMETHODCALLTYPE GetName(LPWSTR* name) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (name == nullptr || *name != nullptr), "bad pointer");
@@ -158,6 +193,19 @@ namespace MSIX {
             ThrowErrorIf(Error::InvalidParameter, (minVersion == nullptr), "bad pointer");
             *minVersion = m_minVersion;
             return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
+        // IAppxManifestPackageDependencyUtf8
+        HRESULT STDMETHODCALLTYPE GetName(LPSTR* name) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (name == nullptr || *name != nullptr), "bad pointer");
+            return m_factory->MarshalOutStringUtf8(m_name, name);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetPublisher(LPSTR* publisher) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (publisher == nullptr || *publisher != nullptr), "bad pointer");
+            return m_factory->MarshalOutStringUtf8(m_publisher, publisher);
         } CATCH_RETURN();
 
     protected:

@@ -9,9 +9,8 @@
 #include <vector>
 
 // internal interface
-EXTERN_C const IID IID_IMsixFactory;   
-#ifndef WIN32
 // {1f850db4-32b8-4db6-8bf4-5a897eb611f1}
+#ifndef WIN32
 interface IMsixFactory : public IUnknown
 #else
 #include "UnKnwn.h"
@@ -25,6 +24,6 @@ public:
     virtual MSIX_VALIDATION_OPTION GetValidationOptions() = 0;
     virtual MSIX::ComPtr<IStream> GetResource(const std::string& resource) = 0;
     virtual HRESULT MarshalOutWstring(std::wstring& internal, LPWSTR* result) = 0;
+    virtual HRESULT MarshalOutStringUtf8(std::string& internal, LPSTR* result) = 0;
 };
-
-SpecializeUuidOfImpl(IMsixFactory);
+MSIX_INTERFACE(IMsixFactory, 0x1f850db4,0x32b8,0x4db6,0x8b,0xf4,0x5a,0x89,0x7e,0xb6,0x11,0xf1);

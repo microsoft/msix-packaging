@@ -136,12 +136,8 @@ static const char* xPaths[] = {
 };
 #endif
 
-EXTERN_C const IID IID_IXmlElement;
-EXTERN_C const IID IID_IXmlDom;
-EXTERN_C const IID IID_IXmlFactory;
-
-#ifndef WIN32
 // {ac94449e-442d-4bed-8fca-83770c0f7ee9}
+#ifndef WIN32
 interface IXmlElement : public IUnknown
 #else
 #include "Unknwn.h"
@@ -155,6 +151,7 @@ public:
     virtual std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) = 0;
     virtual std::string               GetText() = 0;
 };
+MSIX_INTERFACE(IXmlElement, 0xac94449e,0x442d,0x4bed,0x8f,0xca,0x83,0x77,0x0c,0x0f,0x7e,0xe9);
 
 struct XmlVisitor
 {        
@@ -166,8 +163,8 @@ struct XmlVisitor
     XmlVisitor(void* c, lambda f) : context(c), Callback(f) {}
 };
 
-#ifndef WIN32
 // {0e7a446e-baf7-44c1-b38a-216bfa18a1a8}
+#ifndef WIN32
 interface IXmlDom : public IUnknown
 #else
 class IXmlDom : public IUnknown
@@ -182,9 +179,10 @@ public:
         XmlVisitor&  visitor
     ) = 0;
 };
+MSIX_INTERFACE(IXmlDom, 0x0e7a446e,0xbaf7,0x44c1,0xb3,0x8a,0x21,0x6b,0xfa,0x18,0xa1,0xa8);
 
-#ifndef WIN32
 // {f82a60ec-fbfc-4cb9-bc04-1a0fe2b4d5be}
+#ifndef WIN32
 interface IXmlFactory : public IUnknown
 #else
 class IXmlFactory : public IUnknown
@@ -194,10 +192,7 @@ class IXmlFactory : public IUnknown
 public:
     virtual MSIX::ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, const MSIX::ComPtr<IStream>& stream) = 0;
 };
-
-SpecializeUuidOfImpl(IXmlElement);
-SpecializeUuidOfImpl(IXmlDom);
-SpecializeUuidOfImpl(IXmlFactory);
+MSIX_INTERFACE(IXmlFactory, 0xf82a60ec,0xfbfc,0x4cb9,0xbc,0x04,0x1a,0x0f,0xe2,0xb4,0xd5,0xbe);
 
 namespace MSIX {
     MSIX::ComPtr<IXmlFactory> CreateXmlFactory(IMsixFactory* factory);
