@@ -379,12 +379,24 @@ void StartTestPackage(void*)
                     VERIFY_SUCCEEDED(files->GetCurrent(&file));
                     Text<wchar_t> fileName;
                     VERIFY_SUCCEEDED(file->GetName(&fileName));
-                    VERIFY_ARE_EQUAL(fileName.ToString(), expectedPayloadFiles.at(nFiles));
+                    VERIFY_ARE_EQUAL(expectedPayloadFiles.at(nFiles), fileName.ToString());
+
+                    ComPtr<IAppxFileUtf8> fileUtf8;
+                    VERIFY_SUCCEEDED(file->QueryInterface(UuidOfImpl<IAppxFileUtf8>::iid, reinterpret_cast<void**>(&fileUtf8)));
+                    Text<char> fileNameUtf8;
+                    VERIFY_SUCCEEDED(fileUtf8->GetName(&fileNameUtf8));
+                    VERIFY_ARE_EQUAL(expectedPayloadFiles.at(nFiles), fileNameUtf8.ToString());
 
                     // Compare that the file from GetPayloadFile is the same file
                     ComPtr<IAppxFile> file2;
                     VERIFY_SUCCEEDED(packageReader->GetPayloadFile(fileName.Get(), &file2));
                     VERIFY_ARE_SAME(file.Get(), file2.Get());
+
+                    ComPtr<IAppxPackageReaderUtf8> packageReaderUtf8;
+                    VERIFY_SUCCEEDED(packageReader->QueryInterface(UuidOfImpl<IAppxPackageReaderUtf8>::iid, reinterpret_cast<void**>(&packageReaderUtf8)));
+                    ComPtr<IAppxFile> file3;
+                    VERIFY_SUCCEEDED(packageReaderUtf8->GetPayloadFile(fileNameUtf8.Get(), &file3));
+                    VERIFY_ARE_SAME(file2.Get(), file3.Get());
 
                     VERIFY_SUCCEEDED(files->MoveNext(&hasCurrent));
                     nFiles++;
@@ -502,6 +514,12 @@ void StartTestPackageManifest(void*)
                     VERIFY_SUCCEEDED(app->GetAppUserModelId(&aumid));
                     VERIFY_ARE_EQUAL(expectedAumid, aumid.ToString());
 
+                    Text<char> aumidUtf8;
+                    ComPtr<IAppxManifestApplicationUtf8> appUtf8;
+                    VERIFY_SUCCEEDED(app->QueryInterface(UuidOfImpl<IAppxManifestApplicationUtf8>::iid, reinterpret_cast<void**>(&appUtf8)));
+                    VERIFY_SUCCEEDED(appUtf8->GetAppUserModelId(&aumidUtf8));
+                    VERIFY_ARE_EQUAL(expectedAumid, aumidUtf8.ToString());
+
                     // Note: this isn't implemented. But adding check so when we do, we update this test too.
                     Text<wchar_t> value;
                     VERIFY_HR(static_cast<HRESULT>(MSIX::Error::NotImplemented), app->GetStringValue(L"dummy", &value));
@@ -519,14 +537,19 @@ void StartTestPackageManifest(void*)
                 ComPtr<IAppxManifestProperties> properties;
                 VERIFY_SUCCEEDED(manifestReader->GetProperties(&properties));
 
+                ComPtr<IAppxManifestPropertiesUtf8> propertiesUtf8;
+                VERIFY_SUCCEEDED(properties->QueryInterface(UuidOfImpl<IAppxManifestPropertiesUtf8>::iid, reinterpret_cast<void**>(&propertiesUtf8)));
+
                 for(int i = 0; i < numberOfTests; i++)
                 {
                     auto valueType = GetInput<std::string>();
-                    auto value = utf8_to_utf16(GetInput<std::string>());
+                    auto valueUtf8 = GetInput<std::string>();
+                    auto value = utf8_to_utf16(valueUtf8);
                     auto expected = GetInput<std::string>();
                     if (valueType == "BoolValue")
                     {
-                        BOOL result;
+                        BOOL result = FALSE;
+                        BOOL resultUtf8 = FALSE;
                         if (expected == "invalid")
                         {
                             VERIFY_HR(static_cast<HRESULT>(MSIX::Error::InvalidParameter), properties->GetBoolValue(value.c_str(), &result));
@@ -534,13 +557,16 @@ void StartTestPackageManifest(void*)
                         else
                         {
                             VERIFY_SUCCEEDED(properties->GetBoolValue(value.c_str(), &result));
+                            VERIFY_SUCCEEDED(propertiesUtf8->GetBoolValue(valueUtf8.c_str(), &resultUtf8));
                             if (expected == "true")
                             {
                                 VERIFY_IS_TRUE(result);
+                                VERIFY_IS_TRUE(resultUtf8);
                             }
                             else if (expected == "false")
                             {
                                 VERIFY_IS_FALSE(result);
+                                VERIFY_IS_FALSE(resultUtf8);
                             }
                             else
                             {
@@ -551,6 +577,7 @@ void StartTestPackageManifest(void*)
                     else if (valueType == "StringValue")
                     {
                         Text<wchar_t> result;
+                        Text<char> resultUtf8;
                         if (expected == "invalid")
                         {
                             VERIFY_HR(static_cast<HRESULT>(MSIX::Error::InvalidParameter), properties->GetStringValue(value.c_str(), &result));
@@ -559,11 +586,17 @@ void StartTestPackageManifest(void*)
                         {
                             VERIFY_SUCCEEDED(properties->GetStringValue(value.c_str(), &result));
                             VERIFY_IS_NULL(result.Get());
+
+                            VERIFY_SUCCEEDED(propertiesUtf8->GetStringValue(valueUtf8.c_str(), &resultUtf8));
+                            VERIFY_IS_NULL(resultUtf8.Get());
                         }
                         else
                         {
                             VERIFY_SUCCEEDED(properties->GetStringValue(value.c_str(), &result));
                             VERIFY_ARE_EQUAL(expected, result.ToString());
+
+                            VERIFY_SUCCEEDED(propertiesUtf8->GetStringValue(valueUtf8.c_str(), &resultUtf8));
+                            VERIFY_ARE_EQUAL(expected, resultUtf8.ToString());
                         }
                     }
                     else
@@ -589,10 +622,17 @@ void StartTestPackageManifest(void*)
                     ComPtr<IAppxManifestPackageDependency> dependency;
                     VERIFY_SUCCEEDED(dependencies->GetCurrent(&dependency));
 
+                    ComPtr<IAppxManifestPackageDependencyUtf8> dependencyUtf8;
+                    VERIFY_SUCCEEDED(dependency->QueryInterface(UuidOfImpl<IAppxManifestPackageDependencyUtf8>::iid, reinterpret_cast<void**>(&dependencyUtf8)));
+
                     auto expectedName = GetInput<std::string>();
                     Text<wchar_t> name;
                     VERIFY_SUCCEEDED(dependency->GetName(&name));
                     VERIFY_ARE_EQUAL(expectedName, name.ToString());
+
+                    Text<char> nameUtf8;
+                    VERIFY_SUCCEEDED(dependencyUtf8->GetName(&nameUtf8));
+                    VERIFY_ARE_EQUAL(expectedName, nameUtf8.ToString());
 
                     auto expectedMin = GetInput<UINT64>();
                     UINT64 min = 0;
@@ -603,6 +643,10 @@ void StartTestPackageManifest(void*)
                     Text<wchar_t> publisher;
                     VERIFY_SUCCEEDED(dependency->GetPublisher(&publisher));
                     VERIFY_ARE_EQUAL(expectedPublisher, publisher.ToString());
+
+                    Text<char> publisherUtf8;
+                    VERIFY_SUCCEEDED(dependencyUtf8->GetPublisher(&publisherUtf8));
+                    VERIFY_ARE_EQUAL(expectedPublisher, publisherUtf8.ToString());
 
                     VERIFY_SUCCEEDED(dependencies->MoveNext(&hasCurrent));
                     numDep++;
@@ -625,6 +669,9 @@ void StartTestPackageManifest(void*)
                 auto expNumOfResources = GetInput<int>();
                 ComPtr<IAppxManifestResourcesEnumerator> resources;
                 VERIFY_SUCCEEDED(manifestReader->GetResources(&resources));
+                ComPtr<IAppxManifestResourcesEnumeratorUtf8> resourcesUtf8;
+                VERIFY_SUCCEEDED(resources->QueryInterface(UuidOfImpl<IAppxManifestResourcesEnumeratorUtf8>::iid, reinterpret_cast<void**>(&resourcesUtf8)));
+
                 BOOL hasCurrent = FALSE;
                 VERIFY_SUCCEEDED(resources->GetHasCurrent(&hasCurrent));
                 int numOfDependencies = 0;
@@ -634,6 +681,11 @@ void StartTestPackageManifest(void*)
                     Text<wchar_t> resource;
                     VERIFY_SUCCEEDED(resources->GetCurrent(&resource));
                     VERIFY_ARE_EQUAL(expectedResource, resource.ToString());
+
+                    Text<char> resourceUtf8;
+                    VERIFY_SUCCEEDED(resourcesUtf8->GetCurrent(&resourceUtf8));
+                    VERIFY_ARE_EQUAL(expectedResource, resourceUtf8.ToString());
+
                     VERIFY_SUCCEEDED(resources->MoveNext(&hasCurrent));
                     numOfDependencies++;
                 }
@@ -661,6 +713,12 @@ void StartTestPackageManifest(void*)
                     VERIFY_SUCCEEDED(tdf->GetName(&name));
                     VERIFY_ARE_EQUAL(expectedName, name.ToString());
 
+                    ComPtr<IAppxManifestTargetDeviceFamilyUtf8> tdfUtf8;
+                    VERIFY_SUCCEEDED(tdf->QueryInterface(UuidOfImpl<IAppxManifestTargetDeviceFamilyUtf8>::iid, reinterpret_cast<void**>(&tdfUtf8)));
+                    Text<char> nameUtf8;
+                    VERIFY_SUCCEEDED(tdfUtf8->GetName(&nameUtf8));
+                    VERIFY_ARE_EQUAL(expectedName, nameUtf8.ToString());
+
                     auto expectedMin = GetInput<UINT64>();
                     UINT64 min = 0;
                     VERIFY_SUCCEEDED(tdf->GetMinVersion(&min));
@@ -686,40 +744,75 @@ void StartTestPackageManifest(void*)
                 ComPtr<IMsixElement> manifestElement;
                 VERIFY_SUCCEEDED(msixDocument->GetDocumentElement(&manifestElement));
 
-                auto xpath = utf8_to_utf16(GetInput<std::string>());
+                auto xpathUtf8 = GetInput<std::string>();
+                auto xpath = utf8_to_utf16(xpathUtf8);
                 ComPtr<IMsixElementEnumerator> elementEnum;
                 VERIFY_SUCCEEDED(manifestElement->GetElements(xpath.c_str(), &elementEnum));
+
+                ComPtr<IMsixElementEnumerator> elementEnumFromUtf8;
+                VERIFY_SUCCEEDED(manifestElement->GetElementsUtf8(xpathUtf8.c_str(), &elementEnumFromUtf8));
+
                 BOOL hasCurrent = FALSE;
+                BOOL hasCurrentFromUtf8 = FALSE;
                 VERIFY_SUCCEEDED(elementEnum->GetHasCurrent(&hasCurrent));
+                VERIFY_SUCCEEDED(elementEnumFromUtf8->GetHasCurrent(&hasCurrentFromUtf8));
                 int numOfElements = 0;
-                while(hasCurrent)
+                while(hasCurrent && hasCurrentFromUtf8)
                 {
+                    // NOTE: element and elementFromUtf8 are different objects, but should output the same results.
                     ComPtr<IMsixElement> element;
                     VERIFY_SUCCEEDED(elementEnum->GetCurrent(&element));
+
+                    ComPtr<IMsixElement> elementFromUtf8;
+                    VERIFY_SUCCEEDED(elementEnumFromUtf8->GetCurrent(&elementFromUtf8));
 
                     auto numOfAttributes = GetInput<int>();
                     for (int i = 0; i < numOfAttributes; i++)
                     {
-                        auto a = GetInput<std::string>();
+                        auto attributeUtf8 = GetInput<std::string>();
                         Text<wchar_t> value;
-                        if (a == "Fake")
+                        Text<char> valueUtf8;
+                        Text<wchar_t> valueFromUtf8;
+                        Text<char> valueUtf8FromUtf8;
+                        if (attributeUtf8 == "Fake")
                         {
                             VERIFY_SUCCEEDED(element->GetAttributeValue(L"Fake", &value));
                             VERIFY_IS_NULL(value.Get());
+
+                            VERIFY_SUCCEEDED(element->GetAttributeValueUtf8("Fake", &valueUtf8));
+                            VERIFY_IS_NULL(valueUtf8.Get());
+
+                            VERIFY_SUCCEEDED(elementFromUtf8->GetAttributeValue(L"Fake", &valueFromUtf8));
+                            VERIFY_IS_NULL(valueFromUtf8.Get());
+
+                            VERIFY_SUCCEEDED(elementFromUtf8->GetAttributeValueUtf8("Fake", &valueUtf8FromUtf8));
+                            VERIFY_IS_NULL(valueUtf8FromUtf8.Get());
                         }
                         else
                         {
-                            auto attribute = utf8_to_utf16(a);
+                            auto attribute = utf8_to_utf16(attributeUtf8);
                             auto expectedValue = GetInput<std::string>();
+
                             VERIFY_SUCCEEDED(element->GetAttributeValue(attribute.c_str(), &value));
                             VERIFY_ARE_EQUAL(expectedValue, value.ToString());
+
+                            VERIFY_SUCCEEDED(element->GetAttributeValueUtf8(attributeUtf8.c_str(), &valueUtf8));
+                            VERIFY_ARE_EQUAL(expectedValue, valueUtf8.ToString());
+
+                            VERIFY_SUCCEEDED(elementFromUtf8->GetAttributeValue(attribute.c_str(), &valueFromUtf8));
+                            VERIFY_ARE_EQUAL(expectedValue, valueFromUtf8.ToString());
+
+                            VERIFY_SUCCEEDED(elementFromUtf8->GetAttributeValueUtf8(attributeUtf8.c_str(), &valueUtf8FromUtf8));
+                            VERIFY_ARE_EQUAL(expectedValue, valueUtf8FromUtf8.ToString());
                         }
                     }
 
                     VERIFY_SUCCEEDED(elementEnum->MoveNext(&hasCurrent));
+                    VERIFY_SUCCEEDED(elementEnumFromUtf8->MoveNext(&hasCurrentFromUtf8));
                     numOfElements++;
                 }
                 VERIFY_ARE_EQUAL(expNumOfElements, numOfElements);
+                VERIFY_IS_FALSE(hasCurrent || hasCurrentFromUtf8)
             }
         )},
         { "Package.Manifest.PackageId", Test<IAppxManifestReader>("Validates manifest package id",
@@ -729,11 +822,17 @@ void StartTestPackageManifest(void*)
                 VERIFY_SUCCEEDED(manifestReader->GetPackageId(&packageId));
                 VERIFY_NOT_NULL(packageId.Get());
 
+                ComPtr<IAppxManifestPackageIdUtf8> packageIdUtf8;
+                VERIFY_SUCCEEDED(packageId->QueryInterface(UuidOfImpl<IAppxManifestPackageIdUtf8>::iid, reinterpret_cast<void**>(&packageIdUtf8)));
+
                 auto expectedName = GetInput<std::string>();
                 Text<wchar_t> name;
                 VERIFY_SUCCEEDED(packageId->GetName(&name));
                 VERIFY_ARE_EQUAL(expectedName, name.ToString())
 
+                Text<char> nameUtf8;
+                VERIFY_SUCCEEDED(packageIdUtf8->GetName(&nameUtf8));
+                VERIFY_ARE_EQUAL(expectedName, nameUtf8.ToString())
 
                 auto expectedArch = GetInput<int>();
                 APPX_PACKAGE_ARCHITECTURE architecture;
@@ -745,8 +844,15 @@ void StartTestPackageManifest(void*)
                 VERIFY_SUCCEEDED(packageId->GetPublisher(&publisher));
                 VERIFY_ARE_EQUAL(expectedPublisher, publisher.ToString());
 
+                Text<char> publisherUtf8;
+                VERIFY_SUCCEEDED(packageIdUtf8->GetPublisher(&publisherUtf8));
+                VERIFY_ARE_EQUAL(expectedPublisher, publisherUtf8.ToString());
+
                 BOOL isSame = FALSE;
                 VERIFY_SUCCEEDED(packageId->ComparePublisher(publisher.Get(), &isSame));
+                VERIFY_IS_TRUE(isSame);
+                isSame = FALSE;
+                VERIFY_SUCCEEDED(packageIdUtf8->ComparePublisher(publisherUtf8.Get(), &isSame));
                 VERIFY_IS_TRUE(isSame);
                 VERIFY_SUCCEEDED(packageId->ComparePublisher(L"OtherPublisher", &isSame));
                 VERIFY_IS_FALSE(isSame);
@@ -766,6 +872,10 @@ void StartTestPackageManifest(void*)
                 else
                 {
                     VERIFY_ARE_EQUAL(expectedResource, resourceId.ToString());
+
+                    Text<char> resourceIdUtf8;
+                    VERIFY_SUCCEEDED(packageIdUtf8->GetResourceId(&resourceIdUtf8));
+                    VERIFY_ARE_EQUAL(expectedResource, resourceIdUtf8.ToString());
                 }
 
                 auto expectedFull = GetInput<std::string>();
@@ -773,10 +883,18 @@ void StartTestPackageManifest(void*)
                 VERIFY_SUCCEEDED(packageId->GetPackageFullName(&packageFullName));
                 VERIFY_ARE_EQUAL(expectedFull, packageFullName.ToString());
 
+                Text<char> packageFullNameUtf8;
+                VERIFY_SUCCEEDED(packageIdUtf8->GetPackageFullName(&packageFullNameUtf8));
+                VERIFY_ARE_EQUAL(expectedFull, packageFullNameUtf8.ToString());
+
                 auto expectedFamily = GetInput<std::string>();
                 Text<wchar_t> packageFamilyName;
                 VERIFY_SUCCEEDED(packageId->GetPackageFamilyName(&packageFamilyName));
                 VERIFY_ARE_EQUAL(expectedFamily, packageFamilyName.ToString());
+
+                Text<char> packageFamilyNameUtf8;
+                VERIFY_SUCCEEDED(packageIdUtf8->GetPackageFamilyName(&packageFamilyNameUtf8));
+                VERIFY_ARE_EQUAL(expectedFamily, packageFamilyNameUtf8.ToString());
             }
         )},
     };
@@ -823,9 +941,21 @@ void StartTestPackageBlockMap(void*)
                     VERIFY_SUCCEEDED(blockMapFile->GetName(&fileName))
                     VERIFY_ARE_EQUAL(expectedName, fileName.ToString());
 
+                    ComPtr<IAppxBlockMapFileUtf8> blockMapFileUtf8;
+                    VERIFY_SUCCEEDED(blockMapFile->QueryInterface(UuidOfImpl<IAppxBlockMapFileUtf8>::iid, reinterpret_cast<void**>(&blockMapFileUtf8)));
+                    Text<char> fileNameUtf8;
+                    VERIFY_SUCCEEDED(blockMapFileUtf8->GetName(&fileNameUtf8))
+                    VERIFY_ARE_EQUAL(expectedName, fileNameUtf8.ToString());
+
                     ComPtr<IAppxBlockMapFile> blockMapFile2;
                     VERIFY_SUCCEEDED(blockMapReader->GetFile(fileName.Get(), &blockMapFile2));
                     VERIFY_ARE_SAME(blockMapFile.Get(), blockMapFile2.Get());
+
+                    ComPtr<IAppxBlockMapFile> blockMapFile3;
+                    ComPtr<IAppxBlockMapReaderUtf8> blockMapReaderUtf8;
+                    VERIFY_SUCCEEDED(blockMapReader->QueryInterface(UuidOfImpl<IAppxBlockMapReaderUtf8>::iid, reinterpret_cast<void**>(&blockMapReaderUtf8)));
+                    VERIFY_SUCCEEDED(blockMapReaderUtf8->GetFile(fileNameUtf8.Get(), &blockMapFile3));
+                    VERIFY_ARE_SAME(blockMapFile.Get(), blockMapFile3.Get());
 
                     auto expectedLfh = GetInput<UINT32>();
                     UINT32 lfh;
@@ -952,6 +1082,19 @@ void StartTestBundle(void*)
                     ComPtr<IAppxFile> package2;
                     VERIFY_SUCCEEDED(bundleReader->GetPayloadPackage(packageName.Get(), &package2));
                     VERIFY_ARE_SAME(package.Get(), package2.Get());
+
+                    Text<char> packageNameUtf8;
+                    ComPtr<IAppxFileUtf8> packageUtf8;
+                    VERIFY_SUCCEEDED(package->QueryInterface(UuidOfImpl<IAppxFileUtf8>::iid, reinterpret_cast<void**>(&packageUtf8)));
+                    VERIFY_SUCCEEDED(packageUtf8->GetName(&packageNameUtf8));
+                    VERIFY_ARE_EQUAL(expectedName, packageNameUtf8.ToString());
+
+                    ComPtr<IAppxFile> package3;
+                    ComPtr<IAppxBundleReaderUtf8> bundleReaderUtf8;
+                    VERIFY_SUCCEEDED(bundleReader->QueryInterface(UuidOfImpl<IAppxBundleReaderUtf8>::iid, reinterpret_cast<void**>(&bundleReaderUtf8)));
+                    VERIFY_SUCCEEDED(bundleReaderUtf8->GetPayloadPackage(packageNameUtf8.Get(), &package3));
+                    VERIFY_ARE_SAME(package.Get(), package3.Get());
+
                     VERIFY_SUCCEEDED(packages->MoveNext(&hasCurrent));
                     numOfPackages++;
                 }
@@ -1013,6 +1156,12 @@ void StartTestBundleManifest(void*)
                     VERIFY_SUCCEEDED(bundleManifestPackageInfo->GetFileName(&fileName));
                     VERIFY_ARE_EQUAL(expectedName, fileName.ToString());
 
+                    Text<char> fileNameUtf8;
+                    ComPtr<IAppxBundleManifestPackageInfoUtf8> bundleManifestPackageInfoUtf8;
+                    VERIFY_SUCCEEDED(bundleManifestPackageInfo->QueryInterface(UuidOfImpl<IAppxBundleManifestPackageInfoUtf8>::iid, reinterpret_cast<void**>(&bundleManifestPackageInfoUtf8)));
+                    VERIFY_SUCCEEDED(bundleManifestPackageInfoUtf8->GetFileName(&fileNameUtf8));
+                    VERIFY_ARE_EQUAL(expectedName, fileNameUtf8.ToString());
+
                     auto expectedType = GetInput<std::string>();
                     APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE type;
                     VERIFY_SUCCEEDED(bundleManifestPackageInfo->GetPackageType(&type));
@@ -1055,6 +1204,12 @@ void StartTestBundleManifest(void*)
                         Text<wchar_t> language;
                         VERIFY_SUCCEEDED(manifestQualifiedResources->GetLanguage(&language));
                         VERIFY_ARE_EQUAL(expectedTag, language.ToString());
+
+                        ComPtr<IAppxManifestQualifiedResourceUtf8> manifestQualifiedResourcesUtf8;
+                        VERIFY_SUCCEEDED(manifestQualifiedResources->QueryInterface(UuidOfImpl<IAppxManifestQualifiedResourceUtf8>::iid, reinterpret_cast<void**>(&manifestQualifiedResourcesUtf8)));
+                        Text<char> languageUtf8;
+                        VERIFY_SUCCEEDED(manifestQualifiedResourcesUtf8->GetLanguage(&languageUtf8));
+                        VERIFY_ARE_EQUAL(expectedTag, languageUtf8.ToString());
 
                         VERIFY_SUCCEEDED(manifestQualifiedResourcesEnumerator->MoveNext(&hasCurrentResource));
                         nLangs++;

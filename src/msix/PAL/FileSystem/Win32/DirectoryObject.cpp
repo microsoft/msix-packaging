@@ -3,7 +3,6 @@
 //  See LICENSE file in the project root for full license information.
 // 
 // ONLY build on platforms other than Win32
-#ifdef WIN32
 #include "Exceptions.hpp"
 #include "DirectoryObject.hpp"
 #include "FileStream.hpp"
@@ -170,4 +169,3 @@ namespace MSIX {
 
 // Don't pollute other compilation units with any of our #defs...
 #undef UNICODE
-#endif

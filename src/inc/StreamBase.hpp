@@ -15,9 +15,8 @@
 #include "Exceptions.hpp"
 #include "ComHelper.hpp"
 
-EXTERN_C const IID IID_IStreamInternal;
-#ifndef WIN32
 // {44d2a7a8-a165-4a6e-a56f-c7c24de7505c}
+#ifndef WIN32
 interface IStreamInternal : public IUnknown
 #else
 #include "Unknwn.h"
@@ -30,8 +29,7 @@ public:
     virtual bool IsCompressed() = 0;
     virtual std::string GetName() = 0;
 };
-
-SpecializeUuidOfImpl(IStreamInternal);
+MSIX_INTERFACE(IStreamInternal, 0x44d2a7a8,0xa165,0x4a6e,0xa5,0x6f,0xc7,0xc2,0x4d,0xe7,0x50,0x5c);
 
 namespace MSIX {
     class StreamBase : public MSIX::ComClass<StreamBase, IStream, IStreamInternal>

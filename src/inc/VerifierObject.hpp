@@ -11,9 +11,8 @@
 #include "ComHelper.hpp"
 
 // internal interface
-EXTERN_C const IID IID_IVerifierObject;
-#ifndef WIN32
 // {cb0a105c-3a6c-4e48-9351-377c4dccd890}
+#ifndef WIN32
 interface IVerifierObject : public IUnknown
 #else
 #include "Unknwn.h"
@@ -28,5 +27,4 @@ public:
     virtual MSIX::ComPtr<IStream> GetStream() = 0;
     virtual MSIX::ComPtr<IStream> GetValidationStream(const std::string& part, const MSIX::ComPtr<IStream>& stream) = 0;
 };
-
-SpecializeUuidOfImpl(IVerifierObject);
+MSIX_INTERFACE(IVerifierObject, 0xcb0a105c,0x3a6c,0x4e48,0x93,0x51,0x37,0x7c,0x4d,0xcc,0xd8,0x90);

@@ -264,7 +264,7 @@ namespace MSIX {
                     if(streamFactoryUnk.Get() != nullptr)
                     {
                         auto streamFactory = streamFactoryUnk.As<IMsixStreamFactory>();
-                        ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePath(utf8_to_wstring(packageName).c_str(), &packageStream));
+                        ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePathUtf8(packageName.c_str(), &packageStream));
                     }
                     else
                     {   // User didn't specify a stream factory implementation. Assume packages are in the same location
@@ -531,16 +531,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFile(LPCWSTR fileName, IAppxFile** file) noexcept try
     {
-        if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
-        ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
-        auto result = GetAppxFile(Encoding::EncodeFileName(wstring_to_utf8(fileName)));
-        ThrowErrorIfNot(Error::FileNotFound, result, "requested file not in package")
-        // Clients expect the stream's pointer to be at the start of the file!
-        ComPtr<IStream> stream;
-        ThrowHrIfFailed(result->GetStream(&stream));
-        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
-        *file = result.Detach();
-        return static_cast<HRESULT>(Error::OK);
+        return GetPayloadFile(wstring_to_utf8(fileName).c_str(), file);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFiles(IAppxFilesEnumerator** filesEnumerator) noexcept try
@@ -615,21 +606,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadPackage(LPCWSTR fileName, IAppxFile **payloadPackage) noexcept try
     {
-        #ifdef BUNDLE_SUPPORT
-            if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
-            ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || payloadPackage == nullptr || *payloadPackage != nullptr), "bad pointer");
-            std::string name = wstring_to_utf8(fileName);
-            auto result = GetAppxFile(name);
-            ThrowErrorIfNot(Error::FileNotFound, result, "Requested package not in bundle")
-            // Clients expect the stream's pointer to be at the start of the file!
-            ComPtr<IStream> stream;
-            ThrowHrIfFailed(result->GetStream(&stream));
-            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
-            *payloadPackage = result.Detach();
-        return static_cast<HRESULT>(Error::OK);
-        #else
-            return static_cast<HRESULT>(MSIX::Error::NotSupported);
-        #endif
+        return GetPayloadPackage(wstring_to_utf8(fileName).c_str(), payloadPackage);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxBundleManifestReader **manifestReader) noexcept try
@@ -639,6 +616,40 @@ namespace MSIX {
             ThrowErrorIf(Error::InvalidParameter,(manifestReader == nullptr || *manifestReader != nullptr), "bad pointer");
             *manifestReader = m_appxBundleManifest.As<IAppxBundleManifestReader>().Detach();
             return static_cast<HRESULT>(Error::OK);
+        #else
+            return static_cast<HRESULT>(MSIX::Error::NotSupported);
+        #endif
+    } CATCH_RETURN();
+
+    // IAppxPackageReaderUtf8
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFile(LPCSTR fileName, IAppxFile** file) noexcept try
+    {
+        if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
+        ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
+        auto result = GetAppxFile(Encoding::EncodeFileName(fileName));
+        ThrowErrorIfNot(Error::FileNotFound, result, "requested file not in package")
+        // Clients expect the stream's pointer to be at the start of the file!
+        ComPtr<IStream> stream;
+        ThrowHrIfFailed(result->GetStream(&stream));
+        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
+        *file = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    // IAppxBundleReaderUtf8
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadPackage(LPCSTR fileName, IAppxFile **payloadPackage) noexcept try
+    {
+        #ifdef BUNDLE_SUPPORT
+            if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
+            ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || payloadPackage == nullptr || *payloadPackage != nullptr), "bad pointer");
+            auto result = GetAppxFile(fileName);
+            ThrowErrorIfNot(Error::FileNotFound, result, "Requested package not in bundle")
+            // Clients expect the stream's pointer to be at the start of the file!
+            ComPtr<IStream> stream;
+            ThrowHrIfFailed(result->GetStream(&stream));
+            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
+            *payloadPackage = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
         #else
             return static_cast<HRESULT>(MSIX::Error::NotSupported);
         #endif

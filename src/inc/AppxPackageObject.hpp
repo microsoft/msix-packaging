@@ -25,9 +25,8 @@
 #include "AppxManifestObject.hpp"
 
 // internal interface
-EXTERN_C const IID IID_IPackage;
-#ifndef WIN32
 // {51b2c456-aaa9-46d6-8ec9-298220559189}
+#ifndef WIN32
 interface IPackage : public IUnknown
 #else
 #include "Unknwn.h"
@@ -39,15 +38,13 @@ public:
     virtual void Unpack(MSIX_PACKUNPACK_OPTION options, const MSIX::ComPtr<IStorageObject>& to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
 };
-
-SpecializeUuidOfImpl(IPackage);
-
+MSIX_INTERFACE(IPackage, 0x51b2c456,0xaaa9,0x46d6,0x8e,0xc9,0x29,0x82,0x20,0x55,0x91,0x89);
 
 namespace MSIX {
     // Storage object representing the entire AppxPackage
     // Note: This class has is own implmentation of QueryInterface, if a new interface is implemented
     // AppxPackageObject::QueryInterface must also be modified too.
-    class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader>
+    class AppxPackageObject final : public ComClass<AppxPackageObject, IAppxPackageReader, IPackage, IStorageObject, IAppxBundleReader, IAppxPackageReaderUtf8, IAppxBundleReaderUtf8>
     {
     public:
         AppxPackageObject(IMsixFactory* factory, MSIX_VALIDATION_OPTION validation, MSIX_APPLICABILITY_OPTIONS applicabilityOptions, const ComPtr<IStorageObject>& container);
@@ -78,10 +75,22 @@ namespace MSIX {
                 AddRef();
                 return S_OK;
             }
+            if (riid == UuidOfImpl<IAppxPackageReaderUtf8>::iid)
+            {
+                *ppvObject = static_cast<void*>(static_cast<IAppxPackageReaderUtf8*>(this));
+                AddRef();
+                return S_OK;
+            }
             #ifdef BUNDLE_SUPPORT
             if (riid == UuidOfImpl<IAppxBundleReader>::iid && m_isBundle)
             {
                 *ppvObject = static_cast<void*>(static_cast<IAppxBundleReader*>(this));
+                AddRef();
+                return S_OK;
+            }
+            if (riid == UuidOfImpl<IAppxBundleReaderUtf8>::iid && m_isBundle)
+            {
+                *ppvObject = static_cast<void*>(static_cast<IAppxBundleReaderUtf8*>(this));
                 AddRef();
                 return S_OK;
             }
@@ -112,7 +121,7 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetPayloadPackages(IAppxFilesEnumerator **payloadPackages) noexcept override;
         HRESULT STDMETHODCALLTYPE GetPayloadPackage(LPCWSTR fileName, IAppxFile **payloadPackage) noexcept override;
         // Same signature as IAppxPackageReader
-        // HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) override; 
+        // HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept override; 
 
         // IStorageObject methods
         const char* GetPathSeparator() override;
@@ -120,6 +129,12 @@ namespace MSIX {
         ComPtr<IStream> GetFile(const std::string& fileName) override;
         ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         std::string GetFileName() override;
+
+        // IAppxPackageReaderUtf8
+        HRESULT STDMETHODCALLTYPE GetPayloadFile(LPCSTR fileName, IAppxFile** file) noexcept override;
+
+        // IAppxBundleReaderUtf8
+        HRESULT STDMETHODCALLTYPE GetPayloadPackage(LPCSTR fileName, IAppxFile **payloadPackage) noexcept override;
 
     protected:
         // Helper methods

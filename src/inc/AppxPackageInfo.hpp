@@ -11,9 +11,8 @@
 #include <string>
 #include <memory>
 
-EXTERN_C const IID IID_IAppxManifestPackageIdInternal;
-#ifndef WIN32
 // {76b7d3e1-768a-45cb-9626-ba6452bed2de}
+#ifndef WIN32
 interface IAppxManifestPackageIdInternal : public IUnknown
 #else
 #include "Unknwn.h"
@@ -30,8 +29,7 @@ public:
     virtual const std::string& GetResourceId() = 0;
     virtual const std::string GetPackageFamilyName() = 0;
 };
-
-SpecializeUuidOfImpl(IAppxManifestPackageIdInternal);
+MSIX_INTERFACE(IAppxManifestPackageIdInternal, 0x76b7d3e1,0x768a,0x45cb,0x96,0x26,0xba,0x64,0x52,0xbe,0xd2,0xde);
 
 namespace MSIX {
 
@@ -83,7 +81,7 @@ namespace MSIX {
         return result;
     }
 
-    class AppxManifestPackageId final : public ComClass<AppxManifestPackageId, IAppxManifestPackageId, IAppxManifestPackageIdInternal>
+    class AppxManifestPackageId final : public ComClass<AppxManifestPackageId, IAppxManifestPackageId, IAppxManifestPackageIdInternal, IAppxManifestPackageIdUtf8>
     {
     public:
         AppxManifestPackageId(
@@ -118,6 +116,14 @@ namespace MSIX {
         {
             return m_name + "_" + m_publisherId;
         }
+
+        // IAppxManifestPackageIdUtf8
+        HRESULT STDMETHODCALLTYPE GetName(LPSTR* name) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPublisher(LPSTR* publisher) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetResourceId(LPSTR* resourceId) noexcept override;
+        HRESULT STDMETHODCALLTYPE ComparePublisher(LPCSTR other, BOOL *isSame) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPackageFullName(LPSTR* packageFullName) noexcept override;
+        HRESULT STDMETHODCALLTYPE GetPackageFamilyName(LPSTR* packageFamilyName) noexcept override;
 
     private:
         void ValidatePackageString(std::string& packageString);

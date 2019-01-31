@@ -180,8 +180,8 @@ namespace MSIX {
     public:
         virtual ~ComClass() { }
 
-        virtual ULONG STDMETHODCALLTYPE AddRef() override { return ++m_ref; }
-        virtual ULONG STDMETHODCALLTYPE Release() override
+        virtual ULONG STDMETHODCALLTYPE AddRef() noexcept override { return ++m_ref; }
+        virtual ULONG STDMETHODCALLTYPE Release() noexcept override
         {
             if (--m_ref == 0)
             {   delete this;
@@ -190,7 +190,7 @@ namespace MSIX {
             return m_ref;
         }
 
-        virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) override
+        virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void** ppvObject) noexcept override
         {
             if (ppvObject == nullptr || *ppvObject != nullptr)
             {

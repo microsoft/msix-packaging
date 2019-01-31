@@ -12,9 +12,8 @@
 #include "Applicability.hpp"
 #include "VerifierObject.hpp"
 
-EXTERN_C const IID IID_IBundleInfo;
-#ifndef WIN32
 // {ff82ffcd-747a-4df9-8879-853ab9dd15a1}
+#ifndef WIN32
 interface IBundleInfo : public IUnknown
 #else
 #include "Unknwn.h"
@@ -25,10 +24,10 @@ class IBundleInfo : public IUnknown
 public:
     virtual std::vector<MSIX::ComPtr<IAppxBundleManifestPackageInfo>>& GetPackages() = 0;
 };
+MSIX_INTERFACE(IBundleInfo, 0xff82ffcd,0x747a,0x4df9,0x88,0x79,0x85,0x3a,0xb9,0xdd,0x15,0xa1);
 
-EXTERN_C const IID IID_IAppxBundleManifestPackageInfoInternal;
-#ifndef WIN32
 // {32e6fcf0-729b-401d-9dbc-f927b494f9af}
+#ifndef WIN32
 interface IAppxBundleManifestPackageInfoInternal : public IUnknown
 #else
 #include "Unknwn.h"
@@ -42,9 +41,7 @@ public:
     virtual const std::uint64_t GetOffset() = 0;
     virtual bool HasQualifiedResources() = 0;
 };
-
-SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoInternal);
-SpecializeUuidOfImpl(IBundleInfo);
+MSIX_INTERFACE(IAppxBundleManifestPackageInfoInternal, 0x32e6fcf0,0x729b,0x401d,0x9d,0xbc,0xf9,0x27,0xb4,0x94,0xf9,0xaf);
 
 namespace MSIX {
     class AppxBundleManifestObject final : public ComClass<AppxBundleManifestObject, IAppxBundleManifestReader, IVerifierObject, IBundleInfo>
@@ -73,7 +70,7 @@ namespace MSIX {
         std::vector<ComPtr<IAppxBundleManifestPackageInfo>> m_packages;
     };
 
-    class AppxBundleQualifiedResource final : public MSIX::ComClass<AppxBundleQualifiedResource, IAppxManifestQualifiedResource>
+    class AppxBundleQualifiedResource final : public MSIX::ComClass<AppxBundleQualifiedResource, IAppxManifestQualifiedResource, IAppxManifestQualifiedResourceUtf8>
     {
     public:
         AppxBundleQualifiedResource(IMsixFactory* factory, const std::string& language) : m_factory(factory), m_language(language) {}
@@ -95,12 +92,18 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
 
+        // IAppxManifestQualifiedResourceUtf8
+        HRESULT STDMETHODCALLTYPE GetLanguage(LPSTR *language) noexcept override try
+        {
+            return m_factory->MarshalOutStringUtf8(m_language, language);
+        } CATCH_RETURN();
+
     protected:
         IMsixFactory* m_factory;
         std::string m_language;
     };
 
-    class AppxBundleManifestPackageInfo final : public ComClass<AppxBundleManifestPackageInfo, IAppxBundleManifestPackageInfo, IAppxBundleManifestPackageInfoInternal>
+    class AppxBundleManifestPackageInfo final : public ComClass<AppxBundleManifestPackageInfo, IAppxBundleManifestPackageInfo, IAppxBundleManifestPackageInfoInternal, IAppxBundleManifestPackageInfoUtf8>
     {
     public:
         AppxBundleManifestPackageInfo(
@@ -129,6 +132,9 @@ namespace MSIX {
         const std::vector<Bcp47Tag>& GetLanguages() override { return m_languages; }
         const std::uint64_t GetOffset() override { return m_offset; }
         bool HasQualifiedResources() override { return !m_languages.empty(); }
+
+        // IAppxBundleManifestPackageInfoUtf8
+        HRESULT STDMETHODCALLTYPE GetFileName(LPSTR *fileName) noexcept override;
 
     private:
         IMsixFactory* m_factory;

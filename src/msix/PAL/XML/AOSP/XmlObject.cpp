@@ -17,9 +17,6 @@
 #include "Enumerators.hpp"
 #include "JniHelper.hpp"
 
-
-EXTERN_C const IID IID_IJavaXmlElement;
-
 // An internal interface for java XML document object model
 // {69AB3660-398D-4CD6-A131-E73106040E3B}
 interface IJavaXmlElement : public IUnknown
@@ -27,8 +24,7 @@ interface IJavaXmlElement : public IUnknown
 public:
     virtual jobject GetJavaObject() = 0;
 };
-
-SpecializeUuidOfImpl(IJavaXmlElement);
+MSIX_INTERFACE(IJavaXmlElement,  0x69ab3660,0x398d,0x4cd6,0xa1,0x31,0xe7,0x31,0x6,0x4,0xe,0x3b);
 
 namespace MSIX {
 
@@ -84,7 +80,6 @@ public:
         auto intermediate = wstring_to_utf8(name);
         auto attributeValue = GetAttributeValue(intermediate);
         return m_factory->MarshalOutString(attributeValue, value);;
-
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE GetText(LPWSTR* value) noexcept override try
@@ -96,10 +91,28 @@ public:
 
     HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMsixElementEnumerator** elements) noexcept override try
     {
-        ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
+        return GetElementsUtf8(wstring_to_utf8(name).c_str(), elements);
+    } CATCH_RETURN();
 
-        auto intermediate = wstring_to_utf8(name);
-        std::unique_ptr<_jstring, JObjectDeleter> jname(m_env->NewStringUTF(intermediate.c_str()));
+    HRESULT STDMETHODCALLTYPE GetAttributeValueUtf8(LPCSTR name, LPSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        auto attribute = std::string(name);
+        auto attributeValue = GetAttributeValue(attribute);
+        return m_factory->MarshalOutStringUtf8(attributeValue, value);;
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetTextUtf8(LPSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        auto text = GetText();
+        return m_factory->MarshalOutStringUtf8(text, value);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetElementsUtf8(LPCSTR name, IMsixElementEnumerator** elements) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
+        std::unique_ptr<_jstring, JObjectDeleter> jname(m_env->NewStringUTF(name));
         std::unique_ptr<_jobjectArray, JObjectDeleter> javaElements(reinterpret_cast<jobjectArray>(m_env->CallObjectMethod(m_javaXmlElementObject.get(), getElementsFunc, jname.get())));
         std::vector<ComPtr<IMsixElement>> elementsEnum;
         // Note: if the number of elements are large, JNI might barf due to too many local refs alive. This should only be used for small lists.
@@ -108,10 +121,7 @@ public:
             auto item = ComPtr<IMsixElement>::Make<JavaXmlElement>(m_factory, m_env->GetObjectArrayElement(javaElements.get(), i));
             elementsEnum.push_back(std::move(item));
         }
-        *elements = ComPtr<IMsixElementEnumerator>::
-        Make<EnumeratorCom<IMsixElementEnumerator,IMsixElement>>(elementsEnum).Detach();
-
-        
+        *elements = ComPtr<IMsixElementEnumerator>::Make<EnumeratorCom<IMsixElementEnumerator,IMsixElement>>(elementsEnum).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
