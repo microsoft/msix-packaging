@@ -1,4 +1,4 @@
-﻿// !$*UTF8*$!
+// !$*UTF8*$!
 {
 	archiveVersion = 1;
 	classes = {
@@ -7,6 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C14D5D52204CC2A0034C5CE /* libmsix.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C14D5D32204CC2A0034C5CE /* libmsix.dylib */; };
+		4C14D5D62204CC2A0034C5CE /* libmsixtestcommon.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C14D5D42204CC2A0034C5CE /* libmsixtestcommon.dylib */; };
+		4C14D5D72204CC400034C5CE /* libmsix.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C14D5D32204CC2A0034C5CE /* libmsix.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		4C14D5D82204CC400034C5CE /* libmsixtestcommon.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C14D5D42204CC2A0034C5CE /* libmsixtestcommon.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4C7F376D20783FD2002942F4 /* BlockMapContainsPayloadPackage.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375220783FC2002942F4 /* BlockMapContainsPayloadPackage.appxbundle */; };
 		4C7F376E20783FD2002942F4 /* BlockMapIsMissing.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375320783FC2002942F4 /* BlockMapIsMissing.appxbundle */; };
 		4C7F376F20783FD2002942F4 /* BlockMapViolatesSchema.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F375420783FC2002942F4 /* BlockMapViolatesSchema.appxbundle */; };
@@ -34,13 +38,9 @@
 		4C7F378520783FD2002942F4 /* PayloadPackageNotListedInManifest.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376A20783FC2002942F4 /* PayloadPackageNotListedInManifest.appxbundle */; };
 		4C7F378620783FD2002942F4 /* SignedUntrustedCert-CERT_E_CHAINING.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376B20783FC2002942F4 /* SignedUntrustedCert-CERT_E_CHAINING.appxbundle */; };
 		4C7F378720783FD2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F376C20783FC2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle */; };
-		4C7F3789207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
-		4C7F378B20784901002942F4 /* libmsix.0.0.0.dylib in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4C80CD9E216EE2B7008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4C80CD9D216EE2B7008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx */; };
 		4C80CDA0216EE32A008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C80CD9D216EE2B7008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx */; };
 		4CA491B521F26C4000F0ADB0 /* apitest_test_1.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CA491B421F26C4000F0ADB0 /* apitest_test_1.txt */; };
-		4CA491B721F282CC00F0ADB0 /* libmsix.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */; };
-		4CA491B821F282CC00F0ADB0 /* libmsixtestcommon.0.0.0.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */; };
 		4CAC1C2E2135DCC0005C3B2C /* assets.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1A2135DCC0005C3B2C /* assets.appx */; };
 		4CAC1C2F2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1B2135DCC0005C3B2C /* FlatBundleWithAsset.appxbundle */; };
 		4CAC1C302135DCC0005C3B2C /* language-de.appx in Resources */ = {isa = PBXBuildFile; fileRef = 4CAC1C1C2135DCC0005C3B2C /* language-de.appx */; };
@@ -231,8 +231,8 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				4C7F378B20784901002942F4 /* libmsix.0.0.0.dylib in CopyFiles */,
-				4C7F3789207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib in CopyFiles */,
+				4C14D5D72204CC400034C5CE /* libmsix.dylib in CopyFiles */,
+				4C14D5D82204CC400034C5CE /* libmsixtestcommon.dylib in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,6 +286,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4C14D5D32204CC2A0034C5CE /* libmsix.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsix.dylib; path = ../../../.vs/lib/libmsix.dylib; sourceTree = "<group>"; };
+		4C14D5D42204CC2A0034C5CE /* libmsixtestcommon.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsixtestcommon.dylib; path = ../../../.vs/lib/libmsixtestcommon.dylib; sourceTree = "<group>"; };
 		4C7F375220783FC2002942F4 /* BlockMapContainsPayloadPackage.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = BlockMapContainsPayloadPackage.appxbundle; sourceTree = "<group>"; };
 		4C7F375320783FC2002942F4 /* BlockMapIsMissing.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = BlockMapIsMissing.appxbundle; sourceTree = "<group>"; };
 		4C7F375420783FC2002942F4 /* BlockMapViolatesSchema.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = BlockMapViolatesSchema.appxbundle; sourceTree = "<group>"; };
@@ -313,8 +315,6 @@
 		4C7F376A20783FC2002942F4 /* PayloadPackageNotListedInManifest.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = PayloadPackageNotListedInManifest.appxbundle; sourceTree = "<group>"; };
 		4C7F376B20783FC2002942F4 /* SignedUntrustedCert-CERT_E_CHAINING.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = "SignedUntrustedCert-CERT_E_CHAINING.appxbundle"; sourceTree = "<group>"; };
 		4C7F376C20783FC2002942F4 /* StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle; sourceTree = "<group>"; };
-		4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsixtestcommon.0.0.0.dylib; path = ../../../.vs/lib/libmsixtestcommon.0.0.0.dylib; sourceTree = "<group>"; };
-		4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsix.0.0.0.dylib; path = ../../../.vs/lib/libmsix.0.0.0.dylib; sourceTree = "<group>"; };
 		4C80CD9D216EE2B7008E3292 /* StoreSigned_Desktop_x64_MoviesTV.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = StoreSigned_Desktop_x64_MoviesTV.appx; sourceTree = "<group>"; };
 		4CA491B421F26C4000F0ADB0 /* apitest_test_1.txt */ = {isa = PBXFileReference; lastKnownFileType = text; name = apitest_test_1.txt; path = ../../../.vs/test/api/input/apitest_test_1.txt; sourceTree = "<group>"; };
 		4CAC1C1A2135DCC0005C3B2C /* assets.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = assets.appx; sourceTree = "<group>"; };
@@ -384,8 +384,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				4CA491B721F282CC00F0ADB0 /* libmsix.0.0.0.dylib in Frameworks */,
-				4CA491B821F282CC00F0ADB0 /* libmsixtestcommon.0.0.0.dylib in Frameworks */,
+				4C14D5D52204CC2A0034C5CE /* libmsix.dylib in Frameworks */,
+				4C14D5D62204CC2A0034C5CE /* libmsixtestcommon.dylib in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -439,6 +439,8 @@
 		4CA491B621F282CC00F0ADB0 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				4C14D5D32204CC2A0034C5CE /* libmsix.dylib */,
+				4C14D5D42204CC2A0034C5CE /* libmsixtestcommon.dylib */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -476,8 +478,6 @@
 			children = (
 				4CA491B421F26C4000F0ADB0 /* apitest_test_1.txt */,
 				4CAC1C192135DCC0005C3B2C /* flat */,
-				4C7F378A20784901002942F4 /* libmsix.0.0.0.dylib */,
-				4C7F3788207848EC002942F4 /* libmsixtestcommon.0.0.0.dylib */,
 				4C7F375120783FC2002942F4 /* bundles */,
 				EEE4054D20225CDF007B25CE /* iOSBVT */,
 				EEE4054C20225CDF007B25CE /* Products */,

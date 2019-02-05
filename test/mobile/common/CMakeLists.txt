@@ -27,7 +27,6 @@ add_library(${PROJECT_NAME} SHARED MobileTests.cpp ../../api/ApiTests.cpp)
 # Set the build version. It will be used in the name of the lib, with corresponding
 # symlinks created. SOVERSION could also be specified for api version.
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    VERSION ${MSIX_VERSION}  # ${MSIX_VERSION} was defined in the main CMakeLists.
     FRAMEWORK FALSE
 )
 

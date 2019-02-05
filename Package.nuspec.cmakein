@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Microsoft.MSIX.Packaging</id>
+    <id>${MSIX_NUGET_NAME}</id>
     <version>${MSIX_VERSION}</version>
     <authors>psmith@microsoft.com, rubengu@microsoft.com, adrian.mascarenhas@microsoft.com</authors>
     <owners>MSIXPackagingOSSCustomerQs@service.microsoft.com</owners>

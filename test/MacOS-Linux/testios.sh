@@ -62,6 +62,12 @@ xcrun simctl boot $device
 
 # Build app and locate .app to install
 xcodebuild -scheme $app -project $project -sdk $sdk
+build_result=$?
+if [ $build_result -ne 0 ]
+then
+    exit 1
+fi
+
 # We are looking for something like "BUILD_ROOT = <appDir>"
 appDir=`xcodebuild -showBuildSettings -project $project | grep BUILD_ROOT | awk '{print $3}'`
 appDir=$appDir/Debug-iphonesimulator/$app.app
