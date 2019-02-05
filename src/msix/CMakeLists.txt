@@ -231,7 +231,6 @@ endif()
 # Set the build version. It will be used in the name of the lib, with corresponding
 # symlinks created.
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    VERSION ${MSIX_VERSION}  # ${VERSION} was defined in the main CMakeLists.
     FRAMEWORK FALSE
     PUBLIC_HEADER "${LIB_PUBLIC_HEADERS}" # specify the public headers
 )
