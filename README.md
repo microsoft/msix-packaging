@@ -16,14 +16,14 @@ The MSIX SDK project includes cross platform API support for unpacking of .msix/
 
 |                                      |                                 |
 |--------------------------------------|---------------------------------|
-| **msix**      | A shared library (DLL on Win32, dylib on MacOs, SO on Linux and Android) that exports a subset of the functionality contained within appxpackaging.dll on Windows. See [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) for additional details.<br />On all platforms instead of CoCreating IAppxFactory, a C-style export: CoCreateAppxFactory is provided. Similarly, the CoCreateAppxBundleFactory export is equivalent as CoCreating IAppxBundleFactory.<br /><br /> The 'UnpackPackage' and 'UnpackBundle' exports that provide a simplified unpackage implementation. See the [samples directory](sample) for usage of the SDK.|
+| **msix**      | A shared library (DLL on Win32, dylib on MacOS, SO on Linux and Android) that exports a subset of the functionality contained within appxpackaging.dll on Windows. See [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) for additional details.<br />On all platforms instead of CoCreating IAppxFactory, a C-style export: CoCreateAppxFactory is provided. Similarly, the CoCreateAppxBundleFactory export is equivalent as CoCreating IAppxBundleFactory.<br /><br /> The 'UnpackPackage' and 'UnpackBundle' exports that provide a simplified unpackage implementation. See the [samples directory](sample) for usage of the SDK.|
 | **makemsix**  | A command line wrapper over the UnpackPackage and UnpackBundle implementations.  This tool exists primarily as a means of validating the implementation of the MSIX SDK internal routines and is compiled for Win32, MacOS, and Linux platforms.|
 
 Guidance on how to package your app contents and construct your app manifest such that it can take advantage of the cross platform support of this SDK is [here](tdf-guidance.md).
 
 ## Release Notes
 ----------------
-Release notes on the latest features and performance improvements made to the SDK are listed [here](https://docs.microsoft.com/en-us/windows/msix/sdk-release-notes-1.4)
+Release notes on the latest features and performance improvements made to the SDK are listed [here](https://docs.microsoft.com/en-us/windows/msix/msix-sdk/release-notes/sdk-release-notes-1.6)
 
 ## Setup Instructions
 ---------------------
@@ -87,9 +87,11 @@ See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-inte
 
 ## Build
 ----------
-### On Windows using Visual Studio 2017 nmake:
+### On Windows using Visual Studio nmake:
 ```
-   makewin.cmd
+   makewin.cmd <x86|x64>
+
+   This will start MSVC environment calling vcvarsall.bat <arch>, clean the output directory, call cmake and nmake. The latest Visual Studio version is obtained by calling vswhere.exe 
 ```
 
 ### On Mac using make:
@@ -100,8 +102,8 @@ See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-inte
 
 ### On Linux using make:
 ```
-        ./makelinux
-        ./makeaosp
+   ./makelinux
+   ./makeaosp
 ``` 
 
 ### How to compile for Android on Windows:
@@ -161,9 +163,9 @@ First build the project, then:
 
 Testing on mobile platforms:
 
-  On iOS (currently manual process):
+  On iOS :
   First build the project for iOS, then launch xCode and load test/mobile/iOSBVT.xcworkspace, compile the test app,
-  and then launch the iPhone simulator.
+  and then launch the iPhone simulator. You can also run "./testios.sh" from test/MacOS-Linux. 
 
   On Android:
   From within bash, navigate to test/MacOS-Linux, and run "./testaosponmac.sh". The test assumes there's an Android emulator named Nexus_5X_API_19_x86 and the build output is on a .vs directory at the root of the project.
