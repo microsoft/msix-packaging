@@ -3,7 +3,6 @@
 //  See LICENSE file in the project root for full license information.
 // 
 // ONLY build on platforms other than Win32
-#ifdef WIN32
 #include "Exceptions.hpp"
 #include "DirectoryObject.hpp"
 #include "FileStream.hpp"
@@ -61,7 +60,7 @@ namespace MSIX {
         do
         {
             utf16Name = std::wstring(findFileData.cFileName);
-            auto utf8Name = utf16_to_utf8(utf16Name);
+            auto utf8Name = wstring_to_utf8(utf16Name);
 
             if (((options & WalkOptions::Directories) == WalkOptions::Directories) &&
                 (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -163,11 +162,10 @@ namespace MSIX {
             found = false;
         }
         while(directories.size() > 0);
-        auto result = ComPtr<IStream>::Make<FileStream>(std::move(path), mode);
+        auto result = ComPtr<IStream>::Make<FileStream>(std::move(utf8_to_wstring(path)), mode);
         return result;
     }
 }
 
 // Don't pollute other compilation units with any of our #defs...
 #undef UNICODE
-#endif

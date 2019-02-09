@@ -55,6 +55,7 @@ namespace MSIX {
         }
     }
 
+    // IAppxManifestPackageId
     HRESULT STDMETHODCALLTYPE AppxManifestPackageId::GetName(LPWSTR* name) noexcept try
     {
         return m_factory->MarshalOutString(m_name, name);
@@ -108,13 +109,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxManifestPackageId::ComparePublisher(LPCWSTR other, BOOL *isSame) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (isSame == nullptr), "bad pointer" );
-        *isSame = FALSE;
-        if (0 == m_publisher.compare(utf16_to_utf8(other)))
-        {
-            *isSame = TRUE;
-        }
-        return static_cast<HRESULT>(Error::OK);
+        return ComparePublisher(wstring_to_utf8(other).c_str(), isSame);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxManifestPackageId::GetPackageFullName(LPWSTR* packageFullName) noexcept try
@@ -170,6 +165,45 @@ namespace MSIX {
 
         std::vector<std::uint8_t> hash;
         ThrowErrorIfNot(Error::Unexpected, SHA256::ComputeHash(buffer.data(), static_cast<uint32_t>(buffer.size()), hash),  "Failed computing publisherId");
-        return Base32Encoding(hash);
+        return Encoding::Base32Encoding(hash);
     }
+
+    // IAppxManifestPackageIdUtf8
+    HRESULT STDMETHODCALLTYPE AppxManifestPackageId::GetName(LPSTR* name) noexcept try
+    {
+        return m_factory->MarshalOutStringUtf8(m_name, name);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxManifestPackageId::GetPublisher(LPSTR* publisher) noexcept try
+    {
+        return m_factory->MarshalOutStringUtf8(m_publisher, publisher);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxManifestPackageId::GetResourceId(LPSTR* resourceId) noexcept try
+    {
+        return m_factory->MarshalOutStringUtf8(m_resourceId, resourceId);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxManifestPackageId::ComparePublisher(LPCSTR other, BOOL *isSame) noexcept try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (isSame == nullptr), "bad pointer" );
+        *isSame = FALSE;
+        if (0 == m_publisher.compare(other))
+        {
+            *isSame = TRUE;
+        }
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxManifestPackageId::GetPackageFullName(LPSTR* packageFullName) noexcept try
+    {
+        auto fullName = GetPackageFullName();
+        return m_factory->MarshalOutStringUtf8(fullName, packageFullName);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxManifestPackageId::GetPackageFamilyName(LPSTR* packageFamilyName) noexcept try
+    {
+        auto familyName = GetPackageFamilyName();
+        return m_factory->MarshalOutStringUtf8(familyName, packageFamilyName);
+    } CATCH_RETURN();
 }

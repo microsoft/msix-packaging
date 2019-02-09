@@ -5,3 +5,4 @@
 # will break the ABI contract with clients.
 # ---------------------------------------------------------------------------
 _RunTests
+_RunApiTest

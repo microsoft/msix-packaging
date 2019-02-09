@@ -13,6 +13,7 @@
 
 #include "MobileTests.hpp"
 #include "MSIXWindows.hpp"
+#include "ApiTests.hpp"
 
 std::string GetStringPathFromJString(JNIEnv* env, jstring jFilePath)
 {
@@ -74,7 +75,7 @@ JNICALL
 Java_com_microsoft_androidbvt_MainActivity_RunTests(JNIEnv* env, jobject /* this */,
                                                           jobject assetManager, jstring jFilePath)
 {
-    std::string output = "Test failure";
+    std::string output = "";
     std::string filePath = GetStringPathFromJString(env, jFilePath);
     CopyFilesFromAssets(env, assetManager, filePath, "");
     CopyFilesFromAssets(env, assetManager, filePath, "BlockMap");
@@ -82,9 +83,25 @@ Java_com_microsoft_androidbvt_MainActivity_RunTests(JNIEnv* env, jobject /* this
     CopyFilesFromAssets(env, assetManager, filePath, "flat");
     CopyFilesFromAssets(env, assetManager, filePath, "महसुस");
     signed long hr = RunTests(const_cast<char*>(filePath.c_str()), const_cast<char*>(filePath.c_str()));
-    if(hr == 0)
+    output += "End-to-end tests: ";
+    if (hr == 0)
     {
-        output = "Finished running tests";
+        output += "PASSED\n";
+    }
+    else
+    {
+        output += "FAILED\n";
+    }
+    std::string input = filePath + "apitest_test_1.txt";
+    int apiResult = RunApiTest(const_cast<char*>(input.c_str()), const_cast<char*>(filePath.c_str()), const_cast<char*>(filePath.c_str()));
+    output += "Api tests: ";
+    if (apiResult == 0)
+    {
+        output += "PASSED\n";
+    }
+    else
+    {
+        output += "FAILED\n";
     }
     return env->NewStringUTF(output.c_str());
 }

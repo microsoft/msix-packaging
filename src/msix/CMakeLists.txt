@@ -63,42 +63,6 @@ else()
         "UnpackBundleFromStream"
         "CoCreateAppxBundleFactory"
         "CoCreateAppxBundleFactoryWithHeap"
-        "IID_IUnknown"
-        "IID_IStream"
-        "IID_IAppxFactory"
-        "IID_IAppxPackageReader"
-        "IID_IAppxFile"
-        "IID_IAppxFilesEnumerator"
-        "IID_IAppxBlockMapReader"
-        "IID_IAppxBlockMapFile"
-        "IID_IAppxBlockMapFilesEnumerator"
-        "IID_IAppxBlockMapBlock"
-        "IID_IAppxBlockMapBlocksEnumerator"
-        "IID_IAppxManifestReader"
-        "IID_IAppxManifestReader2"
-        "IID_IAppxManifestReader3"
-        "IID_IAppxManifestPackageId"
-        "IID_IAppxManifestProperties"
-        "IID_IAppxManifestTargetDeviceFamiliesEnumerator"
-        "IID_IAppxManifestTargetDeviceFamily"
-        "IID_IAppxManifestPackageDependenciesEnumerator"
-        "IID_IAppxManifestPackageDependency"
-        "IID_IAppxManifestResourcesEnumerator"
-        "IID_IAppxManifestApplicationsEnumerator"
-        "IID_IAppxManifestApplication"
-        "IID_IAppxManifestQualifiedResourcesEnumerator"
-        "IID_IAppxManifestQualifiedResource"
-        "IID_IAppxBundleFactory"
-        "IID_IAppxBundleReader"
-        "IID_IAppxBundleManifestReader"
-        "IID_IAppxBundleManifestPackageInfoEnumerator"
-        "IID_IAppxBundleManifestPackageInfo"
-        "IID_IMsixDocumentElement"
-        "IID_IMsixElement"
-        "IID_IMsixElementEnumerator"
-        "IID_IMsixFactoryOverrides"
-        "IID_IMsixStreamFactory"
-        "IID_IMsixApplicabilityLanguagesEnumerator"
     )
     if((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported
@@ -210,8 +174,8 @@ add_library(${PROJECT_NAME} SHARED
     AppxManifestObject.cpp
     AppxPackageObject.cpp
     AppxPackageInfo.cpp
-    AppxPackaging_i.cpp
     AppxSignature.cpp
+    Encoding.cpp
     Exceptions.cpp
     InflateStream.cpp
     Log.cpp
@@ -267,7 +231,6 @@ endif()
 # Set the build version. It will be used in the name of the lib, with corresponding
 # symlinks created.
 set_target_properties(${PROJECT_NAME} PROPERTIES
-    VERSION ${MSIX_VERSION}  # ${VERSION} was defined in the main CMakeLists.
     FRAMEWORK FALSE
     PUBLIC_HEADER "${LIB_PUBLIC_HEADERS}" # specify the public headers
 )

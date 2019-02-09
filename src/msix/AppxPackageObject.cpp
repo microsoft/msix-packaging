@@ -196,7 +196,18 @@ namespace MSIX {
                 if (fileName != CONTENT_TYPES_XML)
                 {
                     auto stream = footPrintFile->GetValidationStream(this);
-                    m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(stream));;
+                    if (fileName == CODEINTEGRITY_CAT)
+                    {
+                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), "AppxMetadata\\CodeIntegrity.cat", std::move(stream));;
+                    }
+                    else if (fileName == APPXBUNDLEMANIFEST_XML)
+                    {
+                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), "AppxMetadata\\AppxBundleManifest.xml", std::move(stream));;
+                    }
+                    else
+                    {
+                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(stream));;
+                    }
                 }
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
             }
@@ -235,7 +246,7 @@ namespace MSIX {
             {
                 auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
                 auto packageName = bundleInfoInternal->GetFileName();
-                auto packageStream = m_container->GetFile(packageName);
+                auto packageStream = m_container->GetFile(Encoding::EncodeFileName(packageName));
 
                 if (packageStream)
                 {   // The package is in the bundle. Verify is not compressed.
@@ -253,7 +264,7 @@ namespace MSIX {
                     if(streamFactoryUnk.Get() != nullptr)
                     {
                         auto streamFactory = streamFactoryUnk.As<IMsixStreamFactory>();
-                        ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePath(utf8_to_wstring(packageName).c_str(), &packageStream));
+                        ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePathUtf8(packageName.c_str(), &packageStream));
                     }
                     else
                     {   // User didn't specify a stream factory implementation. Assume packages are in the same location
@@ -337,14 +348,14 @@ namespace MSIX {
             {   auto footPrintFile = std::find(std::begin(footPrintFileNames), std::end(footPrintFileNames), fileName);
                 if (footPrintFile == std::end(footPrintFileNames))
                 {
-                    auto containerFileName = EncodeFileName(fileName);
-                    m_payloadFiles.push_back(containerFileName);
-                    auto fileStream = m_container->GetFile(containerFileName);
+                    auto opcFileName = Encoding::EncodeFileName(fileName);
+                    m_payloadFiles.push_back(opcFileName);
+                    auto fileStream = m_container->GetFile(opcFileName);
                     ThrowErrorIfNot(Error::FileNotFound, fileStream, "File described in blockmap not contained in OPC container");
                     VerifyFile(fileStream, fileName, blockMapInternal);
                     auto blockMapStream = m_appxBlockMap->GetValidationStream(fileName, fileStream);
-                    m_files[containerFileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(blockMapStream));
-                    filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), containerFileName), filesToProcess.end());
+                    m_files[opcFileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(blockMapStream));
+                    filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), opcFileName), filesToProcess.end());
                 }
             }
 
@@ -424,7 +435,7 @@ namespace MSIX {
                     targetName = packageId.As<IAppxManifestPackageIdInternal>()->GetPackageFullName() + "/" + fileName;
                 }
                 else
-                {   targetName = DecodeFileName(fileName);
+                {   targetName = Encoding::DecodeFileName(fileName);
                 }
 
                 auto targetFile = to->OpenFile(targetName, MSIX::FileStream::Mode::WRITE_UPDATE);
@@ -508,8 +519,7 @@ namespace MSIX {
         if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
         ThrowErrorIf(Error::InvalidParameter, (file == nullptr || *file != nullptr), "bad pointer");
         ThrowErrorIf(Error::FileNotFound, (static_cast<size_t>(type) > footprintFiles.size()), "unknown footprint file type");
-        std::string footprint (footprintFiles[type]);
-        auto result = GetAppxFile(footprint);
+        auto result = GetAppxFile(footprintFiles[type]);
         ThrowErrorIfNot(Error::FileNotFound, result, "requested footprint file not in package")
         // Clients expect the stream's pointer to be at the start of the file!
         ComPtr<IStream> stream;
@@ -521,17 +531,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFile(LPCWSTR fileName, IAppxFile** file) noexcept try
     {
-        if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
-        ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
-        std::string name = utf16_to_utf8(fileName);
-        auto result = GetAppxFile(EncodeFileName(name));
-        ThrowErrorIfNot(Error::FileNotFound, result, "requested file not in package")
-        // Clients expect the stream's pointer to be at the start of the file!
-        ComPtr<IStream> stream;
-        ThrowHrIfFailed(result->GetStream(&stream));
-        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
-        *file = result.Detach();
-        return static_cast<HRESULT>(Error::OK);
+        return GetPayloadFile(wstring_to_utf8(fileName).c_str(), file);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFiles(IAppxFilesEnumerator** filesEnumerator) noexcept try
@@ -606,21 +606,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadPackage(LPCWSTR fileName, IAppxFile **payloadPackage) noexcept try
     {
-        #ifdef BUNDLE_SUPPORT
-            if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
-            ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || payloadPackage == nullptr || *payloadPackage != nullptr), "bad pointer");
-            std::string name = utf16_to_utf8(fileName);
-            auto result = GetAppxFile(name);
-            ThrowErrorIfNot(Error::FileNotFound, result, "Requested package not in bundle")
-            // Clients expect the stream's pointer to be at the start of the file!
-            ComPtr<IStream> stream;
-            ThrowHrIfFailed(result->GetStream(&stream));
-            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
-            *payloadPackage = result.Detach();
-        return static_cast<HRESULT>(Error::OK);
-        #else
-            return static_cast<HRESULT>(MSIX::Error::NotSupported);
-        #endif
+        return GetPayloadPackage(wstring_to_utf8(fileName).c_str(), payloadPackage);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxPackageObject::GetManifest(IAppxBundleManifestReader **manifestReader) noexcept try
@@ -630,6 +616,40 @@ namespace MSIX {
             ThrowErrorIf(Error::InvalidParameter,(manifestReader == nullptr || *manifestReader != nullptr), "bad pointer");
             *manifestReader = m_appxBundleManifest.As<IAppxBundleManifestReader>().Detach();
             return static_cast<HRESULT>(Error::OK);
+        #else
+            return static_cast<HRESULT>(MSIX::Error::NotSupported);
+        #endif
+    } CATCH_RETURN();
+
+    // IAppxPackageReaderUtf8
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadFile(LPCSTR fileName, IAppxFile** file) noexcept try
+    {
+        if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
+        ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
+        auto result = GetAppxFile(Encoding::EncodeFileName(fileName));
+        ThrowErrorIfNot(Error::FileNotFound, result, "requested file not in package")
+        // Clients expect the stream's pointer to be at the start of the file!
+        ComPtr<IStream> stream;
+        ThrowHrIfFailed(result->GetStream(&stream));
+        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
+        *file = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    // IAppxBundleReaderUtf8
+    HRESULT STDMETHODCALLTYPE AppxPackageObject::GetPayloadPackage(LPCSTR fileName, IAppxFile **payloadPackage) noexcept try
+    {
+        #ifdef BUNDLE_SUPPORT
+            if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
+            ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || payloadPackage == nullptr || *payloadPackage != nullptr), "bad pointer");
+            auto result = GetAppxFile(fileName);
+            ThrowErrorIfNot(Error::FileNotFound, result, "Requested package not in bundle")
+            // Clients expect the stream's pointer to be at the start of the file!
+            ComPtr<IStream> stream;
+            ThrowHrIfFailed(result->GetStream(&stream));
+            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
+            *payloadPackage = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
         #else
             return static_cast<HRESULT>(MSIX::Error::NotSupported);
         #endif

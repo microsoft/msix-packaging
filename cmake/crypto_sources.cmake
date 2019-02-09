@@ -7,6 +7,7 @@ list(APPEND XSRC
     ${CRYPTO}/cryptlib.c
     ${CRYPTO}/cversion.c
     ${CRYPTO}/ex_data.c
+    ${CRYPTO}/getenv.c
     ${CRYPTO}/mem.c
     ${CRYPTO}/mem_clr.c
     ${CRYPTO}/mem_dbg.c
@@ -415,13 +416,13 @@ list(APPEND XSRC
 list(APPEND XINC
     ${CRYPTO}/crypto.h
     ${CRYPTO}/opensslv.h
-     ${CRYPTO}/symhacks.h
+    ${CRYPTO}/symhacks.h
     ${CRYPTO}/ossl_typ.h
     ${CRYPTO}/aes/aes.h
     ${CRYPTO}/asn1/asn1.h
     ${CRYPTO}/asn1/asn1_mac.h
     ${CRYPTO}/asn1/asn1t.h
-     ${CRYPTO}/bio/bio.h
+    ${CRYPTO}/bio/bio.h
     ${CRYPTO}/bn/bn.h
     ${CRYPTO}/buffer/buffer.h
     ${CRYPTO}/comp/comp.h

@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>Microsoft.MSIX.Packaging</id>
+    <id>${MSIX_NUGET_NAME}</id>
     <version>${MSIX_VERSION}</version>
     <authors>psmith@microsoft.com, rubengu@microsoft.com, adrian.mascarenhas@microsoft.com</authors>
     <owners>MSIXPackagingOSSCustomerQs@service.microsoft.com</owners>
@@ -27,6 +27,9 @@
 1.4  -  Support for FlatBundles. Use inbox implementation of zlib for MacOS/iOS and AOSP. General fixes and improvements.
 
 1.5  -  Use inbox implementation of parser for MacOS/iOS and AOSP.
+
+1.6  -  Add IAppx*Utf8 variants for AppxPackaging APIs. Allow overriding language package selection via IMsixApplicabilityLanguagesEnumerator.
+        Support paths and packages with international characters. Update OpenSSL to 1.0.2q. Bugs fixes.
     </releaseNotes>
     <copyright>Copyright (C) 2017 Microsoft</copyright>
     <tags>MSIX Appx AppxPackaging native</tags>

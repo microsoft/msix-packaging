@@ -47,6 +47,7 @@ function CreateApp {
     cd $projectdir/../mobile/AndroidBVT
     mkdir -p app/src/main/assets
     cp -R $projectdir/../appx/* app/src/main/assets
+    cp $projectdir/../../.vs/test/api/input/apitest_test_1.txt app/src/main/assets
     mkdir -p app/src/main/jniLibs/x86
     cp $projectdir/../../.vs/lib/libmsix.so app/src/main/jniLibs/x86
     mkdir -p app/src/main/libs
@@ -74,22 +75,23 @@ function RunTest {
     done
     # Get Results
     RunCommand "adb pull /data/data/com.microsoft.androidbvt/files/testResults.txt"
+    RunCommand "adb pull /data/data/com.microsoft.androidbvt/files/testApiResults.txt"
 }
 
 function ParseResult {
-    if [ ! -f testResults.txt ]
+    local FILE="$1"
+    if [ ! -f $FILE ]
     then
-        echo "testResults.txt not found!"
+        echo $FILE" not found!"
         exit 1
     fi
-    cat testResults.txt 
-    if grep -q "passed" testResults.txt
+    cat $FILE
+    if grep -q "FAILED" $FILE
     then
-        echo "Android tests passed"
-        exit 0
+        echo "FAILED"
+        testfailed=1
     else
-        echo "Android tests failed."
-        exit 1
+        echo "succeeded"
     fi
 }
 
@@ -102,8 +104,20 @@ StartEmulator
 # Clean up. This commands might fail, but is not an error
 adb shell rm -r /data/data/com.microsoft.androidbvt/files
 rm $projectdir/../mobile/androidbvt/testResults.txt
+rm $projectdir/../mobile/androidbvt/testApiResults.txt
 
 CreateApp
 RunTest
 TerminateEmulatorInBackground
-ParseResult
+ParseResult testResults.txt
+ParseResult testApiResults.txt
+
+echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
+if [ $testfailed -ne 0 ]
+then
+    echo "                           FAILED                                 "
+    exit $testfailed
+else
+    echo "                           passed                                 "
+    exit 0
+fi

@@ -28,23 +28,20 @@
 
 XERCES_CPP_NAMESPACE_USE
 
-EXTERN_C const IID IID_IXercesElement;
-
-#ifndef WIN32
+// An internal interface for XML document object model
 // {07d6ee0e-2165-4b90-8024-e176291e77dd}
+#ifndef WIN32
 interface IXercesElement : public IUnknown
 #else
 #include "Unknwn.h"
 #include "Objidl.h"
 class IXercesElement : public IUnknown
 #endif
-// An internal interface for XML document object model
 {
 public:
     virtual DOMElement* GetElement() = 0;
 };
-
-SpecializeUuidOfImpl(IXercesElement);
+MSIX_INTERFACE(IXercesElement,  0x07d6ee0e,0x2165,0x4b90,0x80,0x24,0xe1,0x76,0x29,0x1e,0x77,0xdd);
 
 namespace MSIX {
 
@@ -210,8 +207,8 @@ private:
     std::string GetAttributeValue(std::string& attributeName)
     {
         XercesXMLChPtr nameAttr(XMLString::transcode(attributeName.c_str()));
-        XercesCharPtr value(XMLString::transcode(m_element->getAttribute(nameAttr.Get())));
-        return std::string(value.Get());
+        auto utf16string = std::u16string(m_element->getAttribute(nameAttr.Get()));
+        return u16string_to_utf8(utf16string);
     }
 
 public:
@@ -224,13 +221,13 @@ public:
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        auto attributeName = utf16_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]);
+        auto attributeName = wstring_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]);
         return GetAttributeValue(attributeName);
     }
 
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
     {
-        XercesXMLChPtr nameAttr(XMLString::transcode(utf16_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]).c_str()));
+        XercesXMLChPtr nameAttr(XMLString::transcode(wstring_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]).c_str()));
         XMLSize_t len = 0;
         XercesXMLBytePtr decodedData(XERCES_CPP_NAMESPACE::Base64::decodeToXMLByte(
             m_element->getAttribute(nameAttr.Get()),
@@ -256,7 +253,7 @@ public:
     HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) noexcept override try
     {
         ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
-        auto intermediate = utf16_to_utf8(name);
+        auto intermediate = wstring_to_utf8(name);
         auto attributeValue = GetAttributeValue(intermediate);
         return m_factory->MarshalOutString(attributeValue, value);
     } CATCH_RETURN();
@@ -270,12 +267,30 @@ public:
 
     HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMsixElementEnumerator** elements) noexcept override try
     {
-        ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
+        return GetElementsUtf8(wstring_to_utf8(name).c_str(), elements);
+    } CATCH_RETURN();
 
+    HRESULT STDMETHODCALLTYPE GetAttributeValueUtf8(LPCSTR name, LPSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        auto attribute = std::string(name);
+        auto attributeValue = GetAttributeValue(attribute);
+        return m_factory->MarshalOutStringUtf8(attributeValue, value);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetTextUtf8(LPSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        auto text = GetText();
+        return m_factory->MarshalOutStringUtf8(text, value);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetElementsUtf8(LPCSTR name, IMsixElementEnumerator** elements) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
         // Note: getElementsByTagName only returns the childs of a DOMElement and doesn't 
         // support xPath. For this reason we need the XercesDomParser in this object.
-        auto intermediate = utf16_to_utf8(name);
-        XercesXMLChPtr xPath(XMLString::transcode(intermediate.c_str()));
+        XercesXMLChPtr xPath(XMLString::transcode(name));
         XercesPtr<DOMXPathResult> result(m_parser->getDocument()->evaluate(
             xPath.Get(),
             m_element,

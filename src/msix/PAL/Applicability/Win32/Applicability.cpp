@@ -122,7 +122,7 @@ namespace MSIX {
                 const auto& tag = std::find(std::begin(muiToBcp47List), std::end(muiToBcp47List), muiTag.c_str());
                 if (tag == std::end(muiToBcp47List))
                 {   // Is not well known, luckily the tag will be the same (probably not) :)
-                    result.push_back(utf16_to_utf8(muiTag));
+                    result.push_back(wstring_to_utf8(muiTag));
                 }
                 else
                 {
@@ -148,7 +148,7 @@ namespace MSIX {
             {
                 HString hstring;
                 ThrowHrIfFailed(languages->GetAt(i, hstring.GetAddressOf()));
-                result.push_back(utf16_to_utf8(hstring.GetRawBuffer(nullptr)));
+                result.push_back(wstring_to_utf8(hstring.GetRawBuffer(nullptr)));
             }
         }
         return result;

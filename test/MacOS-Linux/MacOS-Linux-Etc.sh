@@ -65,6 +65,24 @@ function RunTest {
     fi
 }
 
+function RunApiTest {
+    local CURRENTLOCATION=`pwd`
+    cd $BINDIR/..
+    echo "------------------------------------------------------"
+    echo "bin/apitest.exe -f $1"
+    echo "------------------------------------------------------"
+    bin/apitest -f $1
+    local RESULT=$?
+    if [ $RESULT -eq 0 ]
+    then
+        echo "succeeded"
+    else
+        echo "FAILED"
+  	TESTFAILED=1
+    fi
+    cd $CURRENTLOCATION
+}
+
 FindBinFolder
 # return code is last two digits, but in decimal, not hex.  e.g. 0x8bad0002 == 2, 0x8bad0041 == 65, etc...
 # common codes:
@@ -73,6 +91,7 @@ FindBinFolder
 RunTest 2  ./../appx/Empty.appx -sv
 RunTest 0  ./../appx/HelloWorld.appx -ss
 RunTest 0  ./../appx/NotepadPlusPlus.appx -ss
+RunTest 0  ./../appx/IntlPackage.appx -ss
 RunTest 66 ./../appx/SignatureNotLastPart-ERROR_BAD_FORMAT.appx
 RunTest 66 ./../appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
 RunTest 65 ./../appx/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx -sv
@@ -172,7 +191,7 @@ RunTest 3 ./../appx/bundles/PayloadPackageIsEmpty.appxbundle -ss
 RunTest 87 ./../appx/bundles/PayloadPackageIsNotAppxPackage.appxbundle -ss
 # RunTest 0 ./../appx/bundles/PayloadPackageNotListedInManifest.appxbundle
 RunTest 66 ./../appx/bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle
-
+RunTest 0 ./../appx/bundles/BundleWithIntlPackage.appxbundle -ss
 RunTest 0 ./../appx/bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
 ValidateResult ExpectedResult/$directory/StoreSigned_Desktop_x86_x64_MoviesTV.txt
 
@@ -184,6 +203,8 @@ RunTest 0 ./../appx/flat/FlatBundleWithAsset.appxbundle -ss
 ValidateResult ExpectedResult/$directory/FlatBundleWithAsset.txt
 
 CleanupUnpackFolder
+
+RunApiTest test/api/input/apitest_test_1.txt
 
     echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if [ $TESTFAILED -ne 0 ]

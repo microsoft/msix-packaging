@@ -22,37 +22,25 @@
 
 #include <msxml6.h>
 
-EXTERN_C const IID IID_IMSXMLElement;
-EXTERN_C const IID IID_IMSXMLDom;
-
-#ifndef WIN32
-// {2730f595-0c80-4f3e-8891-753b2e8c305d}
-interface IMSXMLElement : public IUnknown
-#else
 #include "Unknwn.h"
 #include "Objidl.h"
+// {2730f595-0c80-4f3e-8891-753b2e8c305d}
 class IMSXMLElement : public IUnknown
-#endif
 // An internal interface for XML document object model
 {
 public:
     virtual MSIX::ComPtr<IXMLDOMNodeList> SelectNodes(XmlQueryName query) = 0;
 };
+MSIX_INTERFACE(IMSXMLElement, 0x2730f595,0x0c80,0x4f3e,0x88,0x91,0x75,0x3b,0x2e,0x8c,0x30,0x5d);
 
-#ifndef WIN32
 // {b6bca5f0-c6c1-4409-85be-e476aabec19a}
-interface IMSXMLDom : public IUnknown
-#else
 class IMSXMLDom : public IUnknown
-#endif
 // An internal interface for XML document object model
 {
 public:
     virtual MSIX::ComPtr<IXMLDOMDocument> GetDomDocument() = 0;
 };
-
-SpecializeUuidOfImpl(IMSXMLElement);
-SpecializeUuidOfImpl(IMSXMLDom);
+MSIX_INTERFACE(IMSXMLDom, 0xb6bca5f0,0xc6c1,0x4409,0x85,0xbe,0xe4,0x76,0xaa,0xbe,0xc1,0x9a);
 
 namespace MSIX {
 
@@ -201,13 +189,6 @@ public:
 
 class MSXMLElement final : public ComClass<MSXMLElement, IXmlElement, IMSXMLElement, IMsixElement>
 {
-    bool GetAttribute(const std::wstring& attribute, VARIANT* variant)
-    {
-        Bstr name(attribute);
-        ThrowHrIfFailed(m_element->getAttribute(name, variant));
-        return (variant->vt == VT_BSTR);
-    }
-
 public:
     MSXMLElement(IMsixFactory* factory, ComPtr<IXMLDOMElement>& element) : m_factory(factory), m_element(element) {}
 
@@ -217,7 +198,7 @@ public:
         Variant value;
         if (GetAttribute(attributeNames[static_cast<std::uint8_t>(attribute)], value.AddressOf()))
         {
-            return utf16_to_utf8(static_cast<WCHAR*>(value.Get().bstrVal));
+            return wstring_to_utf8(static_cast<WCHAR*>(value.Get().bstrVal));
         }
         return "";
     }
@@ -225,7 +206,7 @@ public:
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
     {
         auto intermediate = GetAttributeValue(attribute);
-        return GetBase64DecodedValue(intermediate);
+        return Encoding::GetBase64DecodedValue(intermediate);
     }
 
     std::string GetText() override
@@ -236,7 +217,7 @@ public:
         ThrowHrIfFailed(node->get_text(value.AddressOf()));
         if (value.Get() != nullptr)
         {
-            return utf16_to_utf8(static_cast<WCHAR*>(value.Get()));
+            return wstring_to_utf8(static_cast<WCHAR*>(value.Get()));
         }
         return "";
     }
@@ -281,7 +262,6 @@ public:
 
     HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMsixElementEnumerator** elements) noexcept override try
     {
-        ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
         ComPtr<IXMLDOMNodeList> list;
         Bstr xPath(name);
         ThrowHrIfFailed(m_element->selectNodes(xPath, &list));
@@ -303,7 +283,70 @@ public:
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
+    HRESULT STDMETHODCALLTYPE GetAttributeValueUtf8(LPCSTR name, LPSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        *value = nullptr;
+        Variant attribute;
+        auto wname = utf8_to_wstring(name);
+        if (GetAttribute(wname, attribute.AddressOf()))
+        {
+            auto intermediate = wstring_to_utf8(std::wstring(static_cast<WCHAR*>(attribute.Get().bstrVal)));
+            ThrowHrIfFailed(m_factory->MarshalOutStringUtf8(intermediate, value));
+        }
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetTextUtf8(LPSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        ComPtr<IXMLDOMNode> node;
+        ThrowHrIfFailed(m_element->QueryInterface(__uuidof(IXMLDOMNode), reinterpret_cast<void**>(&node)));
+        Bstr text;
+        ThrowHrIfFailed(node->get_text(text.AddressOf()));
+        if (text.Get() != nullptr)
+        {
+            auto intermediate = wstring_to_utf8(std::wstring(static_cast<WCHAR*>(text.Get())));
+            ThrowHrIfFailed(m_factory->MarshalOutStringUtf8(intermediate, value));
+        }
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetElementsUtf8(LPCSTR name, IMsixElementEnumerator** elements) noexcept override try
+    {
+        return GetElements(utf8_to_wstring(name).c_str(), elements);
+    } CATCH_RETURN();
+
 protected:
+
+    bool GetAttribute(const std::wstring& attribute, VARIANT* variant)
+    {
+        Bstr name(attribute);
+        ThrowHrIfFailed(m_element->getAttribute(name, variant));
+        return (variant->vt == VT_BSTR);
+    }
+
+    ComPtr<IMsixElementEnumerator> GetElementsHelper(std::wstring& name)
+    {
+        ComPtr<IXMLDOMNodeList> list;
+        Bstr xPath(name);
+        ThrowHrIfFailed(m_element->selectNodes(xPath, &list));
+
+        long count = 0;
+        ThrowHrIfFailed(list->get_length(&count));
+        std::vector<ComPtr<IMsixElement>> elementsEnum;
+        for(long index=0; index < count; index++)
+        {
+            ComPtr<IXMLDOMNode> node;
+            ThrowHrIfFailed(list->get_item(index, &node));
+            ComPtr<IXMLDOMElement> elementItem;
+            ThrowHrIfFailed(node->QueryInterface(__uuidof(IXMLDOMElement), reinterpret_cast<void**>(&elementItem)));
+            auto item = ComPtr<IMsixElement>::Make<MSXMLElement>(m_factory, elementItem);
+            elementsEnum.push_back(std::move(item));
+        }
+        return ComPtr<IMsixElementEnumerator>::Make<EnumeratorCom<IMsixElementEnumerator,IMsixElement>>(elementsEnum);
+    }
+
     IMsixFactory* m_factory;
     ComPtr<IXMLDOMElement> m_element;
 };
@@ -318,7 +361,7 @@ protected:
         if (errorInfo)                                                           \
         {   Bstr description;                                                    \
             ThrowHrIfFailed(errorInfo->GetDescription(description.AddressOf())); \
-            Global::Log::Append(utf16_to_utf8(description.Get()));               \
+            Global::Log::Append(wstring_to_utf8(description.Get()));               \
         }                                                                        \
         ThrowHrIfFailed(result);                                                 \
     }                                                                            \
@@ -501,7 +544,7 @@ public:
                 ThrowHrIfFailed(error->get_reason(reason.AddressOf()));
                 std::ostringstream message;            
                 message << "XML error: " << std::hex << errorCode << " on line " << std::dec << lineNumber << ", col " << columnNumber << ".";
-                if (nullptr != reason.Get()) { message << "  " << utf16_to_utf8(static_cast<wchar_t*>(reason.Get())); }
+                if (nullptr != reason.Get()) { message << "  " << wstring_to_utf8(static_cast<wchar_t*>(reason.Get())); }
 
                 // As necessary, translate MSXML6-specific errors w.r.t. malformed/non-schema-compliant 
                 // XML into generic Xml errors and leave the full details in the log.

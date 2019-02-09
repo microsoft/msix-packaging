@@ -84,13 +84,28 @@ message(STATUS "MSIX Packaging SDK branch name ${GIT_BRANCH_NAME}")
 add_definitions(-DSDK_VERSION="${MSIX_VERSION}")
 
 # Configure Package.nuspec
+if(WIN32)
+    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.Windows")
+elseif(MACOS)
+    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.MacOS")
+elseif(IOS)
+    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.iOS")
+elseif(AOSP)
+    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.AOSP")
+elseif(LINUX)
+    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.Linux")
+else()
+    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging") # cmake ..
+endif()
+
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Package.nuspec.cmakein ${CMAKE_CURRENT_BINARY_DIR}/Package.nuspec CRLF)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Microsoft.MSIX.Packaging.targets ${CMAKE_BINARY_DIR}/build/native/Microsoft.MSIX.Packaging.targets)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Microsoft.MSIX.Packaging.targets ${CMAKE_BINARY_DIR}/build/native/${MSIX_NUGET_NAME}.targets)
 message(STATUS "Package.Nuspec created")
 message(STATUS "--------------------------------")
 
 # Configure license txt
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/LICENSE ${CMAKE_BINARY_DIR}/build/LICENSE)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/THIRD\ PARTY\ CODE\ NOTICE ${CMAKE_BINARY_DIR}/build/THIRD\ PARTY\ CODE\ NOTICE)
 message(STATUS "LICENSE created")
 message(STATUS "--------------------------------")    
 

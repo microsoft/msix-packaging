@@ -83,8 +83,7 @@ echo Usage
 echo:
 echo    makewin.cmd ^<x86^|x64^> [options]
 echo:
-echo Helper to build the MSIX SDK for Windows. Assumes the user has a version
-echo of Visual Studio 2017 installed.
+echo Helper to build the MSIX SDK for Windows. Assumes the user has a version of Visual Studio installed.
 echo:
 echo Options
 echo    --debug, -d              = Build chk binary.

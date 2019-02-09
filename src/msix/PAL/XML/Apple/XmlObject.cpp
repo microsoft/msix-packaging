@@ -17,8 +17,6 @@
 #include "Enumerators.hpp"
 #include "XmlDocumentReader.hpp"
 
-EXTERN_C const IID IID_IAppleXmlElement;
-
 // An internal interface for apple XML document object model
 // {8FBC0096-E87D-406A-95D9-203ADEFBF9AF}
 interface IAppleXmlElement : public IUnknown
@@ -26,8 +24,7 @@ interface IAppleXmlElement : public IUnknown
 public:
     virtual MSIX::XmlNode* GetXmlNode() = 0;
 };
-
-SpecializeUuidOfImpl(IAppleXmlElement);
+MSIX_INTERFACE(IAppleXmlElement,  0x8fbc0096, 0xe87d, 0x406a, 0x95, 0xd9, 0x20, 0x3a, 0xde, 0xfb, 0xf9, 0xaf);
 
 namespace MSIX {
 
@@ -42,14 +39,14 @@ public:
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        auto intermediate = utf16_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]);
+        auto intermediate = wstring_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]);
         return GetAttributeValue(intermediate);
     }
 
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
     {
         auto intermediate = GetAttributeValue(attribute);
-        return GetBase64DecodedValue(intermediate);
+        return Encoding::GetBase64DecodedValue(intermediate);
     }
 
     std::string GetText() override
@@ -64,10 +61,9 @@ public:
     HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) noexcept override try
     {
         ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
-        auto intermediate = utf16_to_utf8(name);
+        auto intermediate = wstring_to_utf8(name);
         auto attributeValue = GetAttributeValue(intermediate);
         return m_factory->MarshalOutString(attributeValue, value);;
-
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE GetText(LPWSTR* value) noexcept override try
@@ -79,22 +75,36 @@ public:
 
     HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMsixElementEnumerator** elements) noexcept override try
     {
+        return GetElementsUtf8(wstring_to_utf8(name).c_str(), elements);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetAttributeValueUtf8(LPCSTR name, LPSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        auto attribute = std::string(name);
+        auto attributeValue = GetAttributeValue(attribute);
+        return m_factory->MarshalOutStringUtf8(attributeValue, value);;
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetTextUtf8(LPSTR* value) noexcept override try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
+        auto text = GetText();
+        return m_factory->MarshalOutStringUtf8(text, value);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE GetElementsUtf8(LPCSTR name, IMsixElementEnumerator** elements) noexcept override try
+    {
         ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
-
-        auto intermediate = utf16_to_utf8(name);
-
-        auto elementsFound = m_xmlNode->FindElements(intermediate);
-
+        auto attribute = std::string(name);
+        auto elementsFound = m_xmlNode->FindElements(attribute);
         std::vector<ComPtr<IMsixElement>> elementsEnum;
         for(auto element : elementsFound)
         {
             auto item = ComPtr<IMsixElement>::Make<XmlElement>(m_factory, element);
             elementsEnum.push_back(std::move(item));
         }
-
-        *elements = ComPtr<IMsixElementEnumerator>::
-        Make<EnumeratorCom<IMsixElementEnumerator,IMsixElement>>(elementsEnum).Detach();
-
+        *elements = ComPtr<IMsixElementEnumerator>::Make<EnumeratorCom<IMsixElementEnumerator,IMsixElement>>(elementsEnum).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 

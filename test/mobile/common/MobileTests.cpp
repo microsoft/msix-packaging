@@ -16,6 +16,8 @@
 
 #include "MobileTests.hpp"
 
+namespace MsixMobileTest {
+
 // Used for test results
 bool g_TestFailed = false;
 
@@ -118,6 +120,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "Empty.appx", unpackFolder, sv, 2);
     hr = RunTest(source + "HelloWorld.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "NotepadPlusPlus.appx", unpackFolder, ss, 0);
+    hr = RunTest(source + "IntlPackage.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "SignatureNotLastPart-ERROR_BAD_FORMAT.appx", unpackFolder, full, 66);
     hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
     hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, sv, 65);
@@ -169,6 +172,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "bundles/PayloadPackageIsNotAppxPackage.appxbundle", unpackFolder, ss, 87);
     //hr = RunTest(source + "bundles/PayloadPackageNotListedInManifest.appxbundle", unpackFolder, full, 0);
     hr = RunTest(source + "bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle", unpackFolder, full, 66);
+    hr = RunTest(source + "bundles/BundleWithIntlPackage.appxbundle", unpackFolder, ss, 0);
     hr = RunTest(source + "bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle", unpackFolder, full, 0);
 
     // Flat
@@ -191,7 +195,9 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     return S_OK;
 }
 
+} // MsixMobileTest
+
 __attribute__((visibility("default"))) signed long RunTests(char* source, char* target)
 {
-    return static_cast<signed long>(RunTestsInternal(source, target));
+    return static_cast<signed long>(MsixMobileTest::RunTestsInternal(source, target));
 }

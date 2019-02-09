@@ -7,11 +7,13 @@ include_directories(
     ${include_directories}
     ../../common
     ../../../../src/inc
+    ../../../api
 )
 
 add_library(native-lib SHARED
             ../../common/MobileTests.cpp
             src/main/cpp/native-lib.cpp
+            ../../../api/ApiTests.cpp
 )
 
 # Add our msix library

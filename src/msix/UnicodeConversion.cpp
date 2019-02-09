@@ -40,16 +40,27 @@ namespace MSIX {
         return result;
     }
 
-    std::string utf16_to_utf8(const std::wstring& utf16string)
+    std::string wstring_to_utf8(const std::wstring& utf16string)
     {
         #ifdef WIN32
         int size = WideCharToMultiByte(CP_UTF8, 0, utf16string.data(), utf16string.size(), nullptr, 0, nullptr, nullptr);
         std::string result(size, 0);
         WideCharToMultiByte(CP_UTF8, 0, utf16string.data(), utf16string.size(), &result[0], size, nullptr, nullptr);
         #else
-        auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
-        std::string result(converted.begin(), converted.end());
+        auto result = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
         #endif
         return result;
     }
+
+    std::string u16string_to_utf8(const std::u16string& utf16string)
+    {
+        #ifdef WIN32
+        std::wstring intermediate(utf16string.begin(), utf16string.end());
+        auto result = wstring_to_utf8(intermediate);
+        #else
+        auto result = StringConvert{}.to_bytes(utf16string.data());
+        #endif
+        return result;
+    }
+
 } // namespace MSIX

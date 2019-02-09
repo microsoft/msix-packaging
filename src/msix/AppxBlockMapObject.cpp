@@ -109,6 +109,7 @@ namespace MSIX {
         ThrowErrorIf(Error::XmlError, (0 == context.countFilesFound), "Empty AppxBlockMap.xml");
     }
 
+    // IVerifierObject
     ComPtr<IStream> AppxBlockMapObject::GetValidationStream(const std::string& part, const ComPtr<IStream>& stream)
     {
         ThrowErrorIf(Error::InvalidParameter, (part.empty() || !stream), "bad input");
@@ -119,16 +120,10 @@ namespace MSIX {
         return ComPtr<IStream>::Make<BlockMapStream>(m_factory, part, stream, item->second);
     }
 
+    // IAppxBlockMapReader
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFile(LPCWSTR filename, IAppxBlockMapFile **file) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (
-            filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
-        ), "bad pointer");
-        auto blockMapFile = m_blockMapFiles.find(utf16_to_utf8(filename));
-        ThrowErrorIf(Error::InvalidParameter, (blockMapFile == m_blockMapFiles.end()), "File not found!");
-        MSIX::ComPtr<IAppxBlockMapFile> result = blockMapFile->second;
-        *file = result.Detach();
-        return static_cast<HRESULT>(Error::OK);
+        return GetFile(wstring_to_utf8(filename).c_str(), file);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFiles(IAppxBlockMapFilesEnumerator **enumerator) noexcept try
@@ -186,4 +181,17 @@ namespace MSIX {
         ThrowErrorIf(Error::FileNotFound, (index == m_blockMapFiles.end()), "File not in blockmap");
         return index->second;
     }
+
+    // IAppxBlockMapReaderUtf8
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetFile(LPCSTR filename, IAppxBlockMapFile **file) noexcept try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (
+            filename == nullptr || *filename == '\0' || file == nullptr || *file != nullptr
+        ), "bad pointer");
+        auto blockMapFile = m_blockMapFiles.find(filename);
+        ThrowErrorIf(Error::InvalidParameter, (blockMapFile == m_blockMapFiles.end()), "File not found!");
+        MSIX::ComPtr<IAppxBlockMapFile> result = blockMapFile->second;
+        *file = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 }

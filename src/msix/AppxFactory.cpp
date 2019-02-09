@@ -63,22 +63,7 @@ namespace MSIX {
         LPCWSTR signatureFileName,
         IAppxBlockMapReader** blockMapReader) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (
-            inputStream == nullptr || 
-            signatureFileName == nullptr ||
-            *signatureFileName == '\0' ||
-            blockMapReader == nullptr || 
-            *blockMapReader != nullptr
-        ),"bad pointer.");
-
-        ComPtr<IMsixFactory> self;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
-        auto stream = ComPtr<IStream>::Make<FileStream>(utf16_to_utf8(signatureFileName), FileStream::Mode::READ);
-        auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream);
-        ComPtr<IStream> input(inputStream);
-        auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", input);
-        *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), validatedStream).Detach();
-        return static_cast<HRESULT>(Error::OK);
+        return CreateValidatedBlockMapReader(inputStream, wstring_to_utf8(signatureFileName).c_str(), blockMapReader);
     } CATCH_RETURN();
 
     // IAppxBundleFactory
@@ -121,13 +106,31 @@ namespace MSIX {
         if (!internal.empty())
         {
             auto intermediate = utf8_to_wstring(internal);
+            ThrowHrIfFailed(MarshalOutWstring(intermediate, result));
+        }
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    HRESULT AppxFactory::MarshalOutWstring(std::wstring& internal, LPWSTR* result) noexcept try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
+        *result = nullptr;
+        if (!internal.empty())
+        {
             std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
-            *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
-            ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");
-            std::memset(reinterpret_cast<void*>(*result), 0, countBytes);
-            std::memcpy(reinterpret_cast<void*>(*result),
-                        reinterpret_cast<void*>(const_cast<wchar_t*>(intermediate.c_str())),
-                        countBytes - sizeof(wchar_t));
+            MarshalOutStringHelper<wchar_t>(countBytes, const_cast<wchar_t*>(internal.c_str()), result);
+        }
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    HRESULT AppxFactory::MarshalOutStringUtf8(std::string& internal, LPSTR* result) noexcept try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
+        *result = nullptr;
+        if (!internal.empty())
+        {
+            std::size_t countBytes = internal.size() + 1;
+            MarshalOutStringHelper<char>(countBytes, const_cast<char*>(internal.c_str()), result);
         }
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -159,23 +162,6 @@ namespace MSIX {
         ThrowErrorIfNot(Error::FileNotFound, file, resource.c_str());
         return file;
     }
-
-    HRESULT AppxFactory::MarshalOutWstring(std::wstring& internal, LPWSTR *result) noexcept try
-    {
-        ThrowErrorIf(Error::InvalidParameter, (result == nullptr || *result != nullptr), "bad pointer" );
-        *result = nullptr;
-        if (!internal.empty())
-        {
-            std::size_t countBytes = sizeof(wchar_t)*(internal.size()+1);
-            *result = reinterpret_cast<LPWSTR>(m_memalloc(countBytes));
-            ThrowErrorIfNot(Error::OutOfMemory, (*result), "Allocation failed!");
-            std::memset(reinterpret_cast<void*>(*result), 0, countBytes);
-            std::memcpy(reinterpret_cast<void*>(*result),
-                        reinterpret_cast<void*>(const_cast<wchar_t*>(internal.c_str())),
-                        countBytes - sizeof(wchar_t));
-        }
-        return static_cast<HRESULT>(Error::OK);
-    } CATCH_RETURN();
 
     // IMsixFactoryOverrides
     HRESULT STDMETHODCALLTYPE AppxFactory::SpecifyExtension(MSIX_FACTORY_EXTENSION name, IUnknown* extension) noexcept try
@@ -223,5 +209,41 @@ namespace MSIX {
 
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
+
+    // IAppxFactoryUtf8
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateValidatedBlockMapReader (
+        IStream* inputStream,
+        LPCSTR signatureFileName,
+        IAppxBlockMapReader** blockMapReader) noexcept try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (
+            inputStream == nullptr || 
+            signatureFileName == nullptr ||
+            *signatureFileName == '\0' ||
+            blockMapReader == nullptr || 
+            *blockMapReader != nullptr
+        ),"bad pointer.");
+
+        ComPtr<IMsixFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
+        auto stream = ComPtr<IStream>::Make<FileStream>(signatureFileName, FileStream::Mode::READ);
+        auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream);
+        ComPtr<IStream> input(inputStream);
+        auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", input);
+        *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), validatedStream).Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    // Helper to marshal out strings
+    template<typename T>
+    void AppxFactory::MarshalOutStringHelper(std::size_t size, T* from, T** to)
+    {
+        *to = reinterpret_cast<T*>(m_memalloc(size));
+        ThrowErrorIfNot(Error::OutOfMemory, (*to), "Allocation failed!");
+        std::memset(reinterpret_cast<void*>(*to), 0, size);
+        std::memcpy(reinterpret_cast<void*>(*to),
+                    reinterpret_cast<void*>(from),
+                    size - sizeof(T));
+    }
 
 } // namespace MSIX 
