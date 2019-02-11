@@ -20,24 +20,30 @@ Clone the msix-packaging repository to a local workspace and build it x64 (see h
 ```
 Makewin.cmd x64 -mt
 ```
-Open the Win7MSIXInstaller.sln file in Visual Studio 2017. Build the Win7MSIXInstaller project in release/x64 to create the Win7MsixInstaller.exe
+Open the msix-packaging/preview/Win7Msix/Win7MSIXInstaller.sln file in Visual Studio 2017. Build the Win7MSIXInstaller project in release/x64 to create the Win7MsixInstaller.exe
 
 ## Using a MSI Setup Project
 Once the Win7MSIXInstaller project has been built, the Win7MSIXInstallerSetup project can be built.
 The Win7MSIXInstallerSetup Project creates a .msi package to deploy the msix.dll and Win7MsixInstaller.exe onto a Win 7 machine. The MSI Setup Project will register the specific file type association for the .msix and .appx extensions such that the installer is initiated directly from double-clicking a MSIX or APPX package.
 
+For your convenience, already-built .msi package is placed in the msix-packaging/preview/Win7Msix/Binaries directory
 
 ## Using the Command Line
 The executables can also be manually deployed to a Windows 7 machine without using the MSI setup project. Place the msix.dll and Win7MsixInstaller.exe in the same location. 
-
-Installation - Using command prompt or PowerShell, navigate to the directory that contains the executables and run the following command to install SamplePackage.msix.
+Sample packages can be found at msix-packaging/preview/Win7Msix/tests; these can be copied over to a Windows 7 machine and installed, although they may require adding the APPX_TEST_ROOT.cer (in the same tests folder) to the trusted store in order to install.
 
 ```
-Win7MSIXInstaller.exe -p C:\SomeDirectory\SamplePackage.msix
+certutil -addstore root APPX_TEST_ROOT.cer
+```
+
+Installation - Using command prompt or PowerShell, navigate to the directory that contains the executables and run the following command to install notepadplus.msix.
+
+```
+Win7MSIXInstaller.exe -AddPackage C:\SomeDirectory\notepadplus.msix
 ```
 
 Uninstallation - 
 
 ```
-Win7MSIXInstaller.exe -x "C:\Program Files(x86)\Uninstallers\SamplePackage_1.0.0.0_x86__8wekyb3d8bbwe.xml"
+Win7MSIXInstaller.exe -RemovePackage notepadplus_0.0.0.1_x64__8wekyb3d8bbwe
 ```

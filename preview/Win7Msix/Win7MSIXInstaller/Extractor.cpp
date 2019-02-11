@@ -3,21 +3,23 @@
 #include <experimental/filesystem> // C++-standard header file name
 #include <filesystem> // Microsoft-specific implementation header file name
 
-#include "Extractor.h"
-#include "GeneralUtil.h"
-#include "FootprintFiles.h"
-#include "FilePaths.h"
-#include "Uninstall.h"
-#include "InstallUI.h"
+#include "Extractor.hpp"
+#include "GeneralUtil.hpp"
+#include "FootprintFiles.hpp"
+#include "FilePaths.hpp"
+#include "Constants.hpp"
 
-//
-// Replaces all oldchars in input with newchar
-//
-// Parameters:
-// input   - The input string that contains the characters to be changed
-// oldchar - Old character that are to be replaced
-// newchar - New character that replaces oldchar
-//
+#include "InstallUI.hpp"
+#include "RegistryDevirtualizer.hpp"
+#include <TraceLoggingProvider.h>
+
+const PCWSTR Extractor::HandlerName = L"Extractor";
+
+/// Replaces all oldchars in input with newchar
+///
+/// @param input   - The input string that contains the characters to be changed
+/// @param oldchar - Old character that are to be replaced
+/// @param newchar - New character that replaces oldchar
 void replace(std::wstring& input, const wchar_t oldchar, const wchar_t newchar)
 {
     std::size_t found = input.find_first_of(oldchar);
@@ -28,12 +30,9 @@ void replace(std::wstring& input, const wchar_t oldchar, const wchar_t newchar)
     }
 }
 
-//
-// Makes a directory based on the inputted filepath
-// 
-// Parameters:
-// utf16Path - The filepath to create a directory in utf16
-// 
+/// Makes a directory, including all parent directories based on the inputted filepath
+///
+/// @param utf16Path - The filepath to create a directory in utf16
 int mkdirp(std::wstring& utf16Path)
 {
     replace(utf16Path, L'/', L'\\');
@@ -67,19 +66,7 @@ int mkdirp(std::wstring& utf16Path)
     return 0;
 }
 
-//
-// Helper function to create a writable IStream over a file with the specified name
-// under the specified path.  This function will also create intermediate
-// subdirectories if necessary.  
-//
-// Parameters:
-// path        - Path of the folder containing the file to be opened.  This should NOT
-//            end with a slash ('\') character.
-// fileName - Name, not including path, of the file to be opened
-// stream    - Output parameter pointing to the created instance of IStream over
-//              the specified file when this function succeeds.
-//
-HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
+HRESULT Extractor::GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
 {
     std::wstring fullFileName = path + std::wstring(L"\\") + fileName;
     RETURN_IF_FAILED(HRESULT_FROM_WIN32(mkdirp(fullFileName)));
@@ -87,76 +74,61 @@ HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
     return S_OK;
 }
 
-//
-// Prints basic info about a footprint or payload file and writes the file to disk.
-//
-// Parameters:
-// file          -    The IAppxFile interface that represents a footprint or payload file 
-//                in the package.
-// outputPath - The path of the folder for the extracted files.
-//
-HRESULT ExtractFile(IAppxFile* file, LPCWSTR outputPath)
+HRESULT Extractor::ExtractFile(IAppxFile* file)
 {
     Text<WCHAR> fileName;
-    UINT64 fileSize = 0;
-    ComPtr<IStream> fileStream;
-    ComPtr<IStream> outputStream;
-    ULARGE_INTEGER fileSizeLargeInteger = { 0 };
-
-    // Get basic info about the file
     RETURN_IF_FAILED(file->GetName(&fileName));
+
+    UINT64 fileSize = 0;
     RETURN_IF_FAILED(file->GetSize(&fileSize));
+
+    ULARGE_INTEGER fileSizeLargeInteger = { 0 };
     fileSizeLargeInteger.QuadPart = fileSize;
 
-    // Write the file to disk
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "ExtractFile",
+        TraceLoggingValue(fileName.Get(), "FileName"),
+        TraceLoggingValue(fileSize, "FileSize"));
+
+    ComPtr<IStream> fileStream;
     RETURN_IF_FAILED(file->GetStream(&fileStream));
-    RETURN_IF_FAILED(GetOutputStream(outputPath, fileName.Get(), &outputStream));
+    ComPtr<IStream> outputStream;
+    RETURN_IF_FAILED(GetOutputStream(m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath().c_str(), fileName.Get(), &outputStream));
     RETURN_IF_FAILED(fileStream->CopyTo(outputStream.Get(), fileSizeLargeInteger, nullptr, nullptr));
     return S_OK;
 }
 
-//
-// Extracts all footprint files from a package.
-//
-// Parameters:
-// packageReader - The package reader for the app package.
-// outputPath    - The path of the folder for the extracted footprint files.
-//
-HRESULT ExtractFootprintFiles(IAppxPackageReader* package, LPCWSTR outputPath)
+HRESULT Extractor::ExtractFootprintFiles()
 {
-    std::printf("Extracting footprint files from the package...\n");
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Extracting footprint files from the package");
+    
     for (int i = 0; i < FootprintFilesCount; i++)
     {
         ComPtr<IAppxFile> footprintFile;
-        HRESULT hr = package->GetFootprintFile(g_footprintFilesType[i].fileType, &footprintFile);
+        HRESULT hr = m_msixRequest->GetPackageInfo()->GetPackageReader()->GetFootprintFile(g_footprintFilesType[i].fileType, &footprintFile);
         if (SUCCEEDED(hr) && footprintFile.Get())
         {
-            RETURN_IF_FAILED(ExtractFile(footprintFile.Get(), outputPath));
+            RETURN_IF_FAILED(ExtractFile(footprintFile.Get()));
         }
         else if (g_footprintFilesType[i].isRequired)
         {
-            std::printf("The package does not contain a %s.\n", g_footprintFilesType[i].description);
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Missing required Footprintfile",
+                TraceLoggingValue(g_footprintFilesType[i].description, "File Description"));
             return hr;
         }
     }
     return S_OK;
 }
 
-//
-// Extracts all payload files from a package.
-//
-// Parameters:
-// packageReader - The package reader for the app package.
-// outputPath     - The path of the folder for the extracted payload files.
-//
-HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath, TrackerXML* myXml)
+HRESULT Extractor::ExtractPayloadFiles()
 {
     ComPtr<IAppxFilesEnumerator> files;
-    std::printf("Extracting payload files from the package...\n");
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Extracting payload files from the package");
 
-    // Get an enumerator of all payload files from the package reader and iterate
-    // through all files.
-    RETURN_IF_FAILED(package->GetPayloadFiles(&files));
+    RETURN_IF_FAILED(m_msixRequest->GetPackageInfo()->GetPackageReader()->GetPayloadFiles(&files));
 
     BOOL hasCurrent = FALSE;
     RETURN_IF_FAILED(files->GetHasCurrent(&hasCurrent));
@@ -165,19 +137,18 @@ HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath, Tra
     {
         ComPtr<IAppxFile> file;
         RETURN_IF_FAILED(files->GetCurrent(&file));
+
+        RETURN_IF_FAILED(ExtractFile(file.Get()));
+
+        // After extracting the file, if it's a VFS file, copy it to the local location
         Text<WCHAR> name;
         RETURN_IF_FAILED(file->GetName(&name));
         std::wstring nameStr = name.Get();
-        
-        std::map<std::wstring, std::wstring> map = GetMap();
         if (nameStr.find(L"VFS") != std::wstring::npos)
         {
-            ExtractVFSToLocal(file.Get(), nameStr, myXml);
+            RETURN_IF_FAILED(CopyVfsFileToLocal(nameStr));
         }
-        else
-        {
-            RETURN_IF_FAILED(ExtractFile(file.Get(), outputPath));
-        }
+
         RETURN_IF_FAILED(files->MoveNext(&hasCurrent));
         UpdateProgressBar();
     }
@@ -185,103 +156,425 @@ HRESULT ExtractPayloadFiles(IAppxPackageReader* package, LPCWSTR outputPath, Tra
     return S_OK;
 }
 
-//
-// Extracts all files from a package.
-//
-// Parameters:
-// package      - The package reader for the app package.
-// outputPath - The path of the folder for the extracted payload files.
-//
-HRESULT ExtractPackage(IAppxPackageReader* package, LPCWSTR outputPath, TrackerXML* myXml)
+HRESULT Extractor::CreatePackageRoot()
 {
-    // Print information about all footprint files, and extract them to disk
-    RETURN_IF_FAILED(ExtractFootprintFiles(package, outputPath));
-    // Print information about all payload files, and extract them to disk
-    RETURN_IF_FAILED(ExtractPayloadFiles(package, outputPath, myXml));
-    return S_OK;
-}
-
-
-//
-// Extracts a file stored in the VFS to the disk.
-//
-// Parameters:
-// file       - The IAppxFile interface that represents a footprint or payload file in the package.
-// outputPath - The path of the folder for the extracted files.
-//
-HRESULT ExtractVFSFile(IAppxFile* file, LPCWSTR outputPath)
-{
-    Text<WCHAR> fileName;
-    UINT64 fileSize = 0;
-    ComPtr<IStream> fileStream;
-    ComPtr<IStream> outputStream;
-    ULARGE_INTEGER fileSizeLargeInteger = { 0 };
-
-    // Get basic info about the file
-    RETURN_IF_FAILED(file->GetName(&fileName));
-
-    std::wstring VFSFileName = std::wstring(fileName.Get());
-    std::wstring extractFile;
-
-    //Gets only the file and none of the super directories
-    while (VFSFileName.back() != '\\')
+    std::wstring packagePath = m_msixRequest->GetFilePathMappings()->GetMsix7Directory();
+    if (!CreateDirectory(packagePath.c_str(), nullptr))
     {
-        extractFile.push_back(VFSFileName.back());
-        VFSFileName.erase(VFSFileName.end() - 1, VFSFileName.end());
-    }
-
-    std::reverse(extractFile.begin(), extractFile.end());
-
-    RETURN_IF_FAILED(file->GetSize(&fileSize));
-    fileSizeLargeInteger.QuadPart = fileSize;
-
-    // Write the file to disk
-    RETURN_IF_FAILED(file->GetStream(&fileStream));
-    RETURN_IF_FAILED(GetOutputStream(outputPath, extractFile.c_str(), &outputStream));
-    RETURN_IF_FAILED(fileStream->CopyTo(outputStream.Get(), fileSizeLargeInteger, nullptr, nullptr));
-    return S_OK;
-}
-
-//
-// A helper function that takes in a filepath from the VFS and a COM pointer to an IAppxFile
-// and extracts the IAppxFile to the local computer based on the correct KnownFolderID from
-// the GetMap()
-// 
-// Parameters:
-// file       - A COM pointer to an IAppxFile that is obtained from a MSIX/APPX package
-// nameStr - A filepath of the file in the VFS (e.g. VFS\Program Files (x86)\Notepadplusplus\notepadplusplus.exe)
-//
-void ExtractVFSToLocal(IAppxFile* file, std::wstring nameStr, TrackerXML* myXML)
-{
-    std::map<std::wstring, std::wstring> map = GetMap();
-
-    for (auto& pair : map)
-    {
-        if (nameStr.find(pair.first) != std::wstring::npos)
+        DWORD lastError = GetLastError();
+        if (lastError != ERROR_ALREADY_EXISTS)
         {
-            //The following code gets from "VFS/FirstDir/.../file.ext" to "/.../"
-            std::wstring remainingFilePath = nameStr;
-
-            //Erases the first two parent directories
-            GetPathChild(remainingFilePath);
-            GetPathChild(remainingFilePath);
-
-            //Initialize the full local path
-            std::wstring localPath = pair.second;
-            localPath.push_back(L'\\');
-            localPath.append(remainingFilePath);
-
-            //Creates an XML that has the files paths of all the files to be deleted
-            myXML->AddFileToRecord(localPath);
-
-            //Erases the file at the end of the path 
-            GetPathParent(localPath);
-
-            //Extract the file directly to its current directory
-            ExtractVFSFile(file, localPath.c_str());
-
-            //Stop looping through the list
-            return;
+            RETURN_IF_FAILED(HRESULT_FROM_WIN32(lastError));
         }
     }
+
+    if (!CreateDirectory(m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath().c_str(), nullptr))
+    {
+        DWORD lastError = GetLastError();
+        if (lastError != ERROR_ALREADY_EXISTS)
+        {
+            RETURN_IF_FAILED(HRESULT_FROM_WIN32(lastError));
+        }
+    }
+
+    return S_OK;
+}
+
+HRESULT Extractor::ExecuteForAddRequest()
+{
+    RETURN_IF_FAILED(CreatePackageRoot());
+    
+    RETURN_IF_FAILED(ExtractPackage());
+    return S_OK;
+}
+
+HRESULT Extractor::RemoveVfsFiles()
+{
+    std::wstring blockMapPath = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + blockMapFile;
+    ComPtr<IStream> stream;
+    RETURN_IF_FAILED(CreateStreamOnFileUTF16(blockMapPath.c_str(), true /*forRead*/, &stream));
+
+    ComPtr<IAppxFactory> appxFactory;
+    RETURN_IF_FAILED(CoCreateAppxFactoryWithHeap(MyAllocate, MyFree, m_msixRequest->GetValidationOptions(), &appxFactory));
+
+    ComPtr<IAppxBlockMapReader> blockMapReader;
+    RETURN_IF_FAILED(appxFactory->CreateBlockMapReader(stream.Get(), &blockMapReader));
+
+    ComPtr<IAppxBlockMapFilesEnumerator> files;
+    RETURN_IF_FAILED(blockMapReader->GetFiles(&files));
+
+    BOOL hasCurrent = FALSE;
+    RETURN_IF_FAILED(files->GetHasCurrent(&hasCurrent));
+
+    while (hasCurrent)
+    {
+        ComPtr<IAppxBlockMapFile> file;
+        RETURN_IF_FAILED(files->GetCurrent(&file));
+
+        //if it's a VFS file, delete it from the local location
+        Text<WCHAR> name;
+        RETURN_IF_FAILED(file->GetName(&name));
+        std::wstring nameStr = name.Get();
+        if (nameStr.find(L"VFS") != std::wstring::npos)
+        {
+            RETURN_IF_FAILED(RemoveVfsFile(nameStr));
+        }
+
+        RETURN_IF_FAILED(files->MoveNext(&hasCurrent));
+    }
+
+    return S_OK;
+}
+
+HRESULT Extractor::ExecuteForRemoveRequest()
+{
+    HRESULT hrRemoveRegistry = ExtractRegistry(true);
+    if (FAILED(hrRemoveRegistry))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Unable to remove registry",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrRemoveRegistry, "HR"));
+    }
+
+    HRESULT hrRemoveVfsFiles = RemoveVfsFiles();
+    if (FAILED(hrRemoveVfsFiles))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Unable to remove VFS files",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrRemoveVfsFiles, "HR"));
+    }
+
+    // First release manifest so we can delete the file.
+    m_msixRequest->GetPackageInfo()->ReleaseManifest();
+
+    std::error_code error;
+    uintmax_t numRemoved = std::experimental::filesystem::remove_all(m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath(), error);
+
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Removed directory",
+        TraceLoggingValue(m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath().c_str(), "PackageDirectoryPath"),
+        TraceLoggingValue(error.value(), "Error"),
+        TraceLoggingValue(numRemoved, "NumRemoved"));
+
+    return S_OK;
+}
+
+HRESULT Extractor::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** instance)
+{
+    std::unique_ptr<Extractor> localInstance(new Extractor(msixRequest));
+    if (localInstance == nullptr)
+    {
+        return E_OUTOFMEMORY;
+    }
+    *instance = localInstance.release();
+
+    return S_OK;
+}
+
+HRESULT Extractor::ExtractPackage()
+{
+    RETURN_IF_FAILED(ExtractFootprintFiles());
+    RETURN_IF_FAILED(ExtractPayloadFiles());
+    RETURN_IF_FAILED(ExtractRegistry(false));
+    return S_OK;
+}
+
+HRESULT FileExists(std::wstring file, _Out_ bool &exists)
+{
+    DWORD fileAttributes = GetFileAttributesW(file.c_str());
+    if (fileAttributes == INVALID_FILE_ATTRIBUTES)
+    {
+        DWORD lastError = GetLastError();
+        if ((lastError == ERROR_FILE_NOT_FOUND) || (lastError == ERROR_PATH_NOT_FOUND))
+        {
+            exists = false;
+        }
+        else
+        {
+            return HRESULT_FROM_WIN32(lastError);
+        }
+    }
+    else
+    {
+        exists = true;
+    }
+    return S_OK;
+}
+
+HRESULT GetFileVersion(std::wstring file, _Out_ UINT64& version, _Out_ bool& isUnversioned)
+{
+    isUnversioned = true;
+    DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
+    if (size == 0)
+    {
+        DWORD error = GetLastError();
+        if (error == ERROR_RESOURCE_DATA_NOT_FOUND || error == ERROR_RESOURCE_TYPE_NOT_FOUND)
+        {
+            // Does not have version info, isUnversioned = true was set earlier.
+            version = 0;
+            return S_OK;
+        }
+        RETURN_IF_FAILED(HRESULT_FROM_WIN32(error));
+    }
+
+    std::unique_ptr<BYTE[]> versionInfo(new BYTE[size]);
+    if (!GetFileVersionInfo(file.c_str(), 0, size, versionInfo.get()))
+    {
+        RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+    }
+
+    VS_FIXEDFILEINFO* fileInfo = nullptr;
+    UINT fileInfoLength = 0;
+    if (!VerQueryValue(versionInfo.get(), TEXT("\\"), (LPVOID*)&fileInfo, &fileInfoLength))
+    {
+        RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+    }
+
+    version = ((UINT64)(fileInfo->dwFileVersionMS) << 32) + fileInfo->dwFileVersionLS;
+    isUnversioned = false;
+
+    return S_OK;
+}
+
+HRESULT IsFileModified(std::wstring file, _Out_ bool& isModified)
+{
+    isModified = false;
+    // Since we follow MSI file rules, the file is considered modified by MSI if modified date is more than 2 seconds later than creation date 
+    const int TwoSecondsInFileTimeIncrements = 20000000; // FILETIME is in 100 nanosecond increments
+
+    WIN32_FILE_ATTRIBUTE_DATA strData;
+    if (!GetFileAttributesEx(file.c_str(), GetFileExInfoStandard, (LPVOID)&strData))
+    {
+        RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+    }
+
+    if ((strData.ftLastWriteTime.dwHighDateTime > strData.ftCreationTime.dwHighDateTime))
+    {
+        // This copies the MSI bug where as long as LastWrite dwHighDateTime is greater, it's considered modified, even if
+        // the Create/LastWrite are within 2 seconds of one another (by virtue of creation dwLowDateTime being near UINT_MAX)
+        isModified = true;
+    }
+    else if (strData.ftLastWriteTime.dwHighDateTime == strData.ftCreationTime.dwHighDateTime)
+    {
+        if (strData.ftLastWriteTime.dwLowDateTime > strData.ftCreationTime.dwLowDateTime &&
+            strData.ftLastWriteTime.dwLowDateTime - strData.ftCreationTime.dwLowDateTime > TwoSecondsInFileTimeIncrements)
+        {
+            isModified = true;
+        }
+    }
+    
+    return S_OK;
+}
+
+HRESULT Extractor::NeedToCopyFile(std::wstring sourceFullPath, std::wstring targetFullPath, _Out_ bool &needToCopyFile)
+{
+    needToCopyFile = false;
+
+    bool targetFileExists = false;
+    RETURN_IF_FAILED(FileExists(targetFullPath, targetFileExists));
+
+    if (!targetFileExists)
+    {
+        needToCopyFile = true;
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Need to copy file because target doesn't exist",
+            TraceLoggingValue(targetFullPath.c_str(), "TargetFullPath"));
+        return S_OK;
+    }
+
+    // Whether we overwrite existing files or keep the existing file as-is follows MSI file versioning rules
+    UINT64 targetFileVersion = 0;
+    bool targetFileIsUnversioned = false;
+    bool targetFileIsModified = false;
+    RETURN_IF_FAILED(GetFileVersion(targetFullPath, targetFileVersion, targetFileIsUnversioned));
+    if (targetFileIsUnversioned)
+    {
+        RETURN_IF_FAILED(IsFileModified(targetFullPath, targetFileIsModified));
+    }
+
+    UINT64 sourceFileVersion = 0;
+    bool sourceFileIsUnversioned = false;
+    RETURN_IF_FAILED(GetFileVersion(sourceFullPath, sourceFileVersion, sourceFileIsUnversioned));
+
+    std::wstring targetVersionString = ConvertVersionToString(targetFileVersion);
+    std::wstring sourceVersionString = ConvertVersionToString(sourceFileVersion);
+
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Target Exists, file versioning information",
+        TraceLoggingValue(targetFullPath.c_str(), "TargetFullPath"),
+        TraceLoggingValue(targetVersionString.c_str(), "TargetFileVersion"),
+        TraceLoggingValue(targetFileIsUnversioned, "TargetFileIsUnversioned"),
+        TraceLoggingValue(targetFileIsModified, "TargetFileIsModified"),
+        TraceLoggingValue(sourceFullPath.c_str(), "SourceFullPath"),
+        TraceLoggingValue(sourceVersionString.c_str(), "SourceFileVersion"),
+        TraceLoggingValue(sourceFileIsUnversioned, "SourceFileIsUnversioned"));
+
+    if (targetFileIsUnversioned && !sourceFileIsUnversioned)
+    {
+        // Versioned file should overwrite unversioned file
+        needToCopyFile = true;
+        return S_OK;
+    }
+
+    if (targetFileIsUnversioned && !targetFileIsModified)
+    {
+        // Unversioned file is treated as userData; we do not want to delete user customizations if they made changes to the file
+        // Existing file is unversioned and unmodified -- this is treated as unmodified user data so we can overwrite it
+        needToCopyFile = true;
+        return S_OK;
+    }
+
+    if (targetFileVersion < sourceFileVersion)
+    {
+        // Higher version wins
+        needToCopyFile = true;
+        return S_OK;
+    }
+
+    return S_OK;
+}
+
+HRESULT Extractor::CopyVfsFileIfNecessary(std::wstring sourceFullPath, std::wstring targetFullPath)
+{
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "CopyVfsFile",
+        TraceLoggingValue(sourceFullPath.c_str(), "Source"),
+        TraceLoggingValue(targetFullPath.c_str(), "Target"));
+
+    bool needToCopyFile = false;
+    RETURN_IF_FAILED(NeedToCopyFile(sourceFullPath, targetFullPath, needToCopyFile));
+
+    if (needToCopyFile)
+    {
+        HRESULT hrMkdir = HRESULT_FROM_WIN32(mkdirp(targetFullPath));
+        if (FAILED(hrMkdir))
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to create directory for copying file",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(targetFullPath.c_str(), "FullPath"),
+                TraceLoggingValue(hrMkdir, "HR"));
+        }
+        else if (!CopyFile(sourceFullPath.c_str(), targetFullPath.c_str(), FALSE /*failIfExists*/))
+        {
+            DWORD error = GetLastError();
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to Copy file",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(targetFullPath.c_str(), "FullPath"),
+                TraceLoggingValue(error, "error"));
+        }
+    }
+    
+    return S_OK;
+}
+
+HRESULT Extractor::RemoveVfsFile(std::wstring fileName)
+{
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "RemoveVfsFile",
+        TraceLoggingValue(fileName.c_str(), "FileName"));
+
+    std::wstring fullPath;
+    if (FAILED(ConvertVfsNameToFullPath(fileName, fullPath)))
+    {
+        return S_OK;
+    }
+
+    if (!DeleteFile(fullPath.c_str()))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Unable to Delete file",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(fullPath.c_str(), "FullPath"),
+            TraceLoggingValue(GetLastError(), "error"));
+    }
+
+    GetPathParent(fullPath);
+
+    // instead of checking if the directory is empty, just try to delete it.
+    // if it's not empty it'll fail with expected error code that we can ignore
+    if (!RemoveDirectory(fullPath.c_str()))
+    {
+        DWORD error = GetLastError();
+        if (error != ERROR_DIR_NOT_EMPTY)
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to Delete directory",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(fullPath.c_str(), "FullPath"),
+                TraceLoggingValue(GetLastError(), "error"));
+        }
+    }
+    
+    return S_OK;
+}
+
+HRESULT Extractor::ConvertVfsNameToFullPath(std::wstring fileName, std::wstring& fileFullPath)
+{
+    //The following code gets remainingFilePath from "VFS\FirstDir\...\file.ext" to "\...\file.ext"
+    std::wstring remainingFilePath = fileName;
+    GetPathChild(remainingFilePath); // remove the VFS directory
+
+    std::map<std::wstring, std::wstring> map = m_msixRequest->GetFilePathMappings()->GetMap();
+    for (auto& pair : map)
+    {
+        if (remainingFilePath.find(pair.first) != std::wstring::npos)
+        {
+            GetPathChild(remainingFilePath); // remove the FirstDir directory.
+
+            // Pre-pend the VFS target directory to obtain the full path for the target location
+            fileFullPath = pair.second + std::wstring(L"\\") + remainingFilePath;
+
+            //Stop looping through the list
+            return S_OK;
+        }
+    }
+
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Could not find VFS mapping",
+        TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+        TraceLoggingValue(fileName.c_str(), "FileName"));
+
+    return E_NOT_SET;
+}
+
+HRESULT Extractor::CopyVfsFileToLocal(std::wstring fileName)
+{
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "CopyVfsFileToLocal",
+        TraceLoggingValue(fileName.c_str(), "FileName"));
+
+    std::wstring sourceFullPath = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath().c_str() + std::wstring(L"\\") + fileName;
+
+    std::wstring targetFullPath;
+    if (FAILED(ConvertVfsNameToFullPath(fileName, targetFullPath)))
+    {
+        return S_OK;
+    }
+
+    RETURN_IF_FAILED(CopyVfsFileIfNecessary(sourceFullPath, targetFullPath));
+
+    return S_OK;
+}
+
+HRESULT Extractor::ExtractRegistry(bool remove)
+{
+    std::wstring registryFilePath = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath().c_str() + registryDatFile;
+
+    bool registryFileExists = false;
+    RETURN_IF_FAILED(FileExists(registryFilePath, registryFileExists));
+
+    if (!registryFileExists)
+    {
+        // nothing to extract
+        return S_OK;
+    }
+
+    AutoPtr<RegistryDevirtualizer> registryDevirtualizer;
+    RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFilePath, m_msixRequest, &registryDevirtualizer));
+    RETURN_IF_FAILED(registryDevirtualizer->Run(remove));
+    return S_OK;
 }

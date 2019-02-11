@@ -36,10 +36,16 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateManifestReader(
         IStream* inputStream,
-        IAppxManifestReader** manifestReader) noexcept
+        IAppxManifestReader** manifestReader) noexcept try
     {
-        return static_cast<HRESULT>(Error::NotImplemented);
-    }
+        ThrowErrorIf(Error::InvalidParameter, (manifestReader == nullptr || *manifestReader != nullptr), "Invalid parameter");
+        ComPtr<IMsixFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
+        ComPtr<IStream> input(inputStream);
+        auto result = ComPtr<IAppxManifestReader>::Make<AppxManifestObject>(self.Get(), input);
+        *manifestReader = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBlockMapReader (
         IStream* inputStream,
