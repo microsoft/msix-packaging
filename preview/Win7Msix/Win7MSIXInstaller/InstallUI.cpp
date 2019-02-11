@@ -1,21 +1,298 @@
 // UI Functions
 
-#include "InstallUI.h"
+#include "InstallUI.hpp"
 #include <windows.h>
 #include <string>
 #include <commctrl.h>
 #include <sys/types.h>
 #include <thread>
 
+#include <algorithm>
+#include <sstream>
+#include <iostream>
+#include "resource.h"
+
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
 using namespace std;
 #include <GdiPlus.h>
 
+// Global variables
+static std::wstring g_messageText = L"";
+static std::wstring g_displayText = L"";
+
+
 Gdiplus::Image* g_image = nullptr;
 
 static const int g_width = 500;  // width of window
 static const int g_heigth = 400; // height of window
+
+const PCWSTR CreateAndShowUI::HandlerName = L"UI";
+
+//
+// Gets the stream of a file.
+//
+// Parameters:
+//   package - The package reader for the app package.
+//   name - Name of the file.
+//   stream - The stream for the file.
+//
+HRESULT GetStreamFromFile(IAppxPackageReader* package, LPCWCHAR name, IStream** stream)
+{
+    *stream = nullptr;
+
+    ComPtr<IAppxFilesEnumerator> files;
+    RETURN_IF_FAILED(package->GetPayloadFiles(&files));
+
+    BOOL hasCurrent = FALSE;
+    RETURN_IF_FAILED(files->GetHasCurrent(&hasCurrent));
+    while (hasCurrent)
+    {
+        ComPtr<IAppxFile> file;
+        RETURN_IF_FAILED(files->GetCurrent(&file));
+        Text<WCHAR> fileName;
+        file->GetName(&fileName);
+        if (wcscmp(fileName.Get(), name) == 0)
+        {
+            RETURN_IF_FAILED(file->GetStream(stream));
+            return S_OK;
+        }
+        RETURN_IF_FAILED(files->MoveNext(&hasCurrent));
+    }
+    return S_OK;
+}
+
+//
+// PURPOSE: This compiles the information displayed on the UI when the user selects an msix
+//
+// windowText: pointer to a wstring that the window message will be saved to
+HRESULT UI::DisplayPackageInfo(HWND hWnd, RECT windowRect, std::wstring& displayText, std::wstring& messageText)
+{
+    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
+    CreateProgressBar(hWnd, windowRect, packageInfo->GetNumberOfPayloadFiles());
+
+    ComPtr<IMsixDocumentElement> domElement;
+    RETURN_IF_FAILED(packageInfo->GetManifestReader()->QueryInterface(UuidOfImpl<IMsixDocumentElement>::iid, reinterpret_cast<void**>(&domElement)));
+
+    ComPtr<IMsixElement> element;
+    RETURN_IF_FAILED(domElement->GetDocumentElement(&element));
+
+    // Obtain the Display Name and Logo
+    ComPtr<IMsixElementEnumerator> veElementEnum;
+    RETURN_IF_FAILED(element->GetElements(
+        L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='VisualElements']",
+        &veElementEnum));
+
+    ComPtr<IStream> logoStream;
+    Text<WCHAR> displayName;
+    Text<WCHAR> logo;
+    std::wstring tmpLogoFile;
+
+    BOOL hc = FALSE;
+    RETURN_IF_FAILED(veElementEnum->GetHasCurrent(&hc));
+    if (hc)
+    {
+        ComPtr<IMsixElement> visualElementsElement;
+        RETURN_IF_FAILED(veElementEnum->GetCurrent(&visualElementsElement));
+        RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"DisplayName", &displayName));
+        RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"Square150x150Logo", &logo));
+        RETURN_IF_FAILED(GetStreamFromFile(packageInfo->GetPackageReader(), logo.Get(), &logoStream));
+    }
+
+    // Show only the CommonName of the publisher
+    auto wpublisher = std::wstring(packageInfo->GetPublisher());
+    auto publisherCommonName = wpublisher.substr(wpublisher.find_first_of(L"=") + 1,
+        wpublisher.find_first_of(L",") - wpublisher.find_first_of(L"=") - 1);
+
+    displayText = L"Install " + std::wstring(displayName.Get()) + L"?";
+
+    messageText = L"Publisher: " + publisherCommonName + L"\nVersion: " + ConvertVersionToString(packageInfo->GetVersion());
+    ChangeText(hWnd, displayText, messageText, logoStream.Get());
+
+    return S_OK;
+}
+
+//  FUNCTION: WndProc(HWND, UINT, WPARAM, LPARAM)
+//
+//  PURPOSE:  Processes messages for the main window.
+//
+//  WM_PAINT    - Paint the main window
+//  WM_DESTROY  - post a quit message and return
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    UI* ui = (UI*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
+
+    RECT windowRect;
+    GetClientRect(hWnd, &windowRect);
+    switch (message)
+    {
+    case WM_CREATE:
+        LaunchButton(hWnd, windowRect);
+        break;
+    case WM_PAINT:
+    {
+        if (!g_displayInfo)
+        {
+            HRESULT hr = ui->DisplayPackageInfo(hWnd, windowRect, g_displayText, g_messageText);
+            if (FAILED(hr))
+            {
+                std::wstring failure = L"Loading Package failed";
+                std::wstringstream wstringstream;
+                wstringstream << L"Failed getting package information with: 0x" << std::hex << hr;
+                g_messageText = wstringstream.str();
+                ChangeText(hWnd, failure, g_messageText);
+            }
+            g_displayInfo = true;
+        }
+        if (g_displayCompleteText)
+        {
+            ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));
+            g_displayCompleteText = false;
+        }
+
+        break;
+    }
+    case WM_COMMAND:
+        if (!g_installed)
+        {
+            ui->SetButtonClicked();
+            return HideButtonWindow();
+        }
+        else
+        {
+            PostQuitMessage(0);
+            exit(0);
+        }
+        break;
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        exit(0);
+        break;
+    case WM_SIZE:
+    case WM_SIZING:
+        break;
+    default:
+        return DefWindowProc(hWnd, message, wParam, lParam);
+        break;
+    }
+
+    return 0;
+}
+
+void StartParseFile(HWND hWnd)
+{
+    //auto result = ParseAndRun(hWnd);
+    int result = 0;
+
+    if (result != 0)
+    {
+        std::cout << "Error: " << std::hex << result << " while extracting the appx package" << std::endl;
+        Text<char> text;
+        auto logResult = GetLogTextUTF8(MyAllocate, &text);
+        if (0 == logResult)
+        {
+            std::cout << "LOG:" << std::endl << text.content << std::endl;
+        }
+        else
+        {
+            std::cout << "UNABLE TO GET LOG WITH HR=" << std::hex << logResult << std::endl;
+        }
+    }
+}
+
+void CommandFunc(HWND hWnd, RECT windowRect) {
+    std::thread t1(StartParseFile, hWnd);
+    t1.detach();
+    return;
+}
+
+void StartUIThread(UI* ui)
+{
+    // Free the console that we started with
+    FreeConsole();
+
+    // Register WindowClass and create the window
+    HINSTANCE hInstance = GetModuleHandle(NULL);
+
+    std::wstring windowClass = GetStringResource(IDS_STRING_UI_TITLE);
+    std::wstring title = GetStringResource(IDS_STRING_UI_TITLE);
+
+    WNDCLASSEX wcex;
+    wcex.cbSize = sizeof(WNDCLASSEX);
+    wcex.style = CS_HREDRAW | CS_VREDRAW;
+    wcex.lpfnWndProc = WndProc;
+    wcex.cbClsExtra = 0;
+    wcex.cbWndExtra = 0;
+    wcex.hInstance = hInstance;
+    wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
+    wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
+    wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+    wcex.lpszMenuName = NULL;
+    wcex.lpszClassName = windowClass.c_str();
+    wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
+
+    if (!RegisterClassEx(&wcex))
+    {
+        MessageBox(NULL, L"Call to RegisterClassEx failed!", title.c_str(), NULL);
+        return;
+    }
+    Gdiplus::GdiplusStartupInput gdiplusStartupInput;
+    ULONG_PTR gdiplusToken;
+    Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+
+    ui->CreateInitWindow(hInstance, SW_SHOWNORMAL, windowClass, title);
+    Gdiplus::GdiplusShutdown(gdiplusToken);
+}
+
+HRESULT UI::ShowUI()
+{
+    std::thread thread(StartUIThread, this);
+    thread.detach();
+
+    DWORD waitResult = WaitForSingleObject(m_buttonClickedEvent, INFINITE);
+    
+    return S_OK;
+}
+
+HRESULT CreateAndShowUI::ExecuteForAddRequest()
+{
+    if (m_msixRequest->IsQuietUX())
+    {
+        return S_OK;
+    }
+
+    AutoPtr<UI> ui;
+    RETURN_IF_FAILED(UI::Make(m_msixRequest, &ui));
+
+    m_msixRequest->SetUI(ui.Detach());
+    RETURN_IF_FAILED(m_msixRequest->GetUI()->ShowUI());
+
+    return S_OK;
+}
+
+HRESULT CreateAndShowUI::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** instance)
+{
+    std::unique_ptr<CreateAndShowUI> localInstance(new CreateAndShowUI(msixRequest));
+    if (localInstance == nullptr)
+    {
+        return E_OUTOFMEMORY;
+    }
+    *instance = localInstance.release();
+
+    return S_OK;
+}
+
+HRESULT UI::Make(MsixRequest * msixRequest, UI ** instance)
+{
+    std::unique_ptr<UI> localInstance(new UI(msixRequest));
+    if (localInstance == nullptr)
+    {
+        return E_OUTOFMEMORY;
+    }
+    *instance = localInstance.release();
+
+    return S_OK;
+}
 
 // FUNCTION: CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
 //
@@ -136,9 +413,9 @@ BOOL ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring messageT
 // PURPOSE: Creates the initial installation UI window
 // windowClass: the class text of the window
 // windowTitle: the window title
-int CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title)
+int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title)
 {
-    HWND  hWnd = CreateWindow(
+    HWND hWnd = CreateWindow(
         const_cast<wchar_t*>(windowClass.c_str()),
         const_cast<wchar_t*>(title.c_str()),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
@@ -157,6 +434,7 @@ int CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& wind
         return 1;
     }
 
+    SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this); 
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
