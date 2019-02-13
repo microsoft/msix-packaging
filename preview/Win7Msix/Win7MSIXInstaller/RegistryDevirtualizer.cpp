@@ -23,7 +23,7 @@ HRESULT RegistryDevirtualizer::Run(_In_ bool remove)
 {
     std::wstring rootPath = m_loadedHiveKeyName + L"\\Registry";
     RETURN_IF_FAILED(m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ));
-
+    
     for (auto mapping : mappings)
     {
         TraceLoggingWrite(g_MsixTraceLoggingProvider,
@@ -62,7 +62,7 @@ HRESULT RegistryDevirtualizer::Run(_In_ bool remove)
 
 bool RegistryDevirtualizer::IsExcludeKey(RegistryKey* realKey)
 {
-    const std::wstring excludeKeys[] =
+    const std::wstring excludeKeys[] = 
     {
         uninstallKeySubPath,   // uninstall key will be written by MsixInstaller itself, no need to copy from package
     };
@@ -122,7 +122,7 @@ HRESULT RegistryDevirtualizer::CopyAndDevirtualizeRegistryTree(RegistryKey* virt
         RETURN_IF_FAILED(CopyAndDevirtualizeRegistryTree(&sourceSubKey, &destinationSubKey));
         return S_OK;
     }));
-
+    
     DWORD valuesCount = 0;
     DWORD valueNameMaxLength = 0;
     DWORD valueDataMaxLength = 0;
@@ -326,7 +326,7 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
     {
         RETURN_IF_FAILED(E_OUTOFMEMORY);
     }
-
+    
     HANDLE userToken = nullptr;
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, &userToken))
     {
@@ -353,7 +353,7 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
         RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    PTOKEN_PRIVILEGES pTokenPrivileges;
+    PTOKEN_PRIVILEGES pTokenPrivileges = NULL;
     TOKEN_PRIVILEGES oldTokenPrivileges{};
     DWORD oldTokenPrivilegesSize = sizeof(TOKEN_PRIVILEGES);
 
@@ -368,27 +368,19 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
     pTokenPrivileges->Privileges[1].Luid = seBackupLuid;
     pTokenPrivileges->Privileges[1].Attributes = SE_PRIVILEGE_ENABLED;
 
-    if (!(AdjustTokenPrivileges(
-        userToken,
-        FALSE,
-        pTokenPrivileges,
-        sizeof(TOKEN_PRIVILEGES),
-        &oldTokenPrivileges,
-        &oldTokenPrivilegesSize)))
+    auto success = AdjustTokenPrivileges(userToken, FALSE, pTokenPrivileges, sizeof(TOKEN_PRIVILEGES), &oldTokenPrivileges, &oldTokenPrivilegesSize);
+    LocalFree(pTokenPrivileges);
+    pTokenPrivileges = NULL;
+    if (!success)
     {
-        auto lastError = HRESULT_FROM_WIN32(GetLastError());
-        if (FAILED(lastError))
-        {
-            LocalFree(pTokenPrivileges);
-            return lastError;
-        }
+        RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-	LocalFree(pTokenPrivileges);
-	RETURN_IF_FAILED(CreateTempKeyName(localInstance->m_loadedHiveKeyName));
+    RETURN_IF_FAILED(CreateTempKeyName(localInstance->m_loadedHiveKeyName));
     RETURN_IF_FAILED(HRESULT_FROM_WIN32(RegLoadKey(HKEY_USERS, localInstance->m_loadedHiveKeyName.c_str(), localInstance->m_registryHiveFileName.c_str())));
 
     *instance = localInstance.release();
+    
     return S_OK;
 }
 
@@ -418,5 +410,5 @@ RegistryDevirtualizer::~RegistryDevirtualizer()
             TraceLoggingValue(status, "Error LSTATUS"),
             TraceLoggingValue(m_loadedHiveKeyName.c_str(), "Hive key name"));
     }
-
+    
 }
