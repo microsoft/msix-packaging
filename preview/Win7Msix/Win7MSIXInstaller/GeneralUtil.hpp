@@ -199,13 +199,30 @@ protected:
 template<typename T>
 class Text
 {
-    public:
-        T** operator&() { return &content; }
-        ~Text() { Cleanup(); }
-        T* Get() { return content; }
+public:
+    T** operator&() { return &content; }
+    ~Text() { Cleanup(); }
+    T* Get() { return content; }
 
-        T* content = nullptr;
-    protected:
-        void Cleanup() { if (content) { MyFree(content); content = nullptr; } }
+    T* content = nullptr;
+protected:
+    void Cleanup() { if (content) { MyFree(content); content = nullptr; } }
+};
+
+
+//
+// Helper class to free string buffers created using OLE memory allocator.
+//
+template<typename T>
+class TextOle
+{
+public:
+    T** operator&() { return &content; }
+    ~TextOle() { Cleanup(); }
+    T* Get() { return content; }
+
+    T* content = nullptr;
+protected:
+    void Cleanup() { if (content) { CoTaskMemFree(content); content = nullptr; } }
 };
 
