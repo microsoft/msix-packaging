@@ -359,9 +359,7 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
 
     // be sure we allocate enought space for 2 LUID_AND_ATTRIBUTES
     // by default TOKEN_PRIVILEGES allocates space for only 1 LUID_AND_ATTRIBUTES.
-    pTokenPrivileges = (PTOKEN_PRIVILEGES)LocalAlloc(LMEM_FIXED, sizeof(TOKEN_PRIVILEGES) +
-        (sizeof(LUID_AND_ATTRIBUTES) * 2));
-
+    pTokenPrivileges = (PTOKEN_PRIVILEGES)LocalAlloc(LMEM_FIXED, sizeof(TOKEN_PRIVILEGES) + (sizeof(LUID_AND_ATTRIBUTES) * 2));
     pTokenPrivileges->PrivilegeCount = 2;
     pTokenPrivileges->Privileges[0].Luid = seRestoreLuid;
     pTokenPrivileges->Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
