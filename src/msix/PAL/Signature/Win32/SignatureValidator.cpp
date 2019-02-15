@@ -367,13 +367,12 @@ namespace MSIX
         else 
         {   //pkcs7 -- get the end entity
             PCCERT_CONTEXT pCertContext = NULL;
-            PCCERT_CONTEXT pSelfSignedCertContext = NULL;
             while (NULL != (pCertContext = CertEnumCertificatesInStore(certStoreHandle.get(), pCertContext)))
             {    
                 if (IsCertificateSelfSigned(pCertContext, pCertContext->dwCertEncodingType, 0))
                 {
-                    if (bAllowUnknownSignature && pSelfSignedCertContext == NULL)
-                        pSelfSignedCertContext = pCertContext;
+                    if (bAllowUnknownSignature)
+                        return pCertContext;
                     continue;
                 }
                 if (IsCACert(pCertContext))
@@ -385,7 +384,7 @@ namespace MSIX
                     return pCertContext;
                 }
             }
-            return pSelfSignedCertContext;
+            return NULL;
         }
     }
     
