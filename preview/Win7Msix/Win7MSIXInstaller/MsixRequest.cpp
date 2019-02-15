@@ -62,7 +62,7 @@ std::map<PCWSTR, HandlerInfo> RemoveHandlers =
     {Extractor::HandlerName,            {Extractor::CreateHandler,           nullptr}},
 };
 
-HRESULT MsixRequest::Make(OperationType operationType, Flags flags, std::wstring packageFilePath, std::wstring packageFullName, MsixRequest ** outInstance)
+HRESULT MsixRequest::Make(OperationType operationType, Flags flags, std::wstring packageFilePath, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest ** outInstance)
 {
     std::unique_ptr<MsixRequest> instance(new MsixRequest());
     if (instance == nullptr)
@@ -74,6 +74,7 @@ HRESULT MsixRequest::Make(OperationType operationType, Flags flags, std::wstring
     instance->m_flags = flags;
     instance->m_packageFilePath = packageFilePath;
     instance->m_packageFullName = packageFullName;
+    instance->m_validationOptions = validationOption;
     RETURN_IF_FAILED(instance->InitializeFilePathMappings());
     *outInstance = instance.release();
 

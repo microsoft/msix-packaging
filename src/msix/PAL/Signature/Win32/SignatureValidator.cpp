@@ -152,49 +152,58 @@ namespace MSIX
     static bool GetEnhancedKeyUsage(PCCERT_CONTEXT pCertContext, std::vector<std::string>& values)
     {                   
         //get OIDS from the extension or property
-
+        if (pCertContext == NULL)
+            return false;
         DWORD cbExtensionUsage = 0;
         std::vector<byte> extensionUsage(0);
         CertGetEnhancedKeyUsage(pCertContext, CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG, NULL, &cbExtensionUsage);
-        extensionUsage.resize(cbExtensionUsage);
-        ThrowErrorIf(Error::SignatureInvalid, (
-            !CertGetEnhancedKeyUsage(
-                pCertContext,
-                CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG,
-                reinterpret_cast<PCERT_ENHKEY_USAGE>(extensionUsage.data()),                
-                &cbExtensionUsage) &&
-            GetLastError() != CRYPT_E_NOT_FOUND
-        ), "CertGetEnhacnedKeyUsage on extension usage failed.");
-
-        if (extensionUsage.size() > 0)
+        if (cbExtensionUsage > 0)
         {
-            PCERT_ENHKEY_USAGE pExtensionUsageT = reinterpret_cast<PCERT_ENHKEY_USAGE>(extensionUsage.data());
-            for (DWORD i = 0; i < pExtensionUsageT->cUsageIdentifier; i++)
-            {   values.push_back(std::move(std::string(pExtensionUsageT->rgpszUsageIdentifier[i])));
+            extensionUsage.resize(cbExtensionUsage);
+            ThrowErrorIf(Error::SignatureInvalid, (
+                !CertGetEnhancedKeyUsage(
+                    pCertContext,
+                    CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG,
+                    reinterpret_cast<PCERT_ENHKEY_USAGE>(extensionUsage.data()),
+                    &cbExtensionUsage) &&
+                GetLastError() != CRYPT_E_NOT_FOUND
+                ), "CertGetEnhacnedKeyUsage on extension usage failed.");
+
+            if (extensionUsage.size() > 0)
+            {
+                PCERT_ENHKEY_USAGE pExtensionUsageT = reinterpret_cast<PCERT_ENHKEY_USAGE>(extensionUsage.data());
+                for (DWORD i = 0; i < pExtensionUsageT->cUsageIdentifier; i++)
+                {
+                    values.push_back(std::move(std::string(pExtensionUsageT->rgpszUsageIdentifier[i])));
+                }
+                return (pExtensionUsageT->cUsageIdentifier > 0);
             }
-            return (pExtensionUsageT->cUsageIdentifier > 0);
         }
 
         DWORD cbPropertyUsage = 0;
         std::vector<byte> propertyUsage(0);
         CertGetEnhancedKeyUsage(pCertContext, CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG, NULL, &cbPropertyUsage);
-        propertyUsage.resize(cbPropertyUsage);
-        ThrowErrorIf(Error::SignatureInvalid, (            
-            !CertGetEnhancedKeyUsage(
-                pCertContext,
-                CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG,
-                reinterpret_cast<PCERT_ENHKEY_USAGE>(propertyUsage.data()),
-                &cbPropertyUsage) &&
-            GetLastError() != CRYPT_E_NOT_FOUND
-        ), "CertGetEnhancedKeyUsage on property usage failed.");
-
-        if (propertyUsage.size() > 0)
+        if (cbPropertyUsage > 0)
         {
-            PCERT_ENHKEY_USAGE pPropertyUsageT = reinterpret_cast<PCERT_ENHKEY_USAGE>(propertyUsage.data());
-            for (DWORD i = 0; i < pPropertyUsageT->cUsageIdentifier; i++)
-            {   values.push_back(std::move(std::string(pPropertyUsageT->rgpszUsageIdentifier[i])));
+            propertyUsage.resize(cbPropertyUsage);
+            ThrowErrorIf(Error::SignatureInvalid, (
+                !CertGetEnhancedKeyUsage(
+                    pCertContext,
+                    CERT_FIND_PROP_ONLY_ENHKEY_USAGE_FLAG,
+                    reinterpret_cast<PCERT_ENHKEY_USAGE>(propertyUsage.data()),
+                    &cbPropertyUsage) &&
+                GetLastError() != CRYPT_E_NOT_FOUND
+                ), "CertGetEnhancedKeyUsage on property usage failed.");
+
+            if (propertyUsage.size() > 0)
+            {
+                PCERT_ENHKEY_USAGE pPropertyUsageT = reinterpret_cast<PCERT_ENHKEY_USAGE>(propertyUsage.data());
+                for (DWORD i = 0; i < pPropertyUsageT->cUsageIdentifier; i++)
+                {
+                    values.push_back(std::move(std::string(pPropertyUsageT->rgpszUsageIdentifier[i])));
+                }
+                return (pPropertyUsageT->cUsageIdentifier > 0);
             }
-            return (pPropertyUsageT->cUsageIdentifier > 0);
         }
 
         return false;
@@ -323,7 +332,7 @@ namespace MSIX
         return(true);
     }
 
-    static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuffer)
+    static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuffer, bool bAllowUnknownSignature)
     {
         //get cert context from strCertificate;
         DWORD dwExpectedContentType = CERT_QUERY_CONTENT_FLAG_CERT |
@@ -351,29 +360,41 @@ namespace MSIX
             ),"CryptQueryObject failed");
         unique_cert_store_handle certStoreHandle(certStoreHandleT);
 
-        PCCERT_CONTEXT pCertContext = NULL;
         if (dwContentType == CERT_QUERY_CONTENT_CERT)
         {   //get the certificate context
-            pCertContext = CertEnumCertificatesInStore(certStoreHandle.get(), NULL);
+            return CertEnumCertificatesInStore(certStoreHandle.get(), NULL);
         }
         else 
         {   //pkcs7 -- get the end entity
+            PCCERT_CONTEXT pCertContext = NULL;
+            PCCERT_CONTEXT pSelfSignedCertContext = NULL;
             while (NULL != (pCertContext = CertEnumCertificatesInStore(certStoreHandle.get(), pCertContext)))
-            {   if (IsCertificateSelfSigned(pCertContext, pCertContext->dwCertEncodingType, 0) || IsCACert(pCertContext))
-                { continue;
+            {    
+                if (IsCertificateSelfSigned(pCertContext, pCertContext->dwCertEncodingType, 0))
+                {
+                    if (bAllowUnknownSignature && pSelfSignedCertContext == NULL)
+                        pSelfSignedCertContext = pCertContext;
+                    continue;
+                }
+                if (IsCACert(pCertContext))
+                {
+                    continue;
                 }
                 else
                 {   //end entity cert
-                    break;
+                    return pCertContext;
                 }
             }
+            return pSelfSignedCertContext;
         }
-        return pCertContext;
     }
     
     static bool DoesSignatureCertContainStoreEKU(_In_ byte* rawSignatureBuffer, _In_ ULONG dataSize)
     {
-        unique_cert_context certificateContext(GetCertContext(rawSignatureBuffer, dataSize));        
+        unique_cert_context certificateContext(GetCertContext(rawSignatureBuffer, dataSize, false));
+        if (certificateContext.get() == NULL)
+            return false; 
+        
         std::vector<std::string> oids;
         if (GetEnhancedKeyUsage(certificateContext.get(), oids)) {
             std::size_t count = oids.size();
@@ -402,9 +423,11 @@ namespace MSIX
         return IsAuthenticodeTrustedChain(certChainContext.get());
     }
 
-    static bool GetPublisherName(/*in*/byte* signatureBuffer, /*in*/ ULONG cbSignatureBuffer, /*inout*/ std::string& publisher)
+    static bool GetPublisherName(/*in*/byte* signatureBuffer, /*in*/ ULONG cbSignatureBuffer, /*in*/ bool bAllowUnknownSignature, /*inout*/ std::string& publisher)
     {
-        unique_cert_context certificateContext(GetCertContext(signatureBuffer, cbSignatureBuffer));
+        unique_cert_context certificateContext(GetCertContext(signatureBuffer, cbSignatureBuffer, bAllowUnknownSignature));
+        if (certificateContext.get() == NULL)
+            return false;
         
         int requiredLength = CertNameToStrA(
             X509_ASN_ENCODING,
@@ -572,13 +595,14 @@ namespace MSIX
         if (IsStoreOrigin(p7s, p7sSize)) { origin = MSIX::SignatureOrigin::Store; }
         else if (IsAuthenticodeOrigin(p7s, p7sSize)) { origin = MSIX::SignatureOrigin::LOB; }
 
-        bool SignatureOriginUnknownAllowed = (option & MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN) == MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
+        bool signatureOriginUnknownAllowed = (option & MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN) == MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
+        
         ThrowErrorIf(Error::CertNotTrusted, 
-            ((MSIX::SignatureOrigin::Unknown == origin) && !SignatureOriginUnknownAllowed),
+            ((MSIX::SignatureOrigin::Unknown == origin) && !signatureOriginUnknownAllowed),
             "Unknown signature origin");
 
         ThrowErrorIfNot(Error::SignatureInvalid,
-            GetPublisherName(p7s, p7sSize, publisher) == true,
+            GetPublisherName(p7s, p7sSize, signatureOriginUnknownAllowed, publisher) == true,
             "Could not retrieve publisher name");
                 
         return true;

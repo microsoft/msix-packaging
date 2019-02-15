@@ -72,6 +72,15 @@ std::map<std::wstring, Option, CaseInsensitiveLess> CommandLineInterface::s_opti
             })
     },
     {
+        L"-AllowUnknownSignature",
+        Option(false, IDS_STRING_HELP_OPTION_ALLOWUNKNOWNSIGNATURE,
+            [&](CommandLineInterface* commandLineInterface, const std::string& packageFullName)
+            {
+                commandLineInterface->m_validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
+                return S_OK;
+            })
+    },
+    {
         L"-?", 
         Option(false, IDS_STRING_HELP_OPTION_HELP,
             [&](CommandLineInterface*, const std::string&)
@@ -147,7 +156,7 @@ HRESULT CommandLineInterface::CreateRequest(MsixRequest** msixRequest)
     }
 
     AutoPtr<MsixRequest> localRequest;
-    RETURN_IF_FAILED(MsixRequest::Make(m_operationType, m_flags, m_packageFilePath, m_packageFullName, &localRequest));
+    RETURN_IF_FAILED(MsixRequest::Make(m_operationType, m_flags, m_packageFilePath, m_packageFullName, m_validationOptions, &localRequest));
 
     *msixRequest = localRequest.Detach();
     return S_OK;
