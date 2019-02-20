@@ -27,7 +27,7 @@ private:
     /// to create and store a shortcut to the specified object.
     /// @param targetFilePath - full file path to the application exe
     /// @param linkFilePath - full file path to the shortcut .lnk file
-    /// @description - description of the Shell link, stored in the Comment field of the link
-    ///                properties.
-    HRESULT CreateLink(PCWSTR targetFilePath, PCWSTR linkFilePath, PCWSTR description);
+	/// @param description - description of the Shell link, stored in the Comment field of the link properties.
+	/// @param appUserModelId- Application User Model ID, needed to display toasts.
+	HRESULT CreateLink(PCWSTR targetFilePath, PCWSTR linkFilePath, PCWSTR description, PCWSTR appUserModelId = NULL);
 };
