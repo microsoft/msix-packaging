@@ -5,14 +5,16 @@ dataCompressionLib=libcompression
 bundle=off
 xmlparserLib=applexml
 xmlparser="-DXML_PARSER=applexml"
+addressSanitizerFlag=off
 
 usage()
 {
-    echo "usage: makemac [-b buildType] [-xzlib] [-parser-xerces]"
+    echo "usage: makemac [-b buildType] [-xzlib] [-parser-xerces] [-asan]"
     echo $'\t' "-b Build type. Default MinSizeRel"
     echo $'\t' "-xzlib Use MSIX SDK Zlib instead of inbox libCompression api. Default on MacOS is libCompression."
     echo $'\t' "-sb Skip bundle support."
     echo $'\t' "-parser-xerces Use xerces xml parser instead of default apple xml parser."
+    echo $'\t' "-asan Turn on address sanitizer for memory corruption detection."
 }
 
 printsetup()
@@ -21,6 +23,7 @@ printsetup()
     echo "Data Compression library:" $dataCompressionLib
     echo "Skip bundle support:" $bundle
     echo "parser:" $xmlparserLib
+    echo "Address Sanitizer:" $addressSanitizerFlag
 }
 
 while [ "$1" != "" ]; do
@@ -33,6 +36,9 @@ while [ "$1" != "" ]; do
                 ;;
         -parser-xerces )  xmlparserLib=xerces
                 xmlparser="-DXML_PARSER=xerces"
+                ;;
+        -asan ) addressSanitizerFlag=on
+                addressSanitizer="-DASAN=on"
                 ;;
         -sb )   bundle="on"
                 ;;
@@ -52,5 +58,5 @@ cd .vs
 # clean up any old builds of msix modules
 find . -name *msix* -d | xargs rm -r
 
-cmake -DCMAKE_BUILD_TYPE=$build $zlib -DSKIP_BUNDLES=$bundle $xmlparser -DMACOS=on ..
+cmake -DCMAKE_BUILD_TYPE=$build $zlib -DSKIP_BUNDLES=$bundle $xmlparser $addressSanitizer -DMACOS=on ..
 make

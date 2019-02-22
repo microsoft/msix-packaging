@@ -34,12 +34,12 @@ namespace MSIX {
         while (*p != '\0')
         {
             while (*p != '\0' && *p != '/') { p++; }
-            
+
             char v = *p;
             *p = '\0';
             ThrowErrorIfNot(Error::FileCreateDirectory,(mkdir(path.c_str(), mode) != -1 || errno == EEXIST), path.c_str());
             *p = v;
-            p++;
+            if (*p != '\0') {p++;}
         }
     }
 
