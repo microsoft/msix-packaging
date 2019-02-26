@@ -47,6 +47,14 @@
     #ifndef _WINDOWS_TYPES
     #define _WINDOWS_TYPES
 
+    #ifndef long32
+    #ifndef __LP64__
+    #define long32 long
+    #else
+    #define long32 int
+    #endif //__LP64__
+    #endif // long32
+
     #ifndef _HRESULT_DEFINED
     #define _HRESULT_DEFINED
     typedef signed long HRESULT;
@@ -54,7 +62,7 @@
 
     #ifndef _LONG_DEFINED
     #define _LONG_DEFINED
-    typedef signed long LONG;
+    typedef signed long32 LONG;
     #endif
 
     #ifndef _NTSTATUS_DEFINED
@@ -64,7 +72,7 @@
 
     #ifndef _ULONG_DEFINED
     #define _ULONG_DEFINED
-    typedef unsigned long ULONG;
+    typedef unsigned long32 ULONG;
     #endif
 
     #ifndef _DWORD_DEFINED
@@ -206,10 +214,10 @@
     #ifndef GUID_DEFINED
     #define GUID_DEFINED
     typedef struct _GUID {
-        unsigned long  Data1;
-        unsigned short Data2;
-        unsigned short Data3;
-        unsigned char  Data4[8];
+        unsigned long32 Data1;
+        unsigned short  Data2;
+        unsigned short  Data3;
+        unsigned char   Data4[8];
     } GUID;
     #endif
 
