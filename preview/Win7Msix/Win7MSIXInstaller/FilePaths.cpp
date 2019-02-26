@@ -67,15 +67,15 @@ std::wstring FilePathMappings::GetExecutablePath(std::wstring packageExecutableP
 
 HRESULT FilePathMappings::Initialize()
 {
-    Text<WCHAR> systemX86Path;
-    Text<WCHAR> systemPath;
-    Text<WCHAR> programFilesX86Path;
-    Text<WCHAR> programFilesCommonX86Path;
-    Text<WCHAR> windowsPath;
-    Text<WCHAR> commonAppDataPath;
-    Text<WCHAR> localAppDataPath;
-    Text<WCHAR> appDataPath;
-    Text<WCHAR> commonProgramsPath;
+    TextOle<WCHAR> systemX86Path;
+    TextOle<WCHAR> systemPath;
+    TextOle<WCHAR> programFilesX86Path;
+    TextOle<WCHAR> programFilesCommonX86Path;
+    TextOle<WCHAR> windowsPath;
+    TextOle<WCHAR> commonAppDataPath;
+    TextOle<WCHAR> localAppDataPath;
+    TextOle<WCHAR> appDataPath;
+    TextOle<WCHAR> commonProgramsPath;
 
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_SystemX86, 0, NULL, &systemX86Path));
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_System, 0, NULL, &systemPath));
@@ -119,9 +119,9 @@ HRESULT FilePathMappings::Initialize()
     m_map[L"AppVSystems32Spool"] = appVSystem32SpoolPath;
 
 #ifdef _WIN64
-    Text<WCHAR> programFilesX64Path;
-    Text<WCHAR> programFilesCommonX64Path;
-    Text<WCHAR> systemX64Path;
+    TextOle<WCHAR> programFilesX64Path;
+    TextOle<WCHAR> programFilesCommonX64Path;
+    TextOle<WCHAR> systemX64Path;
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_System, 0, NULL, &systemX64Path));
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_ProgramFilesCommonX64, 0, NULL, &programFilesCommonX64Path));
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_ProgramFilesX64, 0, NULL, &programFilesX64Path));
@@ -130,7 +130,7 @@ HRESULT FilePathMappings::Initialize()
     m_map[L"SystemX64"] = std::wstring(systemX64Path.Get());
 #endif
 
-    Text<WCHAR> programFilesPath;
+    TextOle<WCHAR> programFilesPath;
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, NULL, &programFilesPath));
 
     m_msix7Directory = std::wstring(programFilesPath.Get()) + std::wstring(L"\\Msix7apps\\");
