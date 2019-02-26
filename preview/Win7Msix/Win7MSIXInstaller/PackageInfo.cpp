@@ -4,7 +4,7 @@
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
 
-HRESULT PackageInfo::SetExecutableFromManifestElement(IMsixElement* element)
+HRESULT PackageInfo::SetExecutableAndAppIdFromManifestElement(IMsixElement* element)
 {
     BOOL hc = FALSE;
     ComPtr<IMsixElementEnumerator> applicationElementEnum;
@@ -15,8 +15,8 @@ HRESULT PackageInfo::SetExecutableFromManifestElement(IMsixElement* element)
 
     if (!hc)
     {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider, 
-            "No Application Found", 
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "No Application Found",
             TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
         return E_NOT_SET;
     }
@@ -25,8 +25,11 @@ HRESULT PackageInfo::SetExecutableFromManifestElement(IMsixElement* element)
     RETURN_IF_FAILED(applicationElementEnum->GetCurrent(&applicationElement));
 
     Text<wchar_t> executablePath;
+    Text<wchar_t> applicationId;
     RETURN_IF_FAILED(applicationElement->GetAttributeValue(L"Executable", &executablePath));
+    RETURN_IF_FAILED(applicationElement->GetAttributeValue(L"Id", &applicationId));
     m_executableFilePath = executablePath.Get();
+    m_applicationId = applicationId.Get();
 
     return S_OK;
 }
@@ -41,7 +44,7 @@ HRESULT PackageInfo::SetDisplayNameFromManifestElement(IMsixElement* element)
     RETURN_IF_FAILED(visualElementsEnum->GetHasCurrent(&hc));
     if (!hc)
     {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider, 
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
             "No DisplayName Found",
             TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
         return E_NOT_SET;
@@ -99,7 +102,7 @@ HRESULT PackageInfo::MakeFromPackageReader(IAppxPackageReader * packageReader, s
         RETURN_IF_FAILED(fileEnum->MoveNext(&hc));
     }
     instance->m_numberOfPayloadFiles = numberOfPayloadFiles;
-    
+
     *packageInfo = instance.release();
 
     return S_OK;
@@ -108,7 +111,7 @@ HRESULT PackageInfo::MakeFromPackageReader(IAppxPackageReader * packageReader, s
 HRESULT PackageInfo::SetManifestReader(IAppxManifestReader * manifestReader, std::wstring msix7DirectoryPath)
 {
     m_manifestReader = manifestReader;
-    
+
     // Also fill other fields that come from the manifest reader
     ComPtr<IAppxManifestPackageId> manifestId;
     RETURN_IF_FAILED(manifestReader->GetPackageId(&manifestId));
@@ -126,9 +129,15 @@ HRESULT PackageInfo::SetManifestReader(IAppxManifestReader * manifestReader, std
     ComPtr<IMsixElement> element;
     RETURN_IF_FAILED(domElement->GetDocumentElement(&element));
 
-    RETURN_IF_FAILED(SetExecutableFromManifestElement(element.Get()));
+    RETURN_IF_FAILED(SetExecutableAndAppIdFromManifestElement(element.Get()));
 
     RETURN_IF_FAILED(SetDisplayNameFromManifestElement(element.Get()));
-    
+
+    Text<WCHAR> packageFamilyName;
+    RETURN_IF_FAILED(manifestId->GetPackageFamilyName(&packageFamilyName));
+    if (!m_applicationId.empty() && packageFamilyName.Get() != NULL)
+    {
+        m_appUserModelId = std::wstring(packageFamilyName.Get()) + L"!" + m_applicationId;
+    }
     return S_OK;
 }

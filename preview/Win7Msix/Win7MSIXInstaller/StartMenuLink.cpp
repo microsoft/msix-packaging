@@ -2,6 +2,8 @@
 
 #include <shlobj_core.h>
 #include <CommCtrl.h>
+#include <propvarutil.h>
+#include <propkey.h>
 
 #include "FilePaths.hpp"
 #include "StartMenuLink.hpp"
@@ -10,16 +12,30 @@
 
 const PCWSTR StartMenuLink::HandlerName = L"StartMenuLink";
 
-HRESULT StartMenuLink::CreateLink(PCWSTR targetFilePath, PCWSTR linkFilePath, PCWSTR description)
+HRESULT StartMenuLink::CreateLink(PCWSTR targetFilePath, PCWSTR linkFilePath, PCWSTR description, PCWSTR appUserModelId)
 {
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Creating Link",
         TraceLoggingValue(targetFilePath, "TargetFilePath"),
-        TraceLoggingValue(linkFilePath, "LinkFilePath"));
+        TraceLoggingValue(linkFilePath, "LinkFilePath"),
+        TraceLoggingValue(appUserModelId, "AppUserModelId"));
 
     ComPtr<IShellLink> shellLink;
     RETURN_IF_FAILED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, reinterpret_cast<LPVOID*>(&shellLink)));
     RETURN_IF_FAILED(shellLink->SetPath(targetFilePath));
+    RETURN_IF_FAILED(shellLink->SetArguments(L""));
+
+    if (appUserModelId != NULL && appUserModelId[0] != 0)
+    {
+        ComPtr<IPropertyStore> propertyStore;
+        PROPVARIANT appIdPropVar;
+        RETURN_IF_FAILED(shellLink->QueryInterface(IID_IPropertyStore, reinterpret_cast<LPVOID*>(&propertyStore)));
+        RETURN_IF_FAILED(InitPropVariantFromString(appUserModelId, &appIdPropVar));
+        RETURN_IF_FAILED(propertyStore->SetValue(PKEY_AppUserModel_ID, appIdPropVar));
+        RETURN_IF_FAILED(propertyStore->Commit());
+        PropVariantClear(&appIdPropVar);
+    }
+
     RETURN_IF_FAILED(shellLink->SetDescription(description));
 
     ComPtr<IPersistFile> persistFile;
@@ -35,7 +51,8 @@ HRESULT StartMenuLink::ExecuteForAddRequest()
     std::wstring filePath = m_msixRequest->GetFilePathMappings()->GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";
 
     std::wstring resolvedExecutableFullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(packageInfo->GetExecutableFilePath(), packageInfo->GetPackageFullName().c_str());
-    RETURN_IF_FAILED(CreateLink(resolvedExecutableFullPath.c_str(), filePath.c_str(), L""));
+    std::wstring appUserModelId = m_msixRequest->GetPackageInfo()->GetAppModelUserId();
+    RETURN_IF_FAILED(CreateLink(resolvedExecutableFullPath.c_str(), filePath.c_str(), L"", appUserModelId.c_str()));
 
     return S_OK;
 }

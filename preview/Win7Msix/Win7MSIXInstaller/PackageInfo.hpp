@@ -11,6 +11,8 @@ private:
     std::wstring m_packageDirectoryPath;
     std::wstring m_executableFilePath;
     std::wstring m_displayName;
+    std::wstring m_appUserModelId;
+    std::wstring m_applicationId;
     UINT64 m_version = 0;
     Text<WCHAR> m_publisher;
 
@@ -26,10 +28,13 @@ private:
     HRESULT SetManifestReader(IAppxManifestReader* manifestReader, std::wstring msix7DirectoryPath);
 
     /// Sets the executable path by reading it from the manifest element
-    HRESULT SetExecutableFromManifestElement(IMsixElement * element);
+    HRESULT SetExecutableAndAppIdFromManifestElement(IMsixElement * element);
 
     /// Sets the display name by reading it from the manifest element
     HRESULT SetDisplayNameFromManifestElement(IMsixElement * element);
+
+    /// Sets the application model user id from the manifest reader
+    HRESULT SetApplicationUserModelIdFromManifestElement(IAppxManifestReader* manifestReader);
 
 public:
     /// Create a PackageInfo using the manifest reader and directory path. This is intended for Remove scenarios where
@@ -51,6 +56,7 @@ public:
     std::wstring GetPackageDirectoryPath() { return m_packageDirectoryPath; }
     std::wstring GetExecutableFilePath() { return m_executableFilePath; }
     std::wstring GetDisplayName() { return m_displayName;  }
+    std::wstring GetAppModelUserId() { return m_appUserModelId; }
     UINT64 GetVersion() { return m_version; }
     PCWSTR GetPublisher() { return m_publisher.Get(); }
 
