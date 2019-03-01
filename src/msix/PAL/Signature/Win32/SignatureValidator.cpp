@@ -152,8 +152,10 @@ namespace MSIX
     static bool GetEnhancedKeyUsage(PCCERT_CONTEXT pCertContext, std::vector<std::string>& values)
     {                   
         //get OIDS from the extension or property
-        if (pCertContext == NULL)
-            return false;
+		if (pCertContext == NULL) 
+		{
+			return false;
+		}
         DWORD cbExtensionUsage = 0;
         std::vector<byte> extensionUsage(0);
         CertGetEnhancedKeyUsage(pCertContext, CERT_FIND_EXT_ONLY_ENHKEY_USAGE_FLAG, NULL, &cbExtensionUsage);
@@ -332,7 +334,7 @@ namespace MSIX
         return(true);
     }
 
-    static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuffer, bool bAllowUnknownSignature)
+    static PCCERT_CONTEXT GetCertContext(BYTE *signatureBuffer, ULONG cbSignatureBuffer, bool allowSelfSignedCert)
     {
         //get cert context from strCertificate;
         DWORD dwExpectedContentType = CERT_QUERY_CONTENT_FLAG_CERT |
@@ -371,7 +373,7 @@ namespace MSIX
             {    
                 if (IsCertificateSelfSigned(pCertContext, pCertContext->dwCertEncodingType, 0))
                 {
-                    if (bAllowUnknownSignature)
+                    if (allowSelfSignedCert)
                         return pCertContext;
                     continue;
                 }
@@ -391,9 +393,11 @@ namespace MSIX
     static bool DoesSignatureCertContainStoreEKU(_In_ byte* rawSignatureBuffer, _In_ ULONG dataSize)
     {
         unique_cert_context certificateContext(GetCertContext(rawSignatureBuffer, dataSize, false));
-        if (certificateContext.get() == NULL)
-            return false; 
-        
+		if (certificateContext.get() == NULL)
+		{
+			return false;
+		}
+
         std::vector<std::string> oids;
         if (GetEnhancedKeyUsage(certificateContext.get(), oids)) {
             std::size_t count = oids.size();
@@ -422,12 +426,13 @@ namespace MSIX
         return IsAuthenticodeTrustedChain(certChainContext.get());
     }
 
-    static bool GetPublisherName(/*in*/byte* signatureBuffer, /*in*/ ULONG cbSignatureBuffer, /*in*/ bool bAllowUnknownSignature, /*inout*/ std::string& publisher)
+    static bool GetPublisherName(/*in*/byte* signatureBuffer, /*in*/ ULONG cbSignatureBuffer, /*inout*/ std::string& publisher)
     {
-        unique_cert_context certificateContext(GetCertContext(signatureBuffer, cbSignatureBuffer, bAllowUnknownSignature));
-        if (certificateContext.get() == NULL)
-            return false;
-        
+        unique_cert_context certificateContext(GetCertContext(signatureBuffer, cbSignatureBuffer, true));
+		if (certificateContext.get() == NULL)
+		{
+			return false;
+		}
         int requiredLength = CertNameToStrA(
             X509_ASN_ENCODING,
             &certificateContext.get()->pCertInfo->Subject,
@@ -601,7 +606,7 @@ namespace MSIX
             "Unknown signature origin");
 
         ThrowErrorIfNot(Error::SignatureInvalid,
-            GetPublisherName(p7s, p7sSize, signatureOriginUnknownAllowed, publisher) == true,
+            GetPublisherName(p7s, p7sSize, publisher) == true,
             "Could not retrieve publisher name");
                 
         return true;
