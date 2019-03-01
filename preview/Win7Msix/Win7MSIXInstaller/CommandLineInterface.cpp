@@ -152,7 +152,7 @@ HRESULT CommandLineInterface::CreateRequest(MsixRequest** msixRequest)
 		m_flags, 
 		m_packageFilePath, 
 		m_packageFullName, 
-		MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, 
+		m_validationOptions,
 		&localRequest)
 	);
 

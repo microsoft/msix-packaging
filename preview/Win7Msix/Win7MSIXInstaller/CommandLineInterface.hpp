@@ -63,6 +63,7 @@ private:
     std::wstring m_packageFilePath;
     std::wstring m_packageFullName;
 
+    MSIX_VALIDATION_OPTION m_validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
     Flags m_flags = NoFlags;
     OperationType m_operationType = OperationType::Undefined;
 
