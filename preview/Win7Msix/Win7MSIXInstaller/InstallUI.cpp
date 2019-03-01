@@ -21,7 +21,6 @@ using namespace std;
 static std::wstring g_messageText = L"";
 static std::wstring g_displayText = L"";
 
-
 Gdiplus::Image* g_image = nullptr;
 
 static const int g_width = 500;  // width of window
@@ -128,6 +127,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
     case WM_CREATE:
         LaunchButton(hWnd, windowRect);
+        CreateCheckbox(hWnd, windowRect);
         break;
     case WM_PAINT:
     {
@@ -153,23 +153,45 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     case WM_COMMAND:
-        if (!g_installed)
+        switch (LOWORD(wParam)) 
         {
-            ui->SetButtonClicked();
-            return HideButtonWindow();
+            case IDC_INSTALLBUTTON:
+            {				
+                if (!g_installed)
+                {
+                    DestroyWindow(g_buttonHWnd);
+                    CreateCancelButton(hWnd, windowRect);
+                    UpdateWindow(hWnd);
+                    ShowWindow(g_progressHWnd, SW_SHOW); //Show progress bar only when install is clicked
+                    ui->SetButtonClicked();
+                }
+                else
+                {
+                    PostQuitMessage(0);
+                    exit(0);
+                }
+            }
+            break;
+            case IDC_LAUNCHCHECKBOX:
+            {
+                if (SendMessage(GetDlgItem(hWnd, IDC_LAUNCHCHECKBOX), BM_GETCHECK, 0, 0) == BST_CHECKED) 
+                {
+                    g_launchCheckBoxState = true;
+                }
+                else
+                {
+                    g_launchCheckBoxState = false;
+                }
+            }
+            break;
         }
-        else
-        {
-            PostQuitMessage(0);
-            exit(0);
-        }
+        break;
+    case WM_SIZE:
+    case WM_SIZING:
         break;
     case WM_DESTROY:
         PostQuitMessage(0);
         exit(0);
-        break;
-    case WM_SIZE:
-    case WM_SIZING:
         break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
@@ -224,12 +246,12 @@ void StartUIThread(UI* ui)
     wcex.cbClsExtra = 0;
     wcex.cbWndExtra = 0;
     wcex.hInstance = hInstance;
-    wcex.hIcon = LoadIcon(hInstance, IDI_APPLICATION);
+    wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_ICONBIG));
     wcex.hCursor = LoadCursor(NULL, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName = NULL;
     wcex.lpszClassName = windowClass.c_str();
-    wcex.hIconSm = LoadIcon(wcex.hInstance, IDI_APPLICATION);
+    wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_ICONSMALL));
 
     if (!RegisterClassEx(&wcex))
     {
@@ -310,7 +332,7 @@ BOOL CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
         0,
         PROGRESS_CLASS,
         (LPTSTR)NULL,
-        WS_CHILD | WS_VISIBLE,
+        WS_CHILD,
         parentRect.left + 50, // x coord
         parentRect.bottom - scrollHeight - 125, // y coord
         parentRect.right - 100, // width
@@ -341,14 +363,65 @@ BOOL LaunchButton(HWND parentHWnd, RECT parentRect) {
         L"Install",  // text
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
-        parentRect.bottom - 50 - 50,  // y coord
-        100,  // width
-        50,  // height
+        parentRect.bottom - 60,  // y coord
+        120,  // width
+        35,  // height
         parentHWnd,  // parent
-        NULL, // menu
+        (HMENU)IDC_INSTALLBUTTON, // menu
         reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
         buttonPointer); // pointer to button
     return TRUE;
+}
+
+// FUNCTION: CreateCheckbox(HWND parentHWnd, RECT parentRect)
+//
+// PURPOSE: Create the launch checkbox on the bottom left
+// 
+// parentHWnd: the HWND of the window to add the checkbox to
+// parentRect: the specs of the parent window
+BOOL CreateCheckbox(HWND parentHWnd, RECT parentRect)
+{
+	g_checkboxHWnd = CreateWindowEx(
+        WS_EX_LEFT, // extended window style
+        L"BUTTON",
+        L"Launch when ready",  // text
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, // style
+        parentRect.left + 50, // x coord
+        parentRect.bottom - 60,  // y coord
+        165,  // width
+        35,  // height
+        parentHWnd,  // parent
+        (HMENU)IDC_LAUNCHCHECKBOX, // menu
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+        NULL);
+
+	//Set default checkbox state to checked
+	SendMessage(g_checkboxHWnd, BM_SETCHECK, BST_CHECKED, 0);
+	return TRUE;
+}
+
+// FUNCTION: CancelButton(HWND parentHWnd, RECT parentRect)
+//
+// PURPOSE: Create the lower right cancel button when install is clicked
+// 
+// parentHWnd: the HWND of the window to add the button to
+// parentRect: the specs of the parent window
+BOOL CreateCancelButton(HWND parentHWnd, RECT parentRect) {
+	LPVOID buttonPointer = nullptr;
+	g_CancelbuttonHWnd = CreateWindowEx(
+		WS_EX_LEFT, // extended window style
+		L"BUTTON",
+		L"Cancel",  // text
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
+		parentRect.right - 100 - 50, // x coord
+		parentRect.bottom - 60,  // y coord
+		120,  // width
+		35,  // height
+		parentHWnd,  // parent
+		(HMENU)IDC_CANCELBUTTON, // menu
+		reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+		buttonPointer); // pointer to button
+	return TRUE;
 }
 
 // FUNCTION: ChangeButtonText(LPARAM newMessage)
@@ -415,7 +488,7 @@ BOOL ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring messageT
 // windowTitle: the window title
 int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title)
 {
-    HWND hWnd = CreateWindow(
+	HWND hWnd = CreateWindow(
         const_cast<wchar_t*>(windowClass.c_str()),
         const_cast<wchar_t*>(title.c_str()),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,

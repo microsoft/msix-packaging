@@ -44,6 +44,9 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
     std::wstring versionString(ConvertVersionToString(packageInfo->GetVersion()));
     RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayVersion", versionString));
 
+    std::wstring packageIconString = m_msixRequest->GetFilePathMappings()->GetExecutablePath(packageInfo->GetExecutableFilePath(), packageInfo->GetPackageFullName().c_str());
+    RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayIcon", packageIconString));
+
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Added Uninstall key successfully",
         TraceLoggingValue(packageFullName.c_str(), "packageFullName"),
@@ -51,7 +54,8 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
         TraceLoggingValue(displayName.c_str(), "displayName"),
         TraceLoggingValue(directoryPath.c_str(), "installLocation"), 
         TraceLoggingValue(publisherString.c_str(), "publisher"),
-        TraceLoggingValue(versionString.c_str(), "displayVersion"));
+        TraceLoggingValue(versionString.c_str(), "displayVersion"),
+        TraceLoggingValue(packageIconString.c_str(), "displayIcon"));
 
     return S_OK;
 }
