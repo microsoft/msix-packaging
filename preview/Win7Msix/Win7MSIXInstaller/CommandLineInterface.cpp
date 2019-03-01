@@ -147,7 +147,14 @@ HRESULT CommandLineInterface::CreateRequest(MsixRequest** msixRequest)
     }
 
     AutoPtr<MsixRequest> localRequest;
-    RETURN_IF_FAILED(MsixRequest::Make(m_operationType, m_flags, m_packageFilePath, m_packageFullName, &localRequest));
+    RETURN_IF_FAILED(MsixRequest::Make(
+		m_operationType, 
+		m_flags, 
+		m_packageFilePath, 
+		m_packageFullName, 
+		m_validationOptions,
+		&localRequest)
+	);
 
     *msixRequest = localRequest.Detach();
     return S_OK;
