@@ -35,14 +35,16 @@ private:
 	ComPtr<IStream> m_logoStream;
 	std::wstring m_version = L"";
 	int m_numberOfFiles = 0;
+	HRESULT m_loadingPackageInfoCode = 0;
 
     UI() {}
     UI(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) { m_buttonClickedEvent = CreateEvent(NULL, FALSE, FALSE, NULL); }
+	HRESULT ParseInfoFromPackage();
 public:
-    HRESULT DisplayPackageInfo(HWND hWnd, RECT windowRect);
+    HRESULT DrawPackageInfo(HWND hWnd, RECT windowRect);
 	int CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title);
-	HRESULT LoadInfo();
-
+	void LoadInfo();
+	int GetNumberOfFiles() { return m_numberOfFiles; }
     void SetButtonClicked() { SetEvent(m_buttonClickedEvent); }
 };
 

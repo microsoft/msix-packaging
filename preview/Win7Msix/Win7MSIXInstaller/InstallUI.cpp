@@ -60,14 +60,25 @@ HRESULT GetStreamFromFile(IAppxPackageReader* package, LPCWCHAR name, IStream** 
 //
 // PURPOSE: This compiles the information displayed on the UI when the user selects an msix
 //
-// windowText: pointer to a wstring that the window message will be saved to
-HRESULT UI::DisplayPackageInfo(HWND hWnd, RECT windowRect)
-{
-    auto displayText = L"Install " + m_displayName + L"?";
-    auto messageText = L"Publisher: " + m_publisherCommonName + L"\nVersion: " + m_version;
-	CreateProgressBar(hWnd, windowRect, m_numberOfFiles);
-	ChangeText(hWnd, displayText, messageText, m_logoStream.Get());
+// hWnd: the HWND of the window to draw controls
+// windowRect: the size of the window
 
+HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
+{
+	if (SUCCEEDED(m_loadingPackageInfoCode))
+	{
+		auto displayText = L"Install " + m_displayName + L"?";
+		auto messageText = L"Publisher: " + m_publisherCommonName + L"\nVersion: " + m_version;
+		ChangeText(hWnd, displayText, messageText, m_logoStream.Get());
+		ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));
+	}
+	else
+	{
+		std::wstringstream wstringstream;
+		wstringstream << L"Failed getting package information with: 0x" << std::hex << m_loadingPackageInfoCode;
+		auto g_messageText = wstringstream.str();
+		ChangeText(hWnd, L"Loading Package failed", g_messageText);
+	}
     return S_OK;
 }
 
@@ -88,20 +99,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         LaunchButton(hWnd, windowRect);
         CreateCheckbox(hWnd, windowRect);
-        break;
+		break;
     case WM_PAINT:
     {
-      
-        HRESULT hr = ui->DisplayPackageInfo(hWnd, windowRect);
-        if (FAILED(hr))
-        {
-            std::wstring failure = L"Loading Package failed";
-            std::wstringstream wstringstream;
-            wstringstream << L"Failed getting package information with: 0x" << std::hex << hr;
-            auto g_messageText = wstringstream.str();
-            ChangeText(hWnd, failure, g_messageText);
-        }
-        ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));        
+		if (ui != NULL)
+		{
+			ui->DrawPackageInfo(hWnd, windowRect);
+		}
         break;
     }
     case WM_COMMAND:
@@ -114,8 +118,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                     DestroyWindow(g_buttonHWnd);
                     CreateCancelButton(hWnd, windowRect);
                     UpdateWindow(hWnd);
-                    ShowWindow(g_progressHWnd, SW_SHOW); //Show progress bar only when install is clicked
-                    ui->SetButtonClicked();
+					if (ui != NULL)
+					{
+						CreateProgressBar(hWnd, windowRect, ui->GetNumberOfFiles());
+					}
+					ShowWindow(g_progressHWnd, SW_SHOW); //Show progress bar only when install is clicked
+					if (ui != NULL)
+					{
+						ui->SetButtonClicked();
+					}
                 }
                 else
                 {
@@ -218,7 +229,12 @@ void StartUIThread(UI* ui)
 
 }
 
-HRESULT UI::LoadInfo()
+void UI::LoadInfo()
+{
+	m_loadingPackageInfoCode = ParseInfoFromPackage();
+}
+
+HRESULT UI::ParseInfoFromPackage() 
 {
 	PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
 
@@ -259,6 +275,7 @@ HRESULT UI::LoadInfo()
 		RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"Square150x150Logo", &logo));
 		RETURN_IF_FAILED(GetStreamFromFile(packageInfo->GetPackageReader(), logo.Get(), &m_logoStream));
 	}
+	return S_OK;
 }
 
 HRESULT UI::ShowUI()
@@ -317,7 +334,7 @@ HRESULT UI::Make(MsixRequest * msixRequest, UI ** instance)
 // PURPOSE: Creates the progress bar
 //
 // parentHWnd: the HWND of the window to add the progress bar to
-// parentRect: the dimmensions of the parent window
+// parentRect: the dimensions of the parent window
 // count: the number of objects to be iterated through in the progress bar
 BOOL CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
 {
