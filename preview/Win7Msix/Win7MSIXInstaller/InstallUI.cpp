@@ -17,10 +17,6 @@
 using namespace std;
 #include <GdiPlus.h>
 
-// Global variables
-static std::wstring g_messageText = L"";
-static std::wstring g_displayText = L"";
-
 Gdiplus::Image* g_image = nullptr;
 
 static const int g_width = 500;  // width of window
@@ -65,48 +61,12 @@ HRESULT GetStreamFromFile(IAppxPackageReader* package, LPCWCHAR name, IStream** 
 // PURPOSE: This compiles the information displayed on the UI when the user selects an msix
 //
 // windowText: pointer to a wstring that the window message will be saved to
-HRESULT UI::DisplayPackageInfo(HWND hWnd, RECT windowRect, std::wstring& displayText, std::wstring& messageText)
+HRESULT UI::DisplayPackageInfo(HWND hWnd, RECT windowRect)
 {
-    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
-    CreateProgressBar(hWnd, windowRect, packageInfo->GetNumberOfPayloadFiles());
-
-    ComPtr<IMsixDocumentElement> domElement;
-    RETURN_IF_FAILED(packageInfo->GetManifestReader()->QueryInterface(UuidOfImpl<IMsixDocumentElement>::iid, reinterpret_cast<void**>(&domElement)));
-
-    ComPtr<IMsixElement> element;
-    RETURN_IF_FAILED(domElement->GetDocumentElement(&element));
-
-    // Obtain the Display Name and Logo
-    ComPtr<IMsixElementEnumerator> veElementEnum;
-    RETURN_IF_FAILED(element->GetElements(
-        L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='VisualElements']",
-        &veElementEnum));
-
-    ComPtr<IStream> logoStream;
-    Text<WCHAR> displayName;
-    Text<WCHAR> logo;
-    std::wstring tmpLogoFile;
-
-    BOOL hc = FALSE;
-    RETURN_IF_FAILED(veElementEnum->GetHasCurrent(&hc));
-    if (hc)
-    {
-        ComPtr<IMsixElement> visualElementsElement;
-        RETURN_IF_FAILED(veElementEnum->GetCurrent(&visualElementsElement));
-        RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"DisplayName", &displayName));
-        RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"Square150x150Logo", &logo));
-        RETURN_IF_FAILED(GetStreamFromFile(packageInfo->GetPackageReader(), logo.Get(), &logoStream));
-    }
-
-    // Show only the CommonName of the publisher
-    auto wpublisher = std::wstring(packageInfo->GetPublisher());
-    auto publisherCommonName = wpublisher.substr(wpublisher.find_first_of(L"=") + 1,
-        wpublisher.find_first_of(L",") - wpublisher.find_first_of(L"=") - 1);
-
-    displayText = L"Install " + std::wstring(displayName.Get()) + L"?";
-
-    messageText = L"Publisher: " + publisherCommonName + L"\nVersion: " + ConvertVersionToString(packageInfo->GetVersion());
-    ChangeText(hWnd, displayText, messageText, logoStream.Get());
+    auto displayText = L"Install " + m_displayName + L"?";
+    auto messageText = L"Publisher: " + m_publisherCommonName + L"\nVersion: " + m_version;
+	CreateProgressBar(hWnd, windowRect, m_numberOfFiles);
+	ChangeText(hWnd, displayText, messageText, m_logoStream.Get());
 
     return S_OK;
 }
@@ -131,25 +91,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_PAINT:
     {
-        if (!g_displayInfo)
+      
+        HRESULT hr = ui->DisplayPackageInfo(hWnd, windowRect);
+        if (FAILED(hr))
         {
-            HRESULT hr = ui->DisplayPackageInfo(hWnd, windowRect, g_displayText, g_messageText);
-            if (FAILED(hr))
-            {
-                std::wstring failure = L"Loading Package failed";
-                std::wstringstream wstringstream;
-                wstringstream << L"Failed getting package information with: 0x" << std::hex << hr;
-                g_messageText = wstringstream.str();
-                ChangeText(hWnd, failure, g_messageText);
-            }
-            g_displayInfo = true;
+            std::wstring failure = L"Loading Package failed";
+            std::wstringstream wstringstream;
+            wstringstream << L"Failed getting package information with: 0x" << std::hex << hr;
+            auto g_messageText = wstringstream.str();
+            ChangeText(hWnd, failure, g_messageText);
         }
-        if (g_displayCompleteText)
-        {
-            ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));
-            g_displayCompleteText = false;
-        }
-
+        ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));        
         break;
     }
     case WM_COMMAND:
@@ -261,9 +213,52 @@ void StartUIThread(UI* ui)
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
     Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+	ui->CreateInitWindow(hInstance, SW_SHOWNORMAL, windowClass, title);
+	Gdiplus::GdiplusShutdown(gdiplusToken);
 
-    ui->CreateInitWindow(hInstance, SW_SHOWNORMAL, windowClass, title);
-    Gdiplus::GdiplusShutdown(gdiplusToken);
+}
+
+HRESULT UI::LoadInfo()
+{
+	PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
+
+	ComPtr<IMsixDocumentElement> domElement;
+	RETURN_IF_FAILED(packageInfo->GetManifestReader()->QueryInterface(UuidOfImpl<IMsixDocumentElement>::iid, reinterpret_cast<void**>(&domElement)));
+
+	ComPtr<IMsixElement> element;
+	RETURN_IF_FAILED(domElement->GetDocumentElement(&element));
+
+	// Obtain the Display Name and Logo
+	ComPtr<IMsixElementEnumerator> veElementEnum;
+	RETURN_IF_FAILED(element->GetElements(
+		L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='VisualElements']",
+		&veElementEnum));
+
+	// Obtain publisher name
+	auto wpublisher = std::wstring(packageInfo->GetPublisher());
+	m_publisherCommonName = wpublisher.substr(wpublisher.find_first_of(L"=") + 1,
+		wpublisher.find_first_of(L",") - wpublisher.find_first_of(L"=") - 1);
+
+	// Obtain version number
+	ConvertVersionToString(packageInfo->GetVersion());
+
+	//Obtain the number of files
+	m_numberOfFiles = packageInfo->GetNumberOfPayloadFiles();
+
+	// Obtain logo
+	BOOL hc = FALSE;
+	RETURN_IF_FAILED(veElementEnum->GetHasCurrent(&hc));
+	if (hc)
+	{
+		ComPtr<IMsixElement> visualElementsElement;
+		Text<WCHAR> displayNameValue;
+		RETURN_IF_FAILED(veElementEnum->GetCurrent(&visualElementsElement));
+		RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"DisplayName", &displayNameValue));
+		m_displayName = std::wstring(displayNameValue.Get());
+		Text<WCHAR> logo;
+		RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"Square150x150Logo", &logo));
+		RETURN_IF_FAILED(GetStreamFromFile(packageInfo->GetPackageReader(), logo.Get(), &m_logoStream));
+	}
 }
 
 HRESULT UI::ShowUI()
@@ -285,6 +280,7 @@ HRESULT CreateAndShowUI::ExecuteForAddRequest()
 
     AutoPtr<UI> ui;
     RETURN_IF_FAILED(UI::Make(m_msixRequest, &ui));
+	ui->LoadInfo();
 
     m_msixRequest->SetUI(ui.Detach());
     RETURN_IF_FAILED(m_msixRequest->GetUI()->ShowUI());
