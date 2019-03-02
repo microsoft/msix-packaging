@@ -61,7 +61,6 @@ private:
 
     CreateAndShowUI() {}
     CreateAndShowUI(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
-
 };
 
 

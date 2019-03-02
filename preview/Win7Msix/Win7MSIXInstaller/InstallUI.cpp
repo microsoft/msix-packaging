@@ -17,8 +17,6 @@
 using namespace std;
 #include <GdiPlus.h>
 
-Gdiplus::Image* g_image = nullptr;
-
 static const int g_width = 500;  // width of window
 static const int g_heigth = 400; // height of window
 
@@ -477,17 +475,15 @@ BOOL ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring messageT
     layoutRect.Y += 40;
     graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &blackBrush);
 
-    if (logoStream != nullptr)
-    {
-        // We shouldn't fail if the image can't be loaded, just don't show it.
-        g_image = Gdiplus::Image::FromStream(logoStream, FALSE);
-            
-    }
-        
-    if (g_image != nullptr)
-    {
-        Gdiplus::Status status = graphics.DrawImage(g_image, g_width - 200, 25);
-    }
+	if (logoStream != nullptr)
+	{
+		// We shouldn't fail if the image can't be loaded, just don't show it.
+		auto g_image = Gdiplus::Image::FromStream(logoStream, FALSE);
+		if (g_image != nullptr)
+		{
+			Gdiplus::Status status = graphics.DrawImage(g_image, g_width - 200, 25);
+		}
+	}
 
     EndPaint(parentHWnd, &paint);
 
