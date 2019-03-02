@@ -210,7 +210,7 @@ if(WIN32)
     string(REPLACE "/GR" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
     set_target_properties(${PROJECT_NAME} PROPERTIES
         COMPILE_FLAGS "/source-charset:utf-8 /Gw /GL /GR-"
-        VS_WINRT_COMPONENT TRUE)
+        )
     # Using /DELAYLOAD as linker option will use a helper funtion provided by
     # Visual C++ that will load the dll at runtime by calling LoadLibrary and GetProcAddress.
     # This dlls are NOT supposed to be loaded ever on Win7. See Exceptions.cpp
