@@ -6,12 +6,20 @@
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 
+// Child window identifiers
+#define IDC_LAUNCHCHECKBOX 1
+#define IDC_INSTALLBUTTON 2
+#define IDC_CANCELBUTTON 3
+
 // Global variables
 static HWND g_buttonHWnd = NULL;
+static HWND g_checkboxHWnd = NULL;
 static HWND g_progressHWnd = NULL;
+static HWND g_CancelbuttonHWnd = NULL;
 static bool g_installed = false;
 static bool g_displayInfo = false;
 static bool g_displayCompleteText = false;
+static bool g_launchCheckBoxState = true; // launch checkbox is checked by default
 
 class UI
 {
@@ -68,6 +76,22 @@ BOOL CreateProgressBar(HWND parentHWnd, RECT parentRect, int count);
 // parentHWnd: the HWND of the window to add the button to
 // parentRect: the specs of the parent window
 BOOL LaunchButton(HWND parentHWnd, RECT parentRect);
+
+// FUNCTION: CreateCheckbox(HWND parentHWnd, RECT parentRect)
+//
+// PURPOSE: Create the launch checkbox on the bottom left
+// 
+// parentHWnd: the HWND of the window to add the checkbox to
+// parentRect: the specs of the parent window
+BOOL CreateCheckbox(HWND parentHWnd, RECT parentRect);
+
+// FUNCTION: CreateCancelButton(HWND parentHWnd, RECT parentRect)
+//
+// PURPOSE: Create the launch checkbox on the bottom left
+// 
+// parentHWnd: the HWND of the window to add the checkbox to
+// parentRect: the specs of the parent window
+BOOL CreateCancelButton(HWND parentHWnd, RECT parentRect);
 
 // FUNCTION: ChangeButtonText(LPARAM newMessage)
 //
