@@ -3,16 +3,16 @@ trigger:
 - master
 
 # Branches that trigger builds on PR
-# TODO - enable
-#pr:
-#- master
+pr:
+- master
+
 jobs:
 - job: Windows
   pool:
     name: Hosted VS2017
     demands: Cmd
   strategy:
-    # TODO: add validation parser and xerces debug if needed.
+    # TODO: add debug for validation parser and xerces if needed.
     matrix:
       debug_32:
         _arguments: x86 -d
@@ -48,6 +48,7 @@ jobs:
       failOnStandardError: true
     condition: always()
 
+  # Note: We skip BVTs in Debug mode because of assert()
   - task: PowerShell@2
     displayName: Windows BVTs
     inputs:
