@@ -17,35 +17,27 @@ jobs:
       debug_32:
         _arguments: x86 -d
         _artifact: WIN32chk
-        _configuration: debug
       debug_64:
         _arguments: x64 -d
         _artifact: WIN32-x64chk
-        _configuration: debug
       release_32:
         _arguments: x86
         _artifact: WIN32
-        _configuration: release
       release_64:
         _arguments: x64
         _artifact: WIN32-x64
-        _configuration: release
       release_32_validation_parser:
         _arguments: x86 --validation-parser
         _artifact: WIN32ValidationParser
-        _configuration: release
       release_64_validation_parser:
         _arguments: x64 --validation-parser
         _artifact: WIN32-x64ValidationParser
-        _configuration: release
       release_32_xerces:
         _arguments: x86 --parser-xerces
         _artifact: WIN32Xerces
-        _configuration: release
       release_64_xerces:
         _arguments: x64 --parser-xerces
         _artifact: WIN32-x64Xerces
-        _configuration: release
 
   steps:
   - task: BatchScript@1
@@ -63,7 +55,7 @@ jobs:
       filePath: ./test\Win32\Win32.ps1
       failOnStderr: true
       workingDirectory: test\Win32
-    condition: and(succeeded(), eq($(_configuration), 'release'))
+    condition: and(succeeded(), contains(variables[Agent.JobName], 'release'))
 
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
