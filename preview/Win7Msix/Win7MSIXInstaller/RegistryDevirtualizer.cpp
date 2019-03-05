@@ -354,8 +354,6 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
     }
 
     PTOKEN_PRIVILEGES pTokenPrivileges = NULL;
-    TOKEN_PRIVILEGES oldTokenPrivileges{};
-    DWORD oldTokenPrivilegesSize = sizeof(TOKEN_PRIVILEGES);
 
     // be sure we allocate enought space for 2 LUID_AND_ATTRIBUTES
     // by default TOKEN_PRIVILEGES allocates space for only 1 LUID_AND_ATTRIBUTES.
@@ -366,9 +364,9 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
     pTokenPrivileges->Privileges[1].Luid = seBackupLuid;
     pTokenPrivileges->Privileges[1].Attributes = SE_PRIVILEGE_ENABLED;
 
-    auto success = AdjustTokenPrivileges(userToken, FALSE, pTokenPrivileges, sizeof(TOKEN_PRIVILEGES), &oldTokenPrivileges, &oldTokenPrivilegesSize);
+    auto success = AdjustTokenPrivileges(userToken, FALSE, pTokenPrivileges, sizeof(TOKEN_PRIVILEGES), NULL, NULL);
     LocalFree(pTokenPrivileges);
-    pTokenPrivileges = NULL;
+	pTokenPrivileges = NULL;
     if (!success)
     {
         RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
