@@ -11,6 +11,7 @@
 ## Overview
 The MSIX SDK project includes cross platform API support for unpacking of .msix/.appx packages
 
+|                                      |                                 |
 |--------------------------------------|---------------------------------|
 | **msix**      | A shared library (DLL on Win32, dylib on MacOS, SO on Linux and Android) that exports a subset of the functionality contained within appxpackaging.dll on Windows. See [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) for additional details.<br />On all platforms instead of CoCreating IAppxFactory, a C-style export: CoCreateAppxFactory is provided. Similarly, the CoCreateAppxBundleFactory export is equivalent as CoCreating IAppxBundleFactory.<br /><br /> The 'UnpackPackage' and 'UnpackBundle' exports that provide a simplified unpackage implementation. See the [samples directory](sample) for usage of the SDK.|
 | **makemsix**  | A command line wrapper over the UnpackPackage and UnpackBundle implementations.  This tool exists primarily as a means of validating the implementation of the MSIX SDK internal routines and is compiled for Win32, MacOS, and Linux platforms.|
