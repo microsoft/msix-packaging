@@ -6,13 +6,11 @@ trigger:
 # TODO - enable
 #pr:
 #- master
-
-pool:
-  vmImage: Hosted VS2017
-  demands: Cmd
-
 jobs:
 - job: Windows
+  pool:
+    vmImage: Hosted VS2017
+    demands: Cmd
   strategy:
     maxParallel: 4
     matrix:
@@ -63,7 +61,6 @@ jobs:
       Package.nuspec
       build\**
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact $(_artifact)'
     inputs:
