@@ -13,6 +13,11 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+# Support CMake 3.12. See https://cmake.org/cmake/help/latest/policy/CMP0077.html
+if(POLICY CMP0077)
+    cmake_policy(SET CMP0077 NEW)
+endif()
+
 # Set build options
 option(WIN32 "Build for Win32"   OFF)
 option(MACOS "Build for MacOS"   OFF)

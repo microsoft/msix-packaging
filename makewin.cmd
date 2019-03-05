@@ -75,7 +75,7 @@ if exist CMakeCache.txt del CMakeCache.txt
 
 echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %msvc% %bundle% -G"NMake Makefiles" ..
 cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %msvc% %bundle% -G"NMake Makefiles" ..
-nmake
+nmake /NOLOGO
 
 goto Exit
 :USAGE
