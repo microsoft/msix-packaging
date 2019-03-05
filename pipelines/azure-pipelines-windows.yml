@@ -63,7 +63,7 @@ jobs:
       filePath: ./test\Win32\Win32.ps1
       failOnStderr: true
       workingDirectory: test\Win32
-    condition: and(succeeded(), eq($(_configuration, 'release'))
+    condition: and(succeeded(), eq($(_configuration), 'release'))
 
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
