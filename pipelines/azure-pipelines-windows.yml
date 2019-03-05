@@ -51,7 +51,7 @@ jobs:
     displayName: Windows BVTs
     inputs:
       targetType: filePath
-      filePath: './test\Win32\Win32.ps1'
+      filePath: 'test\Win32\Win32.ps1'
       failOnStderr: true
       workingDirectory: 'test\Win32'
     condition: succeeded()
