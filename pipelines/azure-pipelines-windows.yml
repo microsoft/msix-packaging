@@ -12,6 +12,7 @@ jobs:
     name: Hosted VS2017
     demands: Cmd
   strategy:
+    # TODO: add validation parser and xerces debug if needed.
     matrix:
       debug_32:
         _arguments: x86 -d
@@ -46,7 +47,14 @@ jobs:
       failOnStandardError: true
     condition: always()
 
-  # TODO - add automated tests
+  - task: PowerShell@1
+    displayName: Windows BVTs
+    inputs:
+      targetType: filePath
+      filePath: './test\Win32\Win32.ps1'
+      failOnStderr: true
+      workingDirectory: 'test\Win32'
+    condition: succeeded()
 
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
@@ -63,6 +71,7 @@ jobs:
         build\**
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
     condition: succeeded()
+
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact $(_artifact)'
     inputs:
