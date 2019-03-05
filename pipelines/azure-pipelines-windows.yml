@@ -47,7 +47,7 @@ jobs:
       failOnStandardError: true
     condition: always()
 
-  - task: PowerShell@1
+  - task: PowerShell@2
     displayName: Windows BVTs
     inputs:
       targetType: filePath
