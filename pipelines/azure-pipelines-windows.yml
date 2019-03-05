@@ -39,10 +39,12 @@ jobs:
         _artifact: WIN32-x64Xerces
   steps:
   - task: BatchScript@1
-    displayName: Build
+    displayName: Build $(_artifact)
     inputs:
       filename: makewin.cmd
       arguments: $(_arguments)
+      failOnStandardError: true
+    condition: always()
 
   # TODO - add automated tests
 
@@ -60,7 +62,9 @@ jobs:
         Package.nuspec
         build\**
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    condition: succeeded()
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact $(_artifact)'
     inputs:
       ArtifactName: $(_artifact)
+    condition: succeeded()
