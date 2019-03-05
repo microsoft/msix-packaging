@@ -12,7 +12,6 @@ jobs:
     name: Hosted VS2017
     demands: Cmd
   strategy:
-    maxParallel: 4
     matrix:
       debug_32:
         _arguments: x86 -d
