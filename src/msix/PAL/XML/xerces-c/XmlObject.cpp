@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
-error
+
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "IXml.hpp"
