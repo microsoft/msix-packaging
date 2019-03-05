@@ -52,14 +52,14 @@ jobs:
     inputs:
       SourceFolder: .vs
       Contents: |
-      src\msix\AppxPackaging.hpp
-      src\msix\MSIXWindows.hpp
-      src\msix\MsixErrors.hpp
-      bin\makemsix.*
-      bin\*.dll
-      lib\msix.lib
-      Package.nuspec
-      build\**
+        src\msix\AppxPackaging.hpp
+        src\msix\MSIXWindows.hpp
+        src\msix\MsixErrors.hpp
+        bin\makemsix.*
+        bin\*.dll
+        lib\msix.lib
+        Package.nuspec
+        build\**
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact $(_artifact)'
