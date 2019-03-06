@@ -11,7 +11,7 @@ jobs:
   pool:
     name: Hosted macOS
   strategy:
-    # TODO: add debug for validation parser and xerces if needed.
+    # TODO: add builds using xerces if needed.
     matrix:
       debug:
         _arguments: -b Debug
