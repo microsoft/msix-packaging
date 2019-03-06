@@ -47,3 +47,7 @@ Uninstallation -
 ```
 Win7MSIXInstaller.exe -RemovePackage notepadplus_0.0.0.1_x64__8wekyb3d8bbwe
 ```
+
+## Build Status
+[![Build status](https://microsoft.visualstudio.com/xPlatAppx/_apis/build/status/CIGitHub-for-Win7MsixInstaller)](https://microsoft.visualstudio.com/xPlatAppx/_build/latest?definitionId=36972)
+If succeeded, the MSI can be downloaded at http://win7msixinstaller.azurewebsites.net/Win7MsixInstallerSetup.msi
