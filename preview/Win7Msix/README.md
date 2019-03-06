@@ -49,5 +49,5 @@ Win7MSIXInstaller.exe -RemovePackage notepadplus_0.0.0.1_x64__8wekyb3d8bbwe
 ```
 
 ## Build Status
-[![Build status](https://microsoft.visualstudio.com/xPlatAppx/_apis/build/status/CIGitHub-for-Win7MsixInstaller)](https://microsoft.visualstudio.com/xPlatAppx/_build/latest?definitionId=36972)
+[![Build status](https://microsoft.visualstudio.com/xPlatAppx/_apis/build/status/CIGitHub-for-Win7MsixInstaller)](https://github.com/Microsoft/msix-packaging/releases/tag/Win7MsixInstaller-preview)
 If succeeded, the MSI can be downloaded from the release tab.
