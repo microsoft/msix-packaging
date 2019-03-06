@@ -9,7 +9,7 @@ pr:
 jobs:
 - job: macOS
   pool:
-    name: macOS
+    name: Hosted macOS
   strategy:
     # TODO: add debug for validation parser and xerces if needed.
     matrix:
