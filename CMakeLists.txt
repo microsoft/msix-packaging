@@ -4,6 +4,12 @@
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+# For Linux, make sure we use llvm
+if(LINUX)
+    set(CMAKE_CXX_COMPILER clang++)
+    set(CMAKE_C_COMPILER clang)
+endif()
+
 message(STATUS "--------------------------------")
 message(STATUS "MSIX Packaging SDK")
 message(STATUS "--------------------------------")
