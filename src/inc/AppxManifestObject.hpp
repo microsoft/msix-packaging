@@ -71,7 +71,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
     protected:
-        IMsixFactory* m_factory;
+        ComPtr<IMsixFactory> m_factory;
         std::string m_name;
         std::uint64_t m_minVersion;
         std::uint64_t m_maxVersion;
@@ -107,7 +107,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
     protected:
-        IMsixFactory* m_factory;
+        ComPtr<IMsixFactory> m_factory;
         std::string m_aumid;
     };
 
@@ -160,7 +160,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
         protected:
-            IMsixFactory* m_factory;
+            ComPtr<IMsixFactory> m_factory;
             std::map<std::string, std::string> m_stringValues;
             std::map<std::string, bool> m_boolValues;
     };
@@ -209,7 +209,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
     protected:
-        IMsixFactory* m_factory;
+        ComPtr<IMsixFactory> m_factory;
         UINT64 m_minVersion;
         std::string m_publisher;
         std::string m_name;
@@ -255,7 +255,7 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetDocumentElement(IMsixElement** documentElement) noexcept override;
 
     protected:
-        IMsixFactory* m_factory;
+        ComPtr<IMsixFactory> m_factory;
         ComPtr<IStream> m_stream;
         ComPtr<IAppxManifestPackageId> m_packageId;
         MSIX_PLATFORMS m_platform = MSIX_PLATFORM_NONE;

@@ -2,9 +2,10 @@
 
 #include "PackageInfo.hpp"
 #include "GeneralUtil.hpp"
+#include "MsixRequest.hpp"
 #include <TraceLoggingProvider.h>
 
-HRESULT PackageInfo::SetExecutableAndAppIdFromManifestElement(IMsixElement* element)
+HRESULT PackageInfo::SetExecutableAndAppIdFromManifestElement(IMsixElement* element, PCWSTR packageFullName, MsixRequest * msixRequest)
 {
     BOOL hc = FALSE;
     ComPtr<IMsixElementEnumerator> applicationElementEnum;
@@ -25,10 +26,11 @@ HRESULT PackageInfo::SetExecutableAndAppIdFromManifestElement(IMsixElement* elem
     RETURN_IF_FAILED(applicationElementEnum->GetCurrent(&applicationElement));
 
     Text<wchar_t> executablePath;
-    Text<wchar_t> applicationId;
     RETURN_IF_FAILED(applicationElement->GetAttributeValue(L"Executable", &executablePath));
+    m_executableFilePath = msixRequest->GetFilePathMappings()->GetExecutablePath(executablePath.Get(), packageFullName);
+
+    Text<wchar_t> applicationId;
     RETURN_IF_FAILED(applicationElement->GetAttributeValue(L"Id", &applicationId));
-    m_executableFilePath = executablePath.Get();
     m_applicationId = applicationId.Get();
 
     return S_OK;
@@ -60,7 +62,7 @@ HRESULT PackageInfo::SetDisplayNameFromManifestElement(IMsixElement* element)
     return S_OK;
 }
 
-HRESULT PackageInfo::MakeFromManifestReader(IAppxManifestReader * manifestReader, std::wstring msix7DirectoryPath, PackageInfo ** packageInfo)
+HRESULT PackageInfo::MakeFromManifestReader(IAppxManifestReader * manifestReader, MsixRequest * msixRequest, PackageInfo ** packageInfo)
 {
     std::unique_ptr<PackageInfo> instance(new PackageInfo());
     if (instance == nullptr)
@@ -68,14 +70,14 @@ HRESULT PackageInfo::MakeFromManifestReader(IAppxManifestReader * manifestReader
         return E_OUTOFMEMORY;
     }
 
-    RETURN_IF_FAILED(instance->SetManifestReader(manifestReader, msix7DirectoryPath));
+    RETURN_IF_FAILED(instance->SetManifestReader(manifestReader, msixRequest));
 
     *packageInfo = instance.release();
 
     return S_OK;
 }
 
-HRESULT PackageInfo::MakeFromPackageReader(IAppxPackageReader * packageReader, std::wstring msix7DirectoryPath, PackageInfo ** packageInfo)
+HRESULT PackageInfo::MakeFromPackageReader(IAppxPackageReader * packageReader, MsixRequest * msixRequest, PackageInfo ** packageInfo)
 {
     std::unique_ptr<PackageInfo> instance(new PackageInfo());
     if (instance == nullptr)
@@ -87,7 +89,7 @@ HRESULT PackageInfo::MakeFromPackageReader(IAppxPackageReader * packageReader, s
 
     ComPtr<IAppxManifestReader> manifestReader;
     RETURN_IF_FAILED(packageReader->GetManifest(&manifestReader));
-    RETURN_IF_FAILED(instance->SetManifestReader(manifestReader.Get(), msix7DirectoryPath));
+    RETURN_IF_FAILED(instance->SetManifestReader(manifestReader.Get(), msixRequest));
 
     // Get the number of payload files
     DWORD numberOfPayloadFiles = 0;
@@ -108,9 +110,11 @@ HRESULT PackageInfo::MakeFromPackageReader(IAppxPackageReader * packageReader, s
     return S_OK;
 }
 
-HRESULT PackageInfo::SetManifestReader(IAppxManifestReader * manifestReader, std::wstring msix7DirectoryPath)
+HRESULT PackageInfo::SetManifestReader(IAppxManifestReader * manifestReader, MsixRequest * msixRequest)
 {
     m_manifestReader = manifestReader;
+
+    std::wstring msix7DirectoryPath = msixRequest->GetFilePathMappings()->GetMsix7Directory();
 
     // Also fill other fields that come from the manifest reader
     ComPtr<IAppxManifestPackageId> manifestId;
@@ -129,7 +133,7 @@ HRESULT PackageInfo::SetManifestReader(IAppxManifestReader * manifestReader, std
     ComPtr<IMsixElement> element;
     RETURN_IF_FAILED(domElement->GetDocumentElement(&element));
 
-    RETURN_IF_FAILED(SetExecutableAndAppIdFromManifestElement(element.Get()));
+    RETURN_IF_FAILED(SetExecutableAndAppIdFromManifestElement(element.Get(), packageFullName.Get(), msixRequest));
 
     RETURN_IF_FAILED(SetDisplayNameFromManifestElement(element.Get()));
 
