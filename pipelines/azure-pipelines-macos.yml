@@ -1,0 +1,66 @@
+# Branches that trigger a build on commit
+trigger:
+- master
+
+# Branches that trigger builds on PR
+pr:
+- master
+
+jobs:
+- job: macOS
+  pool:
+    name: Hosted macOS
+  strategy:
+    # TODO: add builds using xerces if needed.
+    matrix:
+      debug:
+        _arguments: -b Debug
+        _artifact: MACOSchk
+      release:
+        _arguments: -b MinSizeRel
+        _artifact: MACOS
+  steps:
+  - task: Bash@3
+    displayName: Build
+    inputs:
+      targetType: filePath
+      filePath: ./makemac.sh
+      arguments: $(_arguments)
+      # failOnStderr: true Turn on when https://github.com/Microsoft/azure-pipelines-image-generation/issues/758 is resolved.
+    condition: succeeded()
+
+    # Because of the azure pipeline issue we won't fail compiling the code, but 
+    # we will fail doing the test because there are no binaries
+    # Note: We skip BVTs in Debug mode because of assert()
+  - task: Bash@3
+    displayName: 'Bash Script'
+    inputs:
+      targetType: filePath
+      filePath: './test/MacOS-Linux/MacOS-Linux-Etc.sh'
+      arguments: Apple
+      workingDirectory: './test/MacOS-Linux'
+      failOnStderr: true
+    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'))
+
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+    inputs:
+      SourceFolder: .vs
+      Contents: |
+        bin/makemsix
+        bin/makemsix.dSYM/**
+        lib/libmsix*
+        lib/libmsix*/**
+        src/msix/AppxPackaging.hpp
+        src/msix/MSIXWindows.hpp
+        src/msix/MsixErrors.hpp
+        Package.nuspec
+        build/**
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    condition: succeeded()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact $(_artifact)'
+    inputs:
+      ArtifactName: $(_artifact)
+    condition: succeeded()
