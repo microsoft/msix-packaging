@@ -1,4 +1,5 @@
 @echo off
+SETLOCAL
 
 if "%~1" == "" goto USAGE
 if /I "%~1" == "--help" goto USAGE
@@ -7,12 +8,14 @@ if /I "%~1" == "/?" goto USAGE
 
 :: Set up MSVC environment
 :: Kudos to https://gist.github.com/AndrewPardoe/689a3b969670787d5dba538bb0a48a1e
+
 pushd "%~dp0"
 pushd %ProgramFiles(x86)%\"Microsoft Visual Studio"\Installer
 for /f "usebackq tokens=*" %%i in (`vswhere -latest -prerelease -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
   set VCINSTALLDIR=%%i\VC
 )
 popd
+
 if exist %VCINSTALLDIR%\Auxiliary\Build\vcvarsall.bat (
     if /I "%~1" == "x86" (
         call "%VCINSTALLDIR%\Auxiliary\Build\vcvarsall.bat" %1

@@ -6,7 +6,10 @@ HRESULT RegistryKey::Open(
     _In_ const REGSAM sam)
 {
     Close();
-    m_path = subkey;
+    if (subkey != nullptr)
+    {
+        m_path = subkey;
+    }
     return HRESULT_FROM_WIN32(RegOpenKeyExW(hkey, subkey, 0, sam, AddressOfHkey()));
 }
 
@@ -82,7 +85,7 @@ HRESULT RegistryKey::SetValue(
     return HRESULT_FROM_WIN32(RegSetValueExW(this->m_hkey, name, 0, type, static_cast<const BYTE*>(value), valueSize));
 }
 
-HRESULT RegistryKey::SetStringValue(PCWSTR name, std::wstring& value)
+HRESULT RegistryKey::SetStringValue(PCWSTR name, const std::wstring& value)
 {
     return SetValue(name, value.c_str(), static_cast<DWORD>(value.size() * sizeof(WCHAR)), REG_SZ);
 }
@@ -102,3 +105,7 @@ HRESULT RegistryKey::DeleteSubKey(PCWSTR subkey)
     return HRESULT_FROM_WIN32(RegDeleteKeyW(this->m_hkey, subkey));
 }
 
+HRESULT RegistryKey::DeleteTree(PCWSTR subkey)
+{
+    return HRESULT_FROM_WIN32(RegDeleteTreeW(this->m_hkey, subkey));
+}

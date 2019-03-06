@@ -89,7 +89,7 @@ namespace MSIX {
             const auto& version        = identityNode->GetAttributeValue(XmlAttributeName::Version);
             const auto& resourceId     = identityNode->GetAttributeValue(XmlAttributeName::ResourceId);
             ThrowErrorIf(Error::AppxManifestSemanticError, (publisher.empty()), "Invalid Identity element");
-            self->m_packageId = ComPtr<IAppxManifestPackageId>::Make<AppxManifestPackageId>(self->m_factory, name, version, resourceId, architecture, publisher);
+            self->m_packageId = ComPtr<IAppxManifestPackageId>::Make<AppxManifestPackageId>(self->m_factory.Get(), name, version, resourceId, architecture, publisher);
             return true;
         });
         m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Identity, visitor);
@@ -103,7 +103,7 @@ namespace MSIX {
             auto name = tdfNode->GetAttributeValue(XmlAttributeName::Name);
             auto min = tdfNode->GetAttributeValue(XmlAttributeName::MinVersion);
             auto max = tdfNode->GetAttributeValue(XmlAttributeName::Dependencies_Tdf_MaxVersionTested);
-            auto tdf = ComPtr<IAppxManifestTargetDeviceFamily>::Make<AppxManifestTargetDeviceFamily>(self->m_factory, name, min, max);
+            auto tdf = ComPtr<IAppxManifestTargetDeviceFamily>::Make<AppxManifestTargetDeviceFamily>(self->m_factory.Get(), name, min, max);
             self->m_tdf.push_back(std::move(tdf));
             std::transform(name.begin(), name.end(), name.begin(), ::tolower);
             const auto& tdfEntry = std::find(std::begin(targetDeviceFamilyList), std::end(targetDeviceFamilyList), name.c_str());
@@ -225,7 +225,7 @@ namespace MSIX {
         });
         m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Properties, visitorProperties);
         *packageProperties = ComPtr<IAppxManifestProperties>::Make<AppxManifestProperties>(
-            m_factory, std::move(stringValues), std::move(boolValues)).Detach();
+            m_factory.Get(), std::move(stringValues), std::move(boolValues)).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
@@ -248,7 +248,7 @@ namespace MSIX {
             auto name = dependencyNode->GetAttributeValue(XmlAttributeName::Name);
             auto publisher = dependencyNode->GetAttributeValue(XmlAttributeName::Publisher);
             // TODO: get MaxMajorVersionTested if needed
-            auto dependency = ComPtr<IAppxManifestPackageDependency>::Make<AppxManifestPackageDependency>(context->self->m_factory, min, name, publisher);
+            auto dependency = ComPtr<IAppxManifestPackageDependency>::Make<AppxManifestPackageDependency>(context->self->m_factory.Get(), min, name, publisher);
             context->packageDependencies->push_back(std::move(dependency));
             return true;
         });
@@ -293,7 +293,7 @@ namespace MSIX {
             return true;
         });
         m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Resources_Resource, visitorResource);
-        *resources = ComPtr<IAppxManifestResourcesEnumerator>::Make<EnumeratorString<IAppxManifestResourcesEnumerator, IAppxManifestResourcesEnumeratorUtf8>>(m_factory, appxResources).Detach();
+        *resources = ComPtr<IAppxManifestResourcesEnumerator>::Make<EnumeratorString<IAppxManifestResourcesEnumerator, IAppxManifestResourcesEnumeratorUtf8>>(m_factory.Get(), appxResources).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
@@ -327,7 +327,7 @@ namespace MSIX {
             auto appId = applicationNode->GetAttributeValue(XmlAttributeName::Package_Applications_Application_Id);
             auto packageIdInternal = context->self->m_packageId.As<IAppxManifestPackageIdInternal>();
             auto aumid = packageIdInternal->GetPackageFamilyName() + "!" + appId;
-            auto application = ComPtr<IAppxManifestApplication>::Make<AppxManifestApplication>(context->self->m_factory, aumid);
+            auto application = ComPtr<IAppxManifestApplication>::Make<AppxManifestApplication>(context->self->m_factory.Get(), aumid);
             // TODO: get other attributes from the Application element and store them a map in AppxManifestApplication
             // or make the AppxManifestApplication have a IXmlElement member to get attributes at will.
             context->apps->push_back(std::move(application));

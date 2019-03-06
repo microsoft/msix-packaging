@@ -17,6 +17,11 @@ public:
     /// @param remove - if true, remove all the keys and values; if false, add all the keys and values
     HRESULT Run(_In_ bool remove);
 
+    /// Determines whether Registry.dat contains a FTA (file type association). Does not perform any modifications to the system.
+    /// 
+    /// @param ftaName - the name of the FTA extension (i.e. .mp4)
+    HRESULT HasFTA(_In_ std::wstring ftaName, _Out_ bool& hasFTA);
+
     static HRESULT Create(_In_ std::wstring hiveFileName, _In_ MsixRequest* msixRequest, _Out_ RegistryDevirtualizer** instance);
 
     /// Creates a GUID string as a temporary registry key's name
