@@ -10,7 +10,8 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
     for (auto& p : std::experimental::filesystem::directory_iterator(m_msixRequest->GetFilePathMappings()->GetMsix7Directory()))
     {
         std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
-        if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName))
+        if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
+            && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
         {
             TraceLoggingWrite(g_MsixTraceLoggingProvider,
                 "Found an update to an existing package, removing package",
@@ -29,7 +30,7 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
 HRESULT ProcessPotentialUpdate::RemovePackage(std::wstring packageFullName)
 {
     AutoPtr<MsixRequest> localRequest;
-    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, Flags::NoFlags, std::wstring(), packageFullName, &localRequest));
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, Flags::NoFlags, std::wstring(), packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &localRequest));
 
     const HRESULT hrProcessRequest = localRequest->ProcessRequest();
     if (FAILED(hrProcessRequest))

@@ -247,6 +247,49 @@ else
 	writeFail
 }
 
+ShowTestHeader("Update package removes old package")
+$output = & $executable -AddPackage VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe-missingsomeftas.msix -quietUx
+$vlc1msixpath = "C:\program files\msix7apps\VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe"
+if ($output -eq $null)
+{
+	$vlc1Exists = (test-path $vlc1msixpath)
+	if ($vlc1Exists)
+	{
+		$output = & $executable -AddPackage VLC-3.0.6_2.0.0.0_x64__8wekyb3d8bbwe-withprotocol.msix -quietUx
+		if ($output -eq $null)
+		{
+			$vlc2msixpath = "C:\program files\msix7apps\VLC-3.0.6_2.0.0.0_x64__8wekyb3d8bbwe"
+			$vlc1Exists = (test-path $vlc1msixpath)
+			$vlc2Exists = (test-path $vlc2msixpath)
+			if ($vlc2Exists -and -not $vlc1Exists)
+			{
+				writeSuccess
+			}
+			else
+			{
+				write-host ("Expected paths not created: $vlc1msixpath exists = $vlc1Exists, $vlc2msixpath exists = $vlc2Exists")
+				writeFail
+			}
+		}
+		else
+		{
+			$output
+			writeFail
+		}
+	}
+	else
+	{
+		write-host ("Expected paths not created: $vlc1msixpath exists = $vlc1Exists")
+		writeFail
+	}
+}
+else
+{
+	$output
+	writeFail
+}
+
+
 
 & .\msixtrace.ps1 -stop
 
