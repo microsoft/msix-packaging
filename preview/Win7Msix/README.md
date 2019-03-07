@@ -26,8 +26,6 @@ Open the msix-packaging/preview/Win7Msix/Win7MSIXInstaller.sln file in Visual St
 Once the Win7MSIXInstaller project has been built, the Win7MSIXInstallerSetup project can be built.
 The Win7MSIXInstallerSetup Project creates a .msi package to deploy the msix.dll and Win7MsixInstaller.exe onto a Win 7 machine. The MSI Setup Project will register the specific file type association for the .msix and .appx extensions such that the installer is initiated directly from double-clicking a MSIX or APPX package.
 
-For your convenience, already-built .msi package is placed in the msix-packaging/preview/Win7Msix/Binaries directory
-
 ## Using the Command Line
 The executables can also be manually deployed to a Windows 7 machine without using the MSI setup project. Place the msix.dll and Win7MsixInstaller.exe in the same location. 
 Sample packages can be found at msix-packaging/preview/Win7Msix/tests; these can be copied over to a Windows 7 machine and installed, although they may require adding the APPX_TEST_ROOT.cer (in the same tests folder) to the trusted store in order to install.
@@ -50,4 +48,4 @@ Win7MSIXInstaller.exe -RemovePackage notepadplus_0.0.0.1_x64__8wekyb3d8bbwe
 
 ## Build Status
 [![Build status](https://microsoft.visualstudio.com/xPlatAppx/_apis/build/status/CIGitHub-for-Win7MsixInstaller)](https://github.com/Microsoft/msix-packaging/releases/tag/Win7MsixInstaller-preview)
-If succeeded, the MSI can be downloaded from the release tab.
+If succeeded, the built MSI can be downloaded from the release tab.
