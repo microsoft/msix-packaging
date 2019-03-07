@@ -19,6 +19,7 @@ jobs:
       release:
         _arguments: -b MinSizeRel
         _artifact: LINUX
+
   steps:
   - task: Bash@3
     displayName: Build

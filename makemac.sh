@@ -56,7 +56,7 @@ mkdir .vs
 cd .vs
 
 # clean up any old builds of msix modules
-find . -name *msix* -d | xargs rm -r
+find . -depth -name *msix* | xargs -0 -r rm -rf
 
 cmake -DCMAKE_BUILD_TYPE=$build $zlib -DSKIP_BUNDLES=$bundle $xmlparser $addressSanitizer -DMACOS=on ..
 make

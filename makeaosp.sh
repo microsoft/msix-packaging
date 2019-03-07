@@ -98,7 +98,7 @@ mkdir .vs
 cd .vs
 
 # clean up any old builds of msix modules
-find . -name *msix* -d | xargs rm -r
+find . -depth -name *msix* | xargs -0 -r rm -rf
 
 cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK="$ndk" \
