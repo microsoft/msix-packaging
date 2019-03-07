@@ -46,6 +46,13 @@ std::wstring ConvertVersionToString(UINT64 version);
 
 std::wstring GetStringResource(UINT resourceId);
 
+/// Assumes properly formatted packageFullName as input.
+/// Converts a packageFullName (i.e. examplePackageName_1.0.0.0_x64_resourceId_8wekyb3d8bbwe) 
+/// into a packageFamilyName (i.e. examplePackageName_8wekyb3d8bbwe)
+std::wstring GetFamilyNameFromFullName(const std::wstring& fullName);
+
+bool CaseInsensitiveEquals(const std::wstring& left, const std::wstring& right);
+
 //
 // A designated memory allocator
 // 

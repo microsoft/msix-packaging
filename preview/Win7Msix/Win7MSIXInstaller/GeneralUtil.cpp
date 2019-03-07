@@ -53,3 +53,13 @@ std::wstring GetStringResource(UINT resourceId)
 
     return stringResource;
 }
+
+std::wstring GetFamilyNameFromFullName(const std::wstring& fullName)
+{
+    return fullName.substr(0, fullName.find(L"_")) + fullName.substr(fullName.find_last_of(L"_"));
+}
+
+bool CaseInsensitiveEquals(const std::wstring& left, const std::wstring& right)
+{
+    return (_wcsicmp(left.c_str(), right.c_str()) == 0);
+}
