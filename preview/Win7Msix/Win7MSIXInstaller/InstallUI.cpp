@@ -12,8 +12,6 @@
 #include <iostream>
 #include "resource.h"
 
-
-
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
 using namespace std;
@@ -189,22 +187,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
 	case WM_INSTALLCOMPLETE_MSG:
-		DestroyWindow(g_CancelbuttonHWnd);
-		CreateLaunchButton(hWnd, windowRect);
-		UpdateWindow(hWnd);
-		ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
-		ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
-		if (g_launchCheckBoxState) {
-			ui->LaunchInstalledApp(); // launch app
-			DestroyWindow(hWnd); // close msix app installer
-		}
-		else
-		{
-			//wait for user to click launch button or close the window
-			DWORD waitLaunchButtonResult = WaitForSingleObject(ui->getLaunchButtonEvent(), INFINITE);
-		}
-		MessageBox(NULL, L"Launch App window", L"Launch App window", 0);
-		break;
+        DestroyWindow(g_CancelbuttonHWnd);
+        CreateLaunchButton(hWnd, windowRect);
+        UpdateWindow(hWnd);
+        ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
+        ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
+        if (g_launchCheckBoxState) {
+            ui->LaunchInstalledApp(); // launch app
+            DestroyWindow(hWnd); // close msix app installer
+        }
+        else
+        {
+            //wait for user to click launch button or close the window
+            DWORD waitLaunchButtonResult = WaitForSingleObject(ui->getLaunchButtonEvent(), INFINITE);
+        }
+        break;
     case WM_SIZE:
     case WM_SIZING:
         break;
@@ -553,8 +550,6 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
         MessageBox(NULL, L"Call to CreateWindow failed!", title.c_str(), NULL);
         return 1;
     }
-
-	RegisterWindowMessage(L"InstallComplete");
 
     SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this); 
     ShowWindow(hWnd, nCmdShow);

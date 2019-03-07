@@ -37,7 +37,7 @@ private:
     MsixRequest* m_msixRequest = nullptr;
 
     HANDLE m_buttonClickedEvent;
-	HANDLE m_launchAppEvent;
+    HANDLE m_launchAppEvent;
 
     UI() {}
     UI(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) 
@@ -51,11 +51,11 @@ public:
     int CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title);
 
     void SetButtonClicked() { SetEvent(m_buttonClickedEvent); }
-	void SetLaunchButtonClicked() { SetEvent(m_launchAppEvent); }
-	HANDLE getLaunchButtonEvent()
-	{
-		return m_launchAppEvent;
-	}
+    void SetLaunchButtonClicked() { SetEvent(m_launchAppEvent); }
+    HANDLE getLaunchButtonEvent()
+    {
+        return m_launchAppEvent;
+    }
 };
 
 class CreateAndShowUI : IPackageHandler
@@ -136,4 +136,7 @@ BOOL ChangeText(HWND parentHWnd, std::wstring displayText, std::wstring  message
 // PURPOSE: Increment the progress bar one tick based on preset tick
 void UpdateProgressBar();
 
+// FUNCTION: SendInstallCompleteMsg
+//
+// PURPOSE: Sends the WM_INSTALLCOMPLETE_MSG message to the main window when app installation is complete
 void SendInstallCompleteMsg();
