@@ -117,6 +117,4 @@ cmake -DCMAKE_SYSTEM_NAME=Android \
     -DSKIP_BUNDLES=$bundle \
     $xmlparser \
     $zlib -DAOSP=on ..
-make 2> errors.txt
-echo "----"
-more errors.txt
+make
