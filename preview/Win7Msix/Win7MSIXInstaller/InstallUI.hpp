@@ -10,12 +10,16 @@
 #define IDC_LAUNCHCHECKBOX 1
 #define IDC_INSTALLBUTTON 2
 #define IDC_CANCELBUTTON 3
+#define IDC_LAUNCHBUTTON 4
+#define WM_INSTALLCOMPLETE_MSG (WM_APP+1)
 
 // Global variables
+static HWND hWnd = NULL; // parent window hwnd
 static HWND g_buttonHWnd = NULL;
 static HWND g_checkboxHWnd = NULL;
 static HWND g_progressHWnd = NULL;
 static HWND g_CancelbuttonHWnd = NULL;
+static HWND g_LaunchbuttonHWnd = NULL;
 static bool g_installed = false;
 static bool g_displayInfo = false;
 static bool g_displayCompleteText = false;
@@ -25,6 +29,7 @@ class UI
 {
 public:
     HRESULT ShowUI();
+	HRESULT LaunchInstalledApp();
 
     static HRESULT Make(_In_ MsixRequest* msixRequest, _Out_ UI** instance);
     ~UI() {}
@@ -32,15 +37,25 @@ private:
     MsixRequest* m_msixRequest = nullptr;
 
     HANDLE m_buttonClickedEvent;
+	HANDLE m_launchAppEvent;
 
     UI() {}
-    UI(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) { m_buttonClickedEvent = CreateEvent(NULL, FALSE, FALSE, NULL); }
+    UI(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) 
+	{
+		m_buttonClickedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+		m_launchAppEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	}
     
 public:
     HRESULT DisplayPackageInfo(HWND hWnd, RECT windowRect, std::wstring& displayText, std::wstring& messageText);
     int CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title);
 
     void SetButtonClicked() { SetEvent(m_buttonClickedEvent); }
+	void SetLaunchButtonClicked() { SetEvent(m_launchAppEvent); }
+	HANDLE getLaunchButtonEvent()
+	{
+		return m_launchAppEvent;
+	}
 };
 
 class CreateAndShowUI : IPackageHandler
@@ -93,6 +108,8 @@ BOOL CreateCheckbox(HWND parentHWnd, RECT parentRect);
 // parentRect: the specs of the parent window
 BOOL CreateCancelButton(HWND parentHWnd, RECT parentRect);
 
+BOOL CreateLaunchButton(HWND parentHWnd, RECT parentRect);
+
 // FUNCTION: ChangeButtonText(LPARAM newMessage)
 //
 // PURPOSE: Changes the text of the lower right button
@@ -118,3 +135,5 @@ BOOL ChangeText(HWND parentHWnd, std::wstring displayText, std::wstring  message
 //
 // PURPOSE: Increment the progress bar one tick based on preset tick
 void UpdateProgressBar();
+
+void SendInstallCompleteMsg();

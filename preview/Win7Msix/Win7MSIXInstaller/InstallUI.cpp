@@ -12,6 +12,8 @@
 #include <iostream>
 #include "resource.h"
 
+
+
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
 using namespace std;
@@ -186,6 +188,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
         }
         break;
+	case WM_INSTALLCOMPLETE_MSG:
+		DestroyWindow(g_CancelbuttonHWnd);
+		CreateLaunchButton(hWnd, windowRect);
+		UpdateWindow(hWnd);
+		ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
+		ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
+		if (g_launchCheckBoxState) {
+			ui->LaunchInstalledApp(); // launch app
+			DestroyWindow(hWnd); // close msix app installer
+		}
+		else
+		{
+			//wait for user to click launch button or close the window
+			DWORD waitLaunchButtonResult = WaitForSingleObject(ui->getLaunchButtonEvent(), INFINITE);
+		}
+		MessageBox(NULL, L"Launch App window", L"Launch App window", 0);
+		break;
     case WM_SIZE:
     case WM_SIZING:
         break;
@@ -199,6 +218,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
 
     return 0;
+}
+
+HRESULT UI::LaunchInstalledApp()
+{
+	STARTUPINFO si;
+	PROCESS_INFORMATION pi;
+	PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
+	std::wstring resolvedExecutableFullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(packageInfo->GetExecutableFilePath(), packageInfo->GetPackageFullName().c_str());
+	ShellExecute(NULL, NULL, resolvedExecutableFullPath.c_str(), NULL, NULL, SW_SHOW);
 }
 
 void StartParseFile(HWND hWnd)
@@ -258,6 +286,7 @@ void StartUIThread(UI* ui)
         MessageBox(NULL, L"Call to RegisterClassEx failed!", title.c_str(), NULL);
         return;
     }
+
     Gdiplus::GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR gdiplusToken;
     Gdiplus::GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
@@ -424,6 +453,24 @@ BOOL CreateCancelButton(HWND parentHWnd, RECT parentRect) {
 	return TRUE;
 }
 
+BOOL CreateLaunchButton(HWND parentHWnd, RECT parentRect) {
+	LPVOID buttonPointer = nullptr;
+	g_LaunchbuttonHWnd = CreateWindowEx(
+		WS_EX_LEFT, // extended window style
+		L"BUTTON",
+		L"Launch",  // text
+		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
+		parentRect.right - 100 - 50, // x coord
+		parentRect.bottom - 60,  // y coord
+		120,  // width
+		35,  // height
+		parentHWnd,  // parent
+		(HMENU)IDC_LAUNCHBUTTON, // menu
+		reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+		buttonPointer); // pointer to button
+	return TRUE;
+}
+
 // FUNCTION: ChangeButtonText(LPARAM newMessage)
 //
 // PURPOSE: Changes the text of the lower right button
@@ -488,7 +535,7 @@ BOOL ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring messageT
 // windowTitle: the window title
 int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title)
 {
-	HWND hWnd = CreateWindow(
+    hWnd = CreateWindow(
         const_cast<wchar_t*>(windowClass.c_str()),
         const_cast<wchar_t*>(title.c_str()),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
@@ -506,6 +553,8 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
         MessageBox(NULL, L"Call to CreateWindow failed!", title.c_str(), NULL);
         return 1;
     }
+
+	RegisterWindowMessage(L"InstallComplete");
 
     SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this); 
     ShowWindow(hWnd, nCmdShow);
@@ -528,4 +577,9 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
 void UpdateProgressBar()
 {
     SendMessage(g_progressHWnd, PBM_STEPIT, 0, 0);
+}
+
+void SendInstallCompleteMsg()
+{
+	SendMessage(hWnd, WM_INSTALLCOMPLETE_MSG, NULL, NULL);
 }
