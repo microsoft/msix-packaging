@@ -60,6 +60,41 @@ HRESULT RegistryDevirtualizer::Run(_In_ bool remove)
     return S_OK;
 }
 
+HRESULT RegistryDevirtualizer::HasFTA(std::wstring ftaName, bool & hasFTA)
+{
+    hasFTA = false;
+    std::wstring rootPath = m_loadedHiveKeyName + L"\\Registry";
+    RETURN_IF_FAILED(m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ));
+
+    RegistryKey userClassesKey;
+    HRESULT hrOpenUserClassesKey = m_rootKey.OpenSubKey(L"USER\\[{AppVCurrentUserSID}]_CLASSES", KEY_READ, &userClassesKey);
+    if (SUCCEEDED(hrOpenUserClassesKey))
+    {
+        RegistryKey ftaKey;
+        HRESULT hrFtaKey = userClassesKey.OpenSubKey(ftaName.c_str(), KEY_READ, &ftaKey);
+        if (SUCCEEDED(hrFtaKey))
+        {
+            hasFTA = true;
+            return S_OK;
+        }
+    }
+
+    RegistryKey machineClassesKey;
+    HRESULT hrOpenMachineClassesKey = m_rootKey.OpenSubKey(L"MACHINE\\Software\\Classes", KEY_READ, &machineClassesKey);
+    if (SUCCEEDED(hrOpenMachineClassesKey))
+    {
+        RegistryKey ftaKey;
+        HRESULT hrFtaKey = machineClassesKey.OpenSubKey(ftaName.c_str(), KEY_READ, &ftaKey);
+        if (SUCCEEDED(hrFtaKey))
+        {
+            hasFTA = true;
+            return S_OK;
+        }
+    }
+
+    return S_OK;
+}
+
 bool RegistryDevirtualizer::IsExcludeKey(RegistryKey* realKey)
 {
     const std::wstring excludeKeys[] = 
@@ -231,7 +266,7 @@ HRESULT RemoveSubKeyIfEmpty(RegistryKey* realKey, PCWSTR subKeyName)
     DWORD valuesCount = 0;
     DWORD valueNameMaxLength = 0;
     DWORD valueDataMaxLength = 0;
-    RETURN_IF_FAILED(realKey->GetValuesInfo(&valuesCount, &valueNameMaxLength, &valueDataMaxLength));
+    RETURN_IF_FAILED(subKey.GetValuesInfo(&valuesCount, &valueNameMaxLength, &valueDataMaxLength));
 
     subKey.Close();
     if (valuesCount == 0)
@@ -353,23 +388,21 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
         RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    TOKEN_PRIVILEGES tokenPrivileges{};
-    TOKEN_PRIVILEGES oldTokenPrivileges{};
-    DWORD oldTokenPrivilegesSize = sizeof(TOKEN_PRIVILEGES);
+    PTOKEN_PRIVILEGES pTokenPrivileges = NULL;
 
-    tokenPrivileges.PrivilegeCount = 2;
-    tokenPrivileges.Privileges[0].Luid = seRestoreLuid;
-    tokenPrivileges.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-    tokenPrivileges.Privileges[1].Luid = seBackupLuid;
-    tokenPrivileges.Privileges[1].Attributes = SE_PRIVILEGE_ENABLED;
+    // be sure we allocate enought space for 2 LUID_AND_ATTRIBUTES
+    // by default TOKEN_PRIVILEGES allocates space for only 1 LUID_AND_ATTRIBUTES.
+    pTokenPrivileges = (PTOKEN_PRIVILEGES)LocalAlloc(LMEM_FIXED, sizeof(TOKEN_PRIVILEGES) + (sizeof(LUID_AND_ATTRIBUTES) * 2));
+    pTokenPrivileges->PrivilegeCount = 2;
+    pTokenPrivileges->Privileges[0].Luid = seRestoreLuid;
+    pTokenPrivileges->Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+    pTokenPrivileges->Privileges[1].Luid = seBackupLuid;
+    pTokenPrivileges->Privileges[1].Attributes = SE_PRIVILEGE_ENABLED;
 
-    if (!(AdjustTokenPrivileges(
-        userToken,
-        FALSE,
-        &tokenPrivileges,
-        sizeof(TOKEN_PRIVILEGES),
-        &oldTokenPrivileges,
-        &oldTokenPrivilegesSize)))
+    auto success = AdjustTokenPrivileges(userToken, FALSE, pTokenPrivileges, sizeof(TOKEN_PRIVILEGES), NULL, NULL);
+    LocalFree(pTokenPrivileges);
+	pTokenPrivileges = NULL;
+    if (!success)
     {
         RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
     }

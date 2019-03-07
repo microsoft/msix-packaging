@@ -24,7 +24,7 @@ HRESULT PopulatePackageInfo::CreatePackageReader()
     RETURN_IF_FAILED(appxFactory->CreatePackageReader(inputStream.Get(), &packageReader));
 
     AutoPtr<PackageInfo> packageInfo;
-    RETURN_IF_FAILED(PackageInfo::MakeFromPackageReader(packageReader.Get(), m_msixRequest->GetFilePathMappings()->GetMsix7Directory(), &packageInfo));
+    RETURN_IF_FAILED(PackageInfo::MakeFromPackageReader(packageReader.Get(), m_msixRequest, &packageInfo));
     m_msixRequest->SetPackageInfo(packageInfo.Detach());
 
     return S_OK;
@@ -69,7 +69,7 @@ HRESULT PopulatePackageInfo::ExecuteForRemoveRequest()
     RETURN_IF_FAILED(appxFactory->CreateManifestReader(stream.Get(), &manifestReader));
 
     AutoPtr<PackageInfo> packageInfo;
-    RETURN_IF_FAILED(PackageInfo::MakeFromManifestReader(manifestReader.Get(), m_msixRequest->GetFilePathMappings()->GetMsix7Directory(), &packageInfo));
+    RETURN_IF_FAILED(PackageInfo::MakeFromManifestReader(manifestReader.Get(), m_msixRequest, &packageInfo));
     m_msixRequest->SetPackageInfo(packageInfo.Detach());
 
     return S_OK;

@@ -108,12 +108,15 @@ public:
 
     HRESULT SetStringValue(
         _In_opt_ PCWSTR name,
-        _In_opt_ std::wstring& value);
+        _In_opt_ const std::wstring& value);
 
     HRESULT DeleteValue(
         _In_opt_ PCWSTR name);
 
     HRESULT DeleteSubKey(
+        _In_ PCWSTR subkey);
+
+    HRESULT DeleteTree(
         _In_ PCWSTR subkey);
     
     template<typename TAction> static HRESULT EnumKeyAndDoActionForAllSubkeys(

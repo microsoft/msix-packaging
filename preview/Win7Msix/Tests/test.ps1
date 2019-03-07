@@ -45,6 +45,8 @@ function ShowTestHeader($testname)
 	$global:testcase++
 }
 
+New-PSDrive -PSProvider registry -Root HKEY_CLASSES_ROOT -Name HKCR -errorAction SilentlyContinue
+
 
 ShowTestHeader("Untrusted Package fails")
 certutil -delstore root 19a0a57c05c3a4884123cd9dccf820ea > $null
@@ -62,10 +64,10 @@ ShowTestHeader("Trusted Package succeeds")
 certutil -addstore root APPX_TEST_ROOT.cer > $null
 $output = & $executable -AddPackage notepadplus.msix -quietUx
 $notepadDir = "C:\program files (x86)\notepad++"
+$startLink = "c:\programdata\microsoft\windows\start menu\programs\notepad++.lnk"
 if ($output -eq $null)
 {
 	$notepadExists = (test-path $notepadDir\notepad++.exe)
-	$startLink = "c:\programdata\microsoft\windows\start menu\programs\notepad++.lnk"
 	$startlinkExists = (test-path $startlink)
 	if ($notepadExists -and $startlinkExists)
 	{
@@ -176,8 +178,76 @@ else
 	writeFail
 }
 
-& .\msixtrace.ps1 -stop
-# remove cases
+ShowTestHeader("Install with FTA and registry entries succeeds")
+$output = & $executable -AddPackage VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe-missingsomeftas.msix -quietUx
+$vlcExePath = "C:\program files (x86)\VideoLAN\VLC\vlc.exe"
+$3gaRegPath = "HKCR:\.3ga"
+if ($output -eq $null)
+{
+	$vlcExists = (test-path $vlcExePath)
+	$3gaFTAExists = (test-path $3gaRegPath)
+	if ($vlcExists -and $3gaFTAExists)
+	{
+		writeSuccess
+	}
+	else
+	{
+		write-host ("Expected paths not created: $vlcExePath exists = $vlcExists, $3gaRegPath exists = $3gaFTAExists")
+		writeFail
+	}
+}
+else
+{
+	$output
+	writeFail
+}
 
+# remove cases
+ShowTestHeader("Remove VLC succeeds")
+$output = & $executable -RemovePackage VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe
+if ($output -eq $null)
+{
+	$vlcExists = (test-path $vlcExePath)
+	$3gaFTAExists = (test-path $3gaRegPath)
+	if (-not $vlcExists -and -not $3gaFTAExists)
+	{
+		writeSuccess
+	}
+	else
+	{
+		write-host ("Expected paths not deleted: $vlcExePath exists = $vlcExists, $3gaRegPath exists = $3gaFTAExists")
+		writeFail
+	}
+}
+else
+{
+	$output
+	writeFail
+}
+
+ShowTestHeader("Remove notepad succeeds")
+$output = & $executable -RemovePackage notepadplus_0.0.0.1_x64__8wekyb3d8bbwe
+if ($output -eq $null)
+{
+	$notepadExists = (test-path $notepadDir\notepad++.exe)
+	$startlinkExists = (test-path $startlink)
+	if (-not $notepadExists -and -not $startlinkExists)
+	{
+		writeSuccess
+	}
+	else
+	{
+		write-host ("Expected paths not deleted: $notepadDir\notepad++.exe exists = $notepadExists, $startLink exists = $startlinkExists")
+		writeFail
+	}
+}
+else
+{
+	$output
+	writeFail
+}
+
+
+& .\msixtrace.ps1 -stop
 
 # manual test: install with UX, launch the package using start menu shortcut, open appwiz.cpl and remove package.

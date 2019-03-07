@@ -55,6 +55,8 @@ function DoStop
 		}
 	}
 
+	Write-Host "Parsing trace logs..."
+	
 	#convert the ETL file to XML data
 	$now = [datetime]::Now.ToString("yyyy_MM_dd_HHmmss")
 	$tempXmlfile = join-path $env:temp ("MsixTrace_{0}.xml" -f $now)

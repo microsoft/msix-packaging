@@ -3,6 +3,8 @@
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
 
+class MsixRequest;
+
 class PackageInfo
 {
 private:
@@ -25,10 +27,10 @@ private:
     ///
     /// @param manifestReader - manifestReader to set
     /// @param msix7DirectoryPath - the root msix7 directory path, which is the parent directory of the package directory.
-    HRESULT SetManifestReader(IAppxManifestReader* manifestReader, std::wstring msix7DirectoryPath);
+    HRESULT SetManifestReader(IAppxManifestReader* manifestReader, MsixRequest * msixRequest);
 
-    /// Sets the executable path by reading it from the manifest element
-    HRESULT SetExecutableAndAppIdFromManifestElement(IMsixElement * element);
+    /// Sets the executable path and app ID by reading it from the manifest element
+    HRESULT SetExecutableAndAppIdFromManifestElement(IMsixElement * element, PCWSTR packageFullName, MsixRequest * msixRequest);
 
     /// Sets the display name by reading it from the manifest element
     HRESULT SetDisplayNameFromManifestElement(IMsixElement * element);
@@ -39,11 +41,11 @@ private:
 public:
     /// Create a PackageInfo using the manifest reader and directory path. This is intended for Remove scenarios where
     /// the actual .msix package file is no longer accessible.
-    static HRESULT MakeFromManifestReader(IAppxManifestReader* manifestReader, std::wstring msix7DirectoryPath, PackageInfo** packageInfo);
+    static HRESULT MakeFromManifestReader(IAppxManifestReader* manifestReader, MsixRequest * msixRequest, PackageInfo** packageInfo);
 
     /// Create a PackageInfo using the package reader. This is intended for Add scenarios where
     /// the actual .msix package file is given.
-    static HRESULT MakeFromPackageReader(IAppxPackageReader* packageReader, std::wstring msix7DirectoryPath, PackageInfo** packageInfo);
+    static HRESULT MakeFromPackageReader(IAppxPackageReader* packageReader, MsixRequest * msixRequest, PackageInfo** packageInfo);
 
     /// When made from manifest reader, it won't have PackageReader available. 
     bool HasPackageReader() { return (m_packageReader.Get() != nullptr); };

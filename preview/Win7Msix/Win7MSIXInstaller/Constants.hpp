@@ -6,3 +6,4 @@ static const std::wstring uninstallKeySubPath = L"Microsoft\\Windows\\CurrentVer
 static const std::wstring registryDatFile = L"\\registry.dat";
 static const std::wstring blockMapFile = L"\\AppxBlockMap.xml";
 static const std::wstring manifestFile = L"\\AppxManifest.xml";
+static const std::wstring classesKeyPath = L"SOFTWARE\\Classes";

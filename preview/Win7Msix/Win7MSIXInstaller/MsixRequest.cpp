@@ -55,7 +55,6 @@ std::map<PCWSTR, HandlerInfo> AddHandlers =
 std::map<PCWSTR, HandlerInfo> RemoveHandlers =
 {
     //HandlerName                       Function to create                   NextHandler
-    {PopulatePackageInfo::HandlerName,  {PopulatePackageInfo::CreateHandler, CreateAndShowUI::HandlerName}},
     {CreateAndShowUI::HandlerName,      {CreateAndShowUI::CreateHandler,     StartMenuLink::HandlerName}},
     {StartMenuLink::HandlerName,        {StartMenuLink::CreateHandler,       AddRemovePrograms::HandlerName}},
     {AddRemovePrograms::HandlerName,    {AddRemovePrograms::CreateHandler,   Protocol::HandlerName}},
@@ -171,7 +170,12 @@ HRESULT MsixRequest::ProcessAddRequest()
 
 HRESULT MsixRequest::ProcessRemoveRequest()
 {
-    PCWSTR currentHandlerName = PopulatePackageInfo::HandlerName;
+    // Run PopulatePackageInfo separately - if it fails (for instance, if the package is not found) it IS fatal.
+    AutoPtr<IPackageHandler> handler;
+    RETURN_IF_FAILED(PopulatePackageInfo::CreateHandler(this, &handler));
+    RETURN_IF_FAILED(handler->ExecuteForRemoveRequest());
+
+    PCWSTR currentHandlerName = CreateAndShowUI::HandlerName;
 
     while (currentHandlerName != nullptr)
     {

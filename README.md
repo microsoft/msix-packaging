@@ -1,9 +1,7 @@
 # MSIX SDK 
---------------------
-   Copyright (c) 2017 Microsoft Corp.  All rights reserved.
+   Copyright (c) 2019 Microsoft Corp.  All rights reserved.
 
 ## Description
---------------
    The MSIX SDK project is an effort to enable developers on a variety of platforms to unpack 
    packages for the purposes of distribution from either the Microsoft Store, or their own content distribution networks.  
     
@@ -11,27 +9,23 @@
    documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).
 
 ## Overview
------------
 The MSIX SDK project includes cross platform API support for unpacking of .msix/.appx packages
 
 |                                      |                                 |
 |--------------------------------------|---------------------------------|
-| **msix**      | A shared library (DLL on Win32, dylib on MacOS, SO on Linux and Android) that exports a subset of the functionality contained within appxpackaging.dll on Windows. See [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) for additional details.<br />On all platforms instead of CoCreating IAppxFactory, a C-style export: CoCreateAppxFactory is provided. Similarly, the CoCreateAppxBundleFactory export is equivalent as CoCreating IAppxBundleFactory.<br /><br /> The 'UnpackPackage' and 'UnpackBundle' exports that provide a simplified unpackage implementation. See the [samples directory](sample) for usage of the SDK.|
-| **makemsix**  | A command line wrapper over the UnpackPackage and UnpackBundle implementations.  This tool exists primarily as a means of validating the implementation of the MSIX SDK internal routines and is compiled for Win32, MacOS, and Linux platforms.|
+| **msix**      | A shared library (DLL on Win32, dylib on macOS, SO on Linux and Android) that exports a subset of the functionality contained within appxpackaging.dll on Windows. See [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) for additional details.<br />On all platforms instead of CoCreating IAppxFactory, a C-style export: CoCreateAppxFactory is provided. Similarly, the CoCreateAppxBundleFactory export is equivalent as CoCreating IAppxBundleFactory.<br /><br /> The 'UnpackPackage' and 'UnpackBundle' exports that provide a simplified unpackage implementation. See the [samples directory](sample) for usage of the SDK.|
+| **makemsix**  | A command line wrapper over the UnpackPackage and UnpackBundle implementations.  This tool exists primarily as a means of validating the implementation of the MSIX SDK internal routines and is compiled for Win32, macOS, and Linux platforms.|
 
 Guidance on how to package your app contents and construct your app manifest such that it can take advantage of the cross platform support of this SDK is [here](tdf-guidance.md).
 
 ## Release Notes
-----------------
 Release notes on the latest features and performance improvements made to the SDK are listed [here](https://docs.microsoft.com/en-us/windows/msix/msix-sdk/release-notes/sdk-release-notes-1.6)
 
 ## Setup Instructions
----------------------
 1. Clone the repository:
         ```git clone [URL]```
 
 ## Issues
----------
 If you are using Visual Studio 2017 and you run into errors about not being able to find the v140 toolset:
 1. Install the Microsoft Build Tools (https://chocolatey.org/packages/microsoft-build-tools)
 2. Start -> visual studio installer -> Visual Studio Build Tools 2017 -> Modify the 2014 toolset -> individual components 
@@ -39,7 +33,6 @@ If you are using Visual Studio 2017 and you run into errors about not being able
 4. Close, then re-open the solution.
 
 ## Dependencies
----------------
 Depending on the platform for which the MSIX shared library (MSIX.DLL | libmsix.dylib | libmsix.so) is compiled, one or 
 more of the following dependencies may be statically linked into the binary:
 
@@ -54,7 +47,6 @@ of these subtrees for build related optimizations are tracked within this reposi
 The Android NDK is only required for targeting the Android platform.
 
 ## Prerequisites
-----------------
 Make sure that you have CMAKE installed on your machine 
 
    * https://cmake.org/download/
@@ -77,7 +69,7 @@ File->Open Folder->navigate to project root and select "CMakeLists.txt"
 See [cmake-support-vs](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/) for details regarding how to configure your environment.
 
 ##### Xcode clients: 
-   
+
 open terminal, from project root:
 mkdir build && cd build && cmake -DMACOS=on -G"Xcode" ..
 open xcode
@@ -86,7 +78,6 @@ File->Open->navigate to project root/build and select "Project.xcodeproj"
 See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode) for additional details
 
 ## Build
-----------
 ### On Windows using Visual Studio nmake:
 ```
    makewin.cmd <x86|x64>
@@ -125,20 +116,55 @@ See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-inte
 ```
 To compile, run the following command from the android folder:
 ```
-    ninja    
+    ninja
 ```
+
+## Build Status
 The following native platforms are in development now:
 
-|Platform|Build|Docs|Status|
-|---|---|---|---|
-| Windows | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/31745/badge) |
-| iOS | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/31745/badge) |
-| Android | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/31745/badge) |
-| MacOS | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/31745/badge) |
-| Linux | [Source](https://github.com/Microsoft/msix-packaging/blob/master/sample/ExtractContentsSample/ExtractContentsSample.cpp)| [Docs](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) | ![Build Status](https://microsoft.visualstudio.com/_apis/public/build/definitions/65a7f9af-fe23-41b6-9aa7-71b0bb348bec/31745/badge) |
+### Windows
+||master|
+|---|---|
+**Debug x32**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=debug_32)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Debug x64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=debug_64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x32**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_32)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x32 Validation Parser**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_32_validation_parser)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x64 Validation Parser**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_64_validation_parser)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x32 Xerces**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_32_xerces)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x64 Xerces**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_64_xerces)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+
+Built in the Azure Pipelines Hosted VS2017 pool. See specifications [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/win/Vs2017-Server2016-Readme.md)
+
+### macOS
+||master|
+|---|---|
+**Debug**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&configuration=debug)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&configuration=release)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+
+Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md)
+
+### iOS
+||master|
+|---|---|
+**Debug emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&configuration=debug_x86)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)|
+**Release emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&configuration=release_x86)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)|
+**Release arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&configuration=release_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)
+
+Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md)
+
+### Android
+TODO
+
+### Linux
+||master|
+|---|---|
+**Debug**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&configuration=debug)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
+**Release**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&configuration=release)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
+
+Built in the Azure Pipelines Hosted Ubuntu 1604. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/linux/Ubuntu1604-README.md)
 
 ## Windows 7 support
-----------
 The MSIX SDK is fully supported and tested on Windows 7. However, an Application Manifest **_MUST_**  be included to any executable that is expected to run on Windows 7 and uses msix.dll. Specifically, the Application Manifest **_MUST_**  include the supportedOS flags for Windows 7. The manifest is not included on msix.dll because the compat manifest doesn't matter on DLLs.
 See the [manifest](manifest.cmakein) that is used for makemsix and samples of this project as example. The Windows 7 machine might also require the [Microsoft Visual C++ Redistributable](https://www.visualstudio.com/downloads/) binaries installed to run properly.
 
@@ -150,7 +176,6 @@ The default level for the SDK level is 24 because we use the [Configuration clas
 We recommend using the [makeaosp](makeaosp) script to build for Android on non-Windows devices.
 
 ## Testing
-----------
 Unit tests should be run on builds that have the "Release" or "RelWithDebug" CMAKE switch. 
 
 First build the project, then:
@@ -171,7 +196,6 @@ Testing on mobile platforms:
   From within bash, navigate to test/MacOS-Linux, and run "./testaosponmac.sh". The test assumes there's an Android emulator named Nexus_5X_API_19_x86 and the build output is on a .vs directory at the root of the project.
 
 ## Releasing
-------------
 If you are the current maintainer of this project:
 
   1. Pull latest payload to release in master
@@ -180,7 +204,6 @@ If you are the current maintainer of this project:
   4. Confirm that new branch called "release_v1.xxx" where "xxx" is the next incremental version is created
   
 ## Contributing
----------------
 This project welcomes contributions and suggestions. Most contributions require you to
 agree to a Contributor License Agreement (CLA) declaring that you have the right to,
 and actually do, grant us the rights to use your contribution. For details, visit
@@ -199,7 +222,6 @@ or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any addi
 questions or comments.
 
 ## Report a Computer Security Vulnerability
--------------------------------------------
 If you are a security researcher and believe you have found a security vulnerability that meets
 the [definition of a security vulnerability](https://technet.microsoft.com/library/cc751383.aspx) that is not resolved by the [10 Immutable Laws of Security](https://technet.microsoft.com/library/cc722487.aspx),
 please send e-mail to us at secure@microsoft.com. To help us to better understand the nature and
