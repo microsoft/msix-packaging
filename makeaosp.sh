@@ -92,7 +92,7 @@ fi
 # maybe ANDROID_NDK_ROOT or ANDROID_ROOT is set?
 if [ -z "$ndk" ]; then
     # if we find the sdk lets just hope they have the ndk
-    ndk="ANDROID_HOME/ndk-bundle"
+    ndk="$ANDROID_HOME/ndk-bundle"
 fi
 
 printsetup
