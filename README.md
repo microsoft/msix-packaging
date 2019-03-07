@@ -145,7 +145,13 @@ Built in the Azure Pipelines Hosted VS2017 pool. See specifications [here](https
 Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md)
 
 ### iOS
-TODO
+||master|
+|---|---|
+**Debug emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&configuration=debug_x86)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)|
+**Release emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&configuration=release_x86)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)|
+**Release arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&configuration=release_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)
+
+Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md)
 
 ### Android
 TODO
