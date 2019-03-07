@@ -89,9 +89,11 @@ elif [ -z "$ndk" ] && [ -n "$ANDROID_ROOT"]; then
     ndk="$ANDROID_ROOT"
 fi
 
-# maybe ANDROID_NDK_ROOT or ANDROID_ROOT is set?
+# If we find the sdk and ndk is still emtpy lets just hope they have it
+# installed in the default location.
+# Note: don't elif this to the block above as I've seen ANDROID_NDK_ROOT or 
+# ANDROID_ROOT set but empty.
 if [ -z "$ndk" ]; then
-    # if we find the sdk lets just hope they have the ndk
     ndk="$ANDROID_HOME/ndk-bundle"
 fi
 
@@ -115,4 +117,6 @@ cmake -DCMAKE_SYSTEM_NAME=Android \
     -DSKIP_BUNDLES=$bundle \
     $xmlparser \
     $zlib -DAOSP=on ..
-make
+make 2> errors.txt
+echo "----"
+more errors.txt
