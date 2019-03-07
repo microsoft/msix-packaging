@@ -151,7 +151,12 @@ TODO
 TODO
 
 ### Linux
-TODO
+||master|
+|---|---|
+**Debug**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&configuration=debug)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
+**Release**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&configuration=release)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
+
+Built in the Azure Pipelines Hosted Ubuntu 1604. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/linux/Ubuntu1604-README.md)
 
 ## Windows 7 support
 The MSIX SDK is fully supported and tested on Windows 7. However, an Application Manifest **_MUST_**  be included to any executable that is expected to run on Windows 7 and uses msix.dll. Specifically, the Application Manifest **_MUST_**  include the supportedOS flags for Windows 7. The manifest is not included on msix.dll because the compat manifest doesn't matter on DLLs.

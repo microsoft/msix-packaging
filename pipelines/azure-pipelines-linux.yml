@@ -1,0 +1,62 @@
+# Branches that trigger a build on commit
+trigger:
+- master
+
+# Branches that trigger builds on PR
+pr:
+- master
+
+jobs:
+- job: Linux
+  pool:
+    name: Hosted Ubuntu 1604
+  strategy:
+    # TODO: add builds using xerces if needed.
+    matrix:
+      debug:
+        _arguments: -b Debug
+        _artifact: LINUXchk
+      release:
+        _arguments: -b MinSizeRel
+        _artifact: LINUX
+
+  steps:
+  - task: Bash@3
+    displayName: Build
+    inputs:
+      targetType: filePath
+      filePath: ./makelinux.sh
+      arguments: $(_arguments)
+      failOnStderr: true
+    condition: succeeded()
+
+    # Note: We skip BVTs in Debug mode because of assert()
+  - task: Bash@3
+    displayName: 'Bash Script'
+    inputs:
+      targetType: filePath
+      filePath: './test/MacOS-Linux/MacOS-Linux-Etc.sh'
+      arguments: Linux
+      workingDirectory: './test/MacOS-Linux'
+      failOnStderr: true
+    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'))
+
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+    inputs:
+      SourceFolder: .vs
+      Contents: |
+        bin/makemsix
+        lib/libmsix*
+        lib/libmsix*/**
+        src/msix/AppxPackaging.hpp
+        src/msix/MSIXWindows.hpp
+        src/msix/MsixErrors.hpp
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    condition: succeeded()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact $(_artifact)'
+    inputs:
+      ArtifactName: $(_artifact)
+    condition: succeeded()
