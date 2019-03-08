@@ -74,8 +74,8 @@ echo "Emulator started"
 
 # Clean up.
 $ANDROID_HOME/platform-tools/adb shell rm -rf /data/data/com.microsoft.androidbvt/files
-rm -f $projectdir/../mobile/androidbvt/testResults.txt
-rm -f $projectdir/../mobile/androidbvt/testApiResults.txt
+rm -f testResults.txt
+rm -f testApiResults.txt
 
 # Create App
 cd $projectdir/../mobile/AndroidBVT
@@ -124,15 +124,18 @@ do
     fi
     sleep 5
 done
+cd $projectdir
 
 # Get Results
 $ANDROID_HOME/platform-tools/adb pull /data/data/com.microsoft.androidbvt/files/testResults.txt
-$ANDROID_HOME/platform-tools/adb pull /data/data/com.microsoft.androidbvt/files/testApiResults.txt
+#$ANDROID_HOME/platform-tools/adb pull /data/data/com.microsoft.androidbvt/files/testApiResults.txt
 
 TerminateEmulator
 
 ParseResult testResults.txt
-ParseResult testApiResults.txt
+#ParseResult testApiResults.txt
+
+more nohup.out
 
 echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if [ $testfailed -ne 0 ]
