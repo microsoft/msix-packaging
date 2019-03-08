@@ -92,11 +92,13 @@ rm -rf build app/build
 sh ./gradlew assembleDebug
 
 # Install app
-$ANDROID_HOME/platform-tools/adb push app/build/outputs/apk/debug/app-debug.apk /data/local/tmp/com.microsoft.androidbvt
-$ANDROID_HOME/platform-tools/adb shell pm install -t -r '/data/local/tmp/com.microsoft.androidbvt'
+# $ANDROID_HOME/platform-tools/adb push app/build/outputs/apk/debug/app-debug.apk /data/local/tmp/com.microsoft.androidbvt
+# $ANDROID_HOME/platform-tools/adb shell pm install -t -r '/data/local/tmp/com.microsoft.androidbvt'
+$ANDROID_HOME/platform-tools/adb install -t app/build/outputs/apk/debug/app-debug.apk
 
 # Start app
-$ANDROID_HOME/platform-tools/adb shell am start -n 'com.microsoft.androidbvt/com.microsoft.androidbvt.MainActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
+#$ANDROID_HOME/platform-tools/adb shell am start -n 'com.microsoft.androidbvt/com.microsoft.androidbvt.MainActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
+$ANDROID_HOME/platform-tools/adb shell monkey -p com.microsoft.androidbvt -c android.intent.category.LAUNCHER 1
 
 # The app terminates when is done
 count=0
