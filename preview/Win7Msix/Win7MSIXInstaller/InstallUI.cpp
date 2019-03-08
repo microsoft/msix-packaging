@@ -189,7 +189,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 break;
         }
         break;
-	case WM_INSTALLCOMPLETE_MSG:
+    case WM_INSTALLCOMPLETE_MSG:
     {
         DestroyWindow(g_CancelbuttonHWnd);
         CreateLaunchButton(hWnd, windowRect);
@@ -255,7 +255,7 @@ HRESULT UI::LaunchInstalledApp()
 {
     PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
     std::wstring resolvedExecutableFullPath = packageInfo->GetExecutableFilePath();
-	//check for error while launching app here
+    //check for error while launching app here
     ShellExecute(NULL, NULL, resolvedExecutableFullPath.c_str(), NULL, NULL, SW_SHOW);
     return S_OK;
 }
@@ -485,21 +485,21 @@ BOOL CreateCancelButton(HWND parentHWnd, RECT parentRect) {
 }
 
 BOOL CreateLaunchButton(HWND parentHWnd, RECT parentRect) {
-	LPVOID buttonPointer = nullptr;
-	g_LaunchbuttonHWnd = CreateWindowEx(
-		WS_EX_LEFT, // extended window style
-		L"BUTTON",
-		L"Launch",  // text
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
-		parentRect.right - 100 - 50, // x coord
-		parentRect.bottom - 60,  // y coord
-		120,  // width
-		35,  // height
-		parentHWnd,  // parent
-		(HMENU)IDC_LAUNCHBUTTON, // menu
-		reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
-		buttonPointer); // pointer to button
-	return TRUE;
+    LPVOID buttonPointer = nullptr;
+    g_LaunchbuttonHWnd = CreateWindowEx(
+        WS_EX_LEFT, // extended window style
+        L"BUTTON",
+        L"Launch",  // text
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
+        parentRect.right - 100 - 50, // x coord
+        parentRect.bottom - 60,  // y coord
+        120,  // width
+        35,  // height
+        parentHWnd,  // parent
+        (HMENU)IDC_LAUNCHBUTTON, // menu
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+        buttonPointer); // pointer to button
+    return TRUE;
 }
 
 // FUNCTION: ChangeButtonText(LPARAM newMessage)
@@ -610,5 +610,5 @@ void UpdateProgressBar()
 
 void SendInstallCompleteMsg()
 {
-	SendMessage(hWnd, WM_INSTALLCOMPLETE_MSG, NULL, NULL);
+    SendMessage(hWnd, WM_INSTALLCOMPLETE_MSG, NULL, NULL);
 }
