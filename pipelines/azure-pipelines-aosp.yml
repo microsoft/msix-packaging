@@ -20,11 +20,8 @@ jobs:
         _arguments: -b MinSizeRel
         _artifact: AOSP-x86
       release_arm:
-        _arguments: -b MinSizeRel -arch armeabi
-        _artifact: AOSP-arm
-      release_arm7a:
         _arguments: -b MinSizeRel -arch armeabi-v7a 
-        _artifact: AOSP-arm7a
+        _artifact: AOSP-arm
   steps:
   - task: Bash@3
     displayName: Build
@@ -37,7 +34,7 @@ jobs:
 
     # Note: We only test for release_emulator
   - task: Bash@3
-    displayName: macOS BVTs
+    displayName: AOSP BVTs
     inputs:
       targetType: filePath
       filePath: './test/MacOS-Linux/testaosponmac.sh'
