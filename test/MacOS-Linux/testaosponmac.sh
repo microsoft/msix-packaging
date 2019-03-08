@@ -67,8 +67,8 @@ if [ -z $($ANDROID_HOME/emulator/emulator -list-avds | grep "$emulatorName") ]; 
     exit 1
 fi
 echo "Starting emulator" $emulatorName
-#nohup $ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot > /dev/null 2>&1 &
-$ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot &
+nohup $ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot > /dev/null 2>&1 &
+#$ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot &
 $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done; input keyevent 82'
 $ANDROID_HOME/platform-tools/adb devices
 echo "Emulator started"
