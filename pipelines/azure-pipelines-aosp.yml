@@ -30,7 +30,7 @@ jobs:
     displayName: Build
     inputs:
       targetType: filePath
-      filePath: ./makeaosp.sh.sh
+      filePath: ./makeaosp.sh
       arguments: $(_arguments)
       failOnStderr: true
     condition: succeeded()
