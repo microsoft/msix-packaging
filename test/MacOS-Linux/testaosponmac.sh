@@ -55,7 +55,7 @@ function TerminateEmulator {
 }
 # Create emulator if requested
 if [ -n "$avdPackage" ]; then
-    if [ $testfailed -ne 0 ]; then
+    if [ $install -ne 0 ]; then
         # Install AVD files
         echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "$avdPackage"
     fi
