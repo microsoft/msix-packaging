@@ -63,10 +63,14 @@ static HRESULT RunTest(std::string packageName, std::string unpackFolder, MSIX_V
     std::cout << "Package: " << packageName << std::endl;
     std::cout << "Validation Options: " << std::hex << validationOptions << std::endl;
 
+    try {
     hr = UnpackPackage(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
             validationOptions,
             const_cast<char*>(packageName.c_str()),
             const_cast<char*>(unpackFolder.c_str()));
+    } catch (...) {
+        std::cout << "this is bad" << std::endl;
+    }
 
     if(FAILED(hr))
     {
@@ -117,66 +121,66 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     // common codes:
     // SignatureInvalid        = ERROR_FACILITY + 0x0041 == 65
 
-    hr = RunTest(source + "Empty.appx", unpackFolder, sv, 2);
-    hr = RunTest(source + "HelloWorld.appx", unpackFolder, ss, 0);
-    hr = RunTest(source + "NotepadPlusPlus.appx", unpackFolder, ss, 0);
-    hr = RunTest(source + "IntlPackage.appx", unpackFolder, ss, 0);
-    hr = RunTest(source + "SignatureNotLastPart-ERROR_BAD_FORMAT.appx", unpackFolder, full, 66);
-    hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
-    //hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, sv, 65);
-    hr = RunTest(source + "SignedTamperedCD-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
-    hr = RunTest(source + "SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
-    hr = RunTest(source + "SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
-    hr = RunTest(source + "SignedUntrustedCert-CERT_E_CHAINING.appx", unpackFolder, full, 66);
-    hr = RunTest(source + "StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, full, 0);
-    hr = RunTest(source + "महसुस/StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, full, 0);
-    hr = RunTest(source + "TestAppxPackage_Win32.appx", unpackFolder, ss, 0);
-    hr = RunTest(source + "TestAppxPackage_x64.appx", unpackFolder, ss, 0);
-    hr = RunTest(source + "UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx", unpackFolder, full, 18);
-    hr = RunTest(source + "FileDoesNotExist.appx", unpackFolder, ss, 1);
-    hr = RunTest(source + "BlockMap/Missing_Manifest_in_blockmap.appx", unpackFolder, ss, 81);
-    hr = RunTest(source + "BlockMap/ContentTypes_in_blockmap.appx", unpackFolder, ss, 81);
-    //hr = RunTest(source + "BlockMap/Invalid_Bad_Block.appx", unpackFolder, ss, 81);          WIN8-era package
-    //hr = RunTest(source + "BlockMap/Size_wrong_uncompressed.appx", unpackFolder, ss, 81);    WIN8-era package
-    //hr = RunTest(source + "BlockMap/HelloWorld.appx", unpackFolder, ss, 0);                  WIN8-era package
-    //hr = RunTest(source + "BlockMap/Extra_file_in_blockmap.appx", unpackFolder, ss, 2);      WIN8-era package
-    //hr = RunTest(source + "BlockMap/File_missing_from_blockmap.appx", unpackFolder, ss, 81); WIN8-era package
-    hr = RunTest(source + "BlockMap/No_blockmap.appx", unpackFolder, ss, 51); 
-    hr = RunTest(source + "BlockMap/Bad_Namespace_Blockmap.appx", unpackFolder, ss, 4099);
-    hr = RunTest(source + "BlockMap/Duplicate_file_in_blockmap.appx", unpackFolder, ss, 81);
+    //hr = RunTest(source + "Empty.appx", unpackFolder, sv, 2);
+    //hr = RunTest(source + "HelloWorld.appx", unpackFolder, ss, 0);
+    //hr = RunTest(source + "NotepadPlusPlus.appx", unpackFolder, ss, 0);
+    //hr = RunTest(source + "IntlPackage.appx", unpackFolder, ss, 0);
+    //hr = RunTest(source + "SignatureNotLastPart-ERROR_BAD_FORMAT.appx", unpackFolder, full, 66);
+    //hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, sv, 65);
+    //hr = RunTest(source + "SignedTamperedCD-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    //hr = RunTest(source + "SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    //hr = RunTest(source + "SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
+    //hr = RunTest(source + "SignedUntrustedCert-CERT_E_CHAINING.appx", unpackFolder, full, 66);
+    //hr = RunTest(source + "StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, full, 0);
+    //hr = RunTest(source + "महसुस/StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, full, 0);
+    //hr = RunTest(source + "TestAppxPackage_Win32.appx", unpackFolder, ss, 0);
+    //hr = RunTest(source + "TestAppxPackage_x64.appx", unpackFolder, ss, 0);
+    //hr = RunTest(source + "UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx", unpackFolder, full, 18);
+    //hr = RunTest(source + "FileDoesNotExist.appx", unpackFolder, ss, 1);
+    //hr = RunTest(source + "BlockMap/Missing_Manifest_in_blockmap.appx", unpackFolder, ss, 81);
+    //hr = RunTest(source + "BlockMap/ContentTypes_in_blockmap.appx", unpackFolder, ss, 81);
+    ////hr = RunTest(source + "BlockMap/Invalid_Bad_Block.appx", unpackFolder, ss, 81);          WIN8-era package
+    ////hr = RunTest(source + "BlockMap/Size_wrong_uncompressed.appx", unpackFolder, ss, 81);    WIN8-era package
+    ////hr = RunTest(source + "BlockMap/HelloWorld.appx", unpackFolder, ss, 0);                  WIN8-era package
+    ////hr = RunTest(source + "BlockMap/Extra_file_in_blockmap.appx", unpackFolder, ss, 2);      WIN8-era package
+    ////hr = RunTest(source + "BlockMap/File_missing_from_blockmap.appx", unpackFolder, ss, 81); WIN8-era package
+    //hr = RunTest(source + "BlockMap/No_blockmap.appx", unpackFolder, ss, 51); 
+    //hr = RunTest(source + "BlockMap/Bad_Namespace_Blockmap.appx", unpackFolder, ss, 4099);
+    //hr = RunTest(source + "BlockMap/Duplicate_file_in_blockmap.appx", unpackFolder, ss, 81);
 
     // Bundle tests
-    hr = RunTest(source + "bundles/BlockMapContainsPayloadPackage.appxbundle", unpackFolder, ss, 81);
-    hr = RunTest(source + "bundles/BlockMapIsMissing.appxbundle", unpackFolder, ss, 51);
-    hr = RunTest(source + "bundles/BlockMapViolatesSchema.appxbundle", unpackFolder, ss, 4098);
-    //hr = RunTest(source + "bundles/ContainsNeutralAndX86AppPackages.appxbundle", unpackFolder, full, 0);
-    hr = RunTest(source + "bundles/ContainsNoPayload.appxbundle", unpackFolder, ss, 4098);
-    hr = RunTest(source + "bundles/ContainsOnlyResourcePackages.appxbundle", unpackFolder, ss, 97);
-    //hr = RunTest(source + "bundles/ContainsTwoNeutralAppPackages.appxbundle", unpackFolder, full, 0);
-    hr = RunTest(source + "bundles/MainBundle.appxbundle", unpackFolder, ss, 0);
-    //hr = RunTest(source + "bundles/ManifestDeclaresAppPackageForResourcePackage.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ManifestHasExtraPackage.appxbundle", unpackFolder, full, 0);
-    hr = RunTest(source + "bundles/ManifestIsMissing.appxbundle", unpackFolder, ss, 52);
-    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectArchitecture.appxbundle", unpackFolder, ss, 97);
-    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectName.appxbundle", unpackFolder, ss, 97);
-    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectPublisher.appxbundle", unpackFolder, ss, 97);
-    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectSize.appxbundle", unpackFolder, ss, 97);
-    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectVersion.appxbundle", unpackFolder, ss, 97);
-    //hr = RunTest(source + "bundles/ManifestPackageHasInvalidOffset.appxbundle", unpackFolder, full, 0);
-    //hr = RunTest(source + "bundles/ManifestPackageHasInvalidRange.appxbundle", unpackFolder, full, 0);
-    hr = RunTest(source + "bundles/ManifestViolatesSchema.appxbundle", unpackFolder, ss, 4098);
-    hr = RunTest(source + "bundles/PayloadPackageHasNonAppxExtension.appxbundle", unpackFolder, ss, 97);
-    hr = RunTest(source + "bundles/PayloadPackageIsCompressed.appxbundle", unpackFolder, ss, 97);
-    hr = RunTest(source + "bundles/PayloadPackageIsEmpty.appxbundle", unpackFolder, ss, 3);
-    hr = RunTest(source + "bundles/PayloadPackageIsNotAppxPackage.appxbundle", unpackFolder, ss, 87);
-    //hr = RunTest(source + "bundles/PayloadPackageNotListedInManifest.appxbundle", unpackFolder, full, 0);
-    hr = RunTest(source + "bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle", unpackFolder, full, 66);
-    hr = RunTest(source + "bundles/BundleWithIntlPackage.appxbundle", unpackFolder, ss, 0);
-    hr = RunTest(source + "bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle", unpackFolder, full, 0);
+    //hr = RunTest(source + "bundles/BlockMapContainsPayloadPackage.appxbundle", unpackFolder, ss, 81);
+    //hr = RunTest(source + "bundles/BlockMapIsMissing.appxbundle", unpackFolder, ss, 51);
+    //hr = RunTest(source + "bundles/BlockMapViolatesSchema.appxbundle", unpackFolder, ss, 4098);
+    ////hr = RunTest(source + "bundles/ContainsNeutralAndX86AppPackages.appxbundle", unpackFolder, full, 0);
+    //hr = RunTest(source + "bundles/ContainsNoPayload.appxbundle", unpackFolder, ss, 4098);
+    //hr = RunTest(source + "bundles/ContainsOnlyResourcePackages.appxbundle", unpackFolder, ss, 97);
+    ////hr = RunTest(source + "bundles/ContainsTwoNeutralAppPackages.appxbundle", unpackFolder, full, 0);
+    //hr = RunTest(source + "bundles/MainBundle.appxbundle", unpackFolder, ss, 0);
+    ////hr = RunTest(source + "bundles/ManifestDeclaresAppPackageForResourcePackage.appxbundle", unpackFolder, full, 0);
+    ////hr = RunTest(source + "bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle", unpackFolder, full, 0);
+    ////hr = RunTest(source + "bundles/ManifestHasExtraPackage.appxbundle", unpackFolder, full, 0);
+    //hr = RunTest(source + "bundles/ManifestIsMissing.appxbundle", unpackFolder, ss, 52);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectArchitecture.appxbundle", unpackFolder, ss, 97);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectName.appxbundle", unpackFolder, ss, 97);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectPublisher.appxbundle", unpackFolder, ss, 97);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectSize.appxbundle", unpackFolder, ss, 97);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectVersion.appxbundle", unpackFolder, ss, 97);
+    ////hr = RunTest(source + "bundles/ManifestPackageHasInvalidOffset.appxbundle", unpackFolder, full, 0);
+    ////hr = RunTest(source + "bundles/ManifestPackageHasInvalidRange.appxbundle", unpackFolder, full, 0);
+    //hr = RunTest(source + "bundles/ManifestViolatesSchema.appxbundle", unpackFolder, ss, 4098);
+    //hr = RunTest(source + "bundles/PayloadPackageHasNonAppxExtension.appxbundle", unpackFolder, ss, 97);
+    //hr = RunTest(source + "bundles/PayloadPackageIsCompressed.appxbundle", unpackFolder, ss, 97);
+    //hr = RunTest(source + "bundles/PayloadPackageIsEmpty.appxbundle", unpackFolder, ss, 3);
+    //hr = RunTest(source + "bundles/PayloadPackageIsNotAppxPackage.appxbundle", unpackFolder, ss, 87);
+    ////hr = RunTest(source + "bundles/PayloadPackageNotListedInManifest.appxbundle", unpackFolder, full, 0);
+    //hr = RunTest(source + "bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle", unpackFolder, full, 66);
+    //hr = RunTest(source + "bundles/BundleWithIntlPackage.appxbundle", unpackFolder, ss, 0);
+    //hr = RunTest(source + "bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle", unpackFolder, full, 0);
 
     // Flat
-    hr = RunTest(source + "flat/FlatBundleWithAsset.appxbundle", unpackFolder, ss, 0);
+    //hr = RunTest(source + "flat/FlatBundleWithAsset.appxbundle", unpackFolder, ss, 0);
 
     // TODO: add validation that all the files extracted are correct for Android and iOS and add test
     //       that removes a payload package from a flat bundle in the device flat bundle and 

@@ -1,0 +1,404 @@
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/Empty.appx
+Validation Options: 2
+Error: 8bad0002
+LOG:
+
+seek failed
+Call failed in /Users/rubengu/msix-packaging/src/inc/FileStream.hpp on line 82
+Call failed in /Users/rubengu/msix-packaging/src/msix/ZipObject.cpp on line 795
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 2, Got: 2
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/HelloWorld.appx
+Validation Options: 1
+Expected: 0, Got: 0
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/NotepadPlusPlus.appx
+Validation Options: 1
+Expected: 0, Got: 0
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/IntlPackage.appx
+Validation Options: 1
+Expected: 0, Got: 0
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/SignatureNotLastPart-ERROR_BAD_FORMAT.appx
+Validation Options: 0
+Error: 8bad0042
+LOG:
+
+Could not verify cert
+Call failed in /Users/rubengu/msix-packaging/src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp on line 387
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 66, Got: 66
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx
+Validation Options: 0
+Error: 8bad0042
+LOG:
+
+Could not verify cert
+Call failed in /Users/rubengu/msix-packaging/src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp on line 387
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 66, Got: 66
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/SignedTamperedCD-TRUST_E_BAD_DIGEST.appx
+Validation Options: 0
+Error: 8bad0042
+LOG:
+
+Could not verify cert
+Call failed in /Users/rubengu/msix-packaging/src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp on line 387
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 66, Got: 66
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/SignedTamperedCodeIntegrity-TRUST_E_BAD_DIGEST.appx
+Validation Options: 0
+Error: 8bad0042
+LOG:
+
+Could not verify cert
+Call failed in /Users/rubengu/msix-packaging/src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp on line 387
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 66, Got: 66
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx
+Validation Options: 0
+Error: 8bad0042
+LOG:
+
+Could not verify cert
+Call failed in /Users/rubengu/msix-packaging/src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp on line 387
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 66, Got: 66
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/SignedUntrustedCert-CERT_E_CHAINING.appx
+Validation Options: 0
+Error: 8bad0042
+LOG:
+
+Could not verify cert
+Call failed in /Users/rubengu/msix-packaging/src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp on line 387
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 66, Got: 66
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/StoreSigned_Desktop_x64_MoviesTV.appx
+Validation Options: 0
+Expected: 0, Got: 0
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/महसुस/StoreSigned_Desktop_x64_MoviesTV.appx
+Validation Options: 0
+Expected: 0, Got: 0
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/TestAppxPackage_Win32.appx
+Validation Options: 1
+Expected: 0, Got: 0
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/TestAppxPackage_x64.appx
+Validation Options: 1
+Expected: 0, Got: 0
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
+Validation Options: 0
+Error: 8bad0012
+LOG:
+
+Invalid Zip CRC
+Call failed in /Users/rubengu/msix-packaging/src/msix/ZipObject.cpp on line 451
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 18, Got: 18
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/FileDoesNotExist.appx
+Validation Options: 1
+Error: 8bad0001
+LOG:
+
+/data/data/com.microsoft.androidbvt/files/FileDoesNotExist.appx
+Call failed in /Users/rubengu/msix-packaging/src/inc/FileStream.hpp on line 31
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 63
+Expected: 1, Got: 1
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/BlockMap/Missing_Manifest_in_blockmap.appx
+Validation Options: 1
+Error: 8bad0051
+LOG:
+
+file: 'AppxManifest.xml' not tracked by blockmap.
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxBlockMapObject.cpp on line 119
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 81, Got: 81
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/BlockMap/ContentTypes_in_blockmap.appx
+Validation Options: 1
+Error: 8bad0051
+LOG:
+
+[Content_Types].xml cannot be in the AppxBlockMap.xml file
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxBlockMapObject.cpp on line 70
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 81, Got: 81
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/BlockMap/No_blockmap.appx
+Validation Options: 1
+Error: 8bad0033
+LOG:
+
+AppxBlockMap.xml not in archive!
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 81
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 51, Got: 51
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/BlockMap/Bad_Namespace_Blockmap.appx
+Validation Options: 1
+Error: 8bad1003
+LOG:
+
+Call failed in /Users/rubengu/msix-packaging/src/msix/PAL/XML/AOSP/XmlObject.cpp on line 165
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 4099, Got: 4099
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/BlockMap/Duplicate_file_in_blockmap.appx
+Validation Options: 1
+Error: 8bad0051
+LOG:
+
+Duplicate file: 'index.html' specified in AppxBlockMap.xml.
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxBlockMapObject.cpp on line 75
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 81, Got: 81
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/BlockMapContainsPayloadPackage.appxbundle
+Validation Options: 1
+Error: 8bad0051
+LOG:
+
+Block map contains invalid files.
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 224
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 81, Got: 81
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/BlockMapIsMissing.appxbundle
+Validation Options: 1
+Error: 8bad0033
+LOG:
+
+AppxBlockMap.xml not in archive!
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 81
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 51, Got: 51
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/BlockMapViolatesSchema.appxbundle
+Validation Options: 1
+Error: 8bad1002
+LOG:
+
+Empty AppxBlockMap.xml
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxBlockMapObject.cpp on line 109
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 4098, Got: 4098
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/ContainsNoPayload.appxbundle
+Validation Options: 1
+Error: 8bad1002
+LOG:
+
+No packages in AppxBundleManifest.xml
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxBundleManifest.cpp on line 103
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 4098, Got: 4098
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/ContainsOnlyResourcePackages.appxbundle
+Validation Options: 1
+Error: 8bad0061
+LOG:
+
+Bundle contains only resource packages
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxBundleManifest.cpp on line 104
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 97, Got: 97
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/MainBundle.appxbundle
+Validation Options: 1
+Expected: 0, Got: 0
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/ManifestIsMissing.appxbundle
+Validation Options: 1
+Error: 8bad0034
+LOG:
+
+AppxManifest.xml or AppxBundleManifest.xml not in archive!
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 91
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 52, Got: 52
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/ManifestPackageHasIncorrectArchitecture.appxbundle
+Validation Options: 1
+Error: 8bad0061
+LOG:
+
+Couldn't find TargetDeviceFamily element in AppxManifest.xml
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxManifestObject.cpp on line 115
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 301
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 97, Got: 97
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/ManifestPackageHasIncorrectName.appxbundle
+Validation Options: 1
+Error: 8bad0061
+LOG:
+
+Couldn't find TargetDeviceFamily element in AppxManifest.xml
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxManifestObject.cpp on line 115
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 301
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 97, Got: 97
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/ManifestPackageHasIncorrectPublisher.appxbundle
+Validation Options: 1
+Error: 8bad0061
+LOG:
+
+Couldn't find TargetDeviceFamily element in AppxManifest.xml
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxManifestObject.cpp on line 115
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 301
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 97, Got: 97
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/ManifestPackageHasIncorrectSize.appxbundle
+Validation Options: 1
+Error: 8bad0061
+LOG:
+
+Size mistmach of package between AppxManifestBundle.appx and container
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 297
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 97, Got: 97
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/ManifestPackageHasIncorrectVersion.appxbundle
+Validation Options: 1
+Error: 8bad0061
+LOG:
+
+Couldn't find TargetDeviceFamily element in AppxManifest.xml
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxManifestObject.cpp on line 115
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 301
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 97, Got: 97
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/ManifestViolatesSchema.appxbundle
+Validation Options: 1
+Error: 8bad1002
+LOG:
+
+No packages in AppxBundleManifest.xml
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxBundleManifest.cpp on line 103
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 4098, Got: 4098
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/PayloadPackageHasNonAppxExtension.appxbundle
+Validation Options: 1
+Error: 8bad0061
+LOG:
+
+Invalid FileName attribute in AppxBundleManifest.xml
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxBundleManifest.cpp on line 148
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 97, Got: 97
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/PayloadPackageIsCompressed.appxbundle
+Validation Options: 1
+Error: 8bad0061
+LOG:
+
+Packages cannot be compressed
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 254
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 97, Got: 97
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/PayloadPackageIsEmpty.appxbundle
+Validation Options: 1
+Error: 8bad0003
+LOG:
+
+Entire object wasn't read!
+Call failed in /Users/rubengu/msix-packaging/src/inc/StreamBase.hpp on line 142
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 301
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 3, Got: 3
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/PayloadPackageIsNotAppxPackage.appxbundle
+Validation Options: 1
+Error: 80070057
+LOG:
+
+Incorrect value specified at field.
+Call failed in /Users/rubengu/msix-packaging/src/inc/ObjectBase.hpp on line 21
+Call failed in /Users/rubengu/msix-packaging/src/msix/AppxPackageObject.cpp on line 301
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 87, Got: 87
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/SignedUntrustedCert-CERT_E_CHAINING.appxbundle
+Validation Options: 0
+Error: 8bad0042
+LOG:
+
+Could not verify cert
+Call failed in /Users/rubengu/msix-packaging/src/msix/PAL/Signature/OpenSSL/SignatureValidator.cpp on line 387
+Call failed in /Users/rubengu/msix-packaging/src/msix/msix.cpp on line 66
+Expected: 66, Got: 66
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/BundleWithIntlPackage.appxbundle
+Validation Options: 1
+Expected: 0, Got: 0
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/bundles/StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
+Validation Options: 0
+Expected: 0, Got: 0
+Succeeded
+------------------------------------------------------
+Package: /data/data/com.microsoft.androidbvt/files/flat/FlatBundleWithAsset.appxbundle
+Validation Options: 1
+Expected: 0, Got: 0
+Succeeded
+-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=
+                           passed                                 
