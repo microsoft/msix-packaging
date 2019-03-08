@@ -89,7 +89,7 @@ elif [ -z "$ndk" ] && [ -n "$ANDROID_ROOT"]; then
     ndk="$ANDROID_ROOT"
 fi
 
-# If we find the sdk and ndk is still emtpy lets just hope they have it
+# If we find the sdk and ndk is still empty lets just hope they have it
 # installed in the default location.
 # Note: don't elif this to the block above as I've seen ANDROID_NDK_ROOT or 
 # ANDROID_ROOT set but empty.

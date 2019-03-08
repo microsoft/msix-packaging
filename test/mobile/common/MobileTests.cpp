@@ -119,7 +119,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
 
     hr = RunTest(source + "Empty.appx", unpackFolder, sv, 2);
     hr = RunTest(source + "HelloWorld.appx", unpackFolder, ss, 0);
-    //hr = RunTest(source + "NotepadPlusPlus.appx", unpackFolder, ss, 0);
+    hr = RunTest(source + "NotepadPlusPlus.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "IntlPackage.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "SignatureNotLastPart-ERROR_BAD_FORMAT.appx", unpackFolder, full, 66);
     hr = RunTest(source + "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx", unpackFolder, full, 66);
