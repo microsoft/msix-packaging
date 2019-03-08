@@ -53,6 +53,11 @@ function ParseResult {
 function TerminateEmulator {
     $ANDROID_HOME/platform-tools/adb emu kill &
 }
+
+# Clean up local result files if necesarry
+rm -f testResults.txt
+rm -f testApiResults.txt
+
 # Create emulator if requested
 if [ -n "$avdPackage" ]; then
     if [ $install -ne 0 ]; then
@@ -67,15 +72,10 @@ if [ -z $($ANDROID_HOME/emulator/emulator -list-avds | grep "$emulatorName") ]; 
     exit 1
 fi
 echo "Starting emulator" $emulatorName
-nohup $ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot > /dev/null 2>&1 &
+nohup $ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot -wipe-data > /dev/null 2>&1 &
 $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done; input keyevent 82'
 $ANDROID_HOME/platform-tools/adb devices
 echo "Emulator started"
-
-# Clean up.
-$ANDROID_HOME/platform-tools/adb shell rm -rf /data/data/com.microsoft.androidbvt/files
-rm -f testResults.txt
-rm -f testApiResults.txt
 
 # Create App
 cd $projectdir/../mobile/AndroidBVT
@@ -91,12 +91,13 @@ rm -rf build app/build
 sh ./gradlew assembleDebug
 
 # Install app
-# $ANDROID_HOME/platform-tools/adb push app/build/outputs/apk/debug/app-debug.apk /data/local/tmp/com.microsoft.androidbvt
-# $ANDROID_HOME/platform-tools/adb shell pm install -t -r '/data/local/tmp/com.microsoft.androidbvt'
 $ANDROID_HOME/platform-tools/adb install -t -r app/build/outputs/apk/debug/app-debug.apk
 
+# Clean up.test results in emulator if necesarry
+$ANDROID_HOME/platform-tools/adb shell "run-as com.microsoft.androidbvt rm -rf /data/data/com.microsoft.androidbvt/files/testResults.txt"
+$ANDROID_HOME/platform-tools/adb shell "run-as com.microsoft.androidbvt rm -rf /data/data/com.microsoft.androidbvt/files/testApiResults.txt"
+
 # Start app
-#$ANDROID_HOME/platform-tools/adb shell am start -n 'com.microsoft.androidbvt/com.microsoft.androidbvt.MainActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
 $ANDROID_HOME/platform-tools/adb shell am start -n com.microsoft.androidbvt/.MainActivity
 
 # The app terminates when is done
@@ -127,14 +128,13 @@ done
 cd $projectdir
 
 # Get Results
-# $ANDROID_HOME/platform-tools/adb pull /data/data/com.microsoft.androidbvt/files/testResults.txt
-$ANDROID_HOME/platform-tools/adb -d shell "run-as com.microsoft.androidbvt cat /data/data/com.microsoft.androidbvt/files/testResults.txt" > testResults.txt
-#$ANDROID_HOME/platform-tools/adb pull /data/data/com.microsoft.androidbvt/files/testApiResults.txt
+$ANDROID_HOME/platform-tools/adb shell "run-as com.microsoft.androidbvt cat /data/data/com.microsoft.androidbvt/files/testResults.txt" > testResults.txt
+$ANDROID_HOME/platform-tools/adb shell "run-as com.microsoft.androidbvt cat /data/data/com.microsoft.androidbvt/files/testApiResults.txt" > testApiResults.txt
 
 TerminateEmulator
 
 ParseResult testResults.txt
-#ParseResult testApiResults.txt
+ParseResult testApiResults.txt
 
 echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if [ $testfailed -ne 0 ]
