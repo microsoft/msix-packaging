@@ -113,13 +113,13 @@ count=0
 while adb shell ps | grep -q "com.microsoft.androidbvt"
 do
     echo "Test is running..."
-    ((count+=5))
+    ((count+=30))
     if [ $count -eq 240 ]; then
         echo "Test never completed"
         TerminateEmulator
         exit 1
     fi
-    sleep 5
+    sleep 30
 done
 
 # Get Results
