@@ -67,7 +67,8 @@ if [ -z $($ANDROID_HOME/emulator/emulator -list-avds | grep "$emulatorName") ]; 
     exit 1
 fi
 echo "Starting emulator" $emulatorName
-nohup $ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot > /dev/null 2>&1 &
+#nohup $ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot > /dev/null 2>&1 &
+$ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot &
 $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done; input keyevent 82'
 $ANDROID_HOME/platform-tools/adb devices
 echo "Emulator started"
@@ -86,8 +87,6 @@ mkdir -p app/src/main/jniLibs/x86
 cp $projectdir/../../.vs/lib/libmsix.so app/src/main/jniLibs/x86
 mkdir -p app/src/main/libs
 cp $projectdir/../../.vs/lib/msix-jni.jar app/src/main/libs
-
-ls -lR app/src/main/assets
 
 rm -rf build app/build
 sh ./gradlew assembleDebug
@@ -134,8 +133,6 @@ TerminateEmulator
 
 ParseResult testResults.txt
 #ParseResult testApiResults.txt
-
-more nohup.out
 
 echo "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if [ $testfailed -ne 0 ]
