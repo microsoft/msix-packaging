@@ -93,7 +93,7 @@ sh ./gradlew assembleDebug
 # Install app
 # $ANDROID_HOME/platform-tools/adb push app/build/outputs/apk/debug/app-debug.apk /data/local/tmp/com.microsoft.androidbvt
 # $ANDROID_HOME/platform-tools/adb shell pm install -t -r '/data/local/tmp/com.microsoft.androidbvt'
-$ANDROID_HOME/platform-tools/adb install -t app/build/outputs/apk/debug/app-debug.apk
+$ANDROID_HOME/platform-tools/adb install -t -r app/build/outputs/apk/debug/app-debug.apk
 
 # Start app
 #$ANDROID_HOME/platform-tools/adb shell am start -n 'com.microsoft.androidbvt/com.microsoft.androidbvt.MainActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
@@ -127,7 +127,8 @@ done
 cd $projectdir
 
 # Get Results
-$ANDROID_HOME/platform-tools/adb pull /data/data/com.microsoft.androidbvt/files/testResults.txt
+# $ANDROID_HOME/platform-tools/adb pull /data/data/com.microsoft.androidbvt/files/testResults.txt
+$ANDROID_HOME/platform-tools/adb -d shell "run-as com.microsoft.androidbvt cat /data/data/com.microsoft.androidbvt/files/testResults.txt" > testResults.txt
 #$ANDROID_HOME/platform-tools/adb pull /data/data/com.microsoft.androidbvt/files/testApiResults.txt
 
 TerminateEmulator
