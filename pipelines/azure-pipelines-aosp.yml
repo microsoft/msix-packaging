@@ -1,0 +1,69 @@
+# Branches that trigger a build on commit
+trigger:
+- master
+
+# Branches that trigger builds on PR
+pr:
+- master
+
+jobs:
+- job: AOSP
+  pool:
+    name: Hosted macOS
+  strategy:
+    # TODO: add builds using xerces if needed.
+    matrix:
+      debug_emulator:
+        _arguments: -b Debug
+        _artifact: AOSP-x86chk
+      release_emulator:
+        _arguments: -b MinSizeRel
+        _artifact: AOSP-x86
+      release_arm:
+        _arguments: -b MinSizeRel -arch armeabi
+        _artifact: AOSP-arm
+      release_arm7a:
+        _arguments: -b MinSizeRel -arch armeabi-v7a 
+        _artifact: AOSP-arm7a
+  steps:
+  - task: Bash@3
+    displayName: Build
+    inputs:
+      targetType: filePath
+      filePath: ./makeaosp.sh.sh
+      arguments: $(_arguments)
+      failOnStderr: true
+    condition: succeeded()
+
+    # Note: We only test for release_emulator
+  - task: Bash@3
+    displayName: macOS BVTs
+    inputs:
+      targetType: filePath
+      filePath: './test/MacOS-Linux/testaosponmac.sh'
+      arguments: '-c "system-images;android-19;google_apis;x86" -i'
+      workingDirectory: './test/MacOS-Linux'
+    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release_emulator'))
+
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+    inputs:
+      SourceFolder: .vs
+      Contents: |
+        bin/makemsix
+        lib/libmsix*
+        lib/libmsix*/**
+        lib/msix-jni.jar
+        src/msix/AppxPackaging.hpp
+        src/msix/MSIXWindows.hpp
+        src/msix/MsixErrors.hpp
+        Package.nuspec
+        build/**
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    condition: succeeded()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact $(_artifact)'
+    inputs:
+      ArtifactName: $(_artifact)
+    condition: succeeded()
