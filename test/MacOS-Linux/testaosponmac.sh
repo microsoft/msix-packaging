@@ -97,7 +97,7 @@ $ANDROID_HOME/platform-tools/adb install -t app/build/outputs/apk/debug/app-debu
 
 # Start app
 #$ANDROID_HOME/platform-tools/adb shell am start -n 'com.microsoft.androidbvt/com.microsoft.androidbvt.MainActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
-$ANDROID_HOME/platform-tools/adb shell -n com.microsoft.androidbvt/.MainActivity
+$ANDROID_HOME/platform-tools/adb shell am start -n com.microsoft.androidbvt/.MainActivity
 
 # The app terminates when is done
 count=0
