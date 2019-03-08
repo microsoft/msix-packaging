@@ -86,7 +86,7 @@ BOOL CreateProgressBar(HWND parentHWnd, RECT parentRect, int count);
 
 // FUNCTION: LaunchButton(HWND parentHWnd, RECT parentRect)
 //
-// PURPOSE: Create the lower right button
+// PURPOSE: Create the lower right install button
 // 
 // parentHWnd: the HWND of the window to add the button to
 // parentRect: the specs of the parent window
@@ -94,7 +94,7 @@ BOOL LaunchButton(HWND parentHWnd, RECT parentRect);
 
 // FUNCTION: CreateCheckbox(HWND parentHWnd, RECT parentRect)
 //
-// PURPOSE: Create the launch checkbox on the bottom left
+// PURPOSE: Create the launch when ready checkbox on the bottom left
 // 
 // parentHWnd: the HWND of the window to add the checkbox to
 // parentRect: the specs of the parent window
@@ -102,12 +102,18 @@ BOOL CreateCheckbox(HWND parentHWnd, RECT parentRect);
 
 // FUNCTION: CreateCancelButton(HWND parentHWnd, RECT parentRect)
 //
-// PURPOSE: Create the launch checkbox on the bottom left
+// PURPOSE: Create the cancel button on the bottom right corner when user clicks on install
 // 
 // parentHWnd: the HWND of the window to add the checkbox to
 // parentRect: the specs of the parent window
 BOOL CreateCancelButton(HWND parentHWnd, RECT parentRect);
 
+// FUNCTION: CreateLaunchButton(HWND parentHWnd, RECT parentRect)
+//
+// PURPOSE: Create the launch button on the botton right after app has been installed
+// 
+// parentHWnd: the HWND of the window to add the checkbox to
+// parentRect: the specs of the parent window
 BOOL CreateLaunchButton(HWND parentHWnd, RECT parentRect);
 
 // FUNCTION: ChangeButtonText(LPARAM newMessage)

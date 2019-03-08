@@ -184,24 +184,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
             }
             break;
+            case IDC_LAUNCHBUTTON:
+                ui->LaunchInstalledApp();
+                break;
         }
         break;
 	case WM_INSTALLCOMPLETE_MSG:
-        DestroyWindow(g_CancelbuttonHWnd);
-        CreateLaunchButton(hWnd, windowRect);
-        UpdateWindow(hWnd);
-        ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
-        ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
-        if (g_launchCheckBoxState) {
-            ui->LaunchInstalledApp(); // launch app
-            DestroyWindow(hWnd); // close msix app installer
-        }
-        else
-        {
-            //wait for user to click launch button or close the window
-            DWORD waitLaunchButtonResult = WaitForSingleObject(ui->getLaunchButtonEvent(), INFINITE);
+    {
+		DestroyWindow(g_CancelbuttonHWnd);
+		CreateLaunchButton(hWnd, windowRect);
+		UpdateWindow(hWnd);
+		ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
+		ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
+		if (g_launchCheckBoxState) {
+			ui->LaunchInstalledApp(); // launch app
+			DestroyWindow(hWnd); // close msix app installer
+		}
+		else
+		{
+			//wait for user to click launch button or close the window
+            HANDLE handles[] = { ui->getLaunchButtonEvent() };
+            while (true)
+            {
+                switch (MsgWaitForMultipleObjects(1, handles, FALSE, INFINITE, QS_ALLINPUT)) {
+                case WAIT_OBJECT_0:
+                    break;
+                case WAIT_OBJECT_0 + 1:
+                    MSG msg;
+                    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+                        TranslateMessage(&msg);
+                        DispatchMessage(&msg);
+                    }
+                    break;
+                }
+            }
         }
         break;
+    }
     case WM_SIZE:
     case WM_SIZING:
         break;
@@ -234,11 +253,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 HRESULT UI::LaunchInstalledApp()
 {
-	STARTUPINFO si;
-	PROCESS_INFORMATION pi;
-	PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
-	std::wstring resolvedExecutableFullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(packageInfo->GetExecutableFilePath(), packageInfo->GetPackageFullName().c_str());
-	ShellExecute(NULL, NULL, resolvedExecutableFullPath.c_str(), NULL, NULL, SW_SHOW);
+    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
+    std::wstring resolvedExecutableFullPath = packageInfo->GetExecutableFilePath();
+	//check for error while launching app here
+    ShellExecute(NULL, NULL, resolvedExecutableFullPath.c_str(), NULL, NULL, SW_SHOW);
+	return S_OK;
 }
 
 void StartParseFile(HWND hWnd)
