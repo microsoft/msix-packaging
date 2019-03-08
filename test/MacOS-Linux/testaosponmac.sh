@@ -4,12 +4,14 @@ projectdir=`pwd`
 
 emulatorName="msix_android_emulator"
 avdPackage=""
+install=0
 
 usage()
 {
-    echo "usage: ./testaosponmac [-avd <emulator name>] [-c <package>]"
+    echo "usage: ./testaosponmac [-avd <emulator name>] [-c <package> [-i]]"
     echo $'\t' "-avd <emulator name>. Name of avd. Default msix_android_emulator"
     echo $'\t' "-c <package>. Create avd with specified package with the name defined by -adv. If not present assume the emulator already exits"
+    echo $'\t' "-i . Only used with -c Install the package specified on c"
 }
 
 while [ "$1" != "" ]; do
@@ -19,6 +21,8 @@ while [ "$1" != "" ]; do
              ;;
         -c ) shift
              avdPackage=$1
+             ;;
+        -i ) install=1
              ;;
         -h ) usage
              exit
@@ -49,14 +53,19 @@ function ParseResult {
 function TerminateEmulator {
     $ANDROID_HOME/platform-tools/adb emu kill &
 }
-
 # Create emulator if requested
 if [ -n "$avdPackage" ]; then
+    if [ $testfailed -ne 0 ]; then
+        # Install AVD files
+        echo "y" | $ANDROID_HOME/tools/bin/sdkmanager --install "$avdPackage"
+    fi
     echo "Creating emulator" $emulatorName
-    echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd -n $emulatorName -k '$avdPackage' --force
+    echo "no" | $ANDROID_HOME/tools/bin/avdmanager create avd -n $emulatorName -k "$avdPackage" --force
 fi
-echo "Listing emulators"
-$ANDROID_HOME/emulator/emulator -list-avds
+if [ -z $($ANDROID_HOME/emulator/emulator -list-avds | grep "$emulatorName") ]; then
+    echo "Emulator doesn't exits"
+    exit 1
+fi
 echo "Starting emulator" $emulatorName
 nohup $ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot > /dev/null 2>&1 &
 $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done; input keyevent 82'
