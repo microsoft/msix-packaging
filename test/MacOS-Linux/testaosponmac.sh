@@ -68,7 +68,6 @@ if [ -z $($ANDROID_HOME/emulator/emulator -list-avds | grep "$emulatorName") ]; 
 fi
 echo "Starting emulator" $emulatorName
 nohup $ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot > /dev/null 2>&1 &
-#$ANDROID_HOME/emulator/emulator -avd $emulatorName -no-snapshot &
 $ANDROID_HOME/platform-tools/adb wait-for-device shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done; input keyevent 82'
 $ANDROID_HOME/platform-tools/adb devices
 echo "Emulator started"
@@ -98,7 +97,7 @@ $ANDROID_HOME/platform-tools/adb install -t app/build/outputs/apk/debug/app-debu
 
 # Start app
 #$ANDROID_HOME/platform-tools/adb shell am start -n 'com.microsoft.androidbvt/com.microsoft.androidbvt.MainActivity' -a android.intent.action.MAIN -c android.intent.category.LAUNCHER
-$ANDROID_HOME/platform-tools/adb shell monkey -p com.microsoft.androidbvt -c android.intent.category.LAUNCHER 1
+$ANDROID_HOME/platform-tools/adb shell -n com.microsoft.androidbvt/.MainActivity
 
 # The app terminates when is done
 count=0
