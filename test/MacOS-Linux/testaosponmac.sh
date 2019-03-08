@@ -86,7 +86,10 @@ mkdir -p app/src/main/jniLibs/x86
 cp $projectdir/../../.vs/lib/libmsix.so app/src/main/jniLibs/x86
 mkdir -p app/src/main/libs
 cp $projectdir/../../.vs/lib/msix-jni.jar app/src/main/libs
-rm -r build app/build
+
+ls -lR app/src/main/assets
+
+rm -rf build app/build
 sh ./gradlew assembleDebug
 
 # Install app
@@ -113,13 +116,13 @@ count=0
 while adb shell ps | grep -q "com.microsoft.androidbvt"
 do
     echo "Test is running..."
-    ((count+=30))
+    ((count+=5))
     if [ $count -eq 240 ]; then
         echo "Test never completed"
         TerminateEmulator
         exit 1
     fi
-    sleep 30
+    sleep 5
 done
 
 # Get Results
