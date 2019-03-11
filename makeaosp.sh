@@ -76,20 +76,25 @@ while [ "$1" != "" ]; do
     shift
 done
 
-if [ -z "$ndk" ] && [ -n "$ANDROID_NDK_ROOT" ]; then
-    ndk="$ANDROID_NDK_ROOT"
-elif [ -z "$ndk" ] && [ -n "$ANDROID_ROOT"]; then
-    ndk="$ANDROID_ROOT"
-elif [ -z "$ndk" ]; then
-    echo "Android NDK not found"
-    exit 1
-fi
-
 if [ -z "$sdk" ] && [ -n "$ANDROID_HOME" ]; then
     sdk="$ANDROID_HOME"
 elif [ -z "$sdk" ]; then
     echo "Android SDK not found"
     exit 1
+fi
+
+if [ -z "$ndk" ] && [ -n "$ANDROID_NDK_ROOT" ]; then
+    ndk="$ANDROID_NDK_ROOT"
+elif [ -z "$ndk" ] && [ -n "$ANDROID_ROOT"]; then
+    ndk="$ANDROID_ROOT"
+fi
+
+# If we find the sdk and ndk is still empty lets just hope they have it
+# installed in the default location.
+# Note: don't elif this to the block above as I've seen ANDROID_NDK_ROOT or 
+# ANDROID_ROOT set but empty.
+if [ -z "$ndk" ]; then
+    ndk="$ANDROID_HOME/ndk-bundle"
 fi
 
 printsetup
@@ -98,7 +103,7 @@ mkdir .vs
 cd .vs
 
 # clean up any old builds of msix modules
-find . -depth -name *msix* | xargs -0 -r rm -rf
+find . -name *msix* -d | xargs rm -r
 
 cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK="$ndk" \
