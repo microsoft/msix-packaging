@@ -164,19 +164,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         else
         {
             //wait for user to click launch button or close the window
-            HANDLE handles[] = { ui->GetLaunchButtonEvent() };
             while (true)
             {
-                switch (MsgWaitForMultipleObjects(1, handles, FALSE, INFINITE, QS_ALLINPUT)) {
-                case WAIT_OBJECT_0:
-                    break;
-                case WAIT_OBJECT_0 + 1:
-                    MSG msg;
-                    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-                        TranslateMessage(&msg);
-                        DispatchMessage(&msg);
-                    }
-                    break;
+				MsgWaitForMultipleObjects(0, NULL, FALSE, INFINITE, QS_ALLINPUT);
+                MSG msg;
+                while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+                    TranslateMessage(&msg);
+                    DispatchMessage(&msg);
                 }
             }
         }

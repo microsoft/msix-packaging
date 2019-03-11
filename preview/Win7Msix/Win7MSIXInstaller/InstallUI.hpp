@@ -34,12 +34,12 @@ public:
 private:
     MsixRequest* m_msixRequest = nullptr;
 
-	std::wstring m_displayName = L"";
-	std::wstring m_publisherCommonName = L"";
-	ComPtr<IStream> m_logoStream;
-	std::wstring m_version = L"";
-	int m_numberOfFiles = 0;
-	HRESULT m_loadingPackageInfoCode = 0;
+    std::wstring m_displayName = L"";
+    std::wstring m_publisherCommonName = L"";
+    ComPtr<IStream> m_logoStream;
+    std::wstring m_version = L"";
+    int m_numberOfFiles = 0;
+    HRESULT m_loadingPackageInfoCode = 0;
     HANDLE m_buttonClickedEvent;
     HANDLE m_launchAppEvent;
 
@@ -50,7 +50,7 @@ private:
 		m_launchAppEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	}
     
-	HRESULT ParseInfoFromPackage();
+    HRESULT ParseInfoFromPackage();
 
 public:
     HRESULT DrawPackageInfo(HWND hWnd, RECT windowRect);
