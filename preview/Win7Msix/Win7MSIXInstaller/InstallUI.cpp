@@ -126,8 +126,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
-        LaunchButton(hWnd, windowRect);
-        CreateCheckbox(hWnd, windowRect);
+        ui->LaunchButton(hWnd, windowRect);
+        ui->CreateCheckbox(hWnd, windowRect);
         break;
     case WM_PAINT:
     {
@@ -140,13 +140,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 std::wstringstream wstringstream;
                 wstringstream << L"Failed getting package information with: 0x" << std::hex << hr;
                 g_messageText = wstringstream.str();
-                ChangeText(hWnd, failure, g_messageText);
+                ui->ChangeText(hWnd, failure, g_messageText);
             }
             g_displayInfo = true;
         }
         if (g_displayCompleteText)
         {
-            ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));
+            ui->ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));
             g_displayCompleteText = false;
         }
 
@@ -160,7 +160,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 if (!g_installed)
                 {
                     DestroyWindow(g_buttonHWnd);
-                    CreateCancelButton(hWnd, windowRect);
+                    ui->CreateCancelButton(hWnd, windowRect);
                     UpdateWindow(hWnd);
                     ShowWindow(g_progressHWnd, SW_SHOW); //Show progress bar only when install is clicked
                     ui->SetButtonClicked();
@@ -192,7 +192,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_INSTALLCOMPLETE_MSG:
     {
         DestroyWindow(g_CancelbuttonHWnd);
-        CreateLaunchButton(hWnd, windowRect);
+        ui->CreateLaunchButton(hWnd, windowRect);
         UpdateWindow(hWnd);
         ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
         ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
@@ -203,7 +203,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         else
         {
             //wait for user to click launch button or close the window
-            HANDLE handles[] = { ui->getLaunchButtonEvent() };
+            HANDLE handles[] = { ui->GetLaunchButtonEvent() };
             while (true)
             {
                 switch (MsgWaitForMultipleObjects(1, handles, FALSE, INFINITE, QS_ALLINPUT)) {
@@ -383,7 +383,7 @@ HRESULT UI::Make(MsixRequest * msixRequest, UI ** instance)
 // parentHWnd: the HWND of the window to add the progress bar to
 // parentRect: the dimmensions of the parent window
 // count: the number of objects to be iterated through in the progress bar
-BOOL CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
+BOOL UI::CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
 {
     int scrollHeight = GetSystemMetrics(SM_CYVSCROLL);
 
@@ -415,7 +415,7 @@ BOOL CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
 // 
 // parentHWnd: the HWND of the window to add the button to
 // parentRect: the specs of the parent window
-BOOL LaunchButton(HWND parentHWnd, RECT parentRect) {
+BOOL UI::LaunchButton(HWND parentHWnd, RECT parentRect) {
     LPVOID buttonPointer = nullptr;
     g_buttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
@@ -439,7 +439,7 @@ BOOL LaunchButton(HWND parentHWnd, RECT parentRect) {
 // 
 // parentHWnd: the HWND of the window to add the checkbox to
 // parentRect: the specs of the parent window
-BOOL CreateCheckbox(HWND parentHWnd, RECT parentRect)
+BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
 {
 	g_checkboxHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
@@ -466,7 +466,8 @@ BOOL CreateCheckbox(HWND parentHWnd, RECT parentRect)
 // 
 // parentHWnd: the HWND of the window to add the button to
 // parentRect: the specs of the parent window
-BOOL CreateCancelButton(HWND parentHWnd, RECT parentRect) {
+BOOL UI::CreateCancelButton(HWND parentHWnd, RECT parentRect) 
+{
 	LPVOID buttonPointer = nullptr;
 	g_CancelbuttonHWnd = CreateWindowEx(
 		WS_EX_LEFT, // extended window style
@@ -484,7 +485,14 @@ BOOL CreateCancelButton(HWND parentHWnd, RECT parentRect) {
 	return TRUE;
 }
 
-BOOL CreateLaunchButton(HWND parentHWnd, RECT parentRect) {
+// FUNCTION: CreateLaunchButton(HWND parentHWnd, RECT parentRect)
+//
+// PURPOSE: Create the launch button on the botton right after app has been installed
+// 
+// parentHWnd: the HWND of the window to add the checkbox to
+// parentRect: the specs of the parent window
+BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect) 
+{
     LPVOID buttonPointer = nullptr;
     g_LaunchbuttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
@@ -507,13 +515,13 @@ BOOL CreateLaunchButton(HWND parentHWnd, RECT parentRect) {
 // PURPOSE: Changes the text of the lower right button
 //
 // newMessage: the message to change the button to
-BOOL ChangeButtonText(const std::wstring& newMessage)
+BOOL UI::ChangeButtonText(const std::wstring& newMessage)
 {
     SendMessage(g_buttonHWnd, WM_SETTEXT, NULL, reinterpret_cast<LPARAM>(newMessage.c_str()));
     return ShowWindow(g_buttonHWnd, SW_SHOW);
 }
 
-BOOL HideButtonWindow()
+BOOL UI::HideButtonWindow()
 {
     return ShowWindow(g_buttonHWnd, SW_HIDE);
 }
@@ -524,7 +532,7 @@ BOOL HideButtonWindow()
 //
 // parentHWnd: the HWND of the window to be changed
 // windowText: the text to change the window to
-BOOL ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring messageText, IStream* logoStream)
+BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring messageText, IStream* logoStream)
 {
     PAINTSTRUCT paint;
     HDC deviceContext = BeginPaint(parentHWnd, &paint);
@@ -600,15 +608,12 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
     return static_cast<int>(msg.wParam);
 }
 
-// FUNCTION: UpdateProgressBar
-//
-// PURPOSE: Increment the progress bar one tick based on preset tick
-void UpdateProgressBar()
+void UI::UpdateProgressBar()
 {
     SendMessage(g_progressHWnd, PBM_STEPIT, 0, 0);
 }
 
-void SendInstallCompleteMsg()
+void UI::SendInstallCompleteMsg()
 {
     SendMessage(hWnd, WM_INSTALLCOMPLETE_MSG, NULL, NULL);
 }
