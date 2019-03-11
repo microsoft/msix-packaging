@@ -41,13 +41,11 @@ private:
     int m_numberOfFiles = 0;
     HRESULT m_loadingPackageInfoCode = 0;
     HANDLE m_buttonClickedEvent;
-    HANDLE m_launchAppEvent;
 
     UI() {}
     UI(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) 
 	{
 		m_buttonClickedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-		m_launchAppEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 	}
     
     HRESULT ParseInfoFromPackage();
@@ -58,11 +56,6 @@ public:
 	void LoadInfo();
 	int GetNumberOfFiles() { return m_numberOfFiles; }
     void SetButtonClicked() { SetEvent(m_buttonClickedEvent); }
-    void SetLaunchButtonClicked() { SetEvent(m_launchAppEvent); }
-    HANDLE GetLaunchButtonEvent()
-    {
-        return m_launchAppEvent;
-    }
 
     // FUNCTION: CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
     //
