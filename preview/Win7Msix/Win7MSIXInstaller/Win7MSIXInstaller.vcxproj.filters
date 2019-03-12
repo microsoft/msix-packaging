@@ -15,12 +15,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MSIXPackaging\AppxPackaging.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MSIXPackaging\MSIXWindows.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="CommandLineInterface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -75,6 +69,15 @@
     <ClInclude Include="Constants.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\.vs\src\msix\AppxPackaging.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\.vs\src\msix\MSIXWindows.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="InstallComplete.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Win7MSIXInstaller.cpp">
@@ -120,6 +123,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="PackageInfo.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="InstallComplete.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
