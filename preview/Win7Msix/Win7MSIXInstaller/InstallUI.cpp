@@ -166,11 +166,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             //wait for user to click launch button or close the window
             while (true)
             {
-                MsgWaitForMultipleObjects(0, NULL, FALSE, INFINITE, QS_ALLINPUT);
-                MSG msg;
-                while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-                    TranslateMessage(&msg);
-                    DispatchMessage(&msg);
+                switch (MsgWaitForMultipleObjects(0, NULL, FALSE, INFINITE, QS_ALLINPUT))
+                {
+                case WAIT_OBJECT_0:
+                    MSG msg;
+                    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
+                    {
+                        TranslateMessage(&msg);
+                        DispatchMessage(&msg);
+                    }
+                    break;
                 }
             }
         }
