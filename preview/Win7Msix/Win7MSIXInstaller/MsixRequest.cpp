@@ -26,6 +26,7 @@
 #include "Protocol.hpp"
 #include "FileTypeAssociation.hpp"
 #include "ProcessPotentialUpdate.hpp"
+#include "InstallComplete.hpp"
 
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
@@ -48,7 +49,8 @@ std::map<PCWSTR, HandlerInfo> AddHandlers =
     {StartMenuLink::HandlerName,          {StartMenuLink::CreateHandler,          AddRemovePrograms::HandlerName}},
     {AddRemovePrograms::HandlerName,      {AddRemovePrograms::CreateHandler,      Protocol::HandlerName}},
     {Protocol::HandlerName,               {Protocol::CreateHandler,               FileTypeAssociation::HandlerName}},
-    {FileTypeAssociation::HandlerName,    {FileTypeAssociation::CreateHandler,    nullptr}},
+    {FileTypeAssociation::HandlerName,    {FileTypeAssociation::CreateHandler,    InstallComplete::HandlerName }},
+    {InstallComplete::HandlerName,        {InstallComplete::CreateHandler,        nullptr}},
 };
 
 std::map<PCWSTR, HandlerInfo> RemoveHandlers =

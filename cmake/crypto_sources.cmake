@@ -68,7 +68,7 @@ list(APPEND XSRC
     ${CRYPTO}/asn1/f_string.c
     ${CRYPTO}/asn1/i2d_pr.c
     ${CRYPTO}/asn1/i2d_pu.c
-    ${CRYPTO}/asn1/n_pkey.c
+#    ${CRYPTO}/asn1/n_pkey.c OPENSSL_NO_RC4
     ${CRYPTO}/asn1/nsseq.c
     ${CRYPTO}/asn1/p5_pbe.c
     ${CRYPTO}/asn1/p5_pbev2.c
@@ -113,9 +113,9 @@ list(APPEND XSRC
     ${CRYPTO}/bio/bio_cb.c
     ${CRYPTO}/bio/bio_err.c
     ${CRYPTO}/bio/bio_lib.c
-    ${CRYPTO}/bio/bss_acpt.c
+#    ${CRYPTO}/bio/bss_acpt.c OPENSSL_NO_SOCK
     ${CRYPTO}/bio/bss_bio.c
-    ${CRYPTO}/bio/bss_conn.c
+#    ${CRYPTO}/bio/bss_conn.c OPENSSL_NO_SOCK
     ${CRYPTO}/bio/bss_fd.c
     ${CRYPTO}/bio/bss_file.c
     ${CRYPTO}/bio/bss_log.c
@@ -189,9 +189,9 @@ list(APPEND XSRC
     ${CRYPTO}/evp/e_aes.c
     ${CRYPTO}/evp/e_aes_cbc_hmac_sha1.c
     ${CRYPTO}/evp/e_aes_cbc_hmac_sha256.c
-     ${CRYPTO}/evp/e_null.c
+    ${CRYPTO}/evp/e_null.c
     ${CRYPTO}/evp/e_old.c
-    ${CRYPTO}/evp/e_rc4_hmac_md5.c
+#    ${CRYPTO}/evp/e_rc4_hmac_md5.c OPENSSL_NO_RC4
     ${CRYPTO}/evp/encode.c
     ${CRYPTO}/evp/evp_acnf.c
     ${CRYPTO}/evp/evp_cnf.c
@@ -208,7 +208,7 @@ list(APPEND XSRC
     ${CRYPTO}/evp/m_sha.c
     ${CRYPTO}/evp/m_sha1.c
     ${CRYPTO}/evp/m_sigver.c
-    ${CRYPTO}/evp/m_wp.c
+#    ${CRYPTO}/evp/m_wp.c OPENSSL_NO_WHIRLPOOL
     ${CRYPTO}/evp/names.c
     ${CRYPTO}/evp/p5_crpt.c
     ${CRYPTO}/evp/p5_crpt2.c

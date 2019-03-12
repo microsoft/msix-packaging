@@ -12,6 +12,10 @@ import java.util.List;
 
 public class Language {
 
+    // Suppress warning for Resources.getSystem().getConfiguration().locale
+    // Yes we know is deprecrated and yes handle it, but we still need something
+    // for older systems...
+    @SuppressWarnings("deprecation")
     static public String[] getLanguages() {
         List<String> languageList = new ArrayList<String>();
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {

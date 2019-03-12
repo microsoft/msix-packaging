@@ -191,6 +191,7 @@
     <ClInclude Include="GeneralUtil.hpp" />
     <ClInclude Include="FilePaths.hpp" />
     <ClInclude Include="CommandLineInterface.hpp" />
+    <ClInclude Include="InstallComplete.hpp" />
     <ClInclude Include="PopulatePackageInfo.hpp" />
     <ClInclude Include="PackageInfo.hpp" />
     <ClInclude Include="IPackageHandler.hpp" />
@@ -210,6 +211,7 @@
     <ClCompile Include="FilePaths.cpp" />
     <ClCompile Include="FileTypeAssociation.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
+    <ClCompile Include="InstallComplete.cpp" />
     <ClCompile Include="InstallUI.cpp" />
     <ClCompile Include="PackageInfo.cpp" />
     <ClCompile Include="ProcessPotentialUpdate.cpp" />

@@ -403,3 +403,6 @@ src/inc/ContentTypesSchemas.hpp
 src/inc/MSIXResource.hpp
 
 .vscode/
+
+test/MacOS-Linux/testApiResults.txt
+test/MacOS-Linux/testResults.txt

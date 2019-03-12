@@ -39,12 +39,14 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
     RETURN_IF_FAILED(packageKey.SetStringValue(L"UninstallString", uninstallCommand));
 
     std::wstring publisherString(packageInfo->GetPublisher());
-    RETURN_IF_FAILED(packageKey.SetStringValue(L"Publisher", publisherString));
+    auto publisherCommonName = publisherString.substr(publisherString.find_first_of(L"=") + 1,
+        publisherString.find_first_of(L",") - publisherString.find_first_of(L"=") - 1);
+    RETURN_IF_FAILED(packageKey.SetStringValue(L"Publisher", publisherCommonName));
     
     std::wstring versionString(ConvertVersionToString(packageInfo->GetVersion()));
     RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayVersion", versionString));
 
-    std::wstring packageIconString = m_msixRequest->GetFilePathMappings()->GetExecutablePath(packageInfo->GetExecutableFilePath(), packageInfo->GetPackageFullName().c_str());
+    std::wstring packageIconString = packageInfo->GetExecutableFilePath();
     RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayIcon", packageIconString));
 
     TraceLoggingWrite(g_MsixTraceLoggingProvider,

@@ -7,40 +7,42 @@ pr:
 - master
 
 jobs:
-- job: macOS
+- job: iOS
   pool:
     name: Hosted macOS
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:
-      debug:
+      debug_x86:
         _arguments: -b Debug
-        _artifact: MACOSchk
-      release:
+        _artifact: iOS-x86chk
+      release_x86:
         _arguments: -b MinSizeRel
-        _artifact: MACOS
+        _artifact: iOS-x86
+      release_arm64:
+        _arguments: -b MinSizeRel -arch arm64
+        _artifact: iOS-arm64
   steps:
   - task: Bash@3
     displayName: Build
     inputs:
       targetType: filePath
-      filePath: ./makemac.sh
+      filePath: ./makeios.sh
       arguments: $(_arguments)
-      # failOnStderr: true Turn on when https://github.com/Microsoft/azure-pipelines-image-generation/issues/758 is resolved.
+      failOnStderr: true
     condition: succeeded()
 
-    # Because of the azure pipeline issue we won't fail compiling the code, but 
-    # we will fail doing the test because there are no binaries
-    # Note: We skip BVTs in Debug mode because of assert()
+    # Note: We skip BVTs in Debug mode because of assert() and release_arm64
+    # Only do BVTs for release_x86 because the emulator
   - task: Bash@3
-    displayName: macOS BVTs
+    displayName: iOS BVTs
     inputs:
       targetType: filePath
-      filePath: './test/MacOS-Linux/MacOS-Linux-Etc.sh'
-      arguments: Apple
+      filePath: './test/MacOS-Linux/testios.sh'
+      arguments: '-p ../mobile/iOSBVT/iOSBVT.xcodeproj'
       workingDirectory: './test/MacOS-Linux'
       failOnStderr: true
-    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'))
+    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release_x86'))
 
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
