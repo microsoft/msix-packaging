@@ -554,11 +554,13 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     Gdiplus::Font messageFont(L"Arial", 10);
     Gdiplus::StringFormat format;
     format.SetAlignment(Gdiplus::StringAlignmentNear);
-    Gdiplus::SolidBrush blackBrush(Gdiplus::Color(255, 0, 0, 0));
+	auto windowsTextColor = Gdiplus::Color();
+	windowsTextColor.SetFromCOLORREF(GetSysColor(COLOR_WINDOWTEXT));
+	Gdiplus::SolidBrush textBrush(windowsTextColor);
 
-    graphics.DrawString(displayName.c_str(), -1, &displayNameFont, layoutRect, &format, &blackBrush);
+    graphics.DrawString(displayName.c_str(), -1, &displayNameFont, layoutRect, &format, &textBrush);
     layoutRect.Y += 40;
-    graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &blackBrush);
+    graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
 
     if (logoStream != nullptr)
     {
