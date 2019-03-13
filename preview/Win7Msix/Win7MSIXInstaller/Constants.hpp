@@ -15,6 +15,7 @@ static const std::wstring openKeyName = L"open";
 static const std::wstring commandKeyName = L"command";
 static const std::wstring defaultIconKeyName = L"DefaultIcon";
 static const std::wstring protocolValueName = L"URL Protocol";
+static const std::wstring urlProtocolPrefix = L"URL:";
 static const std::wstring commandArgument = L" \"%1\"";
 
 static const std::wstring ftaCategoryNameInManifest = L"windows.fileTypeAssociation";

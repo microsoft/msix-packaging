@@ -19,6 +19,10 @@ HRESULT Protocol::ParseProtocolElement(IMsixElement* protocolElement)
     ProtocolData protocol;
     protocol.name = protocolName.Get();
 
+    Text<wchar_t> parameters;
+    RETURN_IF_FAILED(protocolElement->GetAttributeValue(parametersAttribute.c_str(), &parameters));
+    protocol.parameters = parameters.Get();
+
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Parsing Protocol",
         TraceLoggingValue(protocolName.Get(), "Name"));
@@ -49,7 +53,11 @@ HRESULT Protocol::ParseProtocolElement(IMsixElement* protocolElement)
         Text<wchar_t> displayName;
         RETURN_IF_FAILED(displayNameElement->GetText(&displayName));
 
-        protocol.displayName = displayName.Get();
+        protocol.displayName = urlProtocolPrefix + displayName.Get();
+    }
+    else
+    {
+        protocol.displayName = urlProtocolPrefix + protocol.name;
     }
 
     m_protocols.push_back(protocol);
@@ -113,6 +121,7 @@ HRESULT Protocol::ProcessProtocolForAdd(ProtocolData& protocol)
     RETURN_IF_FAILED(m_classesKey.CreateSubKey(protocol.name.c_str(), KEY_WRITE, &protocolKey));
 
     RETURN_IF_FAILED(protocolKey.SetValue(protocolValueName.c_str(), nullptr, 0, REG_SZ));
+    RETURN_IF_FAILED(protocolKey.SetStringValue(L"", protocol.displayName));
 
     if (protocol.logo.c_str() != nullptr)
     {
@@ -131,8 +140,41 @@ HRESULT Protocol::ProcessProtocolForAdd(ProtocolData& protocol)
     RegistryKey commandKey;
     RETURN_IF_FAILED(openKey.CreateSubKey(commandKeyName.c_str(), KEY_WRITE, &commandKey));
 
-    std::wstring command = m_msixRequest->GetPackageInfo()->GetExecutableFilePath() + commandArgument;
+    std::wstring command = m_msixRequest->GetPackageInfo()->GetExecutableFilePath();
+    if (protocol.parameters.c_str() != nullptr)
+    {
+        command += std::wstring(L" ") + protocol.parameters;
+    }
+    else
+    {
+        command += commandArgument;
+    }
     RETURN_IF_FAILED(commandKey.SetStringValue(L"", command));
+
+    return S_OK;
+}
+
+HRESULT Protocol::ExecuteForRemoveRequest()
+{
+    for (std::vector<ProtocolData>::iterator protocol = m_protocols.begin(); protocol != m_protocols.end(); ++protocol)
+    {
+        RETURN_IF_FAILED(ProcessProtocolForRemove(*protocol));
+    }
+
+    return S_OK;
+}
+
+HRESULT Protocol::ProcessProtocolForRemove(ProtocolData& protocol)
+{
+    HRESULT hrDeleteKey = m_classesKey.DeleteTree(protocol.name.c_str());
+    if (FAILED(hrDeleteKey))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Unable to delete protocol extension",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrDeleteKey, "HR"),
+            TraceLoggingValue(protocol.name.c_str(), "Protocol"));
+    }
 
     return S_OK;
 }

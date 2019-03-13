@@ -9,6 +9,7 @@
 struct ProtocolData
 {
     std::wstring name;
+    std::wstring parameters;
     std::wstring displayName;
     std::wstring logo;
 };
@@ -18,6 +19,7 @@ class Protocol : IPackageHandler
 public:
     
     HRESULT ExecuteForAddRequest();
+    HRESULT ExecuteForRemoveRequest();
 
     static const PCWSTR HandlerName;
     static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
@@ -35,5 +37,6 @@ private:
     HRESULT ParseManifest();
 
     HRESULT ProcessProtocolForAdd(ProtocolData & protocol);
+    HRESULT ProcessProtocolForRemove(ProtocolData& protocol);
 };
     
