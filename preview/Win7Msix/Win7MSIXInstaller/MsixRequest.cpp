@@ -122,13 +122,21 @@ HRESULT MsixRequest::DisplayPackageInfo()
 {
     AutoPtr<IPackageHandler> handler;
     RETURN_IF_FAILED(PopulatePackageInfo::CreateHandler(this, &handler));
-    RETURN_IF_FAILED(handler->ExecuteForRemoveRequest());
+    HRESULT packageFoundResult = handler->ExecuteForRemoveRequest();
 
-    std::wcout << std::endl;
-    std::wcout << L"PackageFullName: " << m_packageInfo->GetPackageFullName().c_str() << std::endl;
-    std::wcout << L"DisplayName: " << m_packageInfo->GetDisplayName().c_str() << std::endl;
-    std::wcout << L"DirectoryPath: " << m_packageInfo->GetPackageDirectoryPath().c_str() << std::endl;
-    std::wcout << std::endl;
+    if (packageFoundResult == S_OK)
+    {
+        std::wcout << std::endl;
+        std::wcout << L"PackageFullName: " << m_packageInfo->GetPackageFullName().c_str() << std::endl;
+        std::wcout << L"DisplayName: " << m_packageInfo->GetDisplayName().c_str() << std::endl;
+        std::wcout << L"DirectoryPath: " << m_packageInfo->GetPackageDirectoryPath().c_str() << std::endl;
+        std::wcout << std::endl;
+    }
+    else
+    {
+        std::wcout << std::endl;
+        std::wcout << L"Package not found " << std::endl;
+    }
 
     return S_OK;
 }
