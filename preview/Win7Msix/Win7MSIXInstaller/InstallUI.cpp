@@ -145,6 +145,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
             }
             break;
+            case IDC_CANCELBUTTON:
+            {
+                ui->StartUnInstall();
+                break;
+            }
             case IDC_LAUNCHBUTTON:
                 ui->LaunchInstalledApp();
                 break;
@@ -181,13 +186,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
-    case WM_SIZE:
-    case WM_SIZING:
-        break;
-    case WM_DESTROY:
-        PostQuitMessage(0);
-        exit(0);
-        break;
 	case WM_CTLCOLORSTATIC:
 	{
 		switch (::GetDlgCtrlID((HWND)lParam))
@@ -203,6 +201,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		break;
 	}
+    case WM_SIZE:
+    case WM_SIZING:
+        break;
+    case WM_DESTROY:
+        PostQuitMessage(0);
+        exit(0);
+        break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
@@ -627,4 +632,31 @@ void UI::UpdateProgressBar()
 void UI::SendInstallCompleteMsg()
 {
     SendMessage(hWnd, WM_INSTALLCOMPLETE_MSG, NULL, NULL);
+}
+
+HRESULT UnInstallPackage(MsixRequest* m_msixRequest)
+{
+    AutoPtr<MsixRequest> removePackageRequest;
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, Flags::NoFlags, std::wstring(), m_msixRequest->GetPackageInfo()->GetPackageFullName(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &removePackageRequest));
+
+    const HRESULT hrCancelRequest = removePackageRequest->ProcessRequest();
+    if (FAILED(hrCancelRequest))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Failed to process cancel request",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrCancelRequest, "HR"));
+    }
+    return S_OK;
+}
+
+HRESULT UI::StartUnInstall()
+{
+    m_msixRequest->SetIsCancelClicked();
+    std::thread UnInstallthread(UnInstallPackage, m_msixRequest);
+    UnInstallthread.detach();
+
+    DWORD waitUnInstallResult = WaitForSingleObject(UnInstallthread.native_handle(), INFINITE);
+
+    return S_OK;
 }

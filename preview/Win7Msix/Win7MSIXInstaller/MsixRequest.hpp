@@ -37,6 +37,9 @@ private:
     /// Filled in by CreateAndShowUI 
     AutoPtr<UI> m_UI;
 
+    //Set if Cancel is clicked during app installation
+    bool m_isCancelClicked = false;
+
 public:
     static HRESULT Make(OperationType operationType, Flags flags, std::wstring packageFilePath, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest** outInstance);
 
@@ -72,6 +75,16 @@ public:
     {
         m_validationOptions = static_cast<MSIX_VALIDATION_OPTION>(m_validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN);
         return true;
+    }
+
+    void SetIsCancelClicked()
+    {
+        m_isCancelClicked = true;
+    }
+
+    bool GetIsCancelClicked()
+    {
+        return m_isCancelClicked;
     }
 
 private:

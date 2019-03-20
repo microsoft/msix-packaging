@@ -27,7 +27,8 @@ class UI
 {
 public:
     HRESULT ShowUI();
-	HRESULT LaunchInstalledApp();
+    HRESULT LaunchInstalledApp();
+    HRESULT StartUnInstall();
 
     static HRESULT Make(_In_ MsixRequest* msixRequest, _Out_ UI** instance);
     ~UI() {}
