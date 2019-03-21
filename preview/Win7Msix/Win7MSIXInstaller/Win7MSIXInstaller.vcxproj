@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -184,6 +184,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AddRemovePrograms.hpp" />
+    <ClInclude Include="ComInterface.hpp" />
+    <ClInclude Include="ComServer.hpp" />
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="Extractor.hpp" />
     <ClInclude Include="FileTypeAssociation.hpp" />
@@ -206,6 +208,8 @@
     <ClInclude Include="StartMenuLink.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ComInterface.cpp" />
+    <ClCompile Include="ComServer.cpp" />
     <ClCompile Include="Extractor.cpp" />
     <ClCompile Include="FilePaths.cpp" />
     <ClCompile Include="FileTypeAssociation.cpp" />

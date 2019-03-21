@@ -226,3 +226,9 @@ class TextOle
         void Cleanup() { if (content) { CoTaskMemFree(content); content = nullptr; } }
 };
 
+HRESULT GetAttributeValueFromElement(IMsixElement* element, std::wstring attributeName, std::wstring& attributeValue);
+/// The manifest ID is missing the curly braces;
+/// This adds the curly braces to convert it into a proper Guid form.
+std::wstring GuidFromManifestId(std::wstring id);
+
+HRESULT FileExists(std::wstring file, _Out_ bool &exists);
