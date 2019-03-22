@@ -25,34 +25,116 @@ static const std::wstring idAttribute = L"Id";
 static const std::wstring versionNumberAttribute = L"VersionNumber";
 static const std::wstring proxyStubClsidAttribute = L"ProxyStubClsid";
 static const std::wstring proxyStubClsidForUniversalMarshaler = L"{00020424-0000-0000-C000-000000000046}";
+static const std::wstring localeIdAttribute = L"LocaleId";
+static const std::wstring libraryFlagAttribute = L"LibraryFlag";
+static const std::wstring helpDirectoryAttribute = L"HelpDirectory";
+static const std::wstring displayNameAttribute = L"DisplayName";
+static const std::wstring pathAttribute = L"Path";
 
 static const std::wstring extensionQuery = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='Extensions']/*[local-name()='Extension']";
 static const std::wstring interfaceQuery = L"*[local-name()='ComInterface']/*[local-name()='Interface']";
-static const std::wstring typelibForInterfaceQuery = L"*[local-name()='Typelib']";
+static const std::wstring typeLibForInterfaceQuery = L"*[local-name()='TypeLib']";
+static const std::wstring typeLibQuery = L"*[local-name()='ComInterface']/*[local-name()='TypeLib']";
+static const std::wstring versionQuery = L"*[local-name()='Version']";
+static const std::wstring win32PathQuery = L"*[local-name()='Win32Path']";
+static const std::wstring win64PathQuery = L"*[local-name()='Win64Path']";
 
 static const std::wstring interfaceKeyName = L"Interface";
 static const std::wstring proxyStubClsidKeyName = L"ProxyStubClsid32";
 static const std::wstring typeLibKeyName = L"TypeLib";
 static const std::wstring versionValueName = L"Version";
+static const std::wstring win64KeyName = L"win64";
+static const std::wstring win32KeyName = L"win32";
+static const std::wstring flagsKeyName = L"Flags";
+static const std::wstring helpDirKeyName = L"HelpDir";
 
 HRESULT ComInterface::ExecuteForAddRequest()
+{
+    for (auto comInterface = m_interfaces.begin(); comInterface != m_interfaces.end(); ++comInterface)
+    {
+        RETURN_IF_FAILED(ProcessInterfaceForAddRequest(*comInterface));
+    }
+
+    for (auto typeLib = m_typeLibs.begin(); typeLib != m_typeLibs.end(); ++typeLib)
+    {
+        RETURN_IF_FAILED(ProcessTypeLibForAddRequest(*typeLib));
+    }
+
+    return S_OK;
+}
+
+HRESULT ComInterface::ProcessInterfaceForAddRequest(Interface& comInterface)
 {
     RegistryKey interfaceKey;
     RETURN_IF_FAILED(m_classesKey.CreateSubKey(interfaceKeyName.c_str(), KEY_WRITE, &interfaceKey));
 
-    for (auto comInterface = m_interfaces.begin(); comInterface != m_interfaces.end(); ++comInterface)
+    RegistryKey interfaceIdKey;
+    RETURN_IF_FAILED(interfaceKey.CreateSubKey(comInterface.id.c_str(), KEY_WRITE, &interfaceIdKey));
+
+    RegistryKey proxyStubClsidKey;
+    RETURN_IF_FAILED(interfaceIdKey.CreateSubKey(proxyStubClsidKeyName.c_str(), KEY_WRITE, &proxyStubClsidKey));
+    RETURN_IF_FAILED(proxyStubClsidKey.SetStringValue(L"", comInterface.proxyStubClsid));
+
+    RegistryKey typeLibKey;
+    RETURN_IF_FAILED(interfaceIdKey.CreateSubKey(typeLibKeyName.c_str(), KEY_WRITE, &typeLibKey));
+    RETURN_IF_FAILED(typeLibKey.SetStringValue(L"", comInterface.typeLibId));
+    RETURN_IF_FAILED(typeLibKey.SetStringValue(versionValueName.c_str(), comInterface.typeLibVersion));
+    return S_OK;
+}
+
+HRESULT ComInterface::ProcessTypeLibForAddRequest(TypeLib& typeLib)
+{
+    RegistryKey typeLibKey;
+    RETURN_IF_FAILED(m_classesKey.CreateSubKey(typeLibKeyName.c_str(), KEY_WRITE, &typeLibKey));
+
+    RegistryKey typeLibIdKey;
+    RETURN_IF_FAILED(typeLibKey.CreateSubKey(typeLib.id.c_str(), KEY_WRITE, &typeLibIdKey));
+
+    for (auto version = typeLib.version.begin(); version != typeLib.version.end(); ++version)
     {
-        RegistryKey interfaceIdKey;
-        RETURN_IF_FAILED(interfaceKey.CreateSubKey(comInterface->id.c_str(), KEY_WRITE, &interfaceIdKey));
+        RegistryKey versionNumberKey;
+        RETURN_IF_FAILED(typeLibIdKey.CreateSubKey(version->versionNumber.c_str(), KEY_WRITE, &versionNumberKey));
+        if (!version->displayName.empty())
+        {
+            RETURN_IF_FAILED(versionNumberKey.SetStringValue(L"", version->displayName));
+        }
 
-        RegistryKey proxyStubClsidKey;
-        RETURN_IF_FAILED(interfaceIdKey.CreateSubKey(proxyStubClsidKeyName.c_str(), KEY_WRITE, &proxyStubClsidKey));
-        RETURN_IF_FAILED(proxyStubClsidKey.SetStringValue(L"", comInterface->proxyStubClsid));
+        RegistryKey localeIdKey;
+        RETURN_IF_FAILED(versionNumberKey.CreateSubKey(version->localeId.c_str(), KEY_WRITE, &localeIdKey));
 
-        RegistryKey typeLibKey;
-        RETURN_IF_FAILED(interfaceIdKey.CreateSubKey(typeLibKeyName.c_str(), KEY_WRITE, &typeLibKey));
-        RETURN_IF_FAILED(typeLibKey.SetStringValue(L"", comInterface->typeLibId));
-        RETURN_IF_FAILED(typeLibKey.SetStringValue(versionValueName.c_str(), comInterface->typeLibVersion));
+        if (!version->win32Path.empty())
+        {
+            RegistryKey win32Key;
+            RETURN_IF_FAILED(localeIdKey.CreateSubKey(win32KeyName.c_str(), KEY_WRITE, &win32Key));
+
+            std::wstring win32FullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(version->win32Path, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+            RETURN_IF_FAILED(win32Key.SetStringValue(L"", win32FullPath));
+        }
+
+        if (!version->win64Path.empty())
+        {
+            RegistryKey win64Key;
+            RETURN_IF_FAILED(localeIdKey.CreateSubKey(win64KeyName.c_str(), KEY_WRITE, &win64Key));
+
+            std::wstring win64FullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(version->win64Path, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+            RETURN_IF_FAILED(win64Key.SetStringValue(L"", win64FullPath));
+        }
+
+        if (!version->libraryFlag.empty())
+        {
+            RegistryKey flagsKey;
+            RETURN_IF_FAILED(versionNumberKey.CreateSubKey(flagsKeyName.c_str(), KEY_WRITE, &flagsKey));
+            RETURN_IF_FAILED(flagsKey.SetStringValue(L"", version->libraryFlag));
+        }
+
+        if (!version->helpDirectory.empty())
+        {
+            RegistryKey helpDirKey;
+            RETURN_IF_FAILED(versionNumberKey.CreateSubKey(helpDirKeyName.c_str(), KEY_WRITE, &helpDirKey));
+
+            std::wstring helpDirFullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(version->helpDirectory, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+            RETURN_IF_FAILED(helpDirKey.SetStringValue(L"", helpDirFullPath));
+        }
     }
 
     return S_OK;
@@ -93,6 +175,20 @@ HRESULT ComInterface::ParseManifest()
 
                 RETURN_IF_FAILED(comInterfaceEnum->MoveNext(&hc_extension));
             }
+
+            ComPtr<IMsixElementEnumerator> typeLibEnum;
+            RETURN_IF_FAILED(extensionElement->GetElements(typeLibQuery.c_str(), &typeLibEnum));
+            RETURN_IF_FAILED(typeLibEnum->GetHasCurrent(&hc_extension));
+
+            while (hc_extension)
+            {
+                ComPtr<IMsixElement> typeLibElement;
+                RETURN_IF_FAILED(typeLibEnum->GetCurrent(&typeLibElement));
+
+                RETURN_IF_FAILED(ParseTypeLibElement(typeLibElement.Get()));
+
+                RETURN_IF_FAILED(typeLibEnum->MoveNext(&hc_extension));
+            }
         }
         RETURN_IF_FAILED(extensionEnum->MoveNext(&hasCurrent));
     }
@@ -106,34 +202,97 @@ HRESULT ComInterface::ParseComInterfaceElement(IMsixElement* interfaceElement)
     std::wstring id;
     RETURN_IF_FAILED(GetAttributeValueFromElement(interfaceElement, idAttribute, id));
     comInterface.id = GuidFromManifestId(id);
-    RETURN_IF_FAILED(GetAttributeValueFromElement(interfaceElement, proxyStubClsidAttribute, id));
 
-    if (!id.empty())
+    std::wstring clsid;
+    RETURN_IF_FAILED(GetAttributeValueFromElement(interfaceElement, proxyStubClsidAttribute, clsid));
+
+    if (!clsid.empty())
     {
-        comInterface.proxyStubClsid = GuidFromManifestId(id);
-        return S_OK;
+        comInterface.proxyStubClsid = GuidFromManifestId(clsid);
     }
-
-    comInterface.proxyStubClsid = proxyStubClsidForUniversalMarshaler;
-
-    BOOL hasCurrent = FALSE;
-    ComPtr<IMsixElementEnumerator> typelibEnum;
-    RETURN_IF_FAILED(interfaceElement->GetElements(typelibForInterfaceQuery.c_str(), &typelibEnum));
-    RETURN_IF_FAILED(typelibEnum->GetHasCurrent(&hasCurrent));
-    while (hasCurrent)
+    else
     {
-        ComPtr<IMsixElement> typeLibElement;
-        RETURN_IF_FAILED(typelibEnum->GetCurrent(&typeLibElement));
+        comInterface.proxyStubClsid = proxyStubClsidForUniversalMarshaler;
 
-        RETURN_IF_FAILED(GetAttributeValueFromElement(typeLibElement.Get(), idAttribute, id));
-        comInterface.typeLibId = GuidFromManifestId(id);
-        RETURN_IF_FAILED(GetAttributeValueFromElement(typeLibElement.Get(), versionNumberAttribute, comInterface.typeLibVersion));
-        
-        RETURN_IF_FAILED(typelibEnum->MoveNext(&hasCurrent));
+        BOOL hasCurrent = FALSE;
+        ComPtr<IMsixElementEnumerator> typelibEnum;
+        RETURN_IF_FAILED(interfaceElement->GetElements(typeLibForInterfaceQuery.c_str(), &typelibEnum));
+        RETURN_IF_FAILED(typelibEnum->GetHasCurrent(&hasCurrent));
+        while (hasCurrent)
+        {
+            ComPtr<IMsixElement> typeLibElement;
+            RETURN_IF_FAILED(typelibEnum->GetCurrent(&typeLibElement));
+
+            RETURN_IF_FAILED(GetAttributeValueFromElement(typeLibElement.Get(), idAttribute, id));
+            comInterface.typeLibId = GuidFromManifestId(id);
+            RETURN_IF_FAILED(GetAttributeValueFromElement(typeLibElement.Get(), versionNumberAttribute, comInterface.typeLibVersion));
+
+            RETURN_IF_FAILED(typelibEnum->MoveNext(&hasCurrent));
+        }
     }
-
     m_interfaces.push_back(comInterface);
 
+    return S_OK;
+}
+
+HRESULT ComInterface::ParseTypeLibElement(IMsixElement * typeLibElement)
+{
+    TypeLib typeLib;
+
+    std::wstring id;
+    RETURN_IF_FAILED(GetAttributeValueFromElement(typeLibElement, idAttribute, id));
+    typeLib.id = GuidFromManifestId(id);
+
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> versionEnum;
+    RETURN_IF_FAILED(typeLibElement->GetElements(versionQuery.c_str(), &versionEnum));
+    RETURN_IF_FAILED(versionEnum->GetHasCurrent(&hasCurrent));
+    while (hasCurrent)
+    {
+        ComPtr<IMsixElement> versionElement;
+        RETURN_IF_FAILED(versionEnum->GetCurrent(&versionElement));
+
+        RETURN_IF_FAILED(ParseVersionElement(typeLib, versionElement.Get()));
+
+        RETURN_IF_FAILED(versionEnum->MoveNext(&hasCurrent));
+    }
+
+    m_typeLibs.push_back(typeLib);
+    return S_OK;
+}
+
+
+HRESULT ComInterface::ParseVersionElement(TypeLib & typeLib, IMsixElement * versionElement)
+{
+    Version version;
+
+    RETURN_IF_FAILED(GetAttributeValueFromElement(versionElement, displayNameAttribute, version.displayName));
+    RETURN_IF_FAILED(GetAttributeValueFromElement(versionElement, versionNumberAttribute, version.versionNumber));
+    RETURN_IF_FAILED(GetAttributeValueFromElement(versionElement, localeIdAttribute, version.localeId));
+    RETURN_IF_FAILED(GetAttributeValueFromElement(versionElement, libraryFlagAttribute, version.libraryFlag));
+    RETURN_IF_FAILED(GetAttributeValueFromElement(versionElement, helpDirectoryAttribute, version.helpDirectory));
+
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> pathEnum;
+    RETURN_IF_FAILED(versionElement->GetElements(win32PathQuery.c_str(), &pathEnum));
+    RETURN_IF_FAILED(pathEnum->GetHasCurrent(&hasCurrent));
+    if (hasCurrent)
+    {
+        ComPtr<IMsixElement> pathElement;
+        RETURN_IF_FAILED(pathEnum->GetCurrent(&pathElement));
+        RETURN_IF_FAILED(GetAttributeValueFromElement(pathElement.Get(), pathAttribute, version.win32Path));
+    }
+
+    RETURN_IF_FAILED(versionElement->GetElements(win64PathQuery.c_str(), &pathEnum));
+    RETURN_IF_FAILED(pathEnum->GetHasCurrent(&hasCurrent));
+    if (hasCurrent)
+    {
+        ComPtr<IMsixElement> pathElement;
+        RETURN_IF_FAILED(pathEnum->GetCurrent(&pathElement));
+        RETURN_IF_FAILED(GetAttributeValueFromElement(pathElement.Get(), pathAttribute, version.win64Path));
+    }
+
+    typeLib.version.push_back(version);
     return S_OK;
 }
 
