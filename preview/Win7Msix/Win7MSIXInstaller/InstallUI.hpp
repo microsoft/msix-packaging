@@ -7,10 +7,10 @@
 #include "IPackageHandler.hpp"
 
 // Child window identifiers
-#define IDC_LAUNCHCHECKBOX 1
-#define IDC_INSTALLBUTTON 2
-#define IDC_CANCELBUTTON 3
-#define IDC_LAUNCHBUTTON 4
+#define IDC_LAUNCHCHECKBOX 101
+#define IDC_INSTALLBUTTON 102
+#define IDC_CANCELBUTTON 103
+#define IDC_LAUNCHBUTTON 104
 #define WM_INSTALLCOMPLETE_MSG (WM_APP+1)
 
 // Global variables
@@ -20,7 +20,6 @@ static HWND g_checkboxHWnd = NULL;
 static HWND g_progressHWnd = NULL;
 static HWND g_CancelbuttonHWnd = NULL;
 static HWND g_LaunchbuttonHWnd = NULL;
-static bool g_installed = false;
 static bool g_launchCheckBoxState = true; // launch checkbox is checked by default
 
 class UI
@@ -28,7 +27,6 @@ class UI
 public:
     HRESULT ShowUI();
     HRESULT LaunchInstalledApp();
-    HRESULT StartUnInstall();
 
     static HRESULT Make(_In_ MsixRequest* msixRequest, _Out_ UI** instance);
     ~UI() {}
@@ -57,6 +55,9 @@ public:
 	void LoadInfo();
 	int GetNumberOfFiles() { return m_numberOfFiles; }
     void SetButtonClicked() { SetEvent(m_buttonClickedEvent); }
+    MsixRequest* GetMsixRequest() {
+        return m_msixRequest;
+    }
 
     // FUNCTION: CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
     //

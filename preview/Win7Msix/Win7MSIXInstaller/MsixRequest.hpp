@@ -37,8 +37,8 @@ private:
     /// Filled in by CreateAndShowUI 
     AutoPtr<UI> m_UI;
 
-    //Set if Cancel is clicked during app installation
-    bool m_isCancelClicked = false;
+    ///Variable used to indicate if add package request was cancelled during installation
+    bool m_isInstallCancelled;
 
 public:
     static HRESULT Make(OperationType operationType, Flags flags, std::wstring packageFilePath, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest** outInstance);
@@ -57,6 +57,7 @@ public:
     MSIX_VALIDATION_OPTION GetValidationOptions() { return m_validationOptions; }
     PCWSTR GetPackageFilePath() { return m_packageFilePath.c_str(); }
     PCWSTR GetPackageFullName() { return m_packageFullName.c_str(); }
+    
     FilePathMappings* GetFilePathMappings() { return &m_filePathMappings; }
 
     /// @return can return null if called before PopulatePackageInfo.
@@ -77,14 +78,20 @@ public:
         return true;
     }
 
-    void SetIsCancelClicked()
-    {
-        m_isCancelClicked = true;
-    }
-
     bool GetIsCancelClicked()
     {
-        return m_isCancelClicked;
+        return m_isInstallCancelled;
+    }
+
+    //Setters
+    void SetIsCancelClicked()
+    {
+        m_isInstallCancelled = true;
+    }
+
+    void SetPackageFullName(PCWSTR packageFullName)
+    {
+        m_packageFullName = packageFullName;
     }
 
 private:

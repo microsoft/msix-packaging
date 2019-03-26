@@ -14,7 +14,7 @@ const PCWSTR InstallComplete::HandlerName = L"InstallComplete";
 
 HRESULT InstallComplete::ExecuteForAddRequest()
 {
-    AutoPtr<UI> ui;
+    AutoPtr<UI> ui = m_msixRequest->GetUI();
     ui->SendInstallCompleteMsg();
     return S_OK;
 }

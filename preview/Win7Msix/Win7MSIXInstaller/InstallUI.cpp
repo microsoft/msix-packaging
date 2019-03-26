@@ -111,26 +111,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             case IDC_INSTALLBUTTON:
             {                
-                if (!g_installed)
+                DestroyWindow(g_buttonHWnd);
+                ui->CreateCancelButton(hWnd, windowRect);
+                UpdateWindow(hWnd);
+                if (ui != NULL)
                 {
-                    DestroyWindow(g_buttonHWnd);
-                    ui->CreateCancelButton(hWnd, windowRect);
-                    UpdateWindow(hWnd);
-                    if (ui != NULL)
-                    {
-                        ui->CreateProgressBar(hWnd, windowRect, ui->GetNumberOfFiles());
-                    }
-                    ShowWindow(g_progressHWnd, SW_SHOW); //Show progress bar only when install is clicked
-                    if (ui != NULL)
-                    {
-                        ui->SetButtonClicked();
-                    }
+                    ui->CreateProgressBar(hWnd, windowRect, ui->GetNumberOfFiles());
                 }
-                else
+                ShowWindow(g_progressHWnd, SW_SHOW); //Show progress bar only when install is clicked
+                if (ui != NULL)
                 {
-                    PostQuitMessage(0);
-                    exit(0);
-                }
+                    ui->SetButtonClicked();
+                }   
             }
             break;
             case IDC_LAUNCHCHECKBOX:
@@ -147,7 +139,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
             case IDC_CANCELBUTTON:
             {
-                ui->StartUnInstall();
+                ui->GetMsixRequest()->SetIsCancelClicked();
                 break;
             }
             case IDC_LAUNCHBUTTON:
@@ -162,7 +154,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         UpdateWindow(hWnd);
         ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
         ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
-        if (g_launchCheckBoxState) {
+        if (g_launchCheckBoxState)
+        {
             ui->LaunchInstalledApp(); // launch app
             DestroyWindow(hWnd); // close msix app installer
         }
@@ -188,19 +181,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
 	case WM_CTLCOLORSTATIC:
 	{
-		switch (::GetDlgCtrlID((HWND)lParam))
-		{
-			case IDC_LAUNCHCHECKBOX:
-			{
-				HBRUSH hbr = (HBRUSH)DefWindowProc(hWnd, message, wParam, lParam);
-				::DeleteObject(hbr);
-				SetBkMode((HDC)wParam, TRANSPARENT);
-				return (LRESULT)::GetStockObject(NULL_BRUSH);
-			}
-		}
-
-		break;
-	}
+        switch (::GetDlgCtrlID((HWND)lParam))
+	    {
+            case IDC_LAUNCHCHECKBOX:
+            {
+                HBRUSH hbr = (HBRUSH)DefWindowProc(hWnd, message, wParam, lParam);
+                ::DeleteObject(hbr);
+                SetBkMode((HDC)wParam, TRANSPARENT);
+                return (LRESULT)::GetStockObject(NULL_BRUSH);
+            }
+        }
+        break;
+    }
     case WM_SIZE:
     case WM_SIZING:
         break;
@@ -227,7 +219,6 @@ HRESULT UI::LaunchInstalledApp()
 
 void StartParseFile(HWND hWnd)
 {
-    //auto result = ParseAndRun(hWnd);
     int result = 0;
 
     if (result != 0)
@@ -632,31 +623,4 @@ void UI::UpdateProgressBar()
 void UI::SendInstallCompleteMsg()
 {
     SendMessage(hWnd, WM_INSTALLCOMPLETE_MSG, NULL, NULL);
-}
-
-HRESULT UnInstallPackage(MsixRequest* m_msixRequest)
-{
-    AutoPtr<MsixRequest> removePackageRequest;
-    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, Flags::NoFlags, std::wstring(), m_msixRequest->GetPackageInfo()->GetPackageFullName(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &removePackageRequest));
-
-    const HRESULT hrCancelRequest = removePackageRequest->ProcessRequest();
-    if (FAILED(hrCancelRequest))
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Failed to process cancel request",
-            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-            TraceLoggingValue(hrCancelRequest, "HR"));
-    }
-    return S_OK;
-}
-
-HRESULT UI::StartUnInstall()
-{
-    m_msixRequest->SetIsCancelClicked();
-    std::thread UnInstallthread(UnInstallPackage, m_msixRequest);
-    UnInstallthread.detach();
-
-    DWORD waitUnInstallResult = WaitForSingleObject(UnInstallthread.native_handle(), INFINITE);
-
-    return S_OK;
 }

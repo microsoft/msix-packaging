@@ -276,9 +276,12 @@ HRESULT Extractor::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** i
 
 HRESULT Extractor::ExtractPackage()
 {
-    RETURN_IF_FAILED(ExtractFootprintFiles());
-    RETURN_IF_FAILED(ExtractPayloadFiles());
-    RETURN_IF_FAILED(ExtractRegistry(false));
+    if(!m_msixRequest->GetIsCancelClicked())
+        RETURN_IF_FAILED(ExtractFootprintFiles());
+    if (!m_msixRequest->GetIsCancelClicked())
+        RETURN_IF_FAILED(ExtractPayloadFiles());
+    if (!m_msixRequest->GetIsCancelClicked())
+        RETURN_IF_FAILED(ExtractRegistry(false));
     return S_OK;
 }
 

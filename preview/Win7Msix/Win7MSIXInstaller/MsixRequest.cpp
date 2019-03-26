@@ -150,7 +150,7 @@ HRESULT MsixRequest::FindAllPackages()
         numPackages++;
     }
 
-    std::cout << numPackages << " Packages found" << std::endl;
+    std::cout << numPackages << " Package(s) found" << std::endl;
     
     return S_OK;
 }
@@ -174,6 +174,12 @@ HRESULT MsixRequest::ProcessAddRequest()
         }
 
         currentHandlerName = currentHandler.nextHandler;
+    }
+
+    //If cancel was clicked, process remove request to uninstall the package
+    if (GetIsCancelClicked())
+    {
+        ProcessRemoveRequest();
     }
 
     return S_OK;
