@@ -89,11 +89,6 @@ public:
         m_isInstallCancelled = true;
     }
 
-    void SetPackageFullName(PCWSTR packageFullName)
-    {
-        m_packageFullName = packageFullName;
-    }
-
 private:
     /// FilePath Mappings maps the VFS tokens (e.g. Windows) to the actual folder on disk (e.g. C:\windows)
     HRESULT InitializeFilePathMappings();

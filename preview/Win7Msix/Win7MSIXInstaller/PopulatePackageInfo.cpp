@@ -45,12 +45,7 @@ HRESULT PopulatePackageInfo::ExecuteForAddRequest()
 }
 
 HRESULT PopulatePackageInfo::ExecuteForRemoveRequest()
-{ 
-    if (m_msixRequest->GetPackageFullName() == NULL)
-    {
-        m_msixRequest->SetPackageFullName(m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
-    }
-
+{
     std::wstring packageDirectoryPath = m_msixRequest->GetFilePathMappings()->GetMsix7Directory() + m_msixRequest->GetPackageFullName();
     std::experimental::filesystem::path directory = packageDirectoryPath;
     if (!std::experimental::filesystem::exists(directory))
@@ -62,7 +57,7 @@ HRESULT PopulatePackageInfo::ExecuteForRemoveRequest()
             TraceLoggingValue(directory.c_str(), "PackageDirectoryPath"));
         return E_NOT_SET;
     }
-
+    
     std::wstring manifestPath = packageDirectoryPath + manifestFile;
     ComPtr<IStream> stream;
     RETURN_IF_FAILED(CreateStreamOnFileUTF16(manifestPath.c_str(), true /*forRead*/, &stream));
