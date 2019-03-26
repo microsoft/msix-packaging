@@ -5,8 +5,10 @@ trigger:
 
 # Branches that trigger builds on PR
 pr:
-- master
-- release_v*
+  branches:
+    include:
+    - master
+    - release_v*
   paths:
     exclude:
     - CODEOWNERS
