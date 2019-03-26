@@ -8,13 +8,16 @@ struct ExeServerClass
 {
     std::wstring id;
     std::wstring displayName;
-    std::wstring enableOleDefaultHandler; //TODO
+    std::wstring enableOleDefaultHandler;
     std::wstring progId;
     std::wstring versionIndependentProgId;
-    std::wstring autoConvertTo; //TODO
-    std::wstring insertableObject; //TODO
-    std::wstring shortDisplayName; //TODO
-    //TODO a bunch of child elements
+    std::wstring autoConvertTo;
+    std::wstring insertableObject;
+    std::wstring shortDisplayName;
+    std::vector<std::wstring> implementedCategories;
+    std::wstring conversionReadableFormat;
+    std::wstring conversionReadWritableFormat;
+    std::vector<std::wstring> dataFormats;
 };
 
 struct ExeServer
@@ -57,6 +60,8 @@ private:
     HRESULT ParseExeServerElement(IMsixElement* exeServerElement);
 
     HRESULT ParseExeServerClassElement(ExeServer& exeServer, IMsixElement* classElement);
+
+    HRESULT ParseFormats(IMsixElement * classElement, const std::wstring & formatsQuery, std::wstring & formats);
 
     HRESULT ParseProgIdElement(IMsixElement* progIdElement);
 

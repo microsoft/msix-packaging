@@ -32,6 +32,12 @@ static const std::wstring progIdAttribute = L"ProgId";
 static const std::wstring versionIndependentProgIdAttribute = L"VersionIndependentProgId";
 static const std::wstring clsidAttribute = L"Clsid";
 static const std::wstring currentVersionAttribute = L"CurrentVersion";
+static const std::wstring autoConvertToAttribute = L"AutoConvertTo";
+static const std::wstring insertableObjectAttribute = L"InsertableObject";
+static const std::wstring shortDisplayNameAttribute = L"ShortDisplayName";
+static const std::wstring enableOleDefaultHandlerAttribute = L"EnableOleDefaultHandler";
+static const std::wstring formatNameAttribute = L"FormatName";
+static const std::wstring standardFormatAttribute = L"StandardFormat";
 
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";
 static const std::wstring defaultInprocHandler = L"ole32.dll";
@@ -39,11 +45,22 @@ static const std::wstring localServerKeyName = L"LocalServer32";
 static const std::wstring progIdKeyName = L"ProgID";
 static const std::wstring versionIndependentProgIdKeyName = L"VersionIndependentProgID";
 static const std::wstring curVerKeyName = L"CurVer";
+static const std::wstring auxUserTypeKeyName = L"AuxUserType";
+static const std::wstring shortDisplayNameKeyName = L"2";
+static const std::wstring insertableObjectKeyName = L"Insertable";
+static const std::wstring autoConvertToValueName = L"AutoConvertTo";
+static const std::wstring implementedCategoriesKeyName = L"Implemented Categories";
+static const std::wstring readableKeyName = L"Conversion\\Readable\\Main";
+static const std::wstring readWritableKeyName = L"Conversion\\ReadWritable\\Main";
 
 static const std::wstring extensionQuery = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='Extensions']/*[local-name()='Extension']";
 static const std::wstring exeServerQuery = L"*[local-name()='ComServer']/*[local-name()='ExeServer']";
 static const std::wstring exeServerClassQuery = L"*[local-name()='Class']";
 static const std::wstring progIdQuery = L"*[local-name()='ComServer']/*[local-name()='ProgId']";
+static const std::wstring implementedCategoriesQuery = L"*[local-name()='ImplementedCategories']/*[local-name()='ImplementedCategory']";
+static const std::wstring readableFormatsQuery = L"*[local-name()='Conversion']/*[local-name()='Readable']/*[local-name()='Format']";
+static const std::wstring readWritableFormatsQuery = L"*[local-name()='Conversion']/*[local-name()='ReadWritable']/*[local-name()='Format']";
+
 
 
 HRESULT ComServer::ExecuteForAddRequest()
@@ -72,13 +89,6 @@ HRESULT ComServer::ProcessExeServerForAdd(ExeServer& exeServer)
         RETURN_IF_FAILED(clsidKey.CreateSubKey(exeServerClass->id.c_str(), KEY_WRITE, &classIdKey));
         RETURN_IF_FAILED(classIdKey.SetStringValue(L"", exeServerClass->displayName));
 
-        if (false )//TODO this is enableOleDefaultHandler=true
-        {
-            RegistryKey inprocHandlerKey;
-            RETURN_IF_FAILED(classIdKey.CreateSubKey(inprocHandlerKeyName.c_str(), KEY_WRITE, &inprocHandlerKey));
-            RETURN_IF_FAILED(inprocHandlerKey.SetStringValue(L"", defaultInprocHandler));
-        }
-
         std::wstring executableFullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(exeServer.executable, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
         RegistryKey localServerKey;
         RETURN_IF_FAILED(classIdKey.CreateSubKey(localServerKeyName.c_str(), KEY_WRITE, &localServerKey));
@@ -91,6 +101,60 @@ HRESULT ComServer::ProcessExeServerForAdd(ExeServer& exeServer)
         RegistryKey versionIndependentProgIdKey;
         RETURN_IF_FAILED(classIdKey.CreateSubKey(versionIndependentProgIdKeyName.c_str(), KEY_WRITE, &versionIndependentProgIdKey));
         RETURN_IF_FAILED(versionIndependentProgIdKey.SetStringValue(L"", exeServerClass->versionIndependentProgId));
+
+        RegistryKey auxUserTypeKey;
+        RETURN_IF_FAILED(classIdKey.CreateSubKey(auxUserTypeKeyName.c_str(), KEY_WRITE, &auxUserTypeKey));
+        if (!exeServerClass->shortDisplayName.empty())
+        {
+            RegistryKey shortDisplayNameKey;
+            RETURN_IF_FAILED(auxUserTypeKey.CreateSubKey(shortDisplayNameKeyName.c_str(), KEY_WRITE, &shortDisplayNameKey));
+            RETURN_IF_FAILED(shortDisplayNameKey.SetStringValue(L"", exeServerClass->shortDisplayName));
+        }
+
+        if (!exeServerClass->enableOleDefaultHandler.empty())
+        {
+            RegistryKey inprocHandlerKey;
+            RETURN_IF_FAILED(classIdKey.CreateSubKey(inprocHandlerKeyName.c_str(), KEY_WRITE, &inprocHandlerKey));
+            RETURN_IF_FAILED(inprocHandlerKey.SetStringValue(L"", defaultInprocHandler));
+        }
+        
+        if (!exeServerClass->insertableObject.empty())
+        {
+            RegistryKey insertableObjectKey;
+            RETURN_IF_FAILED(classIdKey.CreateSubKey(insertableObjectKeyName.c_str(), KEY_WRITE, &insertableObjectKey));
+        }
+
+        if (!exeServerClass->autoConvertTo.empty())
+        {
+            RETURN_IF_FAILED(classIdKey.SetStringValue(autoConvertToValueName.c_str(), exeServerClass->autoConvertTo));
+        }
+
+        if (!exeServerClass->implementedCategories.empty())
+        {
+            RegistryKey implementedCategoriesKey;
+            RETURN_IF_FAILED(classIdKey.CreateSubKey(implementedCategoriesKeyName.c_str(), KEY_WRITE, &implementedCategoriesKey));
+
+            for (auto category = exeServerClass->implementedCategories.begin(); category != exeServerClass->implementedCategories.end(); ++category)
+            {
+                RegistryKey categoryKey;
+                RETURN_IF_FAILED(implementedCategoriesKey.CreateSubKey(category->c_str(), KEY_WRITE, &categoryKey));
+            }
+        }
+
+        if (!exeServerClass->conversionReadableFormat.empty())
+        {
+            RegistryKey readableKey;
+            RETURN_IF_FAILED(classIdKey.CreateSubKey(readableKeyName.c_str(), KEY_WRITE, &readableKey));
+            RETURN_IF_FAILED(readableKey.SetStringValue(L"", exeServerClass->conversionReadableFormat));
+        }
+
+        if (!exeServerClass->conversionReadWritableFormat.empty())
+        {
+            RegistryKey readWritableKey;
+            RETURN_IF_FAILED(classIdKey.CreateSubKey(readWritableKeyName.c_str(), KEY_WRITE, &readWritableKey));
+            RETURN_IF_FAILED(readWritableKey.SetStringValue(L"", exeServerClass->conversionReadWritableFormat));
+        }
+
     }
 
     return S_OK;
@@ -229,8 +293,74 @@ HRESULT ComServer::ParseExeServerClassElement(ExeServer & exeServer, IMsixElemen
     RETURN_IF_FAILED(GetAttributeValueFromElement(classElement, displayNameAttribute, exeServerClass.displayName));
     RETURN_IF_FAILED(GetAttributeValueFromElement(classElement, progIdAttribute, exeServerClass.progId));
     RETURN_IF_FAILED(GetAttributeValueFromElement(classElement, versionIndependentProgIdAttribute, exeServerClass.versionIndependentProgId));
+    RETURN_IF_FAILED(GetAttributeValueFromElement(classElement, insertableObjectAttribute, exeServerClass.insertableObject));
+    RETURN_IF_FAILED(GetAttributeValueFromElement(classElement, shortDisplayNameAttribute, exeServerClass.shortDisplayName));
+    RETURN_IF_FAILED(GetAttributeValueFromElement(classElement, enableOleDefaultHandlerAttribute, exeServerClass.enableOleDefaultHandler));
+
+    std::wstring autoConvertToId;
+    RETURN_IF_FAILED(GetAttributeValueFromElement(classElement, autoConvertToAttribute, autoConvertToId));
+    if (!autoConvertToId.empty())
+    {
+        exeServerClass.autoConvertTo = GuidFromManifestId(autoConvertToId);
+    }
+
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> implementedCategoriesEnum;
+    RETURN_IF_FAILED(classElement->GetElements(implementedCategoriesQuery.c_str(), &implementedCategoriesEnum));
+    RETURN_IF_FAILED(implementedCategoriesEnum->GetHasCurrent(&hasCurrent));
+    while (hasCurrent)
+    {
+        ComPtr<IMsixElement> categoryElement;
+        RETURN_IF_FAILED(implementedCategoriesEnum->GetCurrent(&categoryElement));
+
+        std::wstring categoryId;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(categoryElement.Get(), idAttribute, categoryId));
+        exeServerClass.implementedCategories.push_back(GuidFromManifestId(id));
+        
+        RETURN_IF_FAILED(implementedCategoriesEnum->MoveNext(&hasCurrent));
+    }
+
+    RETURN_IF_FAILED(ParseFormats(classElement, readableFormatsQuery, exeServerClass.conversionReadableFormat));
+    RETURN_IF_FAILED(ParseFormats(classElement, readWritableFormatsQuery, exeServerClass.conversionReadWritableFormat));
 
     exeServer.classes.push_back(exeServerClass);
+    return S_OK;
+}
+
+HRESULT ComServer::ParseFormats(IMsixElement* rootElement, const std::wstring & formatsQuery, std::wstring & formats)
+{
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> readableFormatsEnum;
+    RETURN_IF_FAILED(rootElement->GetElements(formatsQuery.c_str(), &readableFormatsEnum));
+    RETURN_IF_FAILED(readableFormatsEnum->GetHasCurrent(&hasCurrent));
+    while (hasCurrent)
+    {
+        ComPtr<IMsixElement> formatElement;
+        RETURN_IF_FAILED(readableFormatsEnum->GetCurrent(&formatElement));
+
+        std::wstring formatName;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(formatElement.Get(), formatNameAttribute, formatName));
+
+        std::wstring standardFormat;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(formatElement.Get(), standardFormatAttribute, standardFormat));
+
+        if (!formats.empty())
+        {
+            formats += L",";
+        }
+
+        if (!formatName.empty())
+        {
+            formats += formatName;
+        }
+        else
+        {
+            formats += standardFormat;
+        }
+
+        RETURN_IF_FAILED(readableFormatsEnum->MoveNext(&hasCurrent));
+    }
+
     return S_OK;
 }
 
