@@ -179,7 +179,7 @@ HRESULT MsixRequest::ProcessAddRequest()
     //If cancel was clicked, process remove request to uninstall the package
     if (GetIsCancelClicked())
     {
-        ProcessRemoveRequest();
+        UnInstallPackage();
     }
 
     return S_OK;
@@ -227,4 +227,20 @@ void MsixRequest::SetUI(UI * ui)
 void MsixRequest::SetPackageInfo(PackageInfo* packageInfo) 
 {
     m_packageInfo = packageInfo; 
+}
+
+HRESULT MsixRequest::UnInstallPackage()
+{
+    //PCWSTR pacFullName = L"notepadplus_0.0.0.1_x64__8wekyb3d8bbwe";
+    AutoPtr<MsixRequest> removePackageRequest;
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, Flags::NoFlags, std::wstring(), GetPackageFullName(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &removePackageRequest));
+
+    const HRESULT hrCancelRequest = removePackageRequest->ProcessRequest();
+    if (FAILED(hrCancelRequest))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Failed to process cancel request",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrCancelRequest, "HR"));
+    }
 }
