@@ -21,5 +21,6 @@ private:
     ProcessPotentialUpdate() {}
     ProcessPotentialUpdate(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
+    /// Synchronously removes the outdated package before allowing the current request to proceed
     HRESULT RemovePackage(std::wstring packageFullName);
 };
