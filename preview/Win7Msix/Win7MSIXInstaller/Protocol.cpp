@@ -107,7 +107,7 @@ HRESULT Protocol::ParseManifest()
 
 HRESULT Protocol::ExecuteForAddRequest()
 {
-    for (std::vector<ProtocolData>::iterator protocol = m_protocols.begin(); protocol != m_protocols.end(); ++protocol)
+    for (auto protocol = m_protocols.begin(); protocol != m_protocols.end(); ++protocol)
     {
         RETURN_IF_FAILED(ProcessProtocolForAdd(*protocol));
     }
@@ -156,7 +156,7 @@ HRESULT Protocol::ProcessProtocolForAdd(ProtocolData& protocol)
 
 HRESULT Protocol::ExecuteForRemoveRequest()
 {
-    for (std::vector<ProtocolData>::iterator protocol = m_protocols.begin(); protocol != m_protocols.end(); ++protocol)
+    for (auto protocol = m_protocols.begin(); protocol != m_protocols.end(); ++protocol)
     {
         RETURN_IF_FAILED(ProcessProtocolForRemove(*protocol));
     }

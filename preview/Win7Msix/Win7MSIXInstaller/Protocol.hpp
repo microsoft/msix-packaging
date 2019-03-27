@@ -8,10 +8,10 @@
 /// Data structs to be filled in from the information in the manifest
 struct ProtocolData
 {
-    std::wstring name;
-    std::wstring parameters;
-    std::wstring displayName;
-    std::wstring logo;
+    std::wstring name;          // name of the URI scheme, such as "mailto"
+    std::wstring parameters;    // parameters to be passed into the executable when invoked
+    std::wstring displayName;   // friendly name to be displayed to users
+    std::wstring logo;          // filepath to logo file 
 };
 
 class Protocol : IPackageHandler
@@ -32,11 +32,22 @@ private:
     Protocol() {}
     Protocol(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
+    /// Parse one protocol element, containing one ProtocolData to be added to the m_protocols vector.
+    ///
+    /// @param protocolElement - the IMsixElement representing the uap:Protocol element from the manifest
     HRESULT ParseProtocolElement(IMsixElement * protocolElement);
 
+    /// Parses the manifest and fills out the m_protocols vector of ProtocolData containing data from the manifest
     HRESULT ParseManifest();
 
+    /// Adds the protocol data to the system registry
+    ///
+    /// @param protocol - the protocol data to be added
     HRESULT ProcessProtocolForAdd(ProtocolData & protocol);
+
+    /// Removes the protocol data from the system registry
+    ///
+    /// @param protocol - the protocol data to be removed
     HRESULT ProcessProtocolForRemove(ProtocolData& protocol);
 };
     
