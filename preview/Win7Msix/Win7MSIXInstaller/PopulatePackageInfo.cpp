@@ -57,7 +57,7 @@ HRESULT PopulatePackageInfo::ExecuteForRemoveRequest()
             TraceLoggingValue(directory.c_str(), "PackageDirectoryPath"));
         return E_NOT_SET;
     }
-    
+
     std::wstring manifestPath = packageDirectoryPath + manifestFile;
     ComPtr<IStream> stream;
     RETURN_IF_FAILED(CreateStreamOnFileUTF16(manifestPath.c_str(), true /*forRead*/, &stream));

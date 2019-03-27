@@ -63,9 +63,9 @@ public:
     // PURPOSE: Creates the initial installation UI window
     // windowClass: the class text of the window
     // windowTitle: the window title
-	int CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title);
-	void LoadInfo();
-	int GetNumberOfFiles() { return m_numberOfFiles; }
+    int CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title);
+    void LoadInfo();
+    int GetNumberOfFiles() { return m_numberOfFiles; }
     void SetButtonClicked() { SetEvent(m_buttonClickedEvent); }
     MsixRequest* GetMsixRequest() {
         return m_msixRequest;

@@ -68,7 +68,7 @@ public:
     bool IsQuietUX() { return (m_flags & Flags::QuietUX) == Flags::QuietUX; }
 
     /// Prepares and sends msixrequest to uninstall the package in case cancel button was clicked during installation
-    HRESULT UnInstallPackage();
+    HRESULT UnInstallPackage(std::wstring packageFullName);
     
     bool IsRemove()
     {
