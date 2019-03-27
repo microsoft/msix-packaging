@@ -132,6 +132,7 @@ HRESULT Extractor::ExtractPayloadFiles()
 
     BOOL hasCurrent = FALSE;
     RETURN_IF_FAILED(files->GetHasCurrent(&hasCurrent));
+    AutoPtr<UI> ui;
 
     while (hasCurrent)
     {
@@ -150,7 +151,7 @@ HRESULT Extractor::ExtractPayloadFiles()
         }
 
         RETURN_IF_FAILED(files->MoveNext(&hasCurrent));
-        UpdateProgressBar();
+        ui->UpdateProgressBar();
     }
 
     return S_OK;

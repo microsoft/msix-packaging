@@ -1,13 +1,13 @@
 #!/bin/bash
 testfailed=0
-device=7F47E071-9C15-4074-9837-03EC4588A562 # This is an iPhone 8 emulator
+device="iPhone 8"
 project=../mobile/iOSBVT/iOSBVT.xcodeproj
 sdk=iphonesimulator11.4
 
 usage()
 {
     echo "usage: ./testios [-d <device>] [-p <project>] [-sdk <sdk>] [-o <ouput location>]"
-    echo $'\t' "-d <device>. Default 7F47E071-9C15-4074-9837-03EC4588A562"
+    echo $'\t' "-d <device>. Default iPhone 8"
     echo $'\t' "-p <project>. Default is ../mobile/iOSBVT/iOSBVT.xcodeproj"
     echo $'\t' "-sdk <sdk>. Default is iphonesimulator11.4"
     echo $'\t' "-o <output file>. Test result output file. Default is /private/tmp/testResults.txt"
@@ -54,11 +54,11 @@ appId=`xcodebuild -showBuildSettings -project $project | grep PRODUCT_BUNDLE_IDE
 printsetup
 
 # Clean test
-rm $outputFile
+rm $outputFile -f
 
 # Start emulator
 echo "Starting emulator"
-xcrun simctl boot $device
+xcrun simctl boot "$device"
 
 # Build app and locate .app to install
 xcodebuild -scheme $app -project $project -sdk $sdk
@@ -100,7 +100,7 @@ echo "Test finished"
 
 echo "Uninstalling app and shuting down emulator"
 xcrun simctl uninstall booted $appId
-xcrun simctl shutdown $device
+xcrun simctl shutdown "$device"
 
 function ParseResult {
     local FILE="$1"
