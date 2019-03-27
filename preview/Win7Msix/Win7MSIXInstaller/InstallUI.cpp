@@ -55,12 +55,6 @@ HRESULT GetStreamFromFile(IAppxPackageReader* package, LPCWCHAR name, IStream** 
     return S_OK;
 }
 
-//
-// PURPOSE: This compiles the information displayed on the UI when the user selects an msix
-//
-// hWnd: the HWND of the window to draw controls
-// windowRect: the size of the window
-
 HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
 {
     if (SUCCEEDED(m_loadingPackageInfoCode))
@@ -382,13 +376,6 @@ HRESULT UI::Make(MsixRequest * msixRequest, UI ** instance)
     return S_OK;
 }
 
-// FUNCTION: CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
-//
-// PURPOSE: Creates the progress bar
-//
-// parentHWnd: the HWND of the window to add the progress bar to
-// parentRect: the dimensions of the parent window
-// count: the number of objects to be iterated through in the progress bar
 BOOL UI::CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
 {
     int scrollHeight = GetSystemMetrics(SM_CYVSCROLL);
@@ -415,12 +402,6 @@ BOOL UI::CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
     return TRUE;
 }
 
-// FUNCTION: LaunchButton(HWND parentHWnd, RECT parentRect)
-//
-// PURPOSE: Create the lower right button
-// 
-// parentHWnd: the HWND of the window to add the button to
-// parentRect: the specs of the parent window
 BOOL UI::LaunchButton(HWND parentHWnd, RECT parentRect) {
     LPVOID buttonPointer = nullptr;
     g_buttonHWnd = CreateWindowEx(
@@ -439,12 +420,6 @@ BOOL UI::LaunchButton(HWND parentHWnd, RECT parentRect) {
     return TRUE;
 }
 
-// FUNCTION: CreateCheckbox(HWND parentHWnd, RECT parentRect)
-//
-// PURPOSE: Create the launch checkbox on the bottom left
-// 
-// parentHWnd: the HWND of the window to add the checkbox to
-// parentRect: the specs of the parent window
 BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
 {
     g_checkboxHWnd = CreateWindowEx(
@@ -466,12 +441,6 @@ BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
     return TRUE;
 }
 
-// FUNCTION: CancelButton(HWND parentHWnd, RECT parentRect)
-//
-// PURPOSE: Create the lower right cancel button when install is clicked
-// 
-// parentHWnd: the HWND of the window to add the button to
-// parentRect: the specs of the parent window
 BOOL UI::CreateCancelButton(HWND parentHWnd, RECT parentRect) 
 {
 	LPVOID buttonPointer = nullptr;
@@ -491,12 +460,6 @@ BOOL UI::CreateCancelButton(HWND parentHWnd, RECT parentRect)
 	return TRUE;
 }
 
-// FUNCTION: CreateLaunchButton(HWND parentHWnd, RECT parentRect)
-//
-// PURPOSE: Create the launch button on the botton right after app has been installed
-// 
-// parentHWnd: the HWND of the window to add the checkbox to
-// parentRect: the specs of the parent window
 BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect) 
 {
     LPVOID buttonPointer = nullptr;
@@ -516,11 +479,6 @@ BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect)
     return TRUE;
 }
 
-// FUNCTION: ChangeButtonText(LPARAM newMessage)
-//
-// PURPOSE: Changes the text of the lower right button
-//
-// newMessage: the message to change the button to
 BOOL UI::ChangeButtonText(const std::wstring& newMessage)
 {
     SendMessage(g_buttonHWnd, WM_SETTEXT, NULL, reinterpret_cast<LPARAM>(newMessage.c_str()));
@@ -532,12 +490,6 @@ BOOL UI::HideButtonWindow()
     return ShowWindow(g_buttonHWnd, SW_HIDE);
 }
 
-// FUNCTION: ChangeText(HWND parentHWnd, std::wstring& windowText)
-//
-// PURPOSE: Change the text of the installation window based on the given input
-//
-// parentHWnd: the HWND of the window to be changed
-// windowText: the text to change the window to
 BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring messageText, IStream* logoStream)
 {
     PAINTSTRUCT paint;
@@ -574,11 +526,6 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     return TRUE;
 }
 
-// FUNCTION: CreateInitWindow(HINSTANCE hInstance, int nCmdShow, TCHAR windowClass[], TCHAR windowTitle[])
-//
-// PURPOSE: Creates the initial installation UI window
-// windowClass: the class text of the window
-// windowTitle: the window title
 int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title)
 {
     hWnd = CreateWindow(

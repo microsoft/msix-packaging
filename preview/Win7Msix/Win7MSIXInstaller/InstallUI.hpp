@@ -50,7 +50,19 @@ private:
     HRESULT ParseInfoFromPackage();
 
 public:
+
+    // FUNCTION: DrawPackageInfo(HWND hWnd, RECT windowRect)
+    // PURPOSE: This compiles the information displayed on the UI when the user selects an msix
+    //
+    // hWnd: the HWND of the window to draw controls
+    // windowRect: the size of the window
     HRESULT DrawPackageInfo(HWND hWnd, RECT windowRect);
+
+    // FUNCTION: CreateInitWindow(HINSTANCE hInstance, int nCmdShow, TCHAR windowClass[], TCHAR windowTitle[])
+    //
+    // PURPOSE: Creates the initial installation UI window
+    // windowClass: the class text of the window
+    // windowTitle: the window title
 	int CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title);
 	void LoadInfo();
 	int GetNumberOfFiles() { return m_numberOfFiles; }
