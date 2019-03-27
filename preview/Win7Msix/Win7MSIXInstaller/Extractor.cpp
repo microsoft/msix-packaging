@@ -136,18 +136,21 @@ HRESULT Extractor::ExtractPayloadFiles()
 
     while (hasCurrent)
     {
-        ComPtr<IAppxFile> file;
-        RETURN_IF_FAILED(files->GetCurrent(&file));
-
-        RETURN_IF_FAILED(ExtractFile(file.Get()));
-
-        // After extracting the file, if it's a VFS file, copy it to the local location
-        Text<WCHAR> name;
-        RETURN_IF_FAILED(file->GetName(&name));
-        std::wstring nameStr = name.Get();
-        if (nameStr.find(L"VFS") != std::wstring::npos)
+        if (!m_msixRequest->GetIsInstallCancelled())
         {
-            RETURN_IF_FAILED(CopyVfsFileToLocal(nameStr));
+            ComPtr<IAppxFile> file;
+            RETURN_IF_FAILED(files->GetCurrent(&file));
+
+            RETURN_IF_FAILED(ExtractFile(file.Get()));
+
+            // After extracting the file, if it's a VFS file, copy it to the local location
+            Text<WCHAR> name;
+            RETURN_IF_FAILED(file->GetName(&name));
+            std::wstring nameStr = name.Get();
+            if (nameStr.find(L"VFS") != std::wstring::npos)
+            {
+                RETURN_IF_FAILED(CopyVfsFileToLocal(nameStr));
+            }
         }
 
         RETURN_IF_FAILED(files->MoveNext(&hasCurrent));
@@ -276,12 +279,18 @@ HRESULT Extractor::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** i
 
 HRESULT Extractor::ExtractPackage()
 {
-    if(!m_msixRequest->GetIsCancelClicked())
+    if (!m_msixRequest->GetIsInstallCancelled())
+    {
         RETURN_IF_FAILED(ExtractFootprintFiles());
-    if (!m_msixRequest->GetIsCancelClicked())
+    }
+    if (!m_msixRequest->GetIsInstallCancelled())
+    {
         RETURN_IF_FAILED(ExtractPayloadFiles());
-    if (!m_msixRequest->GetIsCancelClicked())
+    }
+    if (!m_msixRequest->GetIsInstallCancelled())
+    {
         RETURN_IF_FAILED(ExtractRegistry(false));
+    }
     return S_OK;
 }
 

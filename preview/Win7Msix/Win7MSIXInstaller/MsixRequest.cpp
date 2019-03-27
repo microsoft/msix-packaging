@@ -168,7 +168,7 @@ HRESULT MsixRequest::ProcessAddRequest()
         HandlerInfo currentHandler = AddHandlers[currentHandlerName];
         AutoPtr<IPackageHandler> handler;
         RETURN_IF_FAILED(currentHandler.create(this, &handler));
-        if (!GetIsCancelClicked())
+        if (!GetIsInstallCancelled())
         {
             RETURN_IF_FAILED(handler->ExecuteForAddRequest());
         }
@@ -177,9 +177,9 @@ HRESULT MsixRequest::ProcessAddRequest()
     }
 
     //If cancel was clicked, process remove request to uninstall the package
-    if (GetIsCancelClicked())
+    if (GetIsInstallCancelled())
     {
-        UnInstallPackage(this->GetPackageInfo()->GetPackageFullName());
+        RemovePackage(this->GetPackageInfo()->GetPackageFullName());
     }
 
     return S_OK;
@@ -229,7 +229,7 @@ void MsixRequest::SetPackageInfo(PackageInfo* packageInfo)
     m_packageInfo = packageInfo; 
 }
 
-HRESULT MsixRequest::UnInstallPackage(std::wstring packageFullName)
+HRESULT MsixRequest::RemovePackage(std::wstring packageFullName)
 {
     AutoPtr<MsixRequest> removePackageRequest;
     RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, Flags::NoFlags, std::wstring(), packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &removePackageRequest));
@@ -242,4 +242,5 @@ HRESULT MsixRequest::UnInstallPackage(std::wstring packageFullName)
             TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
             TraceLoggingValue(hrCancelRequest, "HR"));
     }
+    return S_OK;
 }

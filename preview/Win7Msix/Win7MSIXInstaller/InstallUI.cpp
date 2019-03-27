@@ -133,12 +133,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
             case IDC_CANCELBUTTON:
             {
-                ui->GetMsixRequest()->SetIsCancelClicked();
+                ui->GetMsixRequest()->CancelRequest();
                 break;
             }
             case IDC_LAUNCHBUTTON:
+            {
                 ui->LaunchInstalledApp();
                 break;
+            }
         }
         break;
     case WM_INSTALLCOMPLETE_MSG:

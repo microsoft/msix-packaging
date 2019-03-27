@@ -38,7 +38,7 @@ private:
     AutoPtr<UI> m_UI;
 
     ///Variable used to indicate if add package request was cancelled during installation
-    bool m_isInstallCancelled;
+    bool m_isInstallCancelled = false;
 
 public:
     static HRESULT Make(OperationType operationType, Flags flags, std::wstring packageFilePath, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest** outInstance);
@@ -68,7 +68,7 @@ public:
     bool IsQuietUX() { return (m_flags & Flags::QuietUX) == Flags::QuietUX; }
 
     /// Prepares and sends msixrequest to uninstall the package in case cancel button was clicked during installation
-    HRESULT UnInstallPackage(std::wstring packageFullName);
+    HRESULT RemovePackage(std::wstring packageFullName);
     
     bool IsRemove()
     {
@@ -81,13 +81,13 @@ public:
         return true;
     }
 
-    bool GetIsCancelClicked()
+    bool GetIsInstallCancelled()
     {
         return m_isInstallCancelled;
     }
 
     //Setters
-    void SetIsCancelClicked()
+    void CancelRequest()
     {
         m_isInstallCancelled = true;
     }
