@@ -32,7 +32,7 @@ jobs:
 
     # Note: We skip BVTs in Debug mode because of assert()
   - task: Bash@3
-    displayName: 'Bash Script'
+    displayName: Linux BVTs
     inputs:
       targetType: filePath
       filePath: './test/MacOS-Linux/MacOS-Linux-Etc.sh'

@@ -1,0 +1,68 @@
+# Branches that trigger a build on commit
+trigger:
+- master
+
+# Branches that trigger builds on PR
+pr:
+- master
+
+jobs:
+- job: iOS
+  pool:
+    name: Hosted macOS
+  strategy:
+    # TODO: add builds using xerces if needed.
+    matrix:
+      debug_x86:
+        _arguments: -b Debug
+        _artifact: iOS-x86chk
+      release_x86:
+        _arguments: -b MinSizeRel
+        _artifact: iOS-x86
+      release_arm64:
+        _arguments: -b MinSizeRel -arch arm64
+        _artifact: iOS-arm64
+  steps:
+  - task: Bash@3
+    displayName: Build
+    inputs:
+      targetType: filePath
+      filePath: ./makeios.sh
+      arguments: $(_arguments)
+      failOnStderr: true
+    condition: succeeded()
+
+    # Note: We skip BVTs in Debug mode because of assert() and release_arm64
+    # Only do BVTs for release_x86 because the emulator
+  - task: Bash@3
+    displayName: iOS BVTs
+    inputs:
+      targetType: filePath
+      filePath: './test/MacOS-Linux/testios.sh'
+      arguments: '-p ../mobile/iOSBVT/iOSBVT.xcodeproj'
+      workingDirectory: './test/MacOS-Linux'
+      failOnStderr: true
+    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release_x86'))
+
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+    inputs:
+      SourceFolder: .vs
+      Contents: |
+        bin/makemsix
+        bin/makemsix.dSYM/**
+        lib/libmsix*
+        lib/libmsix*/**
+        src/msix/AppxPackaging.hpp
+        src/msix/MSIXWindows.hpp
+        src/msix/MsixErrors.hpp
+        Package.nuspec
+        build/**
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    condition: succeeded()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact $(_artifact)'
+    inputs:
+      ArtifactName: $(_artifact)
+    condition: succeeded()

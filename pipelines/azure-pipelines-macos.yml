@@ -33,7 +33,7 @@ jobs:
     # we will fail doing the test because there are no binaries
     # Note: We skip BVTs in Debug mode because of assert()
   - task: Bash@3
-    displayName: 'Bash Script'
+    displayName: macOS BVTs
     inputs:
       targetType: filePath
       filePath: './test/MacOS-Linux/MacOS-Linux-Etc.sh'

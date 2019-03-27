@@ -199,7 +199,6 @@ public:
         m_env->SetByteArrayRegion(byteArray.get(), (jsize) 0, (jsize) buffer.size(), (jbyte*) buffer.data());
         jmethodID initializeFunc = m_env->GetMethodID(xmlDomClass.get(), "InitializeDocument", "([B)V");
         m_env->CallVoidMethod(m_javaXmlDom.get(), initializeFunc, byteArray.get());
-        m_env->ReleaseByteArrayElements(byteArray.get(), (jbyte*) buffer.data(), JNI_ABORT);
 
         // android does not include any schema validation parsers. We can only support xml validation.
         // If schema validation is required, then use xerces as the xml parser.

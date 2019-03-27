@@ -25,7 +25,8 @@
 #include "PopulatePackageInfo.hpp"
 #include "Protocol.hpp"
 #include "FileTypeAssociation.hpp"
-
+#include "ProcessPotentialUpdate.hpp"
+#include "InstallComplete.hpp"
 
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
@@ -40,14 +41,16 @@ struct HandlerInfo
 
 std::map<PCWSTR, HandlerInfo> AddHandlers =
 {
-    //HandlerName                       Function to create                   NextHandler
-    {PopulatePackageInfo::HandlerName,  {PopulatePackageInfo::CreateHandler, CreateAndShowUI::HandlerName }},
-    {CreateAndShowUI::HandlerName,      {CreateAndShowUI::CreateHandler,     Extractor::HandlerName }},
-    {Extractor::HandlerName,            {Extractor::CreateHandler,           StartMenuLink::HandlerName }},
-    {StartMenuLink::HandlerName,        {StartMenuLink::CreateHandler,       AddRemovePrograms::HandlerName}},
-    {AddRemovePrograms::HandlerName,    {AddRemovePrograms::CreateHandler,   Protocol::HandlerName}},
-    {Protocol::HandlerName,             {Protocol::CreateHandler,            FileTypeAssociation::HandlerName}},
-    {FileTypeAssociation::HandlerName,  {FileTypeAssociation::CreateHandler, nullptr}},
+    //HandlerName                         Function to create                      NextHandler
+    {PopulatePackageInfo::HandlerName,    {PopulatePackageInfo::CreateHandler,    CreateAndShowUI::HandlerName }},
+    {CreateAndShowUI::HandlerName,        {CreateAndShowUI::CreateHandler,        ProcessPotentialUpdate::HandlerName }},
+    {ProcessPotentialUpdate::HandlerName, {ProcessPotentialUpdate::CreateHandler, Extractor::HandlerName }},
+    {Extractor::HandlerName,              {Extractor::CreateHandler,              StartMenuLink::HandlerName }},
+    {StartMenuLink::HandlerName,          {StartMenuLink::CreateHandler,          AddRemovePrograms::HandlerName}},
+    {AddRemovePrograms::HandlerName,      {AddRemovePrograms::CreateHandler,      Protocol::HandlerName}},
+    {Protocol::HandlerName,               {Protocol::CreateHandler,               FileTypeAssociation::HandlerName}},
+    {FileTypeAssociation::HandlerName,    {FileTypeAssociation::CreateHandler,    InstallComplete::HandlerName }},
+    {InstallComplete::HandlerName,        {InstallComplete::CreateHandler,        nullptr}},
 };
 
 std::map<PCWSTR, HandlerInfo> RemoveHandlers =
@@ -120,13 +123,21 @@ HRESULT MsixRequest::DisplayPackageInfo()
 {
     AutoPtr<IPackageHandler> handler;
     RETURN_IF_FAILED(PopulatePackageInfo::CreateHandler(this, &handler));
-    RETURN_IF_FAILED(handler->ExecuteForRemoveRequest());
+    HRESULT packageFoundResult = handler->ExecuteForRemoveRequest();
 
-    std::wcout << std::endl;
-    std::wcout << L"PackageFullName: " << m_packageInfo->GetPackageFullName().c_str() << std::endl;
-    std::wcout << L"DisplayName: " << m_packageInfo->GetDisplayName().c_str() << std::endl;
-    std::wcout << L"DirectoryPath: " << m_packageInfo->GetPackageDirectoryPath().c_str() << std::endl;
-    std::wcout << std::endl;
+    if (packageFoundResult == S_OK)
+    {
+        std::wcout << std::endl;
+        std::wcout << L"PackageFullName: " << m_packageInfo->GetPackageFullName().c_str() << std::endl;
+        std::wcout << L"DisplayName: " << m_packageInfo->GetDisplayName().c_str() << std::endl;
+        std::wcout << L"DirectoryPath: " << m_packageInfo->GetPackageDirectoryPath().c_str() << std::endl;
+        std::wcout << std::endl;
+    }
+    else
+    {
+        std::wcout << std::endl;
+        std::wcout << L"Package not found " << std::endl;
+    }
 
     return S_OK;
 }
