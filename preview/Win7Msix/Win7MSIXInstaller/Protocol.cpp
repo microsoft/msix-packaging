@@ -21,7 +21,10 @@ HRESULT Protocol::ParseProtocolElement(IMsixElement* protocolElement)
 
     Text<wchar_t> parameters;
     RETURN_IF_FAILED(protocolElement->GetAttributeValue(parametersAttribute.c_str(), &parameters));
-    protocol.parameters = parameters.Get();
+    if (parameters.Get())
+    {
+        protocol.parameters = parameters.Get();
+    }
 
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Parsing Protocol",
@@ -164,18 +167,57 @@ HRESULT Protocol::ExecuteForRemoveRequest()
     return S_OK;
 }
 
-HRESULT Protocol::ProcessProtocolForRemove(ProtocolData& protocol)
+bool Protocol::IsCurrentlyAssociatedWithPackage(PCWSTR name)
 {
-    HRESULT hrDeleteKey = m_classesKey.DeleteTree(protocol.name.c_str());
-    if (FAILED(hrDeleteKey))
+    std::wstring keyPath = name + std::wstring(L"\\") + shellKeyName + std::wstring(L"\\") + openKeyName + std::wstring(L"\\") + commandKeyName;
+
+    RegistryKey protocolExeKey;
+    HRESULT hrOpenKey = m_classesKey.OpenSubKey(keyPath.c_str(), KEY_READ, &protocolExeKey);
+    if (FAILED(hrOpenKey))
     {
         TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Unable to delete protocol extension",
+            "Unable to open protocol key",
             TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-            TraceLoggingValue(hrDeleteKey, "HR"),
-            TraceLoggingValue(protocol.name.c_str(), "Protocol"));
+            TraceLoggingValue(hrOpenKey, "HR"),
+            TraceLoggingValue(keyPath.c_str(), "Protocol key path"));
+        return false;
     }
 
+    std::wstring executablePath = m_msixRequest->GetPackageInfo()->GetExecutableFilePath();
+    std::wstring currentlyAssociatedExe;
+    if (SUCCEEDED(protocolExeKey.GetStringValue(L"", currentlyAssociatedExe)))
+    {
+        if (wcsncmp(currentlyAssociatedExe.c_str(), executablePath.c_str(), executablePath.size()) != 0)
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Protocol is no longer associated with this package, not modifying this protocol",
+                TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+                TraceLoggingValue(currentlyAssociatedExe.c_str(), "Current exe"));
+            return false;
+        }
+        else
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+HRESULT Protocol::ProcessProtocolForRemove(ProtocolData& protocol)
+{
+    if (IsCurrentlyAssociatedWithPackage(protocol.name.c_str()))
+    {
+        HRESULT hrDeleteKey = m_classesKey.DeleteTree(protocol.name.c_str());
+        if (FAILED(hrDeleteKey))
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to delete protocol extension",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(hrDeleteKey, "HR"),
+                TraceLoggingValue(protocol.name.c_str(), "Protocol"));
+        }
+    }
     return S_OK;
 }
 

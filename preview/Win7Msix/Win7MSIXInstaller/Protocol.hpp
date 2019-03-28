@@ -49,5 +49,10 @@ private:
     ///
     /// @param protocol - the protocol data to be removed
     HRESULT ProcessProtocolForRemove(ProtocolData& protocol);
+
+    /// Determines if the protocol is currently associated with the package
+    ///
+    /// @param name - the name of the protocol
+    bool IsCurrentlyAssociatedWithPackage(PCWSTR name);
 };
     
