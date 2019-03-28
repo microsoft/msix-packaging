@@ -6,6 +6,7 @@
 class InstallComplete : IPackageHandler
 {
 public:
+    /// Send install complete message to UI if cancel button was not clicked, else uninstalls the app
 	HRESULT ExecuteForAddRequest();
 
 	static const PCWSTR HandlerName;
@@ -13,6 +14,9 @@ public:
 	~InstallComplete() {}
 private:
 	MsixRequest * m_msixRequest = nullptr;
+
+    /// Prepares and sends msixrequest to uninstall the package in case cancel button was clicked during installation
+    HRESULT RemovePackage(std::wstring packageFullName);
 
 	InstallComplete() {}
 	InstallComplete(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}

@@ -66,9 +66,6 @@ public:
     /// @return can return null if called before CreateAndShowUI or if Flags::QuietUX was passed in and there is no UI.
     UI* GetUI() { return m_UI; }
     bool IsQuietUX() { return (m_flags & Flags::QuietUX) == Flags::QuietUX; }
-
-    /// Prepares and sends msixrequest to uninstall the package in case cancel button was clicked during installation
-    HRESULT RemovePackage(std::wstring packageFullName);
     
     bool IsRemove()
     {

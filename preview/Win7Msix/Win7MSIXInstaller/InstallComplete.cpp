@@ -14,8 +14,31 @@ const PCWSTR InstallComplete::HandlerName = L"InstallComplete";
 
 HRESULT InstallComplete::ExecuteForAddRequest()
 {
-    AutoPtr<UI> ui = m_msixRequest->GetUI();
-    ui->SendInstallCompleteMsg();
+    if (!m_msixRequest->GetIsInstallCancelled())
+    {
+        AutoPtr<UI> ui = m_msixRequest->GetUI();
+        ui->SendInstallCompleteMsg();
+    }
+    else
+    {
+        RemovePackage(m_msixRequest->GetPackageInfo()->GetPackageFullName());
+    }
+    return S_OK;
+}
+
+HRESULT InstallComplete::RemovePackage(std::wstring packageFullName)
+{
+    AutoPtr<MsixRequest> removePackageRequest;
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, Flags::NoFlags, std::wstring(), packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &removePackageRequest));
+
+    const HRESULT hrCancelRequest = removePackageRequest->ProcessRequest();
+    if (FAILED(hrCancelRequest))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Failed to process cancel request",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrCancelRequest, "HR"));
+    }
     return S_OK;
 }
 
