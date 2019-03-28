@@ -4,9 +4,11 @@
     targetNamespace="http://schemas.microsoft.com/appx/2013/bundle"
     xmlns="http://schemas.microsoft.com/appx/2013/bundle"
     xmlns:b="http://schemas.microsoft.com/appx/2013/bundle"
-    xmlns:t="http://schemas.microsoft.com/appx/manifest/types">
+    xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
+    xmlns:b4="http://schemas.microsoft.com/appx/2018/bundle">
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types" />
+  <xs:import namespace="http://schemas.microsoft.com/appx/2018/bundle" />
 
   <!-- Root bundle element -->
   <xs:element name="Bundle">
@@ -26,6 +28,7 @@
                 <xs:complexType>
                   <xs:all>
                     <xs:element name="Resources" type="CT_Resources" />
+                    <xs:element ref="b4:Dependencies" minOccurs="0" maxOccurs="1"/>
                   </xs:all>
                   <xs:attribute name="Type" type="t:ST_PackageType" use="optional" default="resource" />
                   <xs:attribute name="Version" type="t:ST_VersionQuad" use="required" />

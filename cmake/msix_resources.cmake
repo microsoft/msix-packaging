@@ -66,12 +66,21 @@ if(XML_PARSER MATCHES msxml6)
         "AppxPackaging/Manifest/Schema/2017/IotManifestSchema_v2.xsd"
         "AppxPackaging/Manifest/Schema/2017/RestrictedCapabilitiesManifestSchema_v4.xsd"
         "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"
-        "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd")
+        "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd"
+        "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v5.xsd"
+        "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v6.xsd"
+        "AppxPackaging/Manifest/Schema/2018/RestrictedCapabilitiesManifestSchema_v5.xsd"
+        "AppxPackaging/Manifest/Schema/2018/RestrictedCapabilitiesManifestSchema_v6.xsd"
+        "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v7.xsd"
+        "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v8.xsd"
+    )
 
     list(APPEND RESOURCES_APPXBUNDLEMANIFEST
         "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"
         "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"
-        "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd")
+        "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd"
+        "AppxPackaging/Manifest/Schema/2018/BundleManifestSchema2018.xsd"
+    )
 endif()
 
 endif(USE_VALIDATION_PARSER)

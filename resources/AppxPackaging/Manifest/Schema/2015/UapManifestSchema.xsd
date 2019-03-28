@@ -24,18 +24,22 @@
            xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
            xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
            xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
+           xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
            xmlns:rescap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3"
            xmlns:desktop2="http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"
            xmlns:desktop3="http://schemas.microsoft.com/appx/manifest/desktop/windows10/3"
+           xmlns:desktop5="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/3"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"/>
 
   <xs:attribute name="Scale" type="t:ST_Scale_All"/>
   <xs:attribute name="DXFeatureLevel" type="t:ST_DXFeatureLevel"/>
@@ -188,6 +192,8 @@
     <xs:attribute name="DesiredView" type="t:ST_DesiredView" use="optional"/>
     <xs:attribute ref="desktop2:UseUrl" use="optional"/>
     <xs:attribute ref="desktop2:AllowSilentDefaultTakeOver" use="optional"/>
+    <xs:attribute ref="desktop5:ThumbnailTypeOverlay" use="optional"/>
+    <xs:attribute ref="uap8:Launch" use="optional"/>
   </xs:complexType>
 
   <xs:element name="FileTypeAssociationSupportedVerbsChoice" abstract="true"/>
