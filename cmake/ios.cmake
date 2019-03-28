@@ -25,7 +25,7 @@ if (NOT DEFINED IOS_PLATFORM)
         set(IOS_PLATFORM "OS")
     endif()
 endif()
-set(IOS_PLATFORM ${IOS_PLATFORM} CACHE string "Type of iOS platform for which to build.")
+set(IOS_PLATFORM ${IOS_PLATFORM} CACHE STRING "Type of iOS platform for which to build.")
 
 # Determine the platform name and architectures for use in xcodebuild commands from the specified IOS_PLATFORM name.
 if (IOS_PLATFORM STREQUAL "OS")
@@ -93,7 +93,7 @@ set(APPLE                   TRUE)
 set(IOS                     TRUE)
 
 # Required: force unset of OS X-specific deployment target (otherwise autopopulated)
-set(CMAKE_OSX_DEPLOYMENT_TARGET "" CACHE string "Must be empty for iOS builds." FORCE)
+set(CMAKE_OSX_DEPLOYMENT_TARGET "" CACHE STRING "Must be empty for iOS builds." FORCE)
 
 # Set up cross compilation flags
 set(CMAKE_C_COMPILER_FORCED                     TRUE)
@@ -111,7 +111,7 @@ set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM BOTH      ) # Both to be able to find Git
 set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY      )
 set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY      )
 set(CMAKE_MODULE_EXISTS                         1)
-set(CMAKE_OSX_ARCHITECTURES                     ${IOS_ARCH} CACHE string "Build architecture for iOS")
+set(CMAKE_OSX_ARCHITECTURES                     ${IOS_ARCH} CACHE STRING "Build architecture for iOS")
 set(CMAKE_PLATFORM_HAS_INSTALLNAME              1)
 set(CMAKE_SHARED_LIBRARY_PREFIX                 "lib")
 set(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS         "-dynamiclib -headerpad_max_install_names")
@@ -127,7 +127,7 @@ if (NOT DEFINED CMAKE_INSTALL_NAME_TOOL)
 endif (NOT DEFINED CMAKE_INSTALL_NAME_TOOL)
 
 # Specify minimum version of deployment target. Unless specified, the latest SDK version is used by default.
-set(IOS_DEPLOYMENT_TARGET "${IOS_SDK_VERSION}" CACHE string "Minimum iOS version to build for." )
+set(IOS_DEPLOYMENT_TARGET "${IOS_SDK_VERSION}" CACHE STRING "Minimum iOS version to build for." )
 message(STATUS "Building for minimum iOS version: ${IOS_DEPLOYMENT_TARGET} (SDK version: ${IOS_SDK_VERSION})")
 
 # Xcode uses flags we can build directly from XCODE_IOS_PLATFORM.
@@ -149,11 +149,11 @@ list(APPEND VARS_TO_FORCE_IN_CACHE
     CMAKE_CXX_RELEASE)
 
 foreach(VAR_TO_FORCE ${VARS_TO_FORCE_IN_CACHE})
-    set(${VAR_TO_FORCE} "${${VAR_TO_FORCE}}" CACHE string "" FORCE)
+    set(${VAR_TO_FORCE} "${${VAR_TO_FORCE}}" CACHE STRING "" FORCE)
 endforeach()
 
 # Set the find root to the iOS developer roots and to user defined paths.
-set(CMAKE_FIND_ROOT_PATH ${CMAKE_IOS_DEVELOPER_ROOT} ${CMAKE_OSX_SYSROOT} ${CMAKE_PREFIX_PATH} CACHE string  "iOS find search path root" FORCE)
+set(CMAKE_FIND_ROOT_PATH ${CMAKE_IOS_DEVELOPER_ROOT} ${CMAKE_OSX_SYSROOT} ${CMAKE_PREFIX_PATH} CACHE STRING "iOS find search path root" FORCE)
 
 # Set up the default search directories for frameworks.
 set(CMAKE_SYSTEM_FRAMEWORK_PATH
