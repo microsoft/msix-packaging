@@ -1,10 +1,22 @@
 # Branches that trigger a build on commit
 trigger:
 - master
+- release_v*
 
 # Branches that trigger builds on PR
 pr:
-- master
+  branches:
+    include:
+    - master
+    - release_v*
+  paths:
+    exclude:
+    - CODEOWNERS
+    - LICENCE
+    - preview/*
+    - README.md
+    - tdf-guidance.md
+    - THIRD PARTY CODE NOTICE
 
 jobs:
 - job: AOSP
