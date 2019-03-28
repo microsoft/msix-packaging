@@ -104,7 +104,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         switch (LOWORD(wParam)) 
         {
             case IDC_INSTALLBUTTON:
-            {                
+            {
+                g_installed = true;
                 DestroyWindow(g_buttonHWnd);
                 ui->CreateCancelButton(hWnd, windowRect);
                 UpdateWindow(hWnd);
@@ -133,7 +134,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
             case IDC_CANCELBUTTON:
             {
-                ui->GetMsixRequest()->CancelRequest();
+                ui->ConfirmAppCancel();
                 break;
             }
             case IDC_LAUNCHBUTTON:
@@ -189,6 +190,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         }
         break;
     }
+    case WM_CLOSE:
+        if (g_installed)
+        {
+            ui->ConfirmAppCancel();
+        }
+        else
+        {
+            DestroyWindow(hWnd);
+        }
+        break;
     case WM_SIZE:
     case WM_SIZING:
         break;
@@ -202,6 +213,19 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     }
 
     return 0;
+}
+
+void UI::ConfirmAppCancel()
+{
+    const int cancelResult = MessageBox(hWnd, L"Are you sure you want to cancel the install?", L"Cancel App install", MB_YESNO);
+    switch (cancelResult)
+    {
+    case IDYES:
+        m_msixRequest->CancelRequest();
+        break;
+    case IDNO:
+        break;
+    }
 }
 
 HRESULT UI::LaunchInstalledApp()
@@ -404,24 +428,6 @@ BOOL UI::CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
     return TRUE;
 }
 
-BOOL UI::LaunchButton(HWND parentHWnd, RECT parentRect) {
-    LPVOID buttonPointer = nullptr;
-    g_buttonHWnd = CreateWindowEx(
-        WS_EX_LEFT, // extended window style
-        L"BUTTON",
-        L"Install",  // text
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
-        parentRect.right - 100 - 50, // x coord
-        parentRect.bottom - 60,  // y coord
-        120,  // width
-        35,  // height
-        parentHWnd,  // parent
-        (HMENU)IDC_INSTALLBUTTON, // menu
-        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
-        buttonPointer); // pointer to button
-    return TRUE;
-}
-
 BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
 {
     g_checkboxHWnd = CreateWindowEx(
@@ -440,6 +446,24 @@ BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
 
     //Set default checkbox state to checked
     SendMessage(g_checkboxHWnd, BM_SETCHECK, BST_CHECKED, 0);
+    return TRUE;
+}
+
+BOOL UI::LaunchButton(HWND parentHWnd, RECT parentRect) {
+    LPVOID buttonPointer = nullptr;
+    g_buttonHWnd = CreateWindowEx(
+        WS_EX_LEFT, // extended window style
+        L"BUTTON",
+        L"Install",  // text
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
+        parentRect.right - 100 - 50, // x coord
+        parentRect.bottom - 60,  // y coord
+        120,  // width
+        35,  // height
+        parentHWnd,  // parent
+        (HMENU)IDC_INSTALLBUTTON, // menu
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+        buttonPointer); // pointer to button
     return TRUE;
 }
 
@@ -485,11 +509,6 @@ BOOL UI::ChangeButtonText(const std::wstring& newMessage)
 {
     SendMessage(g_buttonHWnd, WM_SETTEXT, NULL, reinterpret_cast<LPARAM>(newMessage.c_str()));
     return ShowWindow(g_buttonHWnd, SW_SHOW);
-}
-
-BOOL UI::HideButtonWindow()
-{
-    return ShowWindow(g_buttonHWnd, SW_HIDE);
 }
 
 BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring messageText, IStream* logoStream)

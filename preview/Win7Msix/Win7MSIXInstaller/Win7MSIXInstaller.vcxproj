@@ -227,7 +227,6 @@
     <ResourceCompile Include="Win7MSIXInstaller.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="ico00001.ico" />
     <Image Include="icon1.ico" />
     <Image Include="icon2.ico" />
   </ItemGroup>

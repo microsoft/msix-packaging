@@ -141,8 +141,5 @@
     <Image Include="icon2.ico">
       <Filter>Resource Files</Filter>
     </Image>
-    <Image Include="ico00001.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
   </ItemGroup>
 </Project>

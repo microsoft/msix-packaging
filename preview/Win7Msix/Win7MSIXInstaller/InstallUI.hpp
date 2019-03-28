@@ -21,12 +21,14 @@ static HWND g_progressHWnd = NULL;
 static HWND g_CancelbuttonHWnd = NULL;
 static HWND g_LaunchbuttonHWnd = NULL;
 static bool g_launchCheckBoxState = true; // launch checkbox is checked by default
+static bool g_installed = false;
 
 class UI
 {
 public:
     HRESULT ShowUI();
     HRESULT LaunchInstalledApp();
+    void ConfirmAppCancel();
 
     static HRESULT Make(_In_ MsixRequest* msixRequest, _Out_ UI** instance);
     ~UI() {}
@@ -118,12 +120,6 @@ public:
     //
     // newMessage: the message to change the button to
     BOOL ChangeButtonText(const std::wstring& newMessage);
-
-    // FUNCTION: HideButtonWindow()
-    //
-    // PURPOSE: Hides the lower right button
-    //
-    BOOL HideButtonWindow();
 
     // FUNCTION: ChangeText(HWND parentHWnd, std::wstring& windowText)
     //
