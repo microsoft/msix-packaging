@@ -38,6 +38,11 @@ static const std::wstring shortDisplayNameAttribute = L"ShortDisplayName";
 static const std::wstring enableOleDefaultHandlerAttribute = L"EnableOleDefaultHandler";
 static const std::wstring formatNameAttribute = L"FormatName";
 static const std::wstring standardFormatAttribute = L"StandardFormat";
+static const std::wstring defaultFormatNameAttribute = L"DefaultFormatName";
+static const std::wstring defaultStandardFormatAttribute = L"DefaultStandardFormat";
+static const std::wstring aspectFlagAttribute = L"AspectFlag";
+static const std::wstring mediumFlagAttribute = L"MediumFlag";
+static const std::wstring directionAttribute = L"Direction";
 
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";
 static const std::wstring defaultInprocHandler = L"ole32.dll";
@@ -52,6 +57,9 @@ static const std::wstring autoConvertToValueName = L"AutoConvertTo";
 static const std::wstring implementedCategoriesKeyName = L"Implemented Categories";
 static const std::wstring readableKeyName = L"Conversion\\Readable\\Main";
 static const std::wstring readWritableKeyName = L"Conversion\\ReadWritable\\Main";
+static const std::wstring dataFormatsKeyName = L"DataFormats";
+static const std::wstring defaultFileKeyName = L"DefaultFile";
+static const std::wstring getSetKeyName = L"GetSet";
 
 static const std::wstring extensionQuery = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='Extensions']/*[local-name()='Extension']";
 static const std::wstring exeServerQuery = L"*[local-name()='ComServer']/*[local-name()='ExeServer']";
@@ -60,7 +68,8 @@ static const std::wstring progIdQuery = L"*[local-name()='ComServer']/*[local-na
 static const std::wstring implementedCategoriesQuery = L"*[local-name()='ImplementedCategories']/*[local-name()='ImplementedCategory']";
 static const std::wstring readableFormatsQuery = L"*[local-name()='Conversion']/*[local-name()='Readable']/*[local-name()='Format']";
 static const std::wstring readWritableFormatsQuery = L"*[local-name()='Conversion']/*[local-name()='ReadWritable']/*[local-name()='Format']";
-
+static const std::wstring dataFormatsQuery = L"*[local-name()='DataFormats']";
+static const std::wstring dataFormatQuery = L"*[local-name()='DataFormat']";
 
 
 HRESULT ComServer::ExecuteForAddRequest()
@@ -155,6 +164,26 @@ HRESULT ComServer::ProcessExeServerForAdd(ExeServer& exeServer)
             RETURN_IF_FAILED(readWritableKey.SetStringValue(L"", exeServerClass->conversionReadWritableFormat));
         }
 
+        if (!exeServerClass->dataFormats.empty() && !exeServerClass->defaultFileDataFormat.empty())
+        {
+            RegistryKey dataFormatsKey;
+            RETURN_IF_FAILED(classIdKey.CreateSubKey(dataFormatsKeyName.c_str(), KEY_WRITE, &dataFormatsKey));
+
+            RegistryKey defaultFileKey;
+            RETURN_IF_FAILED(dataFormatsKey.CreateSubKey(defaultFileKeyName.c_str(), KEY_WRITE, &defaultFileKey));
+            RETURN_IF_FAILED(defaultFileKey.SetStringValue(L"", exeServerClass->defaultFileDataFormat));
+
+            RegistryKey getSetKey;
+            RETURN_IF_FAILED(dataFormatsKey.CreateSubKey(getSetKeyName.c_str(), KEY_WRITE, &getSetKey));
+
+            int i = 0;
+            for (auto dataFormat = exeServerClass->dataFormats.begin(); dataFormat != exeServerClass->dataFormats.end(); ++i, ++dataFormat)
+            {
+                RegistryKey formatKey;
+                RETURN_IF_FAILED(getSetKey.CreateSubKey(std::to_wstring(i).c_str(), KEY_WRITE, &formatKey));
+                RETURN_IF_FAILED(formatKey.SetStringValue(L"", *dataFormat));
+            }
+        }
     }
 
     return S_OK;
@@ -320,14 +349,101 @@ HRESULT ComServer::ParseExeServerClassElement(ExeServer & exeServer, IMsixElemen
         RETURN_IF_FAILED(implementedCategoriesEnum->MoveNext(&hasCurrent));
     }
 
-    RETURN_IF_FAILED(ParseFormats(classElement, readableFormatsQuery, exeServerClass.conversionReadableFormat));
-    RETURN_IF_FAILED(ParseFormats(classElement, readWritableFormatsQuery, exeServerClass.conversionReadWritableFormat));
+    RETURN_IF_FAILED(ParseConversionFormats(classElement, readableFormatsQuery, exeServerClass.conversionReadableFormat));
+    RETURN_IF_FAILED(ParseConversionFormats(classElement, readWritableFormatsQuery, exeServerClass.conversionReadWritableFormat));
+
+    RETURN_IF_FAILED(ParseDataFormats(classElement, exeServerClass));
 
     exeServer.classes.push_back(exeServerClass);
     return S_OK;
 }
 
-HRESULT ComServer::ParseFormats(IMsixElement* rootElement, const std::wstring & formatsQuery, std::wstring & formats)
+HRESULT ComServer::ParseDataFormats(IMsixElement* classElement, ExeServerClass& exeServerClass)
+{
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> dataFormatsEnum;
+    RETURN_IF_FAILED(classElement->GetElements(dataFormatsQuery.c_str(), &dataFormatsEnum));
+    RETURN_IF_FAILED(dataFormatsEnum->GetHasCurrent(&hasCurrent));
+    if (hasCurrent)
+    {
+        ComPtr<IMsixElement> dataFormatsElement;
+        RETURN_IF_FAILED(dataFormatsEnum->GetCurrent(&dataFormatsElement));
+
+        std::wstring defaultFormat;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatsElement.Get(), defaultFormatNameAttribute, defaultFormat));
+        if (defaultFormat.empty())
+        {
+            RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatsElement.Get(), defaultStandardFormatAttribute, defaultFormat));
+        }
+        exeServerClass.defaultFileDataFormat = defaultFormat;
+
+        RETURN_IF_FAILED(ParseDataFormat(dataFormatsElement.Get(), exeServerClass))
+    }
+    return S_OK;
+}
+
+HRESULT ConvertDataFormatDirectionStringToRegistryFlag(std::wstring direction, std::wstring& directionRegistryFlag)
+{
+    if (direction.compare(L"Get") == 0)
+    {
+        directionRegistryFlag = L"1";
+        return S_OK;
+    }
+    else if (direction.compare(L"Set") == 0)
+    {
+        directionRegistryFlag = L"2";
+        return S_OK;
+    }
+    else if (direction.compare(L"GetAndSet") == 0)
+    {
+        directionRegistryFlag = L"3";
+        return S_OK;
+    }
+    else
+    {
+        return HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+    }
+}
+
+HRESULT ComServer::ParseDataFormat(IMsixElement* dataFormatsElement, ExeServerClass& exeServerClass)
+{
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> dataFormatEnum;
+    RETURN_IF_FAILED(dataFormatsElement->GetElements(dataFormatQuery.c_str(), &dataFormatEnum));
+    while (hasCurrent)
+    {
+        ComPtr<IMsixElement> dataFormatElement;
+        RETURN_IF_FAILED(dataFormatEnum->GetCurrent(&dataFormatElement));
+
+        std::wstring aspectFlag;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), aspectFlagAttribute, aspectFlag));
+
+        std::wstring mediumFlag;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), mediumFlagAttribute, mediumFlag));
+
+        std::wstring direction;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), directionAttribute, direction));
+
+        std::wstring directionRegistryFlag;
+        RETURN_IF_FAILED(ConvertDataFormatDirectionStringToRegistryFlag(direction, directionRegistryFlag));
+
+        std::wstring formatName;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), formatNameAttribute, formatName));
+        if (formatName.empty())
+        {
+            RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), standardFormatAttribute, formatName));
+        }
+
+        std::wstring dataFormat = formatName + L',' + aspectFlag + L',' + mediumFlag + L',' + directionRegistryFlag;
+        exeServerClass.dataFormats.push_back(dataFormat);
+
+        RETURN_IF_FAILED(dataFormatEnum->MoveNext(&hasCurrent));
+    }
+
+    return S_OK;
+}
+
+HRESULT ComServer::ParseConversionFormats(IMsixElement* rootElement, const std::wstring & formatsQuery, std::wstring & formats)
 {
     BOOL hasCurrent = FALSE;
     ComPtr<IMsixElementEnumerator> readableFormatsEnum;

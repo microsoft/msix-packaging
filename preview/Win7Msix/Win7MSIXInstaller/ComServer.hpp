@@ -17,6 +17,7 @@ struct ExeServerClass
     std::vector<std::wstring> implementedCategories;
     std::wstring conversionReadableFormat;
     std::wstring conversionReadWritableFormat;
+    std::wstring defaultFileDataFormat;
     std::vector<std::wstring> dataFormats;
 };
 
@@ -61,7 +62,11 @@ private:
 
     HRESULT ParseExeServerClassElement(ExeServer& exeServer, IMsixElement* classElement);
 
-    HRESULT ParseFormats(IMsixElement * classElement, const std::wstring & formatsQuery, std::wstring & formats);
+    HRESULT ParseDataFormats(IMsixElement * classElement, ExeServerClass & exeServerClass);
+
+    HRESULT ParseDataFormat(IMsixElement * dataFormatsElement, ExeServerClass & exeServerClass);
+
+    HRESULT ParseConversionFormats(IMsixElement * classElement, const std::wstring & formatsQuery, std::wstring & formats);
 
     HRESULT ParseProgIdElement(IMsixElement* progIdElement);
 
