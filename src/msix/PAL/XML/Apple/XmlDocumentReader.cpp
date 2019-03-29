@@ -9,7 +9,7 @@ namespace MSIX {
 
 void XmlDocumentReader::Init()
 {
-    m_wrapper = new NSXmlParserWrapper();
+    m_wrapper = std::make_unique<NSXmlParserWrapper>();
 }
 
 bool XmlDocumentReader::Parse(uint8_t* data, size_t size)
