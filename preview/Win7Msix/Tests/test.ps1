@@ -7,7 +7,8 @@
 # if omitted, assumes you've copied the binaries into the working directory
 param (
     [Parameter(ParameterSetName="binaryFolder", Mandatory=$false)]
-    [string]$binaryFolder
+    [string]$binaryFolder,
+    [bool]$takeTrace
 )
 
 # if not specified, assume binaries are in the current directory
@@ -34,7 +35,10 @@ function writeFail
 	write-host "FAIL" -foregroundcolor red
 }
 
-& .\msixtrace.ps1 -start
+if ($takeTrace)
+{
+	& .\msixtrace.ps1 -start
+}
 
 $global:testcase = 0
 
@@ -247,9 +251,10 @@ else
 	writeFail
 }
 
-ShowTestHeader("Update package removes old package")
+ShowTestHeader("Update package removes old package and checks windows.protocol extensions")
 $output = & $executable -AddPackage VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe-missingsomeftas.msix -quietUx
 $vlc1msixpath = "C:\program files\msix7apps\VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe"
+$vlcProtocolRegPath = "HKCR:\VLC"
 if ($output -eq $null)
 {
 	$vlc1Exists = (test-path $vlc1msixpath)
@@ -261,7 +266,8 @@ if ($output -eq $null)
 			$vlc2msixpath = "C:\program files\msix7apps\VLC-3.0.6_2.0.0.0_x64__8wekyb3d8bbwe"
 			$vlc1Exists = (test-path $vlc1msixpath)
 			$vlc2Exists = (test-path $vlc2msixpath)
-			if ($vlc2Exists -and -not $vlc1Exists)
+			$vlcRegExists = (test-path $vlcProtocolRegPath)
+			if ($vlc2Exists -and $vlcRegExists -and -not $vlc1Exists)
 			{
 				writeSuccess
 			}
@@ -289,8 +295,30 @@ else
 	writeFail
 }
 
+ShowTestHeader("Remove package with windows.protocol extensions")
+$output = & $executable -RemovePackage VLC-3.0.6_2.0.0.0_x64__8wekyb3d8bbwe
+if ($output -eq $null)
+{
+	$vlcRegExists = (test-path $vlcProtocolRegPath)
+	if (-not $vlcRegExists)
+	{
+		writeSuccess
+	}
+	else
+	{
+		write-host ("Expected paths not deleted: $vlcProtocolRegPath exists = $vlcRegExists")
+		writeFail
+	}
+}
+else
+{
+	$output
+	writeFail
+}
 
-
-& .\msixtrace.ps1 -stop
+if ($takeTrace)
+{
+	& .\msixtrace.ps1 -stop
+}
 
 # manual test: install with UX, launch the package using start menu shortcut, open appwiz.cpl and remove package.

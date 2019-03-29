@@ -92,6 +92,10 @@ public:
         _Out_opt_ DWORD * maxNameLength = nullptr,
         _Out_opt_ DWORD * maxValueSize = nullptr);
 
+    HRESULT GetStringValue(
+        _In_ PCWSTR name,
+        _Out_ std::wstring& value);
+
     HRESULT EnumValue(
         _In_ const DWORD index,
         _Out_writes_to_(*valueNameLength, *valueNameLength) PWSTR valueName,

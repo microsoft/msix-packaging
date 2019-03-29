@@ -5,26 +5,6 @@
 #include "RegistryKey.hpp"
 #include "RegistryDevirtualizer.hpp"
 
-static const std::wstring msix7ProgIDPrefix = L"Msix7";
-static const std::wstring openWithProgIdsKeyName = L"OpenWithProgids";
-static const std::wstring shellKeyName = L"Shell";
-static const std::wstring openKeyName = L"open";
-static const std::wstring commandKeyName = L"command";
-static const std::wstring defaultIconKeyName = L"DefaultIcon";
-static const std::wstring commandArgument = L" \"%1\"";
-
-static const std::wstring ftaCategoryNameInManifest = L"windows.fileTypeAssociation";
-
-static const std::wstring categoryAttribute = L"Category";
-static const std::wstring nameAttribute = L"Name";
-static const std::wstring parametersAttribute = L"Parameters";
-
-static const std::wstring extensionQuery = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='Extensions']/*[local-name()='Extension']";
-static const std::wstring ftaQuery = L"*[local-name()='FileTypeAssociation']";
-static const std::wstring fileTypeQuery = L"*[local-name()='SupportedFileTypes']/*[local-name()='FileType']";
-static const std::wstring logoQuery = L"*[local-name()='Logo']";
-static const std::wstring verbQuery = L"*[local-name()='SupportedVerbs']/*[local-name()='Verb']";
-
 /// Data structs to be filled in from the information in the manifest
 struct Verb
 {
