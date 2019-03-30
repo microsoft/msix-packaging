@@ -84,4 +84,5 @@ private:
     std::wstring m_registryHiveFileName;
 
     RegistryKey m_rootKey;
+    bool m_hiveFileNameExists = false;
 };

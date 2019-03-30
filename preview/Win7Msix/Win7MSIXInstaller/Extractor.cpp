@@ -282,28 +282,6 @@ HRESULT Extractor::ExtractPackage()
     return S_OK;
 }
 
-HRESULT FileExists(std::wstring file, _Out_ bool &exists)
-{
-    DWORD fileAttributes = GetFileAttributesW(file.c_str());
-    if (fileAttributes == INVALID_FILE_ATTRIBUTES)
-    {
-        DWORD lastError = GetLastError();
-        if ((lastError == ERROR_FILE_NOT_FOUND) || (lastError == ERROR_PATH_NOT_FOUND))
-        {
-            exists = false;
-        }
-        else
-        {
-            return HRESULT_FROM_WIN32(lastError);
-        }
-    }
-    else
-    {
-        exists = true;
-    }
-    return S_OK;
-}
-
 HRESULT GetFileVersion(std::wstring file, _Out_ UINT64& version, _Out_ bool& isUnversioned)
 {
     isUnversioned = true;
@@ -564,15 +542,6 @@ HRESULT Extractor::CopyVfsFileToLocal(std::wstring fileName)
 HRESULT Extractor::ExtractRegistry(bool remove)
 {
     std::wstring registryFilePath = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath().c_str() + registryDatFile;
-
-    bool registryFileExists = false;
-    RETURN_IF_FAILED(FileExists(registryFilePath, registryFileExists));
-
-    if (!registryFileExists)
-    {
-        // nothing to extract
-        return S_OK;
-    }
 
     AutoPtr<RegistryDevirtualizer> registryDevirtualizer;
     RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFilePath, m_msixRequest, &registryDevirtualizer));

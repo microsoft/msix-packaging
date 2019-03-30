@@ -24,6 +24,8 @@
 #include "AddRemovePrograms.hpp"
 #include "PopulatePackageInfo.hpp"
 #include "Protocol.hpp"
+#include "ComInterface.hpp"
+#include "ComServer.hpp"
 #include "FileTypeAssociation.hpp"
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
@@ -48,7 +50,9 @@ std::map<PCWSTR, HandlerInfo> AddHandlers =
     {Extractor::HandlerName,              {Extractor::CreateHandler,              StartMenuLink::HandlerName }},
     {StartMenuLink::HandlerName,          {StartMenuLink::CreateHandler,          AddRemovePrograms::HandlerName}},
     {AddRemovePrograms::HandlerName,      {AddRemovePrograms::CreateHandler,      Protocol::HandlerName}},
-    {Protocol::HandlerName,               {Protocol::CreateHandler,               FileTypeAssociation::HandlerName}},
+    {Protocol::HandlerName,               {Protocol::CreateHandler,               ComInterface::HandlerName}},
+    {ComInterface::HandlerName,           {ComInterface::CreateHandler,           ComServer::HandlerName}},
+    {ComServer::HandlerName,              {ComServer::CreateHandler,              FileTypeAssociation::HandlerName}},
     {FileTypeAssociation::HandlerName,    {FileTypeAssociation::CreateHandler,    InstallComplete::HandlerName }},
     {InstallComplete::HandlerName,        {InstallComplete::CreateHandler,        nullptr}},
 };

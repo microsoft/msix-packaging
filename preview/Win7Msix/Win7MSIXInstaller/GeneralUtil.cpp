@@ -51,3 +51,42 @@ bool CaseInsensitiveEquals(const std::wstring& left, const std::wstring& right)
 {
     return (_wcsicmp(left.c_str(), right.c_str()) == 0);
 }
+
+HRESULT GetAttributeValueFromElement(IMsixElement * element, const std::wstring attributeName, std::wstring & attributeValue)
+{
+    Text<wchar_t> textValue;
+    RETURN_IF_FAILED(element->GetAttributeValue(attributeName.c_str(), &textValue));
+    if (textValue.Get() != nullptr)
+    {
+        attributeValue = textValue.Get();
+    }
+
+    return S_OK;
+}
+
+std::wstring GuidFromManifestId(std::wstring id)
+{
+    return L"{" + id + L"}";
+}
+
+HRESULT FileExists(std::wstring file, _Out_ bool &exists)
+{
+    DWORD fileAttributes = GetFileAttributesW(file.c_str());
+    if (fileAttributes == INVALID_FILE_ATTRIBUTES)
+    {
+        DWORD lastError = GetLastError();
+        if ((lastError == ERROR_FILE_NOT_FOUND) || (lastError == ERROR_PATH_NOT_FOUND))
+        {
+            exists = false;
+        }
+        else
+        {
+            return HRESULT_FROM_WIN32(lastError);
+        }
+    }
+    else
+    {
+        exists = true;
+    }
+    return S_OK;
+}
