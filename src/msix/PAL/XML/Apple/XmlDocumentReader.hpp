@@ -46,7 +46,7 @@ public:
     XmlNode* GetRoot(){return m_root.get();};
       
 private:
-    NSXmlParserWrapper* m_wrapper;
+    std::unique_ptr<NSXmlParserWrapper> m_wrapper;
     std::unique_ptr<XmlNode> m_root;
     std::stack<XmlNode*> m_currentNodeStack;
 };

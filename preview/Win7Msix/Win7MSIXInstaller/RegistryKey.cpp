@@ -76,6 +76,21 @@ HRESULT RegistryKey::GetValuesInfo(
         nullptr /*securityDescriptorSize*/, nullptr /*lastModified*/);
 }
 
+HRESULT RegistryKey::GetStringValue(PCWSTR name, std::wstring & value)
+{
+    WCHAR buffer[MAX_PATH];
+    DWORD bufferSize = ARRAYSIZE(buffer);
+    DWORD type = 0;
+    RETURN_IF_FAILED(HRESULT_FROM_WIN32(RegQueryValueExW(this->m_hkey, name, nullptr /*reserved*/, &type, reinterpret_cast<BYTE *>(buffer), &bufferSize)));
+    if (type != REG_SZ)
+    {
+        return HRESULT_FROM_WIN32(ERROR_INVALID_DATATYPE);
+    }
+
+    value = buffer;
+    return S_OK;
+}
+
 HRESULT RegistryKey::SetValue(
     _In_opt_ PCWSTR name,
     _In_reads_bytes_opt_(valueSize) const void * value,

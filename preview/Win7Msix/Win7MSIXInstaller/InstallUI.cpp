@@ -313,7 +313,7 @@ HRESULT UI::ParseInfoFromPackage()
         wpublisher.find_first_of(L",") - wpublisher.find_first_of(L"=") - 1);
 
     // Obtain version number
-    ConvertVersionToString(packageInfo->GetVersion());
+    m_version = ConvertVersionToString(packageInfo->GetVersion());
 
     //Obtain the number of files
     m_numberOfFiles = packageInfo->GetNumberOfPayloadFiles();
