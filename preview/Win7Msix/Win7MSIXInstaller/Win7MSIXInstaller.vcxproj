@@ -185,6 +185,7 @@
   <ItemGroup>
     <ClInclude Include="AddRemovePrograms.hpp" />
     <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="MsixResponse.hpp" />
     <ClInclude Include="Extractor.hpp" />
     <ClInclude Include="FileTypeAssociation.hpp" />
     <ClInclude Include="FootprintFiles.hpp" />
@@ -212,6 +213,7 @@
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="InstallComplete.cpp" />
     <ClCompile Include="InstallUI.cpp" />
+    <ClCompile Include="MsixResponse.cpp" />
     <ClCompile Include="PackageInfo.cpp" />
     <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="RegistryDevirtualizer.cpp" />

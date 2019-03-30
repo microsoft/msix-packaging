@@ -77,6 +77,12 @@ HRESULT MsixRequest::Make(OperationType operationType, Flags flags, std::wstring
     instance->m_packageFullName = packageFullName;
     instance->m_validationOptions = validationOption;
     RETURN_IF_FAILED(instance->InitializeFilePathMappings());
+
+    //Set response object
+    AutoPtr<MsixResponse> responseObject;
+    RETURN_IF_FAILED(MsixResponse::Make(&responseObject));
+    instance->m_msixResponse = responseObject;
+
     *outInstance = instance.release();
 
     return S_OK;
@@ -168,9 +174,17 @@ HRESULT MsixRequest::ProcessAddRequest()
         HandlerInfo currentHandler = AddHandlers[currentHandlerName];
         AutoPtr<IPackageHandler> handler;
         RETURN_IF_FAILED(currentHandler.create(this, &handler));
-        RETURN_IF_FAILED(handler->ExecuteForAddRequest());
-
-        currentHandlerName = currentHandler.nextHandler;
+        HRESULT hr = handler->ExecuteForAddRequest();
+        if (FAILED(hr))
+        {
+            m_msixResponse->SetErrorCode(hr);
+            //call cancel and return
+            return hr;
+        }
+        else
+        {
+            currentHandlerName = currentHandler.nextHandler;
+        }
     }
 
     return S_OK;
@@ -217,5 +231,10 @@ void MsixRequest::SetUI(UI * ui)
 
 void MsixRequest::SetPackageInfo(PackageInfo* packageInfo) 
 {
-    m_packageInfo = packageInfo; 
+    m_packageInfo = packageInfo;
 }
+
+/*void MsixRequest::SetMsixResponse(MsixResponse* msixResponse)
+{
+    m_msixResponse = msixResponse;
+}*/

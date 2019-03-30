@@ -1,6 +1,7 @@
 #pragma once
 #include "PackageInfo.hpp"
 #include "FilePaths.hpp"
+#include "MsixResponse.hpp"
 class UI;
 
 enum OperationType
@@ -37,6 +38,9 @@ private:
     /// Filled in by CreateAndShowUI 
     AutoPtr<UI> m_UI;
 
+    /// MsixResponse object populated by handlers
+    AutoPtr<MsixResponse> m_msixResponse;
+
     ///Variable used to indicate if add package request was cancelled during installation
     bool m_isInstallCancelled = false;
 
@@ -52,6 +56,9 @@ public:
 
     /// Called by CreateAndShowUI 
     void SetUI(UI* ui);
+
+    /// Called by handlers to set response
+    //void SetMsixResponse(MsixResponse* msixResponse);
 
     // Getters
     MSIX_VALIDATION_OPTION GetValidationOptions() { return m_validationOptions; }
@@ -105,5 +112,6 @@ private:
     /// This handles FindPackage operation and displays the package info for a given package.
     /// @return E_NOT_SET when the package could not be found
     HRESULT DisplayPackageInfo();
+
 };
 

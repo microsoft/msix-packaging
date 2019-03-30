@@ -46,15 +46,21 @@ HRESULT StartMenuLink::CreateLink(PCWSTR targetFilePath, PCWSTR linkFilePath, PC
 
 HRESULT StartMenuLink::ExecuteForAddRequest()
 {
-    if (!m_msixRequest->GetIsInstallCancelled())
+    if (m_msixRequest->GetIsInstallCancelled())
     {
-        PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
+        return ERROR_INSTALL_USEREXIT;
+    }
+    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
 
-        std::wstring filePath = m_msixRequest->GetFilePathMappings()->GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";
+    std::wstring filePath = m_msixRequest->GetFilePathMappings()->GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";
 
-        std::wstring resolvedExecutableFullPath = packageInfo->GetExecutableFilePath();
-        std::wstring appUserModelId = m_msixRequest->GetPackageInfo()->GetAppModelUserId();
-        RETURN_IF_FAILED(CreateLink(resolvedExecutableFullPath.c_str(), filePath.c_str(), L"", appUserModelId.c_str()));
+    std::wstring resolvedExecutableFullPath = packageInfo->GetExecutableFilePath();
+    std::wstring appUserModelId = m_msixRequest->GetPackageInfo()->GetAppModelUserId();
+    RETURN_IF_FAILED(CreateLink(resolvedExecutableFullPath.c_str(), filePath.c_str(), L"", appUserModelId.c_str()));
+
+    if (m_msixRequest->GetIsInstallCancelled())
+    {
+        return ERROR_INSTALL_USEREXIT;
     }
 
     return S_OK;

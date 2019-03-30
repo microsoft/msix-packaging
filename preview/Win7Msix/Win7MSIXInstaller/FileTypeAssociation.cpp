@@ -142,12 +142,19 @@ HRESULT FileTypeAssociation::ParseManifest()
 
 HRESULT FileTypeAssociation::ExecuteForAddRequest()
 {
-    if (!m_msixRequest->GetIsInstallCancelled())
+    if (m_msixRequest->GetIsInstallCancelled())
     {
-        for (std::vector<Fta>::iterator fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
-        {
-            RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
-        }
+        return ERROR_INSTALL_USEREXIT;
+    }
+
+    for (std::vector<Fta>::iterator fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
+    {
+        RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
+    }
+
+    if (m_msixRequest->GetIsInstallCancelled())
+    {
+        return ERROR_INSTALL_USEREXIT;
     }
 
     return S_OK;

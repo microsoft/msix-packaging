@@ -89,7 +89,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
-        ui->LaunchButton(hWnd, windowRect);
+        ui->InstallButton(hWnd, windowRect);
         ui->CreateCheckbox(hWnd, windowRect);
         break;
     case WM_PAINT:
@@ -449,7 +449,7 @@ BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
     return TRUE;
 }
 
-BOOL UI::LaunchButton(HWND parentHWnd, RECT parentRect) {
+BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
     LPVOID buttonPointer = nullptr;
     g_buttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style

@@ -82,13 +82,13 @@ public:
     // count: the number of objects to be iterated through in the progress bar
     BOOL CreateProgressBar(HWND parentHWnd, RECT parentRect, int count);
 
-    // FUNCTION: LaunchButton(HWND parentHWnd, RECT parentRect)
+    // FUNCTION: InstallButton(HWND parentHWnd, RECT parentRect)
     //
     // PURPOSE: Create the lower right install button
     // 
     // parentHWnd: the HWND of the window to add the button to
     // parentRect: the specs of the parent window
-    BOOL LaunchButton(HWND parentHWnd, RECT parentRect);
+    BOOL InstallButton(HWND parentHWnd, RECT parentRect);
 
     // FUNCTION: CreateCheckbox(HWND parentHWnd, RECT parentRect)
     //

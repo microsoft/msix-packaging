@@ -157,5 +157,6 @@ HRESULT CommandLineInterface::CreateRequest(MsixRequest** msixRequest)
 	);
 
     *msixRequest = localRequest.Detach();
+
     return S_OK;
 }

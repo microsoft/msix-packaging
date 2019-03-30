@@ -13,54 +13,60 @@ const PCWSTR AddRemovePrograms::HandlerName = L"AddRemovePrograms";
 
 HRESULT AddRemovePrograms::ExecuteForAddRequest()
 {
-    if (!m_msixRequest->GetIsInstallCancelled())
+    if (m_msixRequest->GetIsInstallCancelled())
     {
-        PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
-        std::wstring packageFullName = packageInfo->GetPackageFullName();
+        return ERROR_INSTALL_USEREXIT;
+    }
 
-        RegistryKey uninstallKey;
-        RETURN_IF_FAILED(uninstallKey.Open(HKEY_LOCAL_MACHINE, uninstallKeyPath.c_str(), KEY_WRITE));
+    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
+    std::wstring packageFullName = packageInfo->GetPackageFullName();
 
-        RegistryKey packageKey;
-        RETURN_IF_FAILED(uninstallKey.CreateSubKey(packageFullName.c_str(), KEY_WRITE, &packageKey));
+    RegistryKey uninstallKey;
+    RETURN_IF_FAILED(uninstallKey.Open(HKEY_LOCAL_MACHINE, uninstallKeyPath.c_str(), KEY_WRITE));
 
-        std::wstring displayName = packageInfo->GetDisplayName();
-        RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayName", displayName));
+    RegistryKey packageKey;
+    RETURN_IF_FAILED(uninstallKey.CreateSubKey(packageFullName.c_str(), KEY_WRITE, &packageKey));
 
-        std::wstring directoryPath = packageInfo->GetPackageDirectoryPath();
-        RETURN_IF_FAILED(packageKey.SetStringValue(L"InstallLocation", directoryPath));
+    std::wstring displayName = packageInfo->GetDisplayName();
+    RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayName", displayName));
 
-        WCHAR filePath[MAX_PATH];
-        DWORD lengthCopied = GetModuleFileNameW(nullptr, filePath, MAX_PATH);
-        if (lengthCopied == 0)
-        {
-            RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
-        }
+    std::wstring directoryPath = packageInfo->GetPackageDirectoryPath();
+    RETURN_IF_FAILED(packageKey.SetStringValue(L"InstallLocation", directoryPath));
 
-        std::wstring uninstallCommand = filePath + std::wstring(L" -RemovePackage ") + packageFullName;
-        RETURN_IF_FAILED(packageKey.SetStringValue(L"UninstallString", uninstallCommand));
+    WCHAR filePath[MAX_PATH];
+    DWORD lengthCopied = GetModuleFileNameW(nullptr, filePath, MAX_PATH);
+    if (lengthCopied == 0)
+    {
+        RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+    }
 
-        std::wstring publisherString(packageInfo->GetPublisher());
-        auto publisherCommonName = publisherString.substr(publisherString.find_first_of(L"=") + 1,
-            publisherString.find_first_of(L",") - publisherString.find_first_of(L"=") - 1);
-        RETURN_IF_FAILED(packageKey.SetStringValue(L"Publisher", publisherCommonName));
+    std::wstring uninstallCommand = filePath + std::wstring(L" -RemovePackage ") + packageFullName;
+    RETURN_IF_FAILED(packageKey.SetStringValue(L"UninstallString", uninstallCommand));
 
-        std::wstring versionString(ConvertVersionToString(packageInfo->GetVersion()));
-        RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayVersion", versionString));
+    std::wstring publisherString(packageInfo->GetPublisher());
+    auto publisherCommonName = publisherString.substr(publisherString.find_first_of(L"=") + 1,
+        publisherString.find_first_of(L",") - publisherString.find_first_of(L"=") - 1);
+    RETURN_IF_FAILED(packageKey.SetStringValue(L"Publisher", publisherCommonName));
 
-        std::wstring packageIconString = packageInfo->GetExecutableFilePath();
-        RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayIcon", packageIconString));
+    std::wstring versionString(ConvertVersionToString(packageInfo->GetVersion()));
+    RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayVersion", versionString));
 
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Added Uninstall key successfully",
-            TraceLoggingValue(packageFullName.c_str(), "packageFullName"),
-            TraceLoggingValue(uninstallCommand.c_str(), "uninstallString"),
-            TraceLoggingValue(displayName.c_str(), "displayName"),
-            TraceLoggingValue(directoryPath.c_str(), "installLocation"),
-            TraceLoggingValue(publisherString.c_str(), "publisher"),
-            TraceLoggingValue(versionString.c_str(), "displayVersion"),
-            TraceLoggingValue(packageIconString.c_str(), "displayIcon"));
+    std::wstring packageIconString = packageInfo->GetExecutableFilePath();
+    RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayIcon", packageIconString));
 
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Added Uninstall key successfully",
+        TraceLoggingValue(packageFullName.c_str(), "packageFullName"),
+        TraceLoggingValue(uninstallCommand.c_str(), "uninstallString"),
+        TraceLoggingValue(displayName.c_str(), "displayName"),
+        TraceLoggingValue(directoryPath.c_str(), "installLocation"),
+        TraceLoggingValue(publisherString.c_str(), "publisher"),
+        TraceLoggingValue(versionString.c_str(), "displayVersion"),
+        TraceLoggingValue(packageIconString.c_str(), "displayIcon"));
+
+    if (m_msixRequest->GetIsInstallCancelled())
+    {
+        return ERROR_INSTALL_USEREXIT;
     }
 
     return S_OK;

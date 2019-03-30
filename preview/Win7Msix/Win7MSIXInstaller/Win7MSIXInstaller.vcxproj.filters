@@ -78,6 +78,9 @@
     <ClInclude Include="InstallComplete.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MsixResponse.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Win7MSIXInstaller.cpp">
@@ -126,6 +129,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InstallComplete.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="MsixResponse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
