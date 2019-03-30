@@ -316,6 +316,38 @@ else
 	writeFail
 }
 
+# ACDual was taken from the sample mentioned here: https://blogs.windows.com/buildingapps/2017/04/13/com-server-ole-document-support-desktop-bridge/#o481I86oAPPvX428.97
+ShowTestHeader("Add, launch and remove package with comserver extension")
+$output = & $executable -AddPackage ACDual.msix -quietUx
+if ($output -eq $null)
+{
+	& ".\WindowsFormsApp2.exe"
+	start-sleep 1
+	$appprocess = get-process |? {$_.processname -eq "WindowsFormsApp2" }
+	if ($appprocess -eq $null)
+	{
+		write-host ("Unable to launch WindowsFormsApp2, implies comserver/cominterface registrations were not properly written")
+		writeFail
+	}
+	else
+	{
+		$appprocess | stop-process
+		stop-process -name acdual 
+		$output = & $executable -RemovePackage AutoClickComServerSample_1.1.0.0_x86__8wekyb3d8bbwe
+		if ($output -ne $null)
+		{
+			$output
+			write-host ("Add/launch passed, but remove package failed")
+		}
+		writeSuccess
+	}
+}
+else
+{
+	$output
+	writeFail
+}
+
 if ($takeTrace)
 {
 	& .\msixtrace.ps1 -stop

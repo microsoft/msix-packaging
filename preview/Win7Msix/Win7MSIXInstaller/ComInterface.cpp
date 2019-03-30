@@ -6,47 +6,10 @@
 #include "FilePaths.hpp"
 #include "ComInterface.hpp"
 #include "GeneralUtil.hpp"
+#include "Constants.hpp"
 #include <TraceLoggingProvider.h>
 
 const PCWSTR ComInterface::HandlerName = L"ComInterface";
-
-static const std::wstring msix7ProgIDPrefix = L"Msix7";
-static const std::wstring openWithProgIdsKeyName = L"OpenWithProgids";
-static const std::wstring shellKeyName = L"Shell";
-static const std::wstring openKeyName = L"open";
-static const std::wstring commandKeyName = L"command";
-static const std::wstring defaultIconKeyName = L"DefaultIcon";
-static const std::wstring commandArgument = L" \"%1\"";
-
-static const std::wstring comInterfaceCategoryNameInManifest = L"windows.comInterface";
-
-static const std::wstring categoryAttribute = L"Category";
-static const std::wstring idAttribute = L"Id";
-static const std::wstring versionNumberAttribute = L"VersionNumber";
-static const std::wstring proxyStubClsidAttribute = L"ProxyStubClsid";
-static const std::wstring proxyStubClsidForUniversalMarshaler = L"{00020424-0000-0000-C000-000000000046}";
-static const std::wstring localeIdAttribute = L"LocaleId";
-static const std::wstring libraryFlagAttribute = L"LibraryFlag";
-static const std::wstring helpDirectoryAttribute = L"HelpDirectory";
-static const std::wstring displayNameAttribute = L"DisplayName";
-static const std::wstring pathAttribute = L"Path";
-
-static const std::wstring extensionQuery = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='Extensions']/*[local-name()='Extension']";
-static const std::wstring interfaceQuery = L"*[local-name()='ComInterface']/*[local-name()='Interface']";
-static const std::wstring typeLibForInterfaceQuery = L"*[local-name()='TypeLib']";
-static const std::wstring typeLibQuery = L"*[local-name()='ComInterface']/*[local-name()='TypeLib']";
-static const std::wstring versionQuery = L"*[local-name()='Version']";
-static const std::wstring win32PathQuery = L"*[local-name()='Win32Path']";
-static const std::wstring win64PathQuery = L"*[local-name()='Win64Path']";
-
-static const std::wstring interfaceKeyName = L"Interface";
-static const std::wstring proxyStubClsidKeyName = L"ProxyStubClsid32";
-static const std::wstring typeLibKeyName = L"TypeLib";
-static const std::wstring versionValueName = L"Version";
-static const std::wstring win64KeyName = L"win64";
-static const std::wstring win32KeyName = L"win32";
-static const std::wstring flagsKeyName = L"Flags";
-static const std::wstring helpDirKeyName = L"HelpDir";
 
 HRESULT ComInterface::ExecuteForAddRequest()
 {

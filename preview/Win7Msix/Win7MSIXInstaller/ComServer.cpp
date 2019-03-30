@@ -6,71 +6,10 @@
 #include "FilePaths.hpp"
 #include "ComServer.hpp"
 #include "GeneralUtil.hpp"
+#include "Constants.hpp"
 #include <TraceLoggingProvider.h>
 
 const PCWSTR ComServer::HandlerName = L"ComServer";
-
-static const std::wstring msix7ProgIDPrefix = L"Msix7";
-static const std::wstring openWithProgIdsKeyName = L"OpenWithProgids";
-static const std::wstring shellKeyName = L"Shell";
-static const std::wstring openKeyName = L"open";
-static const std::wstring commandKeyName = L"command";
-static const std::wstring defaultIconKeyName = L"DefaultIcon";
-static const std::wstring commandArgument = L" \"%1\"";
-
-static const std::wstring clsidKeyName = L"CLSID";
-
-static const std::wstring ComServerCategoryNameInManifest = L"windows.comServer";
-
-static const std::wstring categoryAttribute = L"Category";
-static const std::wstring idAttribute = L"Id";
-static const std::wstring executableAttribute = L"Executable";
-static const std::wstring argumentsAttribute = L"Arguments";
-static const std::wstring displayNameAttribute = L"DisplayName";
-static const std::wstring launchAndActivationPermissionAttribute = L"LaunchAndActivationPermission";
-static const std::wstring progIdAttribute = L"ProgId";
-static const std::wstring versionIndependentProgIdAttribute = L"VersionIndependentProgId";
-static const std::wstring clsidAttribute = L"Clsid";
-static const std::wstring currentVersionAttribute = L"CurrentVersion";
-static const std::wstring autoConvertToAttribute = L"AutoConvertTo";
-static const std::wstring insertableObjectAttribute = L"InsertableObject";
-static const std::wstring shortDisplayNameAttribute = L"ShortDisplayName";
-static const std::wstring enableOleDefaultHandlerAttribute = L"EnableOleDefaultHandler";
-static const std::wstring formatNameAttribute = L"FormatName";
-static const std::wstring standardFormatAttribute = L"StandardFormat";
-static const std::wstring defaultFormatNameAttribute = L"DefaultFormatName";
-static const std::wstring defaultStandardFormatAttribute = L"DefaultStandardFormat";
-static const std::wstring aspectFlagAttribute = L"AspectFlag";
-static const std::wstring mediumFlagAttribute = L"MediumFlag";
-static const std::wstring directionAttribute = L"Direction";
-
-static const std::wstring inprocHandlerKeyName = L"InprocHandler32";
-static const std::wstring defaultInprocHandler = L"ole32.dll";
-static const std::wstring localServerKeyName = L"LocalServer32";
-static const std::wstring progIdKeyName = L"ProgID";
-static const std::wstring versionIndependentProgIdKeyName = L"VersionIndependentProgID";
-static const std::wstring curVerKeyName = L"CurVer";
-static const std::wstring auxUserTypeKeyName = L"AuxUserType";
-static const std::wstring shortDisplayNameKeyName = L"2";
-static const std::wstring insertableObjectKeyName = L"Insertable";
-static const std::wstring autoConvertToValueName = L"AutoConvertTo";
-static const std::wstring implementedCategoriesKeyName = L"Implemented Categories";
-static const std::wstring readableKeyName = L"Conversion\\Readable\\Main";
-static const std::wstring readWritableKeyName = L"Conversion\\ReadWritable\\Main";
-static const std::wstring dataFormatsKeyName = L"DataFormats";
-static const std::wstring defaultFileKeyName = L"DefaultFile";
-static const std::wstring getSetKeyName = L"GetSet";
-
-static const std::wstring extensionQuery = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='Extensions']/*[local-name()='Extension']";
-static const std::wstring exeServerQuery = L"*[local-name()='ComServer']/*[local-name()='ExeServer']";
-static const std::wstring exeServerClassQuery = L"*[local-name()='Class']";
-static const std::wstring progIdQuery = L"*[local-name()='ComServer']/*[local-name()='ProgId']";
-static const std::wstring implementedCategoriesQuery = L"*[local-name()='ImplementedCategories']/*[local-name()='ImplementedCategory']";
-static const std::wstring readableFormatsQuery = L"*[local-name()='Conversion']/*[local-name()='Readable']/*[local-name()='Format']";
-static const std::wstring readWritableFormatsQuery = L"*[local-name()='Conversion']/*[local-name()='ReadWritable']/*[local-name()='Format']";
-static const std::wstring dataFormatsQuery = L"*[local-name()='DataFormats']";
-static const std::wstring dataFormatQuery = L"*[local-name()='DataFormat']";
-
 
 HRESULT ComServer::ExecuteForAddRequest()
 {
