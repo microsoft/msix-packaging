@@ -25,6 +25,8 @@
 #include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/util/XMLString.hpp"
 #include "xercesc/util/Base64.hpp"
+#include "xercesc/sax/SAXParseException.hpp"
+#include "xercesc/util/XMLEntityResolver.hpp"
 
 XERCES_CPP_NAMESPACE_USE
 
@@ -45,6 +47,78 @@ MSIX_INTERFACE(IXercesElement,  0x07d6ee0e,0x2165,0x4b90,0x80,0x24,0xe1,0x76,0x2
 
 namespace MSIX {
 
+static std::map<std::string, std::string> s_nameSpaceToSchema = 
+{
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10",
+            "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/uap/windows10",
+            "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/types",
+            "AppxPackaging/Manifest/Schema/Xerces/AppxManifestTypes.xsd"},
+        {"http://schemas.microsoft.com/appx/2014/phone/manifest",
+            "AppxPackaging/Manifest/Schema/2015/AppxPhoneManifestSchema2014.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/2",
+            "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema_v2.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/2",
+            "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v2.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/3",
+            "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v3.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/4",
+            "AppxPackaging/Manifest/Schema/2016/UapManifestSchema_v4.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities",
+            "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/2",
+            "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema_v2.xsd " },
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3",
+            "AppxPackaging/Manifest/Schema/2016/WindowsCapabilitiesManifestSchema_v3.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities",
+            "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/2",
+            "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema_v2.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3",
+            "AppxPackaging/Manifest/Schema/2016/RestrictedCapabilitiesManifestSchema_v3.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/4",
+            "AppxPackaging/Manifest/Schema/2017/RestrictedCapabilitiesManifestSchema_v4.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/5",
+            "AppxPackaging/Manifest/Schema/2018/RestrictedCapabilitiesManifestSchema_v5.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/6",
+            "AppxPackaging/Manifest/Schema/2018/RestrictedCapabilitiesManifestSchema_v6.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/mobile/windows10",
+            "AppxPackaging/Manifest/Schema/2015/MobileManifestSchema.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/iot/windows10",
+            "AppxPackaging/Manifest/Schema/2015/IotManifestSchema.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/iot/windows10/2",
+            "AppxPackaging/Manifest/Schema/2017/IotManifestSchema_v2.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/holographic/windows10",
+            "AppxPackaging/Manifest/Schema/2015/HolographicManifestSchema.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/serverpreview/windows10",
+            "AppxPackaging/Manifest/Schema/2015/ServerManifestSchema.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10",
+            "AppxPackaging/Manifest/Schema/2015/DesktopManifestSchema.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10/2",
+            "AppxPackaging/Manifest/Schema/2016/DesktopManifestSchema_v2.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10/3",
+            "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v3.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10/4",
+            "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v4.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10/5",
+            "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v5.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10/6",
+            "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v6.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/com/windows10",
+            "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/com/windows10/2",
+            "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/5",
+            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/6",
+            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/7",
+            "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v7.xsd"},
+        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/8",
+            "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v8.xsd"}
+};
+
 class ParsingException final : public XERCES_CPP_NAMESPACE::ErrorHandler
 {
 public:
@@ -53,20 +127,52 @@ public:
 
     void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
     {        
-        ThrowError(MSIX::Error::XmlWarning);
+        ThrowErrorAndLog(MSIX::Error::XmlWarning, GetMessage(exp).c_str());
     }
 
     void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
     {
-        ThrowError(MSIX::Error::XmlError);
+        ThrowErrorAndLog(MSIX::Error::XmlError, GetMessage(exp).c_str());
     }
 
     void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
     {
-        ThrowError(MSIX::Error::XmlFatal);
+        ThrowErrorAndLog(MSIX::Error::XmlFatal, GetMessage(exp).c_str());
     }
 
     void resetErrors() override {}
+private:
+    std::string GetMessage(const XERCES_CPP_NAMESPACE::SAXParseException& exp)
+    {
+        std::u16string utf16FileName = std::u16string(exp.getSystemId());
+        std::u16string utf16Message = std::u16string(exp.getMessage());
+        return "Error " + u16string_to_utf8(utf16Message) + " file: " + u16string_to_utf8(utf16FileName) +
+            ":" + std::to_string(static_cast<std::uint64_t>(exp.getLineNumber())) + "," +
+            std::to_string(static_cast<std::uint64_t>(exp.getColumnNumber()));
+    }
+};
+
+class MsixEntityResolver : public XMLEntityResolver
+{
+public:
+    MsixEntityResolver(IMsixFactory* factory) : m_factory(factory) {}
+    ~MsixEntityResolver() {}
+
+    InputSource* resolveEntity(XMLResourceIdentifier* resourceIdentifier)
+    {
+        std::u16string utf16string = std::u16string(resourceIdentifier->getNameSpace());
+        std::string id = u16string_to_utf8(utf16string);
+        auto xsd = s_nameSpaceToSchema.find(id);
+        ThrowErrorIf(MSIX::Error::XmlError, xsd == s_nameSpaceToSchema.end(), "Invalid namespace");
+        std::cout << "resolving: "<< xsd->second << std::endl;
+        auto stream = m_factory->GetResource(xsd->second);
+        auto schemaBuffer = Helper::CreateRawBufferFromStream(stream);
+        auto item = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
+            reinterpret_cast<const XMLByte*>(schemaBuffer.second), schemaBuffer.first, xsd->second.c_str(), true);
+        return item.release();
+    }
+private:
+    IMsixFactory* m_factory = nullptr;
 };
 
 template<class T>
@@ -321,7 +427,7 @@ protected:
 class XercesDom final : public ComClass<XercesDom, IXmlDom>
 {
 public:
-    XercesDom(IMsixFactory* factory, const ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :
+    XercesDom(IMsixFactory* factory, const ComPtr<IStream>& stream, XmlContentType footPrintType) :
         m_factory(factory), m_stream(stream)
     {
         auto buffer = Helper::CreateBufferFromStream(stream);
@@ -334,12 +440,45 @@ public:
         
         // For Non validation parser GetResources will return an empty vector for the ContentType, BlockMap and AppxBundleManifest.
         // XercesDom will only parse the schemas if the vector is not empty. If not, it will only see that it is valid xml.
-        bool HasSchemas = ((schemas != nullptr) && (schemas->begin() != schemas->end()));
+        std::vector<std::pair<std::string, ComPtr<IStream>>> schemas;
+        if (footPrintType == XmlContentType::AppxBlockMapXml)
+        {
+            schemas = GetResources(m_factory, Resource::Type::BlockMap);
+        }
+        else if (footPrintType == XmlContentType::AppxManifestXml)
+        {
+            schemas = GetResources(m_factory, Resource::Type::AppxManifest);
+        }
+        else if (footPrintType == XmlContentType::ContentTypeXml)
+        {
+            schemas = GetResources(m_factory, Resource::Type::ContentType);
+        }
+        else if (footPrintType == XmlContentType::AppxBundleManifestXml)
+        {
+            schemas = GetResources(m_factory, Resource::Type::AppxBundleManifest);
+        }
+        else
+        {
+            ThrowError(Error::InvalidParameter);
+        }
+
+        // Set the error handler for the parser
+        auto errorHandler = std::make_unique<ParsingException>();
+        m_parser->setErrorHandler(errorHandler.get());
+
+        auto entityResolver = std::make_unique<MsixEntityResolver>(m_factory);
+
+        if (footPrintType == XmlContentType::AppxManifestXml)
+        {
+            m_parser->setXMLEntityResolver(entityResolver.get());
+        }
+
+        bool HasSchemas = !schemas.empty();
         m_parser->setValidationScheme(HasSchemas ? 
             XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Always : 
             XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Never
         );
-        m_parser->cacheGrammarFromParse(HasSchemas);            
+        m_parser->cacheGrammarFromParse(HasSchemas);
         m_parser->setDoSchema(HasSchemas);
         m_parser->setDoNamespaces(HasSchemas);
         m_parser->setHandleMultipleImports(HasSchemas); // TODO: do we need to handle the case where there aren't multiple schemas with the same namespace?
@@ -354,17 +493,17 @@ public:
 
         // Add schemas
         if (HasSchemas)
-        {   for(auto& schema : *schemas)
-            {   auto schemaBuffer = Helper::CreateBufferFromStream(schema);
+        {
+            for(auto& schema : schemas)
+            {
+                std::cout << "loading: " << schema.first << std::endl;
+                auto schemaBuffer = Helper::CreateBufferFromStream(schema.second);
                 auto item = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
-                    reinterpret_cast<const XMLByte*>(&schemaBuffer[0]), schemaBuffer.size(), "Schema");
+                    reinterpret_cast<const XMLByte*>(&schemaBuffer[0]), schemaBuffer.size(), schema.first.c_str());
                 m_parser->loadGrammar(*item, XERCES_CPP_NAMESPACE::Grammar::GrammarType::SchemaGrammarType, true);
-            }           
+            }
         }
 
-        // Set the error handler for the parser
-        auto errorHandler = std::make_unique<ParsingException>();
-        m_parser->setErrorHandler(errorHandler.get());
         m_parser->parse(*source);
 
         m_resolver = XercesPtr<DOMXPathNSResolver>(m_parser->getDocument()->createNSResolver(m_parser->getDocument()));
@@ -423,25 +562,7 @@ public:
 
     ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, const ComPtr<IStream>& stream) override
     {
-        switch (footPrintType)
-        {
-            case XmlContentType::AppxBlockMapXml:
-            {   auto blockMapSchema = GetResources(m_factory, Resource::Type::BlockMap);
-                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream, &blockMapSchema);
-            }
-            case XmlContentType::AppxManifestXml:
-                // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
-                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream);
-            case XmlContentType::ContentTypeXml:
-            {   auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
-                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream, &contentTypeSchema);
-            }
-            case XmlContentType::AppxBundleManifestXml:
-            {   // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
-                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream);
-            }
-        }
-        ThrowError(Error::InvalidParameter);
+        return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream, footPrintType);
     }
 protected:
     IMsixFactory* m_factory;

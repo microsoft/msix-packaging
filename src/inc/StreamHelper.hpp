@@ -7,6 +7,8 @@
 #include "AppxPackaging.hpp"
 #include "Exceptions.hpp"
 
+#include <utility>
+
 namespace MSIX {
     namespace Helper {
 
@@ -27,6 +29,25 @@ namespace MSIX {
             // move the underlying stream back to the beginning.
             ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
             return buffer;
+        }
+
+        inline std::pair<std::uint32_t, std::uint8_t*> CreateRawBufferFromStream(const ComPtr<IStream>& stream)
+        {
+            // Create buffer from stream
+            LARGE_INTEGER start = { 0 };
+            ULARGE_INTEGER end = { 0 };
+            ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::END, &end));
+            ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
+            
+            std::uint32_t streamSize = end.u.LowPart;
+            std::uint8_t* buffer = new std::uint8_t[streamSize];
+            ULONG actualRead = 0;
+            ThrowHrIfFailed(stream->Read(buffer, streamSize, &actualRead));
+            ThrowErrorIf(Error::FileRead, (actualRead != streamSize), "read error");
+
+            // move the underlying stream back to the beginning.
+            ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
+            return std::make_pair(streamSize, buffer);
         }
     }
 }
