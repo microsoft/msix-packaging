@@ -136,9 +136,9 @@ HRESULT Extractor::ExtractPayloadFiles()
 
     while (hasCurrent)
     {
-        if (m_msixRequest->GetIsInstallCancelled())
+        if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
         {
-            return ERROR_INSTALL_USEREXIT;
+            return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
         }
         ComPtr<IAppxFile> file;
         RETURN_IF_FAILED(files->GetCurrent(&file));
@@ -188,8 +188,8 @@ HRESULT Extractor::CreatePackageRoot()
 HRESULT Extractor::ExecuteForAddRequest()
 {
     RETURN_IF_FAILED(CreatePackageRoot());
-    
     RETURN_IF_FAILED(ExtractPackage());
+    
     return S_OK;
 }
 
@@ -280,21 +280,21 @@ HRESULT Extractor::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** i
 
 HRESULT Extractor::ExtractPackage()
 {
-    if (m_msixRequest->GetIsInstallCancelled())
+    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
     {
-        return ERROR_INSTALL_USEREXIT;
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
     RETURN_IF_FAILED(ExtractFootprintFiles());
 
-    if (m_msixRequest->GetIsInstallCancelled())
+    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
     {
-        return ERROR_INSTALL_USEREXIT;
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
     RETURN_IF_FAILED(ExtractPayloadFiles());
 
-    if (m_msixRequest->GetIsInstallCancelled())
+    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
     {
-        return ERROR_INSTALL_USEREXIT;
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
     RETURN_IF_FAILED(ExtractRegistry(false));
     return S_OK;

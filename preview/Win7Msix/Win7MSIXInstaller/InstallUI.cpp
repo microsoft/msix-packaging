@@ -221,7 +221,7 @@ void UI::ConfirmAppCancel()
     switch (cancelResult)
     {
     case IDYES:
-        m_msixRequest->CancelRequest();
+        m_msixRequest->GetMsixResponse()->CancelRequest();
         break;
     case IDNO:
         break;

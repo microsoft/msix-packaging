@@ -13,9 +13,9 @@ const PCWSTR AddRemovePrograms::HandlerName = L"AddRemovePrograms";
 
 HRESULT AddRemovePrograms::ExecuteForAddRequest()
 {
-    if (m_msixRequest->GetIsInstallCancelled())
+    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
     {
-        return ERROR_INSTALL_USEREXIT;
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
     PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
@@ -64,9 +64,9 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
         TraceLoggingValue(versionString.c_str(), "displayVersion"),
         TraceLoggingValue(packageIconString.c_str(), "displayIcon"));
 
-    if (m_msixRequest->GetIsInstallCancelled())
+    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
     {
-        return ERROR_INSTALL_USEREXIT;
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
     return S_OK;

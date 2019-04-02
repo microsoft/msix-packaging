@@ -26,30 +26,37 @@
 #include "Protocol.hpp"
 #include "FileTypeAssociation.hpp"
 #include "InstallComplete.hpp"
-
+#include "ErrorHandler.hpp"
 
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
 using namespace std;
 #include <GdiPlus.h>
 
+struct ErrorHandlerInfo
+{
+    CreateHandler create;
+    PCWSTR handlerName;
+};
+
 struct HandlerInfo
 {
     CreateHandler create;
     PCWSTR nextHandler;
+    ErrorHandlerInfo errorHandler;
 };
 
 std::map<PCWSTR, HandlerInfo> AddHandlers =
 {
-    //HandlerName                       Function to create                   NextHandler
-    {PopulatePackageInfo::HandlerName,  {PopulatePackageInfo::CreateHandler, CreateAndShowUI::HandlerName }},
-    {CreateAndShowUI::HandlerName,      {CreateAndShowUI::CreateHandler,     Extractor::HandlerName }},
-    {Extractor::HandlerName,            {Extractor::CreateHandler,           StartMenuLink::HandlerName }},
-    {StartMenuLink::HandlerName,        {StartMenuLink::CreateHandler,       AddRemovePrograms::HandlerName}},
-    {AddRemovePrograms::HandlerName,    {AddRemovePrograms::CreateHandler,   Protocol::HandlerName}},
-    {Protocol::HandlerName,             {Protocol::CreateHandler,            FileTypeAssociation::HandlerName}},
-    {FileTypeAssociation::HandlerName,  {FileTypeAssociation::CreateHandler, InstallComplete::HandlerName }},
-    {InstallComplete::HandlerName,      {InstallComplete::CreateHandler,     nullptr}},
+    //HandlerName                       Function to create                   NextHandler                         ErrorHandlerInfo
+    {PopulatePackageInfo::HandlerName,  {PopulatePackageInfo::CreateHandler, CreateAndShowUI::HandlerName,       {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
+    {CreateAndShowUI::HandlerName,      {CreateAndShowUI::CreateHandler,     Extractor::HandlerName ,            {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
+    {Extractor::HandlerName,            {Extractor::CreateHandler,           StartMenuLink::HandlerName ,        {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
+    {StartMenuLink::HandlerName,        {StartMenuLink::CreateHandler,       AddRemovePrograms::HandlerName,     {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
+    {AddRemovePrograms::HandlerName,    {AddRemovePrograms::CreateHandler,   Protocol::HandlerName,              {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
+    {Protocol::HandlerName,             {Protocol::CreateHandler,            FileTypeAssociation::HandlerName,   {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
+    {FileTypeAssociation::HandlerName,  {FileTypeAssociation::CreateHandler, InstallComplete::HandlerName,       {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
+    {InstallComplete::HandlerName,      {InstallComplete::CreateHandler,     nullptr,                            {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
 };
 
 std::map<PCWSTR, HandlerInfo> RemoveHandlers =
@@ -78,10 +85,12 @@ HRESULT MsixRequest::Make(OperationType operationType, Flags flags, std::wstring
     instance->m_validationOptions = validationOption;
     RETURN_IF_FAILED(instance->InitializeFilePathMappings());
 
-    //Set response object
-    AutoPtr<MsixResponse> responseObject;
-    RETURN_IF_FAILED(MsixResponse::Make(&responseObject));
-    instance->m_msixResponse = responseObject;
+    //Set MsixResponse
+    AutoPtr<MsixResponse> localResponse;
+    RETURN_IF_FAILED(MsixResponse::Make(
+        &localResponse)
+    );
+    instance->m_msixResponse = localResponse.Detach();
 
     *outInstance = instance.release();
 
@@ -174,12 +183,22 @@ HRESULT MsixRequest::ProcessAddRequest()
         HandlerInfo currentHandler = AddHandlers[currentHandlerName];
         AutoPtr<IPackageHandler> handler;
         RETURN_IF_FAILED(currentHandler.create(this, &handler));
-        HRESULT hr = handler->ExecuteForAddRequest();
-        if (FAILED(hr))
+        if (FAILED(handler->ExecuteForAddRequest()))
         {
-            m_msixResponse->SetErrorCode(hr);
-            //call cancel and return
-            return hr;
+            ErrorHandlerInfo errorHandlerInfo = currentHandler.errorHandler;
+
+            AutoPtr<IPackageHandler> handler;
+            RETURN_IF_FAILED(errorHandlerInfo.create(this, &handler));
+            HRESULT hrErrorHandler = handler->ExecuteForAddRequest();
+            if(FAILED(hrErrorHandler))
+            {
+                TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                    "ErrorHandler failed",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(errorHandlerInfo.handlerName, "HandlerName"),
+                    TraceLoggingValue(hrErrorHandler, "HR"));
+            }
+            currentHandlerName = nullptr;
         }
         else
         {
@@ -229,12 +248,12 @@ void MsixRequest::SetUI(UI * ui)
     m_UI = ui;
 }
 
+void MsixRequest::SetMsixResponse(MsixResponse * msixResponse)
+{
+    m_msixResponse = msixResponse;
+}
+
 void MsixRequest::SetPackageInfo(PackageInfo* packageInfo) 
 {
     m_packageInfo = packageInfo;
 }
-
-/*void MsixRequest::SetMsixResponse(MsixResponse* msixResponse)
-{
-    m_msixResponse = msixResponse;
-}*/

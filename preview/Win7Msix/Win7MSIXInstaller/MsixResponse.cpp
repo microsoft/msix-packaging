@@ -11,6 +11,7 @@ HRESULT MsixResponse::Make(MsixResponse ** outInstance)
 
     instance->errorCode = NULL;
     instance->errorText = NULL;
+    instance->m_isInstallCancelled = false;
     *outInstance = instance.release();
 
     return S_OK;

@@ -12,9 +12,9 @@ const PCWSTR Protocol::HandlerName = L"Protocol";
 
 HRESULT Protocol::ExecuteForAddRequest()
 {
-    if (m_msixRequest->GetIsInstallCancelled())
+    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
     {
-        return ERROR_INSTALL_USEREXIT;
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
     ComPtr<IMsixDocumentElement> domElement;
@@ -54,9 +54,9 @@ HRESULT Protocol::ExecuteForAddRequest()
         RETURN_IF_FAILED(extensionEnum->MoveNext(&hasCurrent));
     }
 
-    if (m_msixRequest->GetIsInstallCancelled())
+    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
     {
-        return ERROR_INSTALL_USEREXIT;
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
     
     return S_OK;

@@ -41,9 +41,6 @@ private:
     /// MsixResponse object populated by handlers
     AutoPtr<MsixResponse> m_msixResponse;
 
-    ///Variable used to indicate if add package request was cancelled during installation
-    bool m_isInstallCancelled = false;
-
 public:
     static HRESULT Make(OperationType operationType, Flags flags, std::wstring packageFilePath, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest** outInstance);
 
@@ -57,8 +54,7 @@ public:
     /// Called by CreateAndShowUI 
     void SetUI(UI* ui);
 
-    /// Called by handlers to set response
-    //void SetMsixResponse(MsixResponse* msixResponse);
+    void SetMsixResponse(MsixResponse* msixResponse);
 
     // Getters
     MSIX_VALIDATION_OPTION GetValidationOptions() { return m_validationOptions; }
@@ -85,16 +81,7 @@ public:
         return true;
     }
 
-    bool GetIsInstallCancelled()
-    {
-        return m_isInstallCancelled;
-    }
-
-    //Setters
-    void CancelRequest()
-    {
-        m_isInstallCancelled = true;
-    }
+    MsixResponse* GetMsixResponse() { return m_msixResponse; }
 
 private:
     /// FilePath Mappings maps the VFS tokens (e.g. Windows) to the actual folder on disk (e.g. C:\windows)
