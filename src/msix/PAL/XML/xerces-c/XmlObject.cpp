@@ -54,7 +54,7 @@ static std::map<std::string, std::string> s_nameSpaceToSchema =
         {"http://schemas.microsoft.com/appx/manifest/uap/windows10",
             "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"},
         {"http://schemas.microsoft.com/appx/manifest/types",
-            "AppxPackaging/Manifest/Schema/Xerces/AppxManifestTypes.xsd"},
+            "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"},
         {"http://schemas.microsoft.com/appx/2014/phone/manifest",
             "AppxPackaging/Manifest/Schema/2015/AppxPhoneManifestSchema2014.xsd"},
         {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/2",
@@ -117,6 +117,15 @@ static std::map<std::string, std::string> s_nameSpaceToSchema =
             "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v7.xsd"},
         {"http://schemas.microsoft.com/appx/manifest/uap/windows10/8",
             "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v8.xsd"}
+// Bundle Manifest
+        {"http://schemas.microsoft.com/appx/2013/bundle",
+            "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"},
+        {"http://schemas.microsoft.com/appx/2016/bundle",
+            "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"},
+        {"http://schemas.microsoft.com/appx/2017/bundle",
+            "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd"},
+        {"http://schemas.microsoft.com/appx/2018/bundle",
+            "AppxPackaging/Manifest/Schema/2018/BundleManifestSchema2018.xsd"}
 };
 
 class ParsingException final : public XERCES_CPP_NAMESPACE::ErrorHandler
@@ -164,7 +173,6 @@ public:
         std::string id = u16string_to_utf8(utf16string);
         auto xsd = s_nameSpaceToSchema.find(id);
         ThrowErrorIf(MSIX::Error::XmlError, xsd == s_nameSpaceToSchema.end(), "Invalid namespace");
-        std::cout << "resolving: "<< xsd->second << std::endl;
         auto stream = m_factory->GetResource(xsd->second);
         auto schemaBuffer = Helper::CreateRawBufferFromStream(stream);
         auto item = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
@@ -496,7 +504,6 @@ public:
         {
             for(auto& schema : schemas)
             {
-                std::cout << "loading: " << schema.first << std::endl;
                 auto schemaBuffer = Helper::CreateBufferFromStream(schema.second);
                 auto item = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
                     reinterpret_cast<const XMLByte*>(&schemaBuffer[0]), schemaBuffer.size(), schema.first.c_str());
