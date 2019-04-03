@@ -105,6 +105,11 @@ HRESULT Extractor::ExtractFootprintFiles()
     
     for (int i = 0; i < FootprintFilesCount; i++)
     {
+        if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
+        {
+            return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+        }
+
         ComPtr<IAppxFile> footprintFile;
         HRESULT hr = m_msixRequest->GetPackageInfo()->GetPackageReader()->GetFootprintFile(g_footprintFilesType[i].fileType, &footprintFile);
         if (SUCCEEDED(hr) && footprintFile.Get())
@@ -280,22 +285,8 @@ HRESULT Extractor::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** i
 
 HRESULT Extractor::ExtractPackage()
 {
-    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
-    {
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-    }
     RETURN_IF_FAILED(ExtractFootprintFiles());
-
-    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
-    {
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-    }
     RETURN_IF_FAILED(ExtractPayloadFiles());
-
-    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
-    {
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-    }
     RETURN_IF_FAILED(ExtractRegistry(false));
     return S_OK;
 }
