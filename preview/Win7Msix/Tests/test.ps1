@@ -7,7 +7,8 @@
 # if omitted, assumes you've copied the binaries into the working directory
 param (
     [Parameter(ParameterSetName="binaryFolder", Mandatory=$false)]
-    [string]$binaryFolder
+    [string]$binaryFolder,
+    [bool]$takeTrace
 )
 
 # if not specified, assume binaries are in the current directory
@@ -34,7 +35,10 @@ function writeFail
 	write-host "FAIL" -foregroundcolor red
 }
 
-& .\msixtrace.ps1 -start
+if ($takeTrace)
+{
+	& .\msixtrace.ps1 -start
+}
 
 $global:testcase = 0
 
@@ -247,7 +251,106 @@ else
 	writeFail
 }
 
+ShowTestHeader("Update package removes old package and checks windows.protocol extensions")
+$output = & $executable -AddPackage VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe-missingsomeftas.msix -quietUx
+$vlc1msixpath = "C:\program files\msix7apps\VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe"
+$vlcProtocolRegPath = "HKCR:\VLC"
+if ($output -eq $null)
+{
+	$vlc1Exists = (test-path $vlc1msixpath)
+	if ($vlc1Exists)
+	{
+		$output = & $executable -AddPackage VLC-3.0.6_2.0.0.0_x64__8wekyb3d8bbwe-withprotocol.msix -quietUx
+		if ($output -eq $null)
+		{
+			$vlc2msixpath = "C:\program files\msix7apps\VLC-3.0.6_2.0.0.0_x64__8wekyb3d8bbwe"
+			$vlc1Exists = (test-path $vlc1msixpath)
+			$vlc2Exists = (test-path $vlc2msixpath)
+			$vlcRegExists = (test-path $vlcProtocolRegPath)
+			if ($vlc2Exists -and $vlcRegExists -and -not $vlc1Exists)
+			{
+				writeSuccess
+			}
+			else
+			{
+				write-host ("Expected paths not created: $vlc1msixpath exists = $vlc1Exists, $vlc2msixpath exists = $vlc2Exists")
+				writeFail
+			}
+		}
+		else
+		{
+			$output
+			writeFail
+		}
+	}
+	else
+	{
+		write-host ("Expected paths not created: $vlc1msixpath exists = $vlc1Exists")
+		writeFail
+	}
+}
+else
+{
+	$output
+	writeFail
+}
 
-& .\msixtrace.ps1 -stop
+ShowTestHeader("Remove package with windows.protocol extensions")
+$output = & $executable -RemovePackage VLC-3.0.6_2.0.0.0_x64__8wekyb3d8bbwe
+if ($output -eq $null)
+{
+	$vlcRegExists = (test-path $vlcProtocolRegPath)
+	if (-not $vlcRegExists)
+	{
+		writeSuccess
+	}
+	else
+	{
+		write-host ("Expected paths not deleted: $vlcProtocolRegPath exists = $vlcRegExists")
+		writeFail
+	}
+}
+else
+{
+	$output
+	writeFail
+}
+
+# ACDual was taken from the sample mentioned here: https://blogs.windows.com/buildingapps/2017/04/13/com-server-ole-document-support-desktop-bridge/#o481I86oAPPvX428.97
+ShowTestHeader("Add, launch and remove package with comserver extension")
+$output = & $executable -AddPackage ACDual.msix -quietUx
+if ($output -eq $null)
+{
+	& ".\WindowsFormsApp2.exe"
+	start-sleep 1
+	$appprocess = get-process |? {$_.processname -eq "WindowsFormsApp2" }
+	if ($appprocess -eq $null)
+	{
+		write-host ("Unable to launch WindowsFormsApp2, implies comserver/cominterface registrations were not properly written")
+		writeFail
+	}
+	else
+	{
+		$appprocess | stop-process
+		stop-process -name acdual 
+		$output = & $executable -RemovePackage AutoClickComServerSample_1.1.0.0_x86__8wekyb3d8bbwe
+		if ($output -ne $null)
+		{
+			$output
+			write-host ("Add/launch passed, but remove package failed")
+		}
+		writeSuccess
+	}
+}
+else
+{
+	$output
+	writeFail
+}
+
+if ($takeTrace)
+{
+	& .\msixtrace.ps1 -stop
+}
 
 # manual test: install with UX, launch the package using start menu shortcut, open appwiz.cpl and remove package.

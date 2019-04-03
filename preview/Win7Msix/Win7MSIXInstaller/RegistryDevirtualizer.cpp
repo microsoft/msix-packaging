@@ -21,6 +21,11 @@ VirtualRegistryMapping mappings[] =
 
 HRESULT RegistryDevirtualizer::Run(_In_ bool remove)
 {
+    if (!m_hiveFileNameExists)
+    {
+        return S_OK;
+    }
+
     std::wstring rootPath = m_loadedHiveKeyName + L"\\Registry";
     RETURN_IF_FAILED(m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ));
     
@@ -63,6 +68,10 @@ HRESULT RegistryDevirtualizer::Run(_In_ bool remove)
 HRESULT RegistryDevirtualizer::HasFTA(std::wstring ftaName, bool & hasFTA)
 {
     hasFTA = false;
+    if (!m_hiveFileNameExists)
+    {
+        return S_OK;
+    }
     std::wstring rootPath = m_loadedHiveKeyName + L"\\Registry";
     RETURN_IF_FAILED(m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ));
 
@@ -356,59 +365,66 @@ HRESULT RegistryDevirtualizer::RemoveDevirtualizeRegistryTree(RegistryKey * virt
 
 HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* msixRequest, RegistryDevirtualizer ** instance)
 {
+    bool registryFileExists = false;
+    RETURN_IF_FAILED(FileExists(hiveFileName, registryFileExists));
+
     std::unique_ptr<RegistryDevirtualizer> localInstance(new RegistryDevirtualizer(hiveFileName, msixRequest));
     if (localInstance == nullptr)
     {
         RETURN_IF_FAILED(E_OUTOFMEMORY);
     }
-    
-    HANDLE userToken = nullptr;
-    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, &userToken))
+
+    if (registryFileExists)
     {
-        RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+        localInstance->m_hiveFileNameExists = true;
+        HANDLE userToken = nullptr;
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, &userToken))
+        {
+            RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+        }
+
+        LUID seRestoreLuid;
+
+        if (!LookupPrivilegeValue(
+            NULL,            // lookup privilege on local system
+            SE_RESTORE_NAME,   // privilege to lookup 
+            &seRestoreLuid))        // receives LUID of privilege
+        {
+            RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+        }
+
+        LUID seBackupLuid;
+
+        if (!LookupPrivilegeValue(
+            NULL,            // lookup privilege on local system
+            SE_BACKUP_NAME,   // privilege to lookup 
+            &seBackupLuid))        // receives LUID of privilege
+        {
+            RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+        }
+
+        PTOKEN_PRIVILEGES pTokenPrivileges = NULL;
+
+        // be sure we allocate enought space for 2 LUID_AND_ATTRIBUTES
+        // by default TOKEN_PRIVILEGES allocates space for only 1 LUID_AND_ATTRIBUTES.
+        pTokenPrivileges = (PTOKEN_PRIVILEGES)LocalAlloc(LMEM_FIXED, sizeof(TOKEN_PRIVILEGES) + (sizeof(LUID_AND_ATTRIBUTES) * 2));
+        pTokenPrivileges->PrivilegeCount = 2;
+        pTokenPrivileges->Privileges[0].Luid = seRestoreLuid;
+        pTokenPrivileges->Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+        pTokenPrivileges->Privileges[1].Luid = seBackupLuid;
+        pTokenPrivileges->Privileges[1].Attributes = SE_PRIVILEGE_ENABLED;
+
+        auto success = AdjustTokenPrivileges(userToken, FALSE, pTokenPrivileges, sizeof(TOKEN_PRIVILEGES), NULL, NULL);
+        LocalFree(pTokenPrivileges);
+        pTokenPrivileges = NULL;
+        if (!success)
+        {
+            RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+        }
+
+        RETURN_IF_FAILED(CreateTempKeyName(localInstance->m_loadedHiveKeyName));
+        RETURN_IF_FAILED(HRESULT_FROM_WIN32(RegLoadKey(HKEY_USERS, localInstance->m_loadedHiveKeyName.c_str(), localInstance->m_registryHiveFileName.c_str())));
     }
-
-    LUID seRestoreLuid;
-
-    if (!LookupPrivilegeValue(
-        NULL,            // lookup privilege on local system
-        SE_RESTORE_NAME,   // privilege to lookup 
-        &seRestoreLuid))        // receives LUID of privilege
-    {
-        RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
-    }
-
-    LUID seBackupLuid;
-
-    if (!LookupPrivilegeValue(
-        NULL,            // lookup privilege on local system
-        SE_BACKUP_NAME,   // privilege to lookup 
-        &seBackupLuid))        // receives LUID of privilege
-    {
-        RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
-    }
-
-    PTOKEN_PRIVILEGES pTokenPrivileges = NULL;
-
-    // be sure we allocate enought space for 2 LUID_AND_ATTRIBUTES
-    // by default TOKEN_PRIVILEGES allocates space for only 1 LUID_AND_ATTRIBUTES.
-    pTokenPrivileges = (PTOKEN_PRIVILEGES)LocalAlloc(LMEM_FIXED, sizeof(TOKEN_PRIVILEGES) + (sizeof(LUID_AND_ATTRIBUTES) * 2));
-    pTokenPrivileges->PrivilegeCount = 2;
-    pTokenPrivileges->Privileges[0].Luid = seRestoreLuid;
-    pTokenPrivileges->Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
-    pTokenPrivileges->Privileges[1].Luid = seBackupLuid;
-    pTokenPrivileges->Privileges[1].Attributes = SE_PRIVILEGE_ENABLED;
-
-    auto success = AdjustTokenPrivileges(userToken, FALSE, pTokenPrivileges, sizeof(TOKEN_PRIVILEGES), NULL, NULL);
-    LocalFree(pTokenPrivileges);
-	pTokenPrivileges = NULL;
-    if (!success)
-    {
-        RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
-    }
-
-    RETURN_IF_FAILED(CreateTempKeyName(localInstance->m_loadedHiveKeyName));
-    RETURN_IF_FAILED(HRESULT_FROM_WIN32(RegLoadKey(HKEY_USERS, localInstance->m_loadedHiveKeyName.c_str(), localInstance->m_registryHiveFileName.c_str())));
 
     *instance = localInstance.release();
     
@@ -429,17 +445,19 @@ HRESULT RegistryDevirtualizer::CreateTempKeyName(std::wstring &tempName)
 
 RegistryDevirtualizer::~RegistryDevirtualizer()
 {
-    m_rootKey.Close();
-
-    LSTATUS status = RegUnLoadKey(HKEY_USERS, m_loadedHiveKeyName.c_str());
-
-    if (status != ERROR_SUCCESS)
+    if (m_hiveFileNameExists)
     {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Failed to unload key",
-            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-            TraceLoggingValue(status, "Error LSTATUS"),
-            TraceLoggingValue(m_loadedHiveKeyName.c_str(), "Hive key name"));
+        m_rootKey.Close();
+
+        LSTATUS status = RegUnLoadKey(HKEY_USERS, m_loadedHiveKeyName.c_str());
+
+        if (status != ERROR_SUCCESS)
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Failed to unload key",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(status, "Error LSTATUS"),
+                TraceLoggingValue(m_loadedHiveKeyName.c_str(), "Hive key name"));
+        }
     }
-    
 }

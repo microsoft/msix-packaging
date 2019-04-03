@@ -10,12 +10,14 @@ namespace MSIX
     bool NSXmlParserWrapper::Parse(uint8_t* data, size_t dataLength, void* xmlDocumentReader)
     {
         NSData *xmldata = [NSData dataWithBytes:data length:dataLength];
-        wrapped = [[NSXMLParser alloc] initWithData:xmldata];
+        NSXMLParser* xmlParser = [[NSXMLParser alloc] initWithData:xmldata];
         
         // Create an instance of our parser delegate and assign it to the parser
         NSXmlParserDelegateWrapper *parserDelegate = [[NSXmlParserDelegateWrapper alloc] initWithXmlDocumentReader:xmlDocumentReader];
-        [(NSXMLParser*)wrapped setDelegate:parserDelegate];
-
-        return [(NSXMLParser*)wrapped parse];
+        [xmlParser setDelegate:parserDelegate];
+        bool result = [xmlParser parse];
+        [parserDelegate release];
+        [xmlParser release];
+        return result;
     }
 }

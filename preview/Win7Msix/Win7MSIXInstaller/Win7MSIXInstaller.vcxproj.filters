@@ -78,6 +78,12 @@
     <ClInclude Include="InstallComplete.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="ComInterface.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ComServer.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="MsixResponse.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -132,6 +138,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="InstallComplete.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ComInterface.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ComServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="MsixResponse.cpp">

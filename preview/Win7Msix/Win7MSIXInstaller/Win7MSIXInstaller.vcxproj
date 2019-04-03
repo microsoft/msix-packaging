@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -184,6 +184,8 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AddRemovePrograms.hpp" />
+    <ClInclude Include="ComInterface.hpp" />
+    <ClInclude Include="ComServer.hpp" />
     <ClInclude Include="Constants.hpp" />
     <ClInclude Include="ErrorHandler.hpp" />
     <ClInclude Include="MsixResponse.hpp" />
@@ -201,6 +203,7 @@
     <ClInclude Include="InstallUI.hpp" />
     <ClInclude Include="..\..\..\.vs\src\msix\AppxPackaging.hpp" />
     <ClInclude Include="..\..\..\.vs\src\msix\MSIXWindows.hpp" />
+    <ClInclude Include="ProcessPotentialUpdate.hpp" />
     <ClInclude Include="Protocol.hpp" />
     <ClInclude Include="RegistryDevirtualizer.hpp" />
     <ClInclude Include="RegistryKey.hpp" />
@@ -208,6 +211,8 @@
     <ClInclude Include="StartMenuLink.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ComInterface.cpp" />
+    <ClCompile Include="ComServer.cpp" />
     <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="Extractor.cpp" />
     <ClCompile Include="FilePaths.cpp" />
@@ -217,6 +222,7 @@
     <ClCompile Include="InstallUI.cpp" />
     <ClCompile Include="MsixResponse.cpp" />
     <ClCompile Include="PackageInfo.cpp" />
+    <ClCompile Include="ProcessPotentialUpdate.cpp" />
     <ClCompile Include="Protocol.cpp" />
     <ClCompile Include="RegistryDevirtualizer.cpp" />
     <ClCompile Include="RegistryKey.cpp" />

@@ -11,7 +11,6 @@ namespace MSIX
 {
     class NSXmlParserWrapper
     {
-        void* wrapped;
     public:
         NSXmlParserWrapper() = default;
         ~NSXmlParserWrapper() = default;

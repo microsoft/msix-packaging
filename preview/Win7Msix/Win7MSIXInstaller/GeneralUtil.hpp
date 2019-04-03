@@ -25,26 +25,43 @@ TRACELOGGING_DECLARE_PROVIDER(g_MsixTraceLoggingProvider);
     }  \
 }
 
-//
-// Converts a wstring from utf16 to utf8
-//
-// Parameters:
-// utf16string - A utf16 wstring
-// 
+/// Converts a wstring from utf16 to utf8
+///
+/// @param utf16string - A utf16 wstring
+/// @return utf8 string
 std::string utf16_to_utf8(const std::wstring& utf16string);
 
-//
-// Converts a string from utf8 to utf16
-//
-// Parameters:
-// utf8string - A utf8 string
-// 
+/// Converts a string from utf8 to utf16
+///
+/// @param utf8string - A utf8 string
+/// @return utf16 string
 std::wstring utf8_to_utf16(const std::string& utf8string);
 
-// Helper to convert version number to a version number string
+/// Helper to convert version number to a version string of the form a.b.c.d
+///
+/// @param version - version number
+/// @return a.b.c.d string representation of version
 std::wstring ConvertVersionToString(UINT64 version);
 
+/// Helper to get string resource
+///
+/// @param resourceId - resource ID, these should be listed in resource.h
+/// @return string for the resource, resolved from the stringtable defined in Win7MsixInstaller.rc
 std::wstring GetStringResource(UINT resourceId);
+
+/// Converts a packageFullName (i.e. examplePackageName_1.0.0.0_x64_resourceId_8wekyb3d8bbwe) 
+/// into a packageFamilyName (i.e. examplePackageName_8wekyb3d8bbwe)
+///
+/// @param fullName - the packageFullName, assumed to be properly formatted and not validated.
+/// @return packageFamilyName for the packageFullName
+std::wstring GetFamilyNameFromFullName(const std::wstring& fullName);
+
+/// Determines if two strings are case-insensitive equals
+///
+/// @param left - one of the two strings
+/// @param right - the other of the two strings
+/// @return true if the strings equal, false otherwise
+bool CaseInsensitiveEquals(const std::wstring& left, const std::wstring& right);
 
 //
 // A designated memory allocator
@@ -226,3 +243,9 @@ class TextOle
         void Cleanup() { if (content) { CoTaskMemFree(content); content = nullptr; } }
 };
 
+HRESULT GetAttributeValueFromElement(IMsixElement* element, std::wstring attributeName, std::wstring& attributeValue);
+/// The manifest ID is missing the curly braces;
+/// This adds the curly braces to convert it into a proper Guid form.
+std::wstring GuidFromManifestId(std::wstring id);
+
+HRESULT FileExists(std::wstring file, _Out_ bool &exists);
