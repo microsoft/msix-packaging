@@ -9,8 +9,8 @@ HRESULT MsixResponse::Make(MsixResponse ** outInstance)
         return E_OUTOFMEMORY;
     }
 
-    instance->errorCode = NULL;
-    instance->errorText = NULL;
+    instance->m_hresultTextCode = NULL;
+    instance->m_textStatus = NULL;
     instance->m_isInstallCancelled = false;
     *outInstance = instance.release();
 

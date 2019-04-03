@@ -53,18 +53,16 @@ private:
 
 public:
 
-    /// FUNCTION: DrawPackageInfo(HWND hWnd, RECT windowRect)
-    /// PURPOSE: This compiles the information displayed on the UI when the user selects an msix
+    /// This function compiles the information displayed on the UI when the user selects an msix
     ///
-    /// hWnd: the HWND of the window to draw controls
-    /// windowRect: the size of the window
+    /// @param hWnd - the HWND of the window to draw controls
+    /// @param windowRect - the size of the window
     HRESULT DrawPackageInfo(HWND hWnd, RECT windowRect);
 
-    /// FUNCTION: CreateInitWindow(HINSTANCE hInstance, int nCmdShow, TCHAR windowClass[], TCHAR windowTitle[])
+    /// Creates the initial installation UI window
     ///
-    /// PURPOSE: Creates the initial installation UI window
-    /// windowClass: the class text of the window
-    /// windowTitle: the window title
+    /// @param windowClass - the class text of the window
+    /// @param windowTitle - the window title
     int CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title);
     void LoadInfo();
     int GetNumberOfFiles() { return m_numberOfFiles; }
@@ -73,70 +71,52 @@ public:
         return m_msixRequest;
     }
 
-    /// FUNCTION: CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
+    /// Creates the progress bar
     ///
-    /// PURPOSE: Creates the progress bar
-    ///
-    /// parentHWnd: the HWND of the window to add the progress bar to
-    /// parentRect: the dimmensions of the parent window
+    /// @param parentHWnd - the HWND of the window to add the progress bar to
+    /// @param parentRect - the dimmensions of the parent window
     /// count: the number of objects to be iterated through in the progress bar
     BOOL CreateProgressBar(HWND parentHWnd, RECT parentRect, int count);
 
-    /// FUNCTION: InstallButton(HWND parentHWnd, RECT parentRect)
-    ///
-    /// PURPOSE: Create the lower right install button
+    /// Create the lower right install button
     /// 
-    /// parentHWnd: the HWND of the window to add the button to
-    /// parentRect: the specs of the parent window
+    /// @param parentHWnd - the HWND of the window to add the button to
+    /// @param parentRect - the specs of the parent window
     BOOL InstallButton(HWND parentHWnd, RECT parentRect);
 
-    /// FUNCTION: CreateCheckbox(HWND parentHWnd, RECT parentRect)
-    ///
-    /// PURPOSE: Create the launch when ready checkbox on the bottom left
+    /// Create the launch when ready checkbox on the bottom left
     /// 
-    /// parentHWnd: the HWND of the window to add the checkbox to
-    /// parentRect: the specs of the parent window
+    /// @param parentHWnd - the HWND of the window to add the checkbox to
+    /// @param parentRect - the specs of the parent window
     BOOL CreateCheckbox(HWND parentHWnd, RECT parentRect);
 
-    /// FUNCTION: CreateCancelButton(HWND parentHWnd, RECT parentRect)
-    ///
-    /// PURPOSE: Create the cancel button on the bottom right corner when user clicks on install
+    /// Create the cancel button on the bottom right corner when user clicks on install
     /// 
-    /// parentHWnd: the HWND of the window to add the checkbox to
-    /// parentRect: the specs of the parent window
+    /// @param parentHWnd - the HWND of the window to add the checkbox to
+    /// @param parentRect - the specs of the parent window
     BOOL CreateCancelButton(HWND parentHWnd, RECT parentRect);
 
-    /// FUNCTION: CreateLaunchButton(HWND parentHWnd, RECT parentRect)
-    ///
-    /// PURPOSE: Create the launch button on the botton right after app has been installed
+    /// Create the launch button on the botton right after app has been installed
     /// 
-    /// parentHWnd: the HWND of the window to add the checkbox to
-    /// parentRect: the specs of the parent window
+    /// @param parentHWnd - the HWND of the window to add the checkbox to
+    /// @param parentRect - the specs of the parent window
     BOOL CreateLaunchButton(HWND parentHWnd, RECT parentRect);
 
-    /// FUNCTION: ChangeButtonText(LPARAM newMessage)
+    /// Changes the text of the lower right button
     ///
-    /// PURPOSE: Changes the text of the lower right button
-    ///
-    /// newMessage: the message to change the button to
+    /// @param newMessage - the message to change the button to
     BOOL ChangeButtonText(const std::wstring& newMessage);
 
-    /// FUNCTION: ChangeText(HWND parentHWnd, std::wstring& windowText)
+    /// Change the text of the installation window based on the given input
     ///
-    /// PURPOSE: Change the text of the installation window based on the given input
-    ///
-    /// parentHWnd: the HWND of the window to be changed
-    /// windowText: the text to change the window to
+    /// @param parentHWnd - the HWND of the window to be changed
+    /// @param windowText - the text to change the window to
     BOOL ChangeText(HWND parentHWnd, std::wstring displayText, std::wstring  messageText, IStream* logoStream = nullptr);
 
-    /// FUNCTION: UpdateProgressBar
-    ///
-    /// PURPOSE: Increment the progress bar one tick based on preset tick
+    /// Increment the progress bar one tick based on preset tick
     void UpdateProgressBar();
 
-    /// FUNCTION: SendInstallCompleteMsg
-    ///
-    /// PURPOSE: Sends the WM_INSTALLCOMPLETE_MSG message to the main window when app installation is complete
+    /// Sends the WM_INSTALLCOMPLETE_MSG message to the main window when app installation is complete
     void SendInstallCompleteMsg();
 };
 

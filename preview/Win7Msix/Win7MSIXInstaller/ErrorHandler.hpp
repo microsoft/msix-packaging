@@ -10,6 +10,9 @@ class ErrorHandler : IPackageHandler
 public:
     HRESULT ExecuteForAddRequest();
 
+    /// Intentionally skipping implementation of ExecuteForRemoveRequest()
+    /// since there is no use case as of now to handle an error in case of a remove request
+
     static const PCWSTR HandlerName;
     static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
     ~ErrorHandler() {}
