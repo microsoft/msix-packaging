@@ -155,6 +155,11 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
     bool needToProcessAnyExtensions = false;
     for (auto extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
     {
+        if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
+        {
+            return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+        }
+
         bool registryHasExtension = false;
         RETURN_IF_FAILED(m_registryDevirtualizer->HasFTA(*extensionName, registryHasExtension));
 

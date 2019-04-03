@@ -84,6 +84,12 @@
     <ClInclude Include="ComServer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="MsixResponse.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ErrorHandler.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Win7MSIXInstaller.cpp">
@@ -140,6 +146,12 @@
     <ClCompile Include="ComServer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="MsixResponse.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ErrorHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="Win7MSIXInstaller.rc">
@@ -151,9 +163,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="icon2.ico">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="ico00001.ico">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

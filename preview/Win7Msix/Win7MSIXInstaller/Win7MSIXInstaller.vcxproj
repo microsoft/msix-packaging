@@ -187,6 +187,8 @@
     <ClInclude Include="ComInterface.hpp" />
     <ClInclude Include="ComServer.hpp" />
     <ClInclude Include="Constants.hpp" />
+    <ClInclude Include="ErrorHandler.hpp" />
+    <ClInclude Include="MsixResponse.hpp" />
     <ClInclude Include="Extractor.hpp" />
     <ClInclude Include="FileTypeAssociation.hpp" />
     <ClInclude Include="FootprintFiles.hpp" />
@@ -211,12 +213,14 @@
   <ItemGroup>
     <ClCompile Include="ComInterface.cpp" />
     <ClCompile Include="ComServer.cpp" />
+    <ClCompile Include="ErrorHandler.cpp" />
     <ClCompile Include="Extractor.cpp" />
     <ClCompile Include="FilePaths.cpp" />
     <ClCompile Include="FileTypeAssociation.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="InstallComplete.cpp" />
     <ClCompile Include="InstallUI.cpp" />
+    <ClCompile Include="MsixResponse.cpp" />
     <ClCompile Include="PackageInfo.cpp" />
     <ClCompile Include="ProcessPotentialUpdate.cpp" />
     <ClCompile Include="Protocol.cpp" />
@@ -233,7 +237,6 @@
     <ResourceCompile Include="Win7MSIXInstaller.rc" />
   </ItemGroup>
   <ItemGroup>
-    <Image Include="ico00001.ico" />
     <Image Include="icon1.ico" />
     <Image Include="icon2.ico" />
   </ItemGroup>

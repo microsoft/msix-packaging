@@ -46,6 +46,10 @@ HRESULT StartMenuLink::CreateLink(PCWSTR targetFilePath, PCWSTR linkFilePath, PC
 
 HRESULT StartMenuLink::ExecuteForAddRequest()
 {
+    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
+    {
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
     PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
 
     std::wstring filePath = m_msixRequest->GetFilePathMappings()->GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";

@@ -1,6 +1,7 @@
 #pragma once
 #include "PackageInfo.hpp"
 #include "FilePaths.hpp"
+#include "MsixResponse.hpp"
 class UI;
 
 enum OperationType
@@ -37,6 +38,9 @@ private:
     /// Filled in by CreateAndShowUI 
     AutoPtr<UI> m_UI;
 
+    /// MsixResponse object populated by handlers
+    AutoPtr<MsixResponse> m_msixResponse;
+
 public:
     static HRESULT Make(OperationType operationType, Flags flags, std::wstring packageFilePath, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest** outInstance);
 
@@ -51,28 +55,34 @@ public:
     void SetUI(UI* ui);
 
     // Getters
-    MSIX_VALIDATION_OPTION GetValidationOptions() { return m_validationOptions; }
-    PCWSTR GetPackageFilePath() { return m_packageFilePath.c_str(); }
-    PCWSTR GetPackageFullName() { return m_packageFullName.c_str(); }
-    FilePathMappings* GetFilePathMappings() { return &m_filePathMappings; }
+    inline MSIX_VALIDATION_OPTION GetValidationOptions() { return m_validationOptions; }
+    inline PCWSTR GetPackageFilePath() { return m_packageFilePath.c_str(); }
+    inline PCWSTR GetPackageFullName() { return m_packageFullName.c_str(); }
+    
+    inline FilePathMappings* GetFilePathMappings() { return &m_filePathMappings; }
 
     /// @return can return null if called before PopulatePackageInfo.
     PackageInfo* GetPackageInfo() { return m_packageInfo; }
 
     /// @return can return null if called before CreateAndShowUI or if Flags::QuietUX was passed in and there is no UI.
     UI* GetUI() { return m_UI; }
-    bool IsQuietUX() { return (m_flags & Flags::QuietUX) == Flags::QuietUX; }
+    inline bool IsQuietUX() { return (m_flags & Flags::QuietUX) == Flags::QuietUX; }
     
-    bool IsRemove()
+    inline bool IsRemove()
     {
         return m_operationType == OperationType::Remove;
     }
 
-    bool AllowSignatureOriginUnknown()
+    inline bool AllowSignatureOriginUnknown()
     {
         m_validationOptions = static_cast<MSIX_VALIDATION_OPTION>(m_validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN);
         return true;
     }
+
+    /// Retrieves the msixResponse object
+    ///
+    /// @return m_msixResponse object
+    MsixResponse* GetMsixResponse() { return m_msixResponse; }
 
 private:
     /// FilePath Mappings maps the VFS tokens (e.g. Windows) to the actual folder on disk (e.g. C:\windows)
@@ -90,5 +100,6 @@ private:
     /// This handles FindPackage operation and displays the package info for a given package.
     /// @return E_NOT_SET when the package could not be found
     HRESULT DisplayPackageInfo();
+
 };
 

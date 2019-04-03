@@ -29,6 +29,7 @@
 #include "FileTypeAssociation.hpp"
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
+#include "ErrorHandler.hpp"
 
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
@@ -39,22 +40,24 @@ struct HandlerInfo
 {
     CreateHandler create;
     PCWSTR nextHandler;
+    PCWSTR errorHandler;
 };
 
 std::map<PCWSTR, HandlerInfo> AddHandlers =
 {
-    //HandlerName                         Function to create                      NextHandler
-    {PopulatePackageInfo::HandlerName,    {PopulatePackageInfo::CreateHandler,    CreateAndShowUI::HandlerName }},
-    {CreateAndShowUI::HandlerName,        {CreateAndShowUI::CreateHandler,        ProcessPotentialUpdate::HandlerName }},
-    {ProcessPotentialUpdate::HandlerName, {ProcessPotentialUpdate::CreateHandler, Extractor::HandlerName }},
-    {Extractor::HandlerName,              {Extractor::CreateHandler,              StartMenuLink::HandlerName }},
-    {StartMenuLink::HandlerName,          {StartMenuLink::CreateHandler,          AddRemovePrograms::HandlerName}},
-    {AddRemovePrograms::HandlerName,      {AddRemovePrograms::CreateHandler,      Protocol::HandlerName}},
-    {Protocol::HandlerName,               {Protocol::CreateHandler,               ComInterface::HandlerName}},
-    {ComInterface::HandlerName,           {ComInterface::CreateHandler,           ComServer::HandlerName}},
-    {ComServer::HandlerName,              {ComServer::CreateHandler,              FileTypeAssociation::HandlerName}},
-    {FileTypeAssociation::HandlerName,    {FileTypeAssociation::CreateHandler,    InstallComplete::HandlerName }},
-    {InstallComplete::HandlerName,        {InstallComplete::CreateHandler,        nullptr}},
+    //HandlerName                         Function to create                      NextHandler                          ErrorHandlerInfo
+    {PopulatePackageInfo::HandlerName,    {PopulatePackageInfo::CreateHandler,    CreateAndShowUI::HandlerName,        ErrorHandler::HandlerName}},
+    {CreateAndShowUI::HandlerName,        {CreateAndShowUI::CreateHandler,        ProcessPotentialUpdate::HandlerName, ErrorHandler::HandlerName}},
+    {ProcessPotentialUpdate::HandlerName, {ProcessPotentialUpdate::CreateHandler, Extractor::HandlerName,              ErrorHandler::HandlerName}},
+    {Extractor::HandlerName,              {Extractor::CreateHandler,              StartMenuLink::HandlerName,          ErrorHandler::HandlerName}},
+    {StartMenuLink::HandlerName,          {StartMenuLink::CreateHandler,          AddRemovePrograms::HandlerName,      ErrorHandler::HandlerName}},
+    {AddRemovePrograms::HandlerName,      {AddRemovePrograms::CreateHandler,      Protocol::HandlerName,               ErrorHandler::HandlerName}},
+    {Protocol::HandlerName,               {Protocol::CreateHandler,               ComInterface::HandlerName,           ErrorHandler::HandlerName}},
+    {ComInterface::HandlerName,           {ComInterface::CreateHandler,           ComServer::HandlerName,              ErrorHandler::HandlerName}},
+    {ComServer::HandlerName,              {ComServer::CreateHandler,              FileTypeAssociation::HandlerName,    ErrorHandler::HandlerName}},
+    {FileTypeAssociation::HandlerName,    {FileTypeAssociation::CreateHandler,    InstallComplete::HandlerName,        ErrorHandler::HandlerName}},
+    {InstallComplete::HandlerName,        {InstallComplete::CreateHandler,        nullptr,                             ErrorHandler::HandlerName}},
+    {ErrorHandler::HandlerName,           {ErrorHandler::CreateHandler,           nullptr,                             nullptr}},
 };
 
 std::map<PCWSTR, HandlerInfo> RemoveHandlers =
@@ -82,6 +85,12 @@ HRESULT MsixRequest::Make(OperationType operationType, Flags flags, std::wstring
     instance->m_packageFullName = packageFullName;
     instance->m_validationOptions = validationOption;
     RETURN_IF_FAILED(instance->InitializeFilePathMappings());
+
+    //Set MsixResponse
+    AutoPtr<MsixResponse> localResponse;
+    RETURN_IF_FAILED(MsixResponse::Make(&localResponse));
+    instance->m_msixResponse = localResponse.Detach();
+
     *outInstance = instance.release();
 
     return S_OK;
@@ -155,7 +164,7 @@ HRESULT MsixRequest::FindAllPackages()
         numPackages++;
     }
 
-    std::cout << numPackages << " Packages found" << std::endl;
+    std::cout << numPackages << " Package(s) found" << std::endl;
     
     return S_OK;
 }
@@ -173,9 +182,14 @@ HRESULT MsixRequest::ProcessAddRequest()
         HandlerInfo currentHandler = AddHandlers[currentHandlerName];
         AutoPtr<IPackageHandler> handler;
         RETURN_IF_FAILED(currentHandler.create(this, &handler));
-        RETURN_IF_FAILED(handler->ExecuteForAddRequest());
-
-        currentHandlerName = currentHandler.nextHandler;
+        if (FAILED(handler->ExecuteForAddRequest()))
+        {
+            currentHandlerName = currentHandler.errorHandler;
+        }
+        else
+        {
+            currentHandlerName = currentHandler.nextHandler;
+        }
     }
 
     return S_OK;
@@ -222,5 +236,5 @@ void MsixRequest::SetUI(UI * ui)
 
 void MsixRequest::SetPackageInfo(PackageInfo* packageInfo) 
 {
-    m_packageInfo = packageInfo; 
+    m_packageInfo = packageInfo;
 }

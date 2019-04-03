@@ -82,6 +82,11 @@ HRESULT Protocol::ParseManifest()
     RETURN_IF_FAILED(extensionEnum->GetHasCurrent(&hasCurrent));
     while (hasCurrent)
     {
+        if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
+        {
+            return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+        }
+
         ComPtr<IMsixElement> extensionElement;
         RETURN_IF_FAILED(extensionEnum->GetCurrent(&extensionElement));
         Text<wchar_t> extensionCategory;

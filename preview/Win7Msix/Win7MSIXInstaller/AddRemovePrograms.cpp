@@ -13,6 +13,11 @@ const PCWSTR AddRemovePrograms::HandlerName = L"AddRemovePrograms";
 
 HRESULT AddRemovePrograms::ExecuteForAddRequest()
 {
+    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
+    {
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+
     PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
     std::wstring packageFullName = packageInfo->GetPackageFullName();
 
@@ -42,7 +47,7 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
     auto publisherCommonName = publisherString.substr(publisherString.find_first_of(L"=") + 1,
         publisherString.find_first_of(L",") - publisherString.find_first_of(L"=") - 1);
     RETURN_IF_FAILED(packageKey.SetStringValue(L"Publisher", publisherCommonName));
-    
+
     std::wstring versionString(ConvertVersionToString(packageInfo->GetVersion()));
     RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayVersion", versionString));
 
@@ -52,9 +57,9 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Added Uninstall key successfully",
         TraceLoggingValue(packageFullName.c_str(), "packageFullName"),
-        TraceLoggingValue(uninstallCommand.c_str(), "uninstallString"), 
+        TraceLoggingValue(uninstallCommand.c_str(), "uninstallString"),
         TraceLoggingValue(displayName.c_str(), "displayName"),
-        TraceLoggingValue(directoryPath.c_str(), "installLocation"), 
+        TraceLoggingValue(directoryPath.c_str(), "installLocation"),
         TraceLoggingValue(publisherString.c_str(), "publisher"),
         TraceLoggingValue(versionString.c_str(), "displayVersion"),
         TraceLoggingValue(packageIconString.c_str(), "displayIcon"));
