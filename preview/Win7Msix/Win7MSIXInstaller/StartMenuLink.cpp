@@ -58,11 +58,6 @@ HRESULT StartMenuLink::ExecuteForAddRequest()
     std::wstring appUserModelId = m_msixRequest->GetPackageInfo()->GetAppModelUserId();
     RETURN_IF_FAILED(CreateLink(resolvedExecutableFullPath.c_str(), filePath.c_str(), L"", appUserModelId.c_str()));
 
-    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
-    {
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-    }
-
     return S_OK;
 }
 

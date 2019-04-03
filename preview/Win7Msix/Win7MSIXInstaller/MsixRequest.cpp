@@ -33,30 +33,25 @@
 using namespace std;
 #include <GdiPlus.h>
 
-struct ErrorHandlerInfo
-{
-    CreateHandler create;
-    PCWSTR handlerName;
-};
-
 struct HandlerInfo
 {
     CreateHandler create;
     PCWSTR nextHandler;
-    ErrorHandlerInfo errorHandler;
+    PCWSTR errorHandler;
 };
 
 std::map<PCWSTR, HandlerInfo> AddHandlers =
 {
     //HandlerName                       Function to create                   NextHandler                         ErrorHandlerInfo
-    {PopulatePackageInfo::HandlerName,  {PopulatePackageInfo::CreateHandler, CreateAndShowUI::HandlerName,       {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
-    {CreateAndShowUI::HandlerName,      {CreateAndShowUI::CreateHandler,     Extractor::HandlerName ,            {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
-    {Extractor::HandlerName,            {Extractor::CreateHandler,           StartMenuLink::HandlerName ,        {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
-    {StartMenuLink::HandlerName,        {StartMenuLink::CreateHandler,       AddRemovePrograms::HandlerName,     {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
-    {AddRemovePrograms::HandlerName,    {AddRemovePrograms::CreateHandler,   Protocol::HandlerName,              {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
-    {Protocol::HandlerName,             {Protocol::CreateHandler,            FileTypeAssociation::HandlerName,   {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
-    {FileTypeAssociation::HandlerName,  {FileTypeAssociation::CreateHandler, InstallComplete::HandlerName,       {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
-    {InstallComplete::HandlerName,      {InstallComplete::CreateHandler,     nullptr,                            {ErrorHandler::CreateHandler, ErrorHandler::HandlerName}}},
+    {PopulatePackageInfo::HandlerName,  {PopulatePackageInfo::CreateHandler, CreateAndShowUI::HandlerName,       ErrorHandler::HandlerName}},
+    {CreateAndShowUI::HandlerName,      {CreateAndShowUI::CreateHandler,     Extractor::HandlerName ,            ErrorHandler::HandlerName}},
+    {Extractor::HandlerName,            {Extractor::CreateHandler,           StartMenuLink::HandlerName ,        ErrorHandler::HandlerName}},
+    {StartMenuLink::HandlerName,        {StartMenuLink::CreateHandler,       AddRemovePrograms::HandlerName,     ErrorHandler::HandlerName}},
+    {AddRemovePrograms::HandlerName,    {AddRemovePrograms::CreateHandler,   Protocol::HandlerName,              ErrorHandler::HandlerName}},
+    {Protocol::HandlerName,             {Protocol::CreateHandler,            FileTypeAssociation::HandlerName,   ErrorHandler::HandlerName}},
+    {FileTypeAssociation::HandlerName,  {FileTypeAssociation::CreateHandler, InstallComplete::HandlerName,       ErrorHandler::HandlerName}},
+    {InstallComplete::HandlerName,      {InstallComplete::CreateHandler,     nullptr,                            ErrorHandler::HandlerName}},
+    {ErrorHandler::HandlerName,         {ErrorHandler::CreateHandler,        nullptr,                            nullptr}},
 };
 
 std::map<PCWSTR, HandlerInfo> RemoveHandlers =
@@ -87,9 +82,7 @@ HRESULT MsixRequest::Make(OperationType operationType, Flags flags, std::wstring
 
     //Set MsixResponse
     AutoPtr<MsixResponse> localResponse;
-    RETURN_IF_FAILED(MsixResponse::Make(
-        &localResponse)
-    );
+    RETURN_IF_FAILED(MsixResponse::Make(&localResponse));
     instance->m_msixResponse = localResponse.Detach();
 
     *outInstance = instance.release();
@@ -185,20 +178,7 @@ HRESULT MsixRequest::ProcessAddRequest()
         RETURN_IF_FAILED(currentHandler.create(this, &handler));
         if (FAILED(handler->ExecuteForAddRequest()))
         {
-            ErrorHandlerInfo errorHandlerInfo = currentHandler.errorHandler;
-
-            AutoPtr<IPackageHandler> handler;
-            RETURN_IF_FAILED(errorHandlerInfo.create(this, &handler));
-            HRESULT hrErrorHandler = handler->ExecuteForAddRequest();
-            if(FAILED(hrErrorHandler))
-            {
-                TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                    "ErrorHandler failed",
-                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-                    TraceLoggingValue(errorHandlerInfo.handlerName, "HandlerName"),
-                    TraceLoggingValue(hrErrorHandler, "HR"));
-            }
-            currentHandlerName = nullptr;
+            currentHandlerName = currentHandler.errorHandler;
         }
         else
         {
@@ -246,11 +226,6 @@ HRESULT MsixRequest::ProcessRemoveRequest()
 void MsixRequest::SetUI(UI * ui)
 {
     m_UI = ui;
-}
-
-void MsixRequest::SetMsixResponse(MsixResponse * msixResponse)
-{
-    m_msixResponse = msixResponse;
 }
 
 void MsixRequest::SetPackageInfo(PackageInfo* packageInfo) 

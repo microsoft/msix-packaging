@@ -64,11 +64,6 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
         TraceLoggingValue(versionString.c_str(), "displayVersion"),
         TraceLoggingValue(packageIconString.c_str(), "displayIcon"));
 
-    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
-    {
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-    }
-
     return S_OK;
 }
 

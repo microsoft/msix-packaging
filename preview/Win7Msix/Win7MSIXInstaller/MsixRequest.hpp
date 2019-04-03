@@ -54,8 +54,6 @@ public:
     /// Called by CreateAndShowUI 
     void SetUI(UI* ui);
 
-    void SetMsixResponse(MsixResponse* msixResponse);
-
     // Getters
     MSIX_VALIDATION_OPTION GetValidationOptions() { return m_validationOptions; }
     PCWSTR GetPackageFilePath() { return m_packageFilePath.c_str(); }

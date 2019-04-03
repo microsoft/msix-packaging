@@ -142,19 +142,9 @@ HRESULT FileTypeAssociation::ParseManifest()
 
 HRESULT FileTypeAssociation::ExecuteForAddRequest()
 {
-    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
-    {
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-    }
-
     for (std::vector<Fta>::iterator fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
     {
         RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
-    }
-
-    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
-    {
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
     return S_OK;
@@ -165,6 +155,11 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
     bool needToProcessAnyExtensions = false;
     for (std::vector<std::wstring>::iterator extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
     {
+        if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
+        {
+            return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+        }
+
         bool registryHasExtension = false;
         RETURN_IF_FAILED(m_registryDevirtualizer->HasFTA(*extensionName, registryHasExtension));
 

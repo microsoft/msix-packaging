@@ -12,11 +12,6 @@ const PCWSTR Protocol::HandlerName = L"Protocol";
 
 HRESULT Protocol::ExecuteForAddRequest()
 {
-    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
-    {
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-    }
-
     ComPtr<IMsixDocumentElement> domElement;
     RETURN_IF_FAILED(m_msixRequest->GetPackageInfo()->GetManifestReader()->QueryInterface(UuidOfImpl<IMsixDocumentElement>::iid, reinterpret_cast<void**>(&domElement)));
 
@@ -29,6 +24,11 @@ HRESULT Protocol::ExecuteForAddRequest()
     RETURN_IF_FAILED(extensionEnum->GetHasCurrent(&hasCurrent));
     while (hasCurrent)
     {
+        if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
+        {
+            return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+        }
+
         ComPtr<IMsixElement> extensionElement;
         RETURN_IF_FAILED(extensionEnum->GetCurrent(&extensionElement));
         Text<wchar_t> extensionCategory;
@@ -52,11 +52,6 @@ HRESULT Protocol::ExecuteForAddRequest()
             }
         }
         RETURN_IF_FAILED(extensionEnum->MoveNext(&hasCurrent));
-    }
-
-    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
-    {
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
     
     return S_OK;

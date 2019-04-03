@@ -6,7 +6,7 @@
 class InstallComplete : IPackageHandler
 {
 public:
-    /// Send install complete message to UI if cancel button was not clicked, else uninstalls the app
+    /// Send install complete message to UI
     HRESULT ExecuteForAddRequest();
 
     static const PCWSTR HandlerName;
