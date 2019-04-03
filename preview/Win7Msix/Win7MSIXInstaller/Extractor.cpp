@@ -188,8 +188,8 @@ HRESULT Extractor::CreatePackageRoot()
 HRESULT Extractor::ExecuteForAddRequest()
 {
     RETURN_IF_FAILED(CreatePackageRoot());
+
     RETURN_IF_FAILED(ExtractPackage());
-    
     return S_OK;
 }
 
