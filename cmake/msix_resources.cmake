@@ -131,7 +131,7 @@ if(USE_VALIDATION_PARSER)
             [[/]]
             APPTYPES_TEXT "${APPTYPES_TEXT}")
 
-        # Negative lookahead
+        # Negative lookahead. I am not sure if we can do something here... maybe a semantic check?
         # ST_Parameters
         string(REGEX REPLACE
             [[\(\(\?\!\\%\[Ii\].*\\%\[Ii\]\)\.\)\*]]

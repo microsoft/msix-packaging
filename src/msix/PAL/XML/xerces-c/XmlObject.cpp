@@ -116,7 +116,7 @@ static std::map<std::string, std::string> s_nameSpaceToSchema =
         {"http://schemas.microsoft.com/appx/manifest/uap/windows10/7",
             "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v7.xsd"},
         {"http://schemas.microsoft.com/appx/manifest/uap/windows10/8",
-            "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v8.xsd"}
+            "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v8.xsd"},
 // Bundle Manifest
         {"http://schemas.microsoft.com/appx/2013/bundle",
             "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"},
@@ -476,7 +476,7 @@ public:
 
         auto entityResolver = std::make_unique<MsixEntityResolver>(m_factory);
 
-        if (footPrintType == XmlContentType::AppxManifestXml)
+        if (footPrintType == XmlContentType::AppxManifestXml || footPrintType == XmlContentType::AppxBundleManifestXml)
         {
             m_parser->setXMLEntityResolver(entityResolver.get());
         }
