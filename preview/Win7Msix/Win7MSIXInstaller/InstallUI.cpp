@@ -11,6 +11,7 @@
 #include <sstream>
 #include <iostream>
 #include "resource.h"
+#include <filesystem>
 
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
@@ -59,7 +60,7 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
 {
     if (SUCCEEDED(m_loadingPackageInfoCode))
     {
-        auto displayText = L"Install " + m_displayName + L"?";
+        auto displayText = g_installOrUpdateText + m_displayName + L"?";
         auto messageText = L"Publisher: " + m_publisherCommonName + L"\nVersion: " + m_version;
         ChangeText(hWnd, displayText, messageText, m_logoStream.Get());
         ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));
@@ -89,8 +90,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     switch (message)
     {
     case WM_CREATE:
-        ui->InstallButton(hWnd, windowRect);
         ui->CreateCheckbox(hWnd, windowRect);
+        ui->InstallButton(hWnd, windowRect);
         break;
     case WM_PAINT:
     {
@@ -373,6 +374,8 @@ HRESULT CreateAndShowUI::ExecuteForAddRequest()
     ui->LoadInfo();
 
     m_msixRequest->SetUI(ui.Detach());
+
+    CheckIfUpdate();
     RETURN_IF_FAILED(m_msixRequest->GetUI()->ShowUI());
 
     return S_OK;
@@ -388,6 +391,20 @@ HRESULT CreateAndShowUI::CreateHandler(MsixRequest * msixRequest, IPackageHandle
     *instance = localInstance.release();
 
     return S_OK;
+}
+
+void CreateAndShowUI::CheckIfUpdate()
+{
+    std::wstring currentPackageFamilyName = GetFamilyNameFromFullName(m_msixRequest->GetPackageInfo()->GetPackageFullName());
+    for (auto& p : std::experimental::filesystem::directory_iterator(m_msixRequest->GetFilePathMappings()->GetMsix7Directory()))
+    {
+        std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
+        if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
+            && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
+        {
+            g_installOrUpdateText = L"Update ";
+        }
+    }
 }
 
 HRESULT UI::Make(MsixRequest * msixRequest, UI ** instance)
@@ -453,8 +470,8 @@ BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
     LPVOID buttonPointer = nullptr;
     g_buttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
-        L"BUTTON",
-        L"Install",  // text
+        L"Button",
+        g_installOrUpdateText,  // text
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord

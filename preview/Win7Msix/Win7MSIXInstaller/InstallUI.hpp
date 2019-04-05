@@ -22,6 +22,7 @@ static HWND g_CancelbuttonHWnd = NULL;
 static HWND g_LaunchbuttonHWnd = NULL;
 static bool g_launchCheckBoxState = true; /// launch checkbox is checked by default
 static bool g_installed = false;
+static PCWSTR g_installOrUpdateText = L"Install "; /// Default button and install screen UI text is 'Install'
 
 class UI
 {
@@ -67,9 +68,6 @@ public:
     void LoadInfo();
     int GetNumberOfFiles() { return m_numberOfFiles; }
     void SetButtonClicked() { SetEvent(m_buttonClickedEvent); }
-    MsixRequest* GetMsixRequest() {
-        return m_msixRequest;
-    }
 
     /// Creates the progress bar
     ///
@@ -118,6 +116,7 @@ public:
 
     /// Sends the WM_INSTALLCOMPLETE_MSG message to the main window when app installation is complete
     void SendInstallCompleteMsg();
+
 };
 
 class CreateAndShowUI : IPackageHandler
@@ -131,6 +130,11 @@ public:
 private:
     MsixRequest* m_msixRequest = nullptr;
 
+    // The add operation could be an update if V1 version of the package is already installed. Show appropriate UI with respect to operation type
+    /// The add operation could be an update if V1 version of the package is already installed on the machine
+    /// This method checks the same and sets the button and install screen UI text to 'Update'
+    ///
+    void CheckIfUpdate();
     CreateAndShowUI() {}
     CreateAndShowUI(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 };
