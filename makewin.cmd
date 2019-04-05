@@ -31,6 +31,7 @@ set build="MinSizeRel"
 set validationParser="-DUSE_VALIDATION_PARSER=off"
 set zlib="-DUSE_SHARED_ZLIB=off"
 set parser="-DXML_PARSER=msxml6"
+set crypto="-DCRYPTO_LIB=crypt32"
 set msvc="-DUSE_STATIC_MSVC=off"
 set bundle="-DSKIP_BUNDLES=off"
 
@@ -59,6 +60,12 @@ if /I "%~2" == "--shared-zlib" (
 if /I "%~2" == "-sz" (
     set zlib="-DUSE_SHARED_ZLIB=on"
 )
+if /I "%~2" == "--crypto-openssl" (
+    set crypto="-DCRYPTO_LIB=openssl"
+)
+if /I "%~2" == "-co" (
+    set crypto="-DCRYPTO_LIB=openssl"
+)
 if /I "%~2" == "-mt" (
     set msvc="-DUSE_STATIC_MSVC=on"
 )
@@ -76,8 +83,8 @@ cd .vs
 if exist CMakeFiles rd /s /q CMakeFiles
 if exist CMakeCache.txt del CMakeCache.txt
 
-echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %msvc% %bundle% -G"NMake Makefiles" ..
-cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %msvc% %bundle% -G"NMake Makefiles" ..
+echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% -G"NMake Makefiles" ..
+cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% -G"NMake Makefiles" ..
 nmake /NOLOGO
 
 goto Exit
@@ -93,6 +100,7 @@ echo    --debug, -d              = Build chk binary.
 echo    --parser-xerces, -px     = use Xerces-C parser. Default MSXML6.
 echo    --validation-parser, -vp = enable XML schema validation.
 echo    --shared-zlib, -sz       = don't statically link zlib.
+echo    --crypto-openssl, -co    = use OpenSSL crypto [currently for testing]. Default Crypt32.
 echo    -mt                      = use compiler flag /MT to use static version of the run-time library.
 echo    --skip-bundles, -sb      = turn off bundle support.
 echo    --help, -h, /?           = print this usage information and exit.

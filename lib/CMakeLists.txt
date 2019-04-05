@@ -40,7 +40,7 @@ if(XML_PARSER MATCHES xerces)
 endif()
 
 # OpenSSL
-if(NOT WIN32)
+if(CRYPTO_LIB MATCHES openssl)
     message(STATUS "-----------------------------")
     message(STATUS "OpenSLL configuration summary")
     message(STATUS "-----------------------------")

@@ -11,7 +11,7 @@ set(RESOURCES_APPXTYPES)
 set(RESOURCES_APPXMANIFEST)
 set(RESOURCES_APPXBUNDLEMANIFEST)
 
-if(NOT WIN32) # Always add the certs for non-Windows.
+if(CRYPTO_LIB MATCHES openssl) # Only OpenSSL needs to carry the certificates.
     list(APPEND RESOURCES_CERTS
         "certs/base64_MSFT_RCA_2010.cer"
         "certs/base64_MSFT_RCA_2011.cer"
