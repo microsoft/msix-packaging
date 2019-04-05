@@ -26,6 +26,21 @@ HRESULT ComServer::ExecuteForAddRequest()
     return S_OK;
 }
 
+HRESULT ComServer::ExecuteForRemoveRequest()
+{
+    for (auto exeServer = m_exeServers.begin(); exeServer != m_exeServers.end(); ++exeServer)
+    {
+        RETURN_IF_FAILED(ProcessExeServerForRemove(*exeServer));
+    }
+
+    for (auto progId = m_progIds.begin(); progId != m_progIds.end(); ++progId)
+    {
+        RETURN_IF_FAILED(ProcessProgIdForRemove(*progId));
+    }
+
+    return S_OK;
+}
+
 HRESULT ComServer::ProcessExeServerForAdd(ExeServer& exeServer)
 {
     RegistryKey clsidKey;
@@ -123,6 +138,47 @@ HRESULT ComServer::ProcessExeServerForAdd(ExeServer& exeServer)
                 RETURN_IF_FAILED(formatKey.SetStringValue(L"", *dataFormat));
             }
         }
+
+        if (!exeServerClass->miscStatusOleMiscFlag.empty())
+        {
+            RegistryKey miscStatusKey;
+            RETURN_IF_FAILED(classIdKey.CreateSubKey(miscStatusKeyName.c_str(), KEY_WRITE, &miscStatusKey));
+            RETURN_IF_FAILED(miscStatusKey.SetStringValue(L"", exeServerClass->miscStatusOleMiscFlag));
+
+            for (auto aspect = exeServerClass->miscStatusAspects.begin(); aspect != exeServerClass->miscStatusAspects.end(); ++aspect)
+            {
+                RegistryKey aspectKey;
+                RETURN_IF_FAILED(miscStatusKey.CreateSubKey(aspect->type.c_str(), KEY_WRITE, &aspectKey));
+                RETURN_IF_FAILED(aspectKey.SetStringValue(L"", aspect->oleMiscFlag));
+            }
+        }
+
+        if (!exeServerClass->verbs.empty())
+        {
+            RegistryKey verbKey;
+            RETURN_IF_FAILED(classIdKey.CreateSubKey(verbKeyName.c_str(), KEY_WRITE, &verbKey));
+
+            for (auto verb = exeServerClass->verbs.begin(); verb != exeServerClass->verbs.end(); ++verb)
+            {
+                RegistryKey specificVerbKey;
+                RETURN_IF_FAILED(verbKey.CreateSubKey(verb->id.c_str(), KEY_WRITE, &specificVerbKey));
+                RETURN_IF_FAILED(specificVerbKey.SetStringValue(L"", verb->verb));
+            }
+        }
+
+        if (!exeServerClass->defaultIcon.empty())
+        {
+            RegistryKey defaultIconKey;
+            RETURN_IF_FAILED(classIdKey.CreateSubKey(defaultIconKeyName.c_str(), KEY_WRITE, &defaultIconKey));
+            RETURN_IF_FAILED(defaultIconKey.SetStringValue(L"", exeServerClass->defaultIcon));
+        }
+
+        if (!exeServerClass->toolboxBitmap.empty())
+        {
+            RegistryKey toolboxBitmapKey;
+            RETURN_IF_FAILED(classIdKey.CreateSubKey(toolboxBitmapKeyName.c_str(), KEY_WRITE, &toolboxBitmapKey));
+            RETURN_IF_FAILED(toolboxBitmapKey.SetStringValue(L"", exeServerClass->toolboxBitmap));
+        }
     }
 
     return S_OK;
@@ -138,6 +194,18 @@ HRESULT ComServer::ProcessProgIdForAdd(ProgId& progId)
         RegistryKey clsidKey;
         RETURN_IF_FAILED(progIdKey.CreateSubKey(clsidKeyName.c_str(), KEY_WRITE, &clsidKey));
         RETURN_IF_FAILED(clsidKey.SetStringValue(L"", progId.clsid));
+
+        for (auto exeServer = m_exeServers.begin(); exeServer != m_exeServers.end(); ++exeServer)
+        {
+            for (auto exeServerClass = exeServer->classes.begin(); exeServerClass != exeServer->classes.end(); ++exeServerClass)
+            {
+                if (exeServerClass->id.compare(progId.clsid) == 0 && !exeServerClass->insertableObject.empty())
+                {
+                    RegistryKey insertableObjectKey;
+                    RETURN_IF_FAILED(progIdKey.CreateSubKey(insertableObjectKeyName.c_str(), KEY_WRITE, &insertableObjectKey));
+                }
+            }
+        }
     }
     else
     {
@@ -148,6 +216,40 @@ HRESULT ComServer::ProcessProgIdForAdd(ProgId& progId)
     return S_OK;
 }
 
+HRESULT ComServer::ProcessExeServerForRemove(ExeServer& exeServer)
+{
+    RegistryKey clsidKey;
+    RETURN_IF_FAILED(m_classesKey.OpenSubKey(clsidKeyName.c_str(), KEY_WRITE, &clsidKey));
+
+    for (auto exeServerClass = exeServer.classes.begin(); exeServerClass != exeServer.classes.end(); ++exeServerClass)
+    {
+        const HRESULT hrDeleteKey = clsidKey.DeleteTree(exeServerClass->id.c_str());
+        if (FAILED(hrDeleteKey))
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to delete clsid for com exeServer",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(hrDeleteKey, "HR"),
+                TraceLoggingValue(exeServerClass->id.c_str(), "CLSID"));
+        }
+    }
+    return S_OK;
+}
+
+HRESULT ComServer::ProcessProgIdForRemove(ProgId& progId)
+{
+    const HRESULT hrDeleteKey = m_classesKey.DeleteTree(progId.id.c_str());
+    if (FAILED(hrDeleteKey))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Unable to delete progId for comServer",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrDeleteKey, "HR"),
+            TraceLoggingValue(progId.id.c_str(), "CLSID"));
+    }
+
+    return S_OK;
+}
 
 HRESULT ComServer::ParseManifest()
 {
@@ -272,6 +374,21 @@ HRESULT ComServer::ParseExeServerClassElement(ExeServer & exeServer, IMsixElemen
         exeServerClass.autoConvertTo = GuidFromManifestId(autoConvertToId);
     }
 
+    RETURN_IF_FAILED(ParseImplementedCategories(classElement, exeServerClass));
+    RETURN_IF_FAILED(ParseConversionFormats(classElement, readableFormatsQuery, exeServerClass.conversionReadableFormat));
+    RETURN_IF_FAILED(ParseConversionFormats(classElement, readWritableFormatsQuery, exeServerClass.conversionReadWritableFormat));
+    RETURN_IF_FAILED(ParseDataFormats(classElement, exeServerClass));
+    RETURN_IF_FAILED(ParseMiscStatus(classElement, exeServerClass));
+    RETURN_IF_FAILED(ParseVerbs(classElement, exeServerClass));
+    RETURN_IF_FAILED(ParseDefaultIcon(classElement, exeServerClass));
+    RETURN_IF_FAILED(ParseToolboxBitmap(classElement, exeServerClass));
+
+    exeServer.classes.push_back(exeServerClass);
+    return S_OK;
+}
+
+HRESULT ComServer::ParseImplementedCategories(IMsixElement* classElement, ExeServerClass& exeServerClass)
+{
     BOOL hasCurrent = FALSE;
     ComPtr<IMsixElementEnumerator> implementedCategoriesEnum;
     RETURN_IF_FAILED(classElement->GetElements(implementedCategoriesQuery.c_str(), &implementedCategoriesEnum));
@@ -283,100 +400,9 @@ HRESULT ComServer::ParseExeServerClassElement(ExeServer & exeServer, IMsixElemen
 
         std::wstring categoryId;
         RETURN_IF_FAILED(GetAttributeValueFromElement(categoryElement.Get(), idAttribute, categoryId));
-        exeServerClass.implementedCategories.push_back(GuidFromManifestId(id));
-        
+        exeServerClass.implementedCategories.push_back(GuidFromManifestId(categoryId));
+
         RETURN_IF_FAILED(implementedCategoriesEnum->MoveNext(&hasCurrent));
-    }
-
-    RETURN_IF_FAILED(ParseConversionFormats(classElement, readableFormatsQuery, exeServerClass.conversionReadableFormat));
-    RETURN_IF_FAILED(ParseConversionFormats(classElement, readWritableFormatsQuery, exeServerClass.conversionReadWritableFormat));
-
-    RETURN_IF_FAILED(ParseDataFormats(classElement, exeServerClass));
-
-    exeServer.classes.push_back(exeServerClass);
-    return S_OK;
-}
-
-HRESULT ComServer::ParseDataFormats(IMsixElement* classElement, ExeServerClass& exeServerClass)
-{
-    BOOL hasCurrent = FALSE;
-    ComPtr<IMsixElementEnumerator> dataFormatsEnum;
-    RETURN_IF_FAILED(classElement->GetElements(dataFormatsQuery.c_str(), &dataFormatsEnum));
-    RETURN_IF_FAILED(dataFormatsEnum->GetHasCurrent(&hasCurrent));
-    if (hasCurrent)
-    {
-        ComPtr<IMsixElement> dataFormatsElement;
-        RETURN_IF_FAILED(dataFormatsEnum->GetCurrent(&dataFormatsElement));
-
-        std::wstring defaultFormat;
-        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatsElement.Get(), defaultFormatNameAttribute, defaultFormat));
-        if (defaultFormat.empty())
-        {
-            RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatsElement.Get(), defaultStandardFormatAttribute, defaultFormat));
-        }
-        exeServerClass.defaultFileDataFormat = defaultFormat;
-
-        RETURN_IF_FAILED(ParseDataFormat(dataFormatsElement.Get(), exeServerClass))
-    }
-    return S_OK;
-}
-
-HRESULT ConvertDataFormatDirectionStringToRegistryFlag(std::wstring direction, std::wstring& directionRegistryFlag)
-{
-    if (direction.compare(L"Get") == 0)
-    {
-        directionRegistryFlag = L"1";
-        return S_OK;
-    }
-    else if (direction.compare(L"Set") == 0)
-    {
-        directionRegistryFlag = L"2";
-        return S_OK;
-    }
-    else if (direction.compare(L"GetAndSet") == 0)
-    {
-        directionRegistryFlag = L"3";
-        return S_OK;
-    }
-    else
-    {
-        return HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
-    }
-}
-
-HRESULT ComServer::ParseDataFormat(IMsixElement* dataFormatsElement, ExeServerClass& exeServerClass)
-{
-    BOOL hasCurrent = FALSE;
-    ComPtr<IMsixElementEnumerator> dataFormatEnum;
-    RETURN_IF_FAILED(dataFormatsElement->GetElements(dataFormatQuery.c_str(), &dataFormatEnum));
-    while (hasCurrent)
-    {
-        ComPtr<IMsixElement> dataFormatElement;
-        RETURN_IF_FAILED(dataFormatEnum->GetCurrent(&dataFormatElement));
-
-        std::wstring aspectFlag;
-        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), aspectFlagAttribute, aspectFlag));
-
-        std::wstring mediumFlag;
-        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), mediumFlagAttribute, mediumFlag));
-
-        std::wstring direction;
-        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), directionAttribute, direction));
-
-        std::wstring directionRegistryFlag;
-        RETURN_IF_FAILED(ConvertDataFormatDirectionStringToRegistryFlag(direction, directionRegistryFlag));
-
-        std::wstring formatName;
-        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), formatNameAttribute, formatName));
-        if (formatName.empty())
-        {
-            RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), standardFormatAttribute, formatName));
-        }
-
-        std::wstring dataFormat = formatName + L',' + aspectFlag + L',' + mediumFlag + L',' + directionRegistryFlag;
-        exeServerClass.dataFormats.push_back(dataFormat);
-
-        RETURN_IF_FAILED(dataFormatEnum->MoveNext(&hasCurrent));
     }
 
     return S_OK;
@@ -414,6 +440,246 @@ HRESULT ComServer::ParseConversionFormats(IMsixElement* rootElement, const std::
         }
 
         RETURN_IF_FAILED(readableFormatsEnum->MoveNext(&hasCurrent));
+    }
+
+    return S_OK;
+}
+
+HRESULT ComServer::ParseDataFormats(IMsixElement* classElement, ExeServerClass& exeServerClass)
+{
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> dataFormatsEnum;
+    RETURN_IF_FAILED(classElement->GetElements(dataFormatsQuery.c_str(), &dataFormatsEnum));
+    RETURN_IF_FAILED(dataFormatsEnum->GetHasCurrent(&hasCurrent));
+    if (hasCurrent)
+    {
+        ComPtr<IMsixElement> dataFormatsElement;
+        RETURN_IF_FAILED(dataFormatsEnum->GetCurrent(&dataFormatsElement));
+
+        std::wstring defaultFormat;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatsElement.Get(), defaultFormatNameAttribute, defaultFormat));
+        if (defaultFormat.empty())
+        {
+            RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatsElement.Get(), defaultStandardFormatAttribute, defaultFormat));
+        }
+        exeServerClass.defaultFileDataFormat = defaultFormat;
+
+        RETURN_IF_FAILED(ParseDataFormat(dataFormatsElement.Get(), exeServerClass))
+    }
+    return S_OK;
+}
+
+/// Converts the DataFormat direction from the Manifest type to the registry key name for the direction, following the DATADIR enum.
+HRESULT ConvertDataFormatDirectionStringToRegistryFlag(std::wstring direction, std::wstring& directionRegistryFlag)
+{
+    if (direction.compare(L"Get") == 0)
+    {
+        directionRegistryFlag = L"1";
+        return S_OK;
+    }
+    else if (direction.compare(L"Set") == 0)
+    {
+        directionRegistryFlag = L"2";
+        return S_OK;
+    }
+    else if (direction.compare(L"GetAndSet") == 0)
+    {
+        directionRegistryFlag = L"3";
+        return S_OK;
+    }
+    else
+    {
+        return HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+    }
+}
+
+HRESULT ComServer::ParseDataFormat(IMsixElement* dataFormatsElement, ExeServerClass& exeServerClass)
+{
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> dataFormatEnum;
+    RETURN_IF_FAILED(dataFormatsElement->GetElements(dataFormatQuery.c_str(), &dataFormatEnum));
+    RETURN_IF_FAILED(dataFormatEnum->GetHasCurrent(&hasCurrent));
+    while (hasCurrent)
+    {
+        ComPtr<IMsixElement> dataFormatElement;
+        RETURN_IF_FAILED(dataFormatEnum->GetCurrent(&dataFormatElement));
+
+        std::wstring aspectFlag;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), aspectFlagAttribute, aspectFlag));
+
+        std::wstring mediumFlag;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), mediumFlagAttribute, mediumFlag));
+
+        std::wstring direction;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), directionAttribute, direction));
+
+        std::wstring directionRegistryFlag;
+        RETURN_IF_FAILED(ConvertDataFormatDirectionStringToRegistryFlag(direction, directionRegistryFlag));
+
+        std::wstring formatName;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), formatNameAttribute, formatName));
+        if (formatName.empty())
+        {
+            RETURN_IF_FAILED(GetAttributeValueFromElement(dataFormatElement.Get(), standardFormatAttribute, formatName));
+        }
+
+        std::wstring dataFormat = formatName + L',' + aspectFlag + L',' + mediumFlag + L',' + directionRegistryFlag;
+        exeServerClass.dataFormats.push_back(dataFormat);
+
+        RETURN_IF_FAILED(dataFormatEnum->MoveNext(&hasCurrent));
+    }
+
+    return S_OK;
+}
+
+HRESULT ComServer::ParseMiscStatus(IMsixElement* classElement, ExeServerClass& exeServerClass)
+{
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> miscStatusEnum;
+    RETURN_IF_FAILED(classElement->GetElements(miscStatusQuery.c_str(), &miscStatusEnum));
+    RETURN_IF_FAILED(miscStatusEnum->GetHasCurrent(&hasCurrent));
+    if (hasCurrent)
+    {
+        ComPtr<IMsixElement> miscStatusElement;
+        RETURN_IF_FAILED(miscStatusEnum->GetCurrent(&miscStatusElement));
+
+        RETURN_IF_FAILED(GetAttributeValueFromElement(miscStatusElement.Get(), oleMiscFlagAttribute, exeServerClass.miscStatusOleMiscFlag));
+        RETURN_IF_FAILED(ParseAspects(miscStatusElement.Get(), exeServerClass));
+    }
+    return S_OK;
+}
+
+/// Converts the aspect type from manifest string to the registry key name for the aspect type, following the DVASPECT enum.
+HRESULT ConvertAspectTypeToRegistryName(std::wstring aspect, std::wstring& aspectRegistryName)
+{
+    if (aspect.compare(L"Content") == 0)
+    {
+        aspectRegistryName = L"1";
+        return S_OK;
+    }
+    else if (aspect.compare(L"Thumbnail") == 0)
+    {
+        aspectRegistryName = L"2";
+        return S_OK;
+    }
+    else if (aspect.compare(L"Icon") == 0)
+    {
+        aspectRegistryName = L"4";
+        return S_OK;
+    }
+    else if (aspect.compare(L"DocPrint") == 0)
+    {
+        aspectRegistryName = L"8";
+        return S_OK;
+    }
+    else
+    {
+        return HRESULT_FROM_WIN32(ERROR_INVALID_DATA);
+    }
+}
+
+HRESULT  ComServer::ParseAspects(IMsixElement* miscStatusElement, ExeServerClass& exeServerClass)
+{
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> aspectEnum;
+    RETURN_IF_FAILED(miscStatusElement->GetElements(aspectQuery.c_str(), &aspectEnum));
+    RETURN_IF_FAILED(aspectEnum->GetHasCurrent(&hasCurrent));
+    while (hasCurrent)
+    {
+        ComPtr<IMsixElement> aspectElement;
+        RETURN_IF_FAILED(aspectEnum->GetCurrent(&aspectElement));
+
+        Aspect aspect;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(aspectElement.Get(), oleMiscFlagAttribute, aspect.oleMiscFlag));
+
+        std::wstring aspectType;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(aspectElement.Get(), typeAttribute, aspectType));
+        RETURN_IF_FAILED(ConvertAspectTypeToRegistryName(aspectType, aspect.type));
+
+        exeServerClass.miscStatusAspects.push_back(aspect);
+        RETURN_IF_FAILED(aspectEnum->MoveNext(&hasCurrent));
+    }
+
+    return S_OK;
+}
+
+HRESULT ComServer::ParseVerbs(IMsixElement* classElement, ExeServerClass& exeServerClass)
+{
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> verbEnum;
+    RETURN_IF_FAILED(classElement->GetElements(comVerbQuery.c_str(), &verbEnum));
+    RETURN_IF_FAILED(verbEnum->GetHasCurrent(&hasCurrent));
+    while (hasCurrent)
+    {
+        ComPtr<IMsixElement> verbElement;
+        RETURN_IF_FAILED(verbEnum->GetCurrent(&verbElement));
+
+        Verb verb;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(verbElement.Get(), idAttribute, verb.id));
+
+        std::wstring displayName;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(verbElement.Get(), displayNameAttribute, displayName));
+
+        std::wstring appendMenuFlag;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(verbElement.Get(), appendMenuFlagAttribute, appendMenuFlag));
+
+        std::wstring oleVerbFlag;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(verbElement.Get(), oleVerbFlagAttribute, oleVerbFlag));
+
+        verb.verb = displayName + L"," + appendMenuFlag + L"," + oleVerbFlag;
+
+        exeServerClass.verbs.push_back(verb);
+        RETURN_IF_FAILED(verbEnum->MoveNext(&hasCurrent));
+    }
+
+    return S_OK;
+}
+
+HRESULT ComServer::ParseDefaultIcon(IMsixElement * classElement, ExeServerClass & exeServerClass)
+{
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> defaultIconEnum;
+    RETURN_IF_FAILED(classElement->GetElements(defaultIconQuery.c_str(), &defaultIconEnum));
+    RETURN_IF_FAILED(defaultIconEnum->GetHasCurrent(&hasCurrent));
+    if (hasCurrent)
+    {
+        ComPtr<IMsixElement> defaultIconElement;
+        RETURN_IF_FAILED(defaultIconEnum->GetCurrent(&defaultIconElement));
+
+        std::wstring path;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(defaultIconElement.Get(), pathAttribute, path));
+
+        std::wstring resourceIndex;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(defaultIconElement.Get(), resourceIndexAttribute, resourceIndex));
+
+        std::wstring resolvedPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(path, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+
+        exeServerClass.defaultIcon = std::wstring(L"\"") + resolvedPath + std::wstring(L"\",") + resourceIndex;
+    }
+
+    return S_OK;
+}
+
+HRESULT ComServer::ParseToolboxBitmap(IMsixElement * classElement, ExeServerClass & exeServerClass)
+{
+    BOOL hasCurrent = FALSE;
+    ComPtr<IMsixElementEnumerator> toolboxBitmapEnum;
+    RETURN_IF_FAILED(classElement->GetElements(toolboxBitmapQuery.c_str(), &toolboxBitmapEnum));
+    RETURN_IF_FAILED(toolboxBitmapEnum->GetHasCurrent(&hasCurrent));
+    if (hasCurrent)
+    {
+        ComPtr<IMsixElement> toolboxBitmapElement;
+        RETURN_IF_FAILED(toolboxBitmapEnum->GetCurrent(&toolboxBitmapElement));
+
+        std::wstring path;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(toolboxBitmapElement.Get(), pathAttribute, path));
+
+        std::wstring resourceIndex;
+        RETURN_IF_FAILED(GetAttributeValueFromElement(toolboxBitmapElement.Get(), resourceIndexAttribute, resourceIndex));
+
+        std::wstring resolvedPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(path, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+
+        exeServerClass.toolboxBitmap = std::wstring(L"\"") + resolvedPath + std::wstring(L"\",") + resourceIndex;
     }
 
     return S_OK;

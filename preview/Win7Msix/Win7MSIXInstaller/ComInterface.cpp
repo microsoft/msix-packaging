@@ -26,6 +26,21 @@ HRESULT ComInterface::ExecuteForAddRequest()
     return S_OK;
 }
 
+HRESULT ComInterface::ExecuteForRemoveRequest()
+{
+    for (auto comInterface = m_interfaces.begin(); comInterface != m_interfaces.end(); ++comInterface)
+    {
+        RETURN_IF_FAILED(ProcessInterfaceForRemoveRequest(*comInterface));
+    }
+
+    for (auto typeLib = m_typeLibs.begin(); typeLib != m_typeLibs.end(); ++typeLib)
+    {
+        RETURN_IF_FAILED(ProcessTypeLibForRemoveRequest(*typeLib));
+    }
+
+    return S_OK;
+}
+
 HRESULT ComInterface::ProcessInterfaceForAddRequest(Interface& comInterface)
 {
     RegistryKey interfaceKey;
@@ -98,6 +113,42 @@ HRESULT ComInterface::ProcessTypeLibForAddRequest(TypeLib& typeLib)
             std::wstring helpDirFullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(version->helpDirectory, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
             RETURN_IF_FAILED(helpDirKey.SetStringValue(L"", helpDirFullPath));
         }
+    }
+
+    return S_OK;
+}
+
+HRESULT ComInterface::ProcessInterfaceForRemoveRequest(Interface& comInterface)
+{
+    RegistryKey interfaceKey;
+    RETURN_IF_FAILED(m_classesKey.OpenSubKey(interfaceKeyName.c_str(), KEY_WRITE, &interfaceKey));
+
+    const HRESULT hrDeleteKey = interfaceKey.DeleteTree(comInterface.id.c_str());
+    if (FAILED(hrDeleteKey))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Unable to delete com interface",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrDeleteKey, "HR"),
+            TraceLoggingValue(comInterface.id.c_str(), "interface"));
+    }
+
+    return S_OK;
+}
+
+HRESULT ComInterface::ProcessTypeLibForRemoveRequest(TypeLib& typeLib)
+{
+    RegistryKey typeLibKey;
+    RETURN_IF_FAILED(m_classesKey.OpenSubKey(typeLibKeyName.c_str(), KEY_WRITE, &typeLibKey));
+
+    const HRESULT hrDeleteKey = typeLibKey.DeleteTree(typeLib.id.c_str());
+    if (FAILED(hrDeleteKey))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Unable to delete com interface typeLib",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrDeleteKey, "HR"),
+            TraceLoggingValue(typeLib.id.c_str(), "interface"));
     }
 
     return S_OK;
