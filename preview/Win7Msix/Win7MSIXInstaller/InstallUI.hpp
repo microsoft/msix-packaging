@@ -29,7 +29,6 @@ public:
     HRESULT ShowUI();
     HRESULT LaunchInstalledApp();
     void ConfirmAppCancel(HWND parentHWnd);
-    std::wstring installOrUpdateText = GetStringResource(IDS_STRING_INSTALLTEXT); /// Default button and install screen UI text is 'Install'
 
     static HRESULT Make(_In_ MsixRequest* msixRequest, _Out_ UI** instance);
     ~UI() {}
@@ -37,6 +36,7 @@ private:
     MsixRequest* m_msixRequest = nullptr;
 
     HWND hWnd = NULL; //Parent Window Hwnd
+    std::wstring installOrUpdateText = GetStringResource(IDS_STRING_INSTALLTEXT); /// Default button and install screen UI text is 'Install'
     std::wstring m_displayName = L"";
     std::wstring m_publisherCommonName = L"";
     ComPtr<IStream> m_logoStream;
