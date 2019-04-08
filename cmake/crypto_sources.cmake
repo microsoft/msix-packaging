@@ -297,7 +297,6 @@ list(APPEND XSRC
     ${CRYPTO}/rand/rand_egd.c
     ${CRYPTO}/rand/rand_err.c
     ${CRYPTO}/rand/rand_lib.c
-    ${CRYPTO}/rand/rand_unix.c
     ${CRYPTO}/rand/randfile.c
 
     ${CRYPTO}/rsa/rsa_ameth.c
@@ -409,6 +408,15 @@ list(APPEND XSRC
     ${CRYPTO}/x509v3/v3err.c
 )
 
+if(WIN32)
+    list(APPEND XSRC
+    ${CRYPTO}/rand/rand_win.c
+    )
+else()
+    list(APPEND XSRC
+    ${CRYPTO}/rand/rand_unix.c
+    )
+endif()
 
 ###########################################################################################
 # INC
