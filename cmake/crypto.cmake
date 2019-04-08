@@ -9,8 +9,6 @@ set( TARGET_INCLUDE_DIRS ${OpenSLL_INCLUDE_PATH} )
 set( TARGET_INCLUDE_DIRS_PRIVATE "${TARGET_SOURCE_DIR_TRUE}" "${TARGET_SOURCE_DIR_TRUE}/asn1" "${TARGET_SOURCE_DIR_TRUE}/evp" "${TARGET_SOURCE_DIR_TRUE}/modes")
 set( TARGET_DEFINES "OPENSSL_THREADS" )
 set( TARGET_DEFINES_PRIVATE "${OpenSSL_COMPILER_DEFINES}" )
-set( TARGET_COMPILE_FLAGS -fno-rtti -fno-stack-protector -O1 -fno-unwind-tables -fno-asynchronous-unwind-tables
-    -fno-math-errno -fno-unroll-loops -fmerge-all-constants)
 set( TARGET_COMPILE_FLAGS_PRIVATE -ffunction-sections -fdata-sections)
 set( TARGET_LINK "" )
 set( TARGET_LINK_PRIVATE "" )
@@ -31,6 +29,15 @@ include( crypto_sources )
 
 file( COPY ${XINC} DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl FILES_MATCHING REGEX "\.h$" )
 file( COPY ${TARGET_SOURCE_DIR_TRUE}/opensslconf.h.in DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl )
+
+if(WIN32)
+    # TODO: Replicate build flags for cl
+    # Flags taken from OpenSSL Configure file for VC-WIN64A target.  More care may be required for other targets.
+    set(TARGET_COMPILE_FLAGS -O1 -W3 -Gs0 -Gy -nologo -DOPENSSL_SYSNAME_WIN32 -DWIN32_LEAN_AND_MEAN -DL_ENDIAN -DUNICODE -D_UNICODE)
+else()
+    set( TARGET_COMPILE_FLAGS -fno-rtti -fno-stack-protector -O1 -fno-unwind-tables -fno-asynchronous-unwind-tables
+        -fno-math-errno -fno-unroll-loops -fmerge-all-constants)
+endif()
 
 file( READ "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h.in" CONF )
 set( CONF "

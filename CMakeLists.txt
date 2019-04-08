@@ -34,6 +34,7 @@ option(SKIP_BUNDLES "Removes bundle functionality from the MSIX SDK. Default is 
 
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel.  Use the -DCMAKE_BUILD_TYPE=[option] to specify.")
 set(XML_PARSER "" CACHE STRING "Choose the type of parser, options are: [xerces, msxml6, javaxml].  Use the -DXML_PARSER=[option] to specify.")
+set(CRYPTO_LIB "" CACHE STRING "Choose the cryptography library to use, options are: [openssl, crypt32].  Use the -DCRYPTO_LIB=[option] to specify.")
 
 # Default version is 0.0.0
 set(VERSION_MAJOR "0")
@@ -175,11 +176,21 @@ if(NOT XML_PARSER)
     include(CheckIncludeFileCXX)
     check_include_file_cxx(msxml6.h HAVE_MSXML6)
     if(HAVE_MSXML6)
-        set(XML_PARSER msxml6 CACHE STRING "Using msxml6." FORCE)
+        set(XML_PARSER msxml6 CACHE STRING "Using XML Parser: msxml6" FORCE)
     elseif (AOSP)
-        set(XML_PARSER javaxml CACHE STRING "Using javaxml." FORCE)
+        set(XML_PARSER javaxml CACHE STRING "Using XML Parser: javaxml" FORCE)
     else()
-        set(XML_PARSER xerces CACHE STRING "Using xerces" FORCE)
+        set(XML_PARSER xerces CACHE STRING "Using XML Parser: xerces" FORCE)
+    endif()
+endif()
+
+if(NOT CRYPTO_LIB)
+    include(CheckIncludeFileCXX)
+    check_include_file_cxx(wincrypt.h HAVE_CRYPT32)
+    if(HAVE_CRYPT32)
+        set(CRYPTO_LIB crypt32 CACHE STRING "Using Crypto Lib: crypt32" FORCE)
+    else()
+        set(CRYPTO_LIB openssl CACHE STRING "Using Crypto Lib: openssl" FORCE)
     endif()
 endif()
 

@@ -53,6 +53,11 @@ static const std::wstring localeIdAttribute = L"LocaleId";
 static const std::wstring libraryFlagAttribute = L"LibraryFlag";
 static const std::wstring helpDirectoryAttribute = L"HelpDirectory";
 static const std::wstring pathAttribute = L"Path";
+static const std::wstring typeAttribute = L"Type";
+static const std::wstring oleMiscFlagAttribute = L"OleMiscFlag";
+static const std::wstring appendMenuFlagAttribute = L"AppendMenuFlag";
+static const std::wstring oleVerbFlagAttribute = L"OleVerbFlag";
+static const std::wstring resourceIndexAttribute = L"ResourceIndex";
 
 static const std::wstring extensionQuery = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='Extensions']/*[local-name()='Extension']";
 static const std::wstring ftaQuery = L"*[local-name()='FileTypeAssociation']";
@@ -75,6 +80,11 @@ static const std::wstring typeLibQuery = L"*[local-name()='ComInterface']/*[loca
 static const std::wstring versionQuery = L"*[local-name()='Version']";
 static const std::wstring win32PathQuery = L"*[local-name()='Win32Path']";
 static const std::wstring win64PathQuery = L"*[local-name()='Win64Path']";
+static const std::wstring miscStatusQuery = L"*[local-name()='MiscStatus']";
+static const std::wstring aspectQuery = L"*[local-name()='Aspect']";
+static const std::wstring defaultIconQuery = L"*[local-name()='DefaultIcon']";
+static const std::wstring toolboxBitmapQuery = L"*[local-name()='ToolboxBitmap32']";
+static const std::wstring comVerbQuery = L"*[local-name()='Verbs']/*[local-name()='Verb']";
 
 static const std::wstring clsidKeyName = L"CLSID";
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";
@@ -101,3 +111,6 @@ static const std::wstring win64KeyName = L"win64";
 static const std::wstring win32KeyName = L"win32";
 static const std::wstring flagsKeyName = L"Flags";
 static const std::wstring helpDirKeyName = L"HelpDir";
+static const std::wstring miscStatusKeyName = L"MiscStatus";
+static const std::wstring verbKeyName = L"Verb";
+static const std::wstring toolboxBitmapKeyName = L"ToolBoxBitmap32";

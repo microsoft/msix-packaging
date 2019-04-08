@@ -1,9 +1,10 @@
 
 $global:TESTFAILED=0
+$global:FailedTests=[System.Collections.ArrayList]@()
 $global:BINDIR=""
 
 function FindBinFolder {
-    write-host "Searching under" (Get-Item -Path ".\" -Verbose).FullName
+    write-host "Searching under" (Get-Item -Path ".\" -Verbose).FullName -ForegroundColor Magenta
     if (Test-Path "..\..\.vs\bin\makemsix.exe" )
     {
         $global:BINDIR="..\..\.vs\bin"
@@ -18,17 +19,33 @@ function FindBinFolder {
     }
     else
     {
-        write-host "ERROR: Could not find build binaries"
+        Write-Host "ERROR: Could not find build binaries" -ForegroundColor Red
         exit 2
     }
 
-    write-host "found $global:BINDIR"
+    $global:BINDIR=Join-Path (pwd) $global:BINDIR
+    $global:BINDIR=[System.IO.Path]::GetFullPath($global:BINDIR)
+    Write-Host "Found $global:BINDIR" -ForegroundColor Magenta
 }
 
 function CleanupUnpackFolder {
     if (Test-Path ".\..\unpack")
     {
-        Remove-Item ".\..\unpack\*" -recurse
+        # AV or other system processes may attempt to scan the files that we unpack.
+        # Do a few retries in case it is just a temporary issue.
+        $private:MaxCleanAttempts = 5
+        $private:CleanAttempts = 0
+        do
+        {
+            if ($private:CleanAttempts -gt 0)
+            {
+                Start-Sleep -Milliseconds 200
+            }
+
+            Remove-Item ".\..\unpack\*" -Recurse -ErrorAction SilentlyContinue
+            $private:CleanAttempts++
+        }
+        while (($private:CleanAttempts -lt $private:MaxCleanAttempts) -and (Test-Path ".\..\unpack\*"))
     }
     else
     {
@@ -37,7 +54,7 @@ function CleanupUnpackFolder {
     }
     if (Test-Path ".\..\unpack\*" )
     {
-        write-host "ERROR: Could not cleanup .\..\unpack directory"
+        Write-Host "ERROR: Could not cleanup .\..\unpack directory" -ForegroundColor Red
         exit
     }
 }
@@ -48,13 +65,14 @@ function ValidateResult([string] $EXPECTED) {
     foreach ($file in (Get-ChildItem ".\..\unpack" -file -recurse)) { Add-Content output.txt "$($file.Length) $($file.Name)"}
     if(Compare-Object -ReferenceObject $(Get-Content "output.txt") -DifferenceObject $(Get-Content $EXPECTED))
     {
-        write-host  "FAILED comparing extracted files"
+        $global:FailedTests.Add("ValidateResult $EXPECTED")
+        Write-Host "FAILED comparing extracted files" -ForegroundColor Red
         Get-Content output.txt
         $global:TESTFAILED=1
     }
     else
     {
-        write-host  "succeeded comparing extracted files"
+        Write-Host "succeeded comparing extracted files" -ForegroundColor Green
     }
     Remove-Item output.txt
 }
@@ -74,11 +92,12 @@ function RunTest([int] $SUCCESSCODE, [string] $PACKAGE, [string] $OPT) {
     write-host  "expect: $a, got: $b"
     if ( $ERRORCODE -eq $SUCCESSCODE )
     {
-        write-host  "succeeded"
+        Write-Host "Succeeded" -ForegroundColor Green
     }
     else
     {
-        write-host  "FAILED"
+        $global:FailedTests.Add("RunTest $PACKAGE $OPT")
+        Write-Host "FAILED" -ForegroundColor Red
         $global:TESTFAILED=1
     }
 }
@@ -95,11 +114,12 @@ function RunApiTest([string] $FILE) {
     $ERRORCODE = $p.ExitCode
     if ( $ERRORCODE -eq 0 )
     {
-        write-host  "succeeded"
+        Write-Host "Succeeded" -ForegroundColor Green
     }
     else
     {
-        write-host  "FAILED"
+        $global:FailedTests.Add("RunApiTest $FILE")
+        Write-Host "FAILED" -ForegroundColor Red
         $global:TESTFAILED=1
     }
     Set-Location $CURRENTLOCATION
@@ -187,11 +207,15 @@ RunApiTest test\api\input\apitest_test_1.txt
 write-host "-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-="
 if ( $global:TESTFAILED -eq 1 )
 {
-    write-host "                           FAILED                                 "
+    Write-Host "                           FAILED                                 " -ForegroundColor Red
+    ForEach ($test in $global:FailedTests) 
+    {
+    Write-Host "  $test" -ForegroundColor Red
+    }
     exit 134
 }
 else
 {
-    write-host "                           passed                                 "
+    Write-Host "                           Passed                                 " -ForegroundColor Green
     exit 0
 }
