@@ -399,8 +399,8 @@ void UI::CheckIfUpdate()
         if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
             && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
         {
-            g_installOrUpdateText = L"Update ";
-            ChangeButtonText(L"Update");
+            g_installOrUpdateText = GetStringResource(IDS_STRING_UPDATETEXT);
+            ChangeButtonText(GetStringResource(IDS_STRING_UPDATETEXT));
         }
     }
 }

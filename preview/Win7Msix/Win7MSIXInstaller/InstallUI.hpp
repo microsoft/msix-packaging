@@ -5,6 +5,7 @@
 #include <string>
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
+#include "resource.h"
 
 /// Child window identifiers
 #define IDC_LAUNCHCHECKBOX 101
@@ -28,7 +29,7 @@ public:
     HRESULT ShowUI();
     HRESULT LaunchInstalledApp();
     void ConfirmAppCancel(HWND parentHWnd);
-    LPCWSTR g_installOrUpdateText = L"Install "; /// Default button and install screen UI text is 'Install'
+    std::wstring g_installOrUpdateText = GetStringResource(IDS_STRING_INSTALLTEXT); /// Default button and install screen UI text is 'Install'
 
     static HRESULT Make(_In_ MsixRequest* msixRequest, _Out_ UI** instance);
     ~UI() {}
