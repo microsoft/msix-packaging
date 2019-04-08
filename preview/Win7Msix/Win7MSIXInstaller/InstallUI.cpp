@@ -88,15 +88,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     GetClientRect(hWnd, &windowRect);
     switch (message)
     {
-    /*case WM_NCCREATE:
-    {
-        //LPCREATESTRUCT lpcs = reinterpret_cast<LPCREATESTRUCT>(lParam);
-        //ui = static_cast<UI*>(lpcs->lpCreateParams);
-        SetWindowLongPtr(hWnd, GWLP_USERDATA, LONG(LPCREATESTRUCT(lParam)->lpCreateParams));
-        break;
-        SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
-        SetWindowPos(hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
-    }*/
     case WM_CREATE:
         ui->CreateCheckbox(hWnd, windowRect);
         ui->InstallButton(hWnd, windowRect);
