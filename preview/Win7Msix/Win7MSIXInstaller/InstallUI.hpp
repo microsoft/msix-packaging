@@ -36,7 +36,7 @@ private:
     MsixRequest* m_msixRequest = nullptr;
 
     HWND hWnd = NULL; //Parent Window Hwnd
-    std::wstring installOrUpdateText = GetStringResource(IDS_STRING_INSTALLTEXT); /// Default button and install screen UI text is 'Install'
+    std::wstring m_installOrUpdateText = GetStringResource(IDS_STRING_INSTALLTEXT); /// Default button and install screen UI text is 'Install'
     std::wstring m_displayName = L"";
     std::wstring m_publisherCommonName = L"";
     ComPtr<IStream> m_logoStream;

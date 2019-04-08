@@ -60,7 +60,7 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
 {
     if (SUCCEEDED(m_loadingPackageInfoCode))
     {
-        auto displayText = installOrUpdateText + L" " + m_displayName + L"?";
+        auto displayText = m_installOrUpdateText + L" " + m_displayName + L"?";
         auto messageText = L"Publisher: " + m_publisherCommonName + L"\nVersion: " + m_version;
         ChangeText(hWnd, displayText, messageText, m_logoStream.Get());
         ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));
@@ -399,7 +399,7 @@ void UI::CheckIfUpdate()
         if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
             && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
         {
-            installOrUpdateText = GetStringResource(IDS_STRING_UPDATETEXT);
+            m_installOrUpdateText = GetStringResource(IDS_STRING_UPDATETEXT);
             ChangeButtonText(GetStringResource(IDS_STRING_UPDATETEXT));
         }
     }
