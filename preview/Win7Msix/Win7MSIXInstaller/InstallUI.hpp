@@ -5,6 +5,7 @@
 #include <string>
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
+#include "resource.h"
 
 /// Child window identifiers
 #define IDC_LAUNCHCHECKBOX 101
@@ -14,7 +15,6 @@
 #define WM_INSTALLCOMPLETE_MSG (WM_APP+1)
 
 /// Global variables
-static HWND hWnd = NULL; /// parent window hwnd
 static HWND g_buttonHWnd = NULL;
 static HWND g_checkboxHWnd = NULL;
 static HWND g_progressHWnd = NULL;
@@ -28,13 +28,15 @@ class UI
 public:
     HRESULT ShowUI();
     HRESULT LaunchInstalledApp();
-    void ConfirmAppCancel();
+    void ConfirmAppCancel(HWND parentHWnd);
 
     static HRESULT Make(_In_ MsixRequest* msixRequest, _Out_ UI** instance);
     ~UI() {}
 private:
     MsixRequest* m_msixRequest = nullptr;
 
+    HWND hWnd = NULL; //Parent Window Hwnd
+    std::wstring m_installOrUpdateText = GetStringResource(IDS_STRING_INSTALLTEXT); /// Default button and install screen UI text is 'Install'
     std::wstring m_displayName = L"";
     std::wstring m_publisherCommonName = L"";
     ComPtr<IStream> m_logoStream;
@@ -50,6 +52,22 @@ private:
 	}
     
     HRESULT ParseInfoFromPackage();
+
+    /// This function sets the parent window hwnd after create window
+    ///
+    /// @param hWnd - the HWND of the parent window
+    void SetHwnd(HWND hwnd)
+    {
+        hWnd = hwnd;
+    }
+
+    /// This function returns the parent window hwnd
+    ///
+    /// @return hWnd: parent window hwnd
+    HWND GetHwnd()
+    {
+        return hWnd;
+    }
 
 public:
 
@@ -67,9 +85,6 @@ public:
     void LoadInfo();
     int GetNumberOfFiles() { return m_numberOfFiles; }
     void SetButtonClicked() { SetEvent(m_buttonClickedEvent); }
-    MsixRequest* GetMsixRequest() {
-        return m_msixRequest;
-    }
 
     /// Creates the progress bar
     ///
@@ -118,6 +133,13 @@ public:
 
     /// Sends the WM_INSTALLCOMPLETE_MSG message to the main window when app installation is complete
     void SendInstallCompleteMsg();
+
+    // The add operation could be an update if V1 version of the package is already installed. Show appropriate UI with respect to operation type
+    /// The add operation could be an update if V1 version of the package is already installed on the machine
+    /// This method checks the same and sets the button and install screen UI text to 'Update'
+    ///
+    void CheckIfUpdate();
+
 };
 
 class CreateAndShowUI : IPackageHandler

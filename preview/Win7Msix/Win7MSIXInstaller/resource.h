@@ -20,6 +20,8 @@
 #define IDS_STRING_UI_INSTALL_COMPLETE  114
 #define IDS_STRING_UI_UNINSTALL_COMPLETE 115
 #define IDS_STRING_UI_COMPLETION_MESSAGE 116
+#define IDS_STRING_INSTALLTEXT          117
+#define IDS_STRING_UPDATETEXT           118
 
 // Next default values for new objects
 // 

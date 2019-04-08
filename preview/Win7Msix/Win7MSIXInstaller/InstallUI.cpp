@@ -11,6 +11,7 @@
 #include <sstream>
 #include <iostream>
 #include "resource.h"
+#include <filesystem>
 
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
@@ -59,7 +60,7 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
 {
     if (SUCCEEDED(m_loadingPackageInfoCode))
     {
-        auto displayText = L"Install " + m_displayName + L"?";
+        auto displayText = m_installOrUpdateText + L" " + m_displayName + L"?";
         auto messageText = L"Publisher: " + m_publisherCommonName + L"\nVersion: " + m_version;
         ChangeText(hWnd, displayText, messageText, m_logoStream.Get());
         ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));
@@ -83,14 +84,13 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UI* ui = (UI*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-
     RECT windowRect;
     GetClientRect(hWnd, &windowRect);
     switch (message)
     {
     case WM_CREATE:
-        ui->InstallButton(hWnd, windowRect);
         ui->CreateCheckbox(hWnd, windowRect);
+        ui->InstallButton(hWnd, windowRect);
         break;
     case WM_PAINT:
     {
@@ -134,7 +134,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
             case IDC_CANCELBUTTON:
             {
-                ui->ConfirmAppCancel();
+                ui->ConfirmAppCancel(hWnd);
                 break;
             }
             case IDC_LAUNCHBUTTON:
@@ -193,7 +193,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CLOSE:
         if (g_installed)
         {
-            ui->ConfirmAppCancel();
+            ui->ConfirmAppCancel(hWnd);
         }
         else
         {
@@ -215,7 +215,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void UI::ConfirmAppCancel()
+void UI::ConfirmAppCancel(HWND hWnd)
 {
     const int cancelResult = MessageBox(hWnd, L"Are you sure you want to cancel the install?", L"Cancel App install", MB_YESNO);
     switch (cancelResult)
@@ -390,6 +390,21 @@ HRESULT CreateAndShowUI::CreateHandler(MsixRequest * msixRequest, IPackageHandle
     return S_OK;
 }
 
+void UI::CheckIfUpdate()
+{
+    std::wstring currentPackageFamilyName = GetFamilyNameFromFullName(m_msixRequest->GetPackageInfo()->GetPackageFullName());
+    for (auto& p : std::experimental::filesystem::directory_iterator(m_msixRequest->GetFilePathMappings()->GetMsix7Directory()))
+    {
+        std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
+        if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
+            && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
+        {
+            m_installOrUpdateText = GetStringResource(IDS_STRING_UPDATETEXT);
+            ChangeButtonText(GetStringResource(IDS_STRING_UPDATETEXT));
+        }
+    }
+}
+
 HRESULT UI::Make(MsixRequest * msixRequest, UI ** instance)
 {
     std::unique_ptr<UI> localInstance(new UI(msixRequest));
@@ -453,7 +468,7 @@ BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
     LPVOID buttonPointer = nullptr;
     g_buttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
-        L"BUTTON",
+        L"Button",
         L"Install",  // text
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
@@ -549,7 +564,7 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
 
 int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title)
 {
-    hWnd = CreateWindow(
+    HWND hWnd = CreateWindow(
         const_cast<wchar_t*>(windowClass.c_str()),
         const_cast<wchar_t*>(title.c_str()),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
@@ -568,7 +583,9 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
         return 1;
     }
 
-    SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this); 
+    SetHwnd(hWnd);
+    SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
+    CheckIfUpdate();
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
@@ -590,5 +607,5 @@ void UI::UpdateProgressBar()
 
 void UI::SendInstallCompleteMsg()
 {
-    SendMessage(hWnd, WM_INSTALLCOMPLETE_MSG, NULL, NULL);
+    SendMessage(GetHwnd(), WM_INSTALLCOMPLETE_MSG, NULL, NULL);
 }
