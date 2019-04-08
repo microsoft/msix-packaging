@@ -14,7 +14,6 @@
 #define WM_INSTALLCOMPLETE_MSG (WM_APP+1)
 
 /// Global variables
-static HWND hWnd = NULL; /// parent window hwnd
 static HWND g_buttonHWnd = NULL;
 static HWND g_checkboxHWnd = NULL;
 static HWND g_progressHWnd = NULL;
@@ -22,20 +21,21 @@ static HWND g_CancelbuttonHWnd = NULL;
 static HWND g_LaunchbuttonHWnd = NULL;
 static bool g_launchCheckBoxState = true; /// launch checkbox is checked by default
 static bool g_installed = false;
-static PCWSTR g_installOrUpdateText = L"Install "; /// Default button and install screen UI text is 'Install'
 
 class UI
 {
 public:
     HRESULT ShowUI();
     HRESULT LaunchInstalledApp();
-    void ConfirmAppCancel();
+    void ConfirmAppCancel(HWND parentHWnd);
+    LPCWSTR g_installOrUpdateText = L"Install "; /// Default button and install screen UI text is 'Install'
 
     static HRESULT Make(_In_ MsixRequest* msixRequest, _Out_ UI** instance);
     ~UI() {}
 private:
     MsixRequest* m_msixRequest = nullptr;
 
+    HWND hWnd = NULL; //Parent Window Hwnd
     std::wstring m_displayName = L"";
     std::wstring m_publisherCommonName = L"";
     ComPtr<IStream> m_logoStream;
@@ -53,6 +53,22 @@ private:
     HRESULT ParseInfoFromPackage();
 
 public:
+
+    /// This function sets the parent window hwnd after create window
+    ///
+    /// @param hWnd - the HWND of the parent window
+    void SetHwnd(HWND hwnd)
+    {
+        hWnd = hwnd;
+    }
+
+    /// This function returns the parent window hwnd
+    ///
+    /// @return hWnd: parent window hwnd
+    HWND GetHwnd()
+    {
+        return hWnd;
+    }
 
     /// This function compiles the information displayed on the UI when the user selects an msix
     ///
@@ -117,6 +133,12 @@ public:
     /// Sends the WM_INSTALLCOMPLETE_MSG message to the main window when app installation is complete
     void SendInstallCompleteMsg();
 
+    // The add operation could be an update if V1 version of the package is already installed. Show appropriate UI with respect to operation type
+    /// The add operation could be an update if V1 version of the package is already installed on the machine
+    /// This method checks the same and sets the button and install screen UI text to 'Update'
+    ///
+    void CheckIfUpdate();
+
 };
 
 class CreateAndShowUI : IPackageHandler
@@ -130,11 +152,6 @@ public:
 private:
     MsixRequest* m_msixRequest = nullptr;
 
-    // The add operation could be an update if V1 version of the package is already installed. Show appropriate UI with respect to operation type
-    /// The add operation could be an update if V1 version of the package is already installed on the machine
-    /// This method checks the same and sets the button and install screen UI text to 'Update'
-    ///
-    void CheckIfUpdate();
     CreateAndShowUI() {}
     CreateAndShowUI(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 };

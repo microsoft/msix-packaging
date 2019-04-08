@@ -84,11 +84,19 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     UI* ui = (UI*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
-
     RECT windowRect;
     GetClientRect(hWnd, &windowRect);
     switch (message)
     {
+    /*case WM_NCCREATE:
+    {
+        //LPCREATESTRUCT lpcs = reinterpret_cast<LPCREATESTRUCT>(lParam);
+        //ui = static_cast<UI*>(lpcs->lpCreateParams);
+        SetWindowLongPtr(hWnd, GWLP_USERDATA, LONG(LPCREATESTRUCT(lParam)->lpCreateParams));
+        break;
+        SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)((CREATESTRUCT*)lParam)->lpCreateParams);
+        SetWindowPos(hWnd, 0, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER);
+    }*/
     case WM_CREATE:
         ui->CreateCheckbox(hWnd, windowRect);
         ui->InstallButton(hWnd, windowRect);
@@ -135,7 +143,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             break;
             case IDC_CANCELBUTTON:
             {
-                ui->ConfirmAppCancel();
+                ui->ConfirmAppCancel(hWnd);
                 break;
             }
             case IDC_LAUNCHBUTTON:
@@ -194,7 +202,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CLOSE:
         if (g_installed)
         {
-            ui->ConfirmAppCancel();
+            ui->ConfirmAppCancel(hWnd);
         }
         else
         {
@@ -216,7 +224,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-void UI::ConfirmAppCancel()
+void UI::ConfirmAppCancel(HWND hWnd)
 {
     const int cancelResult = MessageBox(hWnd, L"Are you sure you want to cancel the install?", L"Cancel App install", MB_YESNO);
     switch (cancelResult)
@@ -374,8 +382,6 @@ HRESULT CreateAndShowUI::ExecuteForAddRequest()
     ui->LoadInfo();
 
     m_msixRequest->SetUI(ui.Detach());
-
-    CheckIfUpdate();
     RETURN_IF_FAILED(m_msixRequest->GetUI()->ShowUI());
 
     return S_OK;
@@ -393,7 +399,7 @@ HRESULT CreateAndShowUI::CreateHandler(MsixRequest * msixRequest, IPackageHandle
     return S_OK;
 }
 
-void CreateAndShowUI::CheckIfUpdate()
+void UI::CheckIfUpdate()
 {
     std::wstring currentPackageFamilyName = GetFamilyNameFromFullName(m_msixRequest->GetPackageInfo()->GetPackageFullName());
     for (auto& p : std::experimental::filesystem::directory_iterator(m_msixRequest->GetFilePathMappings()->GetMsix7Directory()))
@@ -403,6 +409,7 @@ void CreateAndShowUI::CheckIfUpdate()
             && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
         {
             g_installOrUpdateText = L"Update ";
+            ChangeButtonText(L"Update");
         }
     }
 }
@@ -471,7 +478,7 @@ BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
     g_buttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
         L"Button",
-        g_installOrUpdateText,  // text
+        L"Install",  // text
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
@@ -566,7 +573,7 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
 
 int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title)
 {
-    hWnd = CreateWindow(
+    HWND hWnd = CreateWindow(
         const_cast<wchar_t*>(windowClass.c_str()),
         const_cast<wchar_t*>(title.c_str()),
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
@@ -585,7 +592,9 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
         return 1;
     }
 
-    SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this); 
+    SetHwnd(hWnd);
+    SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
+    CheckIfUpdate();
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
@@ -607,5 +616,5 @@ void UI::UpdateProgressBar()
 
 void UI::SendInstallCompleteMsg()
 {
-    SendMessage(hWnd, WM_INSTALLCOMPLETE_MSG, NULL, NULL);
+    SendMessage(GetHwnd(), WM_INSTALLCOMPLETE_MSG, NULL, NULL);
 }
