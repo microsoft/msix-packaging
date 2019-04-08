@@ -29,7 +29,7 @@ public:
     HRESULT ShowUI();
     HRESULT LaunchInstalledApp();
     void ConfirmAppCancel(HWND parentHWnd);
-    std::wstring g_installOrUpdateText = GetStringResource(IDS_STRING_INSTALLTEXT); /// Default button and install screen UI text is 'Install'
+    std::wstring installOrUpdateText = GetStringResource(IDS_STRING_INSTALLTEXT); /// Default button and install screen UI text is 'Install'
 
     static HRESULT Make(_In_ MsixRequest* msixRequest, _Out_ UI** instance);
     ~UI() {}
@@ -53,8 +53,6 @@ private:
     
     HRESULT ParseInfoFromPackage();
 
-public:
-
     /// This function sets the parent window hwnd after create window
     ///
     /// @param hWnd - the HWND of the parent window
@@ -70,6 +68,8 @@ public:
     {
         return hWnd;
     }
+
+public:
 
     /// This function compiles the information displayed on the UI when the user selects an msix
     ///
