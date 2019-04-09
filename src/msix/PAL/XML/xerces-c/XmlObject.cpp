@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <queue>
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
@@ -27,6 +28,8 @@
 #include "xercesc/util/Base64.hpp"
 #include "xercesc/sax/SAXParseException.hpp"
 #include "xercesc/util/XMLEntityResolver.hpp"
+#include "xercesc/util/XMLUni.hpp" // helpful XMLChr*
+#include "xercesc/framework/MemBufFormatTarget.hpp"
 
 XERCES_CPP_NAMESPACE_USE
 
@@ -42,91 +45,79 @@ class IXercesElement : public IUnknown
 {
 public:
     virtual DOMElement* GetElement() = 0;
+    virtual std::string GetAttributeValue(std::string& attributeName) = 0;
 };
 MSIX_INTERFACE(IXercesElement,  0x07d6ee0e,0x2165,0x4b90,0x80,0x24,0xe1,0x76,0x29,0x1e,0x77,0xdd);
 
 namespace MSIX {
 
-static std::map<std::string, std::string> s_nameSpaceToSchema = 
+struct SchemaEntry
 {
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10",
-            "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/uap/windows10",
-            "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/types",
-            "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"},
-        {"http://schemas.microsoft.com/appx/2014/phone/manifest",
-            "AppxPackaging/Manifest/Schema/2015/AppxPhoneManifestSchema2014.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/2",
-            "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema_v2.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/2",
-            "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v2.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/3",
-            "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v3.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/4",
-            "AppxPackaging/Manifest/Schema/2016/UapManifestSchema_v4.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities",
-            "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/2",
-            "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema_v2.xsd " },
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3",
-            "AppxPackaging/Manifest/Schema/2016/WindowsCapabilitiesManifestSchema_v3.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities",
-            "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/2",
-            "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema_v2.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3",
-            "AppxPackaging/Manifest/Schema/2016/RestrictedCapabilitiesManifestSchema_v3.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/4",
-            "AppxPackaging/Manifest/Schema/2017/RestrictedCapabilitiesManifestSchema_v4.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/5",
-            "AppxPackaging/Manifest/Schema/2018/RestrictedCapabilitiesManifestSchema_v5.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/6",
-            "AppxPackaging/Manifest/Schema/2018/RestrictedCapabilitiesManifestSchema_v6.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/mobile/windows10",
-            "AppxPackaging/Manifest/Schema/2015/MobileManifestSchema.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/iot/windows10",
-            "AppxPackaging/Manifest/Schema/2015/IotManifestSchema.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/iot/windows10/2",
-            "AppxPackaging/Manifest/Schema/2017/IotManifestSchema_v2.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/holographic/windows10",
-            "AppxPackaging/Manifest/Schema/2015/HolographicManifestSchema.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/serverpreview/windows10",
-            "AppxPackaging/Manifest/Schema/2015/ServerManifestSchema.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10",
-            "AppxPackaging/Manifest/Schema/2015/DesktopManifestSchema.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10/2",
-            "AppxPackaging/Manifest/Schema/2016/DesktopManifestSchema_v2.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10/3",
-            "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v3.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10/4",
-            "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v4.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10/5",
-            "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v5.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/desktop/windows10/6",
-            "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v6.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/com/windows10",
-            "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/com/windows10/2",
-            "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/5",
-            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/6",
-            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/7",
-            "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v7.xsd"},
-        {"http://schemas.microsoft.com/appx/manifest/uap/windows10/8",
-            "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v8.xsd"},
-// Bundle Manifest
-        {"http://schemas.microsoft.com/appx/2013/bundle",
-            "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"},
-        {"http://schemas.microsoft.com/appx/2016/bundle",
-            "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"},
-        {"http://schemas.microsoft.com/appx/2017/bundle",
-            "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd"},
-        {"http://schemas.microsoft.com/appx/2018/bundle",
-            "AppxPackaging/Manifest/Schema/2018/BundleManifestSchema2018.xsd"}
+    const char* uri;
+    const char* alias;
+    const char* schema;
+
+    SchemaEntry(const char* u, const char* a, const char* s) : uri(u), alias(a), schema(s) {}
+
+    inline bool operator==(const char* otherUri) const {
+        return 0 == strcmp(uri, otherUri);
+    }
 };
+
+typedef std::vector<SchemaEntry> NamespaceManager;
+
+static const NamespaceManager s_xmlNamespaces[] = {
+{   // XmlContentType::ContentTypeXml
+SchemaEntry("http://schemas.openxmlformats.org/package/2006/content-types",                             "a",               "AppxPackaging/[Content_Types]/opc-contentTypes.xsd")
+},
+{   // XmlContentType::AppxBlockMapXml
+SchemaEntry("http://schemas.microsoft.com/appx/2010/blockmap",                                          "a",               "AppxPackaging/BlockMap/schema/BlockMapSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/2015/blockmap",                                          "b",               "AppxPackaging/BlockMap/schema/BlockMapSchema2015.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/2017/blockmap",                                          "c",               "AppxPackaging/BlockMap/schema/BlockMapSchema2017.xsd"),
+},
+{   // XmlContentType::AppxManifestXml
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10",                          "win10foundation", "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10",                                 "win10uap",        "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/types",                                         "t",               "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/2014/phone/manifest",                                    "mp",              "AppxPackaging/Manifest/Schema/2015/AppxPhoneManifestSchema2014.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/2",                        "foundation2",     "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema_v2.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/2",                               "uap2",            "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v2.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/3",                               "uap3",            "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v3.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/4",                               "uap4",            "AppxPackaging/Manifest/Schema/2016/UapManifestSchema_v4.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities",      "win10wincap",     "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/2",    "wincap2",         "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema_v2.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3",    "wincap3",         "AppxPackaging/Manifest/Schema/2016/WindowsCapabilitiesManifestSchema_v3.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities",   "win10rescap",     "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/2", "rescap2",         "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema_v2.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3", "rescap3",         "AppxPackaging/Manifest/Schema/2016/RestrictedCapabilitiesManifestSchema_v3.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/4", "rescap4",         "AppxPackaging/Manifest/Schema/2017/RestrictedCapabilitiesManifestSchema_v4.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/5", "rescap5",         "AppxPackaging/Manifest/Schema/2018/RestrictedCapabilitiesManifestSchema_v5.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/6", "rescap6",         "AppxPackaging/Manifest/Schema/2018/RestrictedCapabilitiesManifestSchema_v6.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/mobile/windows10",                              "win10mobile",     "AppxPackaging/Manifest/Schema/2015/MobileManifestSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/iot/windows10",                                 "win10iot",        "AppxPackaging/Manifest/Schema/2015/IotManifestSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/iot/windows10/2",                               "iot2",            "AppxPackaging/Manifest/Schema/2017/IotManifestSchema_v2.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/holographic/windows10",                         "holo",            "AppxPackaging/Manifest/Schema/2015/HolographicManifestSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/serverpreview/windows10",                       "win10serverpreview", "AppxPackaging/Manifest/Schema/2015/ServerManifestSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10",                             "desktop",         "AppxPackaging/Manifest/Schema/2015/DesktopManifestSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10/2",                           "desktop2",        "AppxPackaging/Manifest/Schema/2016/DesktopManifestSchema_v2.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10/3",                           "desktop3",        "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v3.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10/4",                           "desktop4",        "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v4.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10/5",                           "desktop5",        "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v5.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10/6",                           "desktop6",        "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v6.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/com/windows10",                                 "com",             "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/com/windows10/2",                               "com2",            "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/5",                               "uap5",            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/6",                               "uap6",            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/7",                               "uap7",            "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v7.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/8",                               "uap8",            "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v8.xsd"),
+},
+{   // XmlContentType::AppxBundleManifestXml
+SchemaEntry("http://schemas.microsoft.com/appx/manifest/types",                                         "t",               "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/2013/bundle",                                            "b",               "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/2016/bundle",                                            "b2",              "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/2017/bundle",                                            "b3",              "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd"),
+SchemaEntry("http://schemas.microsoft.com/appx/2018/bundle",                                            "b4",              "AppxPackaging/Manifest/Schema/2018/BundleManifestSchema2018.xsd"),
+}};
 
 class ParsingException final : public XERCES_CPP_NAMESPACE::ErrorHandler
 {
@@ -164,22 +155,23 @@ private:
 class MsixEntityResolver : public XMLEntityResolver
 {
 public:
-    MsixEntityResolver(IMsixFactory* factory) : m_factory(factory) {}
+    MsixEntityResolver(IMsixFactory* factory, const NamespaceManager& namespaces) : m_factory(factory), m_namespaces(namespaces) {}
     ~MsixEntityResolver() {}
 
     InputSource* resolveEntity(XMLResourceIdentifier* resourceIdentifier)
     {
         std::u16string utf16string = std::u16string(resourceIdentifier->getNameSpace());
         std::string id = u16string_to_utf8(utf16string);
-        auto xsd = s_nameSpaceToSchema.find(id);
-        ThrowErrorIf(MSIX::Error::XmlError, xsd == s_nameSpaceToSchema.end(), "Invalid namespace");
-        auto stream = m_factory->GetResource(xsd->second);
+        const auto& entry = std::find(m_namespaces.begin(), m_namespaces.end(), id.c_str());
+        ThrowErrorIf(MSIX::Error::XmlError, entry == m_namespaces.end(), "Invalid namespace");
+        auto stream = m_factory->GetResource((*entry).schema);
         auto schemaBuffer = Helper::CreateRawBufferFromStream(stream);
-        auto item = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
-            reinterpret_cast<const XMLByte*>(schemaBuffer.second), schemaBuffer.first, xsd->second.c_str(), true);
+        auto item = std::make_unique<MemBufInputSource>(
+            reinterpret_cast<const XMLByte*>(schemaBuffer.second), schemaBuffer.first, (*entry).schema, true /*delete by xerces*/);
         return item.release();
     }
 private:
+    const NamespaceManager m_namespaces;
     IMsixFactory* m_factory = nullptr;
 };
 
@@ -317,15 +309,8 @@ protected:
 
 class XercesElement final : public ComClass<XercesElement, IXmlElement, IXercesElement, IMsixElement>
 {
-private:
-    std::string GetAttributeValue(std::string& attributeName)
-    {
-        XercesXMLChPtr nameAttr(XMLString::transcode(attributeName.c_str()));
-        auto utf16string = std::u16string(m_element->getAttribute(nameAttr.Get()));
-        return u16string_to_utf8(utf16string);
-    }
-
 public:
+
     XercesElement(IMsixFactory* factory, DOMElement* element, XERCES_CPP_NAMESPACE::XercesDOMParser* parser) :
         m_factory(factory), m_element(element), m_parser(parser)
     {
@@ -362,6 +347,13 @@ public:
 
     // IXercesElement
     DOMElement* GetElement() override { return m_element; }
+
+    std::string GetAttributeValue(std::string& attributeName)
+    {
+        XercesXMLChPtr nameAttr(XMLString::transcode(attributeName.c_str()));
+        auto utf16string = std::u16string(m_element->getAttribute(nameAttr.Get()));
+        return u16string_to_utf8(utf16string);
+    }
 
      // IMsixElement
     HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) noexcept override try
@@ -470,39 +462,31 @@ public:
             ThrowError(Error::InvalidParameter);
         }
 
-        // Set the error handler for the parser
+        // Set the error handler and entity resolver for the parser
         auto errorHandler = std::make_unique<ParsingException>();
+        auto entityResolver = std::make_unique<MsixEntityResolver>(m_factory, s_xmlNamespaces[static_cast<std::uint8_t>(footPrintType)]);
         m_parser->setErrorHandler(errorHandler.get());
+        m_parser->setXMLEntityResolver(entityResolver.get());
 
-        auto entityResolver = std::make_unique<MsixEntityResolver>(m_factory);
-
-        if (footPrintType == XmlContentType::AppxManifestXml || footPrintType == XmlContentType::AppxBundleManifestXml)
+        if (!schemas.empty())
         {
-            m_parser->setXMLEntityResolver(entityResolver.get());
-        }
+            // check for ignorable namespaces
+            if (footPrintType == XmlContentType::AppxManifestXml || footPrintType == XmlContentType::AppxBundleManifestXml)
+            {
+                source = StripIgnorableNamespaces(*source, s_xmlNamespaces[static_cast<std::uint8_t>(footPrintType)]);
+            }
 
-        bool HasSchemas = !schemas.empty();
-        m_parser->setValidationScheme(HasSchemas ? 
-            XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Always : 
-            XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Never
-        );
-        m_parser->cacheGrammarFromParse(HasSchemas);
-        m_parser->setDoSchema(HasSchemas);
-        m_parser->setDoNamespaces(HasSchemas);
-        m_parser->setHandleMultipleImports(HasSchemas); // TODO: do we need to handle the case where there aren't multiple schemas with the same namespace?
-        m_parser->setValidationSchemaFullChecking(HasSchemas);
-
-        if (HasSchemas)
-        {   // Disable DTD and prevent XXE attacks.  See https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#libxerces-c for additional details.
+            m_parser->setValidationScheme(XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Always);
+            m_parser->cacheGrammarFromParse(true);
+            m_parser->setDoSchema(true);
+            m_parser->setDoNamespaces(true);
+            m_parser->setValidationSchemaFullChecking(true);
+            // Disable DTD and prevent XXE attacks.  See https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#libxerces-c for additional details.
             m_parser->setIgnoreCachedDTD(true);
             m_parser->setSkipDTDValidation(true);
             m_parser->setCreateEntityReferenceNodes(false);
-        }
 
-        // Add schemas
-        if (HasSchemas)
-        {
-            for(auto& schema : schemas)
+            for(const auto& schema : schemas)
             {
                 auto schemaBuffer = Helper::CreateBufferFromStream(schema.second);
                 auto item = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
@@ -512,8 +496,9 @@ public:
         }
 
         m_parser->parse(*source);
-
         m_resolver = XercesPtr<DOMXPathNSResolver>(m_parser->getDocument()->createNSResolver(m_parser->getDocument()));
+
+        // TODO: Do semantic check for all the elements we modified to maxOcurrs=unbounded
     }
 
     // IXmlDom
@@ -548,6 +533,125 @@ public:
     }
 
 protected:
+
+    std::unique_ptr<MemBufInputSource> StripIgnorableNamespaces(const InputSource& source, const NamespaceManager& namespaces)
+    {
+        m_parser->setDoNamespaces(true);
+        m_parser->parse(source);
+        XERCES_CPP_NAMESPACE::DOMDocument* dom = m_parser->getDocument();
+        auto rootElement = ComPtr<IXercesElement>::Make<XercesElement>(m_factory, dom->getDocumentElement(), m_parser.get());
+        std::string attr = "IgnorableNamespaces";
+        std::string attrValue = rootElement->GetAttributeValue(attr);
+        if (!attrValue.empty())
+        {
+            std::vector<std::string> aliasesToLookup;
+            {
+                std::string alias;
+                std::istringstream aliases(attrValue);
+                while(getline(aliases, alias, ' ')) { aliasesToLookup.push_back(alias); }
+            }
+            for (const auto& a : aliasesToLookup)
+            {
+                std::string alias = "xmlns:" + a; // Look for xmlns:[alias] attribute name
+                std::string aliasValue = rootElement->GetAttributeValue(alias);
+                const auto& entry = std::find(namespaces.begin(), namespaces.end(), aliasValue.c_str());
+                if (entry == namespaces.end()) // only strip if we don't know about it
+                {
+                    // Remove elements and attributes
+                    RemoveAllInNamespace(rootElement, a);
+                }
+            }
+
+        }
+
+        // serialize the new dom to parse.
+        static const XMLCh cs[3] = {chLatin_L, chLatin_S, chNull};
+        DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(cs);
+        auto serializer = XercesPtr<DOMLSSerializer>((static_cast<DOMImplementationLS*>(impl))->createLSSerializer());
+        auto lsOutput = XercesPtr<DOMLSOutput>((static_cast<DOMImplementationLS*>(impl))->createLSOutput());
+
+        // set encoding to UTF-8
+        static const XMLCh utf8Str[] = {chLatin_U, chLatin_T, chLatin_F, chDash, chDigit_8, chNull};
+        lsOutput->setEncoding(utf8Str);
+
+        // Don't use unique_ptr here, this buffer is going to be deleted by Xerces
+        std::unique_ptr<MemBufFormatTarget> formatTarget = std::make_unique<MemBufFormatTarget>();
+        lsOutput->setByteStream(static_cast<XMLFormatTarget*>(formatTarget.get()));
+        serializer->write(dom, lsOutput.Get());
+
+        m_parser->reset();
+
+        // copy buffer. it will be deleted by xerces
+        XMLSize_t size = formatTarget->getLen();
+        XMLByte* newBuffer = new XMLByte[size];
+        std::memcpy(reinterpret_cast<void*>(newBuffer), 
+            reinterpret_cast<void*>(const_cast<XMLByte*>(formatTarget->getRawBuffer())),
+            static_cast<size_t>(size));
+        return std::make_unique<MemBufInputSource>(newBuffer, size, "XML File", true /*delete by xerces*/);
+    }
+
+    // Remove elements and attributes from a specified namespace. We don't use the Xerces xpath APIs for several
+    // reasons:
+    // 1 - XPathScannerForSchema::addToken on xercesxpath.cpp explicitly disallows node() as a valid token to matches 
+    // elements and attribute nodes with one single xpath...
+    // 2 - Xerces will throw XMLExcepts::XPath_NoAttrSelector ("selector cannot select attribute"). for //@<namespace>:*.
+    // See XercesXPath::checkForSelectedAttributes in xercesxpath.cpp. Removing the checkForSelectedAttributes from
+    // XercesXPath::XercesXPath will allow us to use the xpath but the result will be the element node, not the 
+    // attribute one. This implies modifying xerces and then iteratate the attributes of the elements.
+    // 
+    // Because we don't want to modify xerces, we will iterate throw all of the elements and look at their attributes.
+    // If we are doing that, there's no point performing a previous xpath to select all the elements in the namespace,
+    // just remove them in the same pass.
+    void RemoveAllInNamespace(ComPtr<IXercesElement>& rootElement, const std::string& prefix)
+    {
+        XercesXMLChPtr XercesPrefix(XMLString::transcode(prefix.c_str()));
+        std::queue<DOMNode*> nodeQueue;
+        nodeQueue.push(static_cast<DOMNode*>(rootElement->GetElement()));
+        while (!nodeQueue.empty())
+        {
+            auto node = nodeQueue.front();
+
+            // Remove node if is from the ignorable namespace, no need to look at its childs anymore
+            if (node->getPrefix() != nullptr &&
+                (XMLString::compareString(node->getPrefix(), XercesPrefix.Get()) == 0))
+            {
+                DOMNode* parentNode = node->getParentNode();
+                ThrowErrorIfNot(Error::XmlError, parentNode, "We are trying to delete the root element!");
+                parentNode->removeChild(node);
+            }
+            else
+            {
+                // add childs to queue
+                DOMNode* child = node->getFirstChild();
+                while (child)
+                {
+                    if (child->getNodeType() == DOMNode::ELEMENT_NODE)
+                    {
+                        nodeQueue.push(child);
+                    }
+                    child=child->getNextSibling();
+                }
+                // see if this node has attributes in the ignorable namespace
+                if (node->hasAttributes())
+                {
+                    // DOMElement::removeAttributeNS requires knowing the name of the attribute
+                    // so we have to get all of them and look one by one
+                    DOMNamedNodeMap* attributes = node->getAttributes();
+                    for (XMLSize_t i = 0; i < attributes->getLength(); i++)
+                    {
+                        DOMNode* attribute = attributes->item(i);
+                        if (attribute->getPrefix() != nullptr && 
+                        (XMLString::compareString(attribute->getPrefix(), XercesPrefix.Get()) == 0))
+                        {
+                            static_cast<DOMElement*>(node)->removeAttributeNode(static_cast<DOMAttr*>(attribute));
+                        }
+                    }
+                }
+            }
+            nodeQueue.pop();
+        }
+    }
+
     IMsixFactory* m_factory;
     std::unique_ptr<XERCES_CPP_NAMESPACE::XercesDOMParser> m_parser;
     XercesPtr<DOMXPathNSResolver> m_resolver;

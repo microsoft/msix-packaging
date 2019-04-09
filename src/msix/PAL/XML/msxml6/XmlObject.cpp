@@ -110,7 +110,7 @@ SchemaEntry(L"http://schemas.microsoft.com/appx/manifest/types",                
 SchemaEntry(L"http://schemas.microsoft.com/appx/2013/bundle",                                            L"b",               "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"),
 SchemaEntry(L"http://schemas.microsoft.com/appx/2016/bundle",                                            L"b2",              "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"),
 SchemaEntry(L"http://schemas.microsoft.com/appx/2017/bundle",                                            L"b3",              "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd"),
-SchemaEntry(L"http://schemas.microsoft.com/appx/2018/bundle",                                            L"b4",              "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2018.xsd"),
+SchemaEntry(L"http://schemas.microsoft.com/appx/2018/bundle",                                            L"b4",              "AppxPackaging/Manifest/Schema/2018/BundleManifestSchema2018.xsd"),
 }};
 
 // --------------------------------------------------------
