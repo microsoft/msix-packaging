@@ -19,6 +19,9 @@ jobs:
       release:
         _arguments: -b MinSizeRel
         _artifact: LINUX
+      release_xerces_validation_parser:
+        _arguments: -b MinSizeRel -vp
+        _artifact: LINUX
 
   steps:
   - task: Bash@3
