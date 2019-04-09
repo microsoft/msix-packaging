@@ -66,6 +66,7 @@ struct SchemaEntry
 
 typedef std::vector<SchemaEntry> NamespaceManager;
 
+// Namespace name, alias, schema location.
 static const NamespaceManager s_xmlNamespaces[] = {
 {   // XmlContentType::ContentTypeXml
 SchemaEntry("http://schemas.openxmlformats.org/package/2006/content-types",                             "a",               "AppxPackaging/[Content_Types]/opc-contentTypes.xsd")
@@ -470,7 +471,6 @@ public:
 
         if (!schemas.empty())
         {
-            // check for ignorable namespaces
             if (footPrintType == XmlContentType::AppxManifestXml || footPrintType == XmlContentType::AppxBundleManifestXml)
             {
                 source = StripIgnorableNamespaces(*source, s_xmlNamespaces[static_cast<std::uint8_t>(footPrintType)]);
@@ -498,7 +498,7 @@ public:
         m_parser->parse(*source);
         m_resolver = XercesPtr<DOMXPathNSResolver>(m_parser->getDocument()->createNSResolver(m_parser->getDocument()));
 
-        // TODO: Do semantic check for all the elements we modified to maxOcurrs=unbounded
+        // TODO: Do semantic check for all the elements we modified to maxOcurrs=unbounded and xs:patterns
     }
 
     // IXmlDom
@@ -557,20 +557,19 @@ protected:
                 const auto& entry = std::find(namespaces.begin(), namespaces.end(), aliasValue.c_str());
                 if (entry == namespaces.end()) // only strip if we don't know about it
                 {
-                    // Remove elements and attributes
                     RemoveAllInNamespace(rootElement, a);
                 }
             }
 
         }
 
-        // serialize the new dom to parse.
+        // Serialize the new dom to parse.
         static const XMLCh cs[3] = {chLatin_L, chLatin_S, chNull};
         DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(cs);
         auto serializer = XercesPtr<DOMLSSerializer>((static_cast<DOMImplementationLS*>(impl))->createLSSerializer());
         auto lsOutput = XercesPtr<DOMLSOutput>((static_cast<DOMImplementationLS*>(impl))->createLSOutput());
 
-        // set encoding to UTF-8
+        // Set encoding to UTF-8
         static const XMLCh utf8Str[] = {chLatin_U, chLatin_T, chLatin_F, chDash, chDigit_8, chNull};
         lsOutput->setEncoding(utf8Str);
 
@@ -590,7 +589,7 @@ protected:
         return std::make_unique<MemBufInputSource>(newBuffer, size, "XML File", true /*delete by xerces*/);
     }
 
-    // Remove elements and attributes from a specified namespace. We don't use the Xerces xpath APIs for several
+    // Remove elements and attributes from a specified namespace. We don't use the Xerces xPath APIs for several
     // reasons:
     // 1 - XPathScannerForSchema::addToken on xercesxpath.cpp explicitly disallows node() as a valid token to matches 
     // elements and attribute nodes with one single xpath...
@@ -599,8 +598,8 @@ protected:
     // XercesXPath::XercesXPath will allow us to use the xpath but the result will be the element node, not the 
     // attribute one. This implies modifying xerces and then iteratate the attributes of the elements.
     // 
-    // Because we don't want to modify xerces, we will iterate throw all of the elements and look at their attributes.
-    // If we are doing that, there's no point performing a previous xpath to select all the elements in the namespace,
+    // Because we don't want to modify xerces, we will iterate through all of the elements and look at their attributes.
+    // If we are doing that, there's no point selecting all the elements in the namespace using xpath,
     // just remove them in the same pass.
     void RemoveAllInNamespace(ComPtr<IXercesElement>& rootElement, const std::string& prefix)
     {
@@ -621,7 +620,7 @@ protected:
             }
             else
             {
-                // add childs to queue
+                // Add childs to queue
                 DOMNode* child = node->getFirstChild();
                 while (child)
                 {
@@ -631,7 +630,7 @@ protected:
                     }
                     child=child->getNextSibling();
                 }
-                // see if this node has attributes in the ignorable namespace
+                // See if this node has attributes in the ignorable namespace
                 if (node->hasAttributes())
                 {
                     // DOMElement::removeAttributeNS requires knowing the name of the attribute
