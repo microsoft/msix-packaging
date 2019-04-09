@@ -11,6 +11,7 @@ dataCompressionLib=NDK_libz
 bundle=off
 xmlparserLib=javaxml
 xmlparser="-DXML_PARSER=javaxml"
+validationParser=off
 
 usage()
 {
@@ -24,6 +25,7 @@ usage()
     echo $'\t' "-xzlib Use MSIX SDK Zlib instead of inbox libz.so"
     echo $'\t' "-parser-xerces Use xerces xml parser instead of default javaxml"
     echo $'\t' "-sb Skip bundle support."
+    echo $'\t' "--validation-parser, -vp Enable XML schema validation."
 }
 
 printsetup()
@@ -37,6 +39,7 @@ printsetup()
     echo "Zlib:" $dataCompressionLib
     echo "parser:" $xmlparserLib
     echo "Skip bundle support:" $bundle
+    echo "Validation parser:" $validationParser
 }
 
 while [ "$1" != "" ]; do
@@ -70,6 +73,10 @@ while [ "$1" != "" ]; do
                   ;;
         -sb )     bundle="on"
                   ;;
+        --validation-parser ) validationParser=on
+                ;;
+        -vp )   validationParser=on
+                ;;
         * )       usage
                   exit 1
     esac
@@ -105,6 +112,10 @@ cd .vs
 # clean up any old builds of msix modules
 find . -name *msix* -d | xargs rm -r
 
+echo "cmake -DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_NDK="$ndk "-DCMAKE_SYSTEM_VERSION="$version "-DANDROID_SDK="$sdk
+echo "-DANDROID_SDK_VERSION="$sdkver "-DCMAKE_ANDROID_ARCH_ABI="$arch "-DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang"
+echo "-DCMAKE_ANDROID_STL_TYPE=c++_shared -DCMAKE_BUILD_TYPE="$build "-DSKIP_BUNDLES="$bundle $xmlparser "-DUSE_VALIDATION_PARSER="$validationParser
+echo  $zlib "-DAOSP=on .."
 cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK="$ndk" \
     -DCMAKE_SYSTEM_VERSION="$version" \
@@ -116,5 +127,6 @@ cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_BUILD_TYPE="$build" \
     -DSKIP_BUNDLES=$bundle \
     $xmlparser \
+    -DUSE_VALIDATION_PARSER=$validationParser \
     $zlib -DAOSP=on ..
 make

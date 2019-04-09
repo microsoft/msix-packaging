@@ -348,7 +348,7 @@ public:
     // IXercesElement
     DOMElement* GetElement() override { return m_element; }
 
-    std::string GetAttributeValue(std::string& attributeName)
+    std::string GetAttributeValue(std::string& attributeName) override
     {
         XercesXMLChPtr nameAttr(XMLString::transcode(attributeName.c_str()));
         auto utf16string = std::u16string(m_element->getAttribute(nameAttr.Get()));
