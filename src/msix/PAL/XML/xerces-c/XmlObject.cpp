@@ -45,80 +45,11 @@ class IXercesElement : public IUnknown
 {
 public:
     virtual DOMElement* GetElement() = 0;
-    virtual std::string GetAttributeValue(std::string& attributeName) = 0;
+    virtual std::string GetAttributeValue(const std::string& attributeName) = 0;
 };
 MSIX_INTERFACE(IXercesElement,  0x07d6ee0e,0x2165,0x4b90,0x80,0x24,0xe1,0x76,0x29,0x1e,0x77,0xdd);
 
 namespace MSIX {
-
-struct SchemaEntry
-{
-    const char* uri;
-    const char* alias;
-    const char* schema;
-
-    SchemaEntry(const char* u, const char* a, const char* s) : uri(u), alias(a), schema(s) {}
-
-    inline bool operator==(const char* otherUri) const {
-        return 0 == strcmp(uri, otherUri);
-    }
-};
-
-typedef std::vector<SchemaEntry> NamespaceManager;
-
-// Namespace name, alias, schema location.
-static const NamespaceManager s_xmlNamespaces[] = {
-{   // XmlContentType::ContentTypeXml
-SchemaEntry("http://schemas.openxmlformats.org/package/2006/content-types",                             "a",               "AppxPackaging/[Content_Types]/opc-contentTypes.xsd")
-},
-{   // XmlContentType::AppxBlockMapXml
-SchemaEntry("http://schemas.microsoft.com/appx/2010/blockmap",                                          "a",               "AppxPackaging/BlockMap/schema/BlockMapSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/2015/blockmap",                                          "b",               "AppxPackaging/BlockMap/schema/BlockMapSchema2015.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/2017/blockmap",                                          "c",               "AppxPackaging/BlockMap/schema/BlockMapSchema2017.xsd"),
-},
-{   // XmlContentType::AppxManifestXml
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10",                          "win10foundation", "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10",                                 "win10uap",        "AppxPackaging/Manifest/Schema/2015/UapManifestSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/types",                                         "t",               "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/2014/phone/manifest",                                    "mp",              "AppxPackaging/Manifest/Schema/2015/AppxPhoneManifestSchema2014.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/2",                        "foundation2",     "AppxPackaging/Manifest/Schema/2015/FoundationManifestSchema_v2.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/2",                               "uap2",            "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v2.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/3",                               "uap3",            "AppxPackaging/Manifest/Schema/2015/UapManifestSchema_v3.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/4",                               "uap4",            "AppxPackaging/Manifest/Schema/2016/UapManifestSchema_v4.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities",      "win10wincap",     "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/2",    "wincap2",         "AppxPackaging/Manifest/Schema/2015/WindowsCapabilitiesManifestSchema_v2.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3",    "wincap3",         "AppxPackaging/Manifest/Schema/2016/WindowsCapabilitiesManifestSchema_v3.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities",   "win10rescap",     "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/2", "rescap2",         "AppxPackaging/Manifest/Schema/2015/RestrictedCapabilitiesManifestSchema_v2.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3", "rescap3",         "AppxPackaging/Manifest/Schema/2016/RestrictedCapabilitiesManifestSchema_v3.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/4", "rescap4",         "AppxPackaging/Manifest/Schema/2017/RestrictedCapabilitiesManifestSchema_v4.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/5", "rescap5",         "AppxPackaging/Manifest/Schema/2018/RestrictedCapabilitiesManifestSchema_v5.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/6", "rescap6",         "AppxPackaging/Manifest/Schema/2018/RestrictedCapabilitiesManifestSchema_v6.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/mobile/windows10",                              "win10mobile",     "AppxPackaging/Manifest/Schema/2015/MobileManifestSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/iot/windows10",                                 "win10iot",        "AppxPackaging/Manifest/Schema/2015/IotManifestSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/iot/windows10/2",                               "iot2",            "AppxPackaging/Manifest/Schema/2017/IotManifestSchema_v2.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/holographic/windows10",                         "holo",            "AppxPackaging/Manifest/Schema/2015/HolographicManifestSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/serverpreview/windows10",                       "win10serverpreview", "AppxPackaging/Manifest/Schema/2015/ServerManifestSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10",                             "desktop",         "AppxPackaging/Manifest/Schema/2015/DesktopManifestSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10/2",                           "desktop2",        "AppxPackaging/Manifest/Schema/2016/DesktopManifestSchema_v2.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10/3",                           "desktop3",        "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v3.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10/4",                           "desktop4",        "AppxPackaging/Manifest/Schema/2017/DesktopManifestSchema_v4.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10/5",                           "desktop5",        "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v5.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/desktop/windows10/6",                           "desktop6",        "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v6.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/com/windows10",                                 "com",             "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/com/windows10/2",                               "com2",            "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/5",                               "uap5",            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/6",                               "uap6",            "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v6.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/7",                               "uap7",            "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v7.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/uap/windows10/8",                               "uap8",            "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v8.xsd"),
-},
-{   // XmlContentType::AppxBundleManifestXml
-SchemaEntry("http://schemas.microsoft.com/appx/manifest/types",                                         "t",               "AppxPackaging/Manifest/Schema/2015/AppxManifestTypes.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/2013/bundle",                                            "b",               "AppxPackaging/Manifest/Schema/2015/BundleManifestSchema2014.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/2016/bundle",                                            "b2",              "AppxPackaging/Manifest/Schema/2016/BundleManifestSchema2016.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/2017/bundle",                                            "b3",              "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd"),
-SchemaEntry("http://schemas.microsoft.com/appx/2018/bundle",                                            "b4",              "AppxPackaging/Manifest/Schema/2018/BundleManifestSchema2018.xsd"),
-}};
 
 class ParsingException final : public XERCES_CPP_NAMESPACE::ErrorHandler
 {
@@ -147,9 +78,8 @@ private:
     {
         std::u16string utf16FileName = std::u16string(exp.getSystemId());
         std::u16string utf16Message = std::u16string(exp.getMessage());
-        return "Error " + u16string_to_utf8(utf16Message) + " file: " + u16string_to_utf8(utf16FileName) +
-            ":" + std::to_string(static_cast<std::uint64_t>(exp.getLineNumber())) + "," +
-            std::to_string(static_cast<std::uint64_t>(exp.getColumnNumber()));
+        return "Error in " + u16string_to_utf8(utf16FileName) + " [Line " + std::to_string(static_cast<std::uint64_t>(exp.getLineNumber()))
+            + ", Col " + std::to_string(static_cast<std::uint64_t>(exp.getColumnNumber())) + "] :: " + u16string_to_utf8(utf16Message);
     }
 };
 
@@ -165,10 +95,10 @@ public:
         std::string id = u16string_to_utf8(utf16string);
         const auto& entry = std::find(m_namespaces.begin(), m_namespaces.end(), id.c_str());
         ThrowErrorIf(MSIX::Error::XmlError, entry == m_namespaces.end(), "Invalid namespace");
-        auto stream = m_factory->GetResource((*entry).schema);
+        auto stream = m_factory->GetResource(entry->schema);
         auto schemaBuffer = Helper::CreateRawBufferFromStream(stream);
         auto item = std::make_unique<MemBufInputSource>(
-            reinterpret_cast<const XMLByte*>(schemaBuffer.second), schemaBuffer.first, (*entry).schema, true /*delete by xerces*/);
+            reinterpret_cast<const XMLByte*>(schemaBuffer.second.release()), schemaBuffer.first, entry->schema, true /*delete by xerces*/);
         return item.release();
     }
 private:
@@ -349,7 +279,7 @@ public:
     // IXercesElement
     DOMElement* GetElement() override { return m_element; }
 
-    std::string GetAttributeValue(std::string& attributeName) override
+    std::string GetAttributeValue(const std::string& attributeName) override
     {
         XercesXMLChPtr nameAttr(XMLString::transcode(attributeName.c_str()));
         auto utf16string = std::u16string(m_element->getAttribute(nameAttr.Get()));
@@ -573,14 +503,13 @@ protected:
         static const XMLCh utf8Str[] = {chLatin_U, chLatin_T, chLatin_F, chDash, chDigit_8, chNull};
         lsOutput->setEncoding(utf8Str);
 
-        // Don't use unique_ptr here, this buffer is going to be deleted by Xerces
         std::unique_ptr<MemBufFormatTarget> formatTarget = std::make_unique<MemBufFormatTarget>();
         lsOutput->setByteStream(static_cast<XMLFormatTarget*>(formatTarget.get()));
         serializer->write(dom, lsOutput.Get());
 
         m_parser->reset();
 
-        // copy buffer. it will be deleted by xerces
+        // Copy buffer, don't use unique_ptr here, this buffer is going to be deleted by Xerces
         XMLSize_t size = formatTarget->getLen();
         XMLByte* newBuffer = new XMLByte[size];
         std::memcpy(reinterpret_cast<void*>(newBuffer), 

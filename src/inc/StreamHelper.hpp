@@ -31,7 +31,7 @@ namespace MSIX {
             return buffer;
         }
 
-        inline std::pair<std::uint32_t, std::uint8_t*> CreateRawBufferFromStream(const ComPtr<IStream>& stream)
+        inline std::pair<std::uint32_t, std::unique_ptr<std::uint8_t[]>> CreateRawBufferFromStream(const ComPtr<IStream>& stream)
         {
             // Create buffer from stream
             LARGE_INTEGER start = { 0 };
@@ -40,14 +40,14 @@ namespace MSIX {
             ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
             
             std::uint32_t streamSize = end.u.LowPart;
-            std::uint8_t* buffer = new std::uint8_t[streamSize];
+            std::unique_ptr<std::uint8_t[]> buffer = std::make_unique<std::uint8_t[]>(streamSize);
             ULONG actualRead = 0;
-            ThrowHrIfFailed(stream->Read(buffer, streamSize, &actualRead));
+            ThrowHrIfFailed(stream->Read(buffer.get(), streamSize, &actualRead));
             ThrowErrorIf(Error::FileRead, (actualRead != streamSize), "read error");
 
             // move the underlying stream back to the beginning.
             ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
-            return std::make_pair(streamSize, buffer);
+            return std::make_pair(streamSize, std::move(buffer));
         }
     }
 }
