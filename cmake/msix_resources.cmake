@@ -254,7 +254,7 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
     endif(USE_VALIDATION_PARSER)
 
     # Namespace manager
-    set(NAMESPACE_MANAGER "
+    set(NAMESPACE_MANAGER_HPP "
     struct SchemaEntry
     {
         const ${CHAR_TYPE}*  uri;
@@ -271,7 +271,10 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
     typedef std::vector<SchemaEntry> NamespaceManager;
     
     //         ALL THE URIs MUST BE LOWER-CASE, ordering of schema entries defines order of placement of schema into schema cache.
-    static const NamespaceManager s_xmlNamespaces[] = {
+    extern const NamespaceManager s_xmlNamespaces[];")
+
+    set(NAMESPACE_MANAGER_CPP "
+    const NamespaceManager s_xmlNamespaces[] = {
     {   // XmlContentType::ContentTypeXml
         ${SCHEMAENTRY_CONTENTTYPE}
     },
@@ -286,7 +289,8 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
         ${SCHEMAENTRY_APPXTYPES}
         ${SCHEMAENTRY_APPXBUNDLEMANIFEST}
     }};")
-    string(CONFIGURE "${NAMESPACE_MANAGER}" NAMESPACE_MANAGER)
+    string(CONFIGURE "${NAMESPACE_MANAGER_HPP}" NAMESPACE_MANAGER_HPP)
+    string(CONFIGURE "${NAMESPACE_MANAGER_CPP}" NAMESPACE_MANAGER_CPP)
 endif()
 
 # Create zip file. Use execute_process to run the command while CMake is procesing.
@@ -335,3 +339,4 @@ foreach(FILE ${RESOURCES_CERTS})
 endforeach()
 
 configure_file(${CMAKE_PROJECT_ROOT}/src/inc/MSIXResource.hpp.cmakein ${CMAKE_PROJECT_ROOT}/src/inc/MSIXResource.hpp CRLF)
+configure_file(${CMAKE_PROJECT_ROOT}/src/msix/MSIXResource.cpp.cmakein ${CMAKE_PROJECT_ROOT}/src/msix/MSIXResource.cpp CRLF)
