@@ -136,11 +136,10 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "FileDoesNotExist.appx", unpackFolder, ss, 1);
     hr = RunTest(source + "BlockMap/Missing_Manifest_in_blockmap.appx", unpackFolder, ss, 81);
     hr = RunTest(source + "BlockMap/ContentTypes_in_blockmap.appx", unpackFolder, ss, 81);
-    //hr = RunTest(source + "BlockMap/Invalid_Bad_Block.appx", unpackFolder, ss, 81);          WIN8-era package
-    //hr = RunTest(source + "BlockMap/Size_wrong_uncompressed.appx", unpackFolder, ss, 81);    WIN8-era package
-    //hr = RunTest(source + "BlockMap/HelloWorld.appx", unpackFolder, ss, 0);                  WIN8-era package
-    //hr = RunTest(source + "BlockMap/Extra_file_in_blockmap.appx", unpackFolder, ss, 2);      WIN8-era package
-    //hr = RunTest(source + "BlockMap/File_missing_from_blockmap.appx", unpackFolder, ss, 81); WIN8-era package
+    hr = RunTest(source + "BlockMap/Invalid_Bad_Block.msix", unpackFolder, ss, 81);
+    hr = RunTest(source + "BlockMap/Size_wrong_uncompressed.msix", unpackFolder, ss, 81);
+    hr = RunTest(source + "BlockMap/Extra_file_in_blockmap.msix", unpackFolder, ss, 2);
+    hr = RunTest(source + "BlockMap/File_missing_from_blockmap.msix", unpackFolder, ss, 81);
     hr = RunTest(source + "BlockMap/No_blockmap.appx", unpackFolder, ss, 51); 
     hr = RunTest(source + "BlockMap/Bad_Namespace_Blockmap.appx", unpackFolder, ss, 4099);
     hr = RunTest(source + "BlockMap/Duplicate_file_in_blockmap.appx", unpackFolder, ss, 81);
