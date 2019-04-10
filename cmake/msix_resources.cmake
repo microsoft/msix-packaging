@@ -327,8 +327,11 @@ endfunction()
 GetResourceHpp("${RESOURCES_BLOCKMAP}"           BLOCKMAP_HPP)
 GetResourceHpp("${RESOURCES_CONTENTTYPE}"        CONTENTTYPE_HPP)
 GetResourceHpp("${RESOURCES_APPXMANIFEST}"       APPXMANIFEST_HPP)
-GetResourceHpp("${RESOURCES_CERTS}"              CERTS_HPP)
 GetResourceHpp("${RESOURCES_APPXBUNDLEMANIFEST}" APPXBUNDLEMANIFEST_HPP)
 GetResourceHpp("${RESOURCES_APPXTYPES}"          APPXTYPES_HPP)
+
+foreach(FILE ${RESOURCES_CERTS})
+    string(APPEND CERTS_HPP result.push_back(std::make_pair(\"${FILE}\", std::move(factory->GetResource(\"${FILE}\")))) ";\n\t\t\t\t")
+endforeach()
 
 configure_file(${CMAKE_PROJECT_ROOT}/src/inc/MSIXResource.hpp.cmakein ${CMAKE_PROJECT_ROOT}/src/inc/MSIXResource.hpp CRLF)
