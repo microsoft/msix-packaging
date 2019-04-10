@@ -22,6 +22,7 @@
            xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
            xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
            xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"
+           xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
            xmlns:wincap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"
            xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
            xmlns:iot2="http://schemas.microsoft.com/appx/manifest/iot/windows10/2"
@@ -31,6 +32,7 @@
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/iot/windows10/2"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"/>
@@ -174,11 +176,13 @@
 
   <xs:complexType name="CT_AppExecutionAlias">
     <xs:sequence minOccurs="0" maxOccurs="1000">
-      <xs:element name="ExecutionAlias">
+      <xs:element name="ExecutionAlias" minOccurs="0">
         <xs:complexType>
           <xs:attribute name="Alias" type="t:ST_ExecutableNoPath" use="required"/>
+          <xs:attribute ref="uap8:AllowOverride" use="optional"/>
         </xs:complexType>
       </xs:element>
+      <xs:element ref="uap8:ExecutionAlias" minOccurs="0"/>
     </xs:sequence>
     <xs:attribute ref="desktop4:Subsystem" use="optional"/>
     <xs:attribute ref="iot2:Subsystem" use="optional"/>
@@ -190,7 +194,7 @@
         <xs:element name="DriverConstraint">
           <xs:complexType>
             <xs:attribute name="Name" type="t:ST_NonEmptyString" use="required"/>
-            <xs:attribute name="MinVersion" type="t:ST_VersionQuad"/>
+            <xs:attribute name="MinVersion" type="t:ST_VersionQuadNoneZero"/>
             <xs:attribute name="MinDate" type="t:ST_Date"/>
           </xs:complexType>
         </xs:element>

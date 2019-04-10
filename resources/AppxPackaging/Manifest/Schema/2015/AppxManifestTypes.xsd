@@ -202,7 +202,7 @@
   <xs:simpleType name="ST_ProgId">
     <xs:restriction base="ST_NonEmptyString">
       <xs:pattern value="[A-Za-z][A-Za-z0-9\.]*"/>
-      <xs:maxLength value="39"/>
+      <xs:maxLength value="255"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -276,6 +276,15 @@
   <xs:simpleType name="ST_VersionQuad">
     <xs:restriction base="ST_NonEmptyString">
       <xs:pattern value="(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])(\.(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])){3}"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ST_VersionQuadNoneZero">
+    <xs:restriction base="ST_NonEmptyString">
+      <xs:pattern value="([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])(\.(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])){3}"/>
+      <xs:pattern value="(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])(\.([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))(\.(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])){2}"/>
+      <xs:pattern value="(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])(\.(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))(\.([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))(\.(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))"/>
+      <xs:pattern value="(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])(\.(0|[1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5])){2}(\.([1-9][0-9]{0,3}|[1-5][0-9]{4}|6[0-4][0-9]{3}|65[0-4][0-9]{2}|655[0-2][0-9]|6553[0-5]))"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -405,6 +414,13 @@
   <xs:simpleType name="ST_Capability_Uap_6">
     <xs:restriction base="xs:string">
       <xs:enumeration value="graphicsCapture"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ST_Capability_Uap_7">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="globalMediaControl"/>
+      <xs:enumeration value="gazeInput"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -716,6 +732,23 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="ST_ExtensionCategory_Uap7">
+    <xs:restriction base="xs:string">
+      <!-- Package Extensions -->
+      <xs:enumeration value="windows.sharedFonts"/>
+      <xs:enumeration value="windows.enterpriseDataProtection"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ST_ExtensionCategory_Uap8">
+    <xs:restriction base="xs:string">
+      <!-- Application Extensions -->
+      <xs:enumeration value="windows.posPaymentConnector"/>
+      <!-- Package Extensions -->
+      <xs:enumeration value="windows.dataProtection"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="ST_ExtensionCategory_Com">
     <xs:restriction base="xs:string">
       <xs:enumeration value="windows.comServer"/>
@@ -764,6 +797,16 @@
   <xs:simpleType name="ST_ApplicationExtensionCategory_Desktop4">
     <xs:restriction base="xs:string">
       <xs:enumeration value="windows.fileExplorerContextMenus"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+    <xs:simpleType name="ST_ExtensionCategory_Desktop6">
+    <xs:restriction base="xs:string">
+      <!-- Application Extensions -->
+      <xs:enumeration value="windows.service"/>
+      <!-- Package Extensions -->
+      <xs:enumeration value="windows.mutablePackageDirectories"/>
+      <xs:enumeration value="windows.customInstall"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -1259,6 +1302,16 @@
       <xs:pattern value="[-+A-Za-z0-9][-+.A-Za-z0-9]+"/>
       <xs:minLength value="2"/>
       <xs:maxLength value="39"/>
+    </xs:restriction>
+  </xs:simpleType>
+  
+  <!-- In 19H1 was needed update the max length for AppExentesion Name-->
+  <!-- This is the same type of ST_AppServiceName but with maxLength equals to 255 -->
+  <xs:simpleType name="ST_AppServiceNameLonger">
+    <xs:restriction base="ST_NonEmptyString">
+      <xs:pattern value="[-+A-Za-z0-9][-+.A-Za-z0-9]+"/>
+      <xs:minLength value="2"/>
+      <xs:maxLength value="255"/>
     </xs:restriction>
   </xs:simpleType>
 

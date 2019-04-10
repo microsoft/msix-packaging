@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <queue>
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
@@ -25,6 +26,10 @@
 #include "xercesc/util/PlatformUtils.hpp"
 #include "xercesc/util/XMLString.hpp"
 #include "xercesc/util/Base64.hpp"
+#include "xercesc/sax/SAXParseException.hpp"
+#include "xercesc/util/XMLEntityResolver.hpp"
+#include "xercesc/util/XMLUni.hpp" // helpful XMLChr*
+#include "xercesc/framework/MemBufFormatTarget.hpp"
 
 XERCES_CPP_NAMESPACE_USE
 
@@ -40,6 +45,7 @@ class IXercesElement : public IUnknown
 {
 public:
     virtual DOMElement* GetElement() = 0;
+    virtual std::string GetAttributeValue(const std::string& attributeName) = 0;
 };
 MSIX_INTERFACE(IXercesElement,  0x07d6ee0e,0x2165,0x4b90,0x80,0x24,0xe1,0x76,0x29,0x1e,0x77,0xdd);
 
@@ -53,20 +59,51 @@ public:
 
     void warning(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
     {        
-        ThrowError(MSIX::Error::XmlWarning);
+        ThrowErrorAndLog(MSIX::Error::XmlWarning, GetMessage(exp).c_str());
     }
 
     void error(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
     {
-        ThrowError(MSIX::Error::XmlError);
+        ThrowErrorAndLog(MSIX::Error::XmlError, GetMessage(exp).c_str());
     }
 
     void fatalError(const XERCES_CPP_NAMESPACE::SAXParseException& exp) override
     {
-        ThrowError(MSIX::Error::XmlFatal);
+        ThrowErrorAndLog(MSIX::Error::XmlFatal, GetMessage(exp).c_str());
     }
 
     void resetErrors() override {}
+private:
+    std::string GetMessage(const XERCES_CPP_NAMESPACE::SAXParseException& exp)
+    {
+        std::u16string utf16FileName = std::u16string(exp.getSystemId());
+        std::u16string utf16Message = std::u16string(exp.getMessage());
+        return "Error in " + u16string_to_utf8(utf16FileName) + " [Line " + std::to_string(static_cast<std::uint64_t>(exp.getLineNumber()))
+            + ", Col " + std::to_string(static_cast<std::uint64_t>(exp.getColumnNumber())) + "] :: " + u16string_to_utf8(utf16Message);
+    }
+};
+
+class MsixEntityResolver : public XMLEntityResolver
+{
+public:
+    MsixEntityResolver(IMsixFactory* factory, const NamespaceManager& namespaces) : m_factory(factory), m_namespaces(namespaces) {}
+    ~MsixEntityResolver() {}
+
+    InputSource* resolveEntity(XMLResourceIdentifier* resourceIdentifier)
+    {
+        std::u16string utf16string = std::u16string(resourceIdentifier->getNameSpace());
+        std::string id = u16string_to_utf8(utf16string);
+        const auto& entry = std::find(m_namespaces.begin(), m_namespaces.end(), id.c_str());
+        ThrowErrorIf(MSIX::Error::XmlError, entry == m_namespaces.end(), "Invalid namespace");
+        auto stream = m_factory->GetResource(entry->schema);
+        auto schemaBuffer = Helper::CreateRawBufferFromStream(stream);
+        auto item = std::make_unique<MemBufInputSource>(
+            reinterpret_cast<const XMLByte*>(schemaBuffer.second.release()), schemaBuffer.first, entry->schema, true /*delete by xerces*/);
+        return item.release();
+    }
+private:
+    const NamespaceManager m_namespaces;
+    IMsixFactory* m_factory = nullptr;
 };
 
 template<class T>
@@ -203,15 +240,8 @@ protected:
 
 class XercesElement final : public ComClass<XercesElement, IXmlElement, IXercesElement, IMsixElement>
 {
-private:
-    std::string GetAttributeValue(std::string& attributeName)
-    {
-        XercesXMLChPtr nameAttr(XMLString::transcode(attributeName.c_str()));
-        auto utf16string = std::u16string(m_element->getAttribute(nameAttr.Get()));
-        return u16string_to_utf8(utf16string);
-    }
-
 public:
+
     XercesElement(IMsixFactory* factory, DOMElement* element, XERCES_CPP_NAMESPACE::XercesDOMParser* parser) :
         m_factory(factory), m_element(element), m_parser(parser)
     {
@@ -248,6 +278,13 @@ public:
 
     // IXercesElement
     DOMElement* GetElement() override { return m_element; }
+
+    std::string GetAttributeValue(const std::string& attributeName) override
+    {
+        XercesXMLChPtr nameAttr(XMLString::transcode(attributeName.c_str()));
+        auto utf16string = std::u16string(m_element->getAttribute(nameAttr.Get()));
+        return u16string_to_utf8(utf16string);
+    }
 
      // IMsixElement
     HRESULT STDMETHODCALLTYPE GetAttributeValue(LPCWSTR name, LPWSTR* value) noexcept override try
@@ -321,7 +358,7 @@ protected:
 class XercesDom final : public ComClass<XercesDom, IXmlDom>
 {
 public:
-    XercesDom(IMsixFactory* factory, const ComPtr<IStream>& stream, std::vector<ComPtr<IStream>>* schemas = nullptr) :
+    XercesDom(IMsixFactory* factory, const ComPtr<IStream>& stream, XmlContentType footPrintType) :
         m_factory(factory), m_stream(stream)
     {
         auto buffer = Helper::CreateBufferFromStream(stream);
@@ -334,40 +371,64 @@ public:
         
         // For Non validation parser GetResources will return an empty vector for the ContentType, BlockMap and AppxBundleManifest.
         // XercesDom will only parse the schemas if the vector is not empty. If not, it will only see that it is valid xml.
-        bool HasSchemas = ((schemas != nullptr) && (schemas->begin() != schemas->end()));
-        m_parser->setValidationScheme(HasSchemas ? 
-            XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Always : 
-            XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Never
-        );
-        m_parser->cacheGrammarFromParse(HasSchemas);            
-        m_parser->setDoSchema(HasSchemas);
-        m_parser->setDoNamespaces(HasSchemas);
-        m_parser->setHandleMultipleImports(HasSchemas); // TODO: do we need to handle the case where there aren't multiple schemas with the same namespace?
-        m_parser->setValidationSchemaFullChecking(HasSchemas);
+        std::vector<std::pair<std::string, ComPtr<IStream>>> schemas;
+        if (footPrintType == XmlContentType::AppxBlockMapXml)
+        {
+            schemas = GetResources(m_factory, Resource::Type::BlockMap);
+        }
+        else if (footPrintType == XmlContentType::AppxManifestXml)
+        {
+            schemas = GetResources(m_factory, Resource::Type::AppxManifest);
+        }
+        else if (footPrintType == XmlContentType::ContentTypeXml)
+        {
+            schemas = GetResources(m_factory, Resource::Type::ContentType);
+        }
+        else if (footPrintType == XmlContentType::AppxBundleManifestXml)
+        {
+            schemas = GetResources(m_factory, Resource::Type::AppxBundleManifest);
+        }
+        else
+        {
+            ThrowError(Error::InvalidParameter);
+        }
 
-        if (HasSchemas)
-        {   // Disable DTD and prevent XXE attacks.  See https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#libxerces-c for additional details.
+        // Set the error handler and entity resolver for the parser
+        auto errorHandler = std::make_unique<ParsingException>();
+        auto entityResolver = std::make_unique<MsixEntityResolver>(m_factory, s_xmlNamespaces[static_cast<std::uint8_t>(footPrintType)]);
+        m_parser->setErrorHandler(errorHandler.get());
+        m_parser->setXMLEntityResolver(entityResolver.get());
+
+        if (!schemas.empty())
+        {
+            if (footPrintType == XmlContentType::AppxManifestXml || footPrintType == XmlContentType::AppxBundleManifestXml)
+            {
+                source = StripIgnorableNamespaces(*source, s_xmlNamespaces[static_cast<std::uint8_t>(footPrintType)]);
+            }
+
+            m_parser->setValidationScheme(XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Always);
+            m_parser->cacheGrammarFromParse(true);
+            m_parser->setDoSchema(true);
+            m_parser->setDoNamespaces(true);
+            m_parser->setValidationSchemaFullChecking(true);
+            // Disable DTD and prevent XXE attacks.  See https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#libxerces-c for additional details.
             m_parser->setIgnoreCachedDTD(true);
             m_parser->setSkipDTDValidation(true);
             m_parser->setCreateEntityReferenceNodes(false);
-        }
 
-        // Add schemas
-        if (HasSchemas)
-        {   for(auto& schema : *schemas)
-            {   auto schemaBuffer = Helper::CreateBufferFromStream(schema);
+            for(const auto& schema : schemas)
+            {
+                auto schemaBuffer = Helper::CreateBufferFromStream(schema.second);
                 auto item = std::make_unique<XERCES_CPP_NAMESPACE::MemBufInputSource>(
-                    reinterpret_cast<const XMLByte*>(&schemaBuffer[0]), schemaBuffer.size(), "Schema");
+                    reinterpret_cast<const XMLByte*>(&schemaBuffer[0]), schemaBuffer.size(), schema.first.c_str());
                 m_parser->loadGrammar(*item, XERCES_CPP_NAMESPACE::Grammar::GrammarType::SchemaGrammarType, true);
-            }           
+            }
         }
 
-        // Set the error handler for the parser
-        auto errorHandler = std::make_unique<ParsingException>();
-        m_parser->setErrorHandler(errorHandler.get());
         m_parser->parse(*source);
-
         m_resolver = XercesPtr<DOMXPathNSResolver>(m_parser->getDocument()->createNSResolver(m_parser->getDocument()));
+
+        // TODO: Do semantic check for all the elements we modified to maxOcurrs=unbounded and xs:patterns
     }
 
     // IXmlDom
@@ -402,6 +463,123 @@ public:
     }
 
 protected:
+
+    std::unique_ptr<MemBufInputSource> StripIgnorableNamespaces(const InputSource& source, const NamespaceManager& namespaces)
+    {
+        m_parser->setDoNamespaces(true);
+        m_parser->parse(source);
+        XERCES_CPP_NAMESPACE::DOMDocument* dom = m_parser->getDocument();
+        auto rootElement = ComPtr<IXercesElement>::Make<XercesElement>(m_factory, dom->getDocumentElement(), m_parser.get());
+        std::string attr = "IgnorableNamespaces";
+        std::string attrValue = rootElement->GetAttributeValue(attr);
+        if (!attrValue.empty())
+        {
+            std::vector<std::string> aliasesToLookup;
+            {
+                std::string alias;
+                std::istringstream aliases(attrValue);
+                while(getline(aliases, alias, ' ')) { aliasesToLookup.push_back(alias); }
+            }
+            for (const auto& a : aliasesToLookup)
+            {
+                std::string alias = "xmlns:" + a; // Look for xmlns:[alias] attribute name
+                std::string aliasValue = rootElement->GetAttributeValue(alias);
+                const auto& entry = std::find(namespaces.begin(), namespaces.end(), aliasValue.c_str());
+                if (entry == namespaces.end()) // only strip if we don't know about it
+                {
+                    RemoveAllInNamespace(rootElement, a);
+                }
+            }
+
+        }
+
+        // Serialize the new dom to parse.
+        static const XMLCh cs[3] = {chLatin_L, chLatin_S, chNull};
+        DOMImplementation *impl = DOMImplementationRegistry::getDOMImplementation(cs);
+        auto serializer = XercesPtr<DOMLSSerializer>((static_cast<DOMImplementationLS*>(impl))->createLSSerializer());
+        auto lsOutput = XercesPtr<DOMLSOutput>((static_cast<DOMImplementationLS*>(impl))->createLSOutput());
+
+        // Set encoding to UTF-8
+        static const XMLCh utf8Str[] = {chLatin_U, chLatin_T, chLatin_F, chDash, chDigit_8, chNull};
+        lsOutput->setEncoding(utf8Str);
+
+        std::unique_ptr<MemBufFormatTarget> formatTarget = std::make_unique<MemBufFormatTarget>();
+        lsOutput->setByteStream(static_cast<XMLFormatTarget*>(formatTarget.get()));
+        serializer->write(dom, lsOutput.Get());
+
+        m_parser->reset();
+
+        // Copy buffer, don't use unique_ptr here, this buffer is going to be deleted by Xerces
+        XMLSize_t size = formatTarget->getLen();
+        XMLByte* newBuffer = new XMLByte[size];
+        std::memcpy(reinterpret_cast<void*>(newBuffer), 
+            reinterpret_cast<void*>(const_cast<XMLByte*>(formatTarget->getRawBuffer())),
+            static_cast<size_t>(size));
+        return std::make_unique<MemBufInputSource>(newBuffer, size, "XML File", true /*delete by xerces*/);
+    }
+
+    // Remove elements and attributes from a specified namespace. We don't use the Xerces xPath APIs for several
+    // reasons:
+    // 1 - XPathScannerForSchema::addToken on xercesxpath.cpp explicitly disallows node() as a valid token to matches 
+    // elements and attribute nodes with one single xpath...
+    // 2 - Xerces will throw XMLExcepts::XPath_NoAttrSelector ("selector cannot select attribute"). for //@<namespace>:*.
+    // See XercesXPath::checkForSelectedAttributes in xercesxpath.cpp. Removing the checkForSelectedAttributes from
+    // XercesXPath::XercesXPath will allow us to use the xpath but the result will be the element node, not the 
+    // attribute one. This implies modifying xerces and then iteratate the attributes of the elements.
+    // 
+    // Because we don't want to modify xerces, we will iterate through all of the elements and look at their attributes.
+    // If we are doing that, there's no point selecting all the elements in the namespace using xpath,
+    // just remove them in the same pass.
+    void RemoveAllInNamespace(ComPtr<IXercesElement>& rootElement, const std::string& prefix)
+    {
+        XercesXMLChPtr XercesPrefix(XMLString::transcode(prefix.c_str()));
+        std::queue<DOMNode*> nodeQueue;
+        nodeQueue.push(static_cast<DOMNode*>(rootElement->GetElement()));
+        while (!nodeQueue.empty())
+        {
+            auto node = nodeQueue.front();
+
+            // Remove node if is from the ignorable namespace, no need to look at its childs anymore
+            if (node->getPrefix() != nullptr &&
+                (XMLString::compareString(node->getPrefix(), XercesPrefix.Get()) == 0))
+            {
+                DOMNode* parentNode = node->getParentNode();
+                ThrowErrorIfNot(Error::XmlError, parentNode, "We are trying to delete the root element!");
+                parentNode->removeChild(node);
+            }
+            else
+            {
+                // Add childs to queue
+                DOMNode* child = node->getFirstChild();
+                while (child)
+                {
+                    if (child->getNodeType() == DOMNode::ELEMENT_NODE)
+                    {
+                        nodeQueue.push(child);
+                    }
+                    child=child->getNextSibling();
+                }
+                // See if this node has attributes in the ignorable namespace
+                if (node->hasAttributes())
+                {
+                    // DOMElement::removeAttributeNS requires knowing the name of the attribute
+                    // so we have to get all of them and look one by one
+                    DOMNamedNodeMap* attributes = node->getAttributes();
+                    for (XMLSize_t i = 0; i < attributes->getLength(); i++)
+                    {
+                        DOMNode* attribute = attributes->item(i);
+                        if (attribute->getPrefix() != nullptr && 
+                        (XMLString::compareString(attribute->getPrefix(), XercesPrefix.Get()) == 0))
+                        {
+                            static_cast<DOMElement*>(node)->removeAttributeNode(static_cast<DOMAttr*>(attribute));
+                        }
+                    }
+                }
+            }
+            nodeQueue.pop();
+        }
+    }
+
     IMsixFactory* m_factory;
     std::unique_ptr<XERCES_CPP_NAMESPACE::XercesDOMParser> m_parser;
     XercesPtr<DOMXPathNSResolver> m_resolver;
@@ -423,25 +601,7 @@ public:
 
     ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, const ComPtr<IStream>& stream) override
     {
-        switch (footPrintType)
-        {
-            case XmlContentType::AppxBlockMapXml:
-            {   auto blockMapSchema = GetResources(m_factory, Resource::Type::BlockMap);
-                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream, &blockMapSchema);
-            }
-            case XmlContentType::AppxManifestXml:
-                // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
-                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream);
-            case XmlContentType::ContentTypeXml:
-            {   auto contentTypeSchema = GetResources(m_factory, Resource::Type::ContentType);
-                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream, &contentTypeSchema);
-            }
-            case XmlContentType::AppxBundleManifestXml:
-            {   // TODO: pass schemas to validate AppxManifest. This only validates that is a well-formed xml
-                return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream);
-            }
-        }
-        ThrowError(Error::InvalidParameter);
+        return ComPtr<IXmlDom>::Make<XercesDom>(m_factory, stream, footPrintType);
     }
 protected:
     IMsixFactory* m_factory;

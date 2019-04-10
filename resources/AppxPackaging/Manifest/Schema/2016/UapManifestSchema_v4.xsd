@@ -24,6 +24,7 @@
            xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
            xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
            xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"
+           xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
@@ -32,6 +33,7 @@
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"/>
 
   <xs:element name="MainPackageDependency" substitutionGroup="f:MainPackageDependencyChoice2">
     <xs:complexType>
@@ -208,11 +210,15 @@
   </xs:simpleType>
 
   <xs:complexType name="CT_DevicePortalProvider">
+    <xs:all>
+      <xs:element ref="uap8:Tools" minOccurs="0" />
+      <xs:element ref="uap8:Workspaces" minOccurs="0"/>
+    </xs:all>
     <xs:attribute name="DisplayName" type="t:ST_DisplayName" use="required"/>
     <xs:attribute name="AppServiceName" type="t:ST_AppServiceName" use="required"/>
     <xs:attribute name="ContentRoute" type="t:ST_NonEmptyString" use="optional"/>
     <xs:attribute name="HandlerRoute" type="t:ST_NonEmptyString" use="optional"/>
   </xs:complexType>
-
+ 
 </xs:schema>
 
