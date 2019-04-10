@@ -24,6 +24,16 @@ if(CRYPTO_LIB MATCHES openssl) # Only OpenSSL needs to carry the certificates.
 endif()
 
 if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
+    # Used by namespace manager
+    if (XML_PARSER MATCHES msxml6)
+        set(CHAR_TYPE  "wchar_t")
+        set(STR_COMP   "wcscmp")
+        set(STR_PREFIX "L")
+    else() # xerces
+        set(CHAR_TYPE  "char")
+        set(STR_COMP   "strcmp")
+        set(STR_PREFIX "u8")
+    endif()
 
     if(USE_VALIDATION_PARSER)
         # Schemas are defined in triplets in the form of
@@ -242,16 +252,7 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
         CreateNamespaceManager("${RESOURCES_APPXMANIFEST}"       SCHEMAENTRY_APPXMANIFEST)
         CreateNamespaceManager("${RESOURCES_APPXBUNDLEMANIFEST}" SCHEMAENTRY_APPXBUNDLEMANIFEST)
     endif(USE_VALIDATION_PARSER)
-    
-    if (XML_PARSER MATCHES msxml6)
-        set(CHAR_TYPE  "wchar_t")
-        set(STR_COMP   "wcscmp")
-        set(STR_PREFIX "L")
-    else() # xerces
-        set(CHAR_TYPE  "char")
-        set(STR_COMP   "strcmp")
-        set(STR_PREFIX "u8")
-    endif()
+
     # Namespace manager
     set(NAMESPACE_MANAGER "
     struct SchemaEntry
@@ -291,7 +292,7 @@ endif()
 # Create zip file. Use execute_process to run the command while CMake is procesing.
 message(STATUS "Resource files:")
 set(FILES_TO_ZIP)
-foreach(TRIPLET ${RESOURCES_CERTS} ${RESOURCES_BLOCKMAP} ${RESOURCES_CONTENTTYPE} ${RESOURCES_APPXTYPES} ${RESOURCES_APPXMANIFEST} ${RESOURCES_APPXBUNDLEMANIFEST})
+foreach(TRIPLET ${RESOURCES_BLOCKMAP} ${RESOURCES_CONTENTTYPE} ${RESOURCES_APPXTYPES} ${RESOURCES_APPXMANIFEST} ${RESOURCES_APPXBUNDLEMANIFEST})
     list(GET ${TRIPLET} 2 FILE)
     message(STATUS "\t${FILE}")
     list(APPEND FILES_TO_ZIP "${FILE}")
