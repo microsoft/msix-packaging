@@ -7,6 +7,7 @@ static const std::wstring registryDatFile = L"\\registry.dat";
 static const std::wstring blockMapFile = L"\\AppxBlockMap.xml";
 static const std::wstring manifestFile = L"\\AppxManifest.xml";
 static const std::wstring classesKeyPath = L"SOFTWARE\\Classes";
+static const std::wstring runKeyPath = L"Software\\Microsoft\\Windows\\CurrentVersion\\Run";
 
 static const std::wstring msix7ProgIDPrefix = L"Msix7";
 static const std::wstring openWithProgIdsKeyName = L"OpenWithProgids";
@@ -22,6 +23,7 @@ static const std::wstring ftaCategoryNameInManifest = L"windows.fileTypeAssociat
 static const std::wstring protocolCategoryNameInManifest = L"windows.protocol";
 static const std::wstring ComServerCategoryNameInManifest = L"windows.comServer";
 static const std::wstring comInterfaceCategoryNameInManifest = L"windows.comInterface";
+static const std::wstring startupTaskCategoryNameInManifest = L"windows.startupTask";
 
 static const std::wstring categoryAttribute = L"Category";
 static const std::wstring nameAttribute = L"Name";

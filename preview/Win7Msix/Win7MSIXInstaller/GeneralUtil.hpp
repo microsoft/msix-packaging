@@ -249,3 +249,79 @@ HRESULT GetAttributeValueFromElement(IMsixElement* element, std::wstring attribu
 std::wstring GuidFromManifestId(std::wstring id);
 
 HRESULT FileExists(std::wstring file, _Out_ bool &exists);
+
+
+class AutoCoInitialize
+{
+public:
+    inline AutoCoInitialize()
+        : hr(CO_E_NOTINITIALIZED)
+    {
+    }
+
+    inline ~AutoCoInitialize()
+    {
+        if (SUCCEEDED(hr))
+        {
+            Uninitialize();
+        }
+    }
+
+    inline HRESULT Initialize(
+        _In_ DWORD threadingModel = COINIT_MULTITHREADED)
+    {
+        HRESULT hr = CoInitializeEx(NULL, threadingModel);
+        if (SUCCEEDED(hr))
+        {
+            this->hr = hr;
+        }
+        else if (hr == RPC_E_CHANGED_MODE)
+        {
+            // Thread was already initialized with a different apartment model, don't need to initialize again.
+            // But leave this->hr as a FAILED value as we didn't successfully initialize COM so we better not uninitialize it later
+            return S_FALSE;
+        }
+
+        return hr;
+    }
+
+    inline void Uninitialize()
+    {
+        if (SUCCEEDED(hr))
+        {
+            CoUninitialize();
+            this->hr = CO_E_NOTINITIALIZED;
+        }
+    }
+
+private:
+    // Actions Not Supported
+    AutoCoInitialize(_In_ const AutoCoInitialize&);
+    AutoCoInitialize& operator=(_In_ const AutoCoInitialize&);
+
+private:
+    HRESULT hr;
+};
+
+
+class Bstr
+{
+    BSTR m_bstr;
+public:
+    operator BSTR() && = delete;
+    operator BSTR() & { return m_bstr; }
+    Bstr() { m_bstr = nullptr; }
+    Bstr(std::wstring text)
+    {
+        m_bstr = ::SysAllocStringLen(text.c_str(), static_cast<UINT>(text.length()));
+    }
+    ~Bstr() { ::SysFreeString(m_bstr); }
+
+    BSTR* AddressOf()
+    {
+        ::SysFreeString(m_bstr);
+        return &m_bstr;
+    }
+
+    BSTR& Get() { return m_bstr; }
+};

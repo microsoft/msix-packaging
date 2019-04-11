@@ -26,6 +26,7 @@
 #include "Protocol.hpp"
 #include "ComInterface.hpp"
 #include "ComServer.hpp"
+#include "StartupTask.hpp"
 #include "FileTypeAssociation.hpp"
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
@@ -54,7 +55,8 @@ std::map<PCWSTR, HandlerInfo> AddHandlers =
     {AddRemovePrograms::HandlerName,      {AddRemovePrograms::CreateHandler,      Protocol::HandlerName,               ErrorHandler::HandlerName}},
     {Protocol::HandlerName,               {Protocol::CreateHandler,               ComInterface::HandlerName,           ErrorHandler::HandlerName}},
     {ComInterface::HandlerName,           {ComInterface::CreateHandler,           ComServer::HandlerName,              ErrorHandler::HandlerName}},
-    {ComServer::HandlerName,              {ComServer::CreateHandler,              FileTypeAssociation::HandlerName,    ErrorHandler::HandlerName}},
+    {ComServer::HandlerName,              {ComServer::CreateHandler,              StartupTask::HandlerName,            ErrorHandler::HandlerName}},
+    {StartupTask::HandlerName,            {StartupTask::CreateHandler,            FileTypeAssociation::HandlerName,    ErrorHandler::HandlerName}},
     {FileTypeAssociation::HandlerName,    {FileTypeAssociation::CreateHandler,    InstallComplete::HandlerName,        ErrorHandler::HandlerName}},
     {InstallComplete::HandlerName,        {InstallComplete::CreateHandler,        nullptr,                             ErrorHandler::HandlerName}},
     {ErrorHandler::HandlerName,           {ErrorHandler::CreateHandler,           nullptr,                             nullptr}},
