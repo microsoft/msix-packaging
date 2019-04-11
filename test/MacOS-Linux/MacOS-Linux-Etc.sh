@@ -133,11 +133,11 @@ RunTest 0 ./../appx/bundles/MainBundle.appxbundle -ss
 # RunTest 0 ./../appx/bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle
 # RunTest 0 ./../appx/bundles/ManifestHasExtraPackage.appxbundle
 RunTest 52 ./../appx/bundles/ManifestIsMissing.appxbundle -ss
-RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectArchitecture.appxbundle -ss
-RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectName.appxbundle -ss
-RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectPublisher.appxbundle -ss
+#RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectArchitecture.appxbundle -ss ### WIN8-era package
+#RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectName.appxbundle -ss ### WIN8-era package
+#RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectPublisher.appxbundle -ss ### WIN8-era package
 RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectSize.appxbundle -ss
-RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectVersion.appxbundle -ss
+#RunTest 97 ./../appx/bundles/ManifestPackageHasIncorrectVersion.appxbundle -ss ### WIN8-era package
 # RunTest 0 ./../appx/bundles/ManifestPackageHasInvalidOffset.appxbundle
 # RunTest 0 ./../appx/bundles/ManifestPackageHasInvalidRange.appxbundle
 RunTest 2 ./../appx/bundles/ManifestViolatesSchema.appxbundle -ss

@@ -26,8 +26,11 @@
            xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
            xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
            xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"
+           xmlns:uap7="http://schemas.microsoft.com/appx/manifest/uap/windows10/7"
+           xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
            xmlns:wincap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities"
            xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+           xmlns:rescap6="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/6"
            xmlns:phone="http://schemas.microsoft.com/appx/2014/phone/manifest"
            xmlns:serverpreview="http://schemas.microsoft.com/appx/manifest/serverpreview/windows10"
            xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
@@ -36,6 +39,7 @@
            xmlns:com2="http://schemas.microsoft.com/appx/manifest/com/windows10/2"
            xmlns:desktop2="http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"
            xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
+           xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
@@ -44,8 +48,12 @@
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/7"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/iot/windows10/2"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/6"/>
   
   <xs:element name="Package">
     <xs:complexType>
@@ -111,7 +119,8 @@
       <xs:field xpath="@TaskId"/>
     </xs:unique>
     <xs:unique name="Extension_AppExecutionAlias">
-      <xs:selector xpath="f:Applications/f:Application/uap3:Extensions/uap3:Extension/uap3:AppExecutionAlias/desktop:ExecutionAlias"/>
+      <xs:selector xpath="f:Applications/f:Application/f:Extensions/uap3:Extension/uap3:AppExecutionAlias/desktop:ExecutionAlias | f:Applications/f:Application/f:Extensions/uap3:Extension/uap3:AppExecutionAlias/uap8:ExecutionAlias | f:Applications/f:Application/f:Extensions/uap5:Extension/uap5:AppExecutionAlias/uap5:ExecutionAlias |
+      f:Applications/f:Application/f:Extensions/uap5:Extension/uap5:AppExecutionAlias/uap8:ExecutionAlias"/>
       <xs:field xpath="@Alias"/>
     </xs:unique>
     <xs:unique name="Class_Id">
@@ -133,6 +142,10 @@
     <xs:unique name="SurrogateServer_AppId">
       <xs:selector xpath="f:Applications/f:Application/f:Extensions/com:Extension/com:ComServer/com:SurrogateServer | f:Applications/f:Application/f:Extensions/com2:Extension/com2:ComServer/com:SurrogateServer"/>
       <xs:field xpath="@AppId"/>
+    </xs:unique>
+    <xs:unique name="Extension_AppUriHandlerName">
+      <xs:selector xpath="f:Applications/f:Application/f:Extensions/uap3:Extension/uap3:AppUriHandler"/>
+      <xs:field xpath="@uap7:Name"/>
     </xs:unique>
   </xs:element>
 
@@ -156,6 +169,9 @@
       <xs:element name="ResourcePackage" type="xs:boolean" minOccurs="0"/>
       <xs:element ref="uap:SupportedUsers" minOccurs="0"/>
       <xs:element ref="uap6:AllowExecution" minOccurs="0"/>
+      <xs:element ref="desktop6:RegistryWriteVirtualization" minOccurs="0"/>
+      <xs:element ref="desktop6:FileSystemWriteVirtualization" minOccurs="0"/>
+      <xs:element ref="rescap6:ModificationPackage" minOccurs="0"/>
     </xs:all>
   </xs:complexType>
 
@@ -192,6 +208,7 @@
       <xs:element ref="MainPackageDependencyChoice" minOccurs="0" maxOccurs="1"/>
       <xs:element ref="MainPackageDependencyChoice2" minOccurs="0" maxOccurs="1000"/>
       <xs:element ref="uap5:DriverDependency" minOccurs="0" maxOccurs="1000"/>
+      <xs:element ref="uap7:OSPackageDependency" minOccurs="0" maxOccurs="1000"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -323,6 +340,7 @@
             <xs:element ref="VisualElementsChoice"/>
             <xs:element ref="uap:ApplicationContentUriRules" minOccurs="0"/>
             <xs:element name="Extensions" type="CT_ApplicationExtensions" minOccurs="0"/>
+            <xs:element ref="uap7:Properties" minOccurs="0"/>
           </xs:all>
           <xs:attribute name="Id" type="t:ST_ApplicationId" use="required"/>
           <xs:attribute name="Executable" type="t:ST_ExecutableAnyCase" use="optional"/>

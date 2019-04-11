@@ -10,13 +10,21 @@ pr:
     - master
     - release_v*
   paths:
-    exclude:
-    - CODEOWNERS
-    - LICENCE
-    - preview/*
-    - README.md
-    - tdf-guidance.md
-    - THIRD PARTY CODE NOTICE
+    include:
+    - cmake/*
+    - lib/*
+    - pipelines/*
+    - resources/*
+    - samples/*
+    - src/*
+    - test/*
+    - CMakeLists.txt
+    - makeaosp.sh
+    - makeios.sh
+    - makelinux.sh
+    - makemac.sh
+    - makewin.cmd
+    - manifest.cmakein
 
 jobs:
 - job: Linux
@@ -30,6 +38,9 @@ jobs:
         _artifact: LINUXchk
       release:
         _arguments: -b MinSizeRel
+        _artifact: LINUX
+      release_xerces_validation_parser:
+        _arguments: -b MinSizeRel -vp
         _artifact: LINUX
 
   steps:

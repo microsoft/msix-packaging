@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @@BEGIN_SDKSPLIT
+
+  REDSTONE 5 DESKTOP V5 MANIFEST SCHEMA
+
+  This is the Schema that defines elements and attributes for the Universal App
+  Platform features in RS5. These types are imported into the Foundation
+  schema and included in products that support UAP.
+
+  !!!WARNING!!!
+
+  Don't make any changes to this schema.  Changes will affect a wide range of
+  partners and can potentially break product and test code, as well as existing
+  .appx packages and manifests. Please follow https://microsoft.sharepoint.com/teams/appxmanifest/SitePages/Home.aspx
+  if you need to request any addition or modification.
+
+@@END_SDKSPLIT -->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
+           xmlns="http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"
+           xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
+           xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+           >
+
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
+
+  <xs:attribute name="ThumbnailTypeOverlay" type="t:ST_ImageFile"/>
+
+  <xs:element name="ItemType">
+    <xs:complexType>
+      <xs:sequence minOccurs="0">
+        <xs:element name="Verb" maxOccurs="10000">
+          <xs:complexType>
+            <xs:attribute name="Id" type="t:ST_FileTypeAssociationSupportedVerbId" use="required" />
+            <xs:attribute name="Clsid" type="t:ST_GUID" use="required"/>
+          </xs:complexType>
+        </xs:element>
+      </xs:sequence>
+      <xs:attribute name="Type" type="ST_FileTypeOrStarWithDirectory" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:simpleType name="ST_FileTypeOrStarWithDirectory">
+    <xs:restriction base="t:ST_NonEmptyString">
+      <xs:pattern value="(\*|(\.[^.\\]+))"/>
+      <xs:pattern value="Directory"/>
+      <xs:pattern value="Directory\\Background"/>
+      <xs:maxLength value="64"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+</xs:schema>
+
