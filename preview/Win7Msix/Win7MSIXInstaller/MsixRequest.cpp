@@ -184,7 +184,8 @@ HRESULT MsixRequest::ProcessAddRequest()
         HandlerInfo currentHandler = AddHandlers[currentHandlerName];
         AutoPtr<IPackageHandler> handler;
         RETURN_IF_FAILED(currentHandler.create(this, &handler));
-        if (FAILED(handler->ExecuteForAddRequest()))
+        HRESULT hrAddExecute = handler->ExecuteForAddRequest();
+        if (FAILED(hrAddExecute))
         {
             currentHandlerName = currentHandler.errorHandler;
         }

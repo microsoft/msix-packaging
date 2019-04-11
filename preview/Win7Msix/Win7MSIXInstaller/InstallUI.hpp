@@ -21,7 +21,7 @@ static HWND g_progressHWnd = NULL;
 static HWND g_CancelbuttonHWnd = NULL;
 static HWND g_LaunchbuttonHWnd = NULL;
 static bool g_launchCheckBoxState = true; /// launch checkbox is checked by default
-static bool g_installed = false;
+static bool g_installing = false; /// variable used to indicate that app installation is in progress
 
 class UI
 {
@@ -35,8 +35,17 @@ public:
 private:
     MsixRequest* m_msixRequest = nullptr;
 
-    HWND hWnd = NULL; //Parent Window Hwnd
-    std::wstring m_installOrUpdateText = GetStringResource(IDS_STRING_INSTALLTEXT); /// Default button and install screen UI text is 'Install'
+    //Parent Window Hwnd
+    HWND hWnd = NULL; 
+
+    /// Default prefix text on UI while prompting for app installation is 'Install'
+    std::wstring m_installOrUpdateText = GetStringResource(IDS_STRING_INSTALLTEXT);
+
+    /// Message to prompt user while cancelling app installation
+    std::wstring m_cancelPopUpMessage = GetStringResource(IDS_STRING_CANCEL_INSTALLPOPUP);
+
+    /// Popup message title while cancelling app installation
+    std::wstring m_cancelPopUpTitle = GetStringResource(IDS_STRING_CANCEL_POPUP_TITLE);
     std::wstring m_displayName = L"";
     std::wstring m_publisherCommonName = L"";
     ComPtr<IStream> m_logoStream;
@@ -115,12 +124,15 @@ public:
     /// 
     /// @param parentHWnd - the HWND of the window to add the checkbox to
     /// @param parentRect - the specs of the parent window
-    BOOL CreateLaunchButton(HWND parentHWnd, RECT parentRect);
+    /// @param xDiff - the x coordinate difference to create the button from the parent window
+    /// @param yDiff - the y coordinate difference to create the button from the parent window
+    BOOL CreateLaunchButton(HWND parentHWnd, RECT parentRect, int xDiff, int yDiff);
 
-    /// Changes the text of the lower right button
+    /// Changes the text of the lower right 'Install' button
+    /// Changes text to 'Update' in case of an update, changes text to 'Reinstall' in case app is already installed on the machine
     ///
     /// @param newMessage - the message to change the button to
-    BOOL ChangeButtonText(const std::wstring& newMessage);
+    BOOL ChangeInstallButtonText(const std::wstring& newMessage);
 
     /// Change the text of the installation window based on the given input
     ///
@@ -138,7 +150,7 @@ public:
     /// The add operation could be an update if V1 version of the package is already installed on the machine
     /// This method checks the same and sets the button and install screen UI text to 'Update'
     ///
-    void CheckIfUpdate();
+    void PreprocessRequest();
 
 };
 
