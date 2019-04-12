@@ -10,14 +10,21 @@ pr:
     - master
     - release_v*
   paths:
-    exclude:
-    - CODEOWNERS
-    - LICENCE
-    - preview/*
-    - README.md
-    - tdf-guidance.md
-    - THIRD PARTY CODE NOTICE
-
+    include:
+    - cmake/*
+    - lib/*
+    - pipelines/*
+    - resources/*
+    - samples/*
+    - src/*
+    - test/*
+    - CMakeLists.txt
+    - makeaosp.sh
+    - makeios.sh
+    - makelinux.sh
+    - makemac.sh
+    - makewin.cmd
+    - manifest.cmakein
 jobs:
 - job: Windows
   pool:

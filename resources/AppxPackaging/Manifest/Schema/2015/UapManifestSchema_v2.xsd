@@ -22,12 +22,14 @@
            xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
            xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
            xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+           xmlns:uap7="http://schemas.microsoft.com/appx/manifest/uap/windows10/7"
            xmlns:rescap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/7"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3"/>
 
   <xs:element name="Capability" substitutionGroup="f:CapabilityChoice">
@@ -56,6 +58,7 @@
       <xs:extension base="t:ST_NonEmptyString">
         <xs:attribute name="Id" use="required" type="t:ST_FileTypeAssociationSupportedVerbId"/>
         <xs:attribute name="Extended" use="optional" type="xs:boolean"/>
+        <xs:attribute ref="uap7:Default" use="optional"/>
         <xs:attributeGroup ref="rescap3:DdeExecAttributes"/>
       </xs:extension>
     </xs:simpleContent>

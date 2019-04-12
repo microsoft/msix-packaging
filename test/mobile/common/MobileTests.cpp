@@ -158,11 +158,11 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     //hr = RunTest(source + "bundles/ManifestDeclaresResourcePackageForAppPackage.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestHasExtraPackage.appxbundle", unpackFolder, full, 0);
     hr = RunTest(source + "bundles/ManifestIsMissing.appxbundle", unpackFolder, ss, 52);
-    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectArchitecture.appxbundle", unpackFolder, ss, 97);
-    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectName.appxbundle", unpackFolder, ss, 97);
-    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectPublisher.appxbundle", unpackFolder, ss, 97);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectArchitecture.appxbundle", unpackFolder, ss, 97); WIN8-era package
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectName.appxbundle", unpackFolder, ss, 97);         WIN8-era package
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectPublisher.appxbundle", unpackFolder, ss, 97);    WIN8-era package
     hr = RunTest(source + "bundles/ManifestPackageHasIncorrectSize.appxbundle", unpackFolder, ss, 97);
-    hr = RunTest(source + "bundles/ManifestPackageHasIncorrectVersion.appxbundle", unpackFolder, ss, 97);
+    //hr = RunTest(source + "bundles/ManifestPackageHasIncorrectVersion.appxbundle", unpackFolder, ss, 97);      WIN8-era package
     //hr = RunTest(source + "bundles/ManifestPackageHasInvalidOffset.appxbundle", unpackFolder, full, 0);
     //hr = RunTest(source + "bundles/ManifestPackageHasInvalidRange.appxbundle", unpackFolder, full, 0);
     hr = RunTest(source + "bundles/ManifestViolatesSchema.appxbundle", unpackFolder, ss, 4098);

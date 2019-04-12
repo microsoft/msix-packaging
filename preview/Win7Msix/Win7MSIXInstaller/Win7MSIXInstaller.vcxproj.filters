@@ -151,7 +151,7 @@
     </ClCompile>
     <ClCompile Include="ComServer.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile>
+    </ClCompile> 
     <ClCompile Include="MsixResponse.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -177,5 +177,8 @@
     <Image Include="icon2.ico">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="WindowsCompatibility.manifest" />
   </ItemGroup>
 </Project>

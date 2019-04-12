@@ -6,6 +6,7 @@ bundle=off
 xmlparserLib=applexml
 xmlparser="-DXML_PARSER=applexml"
 addressSanitizerFlag=off
+validationParser=off
 
 usage()
 {
@@ -15,6 +16,7 @@ usage()
     echo $'\t' "-sb Skip bundle support."
     echo $'\t' "-parser-xerces Use xerces xml parser instead of default apple xml parser."
     echo $'\t' "-asan Turn on address sanitizer for memory corruption detection."
+    echo $'\t' "--validation-parser, -vp Enable XML schema validation."
 }
 
 printsetup()
@@ -24,6 +26,7 @@ printsetup()
     echo "Skip bundle support:" $bundle
     echo "parser:" $xmlparserLib
     echo "Address Sanitizer:" $addressSanitizerFlag
+    echo "Validation parser:" $validationParser
 }
 
 while [ "$1" != "" ]; do
@@ -42,6 +45,10 @@ while [ "$1" != "" ]; do
                 ;;
         -sb )   bundle="on"
                 ;;
+        --validation-parser ) validationParser=on
+                ;;
+        -vp )   validationParser=on
+                ;;
         -h )    usage
                 exit
                 ;;
@@ -58,5 +65,6 @@ cd .vs
 # clean up any old builds of msix modules
 find . -name *msix* -d | xargs rm -r
 
-cmake -DCMAKE_BUILD_TYPE=$build $zlib -DSKIP_BUNDLES=$bundle $xmlparser $addressSanitizer -DMACOS=on ..
+echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DSKIP_BUNDLES="$bundle $xmlparser $addressSanitizer "-DUSE_VALIDATION_PARSER="$validationParser "-DMACOS=on .."
+cmake -DCMAKE_BUILD_TYPE=$build $zlib -DSKIP_BUNDLES=$bundle $xmlparser $addressSanitizer -DUSE_VALIDATION_PARSER=$validationParser -DMACOS=on ..
 make

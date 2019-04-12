@@ -23,11 +23,15 @@
            xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
            xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
            xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+           xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
+           xmlns:rescap5="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/5"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/5"/>
 
   <xs:element name="Extension" substitutionGroup="f:ApplicationExtensionChoice">
     <xs:complexType>
@@ -61,6 +65,7 @@
     <xs:attribute name="TaskId" type="t:ST_NonEmptyString" use="required"/>
     <xs:attribute name="Enabled" type="xs:boolean" use="optional"/>
     <xs:attribute name="DisplayName" type="t:ST_DisplayName" use="optional"/>
+    <xs:attribute ref="rescap5:ImmediateRegistration" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="CT_ToastNotificationActivation">
@@ -81,6 +86,7 @@
   <xs:element name="ExecutionAlias" substitutionGroup="uap3:ExecutionAliasChoice">
     <xs:complexType>
       <xs:attribute name="Alias" type="t:ST_ExecutableNoPath" use="required"/>
+      <xs:attribute ref="uap8:AllowOverride" use="optional"/>
     </xs:complexType>
   </xs:element>
 </xs:schema>

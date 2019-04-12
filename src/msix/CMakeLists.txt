@@ -195,6 +195,7 @@ add_library(${PROJECT_NAME} SHARED
     UnicodeConversion.cpp
     msix.cpp
     ZipObject.cpp
+    MSIXResource.cpp
     ${DirectoryObject}
     ${SHA256}
     ${Signature}

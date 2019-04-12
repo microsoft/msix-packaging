@@ -181,6 +181,9 @@
     <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
+    <Manifest>
+      <AdditionalManifestFiles>WindowsCompatibility.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="AddRemovePrograms.hpp" />
@@ -241,6 +244,9 @@
   <ItemGroup>
     <Image Include="icon1.ico" />
     <Image Include="icon2.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="WindowsCompatibility.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
