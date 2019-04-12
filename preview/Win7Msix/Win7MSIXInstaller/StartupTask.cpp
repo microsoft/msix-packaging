@@ -15,6 +15,9 @@ const PCWSTR StartupTask::HandlerName = L"StartupTask";
 /// TODO stop hardcode userID for my machine
 const PCWSTR StartupTask::TaskDefinitionXmlPrefix =
 L"<Task xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\
+        <RegistrationInfo>\
+            <Author>wcheng-win7\\wcheng</Author>\
+        </RegistrationInfo>\
         <Principals>\
             <Principal id=\"Author\">\
                 <UserId>wcheng-win7\\wcheng</UserId>\
@@ -44,27 +47,28 @@ L"<Task xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\
         </Settings>\
         <Actions Context=\"Author\">\
             <Exec>\
-        <Command>\"";
+                <Command>\"";
 const PCWSTR StartupTask::TaskDefinitionXmlPostfix =
                 L"\"</Command>\
             </Exec>\
         </Actions>\
     </Task>";
 
-const PCWSTR taskFolder = L"\\Microsoft\\Windows\\MsixCore";
+const PCWSTR windowsTaskFolderName = L"\\Microsoft\\Windows";
+const PCWSTR taskFolderName = L"MsixCore";
 
 HRESULT StartupTask::ExecuteForAddRequest()
 {
+    if (m_executable.empty())
+    {
+        return S_OK;
+    }
     /// TODO: reminder to generalize user ID
-
 
     AutoCoInitialize coInit;
     RETURN_IF_FAILED(coInit.Initialize(COINIT_MULTITHREADED));
     {
         // New scope so that ComPtrs are released prior to calling CoUninitialize
-        Bstr rootFolderPathBstr(taskFolder);
-
-        Bstr taskNameBstr(m_msixRequest->GetPackageInfo()->GetPackageFullName());
 
         VARIANT variantNull;
         ZeroMemory(&variantNull, sizeof(VARIANT));
@@ -78,8 +82,21 @@ HRESULT StartupTask::ExecuteForAddRequest()
             reinterpret_cast<void**>(&taskService)));
         RETURN_IF_FAILED(taskService->Connect(variantNull, variantNull, variantNull, variantNull));
 
-        ComPtr<ITaskFolder> taskFolder;
-        RETURN_IF_FAILED(taskService->GetFolder(rootFolderPathBstr, &taskFolder));
+        Bstr rootFolderPathBstr(windowsTaskFolderName);
+        ComPtr<ITaskFolder> rootFolder;
+        RETURN_IF_FAILED(taskService->GetFolder(rootFolderPathBstr, &rootFolder));
+
+        Bstr taskFolderBstr(taskFolderName);
+        ComPtr<ITaskFolder> msixCoreFolder;
+        HRESULT hrCreateFolder = rootFolder->CreateFolder(taskFolderBstr, variantNull /*sddl*/, &msixCoreFolder);
+        if (hrCreateFolder == HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS))
+        {
+            RETURN_IF_FAILED(rootFolder->GetFolder(taskFolderBstr, &msixCoreFolder));
+        }
+        else
+        {
+            RETURN_IF_FAILED(hrCreateFolder);
+        }
 
         ComPtr<ITaskDefinition> taskDefinition;
         RETURN_IF_FAILED(taskService->NewTask(0, &taskDefinition));
@@ -88,16 +105,50 @@ HRESULT StartupTask::ExecuteForAddRequest()
         Bstr taskDefinitionXmlBstr(taskDefinitionXml);
         RETURN_IF_FAILED(taskDefinition->put_XmlText(taskDefinitionXmlBstr));
 
+        Bstr taskNameBstr(m_msixRequest->GetPackageInfo()->GetPackageFullName());
         ComPtr<IRegisteredTask> registeredTask;
-        RETURN_IF_FAILED(taskFolder->RegisterTaskDefinition(taskNameBstr, taskDefinition.Get(), TASK_CREATE_OR_UPDATE,
-            variantNull /*userId*/, variantNull /*password*/, TASK_LOGON_SERVICE_ACCOUNT, variantNull /*sddl*/, &registeredTask));
+        RETURN_IF_FAILED(msixCoreFolder->RegisterTaskDefinition(taskNameBstr, taskDefinition.Get(), TASK_CREATE_OR_UPDATE,
+            variantNull /*userId*/, variantNull /*password*/, TASK_LOGON_INTERACTIVE_TOKEN, variantNull /*sddl*/, &registeredTask));
     }
     return S_OK;
 }
 
 HRESULT StartupTask::ExecuteForRemoveRequest()
 {
+    if (m_executable.empty())
+    {
+        return S_OK;
+    }
 
+    AutoCoInitialize coInit;
+    RETURN_IF_FAILED(coInit.Initialize(COINIT_MULTITHREADED));
+    {
+        // New scope so that ComPtrs are released prior to calling CoUninitialize
+
+        VARIANT variantNull;
+        ZeroMemory(&variantNull, sizeof(VARIANT));
+        variantNull.vt = VT_NULL;
+
+        ComPtr<ITaskService> taskService;
+        RETURN_IF_FAILED(CoCreateInstance(CLSID_TaskScheduler,
+            NULL,
+            CLSCTX_INPROC_SERVER,
+            IID_ITaskService,
+            reinterpret_cast<void**>(&taskService)));
+        RETURN_IF_FAILED(taskService->Connect(variantNull, variantNull, variantNull, variantNull));
+
+        Bstr rootFolderPathBstr(windowsTaskFolderName);
+        ComPtr<ITaskFolder> rootFolder;
+        RETURN_IF_FAILED(taskService->GetFolder(rootFolderPathBstr, &rootFolder));
+
+        Bstr taskFolderBstr(taskFolderName);
+        ComPtr<ITaskFolder> msixCoreFolder;
+        RETURN_IF_FAILED(rootFolder->GetFolder(taskFolderBstr, &msixCoreFolder));
+
+        Bstr taskNameBstr(m_msixRequest->GetPackageInfo()->GetPackageFullName());
+        ComPtr<IRegisteredTask> registeredTask;
+        RETURN_IF_FAILED(msixCoreFolder->DeleteTask(taskNameBstr, 0 /*flags*/));
+    }
     return S_OK;
 }
 

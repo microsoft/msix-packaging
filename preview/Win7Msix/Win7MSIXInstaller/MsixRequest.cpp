@@ -70,7 +70,8 @@ std::map<PCWSTR, HandlerInfo> RemoveHandlers =
     {AddRemovePrograms::HandlerName,    {AddRemovePrograms::CreateHandler,   Protocol::HandlerName}},
     {Protocol::HandlerName,             {Protocol::CreateHandler,            ComInterface::HandlerName}},
     {ComInterface::HandlerName,         {ComInterface::CreateHandler,        ComServer::HandlerName}},
-    {ComServer::HandlerName,            {ComServer::CreateHandler,           FileTypeAssociation::HandlerName}},
+    {ComServer::HandlerName,            {ComServer::CreateHandler,           StartupTask::HandlerName}},
+    {StartupTask::HandlerName,          {StartupTask::CreateHandler,         FileTypeAssociation::HandlerName}},
     {FileTypeAssociation::HandlerName,  {FileTypeAssociation::CreateHandler, Extractor::HandlerName}},
     {Extractor::HandlerName,            {Extractor::CreateHandler,           nullptr}},
 };

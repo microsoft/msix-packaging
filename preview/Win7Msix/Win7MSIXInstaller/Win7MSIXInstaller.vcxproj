@@ -176,7 +176,7 @@
       <AdditionalLibraryDirectories>..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
