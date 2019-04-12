@@ -12,15 +12,10 @@
 
 const PCWSTR StartupTask::HandlerName = L"StartupTask";
 
-/// TODO stop hardcode userID for my machine
 const PCWSTR StartupTask::TaskDefinitionXmlPrefix =
-L"<Task xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\
-        <RegistrationInfo>\
-            <Author>wcheng-win7\\wcheng</Author>\
-        </RegistrationInfo>\
+    L"<Task xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\
         <Principals>\
             <Principal id=\"Author\">\
-                <UserId>wcheng-win7\\wcheng</UserId>\
                 <LogonType>InteractiveToken</LogonType>\
                 <RunLevel>LeastPrivilege</RunLevel>\
             </Principal>\
@@ -63,7 +58,6 @@ HRESULT StartupTask::ExecuteForAddRequest()
     {
         return S_OK;
     }
-    /// TODO: reminder to generalize user ID
 
     AutoCoInitialize coInit;
     RETURN_IF_FAILED(coInit.Initialize(COINIT_MULTITHREADED));
