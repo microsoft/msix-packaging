@@ -17,7 +17,10 @@ HRESULT InstallComplete::ExecuteForAddRequest()
     if (!m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
     {
         AutoPtr<UI> ui = m_msixRequest->GetUI();
-        ui->SendInstallCompleteMsg();
+        if (ui)
+        {
+            ui->SendInstallCompleteMsg();
+        }
     }
     return S_OK;
 }

@@ -47,8 +47,8 @@ struct HandlerInfo
 std::map<PCWSTR, HandlerInfo> AddHandlers =
 {
     //HandlerName                         Function to create                      NextHandler                          ErrorHandlerInfo
-    {PopulatePackageInfo::HandlerName,    {PopulatePackageInfo::CreateHandler,    CreateAndShowUI::HandlerName,        ErrorHandler::HandlerName}},
-    {CreateAndShowUI::HandlerName,        {CreateAndShowUI::CreateHandler,        ProcessPotentialUpdate::HandlerName, ErrorHandler::HandlerName}},
+    {PopulatePackageInfo::HandlerName,    {PopulatePackageInfo::CreateHandler,    CreateAndShowUI::HandlerName,        nullptr}},
+    {CreateAndShowUI::HandlerName,        {CreateAndShowUI::CreateHandler,        ProcessPotentialUpdate::HandlerName, nullptr}},
     {ProcessPotentialUpdate::HandlerName, {ProcessPotentialUpdate::CreateHandler, Extractor::HandlerName,              ErrorHandler::HandlerName}},
     {Extractor::HandlerName,              {Extractor::CreateHandler,              StartMenuLink::HandlerName,          ErrorHandler::HandlerName}},
     {StartMenuLink::HandlerName,          {StartMenuLink::CreateHandler,          AddRemovePrograms::HandlerName,      ErrorHandler::HandlerName}},
