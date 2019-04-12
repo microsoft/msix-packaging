@@ -339,4 +339,4 @@ foreach(FILE ${RESOURCES_CERTS})
 endforeach()
 
 configure_file(${CMAKE_PROJECT_ROOT}/src/inc/MSIXResource.hpp.cmakein ${CMAKE_PROJECT_ROOT}/src/inc/MSIXResource.hpp CRLF)
-configure_file(${CMAKE_PROJECT_ROOT}/src/msix/MSIXResource.cpp.cmakein ${CMAKE_PROJECT_ROOT}/src/msix/MSIXResource.cpp CRLF)
+configure_file(${CMAKE_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp.cmakein ${CMAKE_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp CRLF)

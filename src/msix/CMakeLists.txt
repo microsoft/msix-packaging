@@ -170,32 +170,37 @@ set(LIB_PUBLIC_HEADERS
     ../inc/MsixErrors.hpp
 )
 
+list(APPEND CommonSrc
+    common/AppxFactory.cpp
+    common/msix.cpp
+    common/MSIXResource.cpp
+    common/Log.cpp
+    common/UnicodeConversion.cpp
+    common/Encoding.cpp
+    common/Exceptions.cpp
+    common/AppxPackageInfo.cpp
+    common/AppxManifestObject.cpp
+)
+
 # Bundle specific files
 set(BundleSources)
 if(NOT SKIP_BUNDLES)
     list(APPEND BundleSources
-        AppxBundleManifest.cpp
-        ApplicabilityCommon.cpp
+        unpack/AppxBundleManifest.cpp
+        unpack/ApplicabilityCommon.cpp
         ${Applicability}
     )
 endif()
 
-# Define the library
-add_library(${PROJECT_NAME} SHARED 
-    AppxBlockMapObject.cpp
-    AppxFactory.cpp
-    AppxManifestObject.cpp
-    AppxPackageObject.cpp
-    AppxPackageInfo.cpp
-    AppxSignature.cpp
-    Encoding.cpp
-    Exceptions.cpp
-    InflateStream.cpp
-    Log.cpp
-    UnicodeConversion.cpp
-    msix.cpp
-    ZipObject.cpp
-    MSIXResource.cpp
+# TODO: haven't look into what can be shared from the PAL
+#       for now add all to unpack and refactor as necessary
+list(APPEND UnpackSrc
+    unpack/AppxBlockMapObject.cpp
+    unpack/AppxPackageObject.cpp
+    unpack/AppxSignature.cpp
+    unpack/InflateStream.cpp
+    unpack/msixUnpack.cpp
+    unpack/ZipObject.cpp
     ${DirectoryObject}
     ${SHA256}
     ${Signature}
@@ -205,7 +210,13 @@ add_library(${PROJECT_NAME} SHARED
     ${BundleSources}
 )
 
-# Copy out public headers to <binary dir>/src/msix
+# Define the library
+add_library(${PROJECT_NAME} SHARED 
+    ${CommonSrc}
+    ${UnpackSrc}
+)
+
+# Copy out public headers to <binary dir>/src/unpack
 configure_file(../inc/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
 configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
 configure_file(../inc/MsixErrors.hpp ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
@@ -253,7 +264,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 if(((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
     # for macos and ios use the inbox libcompression zlib apis instead of zlib, unless zlib is explicitly requested.
     message(STATUS "MSIX takes a dependency on inbox libcompression")
-    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Apple)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/unpack/PAL/DataCompression/Apple)
     target_link_libraries(${PROJECT_NAME} PRIVATE libcompression.dylib)
 elseif((AOSP) AND (NOT USE_MSIX_SDK_ZLIB))
     # for AOSP, use the libz.so from the android ndk.
@@ -264,7 +275,7 @@ else() # WIN32 or USE_MSIX_SDK_ZLIB
     target_include_directories(${PROJECT_NAME} PRIVATE 
             ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
             ${CMAKE_PROJECT_ROOT}/lib/zlib
-            ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Zlib
+            ${CMAKE_PROJECT_ROOT}/src/unpack/PAL/DataCompression/Zlib
         )
     if(USE_SHARED_ZLIB)
         message(STATUS "MSIX takes a dynamic dependency on zlib")
