@@ -30,6 +30,7 @@
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
 #include "ErrorHandler.hpp"
+#include "ValidateRequest.hpp"
 
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
@@ -47,7 +48,8 @@ std::map<PCWSTR, HandlerInfo> AddHandlers =
 {
     //HandlerName                         Function to create                      NextHandler                          ErrorHandlerInfo
     {PopulatePackageInfo::HandlerName,    {PopulatePackageInfo::CreateHandler,    CreateAndShowUI::HandlerName,        ErrorHandler::HandlerName}},
-    {CreateAndShowUI::HandlerName,        {CreateAndShowUI::CreateHandler,        ProcessPotentialUpdate::HandlerName, ErrorHandler::HandlerName}},
+    {CreateAndShowUI::HandlerName,        {CreateAndShowUI::CreateHandler,        ValidateRequest::HandlerName,        ErrorHandler::HandlerName}},
+    {ValidateRequest::HandlerName,        {ValidateRequest::CreateHandler,        ProcessPotentialUpdate::HandlerName, ErrorHandler::HandlerName } },
     {ProcessPotentialUpdate::HandlerName, {ProcessPotentialUpdate::CreateHandler, Extractor::HandlerName,              ErrorHandler::HandlerName}},
     {Extractor::HandlerName,              {Extractor::CreateHandler,              StartMenuLink::HandlerName,          ErrorHandler::HandlerName}},
     {StartMenuLink::HandlerName,          {StartMenuLink::CreateHandler,          AddRemovePrograms::HandlerName,      ErrorHandler::HandlerName}},

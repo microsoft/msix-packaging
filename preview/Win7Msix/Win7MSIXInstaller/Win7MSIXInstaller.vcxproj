@@ -212,6 +212,7 @@
     <ClInclude Include="RegistryKey.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="StartMenuLink.hpp" />
+    <ClInclude Include="ValidateRequest.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ComInterface.cpp" />
@@ -234,6 +235,7 @@
     <ClCompile Include="PopulatePackageInfo.cpp" />
     <ClCompile Include="AddRemovePrograms.cpp" />
     <ClCompile Include="StartMenuLink.cpp" />
+    <ClCompile Include="ValidateRequest.cpp" />
     <ClCompile Include="Win7MSIXInstaller.cpp" />
   </ItemGroup>
   <ItemGroup>
