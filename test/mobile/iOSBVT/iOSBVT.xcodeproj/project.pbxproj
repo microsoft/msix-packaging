@@ -7,6 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4C074DF8225EA89700123C06 /* Extra_file_in_blockmap.msix in Resources */ = {isa = PBXBuildFile; fileRef = 4C074DF7225EA89700123C06 /* Extra_file_in_blockmap.msix */; };
+		4C074DFA225EA8AD00123C06 /* File_missing_from_blockmap.msix in Resources */ = {isa = PBXBuildFile; fileRef = 4C074DF9225EA8AD00123C06 /* File_missing_from_blockmap.msix */; };
+		4C074DFC225EA8C100123C06 /* Invalid_Bad_Block.msix in Resources */ = {isa = PBXBuildFile; fileRef = 4C074DFB225EA8C100123C06 /* Invalid_Bad_Block.msix */; };
+		4C074DFE225EA8D100123C06 /* Size_wrong_uncompressed.msix in Resources */ = {isa = PBXBuildFile; fileRef = 4C074DFD225EA8D100123C06 /* Size_wrong_uncompressed.msix */; };
+		4C074DFF225EA90200123C06 /* Size_wrong_uncompressed.msix in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C074DFD225EA8D100123C06 /* Size_wrong_uncompressed.msix */; };
+		4C074E00225EA90200123C06 /* Invalid_Bad_Block.msix in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C074DFB225EA8C100123C06 /* Invalid_Bad_Block.msix */; };
+		4C074E01225EA90200123C06 /* File_missing_from_blockmap.msix in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C074DF9225EA8AD00123C06 /* File_missing_from_blockmap.msix */; };
+		4C074E02225EA90200123C06 /* Extra_file_in_blockmap.msix in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4C074DF7225EA89700123C06 /* Extra_file_in_blockmap.msix */; };
 		4C14D5D52204CC2A0034C5CE /* libmsix.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C14D5D32204CC2A0034C5CE /* libmsix.dylib */; };
 		4C14D5D62204CC2A0034C5CE /* libmsixtestcommon.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C14D5D42204CC2A0034C5CE /* libmsixtestcommon.dylib */; };
 		4C14D5D72204CC400034C5CE /* libmsix.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 4C14D5D32204CC2A0034C5CE /* libmsix.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
@@ -221,22 +229,25 @@
 			dstPath = BlockMap;
 			dstSubfolderSpec = 7;
 			files = (
+				4C074DFF225EA90200123C06 /* Size_wrong_uncompressed.msix in CopyFiles */,
+				4C074E00225EA90200123C06 /* Invalid_Bad_Block.msix in CopyFiles */,
+				4C074E01225EA90200123C06 /* File_missing_from_blockmap.msix in CopyFiles */,
+				4C074E02225EA90200123C06 /* Extra_file_in_blockmap.msix in CopyFiles */,
 				EEE405B620227ED8007B25CE /* Bad_Namespace_Blockmap.appx in CopyFiles */,
 				EEE405B720227ED8007B25CE /* ContentTypes_in_blockmap.appx in CopyFiles */,
 				EEE405B820227ED8007B25CE /* Duplicate_file_in_blockmap.appx in CopyFiles */,
-				EEE405B920227ED8007B25CE /* Extra_file_in_blockmap.appx in CopyFiles */,
-				EEE405BA20227ED8007B25CE /* File_missing_from_blockmap.appx in CopyFiles */,
-				EEE405BB20227ED8007B25CE /* HelloWorld.appx in CopyFiles */,
-				EEE405BC20227ED8007B25CE /* Invalid_Bad_Block.appx in CopyFiles */,
 				EEE405BD20227ED8007B25CE /* Missing_Manifest_in_blockmap.appx in CopyFiles */,
 				EEE405BE20227ED8007B25CE /* No_blockmap.appx in CopyFiles */,
-				EEE405BF20227ED8007B25CE /* Size_wrong_uncompressed.appx in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4C074DF7225EA89700123C06 /* Extra_file_in_blockmap.msix */ = {isa = PBXFileReference; lastKnownFileType = file; path = Extra_file_in_blockmap.msix; sourceTree = "<group>"; };
+		4C074DF9225EA8AD00123C06 /* File_missing_from_blockmap.msix */ = {isa = PBXFileReference; lastKnownFileType = file; path = File_missing_from_blockmap.msix; sourceTree = "<group>"; };
+		4C074DFB225EA8C100123C06 /* Invalid_Bad_Block.msix */ = {isa = PBXFileReference; lastKnownFileType = file; path = Invalid_Bad_Block.msix; sourceTree = "<group>"; };
+		4C074DFD225EA8D100123C06 /* Size_wrong_uncompressed.msix */ = {isa = PBXFileReference; lastKnownFileType = file; path = Size_wrong_uncompressed.msix; sourceTree = "<group>"; };
 		4C14D5D32204CC2A0034C5CE /* libmsix.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsix.dylib; path = ../../../.vs/lib/libmsix.dylib; sourceTree = "<group>"; };
 		4C14D5D42204CC2A0034C5CE /* libmsixtestcommon.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsixtestcommon.dylib; path = ../../../.vs/lib/libmsixtestcommon.dylib; sourceTree = "<group>"; };
 		4C7F375220783FC2002942F4 /* BlockMapContainsPayloadPackage.appxbundle */ = {isa = PBXFileReference; lastKnownFileType = file; path = BlockMapContainsPayloadPackage.appxbundle; sourceTree = "<group>"; };
@@ -304,13 +315,8 @@
 		EEE4056D20225EF5007B25CE /* Bad_Namespace_Blockmap.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Bad_Namespace_Blockmap.appx; sourceTree = "<group>"; };
 		EEE4056E20225EF5007B25CE /* ContentTypes_in_blockmap.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = ContentTypes_in_blockmap.appx; sourceTree = "<group>"; };
 		EEE4056F20225EF5007B25CE /* Duplicate_file_in_blockmap.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Duplicate_file_in_blockmap.appx; sourceTree = "<group>"; };
-		EEE4057020225EF5007B25CE /* Extra_file_in_blockmap.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Extra_file_in_blockmap.appx; sourceTree = "<group>"; };
-		EEE4057120225EF5007B25CE /* File_missing_from_blockmap.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = File_missing_from_blockmap.appx; sourceTree = "<group>"; };
-		EEE4057220225EF5007B25CE /* HelloWorld.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = HelloWorld.appx; sourceTree = "<group>"; };
-		EEE4057320225EF5007B25CE /* Invalid_Bad_Block.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Invalid_Bad_Block.appx; sourceTree = "<group>"; };
 		EEE4057420225EF5007B25CE /* Missing_Manifest_in_blockmap.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Missing_Manifest_in_blockmap.appx; sourceTree = "<group>"; };
 		EEE4057520225EF5007B25CE /* No_blockmap.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = No_blockmap.appx; sourceTree = "<group>"; };
-		EEE4057620225EF5007B25CE /* Size_wrong_uncompressed.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = Size_wrong_uncompressed.appx; sourceTree = "<group>"; };
 		EEE4057720225EF5007B25CE /* CentennialCoffee.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = CentennialCoffee.appx; sourceTree = "<group>"; };
 		EEE4057820225EF5007B25CE /* Empty.appx */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Empty.appx; sourceTree = "<group>"; };
 		EEE4057920225EF5007B25CE /* HelloWorld.appx */ = {isa = PBXFileReference; lastKnownFileType = file; path = HelloWorld.appx; sourceTree = "<group>"; };
@@ -493,16 +499,15 @@
 		EEE4056C20225EF5007B25CE /* BlockMap */ = {
 			isa = PBXGroup;
 			children = (
+				4C074DFD225EA8D100123C06 /* Size_wrong_uncompressed.msix */,
+				4C074DFB225EA8C100123C06 /* Invalid_Bad_Block.msix */,
+				4C074DF9225EA8AD00123C06 /* File_missing_from_blockmap.msix */,
+				4C074DF7225EA89700123C06 /* Extra_file_in_blockmap.msix */,
 				EEE4056D20225EF5007B25CE /* Bad_Namespace_Blockmap.appx */,
 				EEE4056E20225EF5007B25CE /* ContentTypes_in_blockmap.appx */,
 				EEE4056F20225EF5007B25CE /* Duplicate_file_in_blockmap.appx */,
-				EEE4057020225EF5007B25CE /* Extra_file_in_blockmap.appx */,
-				EEE4057120225EF5007B25CE /* File_missing_from_blockmap.appx */,
-				EEE4057220225EF5007B25CE /* HelloWorld.appx */,
-				EEE4057320225EF5007B25CE /* Invalid_Bad_Block.appx */,
 				EEE4057420225EF5007B25CE /* Missing_Manifest_in_blockmap.appx */,
 				EEE4057520225EF5007B25CE /* No_blockmap.appx */,
-				EEE4057620225EF5007B25CE /* Size_wrong_uncompressed.appx */,
 			);
 			path = BlockMap;
 			sourceTree = "<group>";
