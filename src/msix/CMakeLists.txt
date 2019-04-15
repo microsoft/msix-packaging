@@ -6,6 +6,8 @@ cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
 project(msix)
 
+add_definitions(-DMSIX_UNPACK=1)
+
 if(SKIP_BUNDLES)
     message(STATUS "Bundle support disabled.")
 else()
@@ -172,7 +174,6 @@ set(LIB_PUBLIC_HEADERS
 
 list(APPEND CommonSrc
     common/AppxFactory.cpp
-    common/msix.cpp
     common/MSIXResource.cpp
     common/Log.cpp
     common/UnicodeConversion.cpp
@@ -199,7 +200,6 @@ list(APPEND UnpackSrc
     unpack/AppxPackageObject.cpp
     unpack/AppxSignature.cpp
     unpack/InflateStream.cpp
-    unpack/msixUnpack.cpp
     unpack/ZipObject.cpp
     ${DirectoryObject}
     ${SHA256}
@@ -212,6 +212,7 @@ list(APPEND UnpackSrc
 
 # Define the library
 add_library(${PROJECT_NAME} SHARED 
+    msix.cpp
     ${CommonSrc}
     ${UnpackSrc}
 )
@@ -224,8 +225,6 @@ configure_file(../inc/MsixErrors.hpp ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
 # Linker and includes
 # Include MSIX headers
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/inc)
-
-
 
 if(WIN32)
     string(REPLACE "/GR" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
