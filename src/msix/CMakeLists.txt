@@ -6,6 +6,7 @@ cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
 project(msix)
 
+# TODO: Only define this when we want unpack
 add_definitions(-DMSIX_UNPACK=1)
 
 if(SKIP_BUNDLES)
@@ -263,7 +264,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 if(((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
     # for macos and ios use the inbox libcompression zlib apis instead of zlib, unless zlib is explicitly requested.
     message(STATUS "MSIX takes a dependency on inbox libcompression")
-    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/unpack/PAL/DataCompression/Apple)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Apple)
     target_link_libraries(${PROJECT_NAME} PRIVATE libcompression.dylib)
 elseif((AOSP) AND (NOT USE_MSIX_SDK_ZLIB))
     # for AOSP, use the libz.so from the android ndk.
@@ -274,7 +275,7 @@ else() # WIN32 or USE_MSIX_SDK_ZLIB
     target_include_directories(${PROJECT_NAME} PRIVATE 
             ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
             ${CMAKE_PROJECT_ROOT}/lib/zlib
-            ${CMAKE_PROJECT_ROOT}/src/unpack/PAL/DataCompression/Zlib
+            ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Zlib
         )
     if(USE_SHARED_ZLIB)
         message(STATUS "MSIX takes a dynamic dependency on zlib")
