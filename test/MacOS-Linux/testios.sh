@@ -2,14 +2,14 @@
 testfailed=0
 device="iPhone 8"
 project=../mobile/iOSBVT/iOSBVT.xcodeproj
-sdk=iphonesimulator11.4
+sdk=iphonesimulator
 
 usage()
 {
     echo "usage: ./testios [-d <device>] [-p <project>] [-sdk <sdk>] [-o <ouput location>]"
     echo $'\t' "-d <device>. Default iPhone 8"
     echo $'\t' "-p <project>. Default is ../mobile/iOSBVT/iOSBVT.xcodeproj"
-    echo $'\t' "-sdk <sdk>. Default is iphonesimulator11.4"
+    echo $'\t' "-sdk <sdk>. Default is iphonesimulator"
     echo $'\t' "-o <output file>. Test result output file. Default is /private/tmp/testResults.txt"
 }
 
