@@ -1,5 +1,3 @@
-    // UI Functions
-
 #include "InstallUI.hpp"
 #include <windows.h>
 #include <string>
@@ -34,8 +32,8 @@ const PCWSTR CreateAndShowUI::HandlerName = L"UI";
 HRESULT GetStreamFromFile(IAppxPackageReader* package, LPCWCHAR name, IStream** stream)
 {
     *stream = nullptr;
-
     ComPtr<IAppxFilesEnumerator> files;
+
     RETURN_IF_FAILED(package->GetPayloadFiles(&files));
 
     BOOL hasCurrent = FALSE;
@@ -91,6 +89,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         ui->CreateCheckbox(hWnd, windowRect);
         ui->InstallButton(hWnd, windowRect);
+        ui->CreateLaunchButton(hWnd, windowRect, 275, 60);
         break;
     case WM_PAINT:
     {
@@ -105,7 +104,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         {
             case IDC_INSTALLBUTTON:
             {
-                g_installed = true;
+                g_installing = true;
+                DestroyWindow(g_LaunchbuttonHWnd);
                 DestroyWindow(g_buttonHWnd);
                 ui->CreateCancelButton(hWnd, windowRect);
                 UpdateWindow(hWnd);
@@ -146,8 +146,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     case WM_INSTALLCOMPLETE_MSG:
     {
+        g_installing = false; // installation complete, clicking on 'x' should not show the cancellation popup
         DestroyWindow(g_CancelbuttonHWnd);
-        ui->CreateLaunchButton(hWnd, windowRect);
+        ui->CreateLaunchButton(hWnd, windowRect, 150, 60);
+        ShowWindow(g_LaunchbuttonHWnd, SW_SHOW);
         UpdateWindow(hWnd);
         ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
         ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
@@ -191,7 +193,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     case WM_CLOSE:
-        if (g_installed)
+        //show popup asking if user wants to stop installation only during app installation
+        if (g_installing)
         {
             ui->ConfirmAppCancel(hWnd);
         }
@@ -217,7 +220,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 void UI::ConfirmAppCancel(HWND hWnd)
 {
-    const int cancelResult = MessageBox(hWnd, L"Are you sure you want to cancel the install?", L"Cancel App install", MB_YESNO);
+    const int cancelResult = MessageBox(hWnd, m_cancelPopUpMessage.c_str(), m_cancelPopUpTitle.c_str(), MB_YESNO);
     switch (cancelResult)
     {
     case IDYES:
@@ -390,17 +393,24 @@ HRESULT CreateAndShowUI::CreateHandler(MsixRequest * msixRequest, IPackageHandle
     return S_OK;
 }
 
-void UI::CheckIfUpdate()
+void UI::PreprocessRequest()
 {
     std::wstring currentPackageFamilyName = GetFamilyNameFromFullName(m_msixRequest->GetPackageInfo()->GetPackageFullName());
     for (auto& p : std::experimental::filesystem::directory_iterator(m_msixRequest->GetFilePathMappings()->GetMsix7Directory()))
     {
         std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
-        if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
-            && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
+        if (CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
         {
+            /// Same package is already installed
+            ChangeInstallButtonText(GetStringResource(IDS_STRING_REINSTALLAPP)); /// change install button text to 'reinstall'
+            ShowWindow(g_LaunchbuttonHWnd, SW_SHOW); /// show launch button window
+        }
+        else if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName))
+        {
+            /// Package with same family name exists and may be an update
             m_installOrUpdateText = GetStringResource(IDS_STRING_UPDATETEXT);
-            ChangeButtonText(GetStringResource(IDS_STRING_UPDATETEXT));
+            m_cancelPopUpMessage = GetStringResource(IDS_STRING_CANCEL_UPDATEPOPUP);
+            ChangeInstallButtonText(GetStringResource(IDS_STRING_UPDATETEXT));       
         }
     }
 }
@@ -501,16 +511,16 @@ BOOL UI::CreateCancelButton(HWND parentHWnd, RECT parentRect)
 	return TRUE;
 }
 
-BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect) 
+BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect, int xDiff, int yDiff) 
 {
     LPVOID buttonPointer = nullptr;
     g_LaunchbuttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
         L"BUTTON",
         L"Launch",  // text
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
-        parentRect.right - 100 - 50, // x coord
-        parentRect.bottom - 60,  // y coord
+        WS_TABSTOP | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
+        parentRect.right - xDiff, // x coord
+        parentRect.bottom - yDiff,  // y coord
         120,  // width
         35,  // height
         parentHWnd,  // parent
@@ -520,7 +530,7 @@ BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect)
     return TRUE;
 }
 
-BOOL UI::ChangeButtonText(const std::wstring& newMessage)
+BOOL UI::ChangeInstallButtonText(const std::wstring& newMessage)
 {
     SendMessage(g_buttonHWnd, WM_SETTEXT, NULL, reinterpret_cast<LPARAM>(newMessage.c_str()));
     return ShowWindow(g_buttonHWnd, SW_SHOW);
@@ -585,7 +595,7 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
 
     SetHwnd(hWnd);
     SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
-    CheckIfUpdate();
+    PreprocessRequest();
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
 
