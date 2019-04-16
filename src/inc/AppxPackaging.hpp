@@ -1552,6 +1552,7 @@ enum MSIX_APPLICABILITY_OPTIONS
                           MSIX_PLATFORM_LINUX          | \
                           MSIX_PLATFORM_WEB              \
 
+// Unpack
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
@@ -1580,6 +1581,14 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     IStream* stream,
     char* utf8Destination
+) noexcept;
+
+// Pack
+// TODO: expand flags flags as needed.
+MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
+    MSIX_VALIDATION_OPTION validationOption,
+    char* directoryPath,
+    char* outputPackage
 ) noexcept;
 
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying

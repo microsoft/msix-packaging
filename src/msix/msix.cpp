@@ -124,6 +124,8 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
     #endif
 }
 
+#ifdef MSIX_UNPACK
+
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
@@ -215,3 +217,28 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     return static_cast<HRESULT>(MSIX::Error::NotSupported);
 #endif
 } CATCH_RETURN();
+
+#endif // MSIX_UNPACK
+
+#ifdef MSIX_PACK
+
+MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
+    MSIX_VALIDATION_OPTION validationOption,
+    char* directoryPath,
+    char* outputPackage
+) noexcept try
+{
+    ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
+        (directoryPath != nullptr && outputPackage != nullptr), 
+        "Invalid parameters");
+    
+    // TODO:
+    // - Look at the output directory a get a std::multimap ordered by last modified time
+    // - get stream to manfiest
+    // - add new method to IPackage that takes a std::multimap with the files and stream of the manifest
+
+
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
+#endif
