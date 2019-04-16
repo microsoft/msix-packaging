@@ -80,6 +80,7 @@ SpecializeUuidOfImpl(IAppxBundleReader);
 SpecializeUuidOfImpl(IAppxBundleManifestReader);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoEnumerator);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfo);
+SpecializeUuidOfImpl(IAppxPackageWriter3);
 #endif
 
 #else
@@ -120,6 +121,7 @@ interface IAppxBundleReader;
 interface IAppxBundleManifestReader;
 interface IAppxBundleManifestPackageInfoEnumerator;
 interface IAppxBundleManifestPackageInfo;
+interface IAppxPackageWriter3;
 
 extern "C"{
 
@@ -1044,6 +1046,49 @@ enum tagLOCKTYPE
     };
 #endif 	/* __IAppxBundleManifestPackageInfo_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxPackageWriter_INTERFACE_DEFINED__
+#define __IAppxPackageWriter_INTERFACE_DEFINED__
+
+    // {9099e33b-246f-41e4-881a-008eb613f858}
+    MSIX_INTERFACE(IAppxPackageWriter, 0x9099e33b,0x246f,0x41e4,0x88,0x1a,0x00,0x8e,0xb6,0x13,0xf8,0x58);
+    interface IAppxPackageWriter : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadFile( 
+            /* [string][in] */ LPCWSTR fileName,
+            /* [string][in] */ LPCWSTR contentType,
+            /* [in] */ APPX_COMPRESSION_OPTION compressionOption,
+            /* [in] */ IStream* inputStream) noexcept = 0;
+        
+        virtual HRESULT STDMETHODCALLTYPE Close( 
+            /* [in] */ IStream *manifest) noexcept = 0;
+    };
+
+#endif 	/* __IAppxPackageWriter_INTERFACE_DEFINED__ */
+
+#ifndef __IAppxPackageWriter3_INTERFACE_DEFINED__
+#define __IAppxPackageWriter3_INTERFACE_DEFINED__
+
+    typedef struct APPX_PACKAGE_WRITER_PAYLOAD_STREAM
+    {
+        IStream* inputStream;
+        LPCWSTR fileName;
+        LPCWSTR contentType;
+        APPX_COMPRESSION_OPTION compressionOption;
+    } 	APPX_PACKAGE_WRITER_PAYLOAD_STREAM;
+
+    // {a83aacd3-41c0-4501-b8a3-74164f50b2fd}
+    MSIX_INTERFACE(IAppxPackageWriter3, 0xa83aacd3,0x41c0,0x4501,0xb8,0xa3,0x74,0x16,0x4f,0x50,0xb2,0xfd);
+    interface IAppxPackageWriter3 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadFiles( 
+            /* [in] */ UINT32 fileCount,
+            /* [size_is][in] */ APPX_PACKAGE_WRITER_PAYLOAD_STREAM* payloadFiles,
+            /* [in] */ UINT64 memoryLimit) = 0;
+    };
+#endif 	/* __IAppxPackageWriter3_INTERFACE_DEFINED__ */
+
 } // extern "C"
 #endif // #ifdef WIN32
 
@@ -1197,6 +1242,8 @@ interface IAppxManifestQualifiedResourceUtf8;
 interface IAppxManifestResourcesEnumeratorUtf8;
 interface IAppxManifestTargetDeviceFamilyUtf8;
 interface IAppxPackageReaderUtf8;
+interface IAppxPackageWriterUtf8;
+interface IAppxPackageWriter3Utf8;
 
 #ifndef __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__
 #define __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__
@@ -1416,6 +1463,45 @@ interface IAppxPackageReaderUtf8;
             /* [retval][out] */  IAppxFile **file) noexcept = 0;
     };
 #endif 	/* __IAppxPackageReaderUtf8_INTERFACE_DEFINED__ */
+
+#ifndef __IAppxPackageWriterUtf8_INTERFACE_DEFINED__
+#define __IAppxPackageWriterUtf8_INTERFACE_DEFINED__
+
+    // {578ee26e-642a-4b03-aeda-8a374ff71b5b}
+    MSIX_INTERFACE(IAppxPackageWriterUtf8, 0x578ee26e,0x642a,0x4b03,0xae,0xda,0x8a,0x37,0x4f,0xf7,0x1b,0x5b);
+    interface IAppxPackageWriterUtf8 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadFile( 
+            /* [string][in] */ LPCSTR fileName,
+            /* [string][in] */ LPCSTR contentType,
+            /* [in] */ APPX_COMPRESSION_OPTION compressionOption,
+            /* [in] */ IStream* inputStream) noexcept = 0;
+    };
+#endif 	/* __IAppxPackageWriterUtf8_INTERFACE_DEFINED__ */
+
+#ifndef __IAppxPackageWriter3Utf8_INTERFACE_DEFINED__
+#define __IAppxPackageWriter3Utf8_INTERFACE_DEFINED__
+
+    typedef struct APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8
+    {
+        IStream* inputStream;
+        LPCSTR fileName;
+        LPCSTR contentType;
+        APPX_COMPRESSION_OPTION compressionOption;
+    } 	APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8;
+
+    // {fc8f7fd6-3a35-49cc-b62f-ea0ee839e25e}
+    MSIX_INTERFACE(IAppxPackageWriter3Utf8, 0xfc8f7fd6,0x3a35,0x49cc,0xb6,0x2f,0xea,0x0e,0xe8,0x39,0xe2,0x5e);
+    interface IAppxPackageWriter3Utf8 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadFiles( 
+            /* [in] */ UINT32 fileCount,
+            /* [size_is][in] */ APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8* payloadFiles,
+            /* [in] */ UINT64 memoryLimit) = 0;
+    };
+#endif 	/* __IAppxPackageWriter3Utf8_INTERFACE_DEFINED__ */
 
 extern "C++" {
 typedef /* [v1_enum] */
