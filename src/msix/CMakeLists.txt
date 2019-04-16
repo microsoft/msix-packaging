@@ -6,6 +6,9 @@ cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
 project(msix)
 
+# TODO: Only define this when we want unpack
+add_definitions(-DMSIX_UNPACK=1)
+
 if(SKIP_BUNDLES)
     message(STATUS "Bundle support disabled.")
 else()
@@ -169,32 +172,35 @@ set(LIB_PUBLIC_HEADERS
     ../inc/MsixErrors.hpp
 )
 
+list(APPEND CommonSrc
+    common/AppxFactory.cpp
+    common/MSIXResource.cpp
+    common/Log.cpp
+    common/UnicodeConversion.cpp
+    common/Encoding.cpp
+    common/Exceptions.cpp
+    common/AppxPackageInfo.cpp
+    common/AppxManifestObject.cpp
+)
+
 # Bundle specific files
 set(BundleSources)
 if(NOT SKIP_BUNDLES)
     list(APPEND BundleSources
-        AppxBundleManifest.cpp
-        ApplicabilityCommon.cpp
+        unpack/AppxBundleManifest.cpp
+        unpack/ApplicabilityCommon.cpp
         ${Applicability}
     )
 endif()
 
-# Define the library
-add_library(${PROJECT_NAME} SHARED 
-    AppxBlockMapObject.cpp
-    AppxFactory.cpp
-    AppxManifestObject.cpp
-    AppxPackageObject.cpp
-    AppxPackageInfo.cpp
-    AppxSignature.cpp
-    Encoding.cpp
-    Exceptions.cpp
-    InflateStream.cpp
-    Log.cpp
-    UnicodeConversion.cpp
-    msix.cpp
-    ZipObject.cpp
-    MSIXResource.cpp
+# TODO: haven't look into what can be shared from the PAL
+#       for now add all to unpack and refactor as necessary
+list(APPEND UnpackSrc
+    unpack/AppxBlockMapObject.cpp
+    unpack/AppxPackageObject.cpp
+    unpack/AppxSignature.cpp
+    unpack/InflateStream.cpp
+    unpack/ZipObject.cpp
     ${DirectoryObject}
     ${SHA256}
     ${Signature}
@@ -204,7 +210,14 @@ add_library(${PROJECT_NAME} SHARED
     ${BundleSources}
 )
 
-# Copy out public headers to <binary dir>/src/msix
+# Define the library
+add_library(${PROJECT_NAME} SHARED 
+    msix.cpp
+    ${CommonSrc}
+    ${UnpackSrc}
+)
+
+# Copy out public headers to <binary dir>/src/unpack
 configure_file(../inc/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
 configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
 configure_file(../inc/MsixErrors.hpp ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
@@ -212,8 +225,6 @@ configure_file(../inc/MsixErrors.hpp ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
 # Linker and includes
 # Include MSIX headers
 target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/inc)
-
-
 
 if(WIN32)
     string(REPLACE "/GR" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

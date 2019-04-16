@@ -23,9 +23,9 @@ namespace MSIX {
     std::wstring utf8_to_wstring(const std::string& utf8string)
     {
         #ifdef WIN32
-        int size = MultiByteToWideChar(CP_UTF8, 0, utf8string.data(), utf8string.size(), nullptr, 0);
+        int size = MultiByteToWideChar(CP_UTF8, 0, utf8string.data(), static_cast<int>(utf8string.size()), nullptr, 0);
         std::wstring result(size, 0);
-        MultiByteToWideChar(CP_UTF8, 0, utf8string.data(), utf8string.size(), &result[0], size);
+        MultiByteToWideChar(CP_UTF8, 0, utf8string.data(), static_cast<int>(utf8string.size()), &result[0], size);
         #else
         auto converted = utf8_to_utf16(utf8string);
         std::wstring result(converted.begin(), converted.end());
@@ -43,9 +43,9 @@ namespace MSIX {
     std::string wstring_to_utf8(const std::wstring& utf16string)
     {
         #ifdef WIN32
-        int size = WideCharToMultiByte(CP_UTF8, 0, utf16string.data(), utf16string.size(), nullptr, 0, nullptr, nullptr);
+        int size = WideCharToMultiByte(CP_UTF8, 0, utf16string.data(), static_cast<int>(utf16string.size()), nullptr, 0, nullptr, nullptr);
         std::string result(size, 0);
-        WideCharToMultiByte(CP_UTF8, 0, utf16string.data(), utf16string.size(), &result[0], size, nullptr, nullptr);
+        WideCharToMultiByte(CP_UTF8, 0, utf16string.data(), static_cast<int>(utf16string.size()), &result[0], size, nullptr, nullptr);
         #else
         auto result = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
         #endif
