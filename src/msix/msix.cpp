@@ -13,8 +13,6 @@
 #include "AppxPackaging.hpp"
 #include "AppxFactory.hpp"
 #include "Log.hpp"
-
-// Unpack
 #include "DirectoryObject.hpp"
 #include "AppxPackageObject.hpp"
 
@@ -162,7 +160,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
     MSIX::ComPtr<IAppxPackageReader> reader;
     ThrowHrIfFailed(factory->CreatePackageReader(stream, &reader));
 
-    auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
+    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
@@ -210,7 +208,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     MSIX::ComPtr<IAppxBundleReader> reader;
     ThrowHrIfFailed(factory->CreateBundleReader(stream, &reader));
 
-    auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
+    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
     return static_cast<HRESULT>(MSIX::Error::OK);
 #else
@@ -231,9 +229,11 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
         (directoryPath != nullptr && outputPackage != nullptr), 
         "Invalid parameters");
-    
+
+    auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+    auto filesMap= from->GetFilesByLastModDate();
+
     // TODO:
-    // - Look at the output directory a get a std::multimap ordered by last modified time
     // - get stream to manfiest
     // - add new method to IPackage that takes a std::multimap with the files and stream of the manifest
 
@@ -241,4 +241,4 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
-#endif
+#endif // MSIX_PACK

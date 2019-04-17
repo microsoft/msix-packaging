@@ -22,10 +22,8 @@ namespace MSIX {
         ZipObject(IMsixFactory* factory, const ComPtr<IStream>& stream);
 
         // IStorageObject methods
-        const char* GetPathSeparator() override { return "/"; }
         std::vector<std::string> GetFileNames(FileNameOptions options) override;
         ComPtr<IStream> GetFile(const std::string& fileName) override;
-        ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override { NOTIMPLEMENTED; }
         std::string GetFileName() override;
 
     protected:

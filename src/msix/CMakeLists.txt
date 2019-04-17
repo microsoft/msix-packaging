@@ -6,8 +6,9 @@ cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
 project(msix)
 
-# TODO: Only define this when we want unpack
+# TODO: Only define this when we want unpack and pack
 add_definitions(-DMSIX_UNPACK=1)
+add_definitions(-DMSIX_PACK=1)
 
 if(SKIP_BUNDLES)
     message(STATUS "Bundle support disabled.")

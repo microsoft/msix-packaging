@@ -15,6 +15,7 @@
 #include "Encoding.hpp"
 #include "Enumerators.hpp"
 #include "AppxFile.hpp"
+#include "DirectoryObject.hpp"
 
 #ifdef BUNDLE_SUPPORT
 #include "Applicability.hpp"
@@ -415,7 +416,7 @@ namespace MSIX {
         }
     }
 
-    void AppxPackageObject::Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to)
+    void AppxPackageObject::Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IDirectoryObject>& to)
     {
         auto fileNames = GetFileNames(FileNameOptions::All);
         for (const auto& fileName : fileNames)
@@ -425,10 +426,7 @@ namespace MSIX {
             {
                 std::string targetName;
                 if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
-                {   // Don't use to->GetPathSeparator(). DirectoryObject::OpenFile created directories
-                    // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with
-                    // the package full name won't be created on Windows, but it will on other platforms.
-                    // This means that we have different behaviors in non-Win platforms.
+                {
                     auto manifest = m_appxManifest.As<IAppxManifestReader>();
                     ComPtr<IAppxManifestPackageId> packageId;
                     ThrowHrIfFailed(manifest->GetPackageId(&packageId));
@@ -460,8 +458,6 @@ namespace MSIX {
     }
 
     // IStorageObject
-    const char* AppxPackageObject::GetPathSeparator() { return "/"; }
-
     std::vector<std::string> AppxPackageObject::GetFileNames(FileNameOptions options)
     {
         std::vector<std::string> result;
@@ -501,8 +497,6 @@ namespace MSIX {
         }
         return result->second;
     }
-
-    ComPtr<IStream> AppxPackageObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) { NOTIMPLEMENTED; }
 
     std::string AppxPackageObject::GetFileName() { return m_container->GetFileName(); }
 

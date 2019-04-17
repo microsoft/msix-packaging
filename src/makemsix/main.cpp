@@ -18,7 +18,8 @@ enum class UserSpecified
     Nothing,
     Help,
     Unpack,
-    Unbundle
+    Unbundle,
+    Pack
 };
 
 // Tracks the state of the current parse operation as well as implements input validation
@@ -187,6 +188,13 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
         std::cout << "    specified output <directory>. The output has the same directory structure " << std::endl;
         std::cout << "    as the package. its packages will be unpacked in a directory named as the package full name" << std::endl;
         break;
+    case UserSpecified::Pack:
+        command = std::find(commands.begin(), commands.end(), "pack");
+        std::cout << "    " << toolName << " pack -p <output package> -d <directory to pack> [options] " << std::endl;
+        std::cout << std::endl;
+        std::cout << "Description:" << std::endl;
+        std::cout << "------------" << std::endl;
+        std::cout << "    TODO" << std::endl;
     }
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
@@ -269,6 +277,10 @@ int ParseAndRun(std::vector<Command>& commands, int argc, char* argv[])
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
         );
+    case UserSpecified::Pack:
+        return PackPackage(state.validationOptions, 
+            const_cast<char*>(state.directoryName.c_str()),
+            const_cast<char*>(state.packageName.c_str()));
     }
     return -1; // should never end up here.
 }
@@ -332,7 +344,18 @@ int main(int argc, char* argv[])
                 Option("-sp", false, "Only for bundles. Skips matching packages with of the same system. By default unpacked application packages will only match the platform.",
                     [](State& state, const std::string&) { return state.SkipPlatform(); }),
                 Option("-?", false, "Displays this help text.",
-                    [](State& state, const std::string&) { return false; })                
+                    [](State& state, const std::string&) { return false; })
+            })
+        },
+        {   Command("pack", "Pack files from disk to a package",
+                [](State& state) { return state.Specify(UserSpecified::Pack); },
+            {
+                Option("-p", true, "REQUIRED, specify output package name.",
+                    [](State& state, const std::string& name) { return state.SetPackageName(name); }),
+                Option("-d", true, "REQUIRED, specify input directory name.",
+                    [](State& state, const std::string& name) { return state.SetDirectoryName(name); }),
+                Option("-?", false, "Displays this help text.",
+                    [](State& state, const std::string&) { return false; })
             })
         },
         {   Command("-?", "Displays this help text.",

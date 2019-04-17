@@ -6,8 +6,6 @@
 #include "Exceptions.hpp"
 #include "DirectoryObject.hpp"
 #include "FileStream.hpp"
-#include "MSIXWindows.hpp"
-#include "UnicodeConversion.hpp"
 
 #include <memory>
 #include <iostream>
@@ -15,7 +13,8 @@
 #include <sstream>
 #include <locale>
 #include <codecvt>
-#include <queue>
+#include "MSIXWindows.hpp"
+#include "UnicodeConversion.hpp"
 
 namespace MSIX {
     enum class WalkOptions : std::uint16_t
@@ -42,6 +41,10 @@ namespace MSIX {
         static std::string dotdot("..");
 
         std::wstring utf16Name = utf8_to_wstring(root);
+        if ((options & WalkOptions::Files) == WalkOptions::Files)
+        {
+            utf16Name += L"\\*";
+        }
 
         WIN32_FIND_DATA findFileData = {};
         std::unique_ptr<std::remove_pointer<HANDLE>::type, decltype(&::FindClose)> find(
@@ -62,29 +65,30 @@ namespace MSIX {
         {
             utf16Name = std::wstring(findFileData.cFileName);
             auto utf8Name = wstring_to_utf8(utf16Name);
-
-            if (((options & WalkOptions::Directories) == WalkOptions::Directories) &&
-                (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-                )
+            if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
-                std::string child = (root + "\\" + utf8Name);
-                if (!visitor(root, WalkOptions::Directories, std::move(utf8Name)))
+                if (dot != utf8Name && dotdot != utf8Name)
                 {
-                    break;
-                }
-                if ((options & WalkOptions::Recursive) == WalkOptions::Recursive)
-                {
-                    WalkDirectory<options>(child, visitor);
+                    std::string child = root + "\\" + utf8Name;
+                    if ((options & WalkOptions::Directories) == WalkOptions::Directories &&
+                        !visitor(root, WalkOptions::Directories, std::move(utf8Name), 0))
+                    {
+                        break;
+                    }
+                    if ((options & WalkOptions::Recursive) == WalkOptions::Recursive)
+                    {
+                        WalkDirectory<options>(child, visitor);
+                    }
                 }
             }
             else if ((options & WalkOptions::Files) == WalkOptions::Files)
             {
-                if (dot != utf8Name && dotdot != utf8Name)
+                ULARGE_INTEGER fileTime;
+                fileTime.HighPart = findFileData.ftLastWriteTime.dwHighDateTime;
+                fileTime.LowPart = findFileData.ftLastWriteTime.dwLowDateTime;
+                if (!visitor(root, WalkOptions::Files, std::move(utf8Name), static_cast<std::uint64_t>(fileTime.QuadPart)))
                 {
-                    if (!visitor(root, WalkOptions::Files, std::move(utf8Name)))
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
         }
@@ -112,13 +116,14 @@ namespace MSIX {
         NOTIMPLEMENTED;
     }
 
+    // IDirectoryObject
     ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
-        std::queue<std::string> directories;
+        std::vector<std::string> directories;
         auto PopFirst = [&directories]()
         {
-            auto result = directories.front();
-            directories.pop();
+            auto result = directories.at(0);
+            std::vector<std::string>(directories.begin() + 1, directories.end()).swap(directories);
             return result;
         };
 
@@ -127,7 +132,7 @@ namespace MSIX {
         std::string directory;
         while (getline(stream, directory, '/'))
         {
-            directories.push(std::move(directory));
+            directories.push_back(std::move(directory));
         }
 
         // Enforce that directory structure exists before creating file at specified location.
@@ -138,7 +143,8 @@ namespace MSIX {
             WalkDirectory<WalkOptions::Directories>(path, [&](
                 std::string,
                 WalkOptions option,
-                std::string&& name)
+                std::string&& name,
+                std::uint64_t)
             {
                 found = false;
                 if (directories.front() == name)
@@ -165,6 +171,31 @@ namespace MSIX {
         while(directories.size() > 0);
         auto result = ComPtr<IStream>::Make<FileStream>(std::move(utf8_to_wstring(path)), mode);
         return result;
+    }
+
+    std::multimap<std::uint64_t, std::string> DirectoryObject::GetFilesByLastModDate()
+    {
+    #ifdef MSIX_PACK
+        std::multimap<std::uint64_t, std::string> files;
+        WalkDirectory<WalkOptions::Recursive | WalkOptions::Files>(m_root, [&](
+                std::string root,
+                WalkOptions option,
+                std::string&& name,
+                std::uint64_t size)
+            {
+                if (name != "AppxManifest.xml") // should only add payload files to the map
+                {
+                    std::string fileName = root + GetPathSeparator() + name;
+                    // fileName includes the root directory, which we dont want.
+                    fileName = fileName.substr(fileName.find_first_of(GetPathSeparator()) + 1);
+                    files.insert(std::make_pair(size, std::move(fileName)));
+                }
+                return true;
+            });
+        return files;
+    #else
+        NOTIMPLEMENTED;
+    #endif // MSIX_PACK
     }
 }
 
