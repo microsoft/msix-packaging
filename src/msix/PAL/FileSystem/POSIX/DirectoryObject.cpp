@@ -26,9 +26,9 @@ namespace MSIX {
         while((dp = readdir(dir.get())) != nullptr)
         {
             std::string fileName = std::string(dp->d_name);
+            std::string child = root + "/" + fileName;
             if (dp->d_type == DT_DIR)
             {
-                std::string child = root + "/" + fileName;
                 if ((fileName != dot) && (fileName != dotdot))
                 {
                     WalkDirectory(child, visitor);
@@ -38,8 +38,7 @@ namespace MSIX {
             {
                 // TODO: ignore .DS_STORE for mac?
                 struct stat sb;
-                std::string fullPath = root + "/" + fileName;
-                ThrowErrorIf(Error::Unexpected, stat(fullPath.c_str(), &sb) == -1, std::string("stat call failed" + std::to_string(errno)).c_str());
+                ThrowErrorIf(Error::Unexpected, stat(child.c_str(), &sb) == -1, std::string("stat call failed" + std::to_string(errno)).c_str());
                 if (!visitor(root, std::move(fileName), static_cast<std::uint64_t>(sb.st_mtime)))
                 {
                     break;
@@ -101,7 +100,7 @@ namespace MSIX {
                 if (name != "AppxManifest.xml") // should only add payload files to the map
                 {
                     std::string fileName = root + GetPathSeparator() + name;
-                    // fileName includes the root directory, which we dont want.
+                    // root contains the top level directory, which we don't need
                     fileName = fileName.substr(fileName.find_first_of(GetPathSeparator()) + 1);
                     files.insert(std::make_pair(size, std::move(fileName)));
                 }

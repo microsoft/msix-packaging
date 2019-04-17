@@ -186,7 +186,7 @@ namespace MSIX {
                 if (name != "AppxManifest.xml") // should only add payload files to the map
                 {
                     std::string fileName = root + GetPathSeparator() + name;
-                    // fileName includes the root directory, which we dont want.
+                    // root contains the top level directory, which we don't need
                     fileName = fileName.substr(fileName.find_first_of(GetPathSeparator()) + 1);
                     files.insert(std::make_pair(size, std::move(fileName)));
                 }
