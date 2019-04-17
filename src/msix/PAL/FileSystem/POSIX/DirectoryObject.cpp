@@ -9,10 +9,12 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <fts.h>
+#include <dirent.h>
 #include <map>
 
 namespace MSIX {
 
+    template<class Lambda>
     void WalkDirectory(const std::string& root, Lambda& visitor)
     {
         static std::string dot(".");
@@ -21,7 +23,7 @@ namespace MSIX {
         std::unique_ptr<DIR, decltype(&closedir)> dir(opendir(root.c_str()), closedir);
         ThrowErrorIf(Error::FileNotFound, dir.get() == nullptr, "Invalid directory");
         struct dirent* dp;
-        while((dp = readdir(dir)) != nullptr)
+        while((dp = readdir(dir.get())) != nullptr)
         {
             std::string fileName = std::string(dp->d_name);
             if (dp->d_type == DT_DIR)
@@ -36,8 +38,9 @@ namespace MSIX {
             {
                 // TODO: ignore .DS_STORE for mac?
                 struct stat sb;
-                ThrowErrorIf(Error::Unexpected, stat(fullPath.c_str(), &sb) == -1, "stat call failed" + std::to_string(errno));
-                if (!visitor(root, std::move(child), static_cast<std::uint64_t>(sb.st_mtime)))
+                std::string fullPath = root + "/" + fileName;
+                ThrowErrorIf(Error::Unexpected, stat(fullPath.c_str(), &sb) == -1, std::string("stat call failed" + std::to_string(errno)).c_str());
+                if (!visitor(root, std::move(fileName), static_cast<std::uint64_t>(sb.st_mtime)))
                 {
                     break;
                 }
@@ -90,11 +93,11 @@ namespace MSIX {
     {
     #ifdef MSIX_PACK
         std::multimap<std::uint64_t, std::string> files;
-        WalkDirectory(m_root, [&](
+        auto lamdba = [&](
                 std::string root,
                 std::string&& name,
                 std::uint64_t size)
-            {
+           {
                 if (name != "AppxManifest.xml") // should only add payload files to the map
                 {
                     std::string fileName = root + GetPathSeparator() + name;
@@ -103,7 +106,8 @@ namespace MSIX {
                     files.insert(std::make_pair(size, std::move(fileName)));
                 }
                 return true;
-            });
+           };
+        WalkDirectory(m_root, lamdba);
         return files;
     #else
         NOTIMPLEMENTED;

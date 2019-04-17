@@ -72,19 +72,25 @@ if(WIN32)
     set(Applicability PAL/Applicability/Win32/Applicability.cpp)
 else()
     # Visibility variables for non-win32 platforms
-    set(MSIX_EXPORTS)
+    list(APPEND MSIX_UNPACK_EXPORTS
+        "UnpackPackage"
+        "UnpackPackageFromStream"
+        "UnpackBundle"
+        "UnpackBundleFromStream"
+    )
+    list(APPEND MSIX_UNPACK_EXPORTS
+        "PackPackage"
+    )
     list(APPEND MSIX_EXPORTS
         "CoCreateAppxFactory"
         "CoCreateAppxFactoryWithHeap"
         "CreateStreamOnFile"
         "CreateStreamOnFileUTF16"
         "GetLogTextUTF8"
-        "UnpackPackage"
-        "UnpackPackageFromStream"
-        "UnpackBundle"
-        "UnpackBundleFromStream"
         "CoCreateAppxBundleFactory"
         "CoCreateAppxBundleFactoryWithHeap"
+        ${MSIX_UNPACK_EXPORTS}
+        ${MSIX_PACK_EXPORTS}
     )
     if((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported

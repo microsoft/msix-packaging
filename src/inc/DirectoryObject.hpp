@@ -54,7 +54,7 @@ namespace MSIX {
         std::multimap<std::uint64_t, std::string> GetFilesByLastModDate() override;
 
     protected:
-        const char* DirectoryObject::GetPathSeparator();
+        const char* GetPathSeparator();
         std::string m_root;
 
     };//class DirectoryObject
