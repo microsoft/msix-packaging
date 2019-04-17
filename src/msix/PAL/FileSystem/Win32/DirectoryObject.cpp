@@ -6,6 +6,8 @@
 #include "Exceptions.hpp"
 #include "DirectoryObject.hpp"
 #include "FileStream.hpp"
+#include "MSIXWindows.hpp"
+#include "UnicodeConversion.hpp"
 
 #include <memory>
 #include <iostream>
@@ -13,8 +15,7 @@
 #include <sstream>
 #include <locale>
 #include <codecvt>
-#include "MSIXWindows.hpp"
-#include "UnicodeConversion.hpp"
+#include <queue>
 
 namespace MSIX {
     enum class WalkOptions : std::uint16_t
@@ -119,11 +120,11 @@ namespace MSIX {
     // IDirectoryObject
     ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
-        std::vector<std::string> directories;
+        std::queue<std::string> directories;
         auto PopFirst = [&directories]()
         {
-            auto result = directories.at(0);
-            std::vector<std::string>(directories.begin() + 1, directories.end()).swap(directories);
+            auto result = directories.front();
+            directories.pop();
             return result;
         };
 
@@ -132,7 +133,7 @@ namespace MSIX {
         std::string directory;
         while (getline(stream, directory, '/'))
         {
-            directories.push_back(std::move(directory));
+            directories.push(std::move(directory));
         }
 
         // Enforce that directory structure exists before creating file at specified location.
