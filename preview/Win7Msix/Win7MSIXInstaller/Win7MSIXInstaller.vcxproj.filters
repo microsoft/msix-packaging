@@ -93,7 +93,7 @@
     <ClInclude Include="ProcessPotentialUpdate.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ValidateRequest.hpp">
+    <ClInclude Include="ValidateTargetDeviceFamily.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -161,7 +161,7 @@
     <ClCompile Include="ProcessPotentialUpdate.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ValidateRequest.cpp">
+    <ClCompile Include="ValidateTargetDeviceFamily.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
