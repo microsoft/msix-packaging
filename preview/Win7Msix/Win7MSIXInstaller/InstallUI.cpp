@@ -520,7 +520,7 @@ void UI::ButtonClicked()
     {
     case InstallUIAdd:
     {
-        m_msixResponse = m_packageManager->AddPackage(m_path, DeploymentOptions::None);
+        m_msixResponse = m_packageManager->AddPackageAsync(m_path, DeploymentOptions::None);
         if (m_msixResponse != nullptr)
         {
             m_msixResponse->SetCallback([this](IMsixResponse * sender) {

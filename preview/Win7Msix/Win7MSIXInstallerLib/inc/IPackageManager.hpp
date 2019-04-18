@@ -11,8 +11,10 @@ namespace Win7MsixInstallerLib {
     class IPackageManager
     {
     public:
-        virtual IMsixResponse * AddPackage(const std::wstring & packageFilePath, DeploymentOptions options) = 0;
-        virtual IMsixResponse * RemovePackage(const std::wstring & packageFullName) = 0;
+        virtual IMsixResponse * AddPackageAsync(const std::wstring & packageFilePath, DeploymentOptions options) = 0;
+        virtual HRESULT AddPackage(const std::wstring & packageFilePath, DeploymentOptions options) = 0;
+        virtual IMsixResponse * RemovePackageAsync(const std::wstring & packageFullName) = 0;
+        virtual HRESULT RemovePackage(const std::wstring & packageFullName) = 0;
         virtual IInstalledPackageInfo * FindPackage(const std::wstring & packageFamilyName) = 0;
         virtual IInstalledPackageInfo * FindPackageByFamilyName(const std::wstring & packageFamilyName) = 0;
         virtual std::vector<IInstalledPackageInfo*> * FindPackages() = 0;

@@ -44,9 +44,10 @@ int main(int argc, char * argv[])
 
             if (cli.IsQuietMode())
             {
-                if (!packageManager->AddPackage(cli.GetPackageFilePathToInstall(), DeploymentOptions::None))
+                auto res = packageManager->AddPackage(cli.GetPackageFilePathToInstall(), DeploymentOptions::None);
+                if (FAILED(res))
                 {
-                    return E_FAIL;
+                    return res;
                 }
             }
             else
@@ -62,11 +63,11 @@ int main(int argc, char * argv[])
             AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
             RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
 
-
             auto packageFullName = cli.GetPackageFullName();
-            if (!packageManager->RemovePackage(packageFullName))
+            auto res = packageManager->RemovePackage(packageFullName);
+            if (FAILED(res))
             {
-                return E_FAIL;
+                return res;
             }
             break;
         }

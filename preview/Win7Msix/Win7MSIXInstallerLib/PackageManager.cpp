@@ -12,9 +12,9 @@ PackageManager::PackageManager()
 {
 }
 
-IMsixResponse * PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
+IMsixResponse * PackageManager::AddPackageAsync(const wstring & packageFilePath, DeploymentOptions options)
 {
-    MsixRequest* impl;
+    MsixRequest * impl;
     auto res = (MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(res))
     {
@@ -22,13 +22,25 @@ IMsixResponse * PackageManager::AddPackage(const wstring & packageFilePath, Depl
     }
     auto t = std::thread([&impl]() {
         impl->ProcessRequest();
+        delete impl;
         impl = nullptr;
     });
     t.detach();
     return (IMsixResponse*)impl->GetMsixResponse();
 }
 
-IMsixResponse * PackageManager::RemovePackage(const wstring & packageFullName)
+HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
+{
+    AutoPtr<MsixRequest> impl;
+    auto res = (MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    if (FAILED(res))
+    {
+        return res;
+    }
+    return impl->ProcessRequest();
+}
+
+IMsixResponse * PackageManager::RemovePackageAsync(const wstring & packageFullName)
 {
     MsixRequest* impl;
     auto res = (MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
@@ -44,6 +56,16 @@ IMsixResponse * PackageManager::RemovePackage(const wstring & packageFullName)
     return (IMsixResponse*)impl->GetMsixResponse();
 }
 
+HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
+{
+    AutoPtr<MsixRequest> impl;
+    auto res = (MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    if (FAILED(res))
+    {
+        return res;
+    }
+    return impl->ProcessRequest();
+}
 IInstalledPackageInfo * PackageManager::GetPackageInfo(const std::wstring & msix7Directory, const std::wstring & directoryPath)
 {
     InstalledPackage* packageInfo;
