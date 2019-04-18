@@ -4,6 +4,10 @@
 #include "IPackageHandler.hpp"
 #include "RegistryKey.hpp"
 #include <vector>
+#include "MsixRequest.hpp"
+
+namespace Win7MsixInstallerLib
+{
 
 /// Data structs to be filled in from the information in the manifest
 struct ProtocolData
@@ -55,4 +59,4 @@ private:
     /// @param name - the name of the protocol
     bool IsCurrentlyAssociatedWithPackage(PCWSTR name);
 };
-    
+}    

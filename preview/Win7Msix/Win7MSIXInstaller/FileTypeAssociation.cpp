@@ -8,6 +8,7 @@
 #include "GeneralUtil.hpp"
 #include "Constants.hpp"
 #include <TraceLoggingProvider.h>
+using namespace Win7MsixInstallerLib;
 
 const PCWSTR FileTypeAssociation::HandlerName = L"FileTypeAssociation";
 
@@ -65,7 +66,7 @@ HRESULT FileTypeAssociation::ParseFtaElement(IMsixElement* ftaElement)
         Text<wchar_t> logoPath;
         RETURN_IF_FAILED(logoElement->GetText(&logoPath));
 
-        fta.logo = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + std::wstring(L"\\") + logoPath.Get();
+        fta.logo = m_msixRequest->GetPackageDirectoryPath() + std::wstring(L"\\") + logoPath.Get();
     }
 
     ComPtr<IMsixElementEnumerator> verbsEnum;
@@ -210,7 +211,8 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
     RegistryKey commandKey;
     RETURN_IF_FAILED(openKey.CreateSubKey(commandKeyName.c_str(), KEY_WRITE, &commandKey));
 
-    std::wstring command = m_msixRequest->GetPackageInfo()->GetExecutableFilePath() + commandArgument;
+    std::wstring executablePath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + m_msixRequest->GetPackageInfo()->GetRelativeExecutableFilePath();
+    std::wstring command = executablePath + commandArgument;
     RETURN_IF_FAILED(commandKey.SetStringValue(L"", command));
 
     for (auto verb = fta.verbs.begin(); verb != fta.verbs.end(); ++verb)
@@ -221,7 +223,7 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
         RegistryKey verbCommandKey;
         RETURN_IF_FAILED(verbKey.CreateSubKey(commandKeyName.c_str(), KEY_WRITE, &verbCommandKey));
 
-        std::wstring verbCommand = m_msixRequest->GetPackageInfo()->GetExecutableFilePath();
+        std::wstring verbCommand = executablePath;
         if (verb->parameter.c_str() != nullptr)
         {
             verbCommand += std::wstring(L" ") + verb->parameter.c_str();
@@ -303,7 +305,7 @@ HRESULT FileTypeAssociation::CreateHandler(MsixRequest * msixRequest, IPackageHa
 
     RETURN_IF_FAILED(localInstance->m_classesKey.Open(HKEY_CLASSES_ROOT, nullptr, KEY_READ | KEY_WRITE | WRITE_DAC));
 
-    std::wstring registryFilePath = msixRequest->GetPackageInfo()->GetPackageDirectoryPath().c_str() + registryDatFile;
+    std::wstring registryFilePath = msixRequest->GetPackageDirectoryPath() + registryDatFile;
     RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFilePath, msixRequest, &localInstance->m_registryDevirtualizer));
 
     RETURN_IF_FAILED(localInstance->ParseManifest());

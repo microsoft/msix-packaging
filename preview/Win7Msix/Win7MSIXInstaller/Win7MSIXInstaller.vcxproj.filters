@@ -18,64 +18,13 @@
     <ClInclude Include="CommandLineInterface.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MsixRequest.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="IPackageHandler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PackageInfo.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="PopulatePackageInfo.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="StartMenuLink.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="AddRemovePrograms.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FileTypeAssociation.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Protocol.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RegistryDevirtualizer.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RegistryKey.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Extractor.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FilePaths.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="FootprintFiles.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="GeneralUtil.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="InstallUI.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Constants.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\.vs\src\msix\AppxPackaging.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\.vs\src\msix\MSIXWindows.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="InstallComplete.hpp">
+    <ClInclude Include="Win7MSIXInstallerLogger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ComInterface.hpp">
@@ -84,63 +33,21 @@
     <ClInclude Include="ComServer.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="MsixResponse.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ErrorHandler.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ProcessPotentialUpdate.hpp">
+    <ClInclude Include="Util.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Win7MSIXInstaller.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="GeneralUtil.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Extractor.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FilePaths.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="InstallUI.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="MsixRequest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="CommandLineInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="PopulatePackageInfo.cpp">
+    <ClCompile Include="Win7MSIXInstallerLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StartMenuLink.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="AddRemovePrograms.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="FileTypeAssociation.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Protocol.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RegistryDevirtualizer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="RegistryKey.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="PackageInfo.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="InstallComplete.cpp">
+    <ClCompile Include="Win7MSIXInstaller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ComInterface.cpp">
@@ -148,14 +55,8 @@
     </ClCompile>
     <ClCompile Include="ComServer.cpp">
       <Filter>Source Files</Filter>
-    </ClCompile> 
-    <ClCompile Include="MsixResponse.cpp">
-      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ErrorHandler.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="ProcessPotentialUpdate.cpp">
+    <ClCompile Include="Util.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

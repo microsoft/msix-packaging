@@ -6,38 +6,22 @@
 #include <CommCtrl.h>
 
 #include <string>
-#include <map>
-#include <algorithm>
-#include <sstream>
 #include <iostream>
-#include <utility>
-#include <iomanip>
-
-#include "GeneralUtil.hpp"
-#include "FilePaths.hpp"
-#include <cstdio>
+#include <vector>
 #include <TraceLoggingProvider.h>
+#include "InstallUI.hpp"
 #include "CommandLineInterface.hpp"
+#include "Win7MSIXInstallerLogger.hpp"
+#include "Util.hpp"
 #include "resource.h"
 #include <VersionHelpers.h>
 
-// Define the GUID to use in TraceLoggingProviderRegister 
-// {033321d3-d599-48e0-868d-c59f15901637}
-// One way to enable:
-// logman create trace <nameoftrace> -p "{033321d3-d599-48e0-868d-c59f15901637}" -o <filename>
-// i.e. logman create trace MsixTrace -p "{033321d3-d599-48e0-868d-c59f15901637}" -o c:\msixtrace.etl
-// logman start MsixTrace
-// logman stop MsixTrace
-// tracerpt.exe, Windows Performance Analyzer or other tools can be used to view the etl file.
-TRACELOGGING_DEFINE_PROVIDER(
-    g_MsixTraceLoggingProvider,
-    "MsixTraceLoggingProvider",
-    (0x033321d3, 0xd599, 0x48e0, 0x86, 0x8d, 0xc5, 0x9f, 0x15, 0x90, 0x16, 0x37));
+#include <Win7MSIXInstallerActions.hpp>
 
 int main(int argc, char * argv[])
 {
     // Register the provider
-    TraceLoggingRegister(g_MsixTraceLoggingProvider);
+    TraceLoggingRegister(g_MsixUITraceLoggingProvider);
 
     HRESULT hrCoInitialize = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     if (FAILED(hrCoInitialize))
@@ -48,20 +32,87 @@ int main(int argc, char * argv[])
 
     CommandLineInterface cli(argc, argv);
 
-    AutoPtr<MsixRequest> msixRequest;
-    const HRESULT hrCreateRequest = cli.CreateRequest(&msixRequest);
+    const HRESULT hrCreateRequest = cli.Init();
     if (SUCCEEDED(hrCreateRequest))
     {
-        const HRESULT hrProcessRequest = msixRequest->ProcessRequest();
-        if (FAILED(hrProcessRequest))
+        switch (cli.GetOperationType())
         {
+        case OperationType::Add:
+        {
+            AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
+            RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
 
-            std::wcout << GetStringResource(IDS_STRING_FAILED_REQUEST) << " " << std::hex << hrProcessRequest << std::endl;
-            TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                "Failed to process request",
-                TraceLoggingLevel(WINEVENT_LEVEL_ERROR),
-                TraceLoggingValue(hrProcessRequest, "HR"));
-            return 1;
+            if (cli.IsQuietMode())
+            {
+                if (!packageManager->AddPackage(cli.GetPackageFilePathToInstall(), DeploymentOptions::None))
+                {
+                    return E_FAIL;
+                }
+            }
+            else
+            {
+
+                auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
+                ui->ShowUI();
+            }
+            break;
+        }
+        case OperationType::Remove:
+        {
+            AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
+            RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
+
+
+            auto packageFullName = cli.GetPackageFullName();
+            if (!packageManager->RemovePackage(packageFullName))
+            {
+                return E_FAIL;
+            }
+            break;
+        }
+        case OperationType::FindPackage:
+        {
+            AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
+            RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
+
+            AutoPtr<Win7MsixInstallerLib::IInstalledPackageInfo> packageInfo = packageManager->FindPackage(cli.GetPackageFullName());
+            if (packageInfo == NULL)
+            {
+                std::wcout << std::endl;
+                std::wcout << L"No packages found" << std::endl;
+                std::wcout << std::endl;
+            }
+            else {
+                std::wcout << std::endl;
+                std::wcout << L"PackageFullName: " << packageInfo->GetPackageFullName().c_str() << std::endl;
+                std::wcout << L"DisplayName: " << packageInfo->GetDisplayName().c_str() << std::endl;
+
+                std::wcout << L"DirectoryPath: " << packageInfo->GetInstalledLocation().c_str() << std::endl;
+                std::wcout << std::endl;
+            }
+            return S_OK;
+        }
+        case OperationType::FindAllPackages:
+        {
+            AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
+            RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
+
+            std::vector<Win7MsixInstallerLib::IInstalledPackageInfo *>* packages = packageManager->FindPackages();
+
+            unsigned int numPackages = 0;
+            for (auto& package : *packages)
+            {
+
+                std::wcout << package->GetPackageFullName() << std::endl;
+                numPackages++;
+            }
+
+            std::cout << numPackages << " Packages found" << std::endl;
+            delete packages;
+            return S_OK;
+        }
+        default:
+            return E_NOT_SET;
         }
     }
     else
@@ -69,10 +120,9 @@ int main(int argc, char * argv[])
         cli.DisplayHelp();
     }
 
-    
+
     // Stop TraceLogging and unregister the provider
-    TraceLoggingUnregister(g_MsixTraceLoggingProvider);
+    TraceLoggingUnregister(g_MsixUITraceLoggingProvider);
 
     return 0;
 }
-

@@ -4,7 +4,10 @@
 #include "MsixRequest.hpp"
 #include "RegistryKey.hpp"
 #include <vector>
+#include "MsixRequest.hpp"
 
+namespace Win7MsixInstallerLib
+{
 /// Handles the conversion of the information stored in Registry.dat 
 /// to the currently running OS's registry, which is referred to here as "actual registry"
 /// The information stored in Registry.dat is referred to here as "virtual registry" or "virtualized registry"
@@ -86,3 +89,4 @@ private:
     RegistryKey m_rootKey;
     bool m_hiveFileNameExists = false;
 };
+}

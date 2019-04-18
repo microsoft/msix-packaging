@@ -3,10 +3,10 @@
 /// UI Functions
 #include <windows.h>
 #include <string>
-#include "GeneralUtil.hpp"
-#include "IPackageHandler.hpp"
+#include "Util.hpp"
+#include <IPackageManager.hpp>
+#include <IMsixResponse.hpp>
 #include "resource.h"
-
 /// Child window identifiers
 #define IDC_LAUNCHCHECKBOX 101
 #define IDC_INSTALLBUTTON 102
@@ -23,17 +23,27 @@ static HWND g_LaunchbuttonHWnd = NULL;
 static bool g_launchCheckBoxState = true; /// launch checkbox is checked by default
 static bool g_installing = false; /// variable used to indicate that app installation is in progress
 
+
+enum UIType { InstallUIAdd, InstallUIRemove};
+
 class UI
 {
 public:
-    HRESULT ShowUI();
     HRESULT LaunchInstalledApp();
     void ConfirmAppCancel(HWND parentHWnd);
 
-    static HRESULT Make(_In_ MsixRequest* msixRequest, _Out_ UI** instance);
+    UI(_In_ Win7MsixInstallerLib::IPackageManager* packageManager, _In_ const std::wstring & path, UIType type) : m_packageManager(packageManager), m_type(type)
+    {
+        m_path = std::wstring(path);
+        m_closeUI = CreateEvent(NULL, FALSE, FALSE, NULL);
+    }
     ~UI() {}
+
 private:
-    MsixRequest* m_msixRequest = nullptr;
+    Win7MsixInstallerLib::IPackageManager* m_packageManager = nullptr;
+    Win7MsixInstallerLib::IPackage* m_packageInfo = nullptr;
+    std::wstring m_path;
+    Win7MsixInstallerLib::IMsixResponse * m_msixResponse = nullptr;
 
     //Parent Window Hwnd
     HWND hWnd = NULL; 
@@ -50,16 +60,12 @@ private:
     std::wstring m_publisherCommonName = L"";
     ComPtr<IStream> m_logoStream;
     std::wstring m_version = L"";
-    int m_numberOfFiles = 0;
-    HRESULT m_loadingPackageInfoCode = 0;
-    HANDLE m_buttonClickedEvent;
 
-    UI() {}
-    UI(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) 
-	{
-		m_buttonClickedEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-	}
-    
+    HRESULT m_loadingPackageInfoCode = 0;
+    UIType m_type;
+
+    HANDLE m_closeUI;
+
     HRESULT ParseInfoFromPackage();
 
     /// This function sets the parent window hwnd after create window
@@ -91,16 +97,14 @@ public:
     /// @param windowClass - the class text of the window
     /// @param windowTitle - the window title
     int CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title);
-    void LoadInfo();
-    int GetNumberOfFiles() { return m_numberOfFiles; }
-    void SetButtonClicked() { SetEvent(m_buttonClickedEvent); }
+
+    void ButtonClicked();
 
     /// Creates the progress bar
     ///
     /// @param parentHWnd - the HWND of the window to add the progress bar to
     /// @param parentRect - the dimmensions of the parent window
-    /// count: the number of objects to be iterated through in the progress bar
-    BOOL CreateProgressBar(HWND parentHWnd, RECT parentRect, int count);
+    BOOL CreateProgressBar(HWND parentHWnd, RECT parentRect);
 
     /// Create the lower right install button
     /// 
@@ -140,31 +144,16 @@ public:
     /// @param windowText - the text to change the window to
     BOOL ChangeText(HWND parentHWnd, std::wstring displayText, std::wstring  messageText, IStream* logoStream = nullptr);
 
-    /// Increment the progress bar one tick based on preset tick
-    void UpdateProgressBar();
-
     /// Sends the WM_INSTALLCOMPLETE_MSG message to the main window when app installation is complete
     void SendInstallCompleteMsg();
 
-    // The add operation could be an update if V1 version of the package is already installed. Show appropriate UI with respect to operation type
+    /// The add operation could be an update if V1 version of the package is already installed. Show appropriate UI with respect to operation type
     /// The add operation could be an update if V1 version of the package is already installed on the machine
     /// This method checks the same and sets the button and install screen UI text to 'Update'
     ///
     void PreprocessRequest();
 
-};
+    HRESULT ShowUI();
 
-class CreateAndShowUI : IPackageHandler
-{
-public:
-    HRESULT ExecuteForAddRequest();
-
-    static const PCWSTR HandlerName;
-    static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
-    ~CreateAndShowUI() {}
-private:
-    MsixRequest* m_msixRequest = nullptr;
-
-    CreateAndShowUI() {}
-    CreateAndShowUI(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
+    void CloseUI();
 };

@@ -2,7 +2,10 @@
 
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
+#include "MsixRequest.hpp"
 
+namespace Win7MsixInstallerLib
+{
 /// Handles adding/removing the entry that allows an app to show up in AddRemovePrograms in the Control Panel (appwiz.cpl)
 class AddRemovePrograms : IPackageHandler
 {
@@ -24,3 +27,4 @@ private:
     AddRemovePrograms(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
 };
+}

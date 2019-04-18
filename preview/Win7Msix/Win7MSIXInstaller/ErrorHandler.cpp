@@ -7,6 +7,7 @@
 #include <TraceLoggingProvider.h>
 #include "ErrorHandler.hpp"
 #include "MsixRequest.hpp"
+using namespace Win7MsixInstallerLib;
 
 const PCWSTR ErrorHandler::HandlerName = L"ErrorHandler";
 
@@ -19,7 +20,7 @@ HRESULT ErrorHandler::ExecuteForAddRequest()
 HRESULT ErrorHandler::RemovePackage(std::wstring packageFullName)
 {
     AutoPtr<MsixRequest> removePackageRequest;
-    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, Flags::NoFlags, std::wstring(), packageFullName,
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, std::wstring(), packageFullName,
         MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &removePackageRequest));
 
     const HRESULT hrCancelRequest = removePackageRequest->ProcessRequest();

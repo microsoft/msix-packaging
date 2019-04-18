@@ -4,7 +4,10 @@
 #include <string>
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
+#include "MsixRequest.hpp"
 
+namespace Win7MsixInstallerLib
+{
 class ErrorHandler : IPackageHandler
 {
 public:
@@ -26,3 +29,4 @@ private:
     /// Prepares and sends msixrequest to uninstall the package in case cancel button was clicked during installation
     HRESULT RemovePackage(std::wstring packageFullName);
 };
+}

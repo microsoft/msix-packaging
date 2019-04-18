@@ -11,48 +11,22 @@
 #include "resource.h"
 #include <filesystem>
 
+#include "Util.hpp"
+#include "Win7MSIXInstallerLogger.hpp"
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
 using namespace std;
+using namespace Win7MsixInstallerLib;
 #include <GdiPlus.h>
 
 static const int g_width = 500;  // width of window
 static const int g_heigth = 400; // height of window
 
-const PCWSTR CreateAndShowUI::HandlerName = L"UI";
-
 //
-// Gets the stream of a file.
+// PURPOSE: This compiles the information displayed on the UI when the user selects an msix
 //
-// Parameters:
-//   package - The package reader for the app package.
-//   name - Name of the file.
-//   stream - The stream for the file.
-//
-HRESULT GetStreamFromFile(IAppxPackageReader* package, LPCWCHAR name, IStream** stream)
-{
-    *stream = nullptr;
-    ComPtr<IAppxFilesEnumerator> files;
-
-    RETURN_IF_FAILED(package->GetPayloadFiles(&files));
-
-    BOOL hasCurrent = FALSE;
-    RETURN_IF_FAILED(files->GetHasCurrent(&hasCurrent));
-    while (hasCurrent)
-    {
-        ComPtr<IAppxFile> file;
-        RETURN_IF_FAILED(files->GetCurrent(&file));
-        Text<WCHAR> fileName;
-        file->GetName(&fileName);
-        if (wcscmp(fileName.Get(), name) == 0)
-        {
-            RETURN_IF_FAILED(file->GetStream(stream));
-            return S_OK;
-        }
-        RETURN_IF_FAILED(files->MoveNext(&hasCurrent));
-    }
-    return S_OK;
-}
+// hWnd: the HWND of the window to draw controls
+// windowRect: the size of the window
 
 HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
 {
@@ -100,96 +74,78 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
     }
     case WM_COMMAND:
-        switch (LOWORD(wParam)) 
+        switch (LOWORD(wParam))
         {
-            case IDC_INSTALLBUTTON:
+        case IDC_INSTALLBUTTON:
+        {
+            g_installing = true;
+            DestroyWindow(g_LaunchbuttonHWnd);
+            DestroyWindow(g_buttonHWnd);
+            ui->CreateCancelButton(hWnd, windowRect);
+            UpdateWindow(hWnd);
+            ui->CreateProgressBar(hWnd, windowRect);
+            ShowWindow(g_progressHWnd, SW_SHOW); //Show progress bar only when install is clicked
+            ui->ButtonClicked();
+        }
+        break;
+        case IDC_LAUNCHCHECKBOX:
+        {
+            if (SendMessage(GetDlgItem(hWnd, IDC_LAUNCHCHECKBOX), BM_GETCHECK, 0, 0) == BST_CHECKED)
             {
-                g_installing = true;
-                DestroyWindow(g_LaunchbuttonHWnd);
-                DestroyWindow(g_buttonHWnd);
-                ui->CreateCancelButton(hWnd, windowRect);
-                UpdateWindow(hWnd);
-                if (ui != NULL)
-                {
-                    ui->CreateProgressBar(hWnd, windowRect, ui->GetNumberOfFiles());
-                }
-                ShowWindow(g_progressHWnd, SW_SHOW); //Show progress bar only when install is clicked
-                if (ui != NULL)
-                {
-                    ui->SetButtonClicked();
-                }   
+                g_launchCheckBoxState = true;
             }
+            else
+            {
+                g_launchCheckBoxState = false;
+            }
+        }
+        break;
+        case IDC_CANCELBUTTON:
+        {
+            ui->ConfirmAppCancel(hWnd);
             break;
-            case IDC_LAUNCHCHECKBOX:
-            {
-                if (SendMessage(GetDlgItem(hWnd, IDC_LAUNCHCHECKBOX), BM_GETCHECK, 0, 0) == BST_CHECKED) 
-                {
-                    g_launchCheckBoxState = true;
-                }
-                else
-                {
-                    g_launchCheckBoxState = false;
-                }
-            }
+        }
+        case IDC_LAUNCHBUTTON:
+        {
+            ui->LaunchInstalledApp();
             break;
-            case IDC_CANCELBUTTON:
-            {
-                ui->ConfirmAppCancel(hWnd);
-                break;
-            }
-            case IDC_LAUNCHBUTTON:
-            {
-                ui->LaunchInstalledApp();
-                break;
-            }
+        }
         }
         break;
     case WM_INSTALLCOMPLETE_MSG:
     {
         g_installing = false; // installation complete, clicking on 'x' should not show the cancellation popup
-        DestroyWindow(g_CancelbuttonHWnd);
-        ui->CreateLaunchButton(hWnd, windowRect, 150, 60);
-        ShowWindow(g_LaunchbuttonHWnd, SW_SHOW);
-        UpdateWindow(hWnd);
-        ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
-        ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
         if (g_launchCheckBoxState)
         {
             ui->LaunchInstalledApp(); // launch app
-            DestroyWindow(hWnd); // close msix app installer
+            ui->CloseUI();
         }
         else
         {
-            //wait for user to click launch button or close the window
-            while (true)
-            {
-                switch (MsgWaitForMultipleObjects(0, NULL, FALSE, INFINITE, QS_ALLINPUT))
-                {
-                case WAIT_OBJECT_0:
-                    MSG msg;
-                    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-                    {
-                        TranslateMessage(&msg);
-                        DispatchMessage(&msg);
-                    }
-                    break;
-                }
-            }
+            RECT windowRect;
+            GetClientRect(hWnd, &windowRect);
+            DestroyWindow(g_CancelbuttonHWnd);
+            ui->CreateLaunchButton(hWnd, windowRect, 150, 60);
+            UpdateWindow(hWnd);
+            ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
+            ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
+            ShowWindow(g_LaunchbuttonHWnd, SW_SHOW);
         }
-        break;
     }
-	case WM_CTLCOLORSTATIC:
-	{
+    break;
+    case WM_CTLCOLORSTATIC:
+    {
         switch (::GetDlgCtrlID((HWND)lParam))
-	    {
-            case IDC_LAUNCHCHECKBOX:
-            {
-                HBRUSH hbr = (HBRUSH)DefWindowProc(hWnd, message, wParam, lParam);
-                ::DeleteObject(hbr);
-                SetBkMode((HDC)wParam, TRANSPARENT);
-                return (LRESULT)::GetStockObject(NULL_BRUSH);
-            }
+        {
+        case IDC_LAUNCHCHECKBOX:
+        {
+            HBRUSH hbr = (HBRUSH)DefWindowProc(hWnd, message, wParam, lParam);
+            ::DeleteObject(hbr);
+            SetBkMode((HDC)wParam, TRANSPARENT);
+            return (LRESULT)::GetStockObject(NULL_BRUSH);
         }
+        }
+
         break;
     }
     case WM_CLOSE:
@@ -224,7 +180,7 @@ void UI::ConfirmAppCancel(HWND hWnd)
     switch (cancelResult)
     {
     case IDYES:
-        m_msixRequest->GetMsixResponse()->CancelRequest();
+        m_msixResponse->CancelRequest();
         break;
     case IDNO:
         break;
@@ -233,10 +189,9 @@ void UI::ConfirmAppCancel(HWND hWnd)
 
 HRESULT UI::LaunchInstalledApp()
 {
-    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
-    std::wstring resolvedExecutableFullPath = packageInfo->GetExecutableFilePath();
+    auto installedPackage = m_packageManager->FindPackage(m_packageInfo->GetPackageFullName());
     //check for error while launching app here
-    ShellExecute(NULL, NULL, resolvedExecutableFullPath.c_str(), NULL, NULL, SW_SHOW);
+    ShellExecute(NULL, NULL, installedPackage->GetFullExecutableFilePath().c_str(), NULL, NULL, SW_SHOW);
     return S_OK;
 }
 
@@ -305,129 +260,79 @@ void StartUIThread(UI* ui)
 
 }
 
-void UI::LoadInfo()
+HRESULT UI::ParseInfoFromPackage()
 {
-    m_loadingPackageInfoCode = ParseInfoFromPackage();
-}
-
-HRESULT UI::ParseInfoFromPackage() 
-{
-    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
-
-    ComPtr<IMsixDocumentElement> domElement;
-    RETURN_IF_FAILED(packageInfo->GetManifestReader()->QueryInterface(UuidOfImpl<IMsixDocumentElement>::iid, reinterpret_cast<void**>(&domElement)));
-
-    ComPtr<IMsixElement> element;
-    RETURN_IF_FAILED(domElement->GetDocumentElement(&element));
-
-    // Obtain the Display Name and Logo
-    ComPtr<IMsixElementEnumerator> veElementEnum;
-    RETURN_IF_FAILED(element->GetElements(
-        L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='VisualElements']",
-        &veElementEnum));
+    if (m_packageInfo == nullptr)
+    {
+        switch (m_type)
+        {
+        case InstallUIAdd:
+        {
+            m_packageInfo = m_packageManager->GetPackageInfoMsix(m_path);
+            if (m_packageInfo == nullptr)
+            {
+                return E_FAIL;
+            }
+        }
+        break;
+        case InstallUIRemove:
+        {
+            m_packageInfo = m_packageManager->FindPackage(m_path);
+            if (m_packageInfo == nullptr)
+            {
+                return E_FAIL;
+            }
+        }
+        break;
+        }
+    }
 
     // Obtain publisher name
-    auto wpublisher = std::wstring(packageInfo->GetPublisher());
-    m_publisherCommonName = wpublisher.substr(wpublisher.find_first_of(L"=") + 1,
-        wpublisher.find_first_of(L",") - wpublisher.find_first_of(L"=") - 1);
+    m_publisherCommonName = m_packageInfo->GetPublisherDisplayName();
 
     // Obtain version number
-    m_version = ConvertVersionToString(packageInfo->GetVersion());
+    m_version = m_packageInfo->GetVersion();
 
     //Obtain the number of files
-    m_numberOfFiles = packageInfo->GetNumberOfPayloadFiles();
-
-    // Obtain logo
-    BOOL hc = FALSE;
-    RETURN_IF_FAILED(veElementEnum->GetHasCurrent(&hc));
-    if (hc)
-    {
-        ComPtr<IMsixElement> visualElementsElement;
-        Text<WCHAR> displayNameValue;
-        RETURN_IF_FAILED(veElementEnum->GetCurrent(&visualElementsElement));
-        RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"DisplayName", &displayNameValue));
-        m_displayName = std::wstring(displayNameValue.Get());
-        Text<WCHAR> logo;
-        RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"Square150x150Logo", &logo));
-        RETURN_IF_FAILED(GetStreamFromFile(packageInfo->GetPackageReader(), logo.Get(), &m_logoStream));
-    }
+    m_displayName = m_packageInfo->GetDisplayName();
+    m_logoStream = m_packageInfo->GetLogo();
     return S_OK;
 }
 
 HRESULT UI::ShowUI()
 {
+    m_loadingPackageInfoCode = ParseInfoFromPackage();
+
     std::thread thread(StartUIThread, this);
     thread.detach();
 
-    DWORD waitResult = WaitForSingleObject(m_buttonClickedEvent, INFINITE);
-    
-    return S_OK;
-}
-
-HRESULT CreateAndShowUI::ExecuteForAddRequest()
-{
-    if (m_msixRequest->IsQuietUX())
-    {
-        return S_OK;
-    }
-
-    AutoPtr<UI> ui;
-    RETURN_IF_FAILED(UI::Make(m_msixRequest, &ui));
-    ui->LoadInfo();
-
-    m_msixRequest->SetUI(ui.Detach());
-    RETURN_IF_FAILED(m_msixRequest->GetUI()->ShowUI());
-
-    return S_OK;
-}
-
-HRESULT CreateAndShowUI::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** instance)
-{
-    std::unique_ptr<CreateAndShowUI> localInstance(new CreateAndShowUI(msixRequest));
-    if (localInstance == nullptr)
-    {
-        return E_OUTOFMEMORY;
-    }
-    *instance = localInstance.release();
+    DWORD waitResult = WaitForSingleObject(m_closeUI, INFINITE);
 
     return S_OK;
 }
 
 void UI::PreprocessRequest()
 {
-    std::wstring currentPackageFamilyName = GetFamilyNameFromFullName(m_msixRequest->GetPackageInfo()->GetPackageFullName());
-    for (auto& p : std::experimental::filesystem::directory_iterator(m_msixRequest->GetFilePathMappings()->GetMsix7Directory()))
+    auto existingPackage = m_packageManager->FindPackageByFamilyName(m_packageInfo->GetPackageFamilyName());
+    if (existingPackage != nullptr)
     {
-        std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
-        if (CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
+        if (CaseInsensitiveEquals(existingPackage->GetPackageFullName(), m_packageInfo->GetPackageFullName()))
         {
             /// Same package is already installed
             ChangeInstallButtonText(GetStringResource(IDS_STRING_REINSTALLAPP)); /// change install button text to 'reinstall'
             ShowWindow(g_LaunchbuttonHWnd, SW_SHOW); /// show launch button window
         }
-        else if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName))
+        else
         {
             /// Package with same family name exists and may be an update
             m_installOrUpdateText = GetStringResource(IDS_STRING_UPDATETEXT);
             m_cancelPopUpMessage = GetStringResource(IDS_STRING_CANCEL_UPDATEPOPUP);
-            ChangeInstallButtonText(GetStringResource(IDS_STRING_UPDATETEXT));       
+            ChangeInstallButtonText(GetStringResource(IDS_STRING_UPDATETEXT));
         }
     }
 }
 
-HRESULT UI::Make(MsixRequest * msixRequest, UI ** instance)
-{
-    std::unique_ptr<UI> localInstance(new UI(msixRequest));
-    if (localInstance == nullptr)
-    {
-        return E_OUTOFMEMORY;
-    }
-    *instance = localInstance.release();
-
-    return S_OK;
-}
-
-BOOL UI::CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
+BOOL UI::CreateProgressBar(HWND parentHWnd, RECT parentRect)
 {
     int scrollHeight = GetSystemMetrics(SM_CYVSCROLL);
 
@@ -448,8 +353,7 @@ BOOL UI::CreateProgressBar(HWND parentHWnd, RECT parentRect, int count)
     );
 
     // Set defaults for range and increments
-    SendMessage(g_progressHWnd, PBM_SETRANGE, 0, MAKELPARAM(0, count)); // set range
-    SendMessage(g_progressHWnd, PBM_SETSTEP, (WPARAM)1, 0); // set increment
+    SendMessage(g_progressHWnd, PBM_SETRANGE, 0, MAKELPARAM(0, 100)); // set range
     return TRUE;
 }
 
@@ -492,26 +396,26 @@ BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
     return TRUE;
 }
 
-BOOL UI::CreateCancelButton(HWND parentHWnd, RECT parentRect) 
+BOOL UI::CreateCancelButton(HWND parentHWnd, RECT parentRect)
 {
-	LPVOID buttonPointer = nullptr;
-	g_CancelbuttonHWnd = CreateWindowEx(
-		WS_EX_LEFT, // extended window style
-		L"BUTTON",
-		L"Cancel",  // text
-		WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
-		parentRect.right - 100 - 50, // x coord
-		parentRect.bottom - 60,  // y coord
-		120,  // width
-		35,  // height
-		parentHWnd,  // parent
-		(HMENU)IDC_CANCELBUTTON, // menu
-		reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
-		buttonPointer); // pointer to button
-	return TRUE;
+    LPVOID buttonPointer = nullptr;
+    g_CancelbuttonHWnd = CreateWindowEx(
+        WS_EX_LEFT, // extended window style
+        L"BUTTON",
+        L"Cancel",  // text
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
+        parentRect.right - 100 - 50, // x coord
+        parentRect.bottom - 60,  // y coord
+        120,  // width
+        35,  // height
+        parentHWnd,  // parent
+        (HMENU)IDC_CANCELBUTTON, // menu
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+        buttonPointer); // pointer to button
+    return TRUE;
 }
 
-BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect, int xDiff, int yDiff) 
+BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect, int xDiff, int yDiff)
 {
     LPVOID buttonPointer = nullptr;
     g_LaunchbuttonHWnd = CreateWindowEx(
@@ -548,9 +452,9 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     Gdiplus::Font messageFont(L"Arial", 10);
     Gdiplus::StringFormat format;
     format.SetAlignment(Gdiplus::StringAlignmentNear);
-	auto windowsTextColor = Gdiplus::Color();
-	windowsTextColor.SetFromCOLORREF(GetSysColor(COLOR_WINDOWTEXT));
-	Gdiplus::SolidBrush textBrush(windowsTextColor);
+    auto windowsTextColor = Gdiplus::Color();
+    windowsTextColor.SetFromCOLORREF(GetSysColor(COLOR_WINDOWTEXT));
+    Gdiplus::SolidBrush textBrush(windowsTextColor);
 
     graphics.DrawString(displayName.c_str(), -1, &displayNameFont, layoutRect, &format, &textBrush);
     layoutRect.Y += 40;
@@ -610,12 +514,49 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
     return static_cast<int>(msg.wParam);
 }
 
-void UI::UpdateProgressBar()
+void UI::ButtonClicked()
 {
-    SendMessage(g_progressHWnd, PBM_STEPIT, 0, 0);
+    switch (m_type)
+    {
+    case InstallUIAdd:
+    {
+        m_msixResponse = m_packageManager->AddPackage(m_path, DeploymentOptions::None);
+        if (m_msixResponse != nullptr)
+        {
+            m_msixResponse->SetCallback([this](IMsixResponse * sender) {
+
+                SendMessage(g_progressHWnd, PBM_SETPOS, (WPARAM)sender->GetPercentage(), 0);
+                switch (sender->GetStatus())
+                {
+                case InstallationStep::InstallationStepCompleted:
+                {
+                    SendInstallCompleteMsg();
+                }
+                break;
+                case InstallationStep::InstallationStepError:
+                {
+                    auto error = sender->GetTextStatus();
+                    
+                    CloseUI();
+                }
+                break;
+                }
+            });
+        }
+    }
+    break;
+    }
 }
+
 
 void UI::SendInstallCompleteMsg()
 {
     SendMessage(GetHwnd(), WM_INSTALLCOMPLETE_MSG, NULL, NULL);
+}
+
+
+void UI::CloseUI()
+{
+    DestroyWindow(GetHwnd()); // close msix app installer
+    SetEvent(m_closeUI);
 }

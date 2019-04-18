@@ -2,8 +2,10 @@
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 #include "RegistryKey.hpp"
+#include "MsixRequest.hpp"
 #include <vector>
-
+namespace Win7MsixInstallerLib
+{
 class ComServer : IPackageHandler
 {
 public:
@@ -169,4 +171,4 @@ private:
     ComServer(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
 };
-
+}

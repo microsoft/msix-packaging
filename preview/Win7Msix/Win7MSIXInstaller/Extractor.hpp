@@ -2,7 +2,10 @@
 
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
+#include "MsixRequest.hpp"
 
+namespace Win7MsixInstallerLib
+{
 /// Extractor extracts the files and registry settings from the package to the file system and registry.
 class Extractor : IPackageHandler
 {
@@ -101,3 +104,4 @@ private:
     /// Removes all VFS files in the package
     HRESULT RemoveVfsFiles();
 };
+}
