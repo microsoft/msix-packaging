@@ -6,6 +6,9 @@
 #include "Exceptions.hpp"
 #include "DirectoryObject.hpp"
 #include "FileStream.hpp"
+#include "MSIXWindows.hpp"
+#include "UnicodeConversion.hpp"
+#include "MsixFeatureSelector.hpp"
 
 #include <memory>
 #include <iostream>
@@ -13,8 +16,7 @@
 #include <sstream>
 #include <locale>
 #include <codecvt>
-#include "MSIXWindows.hpp"
-#include "UnicodeConversion.hpp"
+#include <queue>
 
 namespace MSIX {
     enum class WalkOptions : std::uint16_t
@@ -34,13 +36,17 @@ namespace MSIX {
         return static_cast<WalkOptions>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
     }
 
-    template <WalkOptions options, class Lambda>
-    void WalkDirectory(const std::string& root, Lambda& visitor)
+    template <class Lambda>
+    void WalkDirectory(const std::string& root, WalkOptions options, Lambda& visitor)
     {
         static std::string dot(".");
         static std::string dotdot("..");
 
         std::wstring utf16Name = utf8_to_wstring(root);
+        if ((options & WalkOptions::Files) == WalkOptions::Files)
+        {
+            utf16Name += L"\\*";
+        }
 
         WIN32_FIND_DATA findFileData = {};
         std::unique_ptr<std::remove_pointer<HANDLE>::type, decltype(&::FindClose)> find(
@@ -57,33 +63,35 @@ namespace MSIX {
             ThrowWin32ErrorIfNot(lastError, false, "FindFirstFile failed.");
         }
 
+        // TODO: handle junction loops
         do
         {
             utf16Name = std::wstring(findFileData.cFileName);
             auto utf8Name = wstring_to_utf8(utf16Name);
-
-            if (((options & WalkOptions::Directories) == WalkOptions::Directories) &&
-                (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-                )
+            if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
             {
-                std::string child = (root + "\\" + utf8Name);
-                if (!visitor(root, WalkOptions::Directories, std::move(utf8Name)))
+                if (dot != utf8Name && dotdot != utf8Name)
                 {
-                    break;
-                }
-                if ((options & WalkOptions::Recursive) == WalkOptions::Recursive)
-                {
-                    WalkDirectory<options>(child, visitor);
+                    std::string child = root + "\\" + utf8Name;
+                    if ((options & WalkOptions::Directories) == WalkOptions::Directories &&
+                        !visitor(root, WalkOptions::Directories, std::move(utf8Name), 0))
+                    {
+                        break;
+                    }
+                    if ((options & WalkOptions::Recursive) == WalkOptions::Recursive)
+                    {
+                        WalkDirectory(child, options, visitor);
+                    }
                 }
             }
             else if ((options & WalkOptions::Files) == WalkOptions::Files)
             {
-                if (dot != utf8Name && dotdot != utf8Name)
+                ULARGE_INTEGER fileTime;
+                fileTime.HighPart = findFileData.ftLastWriteTime.dwHighDateTime;
+                fileTime.LowPart = findFileData.ftLastWriteTime.dwLowDateTime;
+                if (!visitor(root, WalkOptions::Files, std::move(utf8Name), static_cast<std::uint64_t>(fileTime.QuadPart)))
                 {
-                    if (!visitor(root, WalkOptions::Files, std::move(utf8Name)))
-                    {
-                        break;
-                    }
+                    break;
                 }
             }
         }
@@ -111,13 +119,14 @@ namespace MSIX {
         NOTIMPLEMENTED;
     }
 
+    // IDirectoryObject
     ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
-        std::vector<std::string> directories;
+        std::queue<std::string> directories;
         auto PopFirst = [&directories]()
         {
-            auto result = directories.at(0);
-            std::vector<std::string>(directories.begin() + 1, directories.end()).swap(directories);
+            auto result = directories.front();
+            directories.pop();
             return result;
         };
 
@@ -126,7 +135,7 @@ namespace MSIX {
         std::string directory;
         while (getline(stream, directory, '/'))
         {
-            directories.push_back(std::move(directory));
+            directories.push(std::move(directory));
         }
 
         // Enforce that directory structure exists before creating file at specified location.
@@ -134,10 +143,11 @@ namespace MSIX {
         std::string path = PopFirst();
         do
         {
-            WalkDirectory<WalkOptions::Directories>(path, [&](
+            WalkDirectory(path, WalkOptions::Directories, [&](
                 std::string,
                 WalkOptions option,
-                std::string&& name)
+                std::string&& name,
+                std::uint64_t)
             {
                 found = false;
                 if (directories.front() == name)
@@ -164,6 +174,28 @@ namespace MSIX {
         while(directories.size() > 0);
         auto result = ComPtr<IStream>::Make<FileStream>(std::move(utf8_to_wstring(path)), mode);
         return result;
+    }
+
+    std::multimap<std::uint64_t, std::string> DirectoryObject::GetFilesByLastModDate()
+    {
+        THROW_IF_PACK_NOT_ENABLED
+        std::multimap<std::uint64_t, std::string> files;
+        WalkDirectory(m_root, WalkOptions::Recursive | WalkOptions::Files, [&](
+                std::string root,
+                WalkOptions option,
+                std::string&& name,
+                std::uint64_t size)
+            {
+                if (name != "AppxManifest.xml") // should only add payload files to the map
+                {
+                    std::string fileName = root + GetPathSeparator() + name;
+                    // root contains the top level directory, which we don't need
+                    fileName = fileName.substr(fileName.find_first_of(GetPathSeparator()) + 1);
+                    files.insert(std::make_pair(size, std::move(fileName)));
+                }
+                return true;
+            });
+        return files;
     }
 }
 

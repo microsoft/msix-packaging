@@ -9,6 +9,7 @@
 #include "AppxPackageObject.hpp"
 #include "MSIXResource.hpp"
 #include "VectorStream.hpp"
+#include "MsixFeatureSelector.hpp"
 
 namespace MSIX {
     // IAppxFactory
@@ -73,36 +74,27 @@ namespace MSIX {
     } CATCH_RETURN();
 
     // IAppxBundleFactory
-    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept try
     {
-        #ifdef BUNDLE_SUPPORT
-            return static_cast<HRESULT>(Error::NotImplemented);
-        #else
-            return static_cast<HRESULT>(MSIX::Error::NotSupported);
-        #endif
-    }
+        THROW_IF_BUNDLE_NOT_ENABLED
+        NOTIMPLEMENTED;
+    } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) noexcept try
     {
-        #ifdef BUNDLE_SUPPORT
-            ComPtr<IAppxPackageReader> reader;
-            ThrowHrIfFailed(CreatePackageReader(inputStream, &reader));
-            auto result = reader.As<IAppxBundleReader>();
-            *bundleReader = result.Detach();
-            return static_cast<HRESULT>(Error::OK);
-        #else
-            return static_cast<HRESULT>(MSIX::Error::NotSupported);
-        #endif
+        THROW_IF_BUNDLE_NOT_ENABLED
+        ComPtr<IAppxPackageReader> reader;
+        ThrowHrIfFailed(CreatePackageReader(inputStream, &reader));
+        auto result = reader.As<IAppxBundleReader>();
+        *bundleReader = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept try
     {
-        #ifdef BUNDLE_SUPPORT
-            return static_cast<HRESULT>(Error::NotImplemented);
-        #else
-            return static_cast<HRESULT>(MSIX::Error::NotSupported);
-        #endif
-    }
+        THROW_IF_BUNDLE_NOT_ENABLED
+        NOTIMPLEMENTED;
+    } CATCH_RETURN();
 
     // IMsixFactory
     HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result) noexcept try

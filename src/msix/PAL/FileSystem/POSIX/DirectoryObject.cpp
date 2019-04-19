@@ -5,12 +5,49 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "DirectoryObject.hpp"
+#include "MsixFeatureSelector.hpp"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
 #include <fts.h>
+#include <dirent.h>
+#include <map>
 
 namespace MSIX {
+
+    template<class Lambda>
+    void WalkDirectory(const std::string& root, Lambda& visitor)
+    {
+        static std::string dot(".");
+        static std::string dotdot("..");
+
+        std::unique_ptr<DIR, decltype(&closedir)> dir(opendir(root.c_str()), closedir);
+        ThrowErrorIf(Error::FileNotFound, dir.get() == nullptr, "Invalid directory");
+        struct dirent* dp;
+        // TODO: handle junction loops
+        while((dp = readdir(dir.get())) != nullptr)
+        {
+            std::string fileName = std::string(dp->d_name);
+            std::string child = root + "/" + fileName;
+            if (dp->d_type == DT_DIR)
+            {
+                if ((fileName != dot) && (fileName != dotdot))
+                {
+                    WalkDirectory(child, visitor);
+                }
+            }
+            else
+            {
+                // TODO: ignore .DS_STORE for mac?
+                struct stat sb;
+                ThrowErrorIf(Error::Unexpected, stat(child.c_str(), &sb) == -1, std::string("stat call failed" + std::to_string(errno)).c_str());
+                if (!visitor(root, std::move(fileName), static_cast<std::uint64_t>(sb.st_mtime)))
+                {
+                    break;
+                }
+            }
+        }
+    }
 
     std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
     {
@@ -23,8 +60,6 @@ namespace MSIX {
         // TODO: Implement when standing-up the pack side for test validation purposes
         NOTIMPLEMENTED;
     }
-    
-    const char* DirectoryObject::GetPathSeparator() { return "/"; }
 
     #define DEFAULT_MODE S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
     void mkdirp(std::string& path, mode_t mode = DEFAULT_MODE)
@@ -43,13 +78,37 @@ namespace MSIX {
         }
     }
 
+    const char* DirectoryObject::GetPathSeparator() { return "/"; }
+
     ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
     {
-        std::string name = m_root + "/" + fileName;
-        auto lastSlash = name.find_last_of("/");
+        std::string name = m_root + GetPathSeparator() + fileName;
+        auto lastSlash = name.find_last_of(GetPathSeparator());
         std::string path = name.substr(0, lastSlash);
         mkdirp(path);
         auto result = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
         return result;
+    }
+
+    std::multimap<std::uint64_t, std::string> DirectoryObject::GetFilesByLastModDate()
+    {
+        THROW_IF_PACK_NOT_ENABLED
+        std::multimap<std::uint64_t, std::string> files;
+        auto lamdba = [&](
+                std::string root,
+                std::string&& name,
+                std::uint64_t size)
+           {
+                if (name != "AppxManifest.xml") // should only add payload files to the map
+                {
+                    std::string fileName = root + GetPathSeparator() + name;
+                    // root contains the top level directory, which we don't need
+                    fileName = fileName.substr(fileName.find_first_of(GetPathSeparator()) + 1);
+                    files.insert(std::make_pair(size, std::move(fileName)));
+                }
+                return true;
+           };
+        WalkDirectory(m_root, lamdba);
+        return files;
     }
 }

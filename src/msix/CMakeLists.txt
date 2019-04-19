@@ -6,8 +6,8 @@ cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
 project(msix)
 
-# TODO: Only define this when we want unpack
-add_definitions(-DMSIX_UNPACK=1)
+# TODO: Only define this when we want pack
+add_definitions(-DMSIX_PACK=1)
 
 if(SKIP_BUNDLES)
     message(STATUS "Bundle support disabled.")
@@ -71,19 +71,26 @@ if(WIN32)
     set(Applicability PAL/Applicability/Win32/Applicability.cpp)
 else()
     # Visibility variables for non-win32 platforms
-    set(MSIX_EXPORTS)
+    list(APPEND MSIX_UNPACK_EXPORTS
+        "UnpackPackage"
+        "UnpackPackageFromStream"
+        "UnpackBundle"
+        "UnpackBundleFromStream"
+    )
+    # TODO: Only define this when we want pack
+    list(APPEND MSIX_PACK_EXPORTS
+        "PackPackage"
+    )
     list(APPEND MSIX_EXPORTS
         "CoCreateAppxFactory"
         "CoCreateAppxFactoryWithHeap"
         "CreateStreamOnFile"
         "CreateStreamOnFileUTF16"
         "GetLogTextUTF8"
-        "UnpackPackage"
-        "UnpackPackageFromStream"
-        "UnpackBundle"
-        "UnpackBundleFromStream"
         "CoCreateAppxBundleFactory"
         "CoCreateAppxBundleFactoryWithHeap"
+        ${MSIX_UNPACK_EXPORTS}
+        ${MSIX_PACK_EXPORTS}
     )
     if((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported
