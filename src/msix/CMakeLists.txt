@@ -6,8 +6,7 @@ cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
 project(msix)
 
-# TODO: Only define this when we want unpack and pack
-add_definitions(-DMSIX_UNPACK=1)
+# TODO: Only define this when we want pack
 add_definitions(-DMSIX_PACK=1)
 
 if(SKIP_BUNDLES)
@@ -78,7 +77,8 @@ else()
         "UnpackBundle"
         "UnpackBundleFromStream"
     )
-    list(APPEND MSIX_UNPACK_EXPORTS
+    # TODO: Only define this when we want pack
+    list(APPEND MSIX_PACK_EXPORTS
         "PackPackage"
     )
     list(APPEND MSIX_EXPORTS

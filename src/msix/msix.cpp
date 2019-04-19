@@ -15,6 +15,7 @@
 #include "Log.hpp"
 #include "DirectoryObject.hpp"
 #include "AppxPackageObject.hpp"
+#include "MsixFeatureSelector.hpp"
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
@@ -101,12 +102,9 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
     MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     IAppxBundleFactory** appxBundleFactory) noexcept try
 {
-#ifdef BUNDLE_SUPPORT
+    THROW_IF_BUNDLE_NOT_ENABLED
     *appxBundleFactory = MSIX::ComPtr<IAppxBundleFactory>::Make<MSIX::AppxFactory>(validationOption, applicabilityOptions, memalloc, memfree).Detach();
     return static_cast<HRESULT>(MSIX::Error::OK);
-#else
-    return static_cast<HRESULT>(MSIX::Error::NotSupported);
-#endif
 } CATCH_RETURN();
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
@@ -121,8 +119,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
         return static_cast<HRESULT>(MSIX::Error::NotSupported);
     #endif
 }
-
-#ifdef MSIX_UNPACK
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
@@ -172,7 +168,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
     char* utf8SourcePackage,
     char* utf8Destination) noexcept try
 {
-#ifdef BUNDLE_SUPPORT
+    THROW_IF_BUNDLE_NOT_ENABLED
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
         (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
         "Invalid parameters"
@@ -182,9 +178,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
     ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
     ThrowHrIfFailed(UnpackBundleFromStream(packUnpackOptions, validationOption, applicabilityOptions, stream.Get(), utf8Destination));
     return static_cast<HRESULT>(MSIX::Error::OK);
-#else
-    return static_cast<HRESULT>(MSIX::Error::NotSupported);
-#endif
 } CATCH_RETURN();
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
@@ -194,7 +187,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     IStream* stream,
     char* utf8Destination) noexcept try
 {
-#ifdef BUNDLE_SUPPORT
+    THROW_IF_BUNDLE_NOT_ENABLED
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
         (stream != nullptr && utf8Destination != nullptr), 
         "Invalid parameters"
@@ -211,12 +204,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
     return static_cast<HRESULT>(MSIX::Error::OK);
-#else
-    return static_cast<HRESULT>(MSIX::Error::NotSupported);
-#endif
 } CATCH_RETURN();
-
-#endif // MSIX_UNPACK
 
 #ifdef MSIX_PACK
 
@@ -238,7 +226,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     // - add new method to IPackage that takes a std::multimap with the files and stream of the manifest
 
 
-    return static_cast<HRESULT>(MSIX::Error::OK);
+    return static_cast<HRESULT>(MSIX::Error::NotImplemented);
 } CATCH_RETURN();
 
 #endif // MSIX_PACK

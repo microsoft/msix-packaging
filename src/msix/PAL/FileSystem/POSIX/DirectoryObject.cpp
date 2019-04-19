@@ -5,6 +5,7 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "DirectoryObject.hpp"
+#include "MsixFeatureSelector.hpp"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <errno.h>
@@ -23,6 +24,7 @@ namespace MSIX {
         std::unique_ptr<DIR, decltype(&closedir)> dir(opendir(root.c_str()), closedir);
         ThrowErrorIf(Error::FileNotFound, dir.get() == nullptr, "Invalid directory");
         struct dirent* dp;
+        // TODO: handle junction loops
         while((dp = readdir(dir.get())) != nullptr)
         {
             std::string fileName = std::string(dp->d_name);
@@ -90,7 +92,7 @@ namespace MSIX {
 
     std::multimap<std::uint64_t, std::string> DirectoryObject::GetFilesByLastModDate()
     {
-    #ifdef MSIX_PACK
+        THROW_IF_PACK_NOT_ENABLED
         std::multimap<std::uint64_t, std::string> files;
         auto lamdba = [&](
                 std::string root,
@@ -108,8 +110,5 @@ namespace MSIX {
            };
         WalkDirectory(m_root, lamdba);
         return files;
-    #else
-        NOTIMPLEMENTED;
-    #endif // MSIX_PACK
     }
 }

@@ -8,6 +8,7 @@
 #include "FileStream.hpp"
 #include "MSIXWindows.hpp"
 #include "UnicodeConversion.hpp"
+#include "MsixFeatureSelector.hpp"
 
 #include <memory>
 #include <iostream>
@@ -35,8 +36,8 @@ namespace MSIX {
         return static_cast<WalkOptions>(static_cast<uint16_t>(a) | static_cast<uint16_t>(b));
     }
 
-    template <WalkOptions options, class Lambda>
-    void WalkDirectory(const std::string& root, Lambda& visitor)
+    template <class Lambda>
+    void WalkDirectory(const std::string& root, WalkOptions options, Lambda& visitor)
     {
         static std::string dot(".");
         static std::string dotdot("..");
@@ -62,6 +63,7 @@ namespace MSIX {
             ThrowWin32ErrorIfNot(lastError, false, "FindFirstFile failed.");
         }
 
+        // TODO: handle junction loops
         do
         {
             utf16Name = std::wstring(findFileData.cFileName);
@@ -78,7 +80,7 @@ namespace MSIX {
                     }
                     if ((options & WalkOptions::Recursive) == WalkOptions::Recursive)
                     {
-                        WalkDirectory<options>(child, visitor);
+                        WalkDirectory(child, options, visitor);
                     }
                 }
             }
@@ -141,7 +143,7 @@ namespace MSIX {
         std::string path = PopFirst();
         do
         {
-            WalkDirectory<WalkOptions::Directories>(path, [&](
+            WalkDirectory(path, WalkOptions::Directories, [&](
                 std::string,
                 WalkOptions option,
                 std::string&& name,
@@ -176,9 +178,9 @@ namespace MSIX {
 
     std::multimap<std::uint64_t, std::string> DirectoryObject::GetFilesByLastModDate()
     {
-    #ifdef MSIX_PACK
+        THROW_IF_PACK_NOT_ENABLED
         std::multimap<std::uint64_t, std::string> files;
-        WalkDirectory<WalkOptions::Recursive | WalkOptions::Files>(m_root, [&](
+        WalkDirectory(m_root, WalkOptions::Recursive | WalkOptions::Files, [&](
                 std::string root,
                 WalkOptions option,
                 std::string&& name,
@@ -194,9 +196,6 @@ namespace MSIX {
                 return true;
             });
         return files;
-    #else
-        NOTIMPLEMENTED;
-    #endif // MSIX_PACK
     }
 }
 

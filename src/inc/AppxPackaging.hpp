@@ -1046,26 +1046,6 @@ enum tagLOCKTYPE
     };
 #endif 	/* __IAppxBundleManifestPackageInfo_INTERFACE_DEFINED__ */
 
-#ifndef __IAppxPackageWriter_INTERFACE_DEFINED__
-#define __IAppxPackageWriter_INTERFACE_DEFINED__
-
-    // {9099e33b-246f-41e4-881a-008eb613f858}
-    MSIX_INTERFACE(IAppxPackageWriter, 0x9099e33b,0x246f,0x41e4,0x88,0x1a,0x00,0x8e,0xb6,0x13,0xf8,0x58);
-    interface IAppxPackageWriter : public IUnknown
-    {
-    public:
-        virtual HRESULT STDMETHODCALLTYPE AddPayloadFile( 
-            /* [string][in] */ LPCWSTR fileName,
-            /* [string][in] */ LPCWSTR contentType,
-            /* [in] */ APPX_COMPRESSION_OPTION compressionOption,
-            /* [in] */ IStream* inputStream) noexcept = 0;
-        
-        virtual HRESULT STDMETHODCALLTYPE Close( 
-            /* [in] */ IStream *manifest) noexcept = 0;
-    };
-
-#endif 	/* __IAppxPackageWriter_INTERFACE_DEFINED__ */
-
 #ifndef __IAppxPackageWriter3_INTERFACE_DEFINED__
 #define __IAppxPackageWriter3_INTERFACE_DEFINED__
 
@@ -1583,13 +1563,16 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     char* utf8Destination
 ) noexcept;
 
-// Pack
+#ifdef MSIX_PACK
+
 // TODO: expand flags flags as needed.
 MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     MSIX_VALIDATION_OPTION validationOption,
     char* directoryPath,
     char* outputPackage
 ) noexcept;
+
+#endif // MSIX_PACK
 
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.
