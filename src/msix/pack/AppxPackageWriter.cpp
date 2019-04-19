@@ -4,6 +4,7 @@
 // 
 #include "AppxPackageWriter.hpp"
 #include "MsixErrors.hpp"
+#include "Exceptions.hpp"
 
 #include <string>
 
@@ -20,12 +21,8 @@ namespace MSIX {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
         auto fileMap = from->GetFilesByLastModDate();
 
-        for(const auto& file : fileMap)
-        {
-            // TODO: either create APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8s and call AddPayloadFiles
-            // or make the blockmap/zip writer take the information and call it from here, AddPayloadFiles
-            // and AddPayloadFile
-        }
+        // TODO: start packing
+        NOTIMPLEMENTED
     }
 
     // IAppxPackageWriter
@@ -41,7 +38,7 @@ namespace MSIX {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
         // TODO: implement
         m_state = WriterState::Closed;
-        return static_cast<HRESULT>(Error::OK);
+        NOTIMPLEMENTED
     } CATCH_RETURN();
 
     // IAppxPackageWriterUtf8
@@ -50,7 +47,7 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
         // TODO: implement
-        return static_cast<HRESULT>(Error::OK);
+        NOTIMPLEMENTED
     } CATCH_RETURN();
 
     // IAppxPackageWriter3
@@ -59,7 +56,7 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
         // TODO: implement
-        return static_cast<HRESULT>(Error::OK);
+        NOTIMPLEMENTED
     } CATCH_RETURN();
 
     // IAppxPackageWriter3Utf8
@@ -68,6 +65,6 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
         // TODO: implement
-        return static_cast<HRESULT>(Error::OK);
+        NOTIMPLEMENTED
     } CATCH_RETURN();
 }

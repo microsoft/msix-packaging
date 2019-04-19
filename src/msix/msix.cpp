@@ -221,8 +221,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
         "Invalid parameters");
 
     auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
-    // If they are calling this API assume they included the AppxManifest.xml
-    // also do this before calling pack to fail earlier if not present
+    // PackPackage assumes AppxManifest.xml to be in the directory provided.
     auto manifest = from.As<IStorageObject>()->GetFile("AppxManifest.xml");
 
     auto deleteFile = MSIX::scope_exit([&outputPackage]
@@ -234,8 +233,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     ThrowHrIfFailed(CreateStreamOnFile(outputPackage, false, &stream));
 
     MSIX::ComPtr<IAppxFactory> factory;
-    // We don't need to use the caller's heap here because we're not marshalling any strings
-    // out to the caller.  So default to new / delete[] and be done with it!
     ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, validationOption, &factory));
 
     MSIX::ComPtr<IAppxPackageWriter> writer;

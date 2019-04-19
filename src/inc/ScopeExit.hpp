@@ -62,7 +62,7 @@ namespace MSIX {
 
     // Returns an object that executes the given lambda when destroyed.
     // Capture the object with 'auto'; use reset() to execute the lambda early or release() to avoid
-    // execution.  Exceptions thrown in the lambda will fail-fast; use scope_exit_log to avoid.
+    // execution.
     template <typename TLambda>
     inline auto scope_exit(TLambda&& lambda)
     {
