@@ -87,16 +87,16 @@ HRESULT ValidateTargetDeviceFamily::ParseTargetDeviceFamilyFromPackage()
 
 bool ValidateTargetDeviceFamily::IsTargetDeviceFamilyNameCompatibleWithOS()
 {
-    if (isWindowsProductTypeDesktop()) /// Desktop OS
+    if (IsWindowsProductTypeServer()) /// Desktop OS
     {
         if (m_targetDeviceFamilyName == L"MsixCore.Server" || m_targetDeviceFamilyName == L"MsixCore.Desktop")
         {
             return true;
         }
     }
-    else if (isWindowsProductTypeServer()) /// Server
+    else if (IsWindowsProductTypeDesktop()) /// Server
     {
-        if (m_targetDeviceFamilyName == L"MsixCore.Server")
+        if (m_targetDeviceFamilyName == L"MsixCore.Desktop")
         {
             return true;
         }
@@ -116,24 +116,14 @@ bool ValidateTargetDeviceFamily::IsManifestVersionCompatibleWithOS()
     osvi.dwMinorVersion = std::stoi(m_minorVersion.c_str());
     osvi.dwBuildNumber = std::stoi(m_buildNumber.c_str());
 
-    if (isWindowsProductTypeDesktop())
-    {
-        osvi.wProductType = VER_NT_WORKSTATION;
-    }
-    else if (isWindowsProductTypeServer())
-    {
-        osvi.wProductType = VER_NT_SERVER;
-    }
-
     VER_SET_CONDITION(dwlConditionMask, VER_MAJORVERSION, op);
     VER_SET_CONDITION(dwlConditionMask, VER_MINORVERSION, op);
     VER_SET_CONDITION(dwlConditionMask, VER_BUILDNUMBER, op);
-    VER_SET_CONDITION(dwlConditionMask, VER_PRODUCT_TYPE, VER_EQUAL);
 
-    return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER | VER_PRODUCT_TYPE, dwlConditionMask);
+    return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask);
 }
 
-bool ValidateTargetDeviceFamily::isWindowsProductTypeDesktop()
+bool ValidateTargetDeviceFamily::IsWindowsProductTypeDesktop()
 {
     OSVERSIONINFOEX osvi;
     DWORDLONG dwlConditionMask = 0;
@@ -147,7 +137,7 @@ bool ValidateTargetDeviceFamily::isWindowsProductTypeDesktop()
     return VerifyVersionInfo(&osvi, VER_PRODUCT_TYPE, dwlConditionMask);
 }
 
-bool ValidateTargetDeviceFamily::isWindowsProductTypeServer()
+bool ValidateTargetDeviceFamily::IsWindowsProductTypeServer()
 {
     OSVERSIONINFOEX osvi;
     DWORDLONG dwlConditionMask = 0;

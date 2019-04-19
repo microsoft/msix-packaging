@@ -42,10 +42,10 @@ private:
     /// This function returns true for Desktop OS
     ///
     /// @return true in case of desktop OS
-    bool isWindowsProductTypeDesktop();
+    bool IsWindowsProductTypeDesktop();
 
     /// This function returns true for Server OS
     ///
     /// @return true in case of Server OS
-    bool isWindowsProductTypeServer();
+    bool IsWindowsProductTypeServer();
 };
