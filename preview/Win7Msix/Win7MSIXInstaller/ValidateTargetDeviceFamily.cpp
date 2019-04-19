@@ -8,14 +8,14 @@
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
 #include <VersionHelpers.h>
-#include <sstream>
 
 const PCWSTR ValidateTargetDeviceFamily::HandlerName = L"ValidateRequest";
 
 HRESULT ValidateTargetDeviceFamily::ExecuteForAddRequest()
 {
     RETURN_IF_FAILED(ParseTargetDeviceFamilyFromPackage());
-    if (m_targetDeviceFamilyName == L"MSIXCore.Desktop" && IsManifestVersionCompatilbleWithOS())
+    if ((m_targetDeviceFamilyName == L"MSIXCore.Desktop" || m_targetDeviceFamilyName == L"MSIXCore.Server")
+        && IsManifestVersionCompatibleWithOS())
     {
         TraceLoggingWrite(g_MsixTraceLoggingProvider,
             "Validation complete",
@@ -65,27 +65,28 @@ HRESULT ValidateTargetDeviceFamily::ParseTargetDeviceFamilyFromPackage()
 
     Text<wchar_t> minVersion;
     RETURN_IF_FAILED(dependencyElement->GetAttributeValue(L"MinVersion", &minVersion));
-    m_minVersion = minVersion.Get();
+    std::wstring m_manifestMinVersion;
+    m_manifestMinVersion = minVersion.Get();
 
     //Major version
     size_t start = 0;
-    size_t end = m_minVersion.find_first_of(L'.');
-    m_majorVersion = m_minVersion.substr(start, end - start);
+    size_t end = m_manifestMinVersion.find_first_of(L'.');
+    m_majorVersion = m_manifestMinVersion.substr(start, end - start);
 
     //Minor version
-    m_minVersion.replace(start, end - start + 1, L"");
-    end = m_minVersion.find_first_of(L'.');
-    m_minorVersion = m_minVersion.substr(start, end - start);
+    m_manifestMinVersion.replace(start, end - start + 1, L"");
+    end = m_manifestMinVersion.find_first_of(L'.');
+    m_minorVersion = m_manifestMinVersion.substr(start, end - start);
 
     //Build number
-    m_minVersion.replace(start, end - start + 1, L"");
-    end = m_minVersion.find_first_of(L'.');
-    m_buildNumber = m_minVersion.substr(start, end - start);
+    m_manifestMinVersion.replace(start, end - start + 1, L"");
+    end = m_manifestMinVersion.find_first_of(L'.');
+    m_buildNumber = m_manifestMinVersion.substr(start, end - start);
 
     return S_OK;
 }
 
-bool ValidateTargetDeviceFamily::IsManifestVersionCompatilbleWithOS()
+bool ValidateTargetDeviceFamily::IsManifestVersionCompatibleWithOS()
 {
     OSVERSIONINFOEX osvi;
     DWORDLONG dwlConditionMask = 0;

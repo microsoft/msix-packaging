@@ -15,7 +15,6 @@ private:
     MsixRequest * m_msixRequest = nullptr;
 
     std::wstring m_targetDeviceFamilyName;
-    std::wstring m_minVersion;
     std::wstring m_majorVersion;
     std::wstring m_minorVersion;
     std::wstring m_buildNumber;
@@ -24,5 +23,5 @@ private:
     ValidateTargetDeviceFamily(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
     HRESULT ParseTargetDeviceFamilyFromPackage();
-    bool IsManifestVersionCompatilbleWithOS();
+    bool IsManifestVersionCompatibleWithOS();
 };
