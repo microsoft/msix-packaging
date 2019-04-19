@@ -24,6 +24,7 @@ namespace MSIX {
         NotSupported                = 0x80070032,
         InvalidParameter            = 0x80070057,
         Stg_E_Invalidpointer        = 0x80030009,
+        InvalidState                = 0x804d0003,
 
         //
         // msix specific error codes

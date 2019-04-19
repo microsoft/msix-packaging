@@ -46,7 +46,12 @@ namespace MSIX {
 
         // IStorageObject methods
         std::vector<std::string> GetFileNames(FileNameOptions options) override;
-        ComPtr<IStream> GetFile(const std::string& fileName) override;
+        ComPtr<IStream> GetFile(const std::string& fileName) override
+        {
+            std::string file = m_root + GetPathSeparator() + fileName;
+            auto fileStream = ComPtr<IStream>::Make<FileStream>(file, FileStream::Mode::READ);
+            return fileStream;
+        }
         std::string GetFileName() override { return m_root; }
 
         // IDirectoryObject
