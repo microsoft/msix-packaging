@@ -137,13 +137,12 @@ bool ValidateTargetDeviceFamily::isWindowsProductTypeDesktop()
 {
     OSVERSIONINFOEX osvi;
     DWORDLONG dwlConditionMask = 0;
-    int op = VER_EQUAL;
 
     ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
     osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
     osvi.wProductType = VER_NT_WORKSTATION;
 
-    VER_SET_CONDITION(dwlConditionMask, VER_PRODUCT_TYPE, op);
+    VER_SET_CONDITION(dwlConditionMask, VER_PRODUCT_TYPE, VER_EQUAL);
 
     return VerifyVersionInfo(&osvi, VER_PRODUCT_TYPE, dwlConditionMask);
 }
@@ -152,13 +151,12 @@ bool ValidateTargetDeviceFamily::isWindowsProductTypeServer()
 {
     OSVERSIONINFOEX osvi;
     DWORDLONG dwlConditionMask = 0;
-    int op = VER_EQUAL;
 
     ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
     osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
     osvi.wProductType = VER_NT_SERVER;
 
-    VER_SET_CONDITION(dwlConditionMask, VER_PRODUCT_TYPE, op);
+    VER_SET_CONDITION(dwlConditionMask, VER_PRODUCT_TYPE, VER_EQUAL);
 
     return VerifyVersionInfo(&osvi, VER_PRODUCT_TYPE, dwlConditionMask);
 }
