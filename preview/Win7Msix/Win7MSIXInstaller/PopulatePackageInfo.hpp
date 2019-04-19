@@ -24,8 +24,8 @@ public:
     static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
     ~PopulatePackageInfo() {}
 
-    static HRESULT GetPackageInfoFromManifest(const std::wstring & directoryPath, MSIX_VALIDATION_OPTION validationOption, InstalledPackage ** packageInfo);
-    static HRESULT GetPackageInfoFromPackage(const std::wstring & packageFilePath, MSIX_VALIDATION_OPTION validationOption, Package ** packageInfo);
+    static HRESULT GetPackageInfoFromManifest(const std::wstring & directoryPath, MSIX_VALIDATION_OPTION validationOption, std::shared_ptr<InstalledPackage> * packageInfo);
+    static HRESULT GetPackageInfoFromPackage(const std::wstring & packageFilePath, MSIX_VALIDATION_OPTION validationOption, std::shared_ptr<Package> * packageInfo);
 private:
     MsixRequest* m_msixRequest = nullptr;
 

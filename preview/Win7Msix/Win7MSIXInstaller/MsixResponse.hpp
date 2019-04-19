@@ -17,7 +17,7 @@ private:
     bool m_isInstallCancelled = false;
 
     /// HResult to be populated by handlers in the msix response
-    HRESULT m_hresultTextCode;
+    HRESULT m_hresultTextCode = 0;
 
     /// Detailed text status of the msix response
     std::wstring m_textStatus;
@@ -28,11 +28,9 @@ private:
     InstallationStep m_status = InstallationStepUnknown;
 
     /// Callback to indicate how the progress of the installation
-    std::function<void(IMsixResponse *)> m_callback;
+    std::function<void(const IMsixResponse&)> m_callback;
 
 public:
-
-    static HRESULT Make(MsixResponse** outInstance);
 
     /// Method used to return the status of the cancel button
     ///
@@ -59,7 +57,7 @@ public:
     /// Get the Hresult value in an msix response
     ///
     /// @return Hresult code as set in the response
-    virtual inline HRESULT GetHResultTextCode()
+    virtual inline HRESULT GetHResultTextCode() const
     {
         return m_hresultTextCode;
     }
@@ -75,7 +73,7 @@ public:
     /// Returns the detailed text status as set in the msix response object
     ///
     /// @return textStatus in the msix response
-    virtual inline std::wstring GetTextStatus()
+    virtual inline std::wstring GetTextStatus() const
     {
         return m_textStatus;
     }
@@ -89,12 +87,12 @@ public:
     /// Set a callback for the UI
     ///
     /// @param callback - callback called when status or percentage change
-    virtual void SetCallback(std::function<void(IMsixResponse *)> callback);
+    virtual void SetCallback(std::function<void(const IMsixResponse&)> callback);
 
     /// Get the installation progress percentage 
     ///
     /// @return the percentage (from 0 to 100)
-    virtual inline float GetPercentage()
+    virtual inline float GetPercentage() const
     {
         return m_percentage;
     }
@@ -102,7 +100,7 @@ public:
     /// Get the installation status
     ///
     /// @return the installation status
-    virtual inline InstallationStep GetStatus()
+    virtual inline InstallationStep GetStatus() const
     {
         return m_status;
     }

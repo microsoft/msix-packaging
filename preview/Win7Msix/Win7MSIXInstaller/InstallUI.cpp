@@ -34,7 +34,7 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
     {
         auto displayText = m_installOrUpdateText + L" " + m_displayName + L"?";
         auto messageText = L"Publisher: " + m_publisherCommonName + L"\nVersion: " + m_version;
-        ChangeText(hWnd, displayText, messageText, m_logoStream.Get());
+        ChangeText(hWnd, displayText, messageText, m_logoStream.get());
         ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));
     }
     else
@@ -295,7 +295,7 @@ HRESULT UI::ParseInfoFromPackage()
 
     //Obtain the number of files
     m_displayName = m_packageInfo->GetDisplayName();
-    m_logoStream = m_packageInfo->GetLogo();
+    m_logoStream = std::move(m_packageInfo->GetLogo());
     return S_OK;
 }
 
@@ -520,29 +520,25 @@ void UI::ButtonClicked()
     {
     case InstallUIAdd:
     {
-        m_msixResponse = m_packageManager->AddPackageAsync(m_path, DeploymentOptions::None);
-        if (m_msixResponse != nullptr)
-        {
-            m_msixResponse->SetCallback([this](IMsixResponse * sender) {
+            m_msixResponse = m_packageManager->AddPackageAsync(m_path, DeploymentOptions::None, [this](const IMsixResponse & sender) {
 
-                SendMessage(g_progressHWnd, PBM_SETPOS, (WPARAM)sender->GetPercentage(), 0);
-                switch (sender->GetStatus())
-                {
-                case InstallationStep::InstallationStepCompleted:
-                {
-                    SendInstallCompleteMsg();
-                }
-                break;
-                case InstallationStep::InstallationStepError:
-                {
-                    auto error = sender->GetTextStatus();
-                    
-                    CloseUI();
-                }
-                break;
-                }
-            });
-        }
+            SendMessage(g_progressHWnd, PBM_SETPOS, (WPARAM)sender.GetPercentage(), 0);
+            switch (sender.GetStatus())
+            {
+            case InstallationStep::InstallationStepCompleted:
+            {
+                SendInstallCompleteMsg();
+            }
+            break;
+            case InstallationStep::InstallationStepError:
+            {
+                //auto error = sender->GetTextStatus();
+
+                CloseUI();
+            }
+            break;
+            }
+        });
     }
     break;
     }

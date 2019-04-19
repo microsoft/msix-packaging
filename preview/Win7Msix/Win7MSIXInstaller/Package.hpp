@@ -62,8 +62,7 @@ namespace Win7MsixInstallerLib
         }
     };
 
-
-    class Package : public PackageBase, IPackage
+    class Package : public PackageBase, public IPackage
     {
     public:
         std::wstring GetPackageFullName() { return m_packageFullName; }
@@ -75,25 +74,25 @@ namespace Win7MsixInstallerLib
         std::wstring GetVersion() { return PackageBase::GetVersion(); }
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
-        IStream* GetLogo();
+        std::unique_ptr<IStream> GetLogo();
         IAppxPackageReader * GetPackageReader() { return m_packageReader.Get(); }
 
         /// Create a Package using the package reader. This is intended for Add scenarios where
         /// the actual .msix package file is given.
-        static HRESULT MakeFromPackageReader(IAppxPackageReader* packageReader, Package** packageInfo);
+        static HRESULT MakeFromPackageReader(IAppxPackageReader* packageReader, std::shared_ptr<Package>* packageInfo);
 
         virtual ~Package()
         {
             m_packageReader.Release();
         }
-    private:
-        Package() :PackageBase() {}
+        Package() : PackageBase(), IPackage(){}
 
+    private:
         /// PackageReader and payloadFiles are available on Add, but not Remove because it's created off the original package itself which is no longer available once it's been installed.
         ComPtr<IAppxPackageReader> m_packageReader;
     };
 
-    class InstalledPackage : public PackageBase, IInstalledPackageInfo
+    class InstalledPackage : public PackageBase, public IInstalledPackageInfo
     {
     public:
         std::wstring GetPackageFullName() { return m_packageFullName; }
@@ -105,7 +104,7 @@ namespace Win7MsixInstallerLib
         std::wstring GetVersion() { return PackageBase::GetVersion(); }
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
-        IStream* GetLogo();
+        std::unique_ptr<IStream> GetLogo();
 
         virtual std::wstring GetFullExecutableFilePath()
         {
@@ -118,10 +117,9 @@ namespace Win7MsixInstallerLib
 
         /// Create a InstalledPackage using the manifest reader and directory path. This is intended for Remove scenarios where
         /// the actual .msix package file is no longer accessible.
-        static HRESULT MakeFromManifestReader(const std::wstring & directoryPath, IAppxManifestReader* manifestReader, InstalledPackage** packageInfo);
+        static HRESULT MakeFromManifestReader(const std::wstring & directoryPath, IAppxManifestReader* manifestReader, std::shared_ptr<InstalledPackage>* packageInfo);
+        InstalledPackage() :PackageBase(), IInstalledPackageInfo() {}
     private:
-        InstalledPackage() :PackageBase() {}
-
         std::wstring m_packageDirectoryPath;
     };
 }

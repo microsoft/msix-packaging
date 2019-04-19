@@ -11,7 +11,11 @@ namespace Win7MsixInstallerLib {
         virtual std::wstring GetPackageFamilyName() = 0;
         virtual std::wstring GetDisplayName() = 0;
         virtual std::wstring GetId() = 0;
-        virtual IStream* GetLogo() = 0;
+        virtual std::unique_ptr<IStream> GetLogo() = 0;
+        virtual ~IPackage() {}
+
+    protected:
+        IPackage() {}
     };
 
     class IInstalledPackageInfo : public IPackage
@@ -19,5 +23,8 @@ namespace Win7MsixInstallerLib {
     public:
         virtual std::wstring GetFullExecutableFilePath() = 0;
         virtual std::wstring GetInstalledLocation() = 0;
+        virtual ~IInstalledPackageInfo() {}
+    protected:
+        IInstalledPackageInfo() {}
     };
 }

@@ -22,10 +22,10 @@ private:
     OperationType m_operationType = Add;
 
     /// Filled by PopulatePackageInfo
-    AutoPtr<PackageBase> m_packageInfo;
+    std::shared_ptr<PackageBase> m_packageInfo;
 
     /// MsixResponse object populated by handlers
-    AutoPtr<MsixResponse> m_msixResponse;
+    std::shared_ptr<MsixResponse> m_msixResponse;
 
 protected:
     MsixRequest() {}
@@ -54,14 +54,14 @@ public:
     /// Retrieves the msixResponse object
     ///
     /// @return m_msixResponse object
-    MsixResponse* GetMsixResponse() { return m_msixResponse; }
+    std::shared_ptr<MsixResponse> GetMsixResponse() { return m_msixResponse; }
 
     /// Called by PopulatePackageInfo
-    void SetPackageInfo(PackageBase* packageInfo);
+    void SetPackageInfo(std::shared_ptr<PackageBase> packageInfo);
     std::wstring GetPackageDirectoryPath();
 
     /// @return can return null if called before PopulatePackageInfo.
-    PackageBase* GetPackageInfo() { return m_packageInfo; }
+    std::shared_ptr<PackageBase> GetPackageInfo() { return m_packageInfo; }
 
 private:
     /// This handles Add operation and proceeds through each of the AddSequenceHandlers to install the package

@@ -87,9 +87,7 @@ HRESULT MsixRequest::Make(OperationType operationType, const std::wstring & pack
     RETURN_IF_FAILED(FilePathMappings::GetInstance().GetInitializationResult());
 
     //Set MsixResponse
-    AutoPtr<MsixResponse> localResponse;
-    RETURN_IF_FAILED(MsixResponse::Make(&localResponse));
-    instance->m_msixResponse = localResponse.Detach();
+    instance->m_msixResponse = std::make_shared<MsixResponse>();
 
     *outInstance = instance.Detach();
 
@@ -205,7 +203,7 @@ HRESULT MsixRequest::ProcessRemoveRequest()
     return S_OK;
 }
 
-void MsixRequest::SetPackageInfo(PackageBase* packageInfo)
+void MsixRequest::SetPackageInfo(std::shared_ptr<PackageBase> packageInfo)
 {
     m_packageInfo = packageInfo;
 }

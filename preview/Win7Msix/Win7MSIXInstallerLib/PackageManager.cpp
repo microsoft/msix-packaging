@@ -12,7 +12,7 @@ PackageManager::PackageManager()
 {
 }
 
-IMsixResponse * PackageManager::AddPackageAsync(const wstring & packageFilePath, DeploymentOptions options)
+shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packageFilePath, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
 {
     MsixRequest * impl;
     auto res = (MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
@@ -20,13 +20,19 @@ IMsixResponse * PackageManager::AddPackageAsync(const wstring & packageFilePath,
     {
         return nullptr;
     }
-    auto t = std::thread([&impl]() {
+
+    if (callback != nullptr)
+    {
+        impl->GetMsixResponse()->SetCallback(callback);
+    }
+
+    auto t = thread([&impl]() {
         impl->ProcessRequest();
         delete impl;
         impl = nullptr;
-    });
+        });
     t.detach();
-    return (IMsixResponse*)impl->GetMsixResponse();
+    return impl->GetMsixResponse();
 }
 
 HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
@@ -40,7 +46,7 @@ HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOp
     return impl->ProcessRequest();
 }
 
-IMsixResponse * PackageManager::RemovePackageAsync(const wstring & packageFullName)
+shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & packageFullName, function<void(const IMsixResponse&)> callback)
 {
     MsixRequest* impl;
     auto res = (MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
@@ -48,12 +54,18 @@ IMsixResponse * PackageManager::RemovePackageAsync(const wstring & packageFullNa
     {
         return nullptr;
     }
-    std::thread t([&impl]() {
+
+    if (callback != nullptr)
+    {
+        impl->GetMsixResponse()->SetCallback(callback);
+    }
+
+    thread t([&impl]() {
         impl->ProcessRequest();
         impl = nullptr;
-    });
+        });
     t.detach();
-    return (IMsixResponse*)impl->GetMsixResponse();
+    return impl->GetMsixResponse();
 }
 
 HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
@@ -66,20 +78,18 @@ HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
     }
     return impl->ProcessRequest();
 }
-IInstalledPackageInfo * PackageManager::GetPackageInfo(const std::wstring & msix7Directory, const std::wstring & directoryPath)
+shared_ptr<IInstalledPackageInfo> PackageManager::GetPackageInfo(const wstring & msix7Directory, const wstring & directoryPath)
 {
-    InstalledPackage* packageInfo;
+    std::shared_ptr<InstalledPackage> packageInfo;
     auto res = PopulatePackageInfo::GetPackageInfoFromManifest(directoryPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo);
     if (FAILED(res))
     {
         return nullptr;
     }
-    // we don't need to keep a reference to the manifest
-    packageInfo->ReleaseManifest();
-    return (IInstalledPackageInfo *)packageInfo;
+    return std::dynamic_pointer_cast<IInstalledPackageInfo>(packageInfo);
 }
 
-IInstalledPackageInfo * PackageManager::FindPackage(const wstring & packageFullName)
+shared_ptr<IInstalledPackageInfo> PackageManager::FindPackage(const wstring & packageFullName)
 {
     auto filemapping = FilePathMappings::GetInstance();
     auto res = filemapping.GetInitializationResult();
@@ -87,13 +97,13 @@ IInstalledPackageInfo * PackageManager::FindPackage(const wstring & packageFullN
     {
         return nullptr;
     }
-    std::wstring msix7Directory = filemapping.GetMsix7Directory();
-    std::wstring packageDirectoryPath = msix7Directory + packageFullName;
+    wstring msix7Directory = filemapping.GetMsix7Directory();
+    wstring packageDirectoryPath = msix7Directory + packageFullName;
     auto package = GetPackageInfo(msix7Directory, packageDirectoryPath);
     return package;
 }
 
-IInstalledPackageInfo * PackageManager::FindPackageByFamilyName(const std::wstring & packageFamilyName)
+shared_ptr<IInstalledPackageInfo> PackageManager::FindPackageByFamilyName(const wstring & packageFamilyName)
 {
     auto filemapping = FilePathMappings::GetInstance();
     auto res = filemapping.GetInitializationResult();
@@ -102,7 +112,7 @@ IInstalledPackageInfo * PackageManager::FindPackageByFamilyName(const std::wstri
         return nullptr;
     }
     auto msix7Directory = filemapping.GetMsix7Directory();
-    for (auto& p : std::experimental::filesystem::directory_iterator(msix7Directory))
+    for (auto& p : experimental::filesystem::directory_iterator(msix7Directory))
     {
 
         auto installedAppFamilyName = Win7MsixInstallerLib_GetFamilyNameFromFullName(p.path().filename());
@@ -114,29 +124,28 @@ IInstalledPackageInfo * PackageManager::FindPackageByFamilyName(const std::wstri
     return nullptr;
 }
 
-vector<IInstalledPackageInfo *> * PackageManager::FindPackages()
+unique_ptr<vector<shared_ptr<IInstalledPackageInfo>>> PackageManager::FindPackages()
 {
+    auto packages = std::make_unique<std::vector<shared_ptr<IInstalledPackageInfo>>>();
     auto filemapping = FilePathMappings::GetInstance();
     auto res = filemapping.GetInitializationResult();
     if (FAILED(res))
     {
-        return nullptr;
+        return packages;
     }
-    auto packages = new std::vector<IInstalledPackageInfo *>();
     auto msix7Directory = filemapping.GetMsix7Directory();
-    for (auto& p : std::experimental::filesystem::directory_iterator(msix7Directory))
+    for (auto& p : experimental::filesystem::directory_iterator(msix7Directory))
     {
         auto packageInfo = GetPackageInfo(msix7Directory, p.path());
         if (packageInfo != nullptr)
         {
-            packages->push_back((IInstalledPackageInfo *)packageInfo);
+            packages->push_back(packageInfo);
         }
     }
-
     return packages;
 }
 
-IPackage * PackageManager::GetPackageInfoMsix(const wstring & msixFullPath)
+shared_ptr<IPackage> PackageManager::GetPackageInfoMsix(const wstring & msixFullPath)
 {
     auto filemapping = FilePathMappings::GetInstance();
     auto res = filemapping.GetInitializationResult();
@@ -144,11 +153,11 @@ IPackage * PackageManager::GetPackageInfoMsix(const wstring & msixFullPath)
     {
         return nullptr;
     }
-    Package* packageInfo;
+    shared_ptr<Package> packageInfo;
     res = PopulatePackageInfo::GetPackageInfoFromPackage(msixFullPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo);
     if (FAILED(res))
     {
         return nullptr;
     }
-    return (IPackage *)packageInfo;
+    return dynamic_pointer_cast<IPackage>(packageInfo);
 }

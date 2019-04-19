@@ -41,9 +41,9 @@ public:
 
 private:
     Win7MsixInstallerLib::IPackageManager* m_packageManager = nullptr;
-    Win7MsixInstallerLib::IPackage* m_packageInfo = nullptr;
+    std::shared_ptr<Win7MsixInstallerLib::IPackage> m_packageInfo = nullptr;
     std::wstring m_path;
-    Win7MsixInstallerLib::IMsixResponse * m_msixResponse = nullptr;
+    std::shared_ptr<Win7MsixInstallerLib::IMsixResponse> m_msixResponse;
 
     //Parent Window Hwnd
     HWND hWnd = NULL; 
@@ -58,7 +58,7 @@ private:
     std::wstring m_cancelPopUpTitle = GetStringResource(IDS_STRING_CANCEL_POPUP_TITLE);
     std::wstring m_displayName = L"";
     std::wstring m_publisherCommonName = L"";
-    ComPtr<IStream> m_logoStream;
+    std::unique_ptr<IStream> m_logoStream;
     std::wstring m_version = L"";
 
     HRESULT m_loadingPackageInfoCode = 0;

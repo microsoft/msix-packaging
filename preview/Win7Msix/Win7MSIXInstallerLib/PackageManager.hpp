@@ -9,15 +9,15 @@ namespace Win7MsixInstallerLib {
     {
     public:
         PackageManager();
-        IMsixResponse * AddPackageAsync(const std::wstring & packageFilePath, DeploymentOptions options) override;
+        std::shared_ptr<IMsixResponse> AddPackageAsync(const std::wstring & packageFilePath, DeploymentOptions options, std::function<void(const IMsixResponse&)> callback = nullptr) override;
         HRESULT AddPackage(const std::wstring & packageFilePath, DeploymentOptions options) override;
-        IMsixResponse * RemovePackageAsync(const std::wstring & packageFullName) override;
+        std::shared_ptr<IMsixResponse> RemovePackageAsync(const std::wstring & packageFullName, std::function<void(const IMsixResponse&)> callback = nullptr) override;
         HRESULT RemovePackage(const std::wstring & packageFullName) override;
-        IInstalledPackageInfo * FindPackage(const std::wstring & packageFullName) override;
-        IInstalledPackageInfo * FindPackageByFamilyName(const std::wstring & packageFamilyName) override;
-        std::vector<IInstalledPackageInfo *> * FindPackages() override;
-        IPackage * GetPackageInfoMsix(const std::wstring & msixFullPath) override;
+        std::shared_ptr<IInstalledPackageInfo> FindPackage(const std::wstring & packageFullName) override;
+        std::shared_ptr<IInstalledPackageInfo> FindPackageByFamilyName(const std::wstring & packageFamilyName) override;
+        std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackageInfo>>> FindPackages() override;
+        std::shared_ptr<IPackage> GetPackageInfoMsix(const std::wstring & msixFullPath) override;
     private:
-        IInstalledPackageInfo * GetPackageInfo(const std::wstring & msix7Directory, const std::wstring & directoryPath);
+        std::shared_ptr<IInstalledPackageInfo> GetPackageInfo(const std::wstring & msix7Directory, const std::wstring & directoryPath);
     };
 }

@@ -17,6 +17,7 @@
 #include <VersionHelpers.h>
 
 #include <Win7MSIXInstallerActions.hpp>
+using namespace std;
 
 int main(int argc, char * argv[])
 {
@@ -76,7 +77,7 @@ int main(int argc, char * argv[])
             AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
             RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
 
-            AutoPtr<Win7MsixInstallerLib::IInstalledPackageInfo> packageInfo = packageManager->FindPackage(cli.GetPackageFullName());
+            shared_ptr<Win7MsixInstallerLib::IInstalledPackageInfo> packageInfo = packageManager->FindPackage(cli.GetPackageFullName());
             if (packageInfo == NULL)
             {
                 std::wcout << std::endl;
@@ -98,18 +99,16 @@ int main(int argc, char * argv[])
             AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
             RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
 
-            std::vector<Win7MsixInstallerLib::IInstalledPackageInfo *>* packages = packageManager->FindPackages();
+            auto packages = packageManager->FindPackages();
 
             unsigned int numPackages = 0;
             for (auto& package : *packages)
             {
-
                 std::wcout << package->GetPackageFullName() << std::endl;
                 numPackages++;
             }
 
             std::cout << numPackages << " Packages found" << std::endl;
-            delete packages;
             return S_OK;
         }
         default:

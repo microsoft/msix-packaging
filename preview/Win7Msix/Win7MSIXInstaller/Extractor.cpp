@@ -106,7 +106,7 @@ HRESULT Extractor::ExtractFootprintFiles()
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Extracting footprint files from the package");
 
-    Package * packageToInstall = dynamic_cast<Package*>(m_msixRequest->GetPackageInfo());
+    auto packageToInstall = std::dynamic_pointer_cast<Package>(m_msixRequest->GetPackageInfo());
     
     for (int i = 0; i < FootprintFilesCount; i++)
     {
@@ -141,7 +141,7 @@ HRESULT Extractor::ExtractPayloadFiles()
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Extracting payload files from the package");
 
-    Package * packageToInstall = dynamic_cast<Package*>(m_msixRequest->GetPackageInfo());
+    auto packageToInstall = std::dynamic_pointer_cast<Package>(m_msixRequest->GetPackageInfo());
     if (packageToInstall == nullptr)
     {
         return E_FAIL;

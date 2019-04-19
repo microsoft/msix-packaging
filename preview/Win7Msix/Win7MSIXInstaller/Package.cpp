@@ -104,9 +104,9 @@ HRESULT PackageBase::SetDisplayNameFromManifestElement(IMsixElement* element)
     return S_OK;
 }
 
-HRESULT Package::MakeFromPackageReader(IAppxPackageReader * packageReader, Package ** packageInfo)
+HRESULT Package::MakeFromPackageReader(IAppxPackageReader * packageReader, std::shared_ptr<Package> * packageInfo)
 {
-    std::unique_ptr<Package> instance(new Package());
+    std::shared_ptr<Package> instance = std::make_shared<Package>();
     if (instance == nullptr)
     {
         return E_OUTOFMEMORY;
@@ -132,7 +132,7 @@ HRESULT Package::MakeFromPackageReader(IAppxPackageReader * packageReader, Packa
     }
     instance->m_numberOfPayloadFiles = numberOfPayloadFiles;
 
-    *packageInfo = instance.release();
+    *packageInfo = instance;
 
     return S_OK;
 }
@@ -178,7 +178,7 @@ HRESULT PackageBase::SetManifestReader(IAppxManifestReader * manifestReader)
     return S_OK;
 }
 
-IStream* Package::GetLogo()
+std::unique_ptr<IStream> Package::GetLogo()
 {
     if (m_packageReader.Get() == nullptr)
     {
@@ -188,25 +188,26 @@ IStream* Package::GetLogo()
     IStream * logoStream;
     if (GetStreamFromFile(m_packageReader.Get(), m_relativeLogoPath.data(), &logoStream) == S_OK)
     {
-        return logoStream;
+        return std::unique_ptr<IStream>(logoStream);
     }
+    return nullptr;
 }
 
-IStream* InstalledPackage::GetLogo()
+std::unique_ptr<IStream> InstalledPackage::GetLogo()
 {
     auto iconPath = m_packageDirectoryPath + m_relativeLogoPath;
     IStream* stream;
     if (SUCCEEDED(CreateStreamOnFileUTF16(iconPath.c_str(), true, &stream)))
     {
-        return stream;
+        return std::unique_ptr<IStream>(stream);
     }
     return nullptr;
 }
 
 
-HRESULT InstalledPackage::MakeFromManifestReader(const std::wstring & directoryPath, IAppxManifestReader * manifestReader, InstalledPackage ** packageInfo)
+HRESULT InstalledPackage::MakeFromManifestReader(const std::wstring & directoryPath, IAppxManifestReader * manifestReader, std::shared_ptr<InstalledPackage> * packageInfo)
 {
-    std::unique_ptr<InstalledPackage> instance(new InstalledPackage());
+    std::shared_ptr<InstalledPackage> instance = std::make_shared<InstalledPackage>();
     if (instance == nullptr)
     {
         return E_OUTOFMEMORY;
@@ -215,7 +216,7 @@ HRESULT InstalledPackage::MakeFromManifestReader(const std::wstring & directoryP
     RETURN_IF_FAILED(instance->SetManifestReader(manifestReader));
     instance->m_packageDirectoryPath = directoryPath + L"\\";
 
-    *packageInfo = instance.release();
+    *packageInfo = instance;
 
     return S_OK;
 }

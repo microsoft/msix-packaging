@@ -10,7 +10,7 @@ using namespace Win7MsixInstallerLib;
 
 const PCWSTR PopulatePackageInfo::HandlerName = L"PopulatePackageInfo";
 
-HRESULT PopulatePackageInfo::GetPackageInfoFromPackage(const std::wstring & packageFilePath, MSIX_VALIDATION_OPTION validationOption, Package ** packageInfo)
+HRESULT PopulatePackageInfo::GetPackageInfoFromPackage(const std::wstring & packageFilePath, MSIX_VALIDATION_OPTION validationOption, std::shared_ptr<Package> * packageInfo)
 {
     ComPtr<IStream> inputStream;
     RETURN_IF_FAILED(CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &inputStream));
@@ -31,7 +31,7 @@ HRESULT PopulatePackageInfo::GetPackageInfoFromPackage(const std::wstring & pack
     return S_OK;
 }
 
-HRESULT PopulatePackageInfo::GetPackageInfoFromManifest(const std::wstring & directoryPath, MSIX_VALIDATION_OPTION validationOption, InstalledPackage ** packageInfo)
+HRESULT PopulatePackageInfo::GetPackageInfoFromManifest(const std::wstring & directoryPath, MSIX_VALIDATION_OPTION validationOption, std::shared_ptr<InstalledPackage> * packageInfo)
 {
     std::wstring manifestPath = directoryPath + manifestFile;
 
@@ -58,7 +58,7 @@ HRESULT PopulatePackageInfo::GetPackageInfoFromManifest(const std::wstring & dir
 HRESULT PopulatePackageInfo::ExecuteForAddRequest()
 {
 
-    Package* packageInfo;
+    std::shared_ptr<Package> packageInfo;
     RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromPackage(m_msixRequest->GetPackageFilePath(), m_msixRequest->GetValidationOptions(), &packageInfo));
 
     if (packageInfo == nullptr)
@@ -83,7 +83,7 @@ HRESULT PopulatePackageInfo::ExecuteForRemoveRequest()
 {
     auto packageDirectoryPath = FilePathMappings::GetInstance().GetMsix7Directory() + m_msixRequest->GetPackageFullName();
 
-    InstalledPackage * package;
+    std::shared_ptr<InstalledPackage> package;
     RETURN_IF_FAILED(GetPackageInfoFromManifest(packageDirectoryPath, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN, &package));
 
     if (package == nullptr)
