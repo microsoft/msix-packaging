@@ -30,10 +30,22 @@ private:
     ValidateTargetDeviceFamily(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
     /// This function parses the target device family fields from the app manifest
-    ///
     HRESULT ParseTargetDeviceFamilyFromPackage();
 
-    /// This function checks if the manifest version is compatible with the operating system
-    ///
+    /// This function returns true if the target device family name is compatible with the operating system
+    /// Desktop OS is compatible with MsixCore.Desktop and MsixCore.Server, Server OS is compatible with MsixCore.Server
+    bool IsTargetDeviceFamilyNameCompatibleWithOS();
+
+    /// This function returns true if the manifest version is compatible with the operating system
     bool IsManifestVersionCompatibleWithOS();
+
+    /// This function returns true for Desktop OS
+    ///
+    /// @return true in case of desktop OS
+    bool isWindowsProductTypeDesktop();
+
+    /// This function returns true for Server OS
+    ///
+    /// @return true in case of Server OS
+    bool isWindowsProductTypeServer();
 };

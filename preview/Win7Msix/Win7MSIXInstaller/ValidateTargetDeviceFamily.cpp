@@ -9,23 +9,23 @@
 #include <TraceLoggingProvider.h>
 #include <VersionHelpers.h>
 
-const PCWSTR ValidateTargetDeviceFamily::HandlerName = L"ValidateRequest";
+const PCWSTR ValidateTargetDeviceFamily::HandlerName = L"ValidateTargetDeviceFamily";
 
 HRESULT ValidateTargetDeviceFamily::ExecuteForAddRequest()
 {
     RETURN_IF_FAILED(ParseTargetDeviceFamilyFromPackage());
-    if ((m_targetDeviceFamilyName == L"MSIXCore.Desktop" || m_targetDeviceFamilyName == L"MSIXCore.Server")
-        && IsManifestVersionCompatibleWithOS())
+    if (IsTargetDeviceFamilyNameCompatibleWithOS() && IsManifestVersionCompatibleWithOS())
     {
         TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Validation complete",
-            TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+            "Target device family name and manifest min version are compatible with OS",
+            TraceLoggingLevel(WINEVENT_LEVEL_INFO));
     }
     else
     {
         TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "TDF or OS version did not match",
+            "Target device family name or manifest min version are not compatible with the OS",
             TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_REJECTED);
     }
     return S_OK;
 }
@@ -40,7 +40,7 @@ HRESULT ValidateTargetDeviceFamily::ParseTargetDeviceFamilyFromPackage()
     ComPtr<IMsixElement> element;
     RETURN_IF_FAILED(domElement->GetDocumentElement(&element));
 
-    // Obtain the TargetDeviceFamily tag info
+    /// Obtain the TargetDeviceFamily tag info
     ComPtr<IMsixElementEnumerator> dependencyEnum;
     RETURN_IF_FAILED(element->GetElements(
         L"/*[local-name()='Package']/*[local-name()='Dependencies']/*[local-name()='TargetDeviceFamily']",
@@ -65,25 +65,43 @@ HRESULT ValidateTargetDeviceFamily::ParseTargetDeviceFamilyFromPackage()
 
     Text<wchar_t> minVersion;
     RETURN_IF_FAILED(dependencyElement->GetAttributeValue(L"MinVersion", &minVersion));
-    std::wstring m_manifestMinVersion;
-    m_manifestMinVersion = minVersion.Get();
+    std::wstring manifestMinVersion = minVersion.Get();
 
-    //Major version
+    /// Major version
     size_t start = 0;
-    size_t end = m_manifestMinVersion.find_first_of(L'.');
-    m_majorVersion = m_manifestMinVersion.substr(start, end - start);
+    size_t end = manifestMinVersion.find_first_of(L'.');
+    m_majorVersion = manifestMinVersion.substr(start, end - start);
 
-    //Minor version
-    m_manifestMinVersion.replace(start, end - start + 1, L"");
-    end = m_manifestMinVersion.find_first_of(L'.');
-    m_minorVersion = m_manifestMinVersion.substr(start, end - start);
+    /// Minor version
+    manifestMinVersion.replace(start, end - start + 1, L"");
+    end = manifestMinVersion.find_first_of(L'.');
+    m_minorVersion = manifestMinVersion.substr(start, end - start);
 
-    //Build number
-    m_manifestMinVersion.replace(start, end - start + 1, L"");
-    end = m_manifestMinVersion.find_first_of(L'.');
-    m_buildNumber = m_manifestMinVersion.substr(start, end - start);
+    /// Build number
+    manifestMinVersion.replace(start, end - start + 1, L"");
+    end = manifestMinVersion.find_first_of(L'.');
+    m_buildNumber = manifestMinVersion.substr(start, end - start);
 
     return S_OK;
+}
+
+bool ValidateTargetDeviceFamily::IsTargetDeviceFamilyNameCompatibleWithOS()
+{
+    if (isWindowsProductTypeDesktop()) /// Desktop OS
+    {
+        if (m_targetDeviceFamilyName == L"MsixCore.Server" || m_targetDeviceFamilyName == L"MsixCore.Desktop")
+        {
+            return true;
+        }
+    }
+    else if (isWindowsProductTypeServer()) /// Server
+    {
+        if (m_targetDeviceFamilyName == L"MsixCore.Server")
+        {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool ValidateTargetDeviceFamily::IsManifestVersionCompatibleWithOS()
@@ -98,11 +116,51 @@ bool ValidateTargetDeviceFamily::IsManifestVersionCompatibleWithOS()
     osvi.dwMinorVersion = std::stoi(m_minorVersion.c_str());
     osvi.dwBuildNumber = std::stoi(m_buildNumber.c_str());
 
+    if (isWindowsProductTypeDesktop())
+    {
+        osvi.wProductType = VER_NT_WORKSTATION;
+    }
+    else if (isWindowsProductTypeServer())
+    {
+        osvi.wProductType = VER_NT_SERVER;
+    }
+
     VER_SET_CONDITION(dwlConditionMask, VER_MAJORVERSION, op);
     VER_SET_CONDITION(dwlConditionMask, VER_MINORVERSION, op);
     VER_SET_CONDITION(dwlConditionMask, VER_BUILDNUMBER, op);
+    VER_SET_CONDITION(dwlConditionMask, VER_PRODUCT_TYPE, VER_EQUAL);
 
-    return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask);
+    return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER | VER_PRODUCT_TYPE, dwlConditionMask);
+}
+
+bool ValidateTargetDeviceFamily::isWindowsProductTypeDesktop()
+{
+    OSVERSIONINFOEX osvi;
+    DWORDLONG dwlConditionMask = 0;
+    int op = VER_EQUAL;
+
+    ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+    osvi.wProductType = VER_NT_WORKSTATION;
+
+    VER_SET_CONDITION(dwlConditionMask, VER_PRODUCT_TYPE, op);
+
+    return VerifyVersionInfo(&osvi, VER_PRODUCT_TYPE, dwlConditionMask);
+}
+
+bool ValidateTargetDeviceFamily::isWindowsProductTypeServer()
+{
+    OSVERSIONINFOEX osvi;
+    DWORDLONG dwlConditionMask = 0;
+    int op = VER_EQUAL;
+
+    ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+    osvi.wProductType = VER_NT_SERVER;
+
+    VER_SET_CONDITION(dwlConditionMask, VER_PRODUCT_TYPE, op);
+
+    return VerifyVersionInfo(&osvi, VER_PRODUCT_TYPE, dwlConditionMask);
 }
 
 HRESULT ValidateTargetDeviceFamily::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** instance)
