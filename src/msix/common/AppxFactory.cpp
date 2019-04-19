@@ -10,6 +10,7 @@
 #include "MSIXResource.hpp"
 #include "VectorStream.hpp"
 #include "MsixFeatureSelector.hpp"
+#include "AppxPackageWriter.hpp"
 
 namespace MSIX {
     // IAppxFactory

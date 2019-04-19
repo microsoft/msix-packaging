@@ -22,7 +22,6 @@ namespace MSIX {
 
         for(const auto& file : fileMap)
         {
-            std::cout << file.first << " " << file.second << std::endl;
             // TODO: either create APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8s and call AddPayloadFiles
             // or make the blockmap/zip writer take the information and call it from here, AddPayloadFiles
             // and AddPayloadFile

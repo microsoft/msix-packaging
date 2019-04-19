@@ -17,6 +17,7 @@
 #include "AppxFile.hpp"
 #include "DirectoryObject.hpp"
 #include "MsixFeatureSelector.hpp"
+#include "ScopeExit.hpp"
 
 #ifdef BUNDLE_SUPPORT
 #include "Applicability.hpp"
@@ -433,12 +434,18 @@ namespace MSIX {
                 {   targetName = Encoding::DecodeFileName(fileName);
                 }
 
-                auto targetFile = to->OpenFile(targetName, MSIX::FileStream::Mode::WRITE_UPDATE);
+                auto deleteFile = MSIX::scope_exit([&targetName]
+                {
+                    remove(targetName.c_str());
+                });
+
+                auto targetFile = to->OpenFile(targetName, MSIX::FileStream::Mode::WRITE);
                 auto sourceFile = GetFile(fileName).As<IStream>();
 
                 ULARGE_INTEGER bytesCount = {0};
                 bytesCount.QuadPart = std::numeric_limits<std::uint64_t>::max();
                 ThrowHrIfFailed(sourceFile->CopyTo(targetFile.Get(), bytesCount, nullptr, nullptr));
+                deleteFile.release();
             }
         }
 

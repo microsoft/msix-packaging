@@ -17,6 +17,7 @@
 #include "AppxPackageObject.hpp"
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
+#include "ScopeExit.hpp"
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
@@ -224,6 +225,11 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     // also do this before calling pack to fail earlier if not present
     auto manifest = from.As<IStorageObject>()->GetFile("AppxManifest.xml");
 
+    auto deleteFile = MSIX::scope_exit([&outputPackage]
+    {
+        remove(outputPackage);
+    });
+
     MSIX::ComPtr<IStream> stream;
     ThrowHrIfFailed(CreateStreamOnFile(outputPackage, false, &stream));
 
@@ -236,6 +242,8 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     ThrowHrIfFailed(factory->CreatePackageWriter(stream.Get(), nullptr, &writer));
     writer.As<IPackageWriter>()->Pack(from);
     ThrowHrIfFailed(writer->Close(manifest.Get()));
+
+    // deleteFile.release(); uncomment when packaging is done
     return static_cast<HRESULT>(MSIX::Error::NotImplemented);
 } CATCH_RETURN();
 
