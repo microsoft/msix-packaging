@@ -87,14 +87,14 @@ HRESULT ValidateTargetDeviceFamily::ParseTargetDeviceFamilyFromPackage()
 
 bool ValidateTargetDeviceFamily::IsTargetDeviceFamilyNameCompatibleWithOS()
 {
-    if (IsWindowsProductTypeServer()) /// Desktop OS
+    if (IsWindowsProductTypeServer()) /// Server OS
     {
         if (m_targetDeviceFamilyName == L"MsixCore.Server" || m_targetDeviceFamilyName == L"MsixCore.Desktop")
         {
             return true;
         }
     }
-    else if (IsWindowsProductTypeDesktop()) /// Server
+    else if (IsWindowsProductTypeDesktop()) /// Desktop OS
     {
         if (m_targetDeviceFamilyName == L"MsixCore.Desktop")
         {
