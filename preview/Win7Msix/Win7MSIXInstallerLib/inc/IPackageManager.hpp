@@ -18,6 +18,6 @@ namespace Win7MsixInstallerLib {
         virtual std::shared_ptr<IInstalledPackageInfo> FindPackage(const std::wstring & packageFamilyName) = 0;
         virtual std::shared_ptr<IInstalledPackageInfo> FindPackageByFamilyName(const std::wstring & packageFamilyName) = 0;
         virtual std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackageInfo>>> FindPackages() = 0;
-        virtual std::shared_ptr<IPackage> GetPackageInfoMsix(const std::wstring & msixFullPath) = 0;
+        virtual std::shared_ptr<IPackage> GetMsixPackageInfo(const std::wstring & msixFullPath) = 0;
     };
 }

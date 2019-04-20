@@ -133,9 +133,7 @@ HRESULT MsixRequest::ProcessAddRequest()
         {
             if (handler->IsMandatoryForAddRequest())
             {
-                m_msixResponse->SetHResultTextCode(hrExecute);
-                m_msixResponse->SetTextStatus(L"Can't create the handler " + std::wstring(currentHandlerName));
-                m_msixResponse->Update(InstallationStep::InstallationStepError, 0);
+                m_msixResponse->SetErrorStatus(hrExecute, L"Can't create the handler " + std::wstring(currentHandlerName));
                 return hrExecute;
             }
         }
@@ -143,9 +141,7 @@ HRESULT MsixRequest::ProcessAddRequest()
         hrExecute = handler->ExecuteForAddRequest();
         if (FAILED(hrExecute))
         {
-            m_msixResponse->SetHResultTextCode(hrExecute);
-            m_msixResponse->SetTextStatus(L"Can't execute the handler " + std::wstring(currentHandlerName));
-            m_msixResponse->Update(InstallationStep::InstallationStepError, 0);
+            m_msixResponse->SetErrorStatus(hrExecute, L"Can't execute the handler " + std::wstring(currentHandlerName));
             currentHandlerName = currentHandler.errorHandler;
         }
         else
@@ -173,8 +169,7 @@ HRESULT MsixRequest::ProcessRemoveRequest()
         {
             if (handler->IsMandatoryForAddRequest())
             {
-                m_msixResponse->SetHResultTextCode(hrExecute);
-                m_msixResponse->SetTextStatus(L"Can't create the handler " + std::wstring(currentHandlerName));
+                m_msixResponse->SetErrorStatus(hrExecute, L"Can't create the handler " + std::wstring(currentHandlerName));
                 m_msixResponse->Update(InstallationStep::InstallationStepError, 0);
                 return hrExecute;
             }
@@ -190,9 +185,7 @@ HRESULT MsixRequest::ProcessRemoveRequest()
                 TraceLoggingValue(hrExecute, "HR"));
             if (handler->IsMandatoryForRemoveRequest())
             {
-                m_msixResponse->SetHResultTextCode(hrExecute);
-                m_msixResponse->SetTextStatus(L"Can't execute the handler " + std::wstring(currentHandlerName));
-                m_msixResponse->Update(InstallationStep::InstallationStepError, 0);
+                m_msixResponse->SetErrorStatus(hrExecute, L"Can't execute the handler " + std::wstring(currentHandlerName));
                 return hrExecute;
             }
         }

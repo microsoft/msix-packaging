@@ -16,7 +16,7 @@ namespace Win7MsixInstallerLib {
         std::shared_ptr<IInstalledPackageInfo> FindPackage(const std::wstring & packageFullName) override;
         std::shared_ptr<IInstalledPackageInfo> FindPackageByFamilyName(const std::wstring & packageFamilyName) override;
         std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackageInfo>>> FindPackages() override;
-        std::shared_ptr<IPackage> GetPackageInfoMsix(const std::wstring & msixFullPath) override;
+        std::shared_ptr<IPackage> GetMsixPackageInfo(const std::wstring & msixFullPath) override;
     private:
         std::shared_ptr<IInstalledPackageInfo> GetPackageInfo(const std::wstring & msix7Directory, const std::wstring & directoryPath);
     };

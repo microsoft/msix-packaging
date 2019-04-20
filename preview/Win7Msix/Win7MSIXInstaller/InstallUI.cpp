@@ -268,7 +268,7 @@ HRESULT UI::ParseInfoFromPackage()
         {
         case InstallUIAdd:
         {
-            m_packageInfo = m_packageManager->GetPackageInfoMsix(m_path);
+            m_packageInfo = m_packageManager->GetMsixPackageInfo(m_path);
             if (m_packageInfo == nullptr)
             {
                 return E_FAIL;

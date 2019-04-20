@@ -145,7 +145,7 @@ unique_ptr<vector<shared_ptr<IInstalledPackageInfo>>> PackageManager::FindPackag
     return packages;
 }
 
-shared_ptr<IPackage> PackageManager::GetPackageInfoMsix(const wstring & msixFullPath)
+shared_ptr<IPackage> PackageManager::GetMsixPackageInfo(const wstring & msixFullPath)
 {
     auto filemapping = FilePathMappings::GetInstance();
     auto res = filemapping.GetInitializationResult();

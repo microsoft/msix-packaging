@@ -46,13 +46,6 @@ public:
         m_isInstallCancelled = true;
     }
 
-    /// Set Hresult code as passed by handlers in the msix response(not being set currently)
-    ///
-    /// @param hresult - hresult value passed
-    inline void SetHResultTextCode(HRESULT hresult)
-    {
-        m_hresultTextCode = hresult;
-    }
 
     /// Get the Hresult value in an msix response
     ///
@@ -83,6 +76,12 @@ public:
     /// @param status - current step of the installation
     /// @param percentage - installation progresss percentage
     void Update(InstallationStep status, float percentage);
+
+    /// Update response to indicate an error status
+    ///
+    /// @param errorCode - code associated to the error
+    /// @param errorText - description of the error
+    void SetErrorStatus(HRESULT errorCode, std::wstring errorText);
 
     /// Set a callback for the UI
     ///

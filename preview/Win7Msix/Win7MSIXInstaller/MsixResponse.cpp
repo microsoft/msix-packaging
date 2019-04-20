@@ -21,3 +21,16 @@ void MsixResponse::SetCallback(std::function<void(const IMsixResponse& sender)> 
 {
     m_callback = callback;
 }
+
+void MsixResponse::SetErrorStatus(HRESULT errorCode, std::wstring errorText)
+{
+    m_percentage = 0;
+    m_status = InstallationStep::InstallationStepError;
+    m_hresultTextCode = errorCode;
+    m_textStatus = errorText;
+
+    if (m_callback)
+    {
+        m_callback(*this);
+    }
+}
