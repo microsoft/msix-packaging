@@ -404,3 +404,4 @@ src/msix/MSIXResource.cpp
 
 test/MacOS-Linux/testApiResults.txt
 test/MacOS-Linux/testResults.txt
+test/mobile/iOSBVT/iOSBVT.xcodeproj/project.xcworkspace/
