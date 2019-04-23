@@ -12,8 +12,10 @@ namespace MSIX {
     static const char* manifestContentType = "application/vnd.ms-appx.manifest+xml";
     static const char* blockMapContentType = "application/vnd.ms-appx.blockmap+xml";
     static const char* signatureContentType = "application/vnd.ms-appx.signature";
+    // TODO: add other MIMEs from other payload files as needed.
 
     // Well-known file types to automatically select a MIME content type and compression option to use based on the file extension
+    // If the extension is not in this map the default is application/octet-stream and APPX_COMPRESSION_OPTION_NORMAL
     static const std::map<std::string, std::pair<std::string, APPX_COMPRESSION_OPTION>> extToContentType = 
     {
         { "atom",  { "application/atom+xml", APPX_COMPRESSION_OPTION_NORMAL} },

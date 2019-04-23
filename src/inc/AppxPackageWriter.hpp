@@ -37,7 +37,7 @@ namespace MSIX {
         std::string hashValue;
     } BlockAndHash;
 
-    typedef struct PayloadFile // rename this
+    typedef struct PayloadFile
     {
         APPX_COMPRESSION_OPTION compressionOption;
         std::uint32_t crc = 0;

@@ -148,6 +148,9 @@ namespace MSIX {
             payloadFile->fileBlocks.push_back(std::move(blockData));
         }
 
+        // TODO: compute SHA256 and base64 from blocks
+        //       write information to the blockmap and zip
+
         return payloadFile;
     }
 }
