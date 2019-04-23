@@ -7,12 +7,15 @@
 #include "Exceptions.hpp"
 
 #include <string>
+#include <memory>
 
 namespace MSIX {
 
     AppxPackageWriter::AppxPackageWriter(IStream* outputStream) : m_outputStream(outputStream)
     {
         m_state = WriterState::Open;
+        m_blockMapWriter = std::make_unique<BlockMapWriter>();
+        m_contentTypeWriter = std::make_unique<ContentTypeWriter>();
     }
 
     // IPackageWriter
@@ -20,6 +23,13 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
         auto fileMap = from->GetFilesByLastModDate();
+
+        for(const auto& file : fileMap)
+        {
+            auto compressopt = m_contentTypeWriter->AddDefault(file.second);
+        }
+
+        m_contentTypeWriter->Close();
 
         // TODO: start packing
         NOTIMPLEMENTED

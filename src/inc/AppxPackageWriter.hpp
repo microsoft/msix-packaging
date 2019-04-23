@@ -7,8 +7,11 @@
 #include "AppxPackaging.hpp"
 #include "ComHelper.hpp"
 #include "DirectoryObject.hpp"
+#include "AppxBlockMapWriter.hpp"
+#include "ContentTypeWriter.hpp"
 
 #include <map>
+#include <memory>
 
 // internal interface
 // {32e89da5-7cbb-4443-8cf0-b84eedb51d0a}
@@ -66,6 +69,8 @@ namespace MSIX {
 
         WriterState m_state;
         ComPtr<IStream> m_outputStream;
+        std::unique_ptr<BlockMapWriter> m_blockMapWriter;
+        std::unique_ptr<ContentTypeWriter> m_contentTypeWriter;
     };
 }
 

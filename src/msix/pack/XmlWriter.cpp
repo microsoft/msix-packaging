@@ -28,7 +28,7 @@ namespace MSIX {
 
         void XmlWriter::StartElement(const std::string& name)
         {
-            ThrowErrorIf(Error::XmlError, State::Finish, "Invalid call, xml already closed");
+            ThrowErrorIf(Error::XmlError, m_state == State::Finish, "Invalid call, xml already closed");
             m_elements.emplace(name);
             std::string element;
             // If the state is open, then we are adding a child element to the previous one. We need to close that element's
@@ -36,7 +36,7 @@ namespace MSIX {
             if (m_state == State::OpenElement)
             {
                 // close parent element
-                std::string element = "><" + name;
+                element = "><" + name;
             }
             else // State::ClosedElement
             {
@@ -49,7 +49,7 @@ namespace MSIX {
 
         void XmlWriter::CloseElement()
         {
-            ThrowErrorIf(Error::XmlError, State::Finish, "Invalid call, xml already closed");
+            ThrowErrorIf(Error::XmlError, m_state == State::Finish, "Invalid call, xml already closed");
             std::string close;
             // If the state is open and we are closing an element, it means that it doesn't have any child, so we can
             // just close it with "/>". If we are closing an element and a closing just happened, it means that we are 
@@ -74,7 +74,7 @@ namespace MSIX {
 
         void XmlWriter::AddAttribute(const std::string& name, const std::string& value)
         {
-            ThrowErrorIf(Error::XmlError, State::Finish, "Invalid call, xml already closed");
+            ThrowErrorIf(Error::XmlError, (m_state == State::Finish) || (m_state == State::ClosedElement), "Invalid call to AddAttrbute");
             // Name="Value". Always add space at the beginning.
             std::string attribute = " " + name + "=\"" + value + "\"";
             ULONG copy;
