@@ -40,7 +40,7 @@ namespace MSIX {
                 newPos.QuadPart = move.QuadPart;
                 break;
             case Reference::END:
-                newPos.QuadPart = m_data.tellp() + move.QuadPart;
+                newPos.QuadPart = static_cast<ULONG>(m_data.tellp()) + move.QuadPart;
                 break;
             }
             m_offset = std::min(newPos.u.LowPart, static_cast<ULONG>(m_data.tellp()));
