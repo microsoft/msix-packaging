@@ -78,7 +78,7 @@ HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
     }
     return impl->ProcessRequest();
 }
-shared_ptr<IInstalledPackageInfo> PackageManager::GetPackageInfo(const wstring & msix7Directory, const wstring & directoryPath)
+shared_ptr<IInstalledPackage> PackageManager::GetPackageInfo(const wstring & msix7Directory, const wstring & directoryPath)
 {
     std::shared_ptr<InstalledPackage> packageInfo;
     auto res = PopulatePackageInfo::GetPackageInfoFromManifest(directoryPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo);
@@ -86,10 +86,10 @@ shared_ptr<IInstalledPackageInfo> PackageManager::GetPackageInfo(const wstring &
     {
         return nullptr;
     }
-    return std::dynamic_pointer_cast<IInstalledPackageInfo>(packageInfo);
+    return std::dynamic_pointer_cast<IInstalledPackage>(packageInfo);
 }
 
-shared_ptr<IInstalledPackageInfo> PackageManager::FindPackage(const wstring & packageFullName)
+shared_ptr<IInstalledPackage> PackageManager::FindPackage(const wstring & packageFullName)
 {
     auto filemapping = FilePathMappings::GetInstance();
     auto res = filemapping.GetInitializationResult();
@@ -103,7 +103,7 @@ shared_ptr<IInstalledPackageInfo> PackageManager::FindPackage(const wstring & pa
     return package;
 }
 
-shared_ptr<IInstalledPackageInfo> PackageManager::FindPackageByFamilyName(const wstring & packageFamilyName)
+shared_ptr<IInstalledPackage> PackageManager::FindPackageByFamilyName(const wstring & packageFamilyName)
 {
     auto filemapping = FilePathMappings::GetInstance();
     auto res = filemapping.GetInitializationResult();
@@ -124,9 +124,9 @@ shared_ptr<IInstalledPackageInfo> PackageManager::FindPackageByFamilyName(const 
     return nullptr;
 }
 
-unique_ptr<vector<shared_ptr<IInstalledPackageInfo>>> PackageManager::FindPackages()
+unique_ptr<vector<shared_ptr<IInstalledPackage>>> PackageManager::FindPackages()
 {
-    auto packages = std::make_unique<std::vector<shared_ptr<IInstalledPackageInfo>>>();
+    auto packages = std::make_unique<std::vector<shared_ptr<IInstalledPackage>>>();
     auto filemapping = FilePathMappings::GetInstance();
     auto res = filemapping.GetInitializationResult();
     if (FAILED(res))

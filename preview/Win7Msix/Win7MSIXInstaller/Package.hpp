@@ -23,12 +23,6 @@ namespace Win7MsixInstallerLib
 
         ComPtr<IAppxManifestReader> m_manifestReader;
         unsigned int m_numberOfPayloadFiles = 0;
-
-        /// Sets the executable path by reading it from the manifest element
-        HRESULT SetExecutableAndAppIdFromManifestElement(IMsixElement * element);
-
-        /// Sets the display name by reading it from the manifest element
-        HRESULT SetDisplayNameFromManifestElement(IMsixElement * element);
     public:
         std::wstring GetPackageFullName() { return m_packageFullName; }
         std::wstring GetPackageFamilyName() { return m_packageFamilyName; }
@@ -47,6 +41,10 @@ namespace Win7MsixInstallerLib
         ///
         /// @param manifestReader - manifestReader to set
         HRESULT SetManifestReader(IAppxManifestReader* manifestReader);
+        /// Parse the manifest file
+        ///
+        /// @param element - the root node of the manifest file
+        HRESULT ParseManifest(IMsixElement * element);
     public:
         virtual ~PackageBase()
         {
@@ -92,7 +90,7 @@ namespace Win7MsixInstallerLib
         ComPtr<IAppxPackageReader> m_packageReader;
     };
 
-    class InstalledPackage : public PackageBase, public IInstalledPackageInfo
+    class InstalledPackage : public PackageBase, public IInstalledPackage
     {
     public:
         std::wstring GetPackageFullName() { return m_packageFullName; }
@@ -118,7 +116,7 @@ namespace Win7MsixInstallerLib
         /// Create a InstalledPackage using the manifest reader and directory path. This is intended for Remove scenarios where
         /// the actual .msix package file is no longer accessible.
         static HRESULT MakeFromManifestReader(const std::wstring & directoryPath, IAppxManifestReader* manifestReader, std::shared_ptr<InstalledPackage>* packageInfo);
-        InstalledPackage() :PackageBase(), IInstalledPackageInfo() {}
+        InstalledPackage() :PackageBase(), IInstalledPackage() {}
     private:
         std::wstring m_packageDirectoryPath;
     };

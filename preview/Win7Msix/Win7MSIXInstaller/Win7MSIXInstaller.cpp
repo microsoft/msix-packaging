@@ -77,7 +77,7 @@ int main(int argc, char * argv[])
             AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
             RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
 
-            shared_ptr<Win7MsixInstallerLib::IInstalledPackageInfo> packageInfo = packageManager->FindPackage(cli.GetPackageFullName());
+            shared_ptr<Win7MsixInstallerLib::IInstalledPackage> packageInfo = packageManager->FindPackage(cli.GetPackageFullName());
             if (packageInfo == NULL)
             {
                 std::wcout << std::endl;

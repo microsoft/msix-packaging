@@ -45,7 +45,7 @@ std::wstring PackageBase::GetVersion()
     return Win7MsixInstallerLib_ConvertVersionToString(m_version);
 }
 
-HRESULT PackageBase::SetExecutableAndAppIdFromManifestElement(IMsixElement* element)
+HRESULT PackageBase::ParseManifest(IMsixElement* element)
 {
     BOOL hc = FALSE;
     ComPtr<IMsixElementEnumerator> applicationElementEnum;
@@ -72,16 +72,8 @@ HRESULT PackageBase::SetExecutableAndAppIdFromManifestElement(IMsixElement* elem
     m_relativeExecutableFilePath = executablePath.Get();
     m_applicationId = applicationId.Get();
 
-    return S_OK;
-}
-
-HRESULT PackageBase::SetDisplayNameFromManifestElement(IMsixElement* element)
-{
     ComPtr<IMsixElementEnumerator> visualElementsEnum;
-    RETURN_IF_FAILED(element->GetElements(
-        L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='VisualElements']",
-        &visualElementsEnum));
-    BOOL hc = FALSE;
+    RETURN_IF_FAILED(applicationElement->GetElements(L"*[local-name()='VisualElements']", &visualElementsEnum));
     RETURN_IF_FAILED(visualElementsEnum->GetHasCurrent(&hc));
     if (!hc)
     {
@@ -101,6 +93,8 @@ HRESULT PackageBase::SetDisplayNameFromManifestElement(IMsixElement* element)
     Text<WCHAR> logo;
     RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"Square150x150Logo", &logo));
     m_relativeLogoPath = logo.Get();
+    return S_OK;
+
     return S_OK;
 }
 
@@ -165,9 +159,7 @@ HRESULT PackageBase::SetManifestReader(IAppxManifestReader * manifestReader)
     ComPtr<IMsixElement> element;
     RETURN_IF_FAILED(domElement->GetDocumentElement(&element));
 
-    RETURN_IF_FAILED(SetExecutableAndAppIdFromManifestElement(element.Get()));
-
-    RETURN_IF_FAILED(SetDisplayNameFromManifestElement(element.Get()));
+    RETURN_IF_FAILED(ParseManifest(element.Get()));
 
     Text<WCHAR> packageFamilyName;
     RETURN_IF_FAILED(manifestId->GetPackageFamilyName(&packageFamilyName));

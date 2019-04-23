@@ -18,13 +18,13 @@ namespace Win7MsixInstallerLib {
         IPackage() {}
     };
 
-    class IInstalledPackageInfo : public IPackage
+    class IInstalledPackage : public IPackage
     {
     public:
         virtual std::wstring GetFullExecutableFilePath() = 0;
         virtual std::wstring GetInstalledLocation() = 0;
-        virtual ~IInstalledPackageInfo() {}
+        virtual ~IInstalledPackage() {}
     protected:
-        IInstalledPackageInfo() {}
+        IInstalledPackage() {}
     };
 }

@@ -44,10 +44,7 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
     std::wstring uninstallCommand = filePath + std::wstring(L" -RemovePackage ") + packageFullName;
     RETURN_IF_FAILED(packageKey.SetStringValue(L"UninstallString", uninstallCommand));
 
-    std::wstring publisherString(packageInfo->GetPublisher());
-    auto publisherCommonName = publisherString.substr(publisherString.find_first_of(L"=") + 1,
-        publisherString.find_first_of(L",") - publisherString.find_first_of(L"=") - 1);
-    RETURN_IF_FAILED(packageKey.SetStringValue(L"Publisher", publisherCommonName));
+    RETURN_IF_FAILED(packageKey.SetStringValue(L"Publisher", packageInfo->GetPublisherDisplayName()));
 
     auto versionString = packageInfo->GetVersion();
     RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayVersion", versionString));
@@ -61,7 +58,7 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
         TraceLoggingValue(uninstallCommand.c_str(), "uninstallString"),
         TraceLoggingValue(displayName.c_str(), "displayName"),
         TraceLoggingValue(directoryPath.c_str(), "installLocation"),
-        TraceLoggingValue(publisherString.c_str(), "publisher"),
+        TraceLoggingValue(packageInfo->GetPublisher().c_str(), "publisher"),
         TraceLoggingValue(versionString.c_str(), "displayVersion"),
         TraceLoggingValue(packageIconString.c_str(), "displayIcon"));
 
