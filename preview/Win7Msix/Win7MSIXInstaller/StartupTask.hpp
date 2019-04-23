@@ -4,12 +4,20 @@
 #include "RegistryKey.hpp"
 #include <vector>
 
+struct Task
+{
+    std::wstring name;
+    std::wstring executable;
+};
+
 class StartupTask : IPackageHandler
 {
 public:
 
-    /// Creates a scheduled task to run the executable listed in the windows.startupTask extension when the user logs on.
+    /// Using task scheduler APIs, creates a scheduled task to run the executable listed in the windows.startupTask extension when the user logs on.
     HRESULT ExecuteForAddRequest();
+
+    /// Removes the scheduled tasks added
     HRESULT ExecuteForRemoveRequest();
 
     static const PCWSTR HandlerName;
@@ -19,7 +27,7 @@ private:
     
     MsixRequest* m_msixRequest = nullptr;
     
-    std::wstring m_executable;
+    std::vector<Task> m_tasks;
 
     /// Parses the manifest to find the executable to run as part of startup task
     HRESULT ParseManifest();

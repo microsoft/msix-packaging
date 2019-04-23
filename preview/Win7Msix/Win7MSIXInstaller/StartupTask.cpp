@@ -54,8 +54,9 @@ const PCWSTR taskFolderName = L"MsixCore";
 
 HRESULT StartupTask::ExecuteForAddRequest()
 {
-    if (m_executable.empty())
+    if (m_tasks.empty())
     {
+        // Startup tasks are not required, if there are none, nothing to do.
         return S_OK;
     }
 
@@ -74,7 +75,7 @@ HRESULT StartupTask::ExecuteForAddRequest()
             CLSCTX_INPROC_SERVER,
             IID_ITaskService,
             reinterpret_cast<void**>(&taskService)));
-        RETURN_IF_FAILED(taskService->Connect(variantNull, variantNull, variantNull, variantNull));
+        RETURN_IF_FAILED(taskService->Connect(variantNull /*serverName*/, variantNull /*user*/, variantNull /*domain*/, variantNull /*password*/));
 
         Bstr rootFolderPathBstr(windowsTaskFolderName);
         ComPtr<ITaskFolder> rootFolder;
@@ -95,21 +96,24 @@ HRESULT StartupTask::ExecuteForAddRequest()
         ComPtr<ITaskDefinition> taskDefinition;
         RETURN_IF_FAILED(taskService->NewTask(0, &taskDefinition));
 
-        std::wstring taskDefinitionXml = TaskDefinitionXmlPrefix + m_executable + TaskDefinitionXmlPostfix;
-        Bstr taskDefinitionXmlBstr(taskDefinitionXml);
-        RETURN_IF_FAILED(taskDefinition->put_XmlText(taskDefinitionXmlBstr));
+        for (auto task = m_tasks.begin(); task != m_tasks.end(); ++task)
+        {
+            std::wstring taskDefinitionXml = TaskDefinitionXmlPrefix + task->executable + TaskDefinitionXmlPostfix;
+            Bstr taskDefinitionXmlBstr(taskDefinitionXml);
+            RETURN_IF_FAILED(taskDefinition->put_XmlText(taskDefinitionXmlBstr));
 
-        Bstr taskNameBstr(m_msixRequest->GetPackageInfo()->GetPackageFullName());
-        ComPtr<IRegisteredTask> registeredTask;
-        RETURN_IF_FAILED(msixCoreFolder->RegisterTaskDefinition(taskNameBstr, taskDefinition.Get(), TASK_CREATE_OR_UPDATE,
-            variantNull /*userId*/, variantNull /*password*/, TASK_LOGON_INTERACTIVE_TOKEN, variantNull /*sddl*/, &registeredTask));
+            Bstr taskNameBstr(task->name);
+            ComPtr<IRegisteredTask> registeredTask;
+            RETURN_IF_FAILED(msixCoreFolder->RegisterTaskDefinition(taskNameBstr, taskDefinition.Get(), TASK_CREATE_OR_UPDATE,
+                variantNull /*userId*/, variantNull /*password*/, TASK_LOGON_INTERACTIVE_TOKEN, variantNull /*sddl*/, &registeredTask));
+        }
     }
     return S_OK;
 }
 
 HRESULT StartupTask::ExecuteForRemoveRequest()
 {
-    if (m_executable.empty())
+    if (m_tasks.empty())
     {
         return S_OK;
     }
@@ -148,6 +152,8 @@ HRESULT StartupTask::ExecuteForRemoveRequest()
 
 HRESULT StartupTask::ParseManifest()
 {
+    std::wstring currentPackageFamilyName = GetFamilyNameFromFullName(m_msixRequest->GetPackageInfo()->GetPackageFullName());
+
     ComPtr<IMsixDocumentElement> domElement;
     RETURN_IF_FAILED(m_msixRequest->GetPackageInfo()->GetManifestReader()->QueryInterface(UuidOfImpl<IMsixDocumentElement>::iid, reinterpret_cast<void**>(&domElement)));
 
@@ -169,7 +175,25 @@ HRESULT StartupTask::ParseManifest()
         {
             Text<wchar_t> executable;
             RETURN_IF_FAILED(extensionElement->GetAttributeValue(executableAttribute.c_str(), &executable));
-            m_executable = m_msixRequest->GetFilePathMappings()->GetExecutablePath(executable.Get(), m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+
+            ComPtr<IMsixElementEnumerator> startupTaskEnum;
+            RETURN_IF_FAILED(extensionElement->GetElements(startupTaskQuery.c_str(), &startupTaskEnum));
+            BOOL taskHasCurrent = FALSE;
+            RETURN_IF_FAILED(startupTaskEnum->GetHasCurrent(&taskHasCurrent));
+            if (taskHasCurrent)
+            {
+                ComPtr<IMsixElement> startupTaskElement;
+                RETURN_IF_FAILED(startupTaskEnum->GetCurrent(&startupTaskElement));
+
+                Text<wchar_t> taskId;
+                RETURN_IF_FAILED(startupTaskElement->GetAttributeValue(taskIdAttribute.c_str(), &taskId));
+
+                Task task;
+                task.executable = m_msixRequest->GetFilePathMappings()->GetExecutablePath(executable.Get(), m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+                task.name = currentPackageFamilyName + L" " + taskId.Get();
+
+                m_tasks.push_back(task);
+            }
         }
         RETURN_IF_FAILED(extensionEnum->MoveNext(&hasCurrent));
     }
