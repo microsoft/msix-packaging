@@ -54,12 +54,6 @@ namespace MSIX {
         // TODO: Implement when standing-up the pack side for test validation purposes
         NOTIMPLEMENTED;
     }
-    
-    ComPtr<IStream> DirectoryObject::GetFile(const std::string& fileName)
-    {
-        // TODO: Implement when standing-up the pack side for test validation purposes
-        NOTIMPLEMENTED;
-    }
 
     #define DEFAULT_MODE S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
     void mkdirp(std::string& path, mode_t mode = DEFAULT_MODE)

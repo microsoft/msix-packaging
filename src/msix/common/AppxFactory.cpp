@@ -10,16 +10,23 @@
 #include "MSIXResource.hpp"
 #include "VectorStream.hpp"
 #include "MsixFeatureSelector.hpp"
+#include "AppxPackageWriter.hpp"
 
 namespace MSIX {
     // IAppxFactory
     HRESULT STDMETHODCALLTYPE AppxFactory::CreatePackageWriter (
         IStream* outputStream,
         APPX_PACKAGE_SETTINGS* ,//settings, TODO: plumb this through
-        IAppxPackageWriter** packageWriter) noexcept
+        IAppxPackageWriter** packageWriter) noexcept try
     {
-        return static_cast<HRESULT>(Error::NotImplemented);
-    }
+        THROW_IF_PACK_NOT_ENABLED
+        ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || *packageWriter != nullptr), "Invalid parameter");
+        // TODO: we problably will probably need the pass IMsixFactory to AppxPackageWriter constructor, but don't
+        // do it until is actually required.
+        auto result = ComPtr<IAppxPackageWriter>::Make<AppxPackageWriter>(outputStream);
+        *packageWriter = result.Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreatePackageReader (
         IStream* inputStream,

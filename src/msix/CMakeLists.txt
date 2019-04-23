@@ -217,11 +217,16 @@ list(APPEND UnpackSrc
     ${BundleSources}
 )
 
+list(APPEND PackSrc
+    pack/AppxPackageWriter.cpp
+)
+
 # Define the library
 add_library(${PROJECT_NAME} SHARED 
     msix.cpp
     ${CommonSrc}
     ${UnpackSrc}
+    ${PackSrc}
 )
 
 # Copy out public headers to <binary dir>/src/unpack
