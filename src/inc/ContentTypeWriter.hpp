@@ -8,31 +8,25 @@
 #include "XmlWriter.hpp"
 #include "ComHelper.hpp"
 
-#include <set>
+#include <map>
 
 namespace MSIX {
 
     class ContentTypeWriter final
     {
     public:
-        typedef enum
-        {
-            BlockMap = 1,
-            AppxManifest = 2,
-            AppxSignature = 3,
-        }
-        PayloadFile;
-
         ContentTypeWriter();
         ~ContentTypeWriter() {}
 
-        APPX_COMPRESSION_OPTION AddDefault(const std::string& name);
-        void AddPayloadFile(ContentTypeWriter::PayloadFile payloadFile);
+        void AddContentType(const std::string& name, const std::string& contentType, bool forceOverride = false);
         void Close();
         ComPtr<IStream> GetStream() { return m_xmlWriter->GetStream(); }
 
     protected:
-        std::set<std::string> m_extensions;
+        void AddDefault(const std::string& ext, const std::string& contentType);
+        void AddOverride(const std::string& file, const std::string& contentType);
+
+        std::map<std::string, std::string> m_defaultExtensions; // ext to contentType map
         std::unique_ptr<XmlWriter> m_xmlWriter;
     };
 }

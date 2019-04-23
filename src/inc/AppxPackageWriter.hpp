@@ -31,6 +31,21 @@ MSIX_INTERFACE(IPackageWriter, 0x32e89da5,0x7cbb,0x4443,0x8c,0xf0,0xb8,0x4e,0xed
 
 namespace MSIX {
 
+    typedef struct BlockAndHash
+    {
+        std::vector<std::uint8_t> block;
+        std::string hashValue;
+    } BlockAndHash;
+
+    typedef struct PayloadFile // rename this
+    {
+        APPX_COMPRESSION_OPTION compressionOption;
+        std::uint32_t crc = 0;
+        std::uint64_t fileSize;
+        std::string relativeName;
+        std::vector<std::unique_ptr<BlockAndHash>> fileBlocks;
+    } PayloadFile;
+
     class AppxPackageWriter final : public ComClass<AppxPackageWriter, IPackageWriter, IAppxPackageWriter,
         IAppxPackageWriterUtf8, IAppxPackageWriter3, IAppxPackageWriter3Utf8>
     {
@@ -66,6 +81,9 @@ namespace MSIX {
             Failed = 3
         }
         WriterState;
+
+        std::unique_ptr<PayloadFile> BuildPayloadFile(const std::string& name, const ComPtr<IStream>& stream, 
+            const std::string& contentType, APPX_COMPRESSION_OPTION compressionOpt);
 
         WriterState m_state;
         ComPtr<IStream> m_outputStream;

@@ -174,6 +174,7 @@ namespace MSIX {
     {
         THROW_IF_PACK_NOT_ENABLED
         std::multimap<std::uint64_t, std::string> files;
+        auto rootSize = m_root.size() + 1; // plus separator
         WalkDirectory(m_root, WalkOptions::Recursive | WalkOptions::Files, [&](
                 std::string root,
                 WalkOptions option,
@@ -184,7 +185,7 @@ namespace MSIX {
                 {
                     std::string fileName = root + GetPathSeparator() + name;
                     // root contains the top level directory, which we don't need
-                    fileName = fileName.substr(fileName.find_first_of(GetPathSeparator()) + 1);
+                    fileName = fileName.substr(rootSize);
                     files.insert(std::make_pair(size, std::move(fileName)));
                 }
                 return true;
