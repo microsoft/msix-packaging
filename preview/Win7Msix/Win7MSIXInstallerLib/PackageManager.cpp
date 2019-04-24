@@ -26,11 +26,11 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packag
         impl->GetMsixResponse()->SetCallback(callback);
     }
 
-    auto t = thread([&impl]() {
-        impl->ProcessRequest();
-        delete impl;
-        impl = nullptr;
-        });
+    auto t = thread([&impl](MsixRequest* msixRequest) {
+        msixRequest->ProcessRequest();
+        delete msixRequest;
+        msixRequest = nullptr;
+        }, impl);
     t.detach();
     return impl->GetMsixResponse();
 }
