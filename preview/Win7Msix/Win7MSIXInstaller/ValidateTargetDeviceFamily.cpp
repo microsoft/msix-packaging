@@ -8,6 +8,7 @@
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
 #include <VersionHelpers.h>
+using namespace Win7MsixInstallerLib;
 
 const PCWSTR ValidateTargetDeviceFamily::HandlerName = L"ValidateTargetDeviceFamily";
 
@@ -32,7 +33,7 @@ HRESULT ValidateTargetDeviceFamily::ExecuteForAddRequest()
 
 HRESULT ValidateTargetDeviceFamily::ParseTargetDeviceFamilyFromPackage()
 {
-    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
+    auto packageInfo = m_msixRequest->GetPackageInfo();
 
     ComPtr<IMsixDocumentElement> domElement;
     RETURN_IF_FAILED(packageInfo->GetManifestReader()->QueryInterface(UuidOfImpl<IMsixDocumentElement>::iid, reinterpret_cast<void**>(&domElement)));
