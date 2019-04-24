@@ -1,7 +1,8 @@
 #pragma once
 
 #include "GeneralUtil.hpp"
-
+namespace Win7MsixInstallerLib
+{
 /// Encapsulates and lifetimes the HKEY used by the RegOpenKey et al APIs.
 class RegistryKey
 {
@@ -156,3 +157,4 @@ protected:
     std::wstring m_path;
     HKEY m_hkey = nullptr;
 };
+}

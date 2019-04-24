@@ -2,7 +2,10 @@
 
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
+#include "MsixRequest.hpp"
 
+namespace Win7MsixInstallerLib
+{
 /// Handles adding/removing the shortcut in the start menu to launch the application
 class StartMenuLink : IPackageHandler
 {
@@ -31,3 +34,4 @@ private:
     /// @param appUserModelId- Application User Model ID, needed to display toasts.
     HRESULT CreateLink(PCWSTR targetFilePath, PCWSTR linkFilePath, PCWSTR description, PCWSTR appUserModelId = NULL);
 };
+}

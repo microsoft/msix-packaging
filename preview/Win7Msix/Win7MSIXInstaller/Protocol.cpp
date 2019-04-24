@@ -8,6 +8,7 @@
 #include "GeneralUtil.hpp"
 #include "Constants.hpp"
 #include <TraceLoggingProvider.h>
+using namespace Win7MsixInstallerLib;
 
 const PCWSTR Protocol::HandlerName = L"Protocol";
 
@@ -42,7 +43,7 @@ HRESULT Protocol::ParseProtocolElement(IMsixElement* protocolElement)
         Text<wchar_t> logoPath;
         RETURN_IF_FAILED(logoElement->GetText(&logoPath));
 
-        protocol.logo = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + std::wstring(L"\\") + logoPath.Get();
+        protocol.logo = m_msixRequest->GetPackageDirectoryPath() + std::wstring(L"\\") + logoPath.Get();
     }
 
     ComPtr<IMsixElementEnumerator> displayNameEnum;
@@ -148,7 +149,7 @@ HRESULT Protocol::ProcessProtocolForAdd(ProtocolData& protocol)
     RegistryKey commandKey;
     RETURN_IF_FAILED(openKey.CreateSubKey(commandKeyName.c_str(), KEY_WRITE, &commandKey));
 
-    std::wstring command = m_msixRequest->GetPackageInfo()->GetExecutableFilePath();
+    std::wstring command = m_msixRequest->GetPackageDirectoryPath() + L"\\" + m_msixRequest->GetPackageInfo()->GetRelativeExecutableFilePath();
     if (protocol.parameters.c_str() != nullptr)
     {
         command += std::wstring(L" ") + protocol.parameters;
@@ -188,7 +189,7 @@ bool Protocol::IsCurrentlyAssociatedWithPackage(PCWSTR name)
         return false;
     }
 
-    std::wstring executablePath = m_msixRequest->GetPackageInfo()->GetExecutableFilePath();
+    std::wstring executablePath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + m_msixRequest->GetPackageInfo()->GetRelativeExecutableFilePath();
     std::wstring currentlyAssociatedExe;
     if (SUCCEEDED(protocolExeKey.GetStringValue(L"", currentlyAssociatedExe)))
     {

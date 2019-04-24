@@ -8,6 +8,7 @@
 #include "GeneralUtil.hpp"
 #include "Constants.hpp"
 #include <TraceLoggingProvider.h>
+using namespace Win7MsixInstallerLib;
 
 const PCWSTR ComInterface::HandlerName = L"ComInterface";
 
@@ -85,7 +86,7 @@ HRESULT ComInterface::ProcessTypeLibForAddRequest(TypeLib& typeLib)
             RegistryKey win32Key;
             RETURN_IF_FAILED(localeIdKey.CreateSubKey(win32KeyName.c_str(), KEY_WRITE, &win32Key));
 
-            std::wstring win32FullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(version->win32Path, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+            std::wstring win32FullPath = FilePathMappings::GetInstance().GetExecutablePath(version->win32Path, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
             RETURN_IF_FAILED(win32Key.SetStringValue(L"", win32FullPath));
         }
 
@@ -94,7 +95,7 @@ HRESULT ComInterface::ProcessTypeLibForAddRequest(TypeLib& typeLib)
             RegistryKey win64Key;
             RETURN_IF_FAILED(localeIdKey.CreateSubKey(win64KeyName.c_str(), KEY_WRITE, &win64Key));
 
-            std::wstring win64FullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(version->win64Path, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+            std::wstring win64FullPath = FilePathMappings::GetInstance().GetExecutablePath(version->win64Path, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
             RETURN_IF_FAILED(win64Key.SetStringValue(L"", win64FullPath));
         }
 
@@ -110,7 +111,7 @@ HRESULT ComInterface::ProcessTypeLibForAddRequest(TypeLib& typeLib)
             RegistryKey helpDirKey;
             RETURN_IF_FAILED(versionNumberKey.CreateSubKey(helpDirKeyName.c_str(), KEY_WRITE, &helpDirKey));
 
-            std::wstring helpDirFullPath = m_msixRequest->GetFilePathMappings()->GetExecutablePath(version->helpDirectory, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+            std::wstring helpDirFullPath = FilePathMappings::GetInstance().GetExecutablePath(version->helpDirectory, m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
             RETURN_IF_FAILED(helpDirKey.SetStringValue(L"", helpDirFullPath));
         }
     }

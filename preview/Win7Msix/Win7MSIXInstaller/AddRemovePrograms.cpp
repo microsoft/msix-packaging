@@ -8,6 +8,7 @@
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
 #include "Constants.hpp"
+using namespace Win7MsixInstallerLib;
 
 const PCWSTR AddRemovePrograms::HandlerName = L"AddRemovePrograms";
 
@@ -18,7 +19,7 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
         return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
-    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
+    auto packageInfo = m_msixRequest->GetPackageInfo();
     std::wstring packageFullName = packageInfo->GetPackageFullName();
 
     RegistryKey uninstallKey;
@@ -30,7 +31,7 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
     std::wstring displayName = packageInfo->GetDisplayName();
     RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayName", displayName));
 
-    std::wstring directoryPath = packageInfo->GetPackageDirectoryPath();
+    std::wstring directoryPath = m_msixRequest->GetPackageDirectoryPath();
     RETURN_IF_FAILED(packageKey.SetStringValue(L"InstallLocation", directoryPath));
 
     WCHAR filePath[MAX_PATH];
@@ -43,15 +44,12 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
     std::wstring uninstallCommand = filePath + std::wstring(L" -RemovePackage ") + packageFullName;
     RETURN_IF_FAILED(packageKey.SetStringValue(L"UninstallString", uninstallCommand));
 
-    std::wstring publisherString(packageInfo->GetPublisher());
-    auto publisherCommonName = publisherString.substr(publisherString.find_first_of(L"=") + 1,
-        publisherString.find_first_of(L",") - publisherString.find_first_of(L"=") - 1);
-    RETURN_IF_FAILED(packageKey.SetStringValue(L"Publisher", publisherCommonName));
+    RETURN_IF_FAILED(packageKey.SetStringValue(L"Publisher", packageInfo->GetPublisherDisplayName()));
 
-    std::wstring versionString(ConvertVersionToString(packageInfo->GetVersion()));
+    auto versionString = packageInfo->GetVersion();
     RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayVersion", versionString));
 
-    std::wstring packageIconString = packageInfo->GetExecutableFilePath();
+    std::wstring packageIconString = m_msixRequest->GetPackageDirectoryPath() + L"\\" + packageInfo->GetRelativeExecutableFilePath();
     RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayIcon", packageIconString));
 
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
@@ -60,7 +58,7 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
         TraceLoggingValue(uninstallCommand.c_str(), "uninstallString"),
         TraceLoggingValue(displayName.c_str(), "displayName"),
         TraceLoggingValue(directoryPath.c_str(), "installLocation"),
-        TraceLoggingValue(publisherString.c_str(), "publisher"),
+        TraceLoggingValue(packageInfo->GetPublisher().c_str(), "publisher"),
         TraceLoggingValue(versionString.c_str(), "displayVersion"),
         TraceLoggingValue(packageIconString.c_str(), "displayIcon"));
 

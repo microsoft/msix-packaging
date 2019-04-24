@@ -1,18 +1,36 @@
-#include "generalutil.hpp"
+#include "GeneralUtil.hpp"
 #include "MsixResponse.hpp"
+using namespace Win7MsixInstallerLib;
 
-HRESULT MsixResponse::Make(MsixResponse ** outInstance)
+void MsixResponse::Update(InstallationStep status, float progress)
 {
-    std::unique_ptr<MsixResponse> instance(new MsixResponse());
-    if (instance == nullptr)
+    if (m_percentage == progress && m_status == status)
     {
-        return E_OUTOFMEMORY;
+        return;
     }
 
-    instance->m_hresultTextCode = NULL;
-    instance->m_textStatus = NULL;
-    instance->m_isInstallCancelled = false;
-    *outInstance = instance.release();
+    m_percentage = progress;
+    m_status = status;
+    if (m_callback)
+    {
+        m_callback(*this);
+    }
+}
 
-    return S_OK;
+void MsixResponse::SetCallback(std::function<void(const IMsixResponse& sender)> callback)
+{
+    m_callback = callback;
+}
+
+void MsixResponse::SetErrorStatus(HRESULT errorCode, std::wstring errorText)
+{
+    m_percentage = 0;
+    m_status = InstallationStep::InstallationStepError;
+    m_hresultTextCode = errorCode;
+    m_textStatus = errorText;
+
+    if (m_callback)
+    {
+        m_callback(*this);
+    }
 }

@@ -1,9 +1,12 @@
 #include <iostream>
 #include <iomanip>
 #include "CommandLineInterface.hpp"
+#include "Win7MSIXInstallerLogger.hpp"
 #include <TraceLoggingProvider.h>
-#include "GeneralUtil.hpp"
+#include "Util.hpp"
 #include "resource.h"
+
+using namespace Win7MsixInstallerLib;
 
 std::map<std::wstring, Option, CaseInsensitiveLess> CommandLineInterface::s_options =
 {
@@ -40,7 +43,7 @@ std::map<std::wstring, Option, CaseInsensitiveLess> CommandLineInterface::s_opti
         Option(false, IDS_STRING_HELP_OPTION_QUIETMODE,
             [&](CommandLineInterface* commandLineInterface, const std::string&)
             {
-                commandLineInterface->m_flags |= Flags::QuietUX;
+                commandLineInterface->m_quietMode = true;
                 return S_OK; 
             })
     },
@@ -98,11 +101,11 @@ void CommandLineInterface::DisplayHelp()
     }
 }
 
-HRESULT CommandLineInterface::CreateRequest(MsixRequest** msixRequest)
+HRESULT CommandLineInterface::Init()
 {
     for (int i = 0; i < m_argc; i++)
     {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        TraceLoggingWrite(g_MsixUITraceLoggingProvider,
             "CommandLineArguments",
             TraceLoggingValue(i, "index"),
             TraceLoggingValue(m_argv[i], "arg"));
@@ -126,7 +129,7 @@ HRESULT CommandLineInterface::CreateRequest(MsixRequest** msixRequest)
         auto option = s_options.find(optionString);
         if (option == s_options.end())
         {
-            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            TraceLoggingWrite(g_MsixUITraceLoggingProvider,
                 "Unknown Argument",
                 TraceLoggingLevel(WINEVENT_LEVEL_ERROR),
                 TraceLoggingValue(m_argv[index], "arg"));
@@ -146,16 +149,5 @@ HRESULT CommandLineInterface::CreateRequest(MsixRequest** msixRequest)
         ++index;
     }
 
-    AutoPtr<MsixRequest> localRequest;
-    RETURN_IF_FAILED(MsixRequest::Make(
-		m_operationType, 
-		m_flags, 
-		m_packageFilePath, 
-		m_packageFullName, 
-		m_validationOptions,
-		&localRequest)
-	);
-
-    *msixRequest = localRequest.Detach();
     return S_OK;
 }
