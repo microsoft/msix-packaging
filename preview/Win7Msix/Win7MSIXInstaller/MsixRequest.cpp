@@ -29,6 +29,7 @@
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
 #include "ErrorHandler.hpp"
+#include "ValidateTargetDeviceFamily.hpp"
 
 #include "Constants.hpp"
 
