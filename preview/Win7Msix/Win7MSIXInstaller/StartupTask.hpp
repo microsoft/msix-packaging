@@ -15,6 +15,8 @@ class StartupTask : IPackageHandler
 public:
 
     /// Using task scheduler APIs, creates a scheduled task to run the executable listed in the windows.startupTask extension when the user logs on.
+    /// This diverges from the Windows 10 handling of startupTask, as there is built-in OS support to run the tasks on logon without using task scheduler.
+    /// Windows 7 and 8 and some versions of windows 10 do not have OS support to understand startupTasks in the same way, so we're using task scheduler instead.
     HRESULT ExecuteForAddRequest();
 
     /// Removes the scheduled tasks added
