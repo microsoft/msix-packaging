@@ -189,6 +189,7 @@
     <ClInclude Include="..\Win7MSIXInstaller\ComServer.hpp" />
     <ClInclude Include="..\Win7MSIXInstaller\Constants.hpp" />
     <ClInclude Include="..\Win7MSIXInstaller\ErrorHandler.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\ValidateTargetDeviceFamily.hpp" />
     <ClInclude Include="inc\IMsixResponse.hpp" />
     <ClInclude Include="inc\DeploymentOptions.hpp" />
     <ClInclude Include="..\Win7MSIXInstaller\Extractor.hpp" />
@@ -221,6 +222,7 @@
     <ClCompile Include="..\Win7MSIXInstaller\FileTypeAssociation.cpp" />
     <ClCompile Include="..\Win7MSIXInstaller\InstallComplete.cpp" />
     <ClCompile Include="..\Win7MSIXInstaller\MsixRequest.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\ValidateTargetDeviceFamily.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="..\Win7MSIXInstaller\MsixResponse.cpp" />
     <ClCompile Include="PackageManager.cpp" />
