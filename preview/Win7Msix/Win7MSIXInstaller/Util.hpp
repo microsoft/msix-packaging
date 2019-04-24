@@ -1,29 +1,8 @@
 #pragma once
 #include <windows.h>
 #include "AppxPackaging.hpp"
-#include <TraceLoggingProvider.h>
 #include <winmeta.h>
 #include <string.h>
-
-TRACELOGGING_DECLARE_PROVIDER(g_MsixTraceLoggingProvider);
-
-// Definition of function to return error if failed
-#define __FILENAME__ (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__)
-#define RETURN_IF_FAILED(a) \
-{                       \
-    HRESULT __hr = a;   \
-    if (FAILED(__hr))   \
-    {   \
-        TraceLoggingWrite(g_MsixTraceLoggingProvider, \
-            "RETURN_IF_FAILED", \
-            TraceLoggingLevel(WINEVENT_LEVEL_ERROR), \
-            TraceLoggingValue(#a, "Code"), \
-            TraceLoggingHResult(__hr, "HR"), \
-            TraceLoggingUInt32(__LINE__, "Line"), \
-            TraceLoggingValue(__FILENAME__, "Filename")); \
-        return __hr; \
-    }  \
-}
 
 /// Converts a wstring from utf16 to utf8
 ///
@@ -37,24 +16,11 @@ std::string utf16_to_utf8(const std::wstring& utf16string);
 /// @return utf16 string
 std::wstring utf8_to_utf16(const std::string& utf8string);
 
-/// Helper to convert version number to a version string of the form a.b.c.d
-///
-/// @param version - version number
-/// @return a.b.c.d string representation of version
-std::wstring ConvertVersionToString(UINT64 version);
-
 /// Helper to get string resource
 ///
 /// @param resourceId - resource ID, these should be listed in resource.h
 /// @return string for the resource, resolved from the stringtable defined in Win7MsixInstaller.rc
 std::wstring GetStringResource(UINT resourceId);
-
-/// Converts a packageFullName (i.e. examplePackageName_1.0.0.0_x64_resourceId_8wekyb3d8bbwe) 
-/// into a packageFamilyName (i.e. examplePackageName_8wekyb3d8bbwe)
-///
-/// @param fullName - the packageFullName, assumed to be properly formatted and not validated.
-/// @return packageFamilyName for the packageFullName
-std::wstring GetFamilyNameFromFullName(const std::wstring& fullName);
 
 /// Determines if two strings are case-insensitive equals
 ///

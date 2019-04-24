@@ -4,7 +4,10 @@
 #include "IPackageHandler.hpp"
 #include "RegistryKey.hpp"
 #include "RegistryDevirtualizer.hpp"
+#include "MsixRequest.hpp"
 
+namespace Win7MsixInstallerLib
+{
 /// Data structs to be filled in from the information in the manifest
 struct Verb
 {
@@ -59,3 +62,4 @@ private:
     /// Creates a ProgID from the name of the fta. Simply take the package name and prepend it to the fta
     std::wstring CreateProgID(PCWSTR name);
 };
+}

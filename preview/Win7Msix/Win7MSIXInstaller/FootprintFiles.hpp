@@ -2,7 +2,8 @@
 #define FOOTPRINTFILES_H
 
 #include "AppxPackaging.hpp"
-
+namespace Win7MsixInstallerLib
+{
 // Describes the FootprintFilesType structure
 template<typename Type>
 struct FootprintFilesType
@@ -22,3 +23,4 @@ __declspec(selectany) FootprintFilesType<APPX_FOOTPRINT_FILE_TYPE> g_footprintFi
 };
 const int FootprintFilesCount = ARRAYSIZE(g_footprintFilesType);
 #endif
+}

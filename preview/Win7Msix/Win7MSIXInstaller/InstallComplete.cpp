@@ -8,19 +8,16 @@
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
 
-#include "InstallUI.hpp"
+using namespace Win7MsixInstallerLib;
 
 const PCWSTR InstallComplete::HandlerName = L"InstallComplete";
 
 HRESULT InstallComplete::ExecuteForAddRequest()
 {
-    if (!m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
+    auto msixResponse = m_msixRequest->GetMsixResponse();
+    if (msixResponse != nullptr && !msixResponse->GetIsInstallCancelled())
     {
-        AutoPtr<UI> ui = m_msixRequest->GetUI();
-        if (ui)
-        {
-            ui->SendInstallCompleteMsg();
-        }
+        msixResponse->Update(InstallationStep::InstallationStepCompleted, 100);
     }
     return S_OK;
 }

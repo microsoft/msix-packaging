@@ -2,7 +2,16 @@
 
 #include <map>
 #include <functional>
-#include "MsixRequest.hpp"
+#include <IPackage.hpp>
+#include <AppxPackaging.hpp>
+enum OperationType
+{
+    Undefined = 0,
+    Add = 1,
+    Remove = 2,
+    FindPackage = 3,
+    FindAllPackages = 4,
+};
 
 class CommandLineInterface;
 /// Describes an option to a command that the user may specify used for the command line tool
@@ -50,9 +59,11 @@ public:
 
     /// Displays contextual formatted help to the user used for command line tool
     void DisplayHelp();
-
-    HRESULT CreateRequest(_Outptr_ MsixRequest** msixRequest);
-
+    HRESULT Init();
+    bool IsQuietMode() { return m_quietMode; }
+    std::wstring GetPackageFilePathToInstall() { return m_packageFilePath; }
+    std::wstring GetPackageFullName() { return m_packageFullName; }
+    OperationType GetOperationType() { return m_operationType; }
 private:
     int m_argc = 0;
     char ** m_argv = nullptr;
@@ -62,9 +73,8 @@ private:
 
     std::wstring m_packageFilePath;
     std::wstring m_packageFullName;
+    bool m_quietMode;
 
-    MSIX_VALIDATION_OPTION m_validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
-    Flags m_flags = NoFlags;
     OperationType m_operationType = OperationType::Undefined;
 
     CommandLineInterface() {}

@@ -1,4 +1,5 @@
 #include "RegistryKey.hpp"
+using namespace Win7MsixInstallerLib;
 
 HRESULT RegistryKey::Open(
     _In_ const HKEY hkey,

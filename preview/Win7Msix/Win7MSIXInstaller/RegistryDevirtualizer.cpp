@@ -2,6 +2,7 @@
 #include "FilePaths.hpp"
 #include "Constants.hpp"
 #include <vector>
+using namespace Win7MsixInstallerLib;
 
 struct VirtualRegistryMapping
 {
@@ -212,7 +213,7 @@ HRESULT RegistryDevirtualizer::DetokenizeData(std::wstring& data)
         // get the contents of what's in between the braces, i.e. [{token}]
         std::wstring token = data.substr(beginToken + 2, (endToken - beginToken - 2)); // +2 to skip over [{ characters, -2 to omit }] characters
 
-        std::map<std::wstring, std::wstring> map = m_msixRequest->GetFilePathMappings()->GetMap();
+        std::map<std::wstring, std::wstring> map = FilePathMappings::GetInstance().GetMap();
         for (auto& pair : map)
         {
             if (token.find(pair.first) != std::wstring::npos)

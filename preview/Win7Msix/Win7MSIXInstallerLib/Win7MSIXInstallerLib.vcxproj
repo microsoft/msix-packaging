@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -20,33 +20,34 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{AAD31763-5E65-47FD-958A-08E35AB83025}</ProjectGuid>
+    <ProjectGuid>{46BE19BD-72E0-4452-9919-33A1F8A5F064}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
     <RootNamespace>Win7MSIXInstaller</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <ProjectName>Win7MSIXInstallerLib</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
     <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
@@ -88,21 +89,21 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>Win7MsixInstallerLib_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Win7MsixInstallerLib\inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\Win7MSIXInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\Debug;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
+      <Command>xcopy /Y /D "$(ProjectDir)MSIXPackaging\x86\Debug\msix.*" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -111,26 +112,22 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>Win7MsixInstallerLib_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Win7MsixInstallerLib\inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\Win7MSIXInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\x64\Debug;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
-    <CustomBuildStep>
-      <Command>
-      </Command>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -140,23 +137,23 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>Win7MsixInstallerLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Win7MsixInstallerLib\inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\Win7MSIXInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\Release;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
+      <Command>xcopy /Y /D "$(ProjectDir)MSIXPackaging\x86\msix.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -167,9 +164,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>Win7MsixInstallerLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;WIN7MSIXINSTALLER_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>..\Win7MsixInstallerLib\inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\Win7MSIXInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
@@ -177,41 +174,67 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\x64\Release;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
     </PostBuildEvent>
-    <Manifest>
-      <AdditionalManifestFiles>WindowsCompatibility.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
-    </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Util.hpp" />
-    <ClInclude Include="CommandLineInterface.hpp" />
-    <ClInclude Include="InstallUI.hpp" />
-    <ClInclude Include="resource.h" />
-    <ClInclude Include="Win7MSIXInstallerLogger.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\AddRemovePrograms.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\ComInterface.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\ComServer.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\Constants.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\ErrorHandler.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\ValidateTargetDeviceFamily.hpp" />
+    <ClInclude Include="inc\IMsixResponse.hpp" />
+    <ClInclude Include="inc\DeploymentOptions.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\Extractor.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\FileTypeAssociation.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\FootprintFiles.hpp" />
+    <ClInclude Include="inc\IPackageManager.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\InstallComplete.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\MsixRequest.hpp" />
+    <ClInclude Include="GeneralUtil.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\FilePaths.hpp" />
+    <ClInclude Include="inc\IPackage.hpp" />
+    <ClInclude Include="inc\Win7MSIXInstallerActions.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\IPackageHandler.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\MsixResponse.hpp" />
+    <ClInclude Include="PackageManager.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\Package.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\PopulatePackageInfo.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\ProcessPotentialUpdate.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\Protocol.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\RegistryDevirtualizer.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\RegistryKey.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\StartMenuLink.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Util.cpp" />
-    <ClCompile Include="InstallUI.cpp" />
-    <ClCompile Include="CommandLineInterface.cpp" />
-    <ClCompile Include="Win7MSIXInstaller.cpp" />
-    <ClCompile Include="Win7MSIXInstallerLogger.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ResourceCompile Include="Win7MSIXInstaller.rc" />
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="icon1.ico" />
-    <Image Include="icon2.ico" />
-  </ItemGroup>
-  <ItemGroup>
-    <Manifest Include="WindowsCompatibility.manifest" />
+    <ClCompile Include="..\Win7MSIXInstaller\ComInterface.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\ComServer.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\ErrorHandler.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\Extractor.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\FilePaths.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\FileTypeAssociation.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\InstallComplete.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\MsixRequest.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\ValidateTargetDeviceFamily.cpp" />
+    <ClCompile Include="GeneralUtil.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\MsixResponse.cpp" />
+    <ClCompile Include="PackageManager.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\Package.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\PopulatePackageInfo.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\ProcessPotentialUpdate.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\Protocol.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\RegistryDevirtualizer.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\RegistryKey.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\AddRemovePrograms.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\StartMenuLink.cpp" />
+    <ClCompile Include="Win7MSIXInstallerActions.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

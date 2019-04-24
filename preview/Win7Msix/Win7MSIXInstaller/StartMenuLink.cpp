@@ -9,6 +9,7 @@
 #include "StartMenuLink.hpp"
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
+using namespace Win7MsixInstallerLib;
 
 const PCWSTR StartMenuLink::HandlerName = L"StartMenuLink";
 
@@ -50,12 +51,12 @@ HRESULT StartMenuLink::ExecuteForAddRequest()
     {
         return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
-    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
+    auto packageInfo = m_msixRequest->GetPackageInfo();
 
-    std::wstring filePath = m_msixRequest->GetFilePathMappings()->GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";
+    std::wstring filePath = FilePathMappings::GetInstance().GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";
 
-    std::wstring resolvedExecutableFullPath = packageInfo->GetExecutableFilePath();
-    std::wstring appUserModelId = m_msixRequest->GetPackageInfo()->GetAppModelUserId();
+    std::wstring resolvedExecutableFullPath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + packageInfo->GetRelativeExecutableFilePath();
+    std::wstring appUserModelId = m_msixRequest->GetPackageInfo()->GetId();
     RETURN_IF_FAILED(CreateLink(resolvedExecutableFullPath.c_str(), filePath.c_str(), L"", appUserModelId.c_str()));
 
     return S_OK;
@@ -63,9 +64,9 @@ HRESULT StartMenuLink::ExecuteForAddRequest()
 
 HRESULT StartMenuLink::ExecuteForRemoveRequest()
 {
-    PackageInfo* packageInfo = m_msixRequest->GetPackageInfo();
+    auto packageInfo = m_msixRequest->GetPackageInfo();
 
-    std::wstring filePath = m_msixRequest->GetFilePathMappings()->GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";
+    std::wstring filePath = FilePathMappings::GetInstance().GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";
 
     RETURN_IF_FAILED(DeleteFile(filePath.c_str()));
     return S_OK;
