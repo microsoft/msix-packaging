@@ -12,6 +12,7 @@
 
 #include <map>
 #include <memory>
+#include <future>
 
 // internal interface
 // {32e89da5-7cbb-4443-8cf0-b84eedb51d0a}
@@ -34,7 +35,7 @@ namespace MSIX {
     typedef struct BlockAndHash
     {
         std::vector<std::uint8_t> block;
-        std::string hashValue;
+        std::future<std::vector<std::uint8_t>> hashValue; // SHA256 of block
     } BlockAndHash;
 
     typedef struct PayloadFile
@@ -84,6 +85,7 @@ namespace MSIX {
 
         std::unique_ptr<PayloadFile> BuildPayloadFile(const std::string& name, const ComPtr<IStream>& stream, 
             const std::string& contentType, APPX_COMPRESSION_OPTION compressionOpt);
+        void ProcessPayloadFiles(const std::vector<std::unique_ptr<PayloadFile>>& files);
 
         WriterState m_state;
         ComPtr<IStream> m_outputStream;

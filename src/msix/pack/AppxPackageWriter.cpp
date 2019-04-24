@@ -8,9 +8,12 @@
 #include "MsixErrors.hpp"
 #include "Exceptions.hpp"
 #include "ContentType.hpp"
+#include "SHA256.hpp"
 
 #include <string>
 #include <memory>
+#include <future>
+#include <algorithm>
 
 namespace MSIX {
 
@@ -28,7 +31,7 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
         auto fileMap = from->GetFilesByLastModDate();
-
+        std::vector<std::unique_ptr<PayloadFile>> files;
         for(const auto& file : fileMap)
         {
             std::string ext = file.second.substr(file.second.find_last_of(".") + 1);
@@ -48,7 +51,9 @@ namespace MSIX {
                 compressionOpt = findExt->second.second;
             }
             auto payloadFile = BuildPayloadFile(file.second, from.As<IStorageObject>()->GetFile(file.second), contentType, compressionOpt);
+            files.push_back(std::move(payloadFile));
         }
+        ProcessPayloadFiles(files);
 
         NOTIMPLEMENTED
     }
@@ -84,8 +89,9 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddPayloadFiles(UINT32 fileCount,
         APPX_PACKAGE_WRITER_PAYLOAD_STREAM* payloadFiles, UINT64 memoryLimit) noexcept try
     {
-        // TODO: handle parallelism
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
+        std::vector<std::unique_ptr<PayloadFile>> files;
+        // TODO: use memoryLimit for how many files are going to be added
         for(UINT32 i = 0; i < fileCount; i++)
         {
             ComPtr<IStream> stream(payloadFiles[i].inputStream);
@@ -93,6 +99,7 @@ namespace MSIX {
             std::string contentType = wstring_to_utf8(payloadFiles[i].contentType);
             auto payloadFile = BuildPayloadFile(fileName, stream, contentType, payloadFiles[i].compressionOption);
         }
+        ProcessPayloadFiles(files);
         
         NOTIMPLEMENTED
     } CATCH_RETURN();
@@ -102,11 +109,15 @@ namespace MSIX {
         APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8* payloadFiles, UINT64 memoryLimit) noexcept try
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
+        std::vector<std::unique_ptr<PayloadFile>> files;
+        // TODO: use memoryLimit for how many files are going to be added
         for(UINT32 i = 0; i < fileCount; i++)
         {
             ComPtr<IStream> stream(payloadFiles[i].inputStream);
             auto payloadFile = BuildPayloadFile(payloadFiles[i].fileName, stream, payloadFiles[i].contentType, payloadFiles[i].compressionOption);
+            files.push_back(std::move(payloadFile));
         }
+        ProcessPayloadFiles(files);
         
         NOTIMPLEMENTED
     } CATCH_RETURN();
@@ -147,10 +158,27 @@ namespace MSIX {
             blockData->block = std::move(buffer);
             payloadFile->fileBlocks.push_back(std::move(blockData));
         }
-
-        // TODO: compute SHA256 and base64 from blocks
-        //       write information to the blockmap and zip
-
         return payloadFile;
+    }
+
+    void AppxPackageWriter::ProcessPayloadFiles(const std::vector<std::unique_ptr<PayloadFile>>& files)
+    {
+        // calculate hash on parallel
+        auto computeHash = [](std::vector<std::uint8_t>& block) -> std::vector<std::uint8_t>
+        {
+            std::vector<std::uint8_t> hash;
+            ThrowErrorIfNot(Error::Unexpected, 
+                SHA256::ComputeHash(block.data(), static_cast<std::uint32_t>(block.size()), hash),
+                "Failed computing SHA256");
+            return hash;
+        };
+        for(auto& file : files)
+        {
+            for(auto& block : file->fileBlocks)
+            {
+                block->hashValue = std::async(std::launch::async, computeHash, block->block);
+            }
+        }
+        // TODO: write information to the blockmap and zip
     }
 }
