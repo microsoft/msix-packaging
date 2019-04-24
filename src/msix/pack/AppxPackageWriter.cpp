@@ -14,6 +14,7 @@
 #include <memory>
 #include <future>
 #include <algorithm>
+#include <functional>
 
 namespace MSIX {
 
@@ -100,7 +101,7 @@ namespace MSIX {
             auto payloadFile = BuildPayloadFile(fileName, stream, contentType, payloadFiles[i].compressionOption);
         }
         ProcessPayloadFiles(files);
-        
+
         NOTIMPLEMENTED
     } CATCH_RETURN();
 
@@ -118,7 +119,7 @@ namespace MSIX {
             files.push_back(std::move(payloadFile));
         }
         ProcessPayloadFiles(files);
-        
+
         NOTIMPLEMENTED
     } CATCH_RETURN();
 
@@ -176,7 +177,8 @@ namespace MSIX {
         {
             for(auto& block : file->fileBlocks)
             {
-                block->hashValue = std::async(std::launch::async, computeHash, block->block);
+                auto bind = std::bind(computeHash, block->block);
+                block->hashValue = std::async(std::launch::async, bind);
             }
         }
         // TODO: write information to the blockmap and zip
