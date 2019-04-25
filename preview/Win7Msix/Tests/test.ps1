@@ -91,7 +91,7 @@ else
 
 ShowTestHeader("FindAllPackages")
 $output = & $executable  -FindAllPackages 
-if ($output -contains "notepadplus_0.0.0.1_x64__8wekyb3d8bbwe" -and -not ($output -contains "fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe"))
+if ($output -contains "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe" -and -not ($output -contains "fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe"))
 {
 	writeSuccess
 }
@@ -101,8 +101,8 @@ else
 }
 
 ShowTestHeader("FindPackage succeeds")
-$output = & $executable  -FindPackage notepadplus_0.0.0.1_x64__8wekyb3d8bbwe
-if (($output -match "notepadplus_0.0.0.1_x64__8wekyb3d8bbwe").count -gt 0)
+$output = & $executable  -FindPackage notepadplus_0.0.0.0_x64__8wekyb3d8bbwe
+if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
 {
 	writeSuccess
 }
@@ -230,7 +230,7 @@ else
 }
 
 ShowTestHeader("Remove notepad succeeds")
-$output = & $executable -RemovePackage notepadplus_0.0.0.1_x64__8wekyb3d8bbwe
+$output = & $executable -RemovePackage notepadplus_0.0.0.0_x64__8wekyb3d8bbwe
 if ($output -eq $null)
 {
 	$notepadExists = (test-path $notepadDir\notepad++.exe)

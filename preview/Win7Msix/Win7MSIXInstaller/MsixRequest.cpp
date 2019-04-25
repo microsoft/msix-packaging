@@ -49,19 +49,20 @@ struct HandlerInfo
 
 std::map<PCWSTR, HandlerInfo> AddHandlers =
 {
-    //HandlerName                             Function to create                           NextHandler                              ErrorHandlerInfo
-    {PopulatePackageInfo::HandlerName,        {PopulatePackageInfo::CreateHandler,         ProcessPotentialUpdate::HandlerName,     nullptr /*nothing to rollback if we can't open the package*/}},
-    {ProcessPotentialUpdate::HandlerName,     {ProcessPotentialUpdate::CreateHandler,      Extractor::HandlerName,                  ErrorHandler::HandlerName}},
-    {Extractor::HandlerName,                  {Extractor::CreateHandler,                   StartMenuLink::HandlerName,              ErrorHandler::HandlerName}},
-    {StartMenuLink::HandlerName,              {StartMenuLink::CreateHandler,               AddRemovePrograms::HandlerName,          ErrorHandler::HandlerName}},
-    {AddRemovePrograms::HandlerName,          {AddRemovePrograms::CreateHandler,           Protocol::HandlerName,                   ErrorHandler::HandlerName}},
-    {Protocol::HandlerName,                   {Protocol::CreateHandler,                    ComInterface::HandlerName,               ErrorHandler::HandlerName}},
-    {ComInterface::HandlerName,               {ComInterface::CreateHandler,                ComServer::HandlerName,                  ErrorHandler::HandlerName}},
-    {ComServer::HandlerName,                  {ComServer::CreateHandler,                   StartupTask::HandlerName,                ErrorHandler::HandlerName}},
-    {StartupTask::HandlerName,                {StartupTask::CreateHandler,                 FileTypeAssociation::HandlerName,        ErrorHandler::HandlerName}},
-    {FileTypeAssociation::HandlerName,        {FileTypeAssociation::CreateHandler,         InstallComplete::HandlerName,            ErrorHandler::HandlerName}},
-    {InstallComplete::HandlerName,            {InstallComplete::CreateHandler,             nullptr,                                 ErrorHandler::HandlerName}},
-    {ErrorHandler::HandlerName,               {ErrorHandler::CreateHandler,                nullptr,                                 nullptr}},
+    //HandlerName                             Function to create                          NextHandler                              ErrorHandlerInfo
+    {PopulatePackageInfo::HandlerName,        {PopulatePackageInfo::CreateHandler,        ValidateTargetDeviceFamily::HandlerName, nullptr /*nothing to rollback if we can't open the package*/}},
+    {ValidateTargetDeviceFamily::HandlerName, {ValidateTargetDeviceFamily::CreateHandler, ProcessPotentialUpdate::HandlerName,     ErrorHandler::HandlerName}},
+    {ProcessPotentialUpdate::HandlerName,     {ProcessPotentialUpdate::CreateHandler,     Extractor::HandlerName,                  ErrorHandler::HandlerName}},
+    {Extractor::HandlerName,                  {Extractor::CreateHandler,                  StartMenuLink::HandlerName,              ErrorHandler::HandlerName}},
+    {StartMenuLink::HandlerName,              {StartMenuLink::CreateHandler,              AddRemovePrograms::HandlerName,          ErrorHandler::HandlerName}},
+    {AddRemovePrograms::HandlerName,          {AddRemovePrograms::CreateHandler,          Protocol::HandlerName,                   ErrorHandler::HandlerName}},
+    {Protocol::HandlerName,                   {Protocol::CreateHandler,                   ComInterface::HandlerName,               ErrorHandler::HandlerName}},
+    {ComInterface::HandlerName,               {ComInterface::CreateHandler,               ComServer::HandlerName,                  ErrorHandler::HandlerName}},
+    {ComServer::HandlerName,                  {ComServer::CreateHandler,                  StartupTask::HandlerName,                ErrorHandler::HandlerName}},
+    {StartupTask::HandlerName,                {StartupTask::CreateHandler,                FileTypeAssociation::HandlerName,        ErrorHandler::HandlerName}},
+    {FileTypeAssociation::HandlerName,        {FileTypeAssociation::CreateHandler,        InstallComplete::HandlerName,            ErrorHandler::HandlerName}},
+    {InstallComplete::HandlerName,            {InstallComplete::CreateHandler,            nullptr,                                 ErrorHandler::HandlerName}},
+    {ErrorHandler::HandlerName,               {ErrorHandler::CreateHandler,               nullptr,                                 nullptr}},
 };
 
 std::map<PCWSTR, HandlerInfo> RemoveHandlers =
