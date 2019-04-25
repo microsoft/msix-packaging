@@ -4,7 +4,7 @@
 #include "MSIXWindows.hpp"
 #include "IPackage.hpp"
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 
     class PackageBase

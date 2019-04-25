@@ -2,7 +2,9 @@
 #include "FilePaths.hpp"
 #include "Constants.hpp"
 #include <vector>
-using namespace Win7MsixInstallerLib;
+#include "MsixTraceLoggingProvider.hpp"
+
+using namespace MsixCoreLib;
 
 struct VirtualRegistryMapping
 {

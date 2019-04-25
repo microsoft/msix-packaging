@@ -1,6 +1,6 @@
 #include "GeneralUtil.hpp"
 #include "MsixResponse.hpp"
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 
 void MsixResponse::Update(InstallationStep status, float progress)
 {

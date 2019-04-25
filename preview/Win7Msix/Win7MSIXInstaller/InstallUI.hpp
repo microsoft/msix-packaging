@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <string>
 #include "Util.hpp"
+#include "..\Win7MSIXInstallerLib\GeneralUtil.hpp"
 #include <IPackageManager.hpp>
 #include <IMsixResponse.hpp>
 #include "resource.h"
@@ -32,7 +33,7 @@ public:
     HRESULT LaunchInstalledApp();
     void ConfirmAppCancel(HWND parentHWnd);
 
-    UI(_In_ Win7MsixInstallerLib::IPackageManager* packageManager, _In_ const std::wstring & path, UIType type) : m_packageManager(packageManager), m_type(type)
+    UI(_In_ MsixCoreLib::IPackageManager* packageManager, _In_ const std::wstring & path, UIType type) : m_packageManager(packageManager), m_type(type)
     {
         m_path = std::wstring(path);
         m_closeUI = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -40,10 +41,10 @@ public:
     ~UI() {}
 
 private:
-    Win7MsixInstallerLib::IPackageManager* m_packageManager = nullptr;
-    std::shared_ptr<Win7MsixInstallerLib::IPackage> m_packageInfo = nullptr;
+    MsixCoreLib::IPackageManager* m_packageManager = nullptr;
+    std::shared_ptr<MsixCoreLib::IPackage> m_packageInfo = nullptr;
     std::wstring m_path;
-    std::shared_ptr<Win7MsixInstallerLib::IMsixResponse> m_msixResponse;
+    std::shared_ptr<MsixCoreLib::IMsixResponse> m_msixResponse;
 
     //Parent Window Hwnd
     HWND hWnd = NULL; 

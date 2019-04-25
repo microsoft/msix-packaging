@@ -2,7 +2,7 @@
 #include "Package.hpp"
 #include "MsixRequest.hpp"
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 /// Interface for a logical chunk of work done on an Msix request
 class IPackageHandler

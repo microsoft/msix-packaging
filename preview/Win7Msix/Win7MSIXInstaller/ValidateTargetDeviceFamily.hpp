@@ -3,7 +3,7 @@
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
     class ValidateTargetDeviceFamily : IPackageHandler
     {

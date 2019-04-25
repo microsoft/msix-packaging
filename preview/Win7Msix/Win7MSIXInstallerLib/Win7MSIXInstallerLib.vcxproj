@@ -189,6 +189,7 @@
     <ClInclude Include="..\Win7MSIXInstaller\ComServer.hpp" />
     <ClInclude Include="..\Win7MSIXInstaller\Constants.hpp" />
     <ClInclude Include="..\Win7MSIXInstaller\ErrorHandler.hpp" />
+    <ClInclude Include="..\Win7MSIXInstaller\StartupTask.hpp" />
     <ClInclude Include="..\Win7MSIXInstaller\ValidateTargetDeviceFamily.hpp" />
     <ClInclude Include="inc\IMsixResponse.hpp" />
     <ClInclude Include="inc\DeploymentOptions.hpp" />
@@ -204,6 +205,7 @@
     <ClInclude Include="inc\Win7MSIXInstallerActions.hpp" />
     <ClInclude Include="..\Win7MSIXInstaller\IPackageHandler.hpp" />
     <ClInclude Include="..\Win7MSIXInstaller\MsixResponse.hpp" />
+    <ClInclude Include="MsixTraceLoggingProvider.hpp" />
     <ClInclude Include="PackageManager.hpp" />
     <ClInclude Include="..\Win7MSIXInstaller\Package.hpp" />
     <ClInclude Include="..\Win7MSIXInstaller\PopulatePackageInfo.hpp" />
@@ -222,9 +224,11 @@
     <ClCompile Include="..\Win7MSIXInstaller\FileTypeAssociation.cpp" />
     <ClCompile Include="..\Win7MSIXInstaller\InstallComplete.cpp" />
     <ClCompile Include="..\Win7MSIXInstaller\MsixRequest.cpp" />
+    <ClCompile Include="..\Win7MSIXInstaller\StartupTask.cpp" />
     <ClCompile Include="..\Win7MSIXInstaller\ValidateTargetDeviceFamily.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="..\Win7MSIXInstaller\MsixResponse.cpp" />
+    <ClCompile Include="MsixTraceLoggingProvider.cpp" />
     <ClCompile Include="PackageManager.cpp" />
     <ClCompile Include="..\Win7MSIXInstaller\Package.cpp" />
     <ClCompile Include="..\Win7MSIXInstaller\PopulatePackageInfo.cpp" />

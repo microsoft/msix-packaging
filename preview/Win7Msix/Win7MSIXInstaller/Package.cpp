@@ -3,8 +3,9 @@
 #include "Package.hpp"
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
+#include "MsixTraceLoggingProvider.hpp"
 #include <fstream>
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 
 //
 // Gets the stream of a file.
@@ -42,7 +43,7 @@ HRESULT GetStreamFromFile(IAppxPackageReader* package, LPCWCHAR name, IStream** 
 
 std::wstring PackageBase::GetVersion()
 {
-    return Win7MsixInstallerLib_ConvertVersionToString(m_version);
+    return ConvertVersionToString(m_version);
 }
 
 HRESULT PackageBase::ParseManifest(IMsixElement* element)
@@ -151,7 +152,7 @@ HRESULT PackageBase::SetManifestReader(IAppxManifestReader * manifestReader)
     Text<WCHAR> packageFullName;
     RETURN_IF_FAILED(manifestId->GetPackageFullName(&packageFullName));
     m_packageFullName = packageFullName.Get();
-    m_packageFamilyName = Win7MsixInstallerLib_GetFamilyNameFromFullName(m_packageFullName);
+    m_packageFamilyName = GetFamilyNameFromFullName(m_packageFullName);
 
     ComPtr<IMsixDocumentElement> domElement;
     RETURN_IF_FAILED(manifestReader->QueryInterface(UuidOfImpl<IMsixDocumentElement>::iid, reinterpret_cast<void**>(&domElement)));

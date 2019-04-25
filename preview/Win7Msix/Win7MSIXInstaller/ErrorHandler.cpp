@@ -5,9 +5,10 @@
 
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
+#include "MsixTraceLoggingProvider.hpp"
 #include "ErrorHandler.hpp"
 #include "MsixRequest.hpp"
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 
 const PCWSTR ErrorHandler::HandlerName = L"ErrorHandler";
 

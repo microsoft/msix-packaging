@@ -4,7 +4,7 @@
 #include "IPackageHandler.hpp"
 #include "MsixRequest.hpp"
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 /// Extractor extracts the files and registry settings from the package to the file system and registry.
 class Extractor : IPackageHandler

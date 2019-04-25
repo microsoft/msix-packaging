@@ -5,7 +5,7 @@
 #include "IMsixResponse.hpp"
 
 #include "GeneralUtil.hpp"
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 /// The response class tracks the response state of the msix deploy operation
 /// (if the operation was cancelled, progress bar updates)

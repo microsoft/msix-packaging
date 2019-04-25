@@ -6,7 +6,7 @@
 #include "MsixRequest.hpp"
 #include <string>
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 class PopulatePackageInfo : IPackageHandler
 {

@@ -99,7 +99,7 @@
       <AdditionalLibraryDirectories>..\Debug;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
@@ -122,7 +122,7 @@
       <AdditionalLibraryDirectories>..\x64\Debug;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
@@ -153,7 +153,7 @@
       <AdditionalLibraryDirectories>..\Release;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
@@ -180,7 +180,7 @@
       <AdditionalLibraryDirectories>..\x64\Release;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>win7msixinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
@@ -190,16 +190,16 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Util.hpp" />
     <ClInclude Include="CommandLineInterface.hpp" />
     <ClInclude Include="InstallUI.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Util.hpp" />
     <ClInclude Include="Win7MSIXInstallerLogger.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Util.cpp" />
     <ClCompile Include="InstallUI.cpp" />
     <ClCompile Include="CommandLineInterface.cpp" />
+    <ClCompile Include="Util.cpp" />
     <ClCompile Include="Win7MSIXInstaller.cpp" />
     <ClCompile Include="Win7MSIXInstallerLogger.cpp" />
   </ItemGroup>

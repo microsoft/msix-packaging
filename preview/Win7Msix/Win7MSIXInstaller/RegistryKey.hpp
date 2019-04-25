@@ -1,7 +1,8 @@
 #pragma once
 
 #include "GeneralUtil.hpp"
-namespace Win7MsixInstallerLib
+#include "MsixTraceLoggingProvider.hpp"
+namespace MsixCoreLib
 {
 /// Encapsulates and lifetimes the HKEY used by the RegOpenKey et al APIs.
 class RegistryKey

@@ -3,10 +3,11 @@
 #include "CommandLineInterface.hpp"
 #include "Win7MSIXInstallerLogger.hpp"
 #include <TraceLoggingProvider.h>
+#include "..\Win7MSIXInstallerLib\GeneralUtil.hpp"
 #include "Util.hpp"
 #include "resource.h"
 
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 
 std::map<std::wstring, Option, CaseInsensitiveLess> CommandLineInterface::s_options =
 {

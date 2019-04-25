@@ -1,6 +1,6 @@
 #pragma once
 #include <Windows.h>
-namespace Win7MsixInstallerLib {
+namespace MsixCoreLib {
 
     class IPackage {
     public:

@@ -7,8 +7,9 @@
 #include "AddRemovePrograms.hpp"
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
+#include "MsixTraceLoggingProvider.hpp"
 #include "Constants.hpp"
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 
 const PCWSTR AddRemovePrograms::HandlerName = L"AddRemovePrograms";
 

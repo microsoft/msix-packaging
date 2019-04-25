@@ -13,16 +13,21 @@
 #include "CommandLineInterface.hpp"
 #include "Win7MSIXInstallerLogger.hpp"
 #include "Util.hpp"
+#include "..\Win7MSIXInstallerLib\GeneralUtil.hpp"
 #include "resource.h"
 #include <VersionHelpers.h>
 
 #include <Win7MSIXInstallerActions.hpp>
 using namespace std;
+using namespace MsixCoreLib;
+
+TRACELOGGING_DECLARE_PROVIDER(g_MsixTraceLoggingProvider);
 
 int main(int argc, char * argv[])
 {
-    // Register the provider
+    // Register the providers
     TraceLoggingRegister(g_MsixUITraceLoggingProvider);
+    TraceLoggingRegister(g_MsixTraceLoggingProvider);
 
     HRESULT hrCoInitialize = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     if (FAILED(hrCoInitialize))
@@ -40,8 +45,8 @@ int main(int argc, char * argv[])
         {
         case OperationType::Add:
         {
-            AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
-            RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
+            AutoPtr<IPackageManager> packageManager;
+            RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
             if (cli.IsQuietMode())
             {
@@ -61,8 +66,8 @@ int main(int argc, char * argv[])
         }
         case OperationType::Remove:
         {
-            AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
-            RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
+            AutoPtr<IPackageManager> packageManager;
+            RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
             auto packageFullName = cli.GetPackageFullName();
             auto res = packageManager->RemovePackage(packageFullName);
@@ -74,10 +79,10 @@ int main(int argc, char * argv[])
         }
         case OperationType::FindPackage:
         {
-            AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
-            RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
+            AutoPtr<IPackageManager> packageManager;
+            RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
-            shared_ptr<Win7MsixInstallerLib::IInstalledPackage> packageInfo = packageManager->FindPackage(cli.GetPackageFullName());
+            shared_ptr<IInstalledPackage> packageInfo = packageManager->FindPackage(cli.GetPackageFullName());
             if (packageInfo == NULL)
             {
                 std::wcout << std::endl;
@@ -96,8 +101,8 @@ int main(int argc, char * argv[])
         }
         case OperationType::FindAllPackages:
         {
-            AutoPtr<Win7MsixInstallerLib::IPackageManager> packageManager;
-            RETURN_IF_FAILED(Win7MsixInstallerLib_CreatePackageManager(&packageManager));
+            AutoPtr<IPackageManager> packageManager;
+            RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
             auto packages = packageManager->FindPackages();
 
@@ -120,9 +125,9 @@ int main(int argc, char * argv[])
         cli.DisplayHelp();
     }
 
-
-    // Stop TraceLogging and unregister the provider
+    // Stop TraceLogging and unregister the providers
     TraceLoggingUnregister(g_MsixUITraceLoggingProvider);
+    TraceLoggingUnregister(g_MsixTraceLoggingProvider);
 
     return 0;
 }
