@@ -59,7 +59,7 @@ namespace MSIX {
         std::multimap<std::uint64_t, std::string> GetPayloadFilesByLastModDate() override;
 
     protected:
-        bool DirectoryObject::IsFootPrintFile(std::string normalized)
+        bool IsFootPrintFile(std::string normalized)
         {
             std::transform(normalized.begin(), normalized.end(), normalized.begin(), ::tolower);
             return ((normalized == "appxmanifest.xml") ||
