@@ -222,6 +222,7 @@ list(APPEND PackSrc
     pack/XmlWriter.cpp
     pack/AppxBlockMapWriter.cpp
     pack/ContentTypeWriter.cpp
+    pack/ContentType.cpp
 )
 
 # Define the library

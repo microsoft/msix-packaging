@@ -23,38 +23,22 @@ namespace MSIX {
     AppxPackageWriter::AppxPackageWriter(IStream* outputStream) : m_outputStream(outputStream)
     {
         m_state = WriterState::Open;
-        m_blockMapWriter = std::make_unique<BlockMapWriter>();
-        m_contentTypeWriter = std::make_unique<ContentTypeWriter>();
     }
 
     // IPackageWriter
     void AppxPackageWriter::Pack(const ComPtr<IDirectoryObject>& from)
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
-        auto fileMap = from->GetFilesByLastModDate();
-        std::vector<std::unique_ptr<PayloadFile>> files;
+        auto fileMap = from->GetPayloadFilesByLastModDate();
         for(const auto& file : fileMap)
         {
             std::string ext = file.second.substr(file.second.find_last_of(".") + 1);
             std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-            std::string contentType;
-            APPX_COMPRESSION_OPTION compressionOpt;
-            auto findExt = extToContentType.find(ext);
-            if (findExt == extToContentType.end())
-            {
-                // if it's not in the map these are the defaults
-                contentType = "application/octet-stream";
-                compressionOpt = APPX_COMPRESSION_OPTION_NORMAL;
-            }
-            else
-            {
-                contentType = findExt->second.first;
-                compressionOpt = findExt->second.second;
-            }
-            auto payloadFile = BuildPayloadFile(file.second, from.As<IStorageObject>()->GetFile(file.second), contentType, compressionOpt);
-            files.push_back(std::move(payloadFile));
+            auto contentTypeData = ContentType::GetExtensionContentTypeData(ext);
+            ProcessPayloadFile(file.second, from.As<IStorageObject>()->GetFile(file.second), contentTypeData.first, contentTypeData.second);
         }
-        ProcessPayloadFiles(files);
+
+        m_contentTypeWriter.Close();
 
         NOTIMPLEMENTED
     }
@@ -81,8 +65,7 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
         ComPtr<IStream> stream(inputStream);
-        auto payloadFile = BuildPayloadFile(fileName, stream, contentType, compressionOption);
-        // TODO: implement
+        ProcessPayloadFile(fileName, stream, contentType, compressionOption);
         NOTIMPLEMENTED
     } CATCH_RETURN();
 
@@ -91,16 +74,14 @@ namespace MSIX {
         APPX_PACKAGE_WRITER_PAYLOAD_STREAM* payloadFiles, UINT64 memoryLimit) noexcept try
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
-        std::vector<std::unique_ptr<PayloadFile>> files;
         // TODO: use memoryLimit for how many files are going to be added
         for(UINT32 i = 0; i < fileCount; i++)
         {
             ComPtr<IStream> stream(payloadFiles[i].inputStream);
             std::string fileName = wstring_to_utf8(payloadFiles[i].fileName);
             std::string contentType = wstring_to_utf8(payloadFiles[i].contentType);
-            auto payloadFile = BuildPayloadFile(fileName, stream, contentType, payloadFiles[i].compressionOption);
+            ProcessPayloadFile(fileName, stream, contentType, payloadFiles[i].compressionOption);
         }
-        ProcessPayloadFiles(files);
 
         NOTIMPLEMENTED
     } CATCH_RETURN();
@@ -110,77 +91,65 @@ namespace MSIX {
         APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8* payloadFiles, UINT64 memoryLimit) noexcept try
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
-        std::vector<std::unique_ptr<PayloadFile>> files;
         // TODO: use memoryLimit for how many files are going to be added
         for(UINT32 i = 0; i < fileCount; i++)
         {
             ComPtr<IStream> stream(payloadFiles[i].inputStream);
-            auto payloadFile = BuildPayloadFile(payloadFiles[i].fileName, stream, payloadFiles[i].contentType, payloadFiles[i].compressionOption);
-            files.push_back(std::move(payloadFile));
+            ProcessPayloadFile(payloadFiles[i].fileName, stream, payloadFiles[i].contentType, payloadFiles[i].compressionOption);
         }
-        ProcessPayloadFiles(files);
 
         NOTIMPLEMENTED
     } CATCH_RETURN();
 
-    std::unique_ptr<PayloadFile> AppxPackageWriter::BuildPayloadFile(const std::string& name, const ComPtr<IStream>& stream,
+    void AppxPackageWriter::ProcessPayloadFile(const std::string& name, const ComPtr<IStream>& stream,
         const std::string& contentType, APPX_COMPRESSION_OPTION compressionOpt)
     {
-        // This might be called with external IStream implementations. Don't rely on internal implementation of FileStream
-        std::unique_ptr<PayloadFile> payloadFile = std::make_unique<PayloadFile>();
-        payloadFile->relativeName = name;
-        payloadFile->compressionOption = compressionOpt;
+        bool isCompress = (compressionOpt != APPX_COMPRESSION_OPTION_NONE );
 
         // Add content type to [Content Types].xml
-        m_contentTypeWriter->AddContentType(name, contentType);
+        m_contentTypeWriter.AddContentType(name, contentType);
 
+        // TODO: Encode file name, add to lfh to zip and get lfh size
+
+        // This might be called with external IStream implementations. Don't rely on internal implementation of FileStream
         LARGE_INTEGER start = { 0 };
         ULARGE_INTEGER end = { 0 };
         ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::END, &end));
         ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
-        payloadFile->fileSize = static_cast<std::uint64_t>(end.u.LowPart);
+        std::uint64_t uncompressedSize = static_cast<std::uint64_t>(end.u.LowPart);
 
-        std::unique_ptr<BlockAndHash> blockData;
-        std::uint64_t bytesToRead = payloadFile->fileSize;
+        // Add file to block map
+        m_blockMapWriter.AddFile(name, uncompressedSize, 0 /* TODO: change this to lfh size*/);
 
+        std::uint64_t bytesToRead = uncompressedSize;
         while (bytesToRead > 0)
         {
             // Calculate the size of the next block to add
             std::uint32_t blockSize = (bytesToRead > defaultBlockSize) ? defaultBlockSize : static_cast<std::uint32_t>(bytesToRead);
             bytesToRead -= blockSize;
 
-            std::vector<std::uint8_t> buffer;
-            buffer.resize(blockSize);
+            // read block from stream
+            std::vector<std::uint8_t> block;
+            block.resize(blockSize);
             ULONG bytesRead;
-            ThrowHrIfFailed(stream->Read(static_cast<void*>(buffer.data()), static_cast<ULONG>(blockSize), &bytesRead));
+            ThrowHrIfFailed(stream->Read(static_cast<void*>(block.data()), static_cast<ULONG>(blockSize), &bytesRead));
             ThrowErrorIfNot(Error::FileRead, (static_cast<ULONG>(blockSize) == bytesRead), "Read stream file failed");
 
-            blockData.reset(new (std::nothrow) BlockAndHash());
-            blockData->block = std::move(buffer);
-            payloadFile->fileBlocks.push_back(std::move(blockData));
+            // hash block
+            std::vector<std::uint8_t> hash;
+            ThrowErrorIfNot(MSIX::Error::SignatureInvalid, 
+                MSIX::SHA256::ComputeHash(block.data(), static_cast<uint32_t>(block.size()), hash), 
+                "Invalid signature");
+
+            m_blockMapWriter.AddBlock(hash, (isCompress) ? blockSize : 0);
+
+            // TODO: compress block if needed
+
         }
-        return payloadFile;
+
+        // TODO: add compressed/uncompressed data to zip
+
+        // TODO: add cdh to zip
     }
 
-    void AppxPackageWriter::ProcessPayloadFiles(const std::vector<std::unique_ptr<PayloadFile>>& files)
-    {
-        // calculate hash on parallel
-        auto computeHash = [](std::vector<std::uint8_t>& block) -> std::vector<std::uint8_t>
-        {
-            std::vector<std::uint8_t> hash;
-            ThrowErrorIfNot(Error::Unexpected, 
-                SHA256::ComputeHash(block.data(), static_cast<std::uint32_t>(block.size()), hash),
-                "Failed computing SHA256");
-            return hash;
-        };
-        for(auto& file : files)
-        {
-            for(auto& block : file->fileBlocks)
-            {
-                auto bind = std::bind(computeHash, block->block);
-                block->hashValue = std::async(std::launch::async, bind);
-            }
-        }
-        // TODO: write information to the blockmap and zip
-    }
 }

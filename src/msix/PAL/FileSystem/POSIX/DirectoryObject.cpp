@@ -84,7 +84,7 @@ namespace MSIX {
         return result;
     }
 
-    std::multimap<std::uint64_t, std::string> DirectoryObject::GetFilesByLastModDate()
+    std::multimap<std::uint64_t, std::string> DirectoryObject::GetPayloadFilesByLastModDate()
     {
         THROW_IF_PACK_NOT_ENABLED
         std::multimap<std::uint64_t, std::string> files;
@@ -94,11 +94,12 @@ namespace MSIX {
                 std::string&& name,
                 std::uint64_t size)
            {
-                if (name != "AppxManifest.xml") // should only add payload files to the map
+                std::string fileName = root + GetPathSeparator() + name;
+                // root contains the top level directory, which we don't need
+                fileName = fileName.substr(rootSize);
+                // Ignore footprint files, non fatal
+                if(!IsFootPrintFile(fileName))
                 {
-                    std::string fileName = root + GetPathSeparator() + name;
-                    // root contains the top level directory, which we don't need
-                    fileName = fileName.substr(rootSize);
                     files.insert(std::make_pair(size, std::move(fileName)));
                 }
                 return true;

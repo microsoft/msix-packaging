@@ -31,10 +31,9 @@ namespace MSIX {
     static const char* partNameAttribute = "PartName";
 
     // <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-    ContentTypeWriter::ContentTypeWriter()
+    ContentTypeWriter::ContentTypeWriter() : m_xmlWriter(XmlWriter(typesElement))
     {
-        m_xmlWriter = std::make_unique<XmlWriter>(typesElement);
-        m_xmlWriter->AddAttribute(xmlnsAttribute, typesNamespace);
+        m_xmlWriter.AddAttribute(xmlnsAttribute, typesNamespace);
     }
 
     void ContentTypeWriter::AddContentType(const std::string& name, const std::string& contentType, bool forceOverride)
@@ -66,26 +65,26 @@ namespace MSIX {
 
     void ContentTypeWriter::Close()
     {
-        m_xmlWriter->CloseElement();
-        ThrowErrorIf(Error::Unexpected, m_xmlWriter->GetState() != XmlWriter::Finish, "Content Type xml didn't close correctly");
+        m_xmlWriter.CloseElement();
+        ThrowErrorIf(Error::Unexpected, m_xmlWriter.GetState() != XmlWriter::Finish, "Content Type xml didn't close correctly");
     }
 
     // <Default ContentType="application/vnd.ms-appx.manifest+xml" Extension="xml"/>
     void ContentTypeWriter::AddDefault(const std::string& ext, const std::string& contentType)
     {
-        m_xmlWriter->StartElement(defaultElement);
-        m_xmlWriter->AddAttribute(contentTypeAttribute, contentType);
-        m_xmlWriter->AddAttribute(extensionAttribute, ext);
-        m_xmlWriter->CloseElement();
+        m_xmlWriter.StartElement(defaultElement);
+        m_xmlWriter.AddAttribute(contentTypeAttribute, contentType);
+        m_xmlWriter.AddAttribute(extensionAttribute, ext);
+        m_xmlWriter.CloseElement();
     }
 
     // <Override ContentType="application/vnd.ms-appx.signature" PartName="/AppxSignature.p7x"/>
     void ContentTypeWriter::AddOverride(const std::string& file, const std::string& contentType)
     {
         std::string partName = "/" + file;
-        m_xmlWriter->StartElement(defaultElement);
-        m_xmlWriter->AddAttribute(contentTypeAttribute, contentType);
-        m_xmlWriter->AddAttribute(partNameAttribute, partName);
-        m_xmlWriter->CloseElement();
+        m_xmlWriter.StartElement(defaultElement);
+        m_xmlWriter.AddAttribute(contentTypeAttribute, contentType);
+        m_xmlWriter.AddAttribute(partNameAttribute, partName);
+        m_xmlWriter.CloseElement();
     }
 }

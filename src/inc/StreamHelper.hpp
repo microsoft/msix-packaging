@@ -49,5 +49,12 @@ namespace MSIX {
             ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
             return std::make_pair(streamSize, std::move(buffer));
         }
+
+        inline ULONG WriteStringToStream(const ComPtr<IStream>& stream, const std::string& toWrite)
+        {
+            ULONG written;
+            ThrowHrIfFailed(stream->Write(static_cast<const void*>(toWrite.data()), static_cast<ULONG>(toWrite.size()), &written));
+            return written;
+        }
     }
 }

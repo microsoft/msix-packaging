@@ -5,6 +5,7 @@
 #pragma once
 
 #include "ComHelper.hpp"
+#include "StringStream.hpp"
 
 #include <stack>
 #include <string>
@@ -27,16 +28,26 @@ namespace MSIX {
         }
         State;
 
-        XmlWriter(const std::string& root);
-        ~XmlWriter() {};
+        XmlWriter(const std::string& root) 
+        {
+            m_stream = ComPtr<IStream>::Make<StringStream>();
+            StartWrite(root);
+        }
+
+        XmlWriter(const std::string& root, ComPtr<IStream>& targetStream) : m_stream(std::move(targetStream))
+        {
+            StartWrite(root);
+        }
 
         void StartElement(const std::string& name);
         void CloseElement();
         void AddAttribute(const std::string& name, const std::string& value);
         State GetState() { return m_state; }
-        ComPtr<IStream> GetStream() { return m_stream; }
+        ComPtr<IStream> GetStream();
 
     protected:
+        void StartWrite(const std::string& root);
+        void Write(const std::string& toWrite);
         State m_state;
         ComPtr<IStream> m_stream;
         std::stack<std::string> m_elements;

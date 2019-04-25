@@ -7,6 +7,7 @@
 #include "ComHelper.hpp"
 #include "Exceptions.hpp"
 #include "MsixErrors.hpp"
+#include "StreamHelper.hpp"
 
 #include <stack>
 #include <string>
@@ -16,54 +17,46 @@ namespace MSIX {
         const static char* xmlStart = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"true\"?><";
 
         // Adds xml header declaration plus the name of the root element
-        XmlWriter::XmlWriter(const std::string& root)
+        void XmlWriter::StartWrite(const std::string& root)
         {
             m_elements.emplace(root);
-            m_stream = ComPtr<IStream>::Make<StringStream>();
-            std::string start = xmlStart + root;
-            ULONG copy;
-            ThrowHrIfFailed(m_stream->Write(static_cast<const void*>(start.data()), static_cast<ULONG>(start.size()), &copy));
+            Write(xmlStart);
+            Write(root);
             m_state = State::OpenElement;
         }
 
         void XmlWriter::StartElement(const std::string& name)
         {
-            ThrowErrorIf(Error::XmlError, m_state == State::Finish, "Invalid call, xml already closed");
+            ThrowErrorIf(Error::XmlError, m_state == State::Finish, "Invalid call, xml already finished");
             m_elements.emplace(name);
-            std::string element;
             // If the state is open, then we are adding a child element to the previous one. We need to close that element's
             // tag and add the new one. If the state is closed, there is no need to close the tag as it had already been closed.
             if (m_state == State::OpenElement)
             {
-                // close parent element
-                element = "><" + name;
+                Write(">"); // close parent element
             }
-            else // State::ClosedElement
-            {
-                element = "<" + name;
-            }
-            ULONG copy;
-            ThrowHrIfFailed(m_stream->Write(static_cast<const void*>(element.data()), static_cast<ULONG>(element.size()), &copy));
+            Write("<");
+            Write(name);
             m_state = State::OpenElement;
         }
 
         void XmlWriter::CloseElement()
         {
-            ThrowErrorIf(Error::XmlError, m_state == State::Finish, "Invalid call, xml already closed");
-            std::string close;
+            ThrowErrorIf(Error::XmlError, m_state == State::Finish, "Invalid call, xml already finished");
             // If the state is open and we are closing an element, it means that it doesn't have any child, so we can
             // just close it with "/>". If we are closing an element and a closing just happened, it means that we are 
             // closing an element that has child elements, so it must be closed with </element>
             if (m_state == State::OpenElement)
             {
-                close = "/>";
+                Write("/>");
             }
             else // State::ClosedElement
             {
-                close = "</" + m_elements.top() + ">"; // </name>
+                // </name>
+                Write("</");
+                Write(m_elements.top());
+                Write(">");
             }
-            ULONG copy = 0;
-            ThrowHrIfFailed(m_stream->Write(static_cast<const void*>(close.data()), static_cast<ULONG>(close.size()), &copy));
             m_state = State::ClosedElement;
             m_elements.pop();
             if (m_elements.size() == 0)
@@ -74,10 +67,22 @@ namespace MSIX {
 
         void XmlWriter::AddAttribute(const std::string& name, const std::string& value)
         {
-            ThrowErrorIf(Error::XmlError, (m_state == State::Finish) || (m_state == State::ClosedElement), "Invalid call to AddAttrbute");
-            // Name="Value". Always add space at the beginning.
-            std::string attribute = " " + name + "=\"" + value + "\"";
-            ULONG copy;
-            ThrowHrIfFailed(m_stream->Write(static_cast<const void*>(attribute.data()), static_cast<ULONG>(attribute.size()), &copy));
+            ThrowErrorIf(Error::XmlError, (m_state == State::Finish) || (m_state == State::ClosedElement), "Invalid call to AddAttribute");
+            Write(" "); // always write a space. We just wrote either an element or an attribute
+            Write(name); // name="value"
+            Write("=\"");
+            Write(value);
+            Write("\"");
+        }
+
+        ComPtr<IStream> XmlWriter::GetStream()
+        {
+            ThrowErrorIf(Error::XmlError, m_state == State::Finish, "Invalid call, the stream can only be accessed when the writer is done");
+            return m_stream;
+        }
+
+        void XmlWriter::Write(const std::string& toWrite)
+        {
+            Helper::WriteStringToStream(m_stream, toWrite);
         }
 }

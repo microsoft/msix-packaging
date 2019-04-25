@@ -7,21 +7,22 @@
 #include "XmlWriter.hpp"
 #include "ComHelper.hpp"
 
+#include <vector>
+
 namespace MSIX {
 
     class BlockMapWriter final
     {
     public:
         BlockMapWriter();
-        ~BlockMapWriter() {}
 
-        void AddFileElement(const std::string& name, std::uint64_t uncompressedSize, std::uint32_t lfh);
-        void AddBlockElement(const std::string& hash, std::size_t size);
-        void CloseFileElement();
+        void AddFile(const std::string& name, std::uint64_t uncompressedSize, std::uint32_t lfh);
+        void AddBlock(const std::vector<std::uint8_t>& hash, std::size_t size = 0);
+        void CloseFile();
         void Close();
-        ComPtr<IStream> GetStream() { return m_xmlWriter->GetStream(); }
+        ComPtr<IStream> GetStream() { return m_xmlWriter.GetStream(); }
 
     protected:
-        std::unique_ptr<XmlWriter> m_xmlWriter;
+        XmlWriter m_xmlWriter;
     };
 }

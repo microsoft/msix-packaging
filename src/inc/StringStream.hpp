@@ -15,7 +15,6 @@ namespace MSIX {
     {
     public:
         StringStream() {}
-        ~StringStream() {}
 
         HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
         {
@@ -52,12 +51,13 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept override try
         {
             if (bytesWritten) { *bytesWritten = 0; }
-            ULONG oldOffset = m_offset;
             m_data.write(static_cast<const char*>(buffer), static_cast<std::streamsize>(countBytes));
-            m_offset = std::min(m_offset + countBytes, static_cast<ULONG>(m_data.tellp()));
-            ThrowErrorIfNot(Error::FileWrite, ((m_offset - oldOffset) == countBytes), "write failed");
+            // std::basic_ostream::write : Characters are inserted into the output sequence until one of the following occurs:
+            // exactly count characters are inserted or inserting into the output sequence fails (in which case setstate(badbit) is called)
+            // If the state is std::ios_base::goodbit we know the exact number of bytes were written.
+            ThrowErrorIf(Error::FileWrite, m_data.rdstate() != std::ios_base::goodbit, "Write failed");
+            m_offset += countBytes;
             if (bytesWritten) { *bytesWritten = countBytes; }
-            m_data.seekp(m_offset);
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 

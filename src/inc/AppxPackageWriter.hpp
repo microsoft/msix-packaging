@@ -31,22 +31,6 @@ public:
 MSIX_INTERFACE(IPackageWriter, 0x32e89da5,0x7cbb,0x4443,0x8c,0xf0,0xb8,0x4e,0xed,0xb5,0x1d,0x0a);
 
 namespace MSIX {
-
-    typedef struct BlockAndHash
-    {
-        std::vector<std::uint8_t> block;
-        std::future<std::vector<std::uint8_t>> hashValue; // SHA256 of block
-    } BlockAndHash;
-
-    typedef struct PayloadFile
-    {
-        APPX_COMPRESSION_OPTION compressionOption;
-        std::uint32_t crc = 0;
-        std::uint64_t fileSize;
-        std::string relativeName;
-        std::vector<std::unique_ptr<BlockAndHash>> fileBlocks;
-    } PayloadFile;
-
     class AppxPackageWriter final : public ComClass<AppxPackageWriter, IPackageWriter, IAppxPackageWriter,
         IAppxPackageWriterUtf8, IAppxPackageWriter3, IAppxPackageWriter3Utf8>
     {
@@ -83,14 +67,13 @@ namespace MSIX {
         }
         WriterState;
 
-        std::unique_ptr<PayloadFile> BuildPayloadFile(const std::string& name, const ComPtr<IStream>& stream, 
+        void ProcessPayloadFile(const std::string& name, const ComPtr<IStream>& stream, 
             const std::string& contentType, APPX_COMPRESSION_OPTION compressionOpt);
-        void ProcessPayloadFiles(const std::vector<std::unique_ptr<PayloadFile>>& files);
 
         WriterState m_state;
         ComPtr<IStream> m_outputStream;
-        std::unique_ptr<BlockMapWriter> m_blockMapWriter;
-        std::unique_ptr<ContentTypeWriter> m_contentTypeWriter;
+        BlockMapWriter m_blockMapWriter;
+        ContentTypeWriter m_contentTypeWriter;
     };
 }
 

@@ -33,7 +33,7 @@ public:
 
     // Returns a multipmap sorted by last modified time. Use multimap in the unlikely case there are two files
     // with the same last modified time.
-    virtual std::multimap<std::uint64_t, std::string> GetFilesByLastModDate() = 0;
+    virtual std::multimap<std::uint64_t, std::string> GetPayloadFilesByLastModDate() = 0;
 };
 MSIX_INTERFACE(IDirectoryObject, 0x1675f000,0x9b74,0x49bb,0xba,0x31,0x94,0xed,0x7c,0x43,0x5c,0x28);
 
@@ -56,9 +56,18 @@ namespace MSIX {
 
         // IDirectoryObject
         ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
-        std::multimap<std::uint64_t, std::string> GetFilesByLastModDate() override;
+        std::multimap<std::uint64_t, std::string> GetPayloadFilesByLastModDate() override;
 
     protected:
+        bool DirectoryObject::IsFootPrintFile(std::string normalized)
+        {
+            std::transform(normalized.begin(), normalized.end(), normalized.begin(), ::tolower);
+            return ((normalized == "appxmanifest.xml") ||
+                    (normalized == "appxsignature.p7x") ||
+                    (normalized == "[content_types].xml") ||
+                    (normalized.rfind("appxmetadata", 0) != std::string::npos) ||
+                    (normalized.rfind("microsoft.system.package.metadata", 0) != std::string::npos));
+        }
         const char* GetPathSeparator();
         std::string m_root;
 

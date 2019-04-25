@@ -16,11 +16,10 @@ namespace MSIX {
     {
     public:
         ContentTypeWriter();
-        ~ContentTypeWriter() {}
 
         void AddContentType(const std::string& name, const std::string& contentType, bool forceOverride = false);
         void Close();
-        ComPtr<IStream> GetStream() { return m_xmlWriter->GetStream(); }
+        ComPtr<IStream> GetStream() { return m_xmlWriter.GetStream(); }
 
     protected:
         void AddDefault(const std::string& ext, const std::string& contentType);
@@ -30,6 +29,6 @@ namespace MSIX {
         // If the extension is already in the map and its content type is different,
         // AddOverride is called.
         std::map<std::string, std::string> m_defaultExtensions;
-        std::unique_ptr<XmlWriter> m_xmlWriter;
+        XmlWriter m_xmlWriter;
     };
 }
