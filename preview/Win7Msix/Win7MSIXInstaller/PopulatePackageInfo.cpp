@@ -6,7 +6,8 @@
 #include <TraceLoggingProvider.h>
 #include <experimental/filesystem> // C++-standard header file name
 #include "Constants.hpp"
-using namespace Win7MsixInstallerLib;
+#include "MsixTraceLoggingProvider.hpp"
+using namespace MsixCoreLib;
 
 const PCWSTR PopulatePackageInfo::HandlerName = L"PopulatePackageInfo";
 
@@ -19,7 +20,7 @@ HRESULT PopulatePackageInfo::GetPackageInfoFromPackage(const std::wstring & pack
     // On non-Win32 platforms CoCreateAppxFactory will return 0x80070032 (e.g. HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
     // So on all platforms, it's always safe to call CoCreateAppxFactoryWithHeap, just be sure to bring your own heap!
     ComPtr<IAppxFactory> appxFactory;
-    RETURN_IF_FAILED(CoCreateAppxFactoryWithHeap(Win7MsixInstallerLib_MyAllocate, Win7MsixInstallerLib_MyFree, validationOption, &appxFactory));
+    RETURN_IF_FAILED(CoCreateAppxFactoryWithHeap(MyAllocate, MyFree, validationOption, &appxFactory));
 
     // Create a new package reader using the factory.
     ComPtr<IAppxPackageReader> packageReader;
@@ -43,7 +44,7 @@ HRESULT PopulatePackageInfo::GetPackageInfoFromManifest(const std::wstring & dir
 
     // Create a new package reader using the factory.
     ComPtr<IAppxFactory> appxFactory;
-    RETURN_IF_FAILED(CoCreateAppxFactoryWithHeap(Win7MsixInstallerLib_MyAllocate, Win7MsixInstallerLib_MyFree, validationOption, &appxFactory));
+    RETURN_IF_FAILED(CoCreateAppxFactoryWithHeap(MyAllocate, MyFree, validationOption, &appxFactory));
 
     ComPtr<IAppxManifestReader> manifestReader;
     RETURN_IF_FAILED(appxFactory->CreateManifestReader(inputStream.Get(), &manifestReader));

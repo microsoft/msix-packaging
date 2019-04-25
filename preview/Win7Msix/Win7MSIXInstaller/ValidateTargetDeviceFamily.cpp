@@ -7,8 +7,9 @@
 #include "ValidateTargetDeviceFamily.hpp"
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
+#include "MsixTraceLoggingProvider.hpp"
 #include <VersionHelpers.h>
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 
 const PCWSTR ValidateTargetDeviceFamily::HandlerName = L"ValidateTargetDeviceFamily";
 

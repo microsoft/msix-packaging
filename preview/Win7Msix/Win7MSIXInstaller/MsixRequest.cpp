@@ -16,6 +16,7 @@
 #include <experimental/filesystem> // C++-standard header file name
 #include <filesystem> // Microsoft-specific implementation header file name
 #include <TraceLoggingProvider.h>
+#include "MsixTraceLoggingProvider.hpp"
 
 // handlers
 #include "Extractor.hpp"
@@ -38,7 +39,7 @@
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
 using namespace std;
 #include <GdiPlus.h>
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 struct HandlerInfo
 {
     CreateHandler create;

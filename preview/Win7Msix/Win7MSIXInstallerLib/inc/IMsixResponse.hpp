@@ -2,7 +2,7 @@
 #include <functional>
 #include <windows.h>
 
-namespace Win7MsixInstallerLib {
+namespace MsixCoreLib {
 
     enum InstallationStep {
         InstallationStepUnknown,

@@ -190,16 +190,16 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Util.hpp" />
     <ClInclude Include="CommandLineInterface.hpp" />
     <ClInclude Include="InstallUI.hpp" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="Util.hpp" />
     <ClInclude Include="Win7MSIXInstallerLogger.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Util.cpp" />
     <ClCompile Include="InstallUI.cpp" />
     <ClCompile Include="CommandLineInterface.cpp" />
+    <ClCompile Include="Util.cpp" />
     <ClCompile Include="Win7MSIXInstaller.cpp" />
     <ClCompile Include="Win7MSIXInstallerLogger.cpp" />
   </ItemGroup>

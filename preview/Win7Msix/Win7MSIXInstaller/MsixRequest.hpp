@@ -3,7 +3,7 @@
 #include "FilePaths.hpp"
 #include "MsixResponse.hpp"
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 enum OperationType
 {

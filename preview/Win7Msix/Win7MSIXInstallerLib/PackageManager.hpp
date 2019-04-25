@@ -2,7 +2,7 @@
 #include "inc/IPackageManager.hpp"
 #include "inc/IPackage.hpp"
 
-namespace Win7MsixInstallerLib {
+namespace MsixCoreLib {
 
     class PackageManager :
         public IPackageManager

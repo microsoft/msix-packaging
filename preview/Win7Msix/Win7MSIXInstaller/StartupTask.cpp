@@ -8,7 +8,9 @@
 #include "GeneralUtil.hpp"
 #include "Constants.hpp"
 #include <TraceLoggingProvider.h>
+#include "MsixTraceLoggingProvider.hpp"
 #include <taskschd.h>
+using namespace MsixCoreLib;
 
 const PCWSTR StartupTask::HandlerName = L"StartupTask";
 
@@ -189,7 +191,7 @@ HRESULT StartupTask::ParseManifest()
                 RETURN_IF_FAILED(startupTaskElement->GetAttributeValue(taskIdAttribute.c_str(), &taskId));
 
                 Task task;
-                task.executable = m_msixRequest->GetFilePathMappings()->GetExecutablePath(executable.Get(), m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
+                task.executable = FilePathMappings::GetInstance().GetExecutablePath(executable.Get(), m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str());
                 task.name = currentPackageFamilyName + L" " + taskId.Get();
 
                 m_tasks.push_back(task);

@@ -6,7 +6,7 @@
 #include <thread>
 
 using namespace std;
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 
 PackageManager::PackageManager()
 {
@@ -116,8 +116,8 @@ shared_ptr<IInstalledPackage> PackageManager::FindPackageByFamilyName(const wstr
     for (auto& p : experimental::filesystem::directory_iterator(msix7Directory))
     {
 
-        auto installedAppFamilyName = Win7MsixInstallerLib_GetFamilyNameFromFullName(p.path().filename());
-        if (Win7MsixInstallerLib_CaseInsensitiveEquals(installedAppFamilyName, packageFamilyName))
+        auto installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
+        if (CaseInsensitiveEquals(installedAppFamilyName, packageFamilyName))
         {
             return GetPackageInfo(msix7Directory, p.path());
         }

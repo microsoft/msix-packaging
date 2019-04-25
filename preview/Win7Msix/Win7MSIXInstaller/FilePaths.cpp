@@ -2,10 +2,11 @@
 #include "GeneralUtil.hpp"
 #include <shlobj_core.h>
 #include <KnownFolders.h>
+#include "MsixTraceLoggingProvider.hpp"
 
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 
-void Win7MsixInstallerLib_GetPathChild(std::wstring &path)
+void MsixCoreLib_GetPathChild(std::wstring &path)
 {
     while (path.front() != '\\')
     {
@@ -14,7 +15,7 @@ void Win7MsixInstallerLib_GetPathChild(std::wstring &path)
     path.erase(0, 1);
 }
 
-void Win7MsixInstallerLib_GetPathParent(std::wstring &path)
+void MsixCoreLib_GetPathParent(std::wstring &path)
 {
     while (!path.empty() && path.back() != '\\')
     {
@@ -48,7 +49,7 @@ std::wstring FilePathMappings::GetExecutablePath(std::wstring packageExecutableP
     //Checks if the executable is inside the VFS
     if (executionPathWSTR.find(L"VFS") != std::wstring::npos)
     {
-        Win7MsixInstallerLib_GetPathChild(executionPathWSTR);
+        MsixCoreLib_GetPathChild(executionPathWSTR);
         //Checks if the executable is in one of the known folders
         for (auto pair : m_map) 
         {
@@ -57,7 +58,7 @@ std::wstring FilePathMappings::GetExecutablePath(std::wstring packageExecutableP
                 //The executable exists in an unpacked directory
                 std::wstring executablePath = pair.second;
                 
-                Win7MsixInstallerLib_GetPathChild(executionPathWSTR);
+                MsixCoreLib_GetPathChild(executionPathWSTR);
                 executablePath.push_back(L'\\');
                 executablePath.append(executionPathWSTR);
                 return executablePath;
@@ -109,7 +110,7 @@ HRESULT FilePathMappings::InitializePaths()
     appVSystem32SpoolPath.append(L"\\spool");
 
     std::wstring systemDrive = std::wstring(windowsPath.Get());
-    Win7MsixInstallerLib_GetPathParent(systemDrive);
+    MsixCoreLib_GetPathParent(systemDrive);
     m_map[L"AppVPackageDrive"] = systemDrive;
     m_map[L"SystemX86"] = std::wstring(systemX86Path.Get());
     m_map[L"System"] = std::wstring(systemPath.Get());

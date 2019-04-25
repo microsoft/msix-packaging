@@ -4,7 +4,7 @@
 #include "IPackageHandler.hpp"
 #include "MsixRequest.hpp"
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 class InstallComplete : IPackageHandler
 {

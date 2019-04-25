@@ -7,7 +7,7 @@
 #include "DeploymentOptions.hpp"
 
 
-namespace Win7MsixInstallerLib {
+namespace MsixCoreLib {
     class IPackageManager
     {
     public:

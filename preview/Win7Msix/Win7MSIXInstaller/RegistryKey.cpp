@@ -1,5 +1,6 @@
 #include "RegistryKey.hpp"
-using namespace Win7MsixInstallerLib;
+#include "MsixTraceLoggingProvider.hpp"
+using namespace MsixCoreLib;
 
 HRESULT RegistryKey::Open(
     _In_ const HKEY hkey,

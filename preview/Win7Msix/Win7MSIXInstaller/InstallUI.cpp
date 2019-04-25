@@ -16,7 +16,7 @@
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
 using namespace std;
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 #include <GdiPlus.h>
 
 static const int g_width = 500;  // width of window

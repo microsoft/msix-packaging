@@ -11,7 +11,8 @@
 
 #include "RegistryDevirtualizer.hpp"
 #include <TraceLoggingProvider.h>
-using namespace Win7MsixInstallerLib;
+#include "MsixTraceLoggingProvider.hpp"
+using namespace MsixCoreLib;
 
 const PCWSTR Extractor::HandlerName = L"Extractor";
 
@@ -223,7 +224,7 @@ HRESULT Extractor::RemoveVfsFiles()
     RETURN_IF_FAILED(CreateStreamOnFileUTF16(blockMapPath.c_str(), true /*forRead*/, &stream));
 
     ComPtr<IAppxFactory> appxFactory;
-    RETURN_IF_FAILED(CoCreateAppxFactoryWithHeap(Win7MsixInstallerLib_MyAllocate, Win7MsixInstallerLib_MyFree, m_msixRequest->GetValidationOptions(), &appxFactory));
+    RETURN_IF_FAILED(CoCreateAppxFactoryWithHeap(MyAllocate, MyFree, m_msixRequest->GetValidationOptions(), &appxFactory));
 
     ComPtr<IAppxBlockMapReader> blockMapReader;
     RETURN_IF_FAILED(appxFactory->CreateBlockMapReader(stream.Get(), &blockMapReader));
@@ -405,8 +406,8 @@ HRESULT Extractor::NeedToCopyFile(std::wstring sourceFullPath, std::wstring targ
     bool sourceFileIsUnversioned = false;
     RETURN_IF_FAILED(GetFileVersion(sourceFullPath, sourceFileVersion, sourceFileIsUnversioned));
 
-    std::wstring targetVersionString = Win7MsixInstallerLib_ConvertVersionToString(targetFileVersion);
-    std::wstring sourceVersionString = Win7MsixInstallerLib_ConvertVersionToString(sourceFileVersion);
+    std::wstring targetVersionString = ConvertVersionToString(targetFileVersion);
+    std::wstring sourceVersionString = ConvertVersionToString(sourceFileVersion);
 
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Target Exists, file versioning information",
@@ -499,7 +500,7 @@ HRESULT Extractor::RemoveVfsFile(std::wstring fileName)
             TraceLoggingValue(GetLastError(), "error"));
     }
 
-    Win7MsixInstallerLib_GetPathParent(fullPath);
+    MsixCoreLib_GetPathParent(fullPath);
 
     // instead of checking if the directory is empty, just try to delete it.
     // if it's not empty it'll fail with expected error code that we can ignore
@@ -523,14 +524,14 @@ HRESULT Extractor::ConvertVfsNameToFullPath(std::wstring fileName, std::wstring&
 {
     //The following code gets remainingFilePath from "VFS\FirstDir\...\file.ext" to "\...\file.ext"
     std::wstring remainingFilePath = fileName;
-    Win7MsixInstallerLib_GetPathChild(remainingFilePath); // remove the VFS directory
+    MsixCoreLib_GetPathChild(remainingFilePath); // remove the VFS directory
 
     std::map<std::wstring, std::wstring> map = FilePathMappings::GetInstance().GetMap();
     for (auto& pair : map)
     {
         if (remainingFilePath.find(pair.first) != std::wstring::npos)
         {
-            Win7MsixInstallerLib_GetPathChild(remainingFilePath); // remove the FirstDir directory.
+            MsixCoreLib_GetPathChild(remainingFilePath); // remove the FirstDir directory.
 
             // Pre-pend the VFS target directory to obtain the full path for the target location
             fileFullPath = pair.second + std::wstring(L"\\") + remainingFilePath;

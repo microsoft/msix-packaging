@@ -4,7 +4,7 @@
 #include "RegistryKey.hpp"
 #include "MsixRequest.hpp"
 #include <vector>
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 class ComServer : IPackageHandler
 {

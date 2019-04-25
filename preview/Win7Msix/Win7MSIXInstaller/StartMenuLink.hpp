@@ -4,7 +4,7 @@
 #include "IPackageHandler.hpp"
 #include "MsixRequest.hpp"
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 /// Handles adding/removing the shortcut in the start menu to launch the application
 class StartMenuLink : IPackageHandler
