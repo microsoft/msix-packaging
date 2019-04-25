@@ -21,10 +21,13 @@
 using namespace std;
 using namespace MsixCoreLib;
 
+TRACELOGGING_DECLARE_PROVIDER(g_MsixTraceLoggingProvider);
+
 int main(int argc, char * argv[])
 {
-    // Register the provider
+    // Register the providers
     TraceLoggingRegister(g_MsixUITraceLoggingProvider);
+    TraceLoggingRegister(g_MsixTraceLoggingProvider);
 
     HRESULT hrCoInitialize = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     if (FAILED(hrCoInitialize))
@@ -122,9 +125,9 @@ int main(int argc, char * argv[])
         cli.DisplayHelp();
     }
 
-
-    // Stop TraceLogging and unregister the provider
+    // Stop TraceLogging and unregister the providers
     TraceLoggingUnregister(g_MsixUITraceLoggingProvider);
+    TraceLoggingUnregister(g_MsixTraceLoggingProvider);
 
     return 0;
 }

@@ -145,9 +145,12 @@ HRESULT StartupTask::ExecuteForRemoveRequest()
         ComPtr<ITaskFolder> msixCoreFolder;
         RETURN_IF_FAILED(rootFolder->GetFolder(taskFolderBstr, &msixCoreFolder));
 
-        Bstr taskNameBstr(m_msixRequest->GetPackageInfo()->GetPackageFullName());
-        ComPtr<IRegisteredTask> registeredTask;
-        RETURN_IF_FAILED(msixCoreFolder->DeleteTask(taskNameBstr, 0 /*flags*/));
+        for (auto task = m_tasks.begin(); task != m_tasks.end(); ++task)
+        {
+            Bstr taskNameBstr(task->name);
+            ComPtr<IRegisteredTask> registeredTask;
+            RETURN_IF_FAILED(msixCoreFolder->DeleteTask(taskNameBstr, 0 /*flags*/));
+        }
     }
     return S_OK;
 }
