@@ -20,7 +20,7 @@ using namespace Win7MsixInstallerLib;
 #include <GdiPlus.h>
 
 static const int g_width = 500;  // width of window
-static const int g_heigth = 400; // height of window
+static const int g_height = 400; // height of window
 
 //
 // PURPOSE: This compiles the information displayed on the UI when the user selects an msix
@@ -35,7 +35,6 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
         auto displayText = m_installOrUpdateText + L" " + m_displayName + L"?";
         auto messageText = L"Publisher: " + m_publisherCommonName + L"\nVersion: " + m_version;
         ChangeText(hWnd, displayText, messageText, m_logoStream.get());
-        ChangeText(hWnd, GetStringResource(IDS_STRING_UI_INSTALL_COMPLETE), GetStringResource(IDS_STRING_UI_COMPLETION_MESSAGE));
     }
     else
     {
@@ -64,6 +63,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         ui->CreateCheckbox(hWnd, windowRect);
         ui->InstallButton(hWnd, windowRect);
         ui->CreateLaunchButton(hWnd, windowRect, 275, 60);
+        ui->CreateDisplayPercentageText(hWnd, windowRect);
         break;
     case WM_PAINT:
     {
@@ -137,13 +137,20 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     {
         switch (::GetDlgCtrlID((HWND)lParam))
         {
-        case IDC_LAUNCHCHECKBOX:
-        {
-            HBRUSH hbr = (HBRUSH)DefWindowProc(hWnd, message, wParam, lParam);
-            ::DeleteObject(hbr);
-            SetBkMode((HDC)wParam, TRANSPARENT);
-            return (LRESULT)::GetStockObject(NULL_BRUSH);
-        }
+            case IDC_LAUNCHCHECKBOX:
+            {
+                HBRUSH hbr = (HBRUSH)DefWindowProc(hWnd, message, wParam, lParam);
+                ::DeleteObject(hbr);
+                SetBkMode((HDC)wParam, TRANSPARENT);
+                return (LRESULT)::GetStockObject(NULL_BRUSH);
+            }
+            case IDC_STATICPERCENTCONTROL:
+            {
+                HBRUSH hbr = (HBRUSH)DefWindowProc(hWnd, message, wParam, lParam);
+                ::DeleteObject(hbr);
+                SetBkMode((HDC)wParam, TRANSPARENT);
+                return (LRESULT)::GetStockObject(NULL_BRUSH);
+            }
         }
 
         break;
@@ -434,6 +441,40 @@ BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect, int xDiff, int yDi
     return TRUE;
 }
 
+BOOL UI::CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect)
+{
+    int scrollHeight = GetSystemMetrics(SM_CYVSCROLL);
+
+    g_percentageTextHWnd = CreateWindowEx(
+        WS_EX_LEFT,
+        L"Static",
+        L"Installing app package",
+        WS_CHILD ,
+        parentRect.left + 50,
+        parentRect.bottom - scrollHeight - 143,
+        175,
+        20,
+        parentHWnd,
+        (HMENU)IDC_STATICPERCENTCONTROL,
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+        0);
+
+    g_staticPercentText = CreateWindowEx(
+        WS_EX_LEFT,
+        L"Static",
+        L"0%...",
+        WS_CHILD,
+        parentRect.left + 200,
+        parentRect.bottom - scrollHeight - 143,
+        175,
+        20,
+        parentHWnd,
+        (HMENU)IDC_STATICPERCENTCONTROL,
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+        0);
+    return TRUE;
+}
+
 BOOL UI::ChangeInstallButtonText(const std::wstring& newMessage)
 {
     SendMessage(g_buttonHWnd, WM_SETTEXT, NULL, reinterpret_cast<LPARAM>(newMessage.c_str()));
@@ -484,7 +525,7 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
         WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU,
         CW_USEDEFAULT, CW_USEDEFAULT,
         g_width,  // width of window
-        g_heigth, // height of window
+        g_height, // height of window
         NULL, // A handle to the parent or owner window of the window being created
         NULL, // a handle to a menu, or specifies a child-window identifier depending on the window style
         hInstance, // a handle to the instance o the module to be associated with the window
@@ -522,6 +563,8 @@ void UI::ButtonClicked()
     {
             m_msixResponse = m_packageManager->AddPackageAsync(m_path, DeploymentOptions::None, [this](const IMsixResponse & sender) {
 
+            ShowWindow(g_percentageTextHWnd, SW_SHOW);
+            UpdateDisplayPercent((WPARAM)sender.GetPercentage());
             SendMessage(g_progressHWnd, PBM_SETPOS, (WPARAM)sender.GetPercentage(), 0);
             switch (sender.GetStatus())
             {
@@ -544,12 +587,19 @@ void UI::ButtonClicked()
     }
 }
 
-
 void UI::SendInstallCompleteMsg()
 {
     SendMessage(GetHwnd(), WM_INSTALLCOMPLETE_MSG, NULL, NULL);
 }
 
+void UI::UpdateDisplayPercent(float displayPercent)
+{
+    std::wstringstream ss;
+    ss << displayPercent << "%...";
+    SetWindowText(g_staticPercentText, ss.str().c_str());
+    ShowWindow(g_staticPercentText, SW_HIDE);
+    ShowWindow(g_staticPercentText, SW_SHOW);
+}
 
 void UI::CloseUI()
 {

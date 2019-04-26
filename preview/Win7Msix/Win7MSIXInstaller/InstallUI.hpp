@@ -12,6 +12,7 @@
 #define IDC_INSTALLBUTTON 102
 #define IDC_CANCELBUTTON 103
 #define IDC_LAUNCHBUTTON 104
+#define IDC_STATICPERCENTCONTROL 105
 #define WM_INSTALLCOMPLETE_MSG (WM_APP+1)
 
 /// Global variables
@@ -20,6 +21,8 @@ static HWND g_checkboxHWnd = NULL;
 static HWND g_progressHWnd = NULL;
 static HWND g_CancelbuttonHWnd = NULL;
 static HWND g_LaunchbuttonHWnd = NULL;
+static HWND g_percentageTextHWnd = NULL;
+static HWND g_staticPercentText = NULL;
 static bool g_launchCheckBoxState = true; /// launch checkbox is checked by default
 static bool g_installing = false; /// variable used to indicate that app installation is in progress
 
@@ -138,6 +141,12 @@ public:
     /// @param newMessage - the message to change the button to
     BOOL ChangeInstallButtonText(const std::wstring& newMessage);
 
+    /// Creates the text which says, 'Installing app package %'  during package installation
+    /// 
+    /// @param parentHWnd - the HWND of the window to add the checkbox to
+    /// @param parentRect - the specs of the parent window
+    BOOL CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect);
+
     /// Change the text of the installation window based on the given input
     ///
     /// @param parentHWnd - the HWND of the window to be changed
@@ -152,6 +161,11 @@ public:
     /// This method checks the same and sets the button and install screen UI text to 'Update'
     ///
     void PreprocessRequest();
+
+    /// Updates the percentage displayed on screen indicating app installation progress
+    ///
+    /// @param displayPercent - the percentage from the msixresponse object
+    void UpdateDisplayPercent(float displayPercent);
 
     HRESULT ShowUI();
 
