@@ -253,7 +253,7 @@ else
 
 ShowTestHeader("Update package removes old package and checks windows.protocol extensions")
 $output = & $executable -AddPackage VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe-missingsomeftas.msix -quietUx
-$vlc1msixpath = "C:\program files\msix7apps\VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe"
+$vlc1msixpath = "C:\program files\msixcoreapps\VLC-3.0.6_1.0.0.0_x64__8wekyb3d8bbwe"
 $vlcProtocolRegPath = "HKCR:\VLC"
 if ($output -eq $null)
 {
@@ -263,7 +263,7 @@ if ($output -eq $null)
 		$output = & $executable -AddPackage VLC-3.0.6_2.0.0.0_x64__8wekyb3d8bbwe-withprotocol.msix -quietUx
 		if ($output -eq $null)
 		{
-			$vlc2msixpath = "C:\program files\msix7apps\VLC-3.0.6_2.0.0.0_x64__8wekyb3d8bbwe"
+			$vlc2msixpath = "C:\program files\msixcoreapps\VLC-3.0.6_2.0.0.0_x64__8wekyb3d8bbwe"
 			$vlc1Exists = (test-path $vlc1msixpath)
 			$vlc2Exists = (test-path $vlc2msixpath)
 			$vlcRegExists = (test-path $vlcProtocolRegPath)

@@ -11,7 +11,7 @@ class Extractor : IPackageHandler
 {
 public:
     /// Extracts the package to the file system and registry.
-    /// Creates the package's root directory in c:\program files\msix7apps\<package>
+    /// Creates the package's root directory in c:\program files\msixcoreapps\<package>
     /// Extracts the files from the package to the package's root directory
     /// Copies over the VFS files from the package root directory to the actual file system location
     /// Devirtualizes the registry keys from the package's registry.dat
@@ -56,7 +56,7 @@ private:
     HRESULT GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream);
 
     /// Creates the package root directory where all the files will be installed to.
-    /// This will be in c:\program files\msix7apps\<packagefullname>
+    /// This will be in c:\program files\msixcoreapps\<packagefullname>
     HRESULT CreatePackageRoot();
     
     /// Copies a VFS file from the package root to its resolved location.

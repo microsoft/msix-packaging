@@ -67,7 +67,7 @@ std::wstring FilePathMappings::GetExecutablePath(std::wstring packageExecutableP
     }
 
     //The executable path exists in the root msix directory and was not devirtualized
-    std::wstring executablePath = m_msix7Directory;
+    std::wstring executablePath = m_msixCoreDirectory;
     executablePath.append(packageFullName);
     executablePath.push_back(L'\\');
     executablePath.append(packageExecutablePath);
@@ -142,6 +142,6 @@ HRESULT FilePathMappings::InitializePaths()
     TextOle<WCHAR> programFilesPath;
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, NULL, &programFilesPath));
 
-    m_msix7Directory = std::wstring(programFilesPath.Get()) + std::wstring(L"\\Msix7apps\\");
+    m_msixCoreDirectory = std::wstring(programFilesPath.Get()) + std::wstring(L"\\MsixCoreApps\\");
     return S_OK;
 }

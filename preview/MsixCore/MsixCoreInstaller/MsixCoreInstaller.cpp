@@ -1,6 +1,6 @@
-// Win7MSIXInstaller.cpp :
-// The main entry point for Win7MSIXInstaller.exe. This application is
-// a working preview for the MSIX/APPX installer for Windows 7
+// MsixCoreInstaller.cpp :
+// The main entry point for MsixCoreInstaller.exe. This application is
+// a working preview for the MSIX/APPX installer for Windows 7 SP1 and higher OS versions
 #include "MSIXWindows.hpp"
 #include <shlobj_core.h>
 #include <CommCtrl.h>
@@ -11,13 +11,13 @@
 #include <TraceLoggingProvider.h>
 #include "InstallUI.hpp"
 #include "CommandLineInterface.hpp"
-#include "Win7MSIXInstallerLogger.hpp"
+#include "MsixCoreInstallerLogger.hpp"
 #include "Util.hpp"
-#include "..\Win7MSIXInstallerLib\GeneralUtil.hpp"
+#include "..\MsixCoreInstallerLib\GeneralUtil.hpp"
 #include "resource.h"
 #include <VersionHelpers.h>
 
-#include <Win7MSIXInstallerActions.hpp>
+#include <MsixCoreInstallerActions.hpp>
 using namespace std;
 using namespace MsixCoreLib;
 

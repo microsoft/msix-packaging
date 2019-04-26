@@ -82,7 +82,7 @@ HRESULT PopulatePackageInfo::ExecuteForAddRequest()
 
 HRESULT PopulatePackageInfo::ExecuteForRemoveRequest()
 {
-    auto packageDirectoryPath = FilePathMappings::GetInstance().GetMsix7Directory() + m_msixRequest->GetPackageFullName();
+    auto packageDirectoryPath = FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_msixRequest->GetPackageFullName();
 
     std::shared_ptr<InstalledPackage> package;
     RETURN_IF_FAILED(GetPackageInfoFromManifest(packageDirectoryPath, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN, &package));

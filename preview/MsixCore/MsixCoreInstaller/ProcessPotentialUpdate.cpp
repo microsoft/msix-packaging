@@ -13,7 +13,7 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
     /// and each handler would have the opportunity to reason between the old and new packages to perform more efficient updating.
     std::wstring currentPackageFamilyName = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
     
-    for (auto& p : std::experimental::filesystem::directory_iterator(FilePathMappings::GetInstance().GetMsix7Directory()))
+    for (auto& p : std::experimental::filesystem::directory_iterator(FilePathMappings::GetInstance().GetMsixCoreDirectory()))
     {
         std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
         if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)

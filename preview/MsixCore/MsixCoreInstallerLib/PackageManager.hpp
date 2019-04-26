@@ -18,6 +18,6 @@ namespace MsixCoreLib {
         std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> FindPackages() override;
         std::shared_ptr<IPackage> GetMsixPackageInfo(const std::wstring & msixFullPath) override;
     private:
-        std::shared_ptr<IInstalledPackage> GetPackageInfo(const std::wstring & msix7Directory, const std::wstring & directoryPath);
+        std::shared_ptr<IInstalledPackage> GetPackageInfo(const std::wstring & msixCoreDirectory, const std::wstring & directoryPath);
     };
 }

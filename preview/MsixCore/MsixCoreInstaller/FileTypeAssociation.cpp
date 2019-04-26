@@ -17,7 +17,7 @@ const PCWSTR FileTypeAssociation::HandlerName = L"FileTypeAssociation";
 std::wstring FileTypeAssociation::CreateProgID(PCWSTR name)
 {
     std::wstring packageFullName = m_msixRequest->GetPackageInfo()->GetPackageFullName();
-    std::wstring progID = msix7ProgIDPrefix + packageFullName.substr(0, packageFullName.find(L"_")) + name;
+    std::wstring progID = msixCoreProgIDPrefix + packageFullName.substr(0, packageFullName.find(L"_")) + name;
     return progID;
 }
 

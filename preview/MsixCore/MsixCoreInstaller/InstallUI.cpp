@@ -12,7 +12,7 @@
 #include <filesystem>
 
 #include "Util.hpp"
-#include "Win7MSIXInstallerLogger.hpp"
+#include "MsixCoreInstallerLogger.hpp"
 // MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
 using namespace std;

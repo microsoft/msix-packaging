@@ -79,7 +79,7 @@ HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
     }
     return impl->ProcessRequest();
 }
-shared_ptr<IInstalledPackage> PackageManager::GetPackageInfo(const wstring & msix7Directory, const wstring & directoryPath)
+shared_ptr<IInstalledPackage> PackageManager::GetPackageInfo(const wstring & msixCoreDirectory, const wstring & directoryPath)
 {
     std::shared_ptr<InstalledPackage> packageInfo;
     auto res = PopulatePackageInfo::GetPackageInfoFromManifest(directoryPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo);
@@ -98,9 +98,9 @@ shared_ptr<IInstalledPackage> PackageManager::FindPackage(const wstring & packag
     {
         return nullptr;
     }
-    wstring msix7Directory = filemapping.GetMsix7Directory();
-    wstring packageDirectoryPath = msix7Directory + packageFullName;
-    auto package = GetPackageInfo(msix7Directory, packageDirectoryPath);
+    wstring msixCoreDirectory = filemapping.GetMsixCoreDirectory();
+    wstring packageDirectoryPath = msixCoreDirectory + packageFullName;
+    auto package = GetPackageInfo(msixCoreDirectory, packageDirectoryPath);
     return package;
 }
 
@@ -112,14 +112,14 @@ shared_ptr<IInstalledPackage> PackageManager::FindPackageByFamilyName(const wstr
     {
         return nullptr;
     }
-    auto msix7Directory = filemapping.GetMsix7Directory();
-    for (auto& p : experimental::filesystem::directory_iterator(msix7Directory))
+    auto msixCoreDirectory = filemapping.GetMsixCoreDirectory();
+    for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
     {
 
         auto installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
         if (CaseInsensitiveEquals(installedAppFamilyName, packageFamilyName))
         {
-            return GetPackageInfo(msix7Directory, p.path());
+            return GetPackageInfo(msixCoreDirectory, p.path());
         }
     }
     return nullptr;
@@ -134,10 +134,10 @@ unique_ptr<vector<shared_ptr<IInstalledPackage>>> PackageManager::FindPackages()
     {
         return packages;
     }
-    auto msix7Directory = filemapping.GetMsix7Directory();
-    for (auto& p : experimental::filesystem::directory_iterator(msix7Directory))
+    auto msixCoreDirectory = filemapping.GetMsixCoreDirectory();
+    for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
     {
-        auto packageInfo = GetPackageInfo(msix7Directory, p.path());
+        auto packageInfo = GetPackageInfo(msixCoreDirectory, p.path());
         if (packageInfo != nullptr)
         {
             packages->push_back(packageInfo);

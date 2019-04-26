@@ -8,7 +8,7 @@ static const std::wstring blockMapFile = L"\\AppxBlockMap.xml";
 static const std::wstring manifestFile = L"\\AppxManifest.xml";
 static const std::wstring classesKeyPath = L"SOFTWARE\\Classes";
 
-static const std::wstring msix7ProgIDPrefix = L"Msix7";
+static const std::wstring msixCoreProgIDPrefix = L"MsixCore";
 static const std::wstring openWithProgIdsKeyName = L"OpenWithProgids";
 static const std::wstring shellKeyName = L"Shell";
 static const std::wstring openKeyName = L"open";

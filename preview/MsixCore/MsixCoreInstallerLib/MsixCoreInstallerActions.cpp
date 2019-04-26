@@ -1,5 +1,5 @@
-#include "Win7MSIXInstallerActions.hpp"
-    #include "PackageManager.hpp"
+#include "MsixCoreInstallerActions.hpp"
+#include "PackageManager.hpp"
 
 using namespace MsixCoreLib;
 

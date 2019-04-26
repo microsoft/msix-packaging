@@ -1,4 +1,4 @@
-#include "Win7MSIXInstallerLogger.hpp"
+#include "MsixCoreInstallerLogger.hpp"
 
 // Define the GUID to use in TraceLoggingProviderRegister 
 // {033321d3-d599-48e0-868d-c59f15901637}

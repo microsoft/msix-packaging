@@ -213,5 +213,5 @@ std::wstring MsixRequest::GetPackageDirectoryPath()
     if (m_packageInfo == nullptr)
         return nullptr;
 
-    return FilePathMappings::GetInstance().GetMsix7Directory() + m_packageInfo->GetPackageFullName();
+    return FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_packageInfo->GetPackageFullName();
 }

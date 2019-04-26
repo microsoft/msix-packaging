@@ -187,7 +187,7 @@ HRESULT Extractor::ExtractPayloadFiles()
 
 HRESULT Extractor::CreatePackageRoot()
 {
-    std::wstring packagePath = FilePathMappings::GetInstance().GetMsix7Directory();
+    std::wstring packagePath = FilePathMappings::GetInstance().GetMsixCoreDirectory();
     if (!CreateDirectory(packagePath.c_str(), nullptr))
     {
         DWORD lastError = GetLastError();
@@ -197,7 +197,7 @@ HRESULT Extractor::CreatePackageRoot()
         }
     }
 
-    if (!CreateDirectory((FilePathMappings::GetInstance().GetMsix7Directory() + m_msixRequest->GetPackageInfo()->GetPackageFullName()).c_str(), nullptr))
+    if (!CreateDirectory((FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_msixRequest->GetPackageInfo()->GetPackageFullName()).c_str(), nullptr))
     {
         DWORD lastError = GetLastError();
         if (lastError != ERROR_ALREADY_EXISTS)
