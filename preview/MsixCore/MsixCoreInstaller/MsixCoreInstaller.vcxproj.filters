@@ -24,7 +24,7 @@
     <ClInclude Include="resource.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Win7MSIXInstallerLogger.hpp">
+    <ClInclude Include="MsixCoreInstallerLogger.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Util.hpp">
@@ -38,10 +38,10 @@
     <ClCompile Include="CommandLineInterface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Win7MSIXInstallerLogger.cpp">
+    <ClCompile Include="MsixCoreInstallerLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Win7MSIXInstaller.cpp">
+    <ClCompile Include="MsixCoreInstaller.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Util.cpp">
@@ -49,7 +49,7 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="Win7MSIXInstaller.rc">
+    <ResourceCompile Include="MsixCoreInstaller.rc">
       <Filter>Resource Files</Filter>
     </ResourceCompile>
   </ItemGroup>
