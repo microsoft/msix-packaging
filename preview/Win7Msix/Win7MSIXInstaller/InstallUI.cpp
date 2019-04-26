@@ -135,24 +135,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     break;
     case WM_CTLCOLORSTATIC:
     {
-        switch (::GetDlgCtrlID((HWND)lParam))
-        {
-            case IDC_LAUNCHCHECKBOX:
-            {
-                HBRUSH hbr = (HBRUSH)DefWindowProc(hWnd, message, wParam, lParam);
-                ::DeleteObject(hbr);
-                SetBkMode((HDC)wParam, TRANSPARENT);
-                return (LRESULT)::GetStockObject(NULL_BRUSH);
-            }
-            case IDC_STATICPERCENTCONTROL:
-            {
-                HBRUSH hbr = (HBRUSH)DefWindowProc(hWnd, message, wParam, lParam);
-                ::DeleteObject(hbr);
-                SetBkMode((HDC)wParam, TRANSPARENT);
-                return (LRESULT)::GetStockObject(NULL_BRUSH);
-            }
-        }
-
+        HBRUSH hbr = (HBRUSH)DefWindowProc(hWnd, message, wParam, lParam);
+        ::DeleteObject(hbr);
+        SetBkMode((HDC)wParam, TRANSPARENT);
+        return (LRESULT)::GetStockObject(NULL_BRUSH);
         break;
     }
     case WM_CLOSE:
