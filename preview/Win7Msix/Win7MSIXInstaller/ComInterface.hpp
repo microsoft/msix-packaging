@@ -5,7 +5,7 @@
 #include "MsixRequest.hpp"
 #include <vector>
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 class ComInterface : IPackageHandler
 {

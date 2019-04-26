@@ -16,6 +16,7 @@
 #include <experimental/filesystem> // C++-standard header file name
 #include <filesystem> // Microsoft-specific implementation header file name
 #include <TraceLoggingProvider.h>
+#include "MsixTraceLoggingProvider.hpp"
 
 // handlers
 #include "Extractor.hpp"
@@ -25,6 +26,7 @@
 #include "Protocol.hpp"
 #include "ComInterface.hpp"
 #include "ComServer.hpp"
+#include "StartupTask.hpp"
 #include "FileTypeAssociation.hpp"
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
@@ -37,7 +39,7 @@
 // GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
 using namespace std;
 #include <GdiPlus.h>
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 struct HandlerInfo
 {
     CreateHandler create;
@@ -48,7 +50,7 @@ struct HandlerInfo
 std::map<PCWSTR, HandlerInfo> AddHandlers =
 {
     //HandlerName                             Function to create                          NextHandler                              ErrorHandlerInfo
-    {PopulatePackageInfo::HandlerName,        {PopulatePackageInfo::CreateHandler,        ValidateTargetDeviceFamily::HandlerName, ErrorHandler::HandlerName}},
+    {PopulatePackageInfo::HandlerName,        {PopulatePackageInfo::CreateHandler,        ValidateTargetDeviceFamily::HandlerName, nullptr /*nothing to rollback if we can't open the package*/}},
     {ValidateTargetDeviceFamily::HandlerName, {ValidateTargetDeviceFamily::CreateHandler, ProcessPotentialUpdate::HandlerName,     ErrorHandler::HandlerName}},
     {ProcessPotentialUpdate::HandlerName,     {ProcessPotentialUpdate::CreateHandler,     Extractor::HandlerName,                  ErrorHandler::HandlerName}},
     {Extractor::HandlerName,                  {Extractor::CreateHandler,                  StartMenuLink::HandlerName,              ErrorHandler::HandlerName}},
@@ -56,7 +58,8 @@ std::map<PCWSTR, HandlerInfo> AddHandlers =
     {AddRemovePrograms::HandlerName,          {AddRemovePrograms::CreateHandler,          Protocol::HandlerName,                   ErrorHandler::HandlerName}},
     {Protocol::HandlerName,                   {Protocol::CreateHandler,                   ComInterface::HandlerName,               ErrorHandler::HandlerName}},
     {ComInterface::HandlerName,               {ComInterface::CreateHandler,               ComServer::HandlerName,                  ErrorHandler::HandlerName}},
-    {ComServer::HandlerName,                  {ComServer::CreateHandler,                  FileTypeAssociation::HandlerName,        ErrorHandler::HandlerName}},
+    {ComServer::HandlerName,                  {ComServer::CreateHandler,                  StartupTask::HandlerName,                ErrorHandler::HandlerName}},
+    {StartupTask::HandlerName,                {StartupTask::CreateHandler,                FileTypeAssociation::HandlerName,        ErrorHandler::HandlerName}},
     {FileTypeAssociation::HandlerName,        {FileTypeAssociation::CreateHandler,        InstallComplete::HandlerName,            ErrorHandler::HandlerName}},
     {InstallComplete::HandlerName,            {InstallComplete::CreateHandler,            nullptr,                                 ErrorHandler::HandlerName}},
     {ErrorHandler::HandlerName,               {ErrorHandler::CreateHandler,               nullptr,                                 nullptr}},
@@ -70,7 +73,8 @@ std::map<PCWSTR, HandlerInfo> RemoveHandlers =
     {AddRemovePrograms::HandlerName,    {AddRemovePrograms::CreateHandler,   Protocol::HandlerName}},
     {Protocol::HandlerName,             {Protocol::CreateHandler,            ComInterface::HandlerName}},
     {ComInterface::HandlerName,         {ComInterface::CreateHandler,        ComServer::HandlerName}},
-    {ComServer::HandlerName,            {ComServer::CreateHandler,           FileTypeAssociation::HandlerName}},
+    {ComServer::HandlerName,            {ComServer::CreateHandler,           StartupTask::HandlerName}},
+    {StartupTask::HandlerName,          {StartupTask::CreateHandler,         FileTypeAssociation::HandlerName}},
     {FileTypeAssociation::HandlerName,  {FileTypeAssociation::CreateHandler, Extractor::HandlerName}},
     {Extractor::HandlerName,            {Extractor::CreateHandler,           nullptr}},
 };

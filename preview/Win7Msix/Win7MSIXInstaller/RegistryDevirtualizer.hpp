@@ -6,7 +6,7 @@
 #include <vector>
 #include "MsixRequest.hpp"
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 /// Handles the conversion of the information stored in Registry.dat 
 /// to the currently running OS's registry, which is referred to here as "actual registry"

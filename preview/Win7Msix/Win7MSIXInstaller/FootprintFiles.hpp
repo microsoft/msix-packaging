@@ -2,7 +2,7 @@
 #define FOOTPRINTFILES_H
 
 #include "AppxPackaging.hpp"
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 // Describes the FootprintFilesType structure
 template<typename Type>

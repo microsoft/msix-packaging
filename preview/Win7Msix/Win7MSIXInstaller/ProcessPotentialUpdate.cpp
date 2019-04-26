@@ -1,7 +1,8 @@
 #include "ProcessPotentialUpdate.hpp"
 #include <filesystem>
+#include "MsixTraceLoggingProvider.hpp"
 
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 const PCWSTR ProcessPotentialUpdate::HandlerName = L"ProcessPotentialUpdate";
 
 HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
@@ -14,9 +15,9 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
     
     for (auto& p : std::experimental::filesystem::directory_iterator(FilePathMappings::GetInstance().GetMsix7Directory()))
     {
-        std::wstring installedPackageFamilyName = Win7MsixInstallerLib_GetFamilyNameFromFullName(p.path().filename());
-        if (Win7MsixInstallerLib_CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
-            && !Win7MsixInstallerLib_CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
+        std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
+        if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
+            && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
         {
             RETURN_IF_FAILED(RemovePackage(p.path().filename()));
             return S_OK;

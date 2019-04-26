@@ -22,6 +22,7 @@ static const std::wstring ftaCategoryNameInManifest = L"windows.fileTypeAssociat
 static const std::wstring protocolCategoryNameInManifest = L"windows.protocol";
 static const std::wstring ComServerCategoryNameInManifest = L"windows.comServer";
 static const std::wstring comInterfaceCategoryNameInManifest = L"windows.comInterface";
+static const std::wstring startupTaskCategoryNameInManifest = L"windows.startupTask";
 
 static const std::wstring categoryAttribute = L"Category";
 static const std::wstring nameAttribute = L"Name";
@@ -58,6 +59,7 @@ static const std::wstring oleMiscFlagAttribute = L"OleMiscFlag";
 static const std::wstring appendMenuFlagAttribute = L"AppendMenuFlag";
 static const std::wstring oleVerbFlagAttribute = L"OleVerbFlag";
 static const std::wstring resourceIndexAttribute = L"ResourceIndex";
+static const std::wstring taskIdAttribute = L"TaskId";
 
 static const std::wstring extensionQuery = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='Extensions']/*[local-name()='Extension']";
 static const std::wstring ftaQuery = L"*[local-name()='FileTypeAssociation']";
@@ -85,6 +87,7 @@ static const std::wstring aspectQuery = L"*[local-name()='Aspect']";
 static const std::wstring defaultIconQuery = L"*[local-name()='DefaultIcon']";
 static const std::wstring toolboxBitmapQuery = L"*[local-name()='ToolboxBitmap32']";
 static const std::wstring comVerbQuery = L"*[local-name()='Verbs']/*[local-name()='Verb']";
+static const std::wstring startupTaskQuery = L"*[local-name()='StartupTask']";
 
 static const std::wstring clsidKeyName = L"CLSID";
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";

@@ -1,9 +1,9 @@
 #include "Win7MSIXInstallerActions.hpp"
     #include "PackageManager.hpp"
 
-using namespace Win7MsixInstallerLib;
+using namespace MsixCoreLib;
 
-HRESULT Win7MsixInstallerLib_CreatePackageManager(Win7MsixInstallerLib::IPackageManager** packageManager)
+HRESULT MsixCoreLib_CreatePackageManager(MsixCoreLib::IPackageManager** packageManager)
 {
     *packageManager = new PackageManager();
     return S_OK;

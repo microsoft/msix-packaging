@@ -4,7 +4,7 @@
 #include "IPackageHandler.hpp"
 #include "MsixRequest.hpp"
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 /// Determines if the incoming add request is actually an update to an existing package.
 /// If it is, it'll remove the outdated package

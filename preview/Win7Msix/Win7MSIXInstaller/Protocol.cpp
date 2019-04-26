@@ -8,7 +8,8 @@
 #include "GeneralUtil.hpp"
 #include "Constants.hpp"
 #include <TraceLoggingProvider.h>
-using namespace Win7MsixInstallerLib;
+#include "MsixTraceLoggingProvider.hpp"
+using namespace MsixCoreLib;
 
 const PCWSTR Protocol::HandlerName = L"Protocol";
 

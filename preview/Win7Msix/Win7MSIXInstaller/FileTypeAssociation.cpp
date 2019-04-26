@@ -8,7 +8,9 @@
 #include "GeneralUtil.hpp"
 #include "Constants.hpp"
 #include <TraceLoggingProvider.h>
-using namespace Win7MsixInstallerLib;
+#include "RegistryKey.hpp"
+#include "MsixTraceLoggingProvider.hpp"
+using namespace MsixCoreLib;
 
 const PCWSTR FileTypeAssociation::HandlerName = L"FileTypeAssociation";
 

@@ -6,7 +6,7 @@
 #include <vector>
 #include "MsixRequest.hpp"
 
-namespace Win7MsixInstallerLib
+namespace MsixCoreLib
 {
 
 /// Data structs to be filled in from the information in the manifest
