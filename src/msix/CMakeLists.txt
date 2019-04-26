@@ -184,6 +184,7 @@ add_library(${PROJECT_NAME} SHARED
     AppxBlockMapObject.cpp
     AppxFactory.cpp
     AppxManifestObject.cpp
+    AppxManifestValidation.cpp
     AppxPackageObject.cpp
     AppxPackageInfo.cpp
     AppxSignature.cpp
@@ -195,6 +196,7 @@ add_library(${PROJECT_NAME} SHARED
     msix.cpp
     ZipObject.cpp
     MSIXResource.cpp
+    IXML.cpp
     ${DirectoryObject}
     ${SHA256}
     ${Signature}

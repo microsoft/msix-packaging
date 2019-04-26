@@ -15,13 +15,13 @@
 // XML file content types/schemas
 enum class XmlContentType : std::uint8_t
 {
-    ContentTypeXml  = 0,
-    AppxBlockMapXml = 1,
-    AppxManifestXml = 2,
-    AppxBundleManifestXml =3,
+    ContentTypeXml,
+    AppxBlockMapXml,
+    AppxManifestXml,
+    AppxBundleManifestXml,
 };
 
-// defines queries for use in IXmlDom->ForEachElementIn
+// defines queries for use in IXmlDom::ForEachElementIn
 enum class XmlQueryName : std::uint8_t
 {
     Package_Identity                           = 0,
@@ -43,9 +43,12 @@ enum class XmlQueryName : std::uint8_t
     Package_Dependencies_PackageDependency     = 16,
     Package_Capabilities_Capability            = 17,
     Package_Resources_Resource                 = 18,
+    Any_Identity,
+    Package_Dependencies_MainPackageDependency,
+    Applications_Application_Extensions_Extension,
 };
 
-// defines attribute names for use in IXmlElement-> [GetAttributeValue|GetBase64DecodedAttributeValue]
+// defines attribute names for use in IXmlElement:: [GetAttributeValue|GetBase64DecodedAttributeValue]
 enum class XmlAttributeName : std::uint8_t
 {
     Name                                       = 0,
@@ -64,77 +67,8 @@ enum class XmlAttributeName : std::uint8_t
     MinVersion                                 = 13,
     Dependencies_Tdf_MaxVersionTested          = 14,
     Package_Applications_Application_Id        = 15,
+    Category,
 };
-
-// must remain in same order as XmlAttributeName
-static const wchar_t* attributeNames[] = {
-    /* Name                                   */L"Name",
-    /* ResourceId                             */L"ResourceId",
-    /* Version                                */L"Version",
-    /* Size                                   */L"Size",
-    /* Package_Identity_ProcessorArchitecture */L"ProcessorArchitecture",
-    /* Publisher                              */L"Publisher",
-    /* BlockMap_File_LocalFileHeaderSize      */L"LfhSize",
-    /* BlockMap_File_Block_Hash               */L"Hash",
-    /* Bundle_Package_FileName                */L"FileName",
-    /* Bundle_Package_Offset                  */L"Offset",
-    /* Bundle_Package_Type                    */L"Type",
-    /* Bundle_Package_Architecture            */L"Architecture",
-    /* Language                               */L"Language",
-    /* MinVersion                             */L"MinVersion",
-    /* Dependencies_Tdf_MaxVersionTested      */L"MaxVersionTested",
-    /* Package_Applications_Application_Id    */L"Id",
-};
-
-#ifdef USING_MSXML
-
-// must remain in same order as XmlQueryName
-static const wchar_t* xPaths[] = {
-    /* Package_Identity                           */L"/*[local-name()='Package']/*[local-name()='Identity']",
-    /* BlockMap_File                              */L"/*[local-name()='BlockMap']/*[local-name()='File']",
-    /* BlockMap_File_Block                        */L"*[local-name()='Block']",
-    /* Bundle_Identity                            */L"/*[local-name()='Bundle']/*[local-name()='Identity']",
-    /* Bundle_Packages_Package                    */L"/*[local-name()='Bundle']/*[local-name()='Packages']/*[local-name()='Package']",
-    /* Bundle_Packages_Package_Resources_Resource */L"*[local-name()='Resources']/*[local-name()='Resource']",
-    /* Package_Dependencies_TargetDeviceFamily    */L"/*[local-name()='Package']/*[local-name()='Dependencies']/*[local-name()='TargetDeviceFamily']",
-    /* Package_Applications_Application           */L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']",
-    /* Package_Properties                         */L"/*[local-name()='Package']/*[local-name()='Properties']",
-    /* Package_Properties_Description             */L"*[local-name()='Description']",
-    /* Package_Properties_DisplayName             */L"*[local-name()='DisplayName']",
-    /* Package_Properties_PublisherDisplayName    */L"*[local-name()='PublisherDisplayName']",
-    /* Package_Properties_Logo                    */L"*[local-name()='Logo']",
-    /* Package_Properties_Framework               */L"*[local-name()='Framework']",
-    /* Package_Properties_ResourcePackage         */L"*[local-name()='ResourcePackage']",
-    /* Package_Properties_AllowExecution          */L"*[local-name()='AllowExecution']",
-    /* Package_Dependencies_PackageDependency     */L"/*[local-name()='Package']/*[local-name()='Dependencies']/*[local-name()='PackageDependency']",
-    /* Package_Capabilities_Capability            */L"/*[local-name()='Package']/*[local-name()='Capabilities']/*[local-name()='Capability']",
-    /* Package_Resources_Resource                 */L"/*[local-name()='Package']/*[local-name()='Resources']/*[local-name()='Resource']",
-};
-#else
-
-// must remain in same order as XmlQueryName
-static const char* xPaths[] = {
-    /* XmlQueryName::Package_Identity                               */"/Package/Identity",
-    /* XmlQueryName::BlockMap_File                                  */"/BlockMap/File",
-    /* XmlQueryName::BlockMap_File_Block                            */"./Block",
-    /* XmlQueryName::Bundle_Identity                                */"/Bundle/Identity",
-    /* XmlQueryName::Bundle_Packages_Package                        */"/Bundle/Packages/Package",
-    /* XmlQueryName::Bundle_Packages_Package_Resources_Resource     */"./Resources/Resource",
-    /* XmlQueryName::Package_Dependencies_TargetDeviceFamily        */"/Package/Dependencies/TargetDeviceFamily",
-    /* XmlQueryName::Package_Applications_Application               */"/Package/Applications/Application",
-    /* XmlQueryName::Package_Properties                             */"/Package/Properties",
-    /* XmlQueryName::Package_Properties_Description                 */"./Description",
-    /* XmlQueryName::Package_Properties_DisplayName                 */"./DisplayName",
-    /* XmlQueryName::Package_Properties_PublisherDisplayName        */"./PublisherDisplayName",
-    /* XmlQueryName::Package_Properties_Logo                        */"./Logo",
-    /* XmlQueryName::Package_Properties_Framework                   */"./Framework",
-    /* XmlQueryName::Package_Properties_ResourcePackage             */"./ResourcePackage",
-    /* XmlQueryName::Package_Properties_AllowExecution              */"./AllowExecution",
-    /* XmlQueryName::Package_Dependencies_PackageDependency         */"/Package/Dependencies/PackageDependency",
-    /* XmlQueryName::Package_Capabilities_Capability                */"/Package/Capabilities/Capability",
-    /* XmlQueryName::Package_Resources_Resource                     */"/Package/Resources/Resource",
-};
-#endif
 
 // {ac94449e-442d-4bed-8fca-83770c0f7ee9}
 #ifndef WIN32
@@ -160,7 +94,8 @@ struct XmlVisitor
     void*   context;
     lambda  Callback;
 
-    XmlVisitor(void* c, lambda f) : context(c), Callback(f) {}
+    // Allow for const data to be passed in, but strip the const.
+    XmlVisitor(const void* c, lambda f) : context(const_cast<void*>(c)), Callback(f) {}
 };
 
 // {0e7a446e-baf7-44c1-b38a-216bfa18a1a8}
@@ -178,6 +113,11 @@ public:
         XmlQueryName query,
         XmlVisitor&  visitor
     ) = 0;
+
+    bool ForEachElementIn(XmlQueryName query, XmlVisitor& visitor)
+    {
+        return ForEachElementIn(GetDocument(), query, visitor);
+    }
 };
 MSIX_INTERFACE(IXmlDom, 0x0e7a446e,0xbaf7,0x44c1,0xb3,0x8a,0x21,0x6b,0xfa,0x18,0xa1,0xa8);
 
@@ -204,6 +144,17 @@ namespace MSIX {
         bool hasValue = !attributeValue.empty();
         T value = defaultValue;
         if (hasValue) { value = static_cast<T>(std::stoul(attributeValue)); }
-        return value;        
+        return value;
     }
+
+#ifdef USING_MSXML
+    using XmlQueryNameCharType = wchar_t;
+#else
+    using XmlQueryNameCharType = char;
+#endif
+
+    const XmlQueryNameCharType* GetQueryString(XmlQueryName query);
+
+    std::wstring GetAttributeNameString(XmlAttributeName attr);
+    const char* GetAttributeNameStringUtf8(XmlAttributeName attr);
 }

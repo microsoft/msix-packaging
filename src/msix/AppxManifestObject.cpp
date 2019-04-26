@@ -4,6 +4,7 @@
 //
 
 #include "AppxManifestObject.hpp"
+#include "AppxManifestValidation.hpp"
 #include "UnicodeConversion.hpp"
 #include "Encoding.hpp"
 #include "Enumerators.hpp"
@@ -77,6 +78,10 @@ namespace MSIX {
         ThrowHrIfFailed(m_factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));
         m_dom = xmlFactory->CreateDomFromStream(XmlContentType::AppxManifestXml, stream);
 
+#if VALIDATING
+        AppxManifestValidation::ValidateManifest(m_dom.Get());
+#endif
+
         // Parse Identity element
         XmlVisitor visitor(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& identityNode)->bool
         {
@@ -107,6 +112,7 @@ namespace MSIX {
             self->m_tdf.push_back(std::move(tdf));
             std::transform(name.begin(), name.end(), name.begin(), ::tolower);
             const auto& tdfEntry = std::find(std::begin(targetDeviceFamilyList), std::end(targetDeviceFamilyList), name.c_str());
+            // TODO: Here and below; are unknown device families really an error?  I don't think so.
             ThrowErrorIf(Error::AppxManifestSemanticError, (tdfEntry == std::end(targetDeviceFamilyList)), "Unrecognized TargetDeviceFamily");
             self->m_platform = static_cast<MSIX_PLATFORMS>(self->m_platform | (*tdfEntry).value);
             return true;
