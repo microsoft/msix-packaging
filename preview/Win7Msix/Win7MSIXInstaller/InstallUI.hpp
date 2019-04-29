@@ -8,6 +8,8 @@
 #include <IPackageManager.hpp>
 #include <IMsixResponse.hpp>
 #include "resource.h"
+#include <vector>
+
 /// Child window identifiers
 #define IDC_LAUNCHCHECKBOX 101
 #define IDC_INSTALLBUTTON 102
@@ -64,6 +66,7 @@ private:
     std::wstring m_publisherCommonName = L"";
     std::unique_ptr<IStream> m_logoStream;
     std::wstring m_version = L"";
+    std::vector<std::wstring> m_capabilities;
 
     HRESULT m_loadingPackageInfoCode = 0;
     UIType m_type;

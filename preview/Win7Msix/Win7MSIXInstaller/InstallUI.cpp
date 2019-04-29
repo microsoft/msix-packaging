@@ -289,6 +289,10 @@ HRESULT UI::ParseInfoFromPackage()
     //Obtain the number of files
     m_displayName = m_packageInfo->GetDisplayName();
     m_logoStream = std::move(m_packageInfo->GetLogo());
+
+    //Obtain package capabilities
+    m_capabilities = m_packageInfo->GetCapabilities();
+
     return S_OK;
 }
 
@@ -486,6 +490,17 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     graphics.DrawString(displayName.c_str(), -1, &displayNameFont, layoutRect, &format, &textBrush);
     layoutRect.Y += 40;
     graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+
+    std::wstring capabilitiesHeading = L"Capabilties:";
+    layoutRect.Y += 40;
+    graphics.DrawString(capabilitiesHeading.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+
+    layoutRect.Y += 20;
+    for (std::wstring capability : m_capabilities)
+    {
+        graphics.DrawString(capability.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+        layoutRect.Y += 20;
+    }
 
     if (logoStream != nullptr)
     {

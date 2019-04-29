@@ -99,6 +99,30 @@ HRESULT PackageBase::ParseManifest(IMsixElement* element)
     return S_OK;
 }
 
+HRESULT PackageBase::ParseManifestCapabilities(IMsixElement* element)
+{
+    ComPtr<IMsixElementEnumerator> capabilitiesEnum;
+    RETURN_IF_FAILED(element->GetElements(
+        L"/*[local-name()='Package']/*[local-name()='Capabilities']/*[local-name()='Capability']",
+        &capabilitiesEnum));
+
+    BOOL hc = FALSE;
+    RETURN_IF_FAILED(capabilitiesEnum->GetHasCurrent(&hc));
+
+    while (hc)
+    {
+        ComPtr<IMsixElement> capabilityElement;
+        RETURN_IF_FAILED(capabilitiesEnum->GetCurrent(&capabilityElement));
+
+        Text<wchar_t> capabilityName;
+        RETURN_IF_FAILED(capabilityElement->GetAttributeValue(L"Name", &capabilityName));
+        m_capabilities.push_back(capabilityName.Get());
+
+        RETURN_IF_FAILED(capabilitiesEnum->MoveNext(&hc));
+    }
+    return S_OK;
+}
+
 HRESULT Package::MakeFromPackageReader(IAppxPackageReader * packageReader, std::shared_ptr<Package> * packageInfo)
 {
     std::shared_ptr<Package> instance = std::make_shared<Package>();
@@ -161,6 +185,8 @@ HRESULT PackageBase::SetManifestReader(IAppxManifestReader * manifestReader)
     RETURN_IF_FAILED(domElement->GetDocumentElement(&element));
 
     RETURN_IF_FAILED(ParseManifest(element.Get()));
+
+    RETURN_IF_FAILED(ParseManifestCapabilities(element.Get()));
 
     Text<WCHAR> packageFamilyName;
     RETURN_IF_FAILED(manifestId->GetPackageFamilyName(&packageFamilyName));

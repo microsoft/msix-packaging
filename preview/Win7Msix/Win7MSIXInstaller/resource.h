@@ -26,6 +26,7 @@
 #define IDS_STRING_CANCEL_POPUP_TITLE   120
 #define IDS_STRING_CANCEL_UPDATEPOPUP   121
 #define IDS_STRING_REINSTALLAPP        122
+#define IDS_RUNFULLTRUST_CAPABILITY    123
 
 // Next default values for new objects
 // 
