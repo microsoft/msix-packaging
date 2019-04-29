@@ -1,5 +1,6 @@
 #pragma once
 #include <Windows.h>
+#include <vector>
 namespace MsixCoreLib {
 
     class IPackage {
@@ -12,6 +13,7 @@ namespace MsixCoreLib {
         virtual std::wstring GetDisplayName() = 0;
         virtual std::wstring GetId() = 0;
         virtual std::unique_ptr<IStream> GetLogo() = 0;
+        virtual std::vector<std::wstring> GetCapabilities() = 0;
         virtual ~IPackage() {}
 
     protected:

@@ -3,6 +3,7 @@
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
 #include "IPackage.hpp"
+#include <vector>
 
 namespace MsixCoreLib
 {
@@ -20,6 +21,7 @@ namespace MsixCoreLib
         std::wstring m_publisher;
         std::wstring m_publisherName;
         std::wstring m_relativeLogoPath;
+        std::vector<std::wstring> m_capabilities;
 
         ComPtr<IAppxManifestReader> m_manifestReader;
         unsigned int m_numberOfPayloadFiles = 0;
@@ -34,6 +36,11 @@ namespace MsixCoreLib
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
 
+        std::vector<std::wstring> GetCapabilities()
+        {
+            return m_capabilities;
+        }
+
     protected:
         PackageBase() {}
         /// Sets the manifest reader, and other fields derived from the manifest
@@ -45,6 +52,11 @@ namespace MsixCoreLib
         ///
         /// @param element - the root node of the manifest file
         HRESULT ParseManifest(IMsixElement * element);
+
+        /// Parse the manifest file for capabilities listed
+        ///
+        /// @param element - the root node of the manifest file
+        HRESULT ParseManifestCapabilities(IMsixElement * element);
     public:
         virtual ~PackageBase()
         {
@@ -73,6 +85,11 @@ namespace MsixCoreLib
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
         std::unique_ptr<IStream> GetLogo();
+        std::vector<std::wstring> GetCapabilities()
+        {
+            return m_capabilities;
+        }
+
         IAppxPackageReader * GetPackageReader() { return m_packageReader.Get(); }
 
         /// Create a Package using the package reader. This is intended for Add scenarios where
@@ -102,6 +119,7 @@ namespace MsixCoreLib
         std::wstring GetVersion() { return PackageBase::GetVersion(); }
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
+
         std::unique_ptr<IStream> GetLogo();
 
         virtual std::wstring GetFullExecutableFilePath()
@@ -111,6 +129,10 @@ namespace MsixCoreLib
         virtual std::wstring GetInstalledLocation()
         {
             return m_packageDirectoryPath;
+        }
+        std::vector<std::wstring> GetCapabilities()
+        {
+            return m_capabilities;
         }
 
         /// Create a InstalledPackage using the manifest reader and directory path. This is intended for Remove scenarios where
