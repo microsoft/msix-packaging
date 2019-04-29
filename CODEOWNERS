@@ -2,6 +2,5 @@
 * @msftrubengu @ranm-msft @johnmcpms 
 /README.md @c-don
 
-# Win7Installer owners
-/preview/Win7Msix/ @wcheng-msft @jyvenugo @sarjanas-msft
-/preview/Win7MSIX/README.md @andyliumsa
+# MsixCoreInstaller owners
+/preview/MsixCore/ @wcheng-msft @jyvenugo @sarjanas-msft

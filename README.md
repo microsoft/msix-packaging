@@ -80,7 +80,7 @@ See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-inte
 ## Build
 ### On Windows using Visual Studio nmake:
 ```
-   makewin.cmd <x86|x64>
+   makewin.cmd <x86|x64> -mt
 
    This will start MSVC environment calling vcvarsall.bat <arch>, clean the output directory, call cmake and nmake. The latest Visual Studio version is obtained by calling vswhere.exe 
 ```
