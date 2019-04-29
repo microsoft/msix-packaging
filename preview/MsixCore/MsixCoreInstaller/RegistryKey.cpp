@@ -104,6 +104,11 @@ HRESULT RegistryKey::SetValue(
 
 HRESULT RegistryKey::SetStringValue(PCWSTR name, const std::wstring& value)
 {
+    if (value.empty())
+    {
+        // Documentation for RegSetValueEx indicates that REG_SZ type the string must be null-terminated-- we can't just write nullptr here.
+        return SetValue(name, L"", 1, REG_SZ);
+    }
     return SetValue(name, value.c_str(), static_cast<DWORD>(value.size() * sizeof(WCHAR)), REG_SZ);
 }
 
