@@ -495,10 +495,11 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     layoutRect.Y += 40;
     graphics.DrawString(capabilitiesHeading.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
 
-    layoutRect.Y += 20;
+    layoutRect.Y += 17;
     for (std::wstring capability : m_capabilities)
     {
-        graphics.DrawString(capability.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+        std::wstring capabilityString = L"\x2022 " + GetStringResource(IDS_RUNFULLTRUST_CAPABILITY);
+        graphics.DrawString(capabilityString.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
         layoutRect.Y += 20;
     }
 
@@ -577,7 +578,6 @@ void UI::ButtonClicked()
             case InstallationStep::InstallationStepError:
             {
                 //auto error = sender->GetTextStatus();
-
                 CloseUI();
             }
             break;
