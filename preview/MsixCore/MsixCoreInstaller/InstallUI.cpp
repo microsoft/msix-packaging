@@ -289,6 +289,10 @@ HRESULT UI::ParseInfoFromPackage()
     //Obtain the number of files
     m_displayName = m_packageInfo->GetDisplayName();
     m_logoStream = std::move(m_packageInfo->GetLogo());
+
+    //Obtain package capabilities
+    m_capabilities = m_packageInfo->GetCapabilities();
+
     return S_OK;
 }
 
@@ -487,6 +491,18 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     layoutRect.Y += 40;
     graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
 
+    std::wstring capabilitiesHeading = L"Capabilties:";
+    layoutRect.Y += 40;
+    graphics.DrawString(capabilitiesHeading.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+
+    layoutRect.Y += 17;
+    for (std::wstring capability : m_capabilities)
+    {
+        std::wstring capabilityString = L"\x2022 " + GetStringResource(IDS_RUNFULLTRUST_CAPABILITY);
+        graphics.DrawString(capabilityString.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+        layoutRect.Y += 20;
+    }
+
     if (logoStream != nullptr)
     {
         // We shouldn't fail if the image can't be loaded, just don't show it.
@@ -562,7 +578,6 @@ void UI::ButtonClicked()
             case InstallationStep::InstallationStepError:
             {
                 //auto error = sender->GetTextStatus();
-
                 CloseUI();
             }
             break;
