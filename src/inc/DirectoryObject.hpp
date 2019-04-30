@@ -26,7 +26,7 @@ namespace MSIX {
         std::vector<std::string> GetFileNames(FileNameOptions options) override;
         ComPtr<IStream> GetFile(const std::string& fileName) override;
         ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
-        std::string GetFileName() override { NOTIMPLEMENTED; }
+        std::string GetFileName() override { return m_root; }
 
     protected:
         std::string m_root;
