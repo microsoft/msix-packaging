@@ -13,4 +13,10 @@ namespace MSIX {
     public:
         static bool ComputeHash(std::uint8_t *buffer, std::uint32_t cbBuffer, std::vector<uint8_t>& hash);
     };
+
+    class Base64
+    {
+    public:
+        static std::string ComputeBase64(const std::vector<std::uint8_t>& buffer);
+    };
 }

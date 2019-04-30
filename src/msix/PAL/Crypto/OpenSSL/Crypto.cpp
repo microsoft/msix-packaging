@@ -14,4 +14,11 @@ namespace MSIX {
         ::SHA256(buffer, cbBuffer, hash.data());
         return true;
     }
-} // namespace MSIX {
+
+    std::string Base64::ComputeBase64(const std::vector<std::uint8_t>& buffer)
+    {
+        std::vector<std::uint8_t> result(((buffer.size() +2)/3)*4); // +2 for a cheap round up if it needs padding
+        EVP_EncodeBlock(static_cast<unsigned char*>(result.data()) , static_cast<unsigned char*>(buffer), cbBuffer);
+        return std::string(result.begin(), result.end());
+    }
+}
