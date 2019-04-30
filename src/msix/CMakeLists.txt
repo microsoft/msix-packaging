@@ -219,6 +219,10 @@ list(APPEND UnpackSrc
 
 list(APPEND PackSrc
     pack/AppxPackageWriter.cpp
+    pack/XmlWriter.cpp
+    pack/AppxBlockMapWriter.cpp
+    pack/ContentTypeWriter.cpp
+    pack/ContentType.cpp
 )
 
 # Define the library

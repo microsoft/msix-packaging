@@ -7,8 +7,12 @@
 #include "AppxPackaging.hpp"
 #include "ComHelper.hpp"
 #include "DirectoryObject.hpp"
+#include "AppxBlockMapWriter.hpp"
+#include "ContentTypeWriter.hpp"
 
 #include <map>
+#include <memory>
+#include <future>
 
 // internal interface
 // {32e89da5-7cbb-4443-8cf0-b84eedb51d0a}
@@ -27,7 +31,6 @@ public:
 MSIX_INTERFACE(IPackageWriter, 0x32e89da5,0x7cbb,0x4443,0x8c,0xf0,0xb8,0x4e,0xed,0xb5,0x1d,0x0a);
 
 namespace MSIX {
-
     class AppxPackageWriter final : public ComClass<AppxPackageWriter, IPackageWriter, IAppxPackageWriter,
         IAppxPackageWriterUtf8, IAppxPackageWriter3, IAppxPackageWriter3Utf8>
     {
@@ -64,8 +67,14 @@ namespace MSIX {
         }
         WriterState;
 
+        void ProcessPayloadFile(const std::string& name, const ComPtr<IStream>& stream, 
+            const std::string& contentType, APPX_COMPRESSION_OPTION compressionOpt);
+        bool IsFootPrintFile(std::string normalized);
+
         WriterState m_state;
         ComPtr<IStream> m_outputStream;
+        BlockMapWriter m_blockMapWriter;
+        ContentTypeWriter m_contentTypeWriter;
     };
 }
 
