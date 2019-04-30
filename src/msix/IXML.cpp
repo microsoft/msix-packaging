@@ -2,10 +2,9 @@
 //  Copyright (C) 2017 Microsoft.  All rights reserved.
 //  See LICENSE file in the project root for full license information.
 // 
-#pragma once
 #include <type_traits>
 
-#include "IXML.hpp"
+#include "IXml.hpp"
 #include "UnicodeConversion.hpp"
 
 // must remain in same order as XmlAttributeName

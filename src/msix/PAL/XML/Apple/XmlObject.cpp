@@ -39,7 +39,7 @@ public:
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        auto intermediate = GetAttributeNameStringUtf8(attribute);
+        auto intermediate = std::string(GetAttributeNameStringUtf8(attribute));
         return GetAttributeValue(intermediate);
     }
 

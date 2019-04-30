@@ -196,7 +196,7 @@ add_library(${PROJECT_NAME} SHARED
     msix.cpp
     ZipObject.cpp
     MSIXResource.cpp
-    IXML.cpp
+    IXml.cpp
     ${DirectoryObject}
     ${SHA256}
     ${Signature}

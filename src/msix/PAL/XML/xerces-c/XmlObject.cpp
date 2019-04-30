@@ -257,7 +257,7 @@ public:
 
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
     {
-        XercesXMLChPtr nameAttr(XMLString::transcode(GetAttributeNameStringUtf8(attribute).c_str()));
+        XercesXMLChPtr nameAttr(XMLString::transcode(GetAttributeNameStringUtf8(attribute)));
         XMLSize_t len = 0;
         XercesXMLBytePtr decodedData(XERCES_CPP_NAMESPACE::Base64::decodeToXMLByte(
             m_element->getAttribute(nameAttr.Get()),
