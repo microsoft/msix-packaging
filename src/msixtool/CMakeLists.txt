@@ -28,11 +28,9 @@ target_link_libraries(${BINARY_NAME} msix)
 if(WIN32)
     add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy "${BINARY_NAME}.exe" "makemsix.exe"
-                    WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-                    )
+                    WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 else()
     add_custom_command(TARGET ${BINARY_NAME} POST_BUILD
                     COMMAND ${CMAKE_COMMAND} -E copy "${BINARY_NAME}" "makemsix"
-                    WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}"
-                    OUTPUT_QUIET)
+                    WORKING_DIRECTORY "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 endif()
