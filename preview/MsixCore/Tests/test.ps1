@@ -125,9 +125,9 @@ else
 ShowTestHeader("Re-installing package succeeds, and overwrites files it should")
 if (test-path $notepadDir)
 {
-	# notepad++ is higher version than nppshell_06, and uninstall.exe is unversioned
-	# if a higher version nppshell_06 exists, installing the package should not overwrite it.
-	copy $notepadDir\notepad++.exe $notepadDir\nppshell_06.dll
+	# notepad++ is higher version than scilexer, and uninstall.exe is unversioned
+	# if a higher version scilexer exists, installing the package should not overwrite it.
+	copy $notepadDir\notepad++.exe $notepadDir\scilexer.dll
 	# if an unversioned file exists, installing the package *should* overwrite it with a versioned file
 	copy $notepadDir\uninstall.exe $notepadDir\notepad++.exe
 	# if an unmodified, unversioned file exists, installing the package should overwrite it with another unversioned file
@@ -141,7 +141,7 @@ if (test-path $notepadDir)
 	(dir $notepadDir\change.log).LastWriteTime = (dir $notepadDir\change.log).CreationTime.AddHours(2)
 	
 	$beginNotepadExeSize = (dir $notepadDir\notepad++.exe).length
-	$beginNppShellSize = (dir $notepadDir\nppshell_06.dll).length
+	$beginSciLexerSize = (dir $notepadDir\scilexer.dll).length
 	$beginReadmeSize = (dir $notepadDir\readme.txt).length
 	$beginChangeLogSize = (dir $notepadDir\change.log).length
 	
@@ -149,12 +149,12 @@ if (test-path $notepadDir)
 	if ($output -eq $null)
 	{
 		$afterNotepadExeSize = (dir $notepadDir\notepad++.exe).length
-		$afterNppShellSize = (dir $notepadDir\nppshell_06.dll).length
+		$afterSciLexerSize = (dir $notepadDir\scilexer.dll).length
 		$afterReadmeSize = (dir $notepadDir\readme.txt).length
 		$afterChangeLogSize = (dir $notepadDir\change.log).length
 		
 		if (($beginNotepadExeSize -ne $afterNotepadExeSize) -and
-			($beginNppShellSize -eq $afterNppShellSize) -and
+			($beginSciLexerSize -eq $afterSciLexerSize) -and
 			($beginReadmeSize -ne $afterReadmeSize) -and
 			($beginChangeLogSize -eq $afterChangeLogSize))
 		{
@@ -164,7 +164,7 @@ if (test-path $notepadDir)
 		{
 			write-host ("Reinstall did not overwrite expected files")
 			write-host ("Notepad before/after (should Not equal): $beginNotepadExeSize $afterNotepadExeSize")
-			write-host ("NppShell before/after (should equal): $beginNppShellSize  $afterNppShellSize")
+			write-host ("SciLexer before/after (should equal): $beginSciLexerSize  $afterSciLexerSize")
 			write-host ("Readme before/after (should Not equal): $beginReadmeSize $afterReadmeSize")
 			write-host ("ChangeLog before/after (should equal): $beginChangeLogSize $afterChangeLogSize")
 			writeFail

@@ -255,6 +255,11 @@ HRESULT RegistryDevirtualizer::DevirtualizeValue(RegistryKey* realKey, PCWSTR na
         TraceLoggingValue(type, "valueType"));
 
     DWORD actualType = (type & 0xff);
+    if (actualType == REG_NONE)
+    {
+        actualType = REG_SZ;
+    }
+
     if (actualType == REG_SZ)
     {
         std::wstring dataWString = reinterpret_cast<PWSTR>(&dataBuffer[0]);
