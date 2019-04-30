@@ -78,8 +78,18 @@ HRESULT ValidateTargetDeviceFamily::ParseAndValidateTargetDeviceFamilyFromPackag
         {
             TraceLoggingWrite(g_MsixTraceLoggingProvider,
                 "Target device family name and manifest min version are compatible with OS",
-                TraceLoggingLevel(WINEVENT_LEVEL_INFO));
+                TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+                TraceLoggingValue(m_targetDeviceFamilyName.c_str(), "TargetDeviceFamilyName"),
+                TraceLoggingValue(manifestMinVersion.c_str(), "ManifestMinVersion"));
             return S_OK;
+        }
+        else
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Target device family name and manifest min version are not compatible with OS",
+                TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+                TraceLoggingValue(m_targetDeviceFamilyName.c_str(), "TargetDeviceFamilyName"),
+                TraceLoggingValue(manifestMinVersion.c_str(), "ManifestMinVersion"));
         }
 
         RETURN_IF_FAILED(dependencyEnum->MoveNext(&hc));
