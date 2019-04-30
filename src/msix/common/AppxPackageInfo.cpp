@@ -6,7 +6,7 @@
 #include "AppxManifestObject.hpp"
 #include "UnicodeConversion.hpp"
 #include "Encoding.hpp"
-#include "SHA256.hpp"
+#include "Crypto.hpp"
 #include "Enumerators.hpp"
 
 #include <regex>

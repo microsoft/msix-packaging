@@ -8,7 +8,7 @@
 #include "MsixErrors.hpp"
 #include "Exceptions.hpp"
 #include "ContentType.hpp"
-#include "SHA256.hpp"
+#include "Crypto.hpp"
 
 #include <string>
 #include <memory>

@@ -8,7 +8,7 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "ComHelper.hpp"
-#include "SHA256.hpp"
+#include "Crypto.hpp"
 
 #include <string>
 #include <map>

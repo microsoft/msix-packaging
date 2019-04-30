@@ -3,7 +3,7 @@
 //  See LICENSE file in the project root for full license information.
 // 
 #include "Exceptions.hpp"
-#include "SHA256.hpp"
+#include "Crypto.hpp"
 
 #include "openssl/sha.h"
 

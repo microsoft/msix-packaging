@@ -5,7 +5,7 @@
 #pragma once
 #include "AppxPackaging.hpp"
 #include "AppxSignature.hpp"
-#include "SHA256.hpp"
+#include "Crypto.hpp"
 
 #include <vector>
 #include <map>

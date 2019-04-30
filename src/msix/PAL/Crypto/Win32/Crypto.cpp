@@ -9,7 +9,7 @@
 #include <winternl.h>
 #include <winerror.h>
 #include "Exceptions.hpp"
-#include "SHA256.hpp"
+#include "Crypto.hpp"
 
 #include <memory>
 #include <vector>
