@@ -289,7 +289,7 @@ public:
 // Defines the grammar of commands and each command's associated options,
 int main(int argc, char* argv[])
 {
-    std::cout << "Microsoft (R) makemsix version " << SDK_VERSION << std::endl;
+    std::cout << "Microsoft (R) msixtool version " << SDK_VERSION << std::endl;
     std::cout << "Copyright (C) 2017 Microsoft.  All rights reserved." << std::endl;
 
     std::vector<Command> commands = {

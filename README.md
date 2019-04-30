@@ -14,7 +14,7 @@ The MSIX SDK project includes cross platform API support for unpacking of .msix/
 |                                      |                                 |
 |--------------------------------------|---------------------------------|
 | **msix**      | A shared library (DLL on Win32, dylib on macOS, SO on Linux and Android) that exports a subset of the functionality contained within appxpackaging.dll on Windows. See [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) for additional details.<br />On all platforms instead of CoCreating IAppxFactory, a C-style export: CoCreateAppxFactory is provided. Similarly, the CoCreateAppxBundleFactory export is equivalent as CoCreating IAppxBundleFactory.<br /><br /> The 'UnpackPackage' and 'UnpackBundle' exports that provide a simplified unpackage implementation. See the [samples directory](sample) for usage of the SDK.|
-| **makemsix**  | A command line wrapper over the UnpackPackage and UnpackBundle implementations.  This tool exists primarily as a means of validating the implementation of the MSIX SDK internal routines and is compiled for Win32, macOS, and Linux platforms.|
+| **msixtool**  | A command line wrapper over the UnpackPackage and UnpackBundle implementations.  This tool exists primarily as a means of validating the implementation of the MSIX SDK internal routines and is compiled for Win32, macOS, and Linux platforms.  msixtool used be named makemsix. For compatibility reasons, a copy of msixtool is generated after is built and named makemsix. This copy will be removed in a future release.|
 
 Guidance on how to package your app contents and construct your app manifest such that it can take advantage of the cross platform support of this SDK is [here](tdf-guidance.md).
 
@@ -172,7 +172,7 @@ Built in the Azure Pipelines Hosted Ubuntu 1604. See specification [here](https:
 
 ## Windows 7 support
 The MSIX SDK is fully supported and tested on Windows 7. However, an Application Manifest **_MUST_**  be included to any executable that is expected to run on Windows 7 and uses msix.dll. Specifically, the Application Manifest **_MUST_**  include the supportedOS flags for Windows 7. The manifest is not included on msix.dll because the compat manifest doesn't matter on DLLs.
-See the [manifest](manifest.cmakein) that is used for makemsix and samples of this project as example. The Windows 7 machine might also require the [Microsoft Visual C++ Redistributable](https://www.visualstudio.com/downloads/) binaries installed to run properly.
+See the [manifest](manifest.cmakein) that is used for msixtool and samples of this project as example. The Windows 7 machine might also require the [Microsoft Visual C++ Redistributable](https://www.visualstudio.com/downloads/) binaries installed to run properly.
 
 ## Android support
 The MSIX SDK minimum supported for Android is API Level 19.

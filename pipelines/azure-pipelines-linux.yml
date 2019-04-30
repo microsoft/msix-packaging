@@ -69,7 +69,7 @@ jobs:
     inputs:
       SourceFolder: .vs
       Contents: |
-        bin/makemsix
+        bin/msixtool
         lib/libmsix*
         lib/libmsix*/**
         src/msix/AppxPackaging.hpp

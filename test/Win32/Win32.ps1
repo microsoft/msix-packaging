@@ -5,15 +5,15 @@ $global:BINDIR=""
 
 function FindBinFolder {
     write-host "Searching under" (Get-Item -Path ".\" -Verbose).FullName -ForegroundColor Magenta
-    if (Test-Path "..\..\.vs\bin\makemsix.exe" )
+    if (Test-Path "..\..\.vs\bin\msixtool.exe" )
     {
         $global:BINDIR="..\..\.vs\bin"
     }
-    elseif (Test-Path "..\..\.vscode\bin\makemsix.exe" )
+    elseif (Test-Path "..\..\.vscode\bin\msixtool.exe" )
     {
         $global:BINDIR="..\..\.vscode\bin"
     }
-    elseif (Test-Path "..\..\build\bin\makemsix.exe")
+    elseif (Test-Path "..\..\build\bin\msixtool.exe")
     {
         $global:BINDIR="..\..\build\bin"
     }
@@ -81,10 +81,10 @@ function RunTest([int] $SUCCESSCODE, [string] $PACKAGE, [string] $OPT) {
     CleanupUnpackFolder
     $OPTIONS = "unpack -d .\..\unpack -p $PACKAGE $OPT"
     write-host  "------------------------------------------------------"
-    write-host  "$BINDIR\makemsix.exe $OPTIONS"
+    write-host  "$BINDIR\msixtool.exe $OPTIONS"
     write-host  "------------------------------------------------------"
 
-    $p = Start-Process $BINDIR\makemsix.exe -ArgumentList "$OPTIONS" -wait -NoNewWindow -PassThru
+    $p = Start-Process $BINDIR\msixtool.exe -ArgumentList "$OPTIONS" -wait -NoNewWindow -PassThru
     #$p.HasExited
     $ERRORCODE = $p.ExitCode
     $a = "{0:x0}" -f $SUCCESSCODE

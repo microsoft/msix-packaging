@@ -4,13 +4,13 @@ directory=$1
 function FindBinFolder {
     echo "Searching under" $PWD
     #look in .vs/bin first
-    if [ -e "../../.vs/bin/makemsix" ]
+    if [ -e "../../.vs/bin/msixtool" ]
     then
         BINDIR="../../.vs/bin"
-    elif [ -e "../../.vscode/bin/makemsix" ]
+    elif [ -e "../../.vscode/bin/msixtool" ]
     then
         BINDIR="../../.vscode/bin"
-    elif [ -e "../../build/bin/makemsix" ]
+    elif [ -e "../../build/bin/msixtool" ]
     then
         BINDIR="../../build/bin"
     else
@@ -51,9 +51,9 @@ function RunTest {
     local UNPACKFOLDER="$2"
     local ARGS="$3"
     echo "------------------------------------------------------"
-    echo $BINDIR/makemsix unpack -d ./../unpack -p $UNPACKFOLDER $ARGS
+    echo $BINDIR/msixtool unpack -d ./../unpack -p $UNPACKFOLDER $ARGS
     echo "------------------------------------------------------"
-    $BINDIR/makemsix unpack -d ./../unpack -p $UNPACKFOLDER $ARGS
+    $BINDIR/msixtool unpack -d ./../unpack -p $UNPACKFOLDER $ARGS
     local RESULT=$?
     echo "expect: "$SUCCESS", got: "$RESULT
     if [ $RESULT -eq $SUCCESS ]

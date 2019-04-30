@@ -85,7 +85,7 @@ jobs:
         src\msix\AppxPackaging.hpp
         src\msix\MSIXWindows.hpp
         src\msix\MsixErrors.hpp
-        bin\makemsix.*
+        bin\msixtool.*
         bin\*.dll
         lib\msix.lib
         Package.nuspec

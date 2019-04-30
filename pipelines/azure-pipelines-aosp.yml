@@ -67,7 +67,7 @@ jobs:
     inputs:
       SourceFolder: .vs
       Contents: |
-        bin/makemsix
+        bin/msixtool
         lib/libmsix*
         lib/libmsix*/**
         lib/msix-jni.jar
