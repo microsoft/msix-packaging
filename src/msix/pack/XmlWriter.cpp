@@ -77,7 +77,7 @@ namespace MSIX {
 
         ComPtr<IStream> XmlWriter::GetStream()
         {
-            ThrowErrorIf(Error::XmlError, m_state == State::Finish, "Invalid call, the stream can only be accessed when the writer is done");
+            ThrowErrorIf(Error::XmlError, m_state != State::Finish, "Invalid call, the stream can only be accessed when the writer is done");
             return m_stream;
         }
 

@@ -69,6 +69,7 @@ namespace MSIX {
 
         void ProcessPayloadFile(const std::string& name, const ComPtr<IStream>& stream, 
             const std::string& contentType, APPX_COMPRESSION_OPTION compressionOpt);
+        bool IsFootPrintFile(std::string normalized);
 
         WriterState m_state;
         ComPtr<IStream> m_outputStream;

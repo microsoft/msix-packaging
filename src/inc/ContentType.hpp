@@ -11,12 +11,21 @@
 
 namespace MSIX {
 
-    typedef std::pair<std::string, APPX_COMPRESSION_OPTION> ContentTypeData;
-
     class ContentType
     {
     public:
-        static const ContentTypeData GetExtensionContentTypeData(std::string& ext);
+        ContentType(std::string contentType, APPX_COMPRESSION_OPTION compressionOpt) :
+            m_contentType(contentType), m_compressionOpt(compressionOpt)
+        {}
+
+        const std::string& GetContentType() { return m_contentType; }
+        APPX_COMPRESSION_OPTION GetCompressionOpt() { return m_compressionOpt; }
+
+        static const ContentType& GetContentTypeByExtension(std::string& ext);
         static const std::string GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE footprintFile);
+    
+    private:
+        APPX_COMPRESSION_OPTION m_compressionOpt;
+        std::string m_contentType;
     };
 }

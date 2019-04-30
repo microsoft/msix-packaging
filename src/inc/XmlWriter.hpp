@@ -34,7 +34,7 @@ namespace MSIX {
             StartWrite(root);
         }
 
-        XmlWriter(const std::string& root, ComPtr<IStream>& targetStream) : m_stream(std::move(targetStream))
+        XmlWriter(const std::string& root, IStream* targetStream) : m_stream(ComPtr<IStream>(targetStream))
         {
             StartWrite(root);
         }

@@ -18,8 +18,6 @@
 
 namespace MSIX {
 
-    static const std::uint32_t defaultBlockSize = 65536;
-
     AppxPackageWriter::AppxPackageWriter(IStream* outputStream) : m_outputStream(outputStream)
     {
         m_state = WriterState::Open;
@@ -29,16 +27,20 @@ namespace MSIX {
     void AppxPackageWriter::Pack(const ComPtr<IDirectoryObject>& from)
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
-        auto fileMap = from->GetPayloadFilesByLastModDate();
+        auto fileMap = from->GetFilesByLastModDate();
         for(const auto& file : fileMap)
         {
-            std::string ext = file.second.substr(file.second.find_last_of(".") + 1);
-            std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-            auto contentTypeData = ContentType::GetExtensionContentTypeData(ext);
-            ProcessPayloadFile(file.second, from.As<IStorageObject>()->GetFile(file.second), contentTypeData.first, contentTypeData.second);
+            // If any footprint file is present, ignore it. We only require the AppxManifest.xml
+            // and any other will be ignored and a new one will be created for the package. 
+            if(!IsFootPrintFile(file.second))
+            {
+                std::string ext = file.second.substr(file.second.find_last_of(".") + 1);
+                std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
+                auto contentType = ContentType::GetContentTypeByExtension(ext);
+                ProcessPayloadFile(file.second, from.As<IStorageObject>()->GetFile(file.second),
+                    contentType.GetContentType(), contentType.GetCompressionOpt());
+            }
         }
-
-        m_contentTypeWriter.Close();
 
         NOTIMPLEMENTED
     }
@@ -64,6 +66,7 @@ namespace MSIX {
         APPX_COMPRESSION_OPTION compressionOption, IStream* inputStream) noexcept try
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
+        ThrowErrorIf(Error::InvalidParameter, IsFootPrintFile(fileName), "Trying to add footprint file to package");
         ComPtr<IStream> stream(inputStream);
         ProcessPayloadFile(fileName, stream, contentType, compressionOption);
         NOTIMPLEMENTED
@@ -77,8 +80,9 @@ namespace MSIX {
         // TODO: use memoryLimit for how many files are going to be added
         for(UINT32 i = 0; i < fileCount; i++)
         {
-            ComPtr<IStream> stream(payloadFiles[i].inputStream);
             std::string fileName = wstring_to_utf8(payloadFiles[i].fileName);
+            ThrowErrorIf(Error::InvalidParameter, IsFootPrintFile(fileName), "Trying to add footprint file to package");
+            ComPtr<IStream> stream(payloadFiles[i].inputStream);
             std::string contentType = wstring_to_utf8(payloadFiles[i].contentType);
             ProcessPayloadFile(fileName, stream, contentType, payloadFiles[i].compressionOption);
         }
@@ -94,6 +98,7 @@ namespace MSIX {
         // TODO: use memoryLimit for how many files are going to be added
         for(UINT32 i = 0; i < fileCount; i++)
         {
+            ThrowErrorIf(Error::InvalidParameter, IsFootPrintFile(payloadFiles[i].fileName), "Trying to add footprint file to package");
             ComPtr<IStream> stream(payloadFiles[i].inputStream);
             ProcessPayloadFile(payloadFiles[i].fileName, stream, payloadFiles[i].contentType, payloadFiles[i].compressionOption);
         }
@@ -125,7 +130,7 @@ namespace MSIX {
         while (bytesToRead > 0)
         {
             // Calculate the size of the next block to add
-            std::uint32_t blockSize = (bytesToRead > defaultBlockSize) ? defaultBlockSize : static_cast<std::uint32_t>(bytesToRead);
+            std::uint32_t blockSize = (bytesToRead > DefaultBlockSize) ? DefaultBlockSize : static_cast<std::uint32_t>(bytesToRead);
             bytesToRead -= blockSize;
 
             // read block from stream
@@ -141,15 +146,32 @@ namespace MSIX {
                 MSIX::SHA256::ComputeHash(block.data(), static_cast<uint32_t>(block.size()), hash), 
                 "Invalid signature");
 
-            m_blockMapWriter.AddBlock(hash, (isCompress) ? blockSize : 0);
-
             // TODO: compress block if needed
+            // if(isCompress)
+            //{
+            //    std::vector<std::uint8_t> compressedBuffer;
+            //    get new compressed block
+            //    block.swap(compressedBuffer);
+            //}
+
+            // Add block to blockmap
+            m_blockMapWriter.AddBlock(hash, block.size());
 
         }
 
         // TODO: add compressed/uncompressed data to zip
 
         // TODO: add cdh to zip
+    }
+
+    bool AppxPackageWriter::IsFootPrintFile(std::string normalized)
+    {
+        std::transform(normalized.begin(), normalized.end(), normalized.begin(), ::tolower);
+        return ((normalized == "appxmanifest.xml") ||
+                (normalized == "appxsignature.p7x") ||
+                (normalized == "[content_types].xml") ||
+                (normalized.rfind("appxmetadata", 0) != std::string::npos) ||
+                (normalized.rfind("microsoft.system.package.metadata", 0) != std::string::npos));
     }
 
 }

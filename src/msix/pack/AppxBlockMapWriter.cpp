@@ -55,7 +55,7 @@ namespace MSIX {
         // TODO: convert hash to base64.
         std::string hashBase64;
         m_xmlWriter.StartElement(blockElement);
-        if(size != 0)
+        if(size != DefaultBlockSize)
         {
             m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(size));
         }

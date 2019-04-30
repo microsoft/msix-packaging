@@ -11,13 +11,15 @@
 
 namespace MSIX {
 
+    static const std::uint32_t DefaultBlockSize = 65536;
+
     class BlockMapWriter final
     {
     public:
         BlockMapWriter();
 
         void AddFile(const std::string& name, std::uint64_t uncompressedSize, std::uint32_t lfh);
-        void AddBlock(const std::vector<std::uint8_t>& hash, std::size_t size = 0);
+        void AddBlock(const std::vector<std::uint8_t>& hash, std::size_t size);
         void CloseFile();
         void Close();
         ComPtr<IStream> GetStream() { return m_xmlWriter.GetStream(); }

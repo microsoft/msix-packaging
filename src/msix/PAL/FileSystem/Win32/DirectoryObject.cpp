@@ -170,7 +170,7 @@ namespace MSIX {
         return result;
     }
 
-    std::multimap<std::uint64_t, std::string> DirectoryObject::GetPayloadFilesByLastModDate()
+    std::multimap<std::uint64_t, std::string> DirectoryObject::GetFilesByLastModDate()
     {
         THROW_IF_PACK_NOT_ENABLED
         std::multimap<std::uint64_t, std::string> files;
@@ -184,11 +184,7 @@ namespace MSIX {
                 std::string fileName = root + GetPathSeparator() + name;
                 // root contains the top level directory, which we don't need
                 fileName = fileName.substr(rootSize);
-                // Ignore footprint files, non fatal
-                if(!IsFootPrintFile(fileName))
-                {
-                    files.insert(std::make_pair(size, std::move(fileName)));
-                }
+                files.insert(std::make_pair(size, std::move(fileName)));
                 return true;
             });
         return files;
