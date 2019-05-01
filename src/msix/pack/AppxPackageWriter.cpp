@@ -144,7 +144,7 @@ namespace MSIX {
             ULONG bytesRead;
             ThrowHrIfFailed(stream->Read(static_cast<void*>(block.data()), static_cast<ULONG>(blockSize), &bytesRead));
             ThrowErrorIfNot(Error::FileRead, (static_cast<ULONG>(blockSize) == bytesRead), "Read stream file failed");
-            crc = crc32(crc, block.data(), static_cast<uInt>(block.size()));
+            //crc = crc32(crc, block.data(), static_cast<uInt>(block.size()));
 
             // hash block
             std::vector<std::uint8_t> hash;
