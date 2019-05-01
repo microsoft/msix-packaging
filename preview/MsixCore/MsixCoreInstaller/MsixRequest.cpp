@@ -67,8 +67,8 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
 {
     //HandlerName                             Function to create                          NextHandler (on success)                 ErrorHandlingMode    ErrorHandler (when ExecuteErrorHandler)
     {PopulatePackageInfo::HandlerName,        {PopulatePackageInfo::CreateHandler,        ValidateTargetDeviceFamily::HandlerName, ReturnError,         nullptr}},
-    {ValidateTargetDeviceFamily::HandlerName, {ValidateTargetDeviceFamily::CreateHandler, ProcessPotentialUpdate::HandlerName,     ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {ProcessPotentialUpdate::HandlerName,     {ProcessPotentialUpdate::CreateHandler,     Extractor::HandlerName,                  ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {ValidateTargetDeviceFamily::HandlerName, {ValidateTargetDeviceFamily::CreateHandler, ProcessPotentialUpdate::HandlerName,     ReturnError,         nullptr}},
+    {ProcessPotentialUpdate::HandlerName,     {ProcessPotentialUpdate::CreateHandler,     Extractor::HandlerName,                  ReturnError,         nullptr}},
     {Extractor::HandlerName,                  {Extractor::CreateHandler,                  StartMenuLink::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartMenuLink::HandlerName,              {StartMenuLink::CreateHandler,              AddRemovePrograms::HandlerName,          ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {AddRemovePrograms::HandlerName,          {AddRemovePrograms::CreateHandler,          Protocol::HandlerName,                   ExecuteErrorHandler, ErrorHandler::HandlerName}},
@@ -157,12 +157,12 @@ HRESULT MsixRequest::ProcessAddRequest()
         }
         if (FAILED(hr) && currentHandler.errorMode != IgnoreAndProcessNextHandler)
         {
-            currentHandlerName = currentHandler.errorHandler;
             if (currentHandler.errorMode == ReturnError)
             {
                 m_msixResponse->SetErrorStatus(hr, L"Failed to process add request");
                 return hr;
             }
+            currentHandlerName = currentHandler.errorHandler;
         }
         else
         {
