@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <functional>
 
+#include <zlib.h>
+
 namespace MSIX {
 
     AppxPackageWriter::AppxPackageWriter(IStream* outputStream) : m_outputStream(outputStream)
@@ -126,7 +128,10 @@ namespace MSIX {
         // Add file to block map
         m_blockMapWriter.AddFile(name, uncompressedSize, 0 /* TODO: change this to lfh size*/);
 
+        std::vector<std::uint8_t> buffer;
         std::uint64_t bytesToRead = uncompressedSize;
+        std::uint32_t crc = 0;
+
         while (bytesToRead > 0)
         {
             // Calculate the size of the next block to add
@@ -139,12 +144,16 @@ namespace MSIX {
             ULONG bytesRead;
             ThrowHrIfFailed(stream->Read(static_cast<void*>(block.data()), static_cast<ULONG>(blockSize), &bytesRead));
             ThrowErrorIfNot(Error::FileRead, (static_cast<ULONG>(blockSize) == bytesRead), "Read stream file failed");
+            crc = crc32(crc, block.data(), static_cast<uInt>(block.size()));
 
             // hash block
             std::vector<std::uint8_t> hash;
             ThrowErrorIfNot(MSIX::Error::SignatureInvalid, 
                 MSIX::SHA256::ComputeHash(block.data(), static_cast<uint32_t>(block.size()), hash), 
                 "Invalid signature");
+
+            // Add block to blockmap
+            m_blockMapWriter.AddBlock(hash, block.size());
 
             // TODO: compress block if needed
             // if(isCompress)
@@ -154,9 +163,7 @@ namespace MSIX {
             //    block.swap(compressedBuffer);
             //}
 
-            // Add block to blockmap
-            m_blockMapWriter.AddBlock(hash, block.size());
-
+            buffer.insert(buffer.end(), block.begin(), block.end());
         }
 
         // TODO: add compressed/uncompressed data to zip

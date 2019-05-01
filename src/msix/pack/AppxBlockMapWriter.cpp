@@ -43,10 +43,12 @@ namespace MSIX {
     // <File Size="18944" Name="App1.exe" LfhSize="38">
     void BlockMapWriter::AddFile(const std::string& name, std::uint64_t uncompressedSize, std::uint32_t lfh)
     {
-        // TODO: might need sway \ to //. For the blockmap we always use the windows separator.
+        // For the blockmap we always use the windows separator.
+        std::string winName = name;
+        std::replace(winName.begin(), winName.end(), '/', '\\');
         m_xmlWriter.StartElement(fileElement);
         m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(uncompressedSize));
-        m_xmlWriter.AddAttribute(nameAttribute, name);
+        m_xmlWriter.AddAttribute(nameAttribute, winName);
         m_xmlWriter.AddAttribute(lfhSizeAttribute, std::to_string(lfh));
     }
 
