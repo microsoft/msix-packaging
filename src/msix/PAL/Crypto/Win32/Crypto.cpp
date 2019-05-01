@@ -9,7 +9,8 @@
 #include <winternl.h>
 #include <winerror.h>
 #include "Exceptions.hpp"
-#include "SHA256.hpp"
+#include "Crypto.hpp"
+#include "UnicodeConversion.hpp"
 
 #include <memory>
 #include <vector>
@@ -104,5 +105,18 @@ namespace MSIX {
         "failed computing SHA256 hash");
 
         return true;
+    }
+
+    std::string Base64::ComputeBase64(const std::vector<std::uint8_t>& buffer)
+    {
+        std::wstring result;
+        DWORD encodingFlags = CRYPT_STRING_BASE64 | CRYPT_STRING_NOCRLF;
+        DWORD encodedHashSize = 0;
+        ThrowHrIfFalse(CryptBinaryToStringW(buffer.data(), static_cast<DWORD>(buffer.size()), encodingFlags, nullptr, &encodedHashSize),
+            "CryptBinaryToStringW failed");
+        result.resize(encodedHashSize);
+        ThrowHrIfFalse(CryptBinaryToStringW(buffer.data(), static_cast<DWORD>(buffer.size()), encodingFlags, const_cast<wchar_t*>(result.data()), &encodedHashSize),
+            "CryptBinaryToStringW failed");
+        return wstring_to_utf8(result);
     }
 }

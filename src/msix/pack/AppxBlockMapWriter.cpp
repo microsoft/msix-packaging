@@ -5,6 +5,7 @@
 
 #include "XmlWriter.hpp"
 #include "AppxBlockMapWriter.hpp"
+#include "Crypto.hpp"
 
 #include <vector>
 
@@ -42,24 +43,24 @@ namespace MSIX {
     // <File Size="18944" Name="App1.exe" LfhSize="38">
     void BlockMapWriter::AddFile(const std::string& name, std::uint64_t uncompressedSize, std::uint32_t lfh)
     {
-        // TODO: might need sway \ to //. For the blockmap we always use the windows separator.
+        // For the blockmap we always use the windows separator.
+        std::string winName = name;
+        std::replace(winName.begin(), winName.end(), '/', '\\');
         m_xmlWriter.StartElement(fileElement);
         m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(uncompressedSize));
-        m_xmlWriter.AddAttribute(nameAttribute, name);
+        m_xmlWriter.AddAttribute(nameAttribute, winName);
         m_xmlWriter.AddAttribute(lfhSizeAttribute, std::to_string(lfh));
     }
 
     // <Block Size="2948" Hash="ORIk+3QF9mSpuOq51oT3Xqn0Gy0vcGbnBRn5lBg5irM="/>
     void BlockMapWriter::AddBlock(const std::vector<std::uint8_t>& hash, std::size_t size)
     {
-        // TODO: convert hash to base64.
-        std::string hashBase64;
         m_xmlWriter.StartElement(blockElement);
         if(size != DefaultBlockSize)
         {
             m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(size));
         }
-        m_xmlWriter.AddAttribute(hashAttribute, hashBase64);
+        m_xmlWriter.AddAttribute(hashAttribute, Base64::ComputeBase64(hash));
         m_xmlWriter.CloseElement();
     }
 

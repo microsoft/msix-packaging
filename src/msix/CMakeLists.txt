@@ -48,7 +48,7 @@ endif()
 
 if(CRYPTO_LIB MATCHES crypt32)
     message(STATUS "CRYPTO_LIB defined.  Using crypt32 library." )
-    set(SHA256 PAL/SHA256/Win32/SHA256.cpp)
+    set(Crypto PAL/Crypto/Win32/Crypto.cpp)
     set(Signature PAL/Signature/Win32/SignatureValidator.cpp)
     add_definitions(-DUSING_CRYPT32=1)
 endif()
@@ -57,7 +57,7 @@ if(CRYPTO_LIB MATCHES openssl)
     message(STATUS "CRYPTO_LIB defined.  Using OpenSSL library." )
     if(OpenSSL_FOUND)
         message(STATUS "Using OpenSSL ${OpenSLL_VERSION}")
-        set(SHA256    PAL/SHA256/OpenSSL/SHA256.cpp)
+        set(Crypto    PAL/Crypto/OpenSSL/Crypto.cpp)
         set(Signature PAL/Signature/OpenSSL/SignatureValidator.cpp)
     else()
         # ... and were done here...  :/
@@ -166,7 +166,7 @@ endif()
 
 message(STATUS "PAL: XML             = ${XmlParser}")
 message(STATUS "PAL: DirectoryObject = ${DirectoryObject}")
-message(STATUS "PAL: SHA256          = ${SHA256}")
+message(STATUS "PAL: Crypto          = ${Crypto}")
 message(STATUS "PAL: Signature       = ${Signature}")
 message(STATUS "PAL: Applicability   = ${Applicability}")
 message(STATUS "PAL: Compression     = ${CompressionObject}")
@@ -209,7 +209,7 @@ list(APPEND UnpackSrc
     unpack/InflateStream.cpp
     unpack/ZipObject.cpp
     ${DirectoryObject}
-    ${SHA256}
+    ${Crypto}
     ${Signature}
     ${XmlParser}
     ${CompressionObject}

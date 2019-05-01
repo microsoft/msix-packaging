@@ -10,7 +10,7 @@
 #include "RangeStream.hpp"
 #include "HashStream.hpp"
 #include "ComHelper.hpp"
-#include "SHA256.hpp"
+#include "Crypto.hpp"
 #include "AppxFactory.hpp"
 
 #include <string>
