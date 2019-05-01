@@ -9,7 +9,7 @@ namespace MsixCoreLib
     {
     public:
 
-        virtual HRESULT ExecuteForAddRequest(HRESULT & hrExecute) = 0;
+        virtual HRESULT ExecuteForAddRequest() = 0;
 
         virtual HRESULT ExecuteForRemoveRequest() { return S_OK; }
 

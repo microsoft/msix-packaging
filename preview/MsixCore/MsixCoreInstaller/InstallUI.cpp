@@ -310,6 +310,11 @@ HRESULT UI::ShowUI()
 
 void UI::PreprocessRequest()
 {
+    if (FAILED(m_loadingPackageInfoCode))
+    {
+        return;
+    }
+
     auto existingPackage = m_packageManager->FindPackageByFamilyName(m_packageInfo->GetPackageFamilyName());
     if (existingPackage != nullptr)
     {

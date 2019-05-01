@@ -50,10 +50,11 @@ int main(int argc, char * argv[])
 
             if (cli.IsQuietMode())
             {
-                auto res = packageManager->AddPackage(cli.GetPackageFilePathToInstall(), DeploymentOptions::None);
-                if (FAILED(res))
+                HRESULT hrAddPackage = packageManager->AddPackage(cli.GetPackageFilePathToInstall(), DeploymentOptions::None);
+                if (FAILED(hrAddPackage))
                 {
-                    return res;
+                    std::wcout << GetStringResource(IDS_STRING_FAILED_REQUEST) << " " << std::hex << hrAddPackage << std::endl;
+                    return hrAddPackage;
                 }
             }
             else
@@ -70,10 +71,11 @@ int main(int argc, char * argv[])
             RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
             auto packageFullName = cli.GetPackageFullName();
-            auto res = packageManager->RemovePackage(packageFullName);
-            if (FAILED(res))
+            HRESULT hrRemovePackage = packageManager->RemovePackage(packageFullName);
+            if (FAILED(hrRemovePackage))
             {
-                return res;
+                std::wcout << GetStringResource(IDS_STRING_FAILED_REQUEST) << " " << std::hex << hrRemovePackage << std::endl;
+                return hrRemovePackage;
             }
             break;
         }
