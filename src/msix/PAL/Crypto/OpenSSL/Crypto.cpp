@@ -6,6 +6,7 @@
 #include "Crypto.hpp"
 
 #include "openssl/sha.h"
+#include "openssl/evp.h"
 
 namespace MSIX {
     bool SHA256::ComputeHash(std::uint8_t *buffer, std::uint32_t cbBuffer, std::vector<uint8_t>& hash)
@@ -17,8 +18,10 @@ namespace MSIX {
 
     std::string Base64::ComputeBase64(const std::vector<std::uint8_t>& buffer)
     {
-        std::vector<std::uint8_t> result(((buffer.size() +2)/3)*4); // +2 for a cheap round up if it needs padding
-        EVP_EncodeBlock(static_cast<unsigned char*>(result.data()) , static_cast<unsigned char*>(buffer), cbBuffer);
+        int expectedSize = ((buffer.size() +2)/3)*4; // +2 for a cheap round up if it needs padding
+        std::vector<std::uint8_t> result(expectedSize);
+        int encodeResult = EVP_EncodeBlock(static_cast<unsigned char*>(result.data()), const_cast<unsigned char*>(buffer.data()), buffer.size());
+        ThrowErrorIf(Error::Unexpected, expectedSize != encodeResult, "Error computing base64");
         return std::string(result.begin(), result.end());
     }
 }
