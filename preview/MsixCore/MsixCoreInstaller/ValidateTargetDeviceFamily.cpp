@@ -15,24 +15,11 @@ const PCWSTR ValidateTargetDeviceFamily::HandlerName = L"ValidateTargetDeviceFam
 
 HRESULT ValidateTargetDeviceFamily::ExecuteForAddRequest()
 {
-    RETURN_IF_FAILED(ParseTargetDeviceFamilyFromPackage());
-    if (IsTargetDeviceFamilyNameCompatibleWithOS() && IsManifestVersionCompatibleWithOS())
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Target device family name and manifest min version are compatible with OS",
-            TraceLoggingLevel(WINEVENT_LEVEL_INFO));
-    }
-    else
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Target device family name or manifest min version are not compatible with the OS",
-            TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_REJECTED);
-    }
+    RETURN_IF_FAILED(ParseAndValidateTargetDeviceFamilyFromPackage());
     return S_OK;
 }
 
-HRESULT ValidateTargetDeviceFamily::ParseTargetDeviceFamilyFromPackage()
+HRESULT ValidateTargetDeviceFamily::ParseAndValidateTargetDeviceFamilyFromPackage()
 {
     auto packageInfo = m_msixRequest->GetPackageInfo();
 
@@ -58,33 +45,60 @@ HRESULT ValidateTargetDeviceFamily::ParseTargetDeviceFamilyFromPackage()
         return HRESULT_FROM_WIN32(ERROR_INSTALL_REJECTED);
     }
 
-    ComPtr<IMsixElement> dependencyElement;
-    RETURN_IF_FAILED(dependencyEnum->GetCurrent(&dependencyElement));
+    while (hc)
+    {
+        ComPtr<IMsixElement> dependencyElement;
+        RETURN_IF_FAILED(dependencyEnum->GetCurrent(&dependencyElement));
 
-    Text<wchar_t> targetDeviceFamilyName;
-    RETURN_IF_FAILED(dependencyElement->GetAttributeValue(L"Name", &targetDeviceFamilyName));
-    m_targetDeviceFamilyName = targetDeviceFamilyName.Get();
+        Text<wchar_t> targetDeviceFamilyName;
+        RETURN_IF_FAILED(dependencyElement->GetAttributeValue(L"Name", &targetDeviceFamilyName));
+        m_targetDeviceFamilyName = targetDeviceFamilyName.Get();
 
-    Text<wchar_t> minVersion;
-    RETURN_IF_FAILED(dependencyElement->GetAttributeValue(L"MinVersion", &minVersion));
-    std::wstring manifestMinVersion = minVersion.Get();
+        Text<wchar_t> minVersion;
+        RETURN_IF_FAILED(dependencyElement->GetAttributeValue(L"MinVersion", &minVersion));
+        std::wstring manifestMinVersion = minVersion.Get();
 
-    /// Major version
-    size_t start = 0;
-    size_t end = manifestMinVersion.find_first_of(L'.');
-    m_majorVersion = manifestMinVersion.substr(start, end - start);
+        /// Major version
+        size_t start = 0;
+        size_t end = manifestMinVersion.find_first_of(L'.');
+        m_majorVersion = manifestMinVersion.substr(start, end - start);
 
-    /// Minor version
-    manifestMinVersion.replace(start, end - start + 1, L"");
-    end = manifestMinVersion.find_first_of(L'.');
-    m_minorVersion = manifestMinVersion.substr(start, end - start);
+        /// Minor version
+        manifestMinVersion.replace(start, end - start + 1, L"");
+        end = manifestMinVersion.find_first_of(L'.');
+        m_minorVersion = manifestMinVersion.substr(start, end - start);
 
-    /// Build number
-    manifestMinVersion.replace(start, end - start + 1, L"");
-    end = manifestMinVersion.find_first_of(L'.');
-    m_buildNumber = manifestMinVersion.substr(start, end - start);
+        /// Build number
+        manifestMinVersion.replace(start, end - start + 1, L"");
+        end = manifestMinVersion.find_first_of(L'.');
+        m_buildNumber = manifestMinVersion.substr(start, end - start);
 
-    return S_OK;
+        /// Return if any one of the target device families are compatible with OS
+        if (IsTargetDeviceFamilyNameCompatibleWithOS() && IsManifestVersionCompatibleWithOS())
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Target device family name and manifest min version are compatible with OS",
+                TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+                TraceLoggingValue(m_targetDeviceFamilyName.c_str(), "TargetDeviceFamilyName"),
+                TraceLoggingValue(minVersion.Get(), "ManifestMinVersion"));
+            return S_OK;
+        }
+        else
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Target device family name and manifest min version are not compatible with OS",
+                TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+                TraceLoggingValue(m_targetDeviceFamilyName.c_str(), "TargetDeviceFamilyName"),
+                TraceLoggingValue(minVersion.Get(), "ManifestMinVersion"));
+        }
+
+        RETURN_IF_FAILED(dependencyEnum->MoveNext(&hc));
+    }
+
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Target device family name or manifest min version are not compatible with the OS",
+        TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+    return HRESULT_FROM_WIN32(ERROR_INSTALL_REJECTED);
 }
 
 bool ValidateTargetDeviceFamily::IsTargetDeviceFamilyNameCompatibleWithOS()
