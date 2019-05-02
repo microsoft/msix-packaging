@@ -277,10 +277,12 @@ int ParseAndRun(std::vector<Command>& commands, int argc, char* argv[])
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
         );
+    #ifdef MSIX_PACK
     case UserSpecified::Pack:
         return PackPackage(state.validationOptions, 
             const_cast<char*>(state.directoryName.c_str()),
             const_cast<char*>(state.packageName.c_str()));
+    #endif
     }
     return -1; // should never end up here.
 }
@@ -347,6 +349,7 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return false; })
             })
         },
+        #ifdef MSIX_PACK
         {   Command("pack", "Pack files from disk to a package",
                 [](State& state) { return state.Specify(UserSpecified::Pack); },
             {
@@ -358,6 +361,7 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return false; })
             })
         },
+        #endif
         {   Command("-?", "Displays this help text.",
                 [](State& state) { return state.Specify(UserSpecified::Help);}, {})
         },

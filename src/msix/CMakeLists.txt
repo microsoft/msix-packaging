@@ -6,70 +6,8 @@ cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
 project(msix)
 
-# TODO: Only define this when we want pack
-add_definitions(-DMSIX_PACK=1)
-
-if(SKIP_BUNDLES)
-    message(STATUS "Bundle support disabled.")
-else()
-    add_definitions(-DBUNDLE_SUPPORT=1)
-endif()
-
-# Define PALs
-if(XML_PARSER MATCHES xerces)
-    message(STATUS "XML_PARSER defined.  Using XERCES-C XML parser." )
-    set(XmlParser PAL/XML/xerces-c/XmlObject.cpp)
-    add_definitions(-DUSING_XERCES=1)
-endif()
-
-if(XML_PARSER MATCHES javaxml)
-    message(STATUS "XML_PARSER defined.  Using javaxml parser." )
-    set(XmlParser PAL/XML/AOSP/XmlObject.cpp)
-    add_definitions(-DUSING_JAVAXML=1)
-endif()
-
-if(XML_PARSER MATCHES applexml)
-    message(STATUS "XML_PARSER defined.  Using apple xml parser." )
-    set(XmlParser)
-    list(APPEND XmlParser
-        "PAL/XML/APPLE/XmlObject.cpp"
-        "PAL/XML/APPLE/NSXmlParserDelegateWrapper.mm"
-        "PAL/XML/APPLE/NSXmlParserWrapper.mm"
-        "PAL/XML/APPLE/XmlDocumentReader.cpp"
-    )
-    add_definitions(-DUSING_APPLE_XML=1)
-endif()
-
-if(XML_PARSER MATCHES msxml6)
-    message(STATUS "XML_PARSER defined.  Using MSXML6 XML parser." )
-    set(XmlParser PAL/XML/msxml6/XmlObject.cpp)
-    add_definitions(-DUSING_MSXML=1)
-endif()
-
-if(CRYPTO_LIB MATCHES crypt32)
-    message(STATUS "CRYPTO_LIB defined.  Using crypt32 library." )
-    set(Crypto PAL/Crypto/Win32/Crypto.cpp)
-    set(Signature PAL/Signature/Win32/SignatureValidator.cpp)
-    add_definitions(-DUSING_CRYPT32=1)
-endif()
-
-if(CRYPTO_LIB MATCHES openssl)
-    message(STATUS "CRYPTO_LIB defined.  Using OpenSSL library." )
-    if(OpenSSL_FOUND)
-        message(STATUS "Using OpenSSL ${OpenSLL_VERSION}")
-        set(Crypto    PAL/Crypto/OpenSSL/Crypto.cpp)
-        set(Signature PAL/Signature/OpenSSL/SignatureValidator.cpp)
-    else()
-        # ... and were done here...  :/
-        message(STATUS "OpenSSL NOT FOUND!")
-        return()
-    endif()
-endif()
-
-if(WIN32)
-    set(DirectoryObject PAL/FileSystem/Win32/DirectoryObject.cpp)
-    set(Applicability PAL/Applicability/Win32/Applicability.cpp)
-else()
+# Handle exports and flags we need to set
+if(NOT WIN32)
     # Visibility variables for non-win32 platforms
     list(APPEND MSIX_UNPACK_EXPORTS
         "UnpackPackage"
@@ -77,10 +15,11 @@ else()
         "UnpackBundle"
         "UnpackBundleFromStream"
     )
-    # TODO: Only define this when we want pack
-    list(APPEND MSIX_PACK_EXPORTS
-        "PackPackage"
-    )
+    if(MSIX_PACK)
+        list(APPEND MSIX_PACK_EXPORTS
+            "PackPackage"
+        )
+    endif()
     list(APPEND MSIX_EXPORTS
         "CoCreateAppxFactory"
         "CoCreateAppxFactoryWithHeap"
@@ -106,15 +45,6 @@ else()
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/exports.def.cmakein ${CMAKE_CURRENT_BINARY_DIR}/exports.def CRLF)
         set(DEFINE_EXPORTS  "-exported_symbols_list ${CMAKE_CURRENT_BINARY_DIR}/exports.def")
         # used to get the languages of the device
-        find_library(COREFOUNDATION_LIBRARY CoreFoundation)
-        if(NOT COREFOUNDATION_LIBRARY)
-            message(FATAL_ERROR "CoreFoundation library not found")
-        endif()
-        find_library(FOUNDATION_LIBRARY Foundation)
-        if(NOT FOUNDATION_LIBRARY)
-            message(FATAL_ERROR "Foundation library not found")
-        endif()
-        set(Applicability PAL/Applicability/Apple/Applicability.cpp)
         if(IOS)
             add_definitions(-DIOS)
         else()
@@ -123,8 +53,6 @@ else()
     else()
         if(LINUX)
             add_definitions(-DLINUX)
-            find_package(ICU COMPONENTS uc)
-            set(Applicability PAL/Applicability/Linux/Applicability.cpp)
         endif()
         if(AOSP)
             # add here any exports specific for android
@@ -132,9 +60,6 @@ else()
             list(APPEND MSIX_EXPORTS
                 "JNI_OnLoad"
             )
-            set(InteropHpp    PAL/Interop/AOSP/JniHelper.hpp)
-            set(InteropCpp    PAL/Interop/AOSP/JniHelper.cpp)
-            set(Applicability PAL/Applicability/AOSP/Applicability.cpp)
         endif()
         # on Linux and linux-derived platforms, you use a version script to achieve similar ends.
         set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fvisibility=hidden")
@@ -145,33 +70,9 @@ else()
     endif()
     message(STATUS "Using export flag: ${DEFINE_EXPORTS}")
     set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${DEFINE_EXPORTS}")
-
-    set(DirectoryObject PAL/FileSystem/POSIX/DirectoryObject.cpp)
 endif()
 
-if(USE_VALIDATION_PARSER)
-    message(STATUS "PAL: VALIDATING parser" )
-    add_definitions(-DVALIDATING=1)
-else()
-    message(STATUS "PAL: non-validating parser" )
-    add_definitions(-DVALIDATING=0)
-endif()
-
-# Compression option
-if(((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
-    set(CompressionObject PAL/DataCompression/Apple/CompressionObject.cpp)
-else()
-    set(CompressionObject PAL/DataCompression/Zlib/CompressionObject.cpp)
-endif()
-
-message(STATUS "PAL: XML             = ${XmlParser}")
-message(STATUS "PAL: DirectoryObject = ${DirectoryObject}")
-message(STATUS "PAL: Crypto          = ${Crypto}")
-message(STATUS "PAL: Signature       = ${Signature}")
-message(STATUS "PAL: Applicability   = ${Applicability}")
-message(STATUS "PAL: Compression     = ${CompressionObject}")
-
-include(msix_resources)
+include(msix_resources) # Handles all the certificates and schemas we are going to use.
 
 set(LIB_PUBLIC_HEADERS
     ../inc/AppxPackaging.hpp
@@ -179,7 +80,10 @@ set(LIB_PUBLIC_HEADERS
     ../inc/MsixErrors.hpp
 )
 
-list(APPEND CommonSrc
+set(MsixSrc) # list with all the files we are going to use
+
+# Common for pack and unpack
+list(APPEND MsixSrc
     common/AppxFactory.cpp
     common/MSIXResource.cpp
     common/Log.cpp
@@ -190,47 +94,156 @@ list(APPEND CommonSrc
     common/AppxManifestObject.cpp
 )
 
-# Bundle specific files
-set(BundleSources)
-if(NOT SKIP_BUNDLES)
-    list(APPEND BundleSources
-        unpack/AppxBundleManifest.cpp
-        unpack/ApplicabilityCommon.cpp
-        ${Applicability}
-    )
-endif()
-
-# TODO: haven't look into what can be shared from the PAL
-#       for now add all to unpack and refactor as necessary
-list(APPEND UnpackSrc
+# Unpack. Always add
+list(APPEND MsixSrc
     unpack/AppxBlockMapObject.cpp
     unpack/AppxPackageObject.cpp
     unpack/AppxSignature.cpp
     unpack/InflateStream.cpp
     unpack/ZipObject.cpp
-    ${DirectoryObject}
-    ${Crypto}
-    ${Signature}
-    ${XmlParser}
-    ${CompressionObject}
-    ${InteropCpp}
-    ${BundleSources}
 )
 
-list(APPEND PackSrc
-    pack/AppxPackageWriter.cpp
-    pack/XmlWriter.cpp
-    pack/AppxBlockMapWriter.cpp
-    pack/ContentTypeWriter.cpp
-    pack/ContentType.cpp
-)
+# Pack
+if(MSIX_PACK)
+    message(STATUS "Packaging enabled.")
+    add_definitions(-DMSIX_PACK=1)
+    list(APPEND MsixSrc
+        pack/AppxPackageWriter.cpp
+        pack/XmlWriter.cpp
+        pack/AppxBlockMapWriter.cpp
+        pack/ContentTypeWriter.cpp
+        pack/ContentType.cpp
+    )
+endif()
+
+# Bundle specific files
+if(NOT SKIP_BUNDLES)
+    message(STATUS "Bundle support enabled.")
+    add_definitions(-DBUNDLE_SUPPORT=1)
+    list(APPEND MsixSrc
+        unpack/AppxBundleManifest.cpp
+        unpack/ApplicabilityCommon.cpp
+    )
+    # Applicability.
+    if (WIN32)
+        list(APPEND MsixSrc PAL/Applicability/Win32/Applicability.cpp)
+    elseif(LINUX)
+        find_package(ICU REQUIRED COMPONENTS uc)
+        list(APPEND MsixSrc PAL/Applicability/Linux/Applicability.cpp)
+    elseif(AOSP)
+        list(APPEND MsixSrc PAL/Applicability/AOSP/Applicability.cpp)
+    else() # iOS and MACOS
+        find_library(COREFOUNDATION_LIBRARY CoreFoundation REQUIRED)
+        find_library(FOUNDATION_LIBRARY Foundation REQUIRED)
+        list(APPEND MsixSrc PAL/Applicability/Apple/Applicability.cpp)
+    endif()
+endif()
+
+# Compression option
+if(((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
+    # We don't support using libcompression APIs for packaging.
+    if(MSIX_PACK)
+        message(FATAL_ERROR "Using libCompression APIs and packaging features is not supported.")
+    endif()
+    message(STATUS "PAL: Compression     = libCompression")
+    list(APPEND MsixSrc PAL/DataCompression/Apple/CompressionObject.cpp)
+else()
+    message(STATUS "PAL: Compression     = zlib")
+    list(APPEND MsixSrc PAL/DataCompression/Zlib/CompressionObject.cpp)
+endif()
+
+# Directory object
+if(WIN32)
+    message(STATUS "PAL: DirectoryObject = Windows")
+    list(APPEND MsixSrc PAL/FileSystem/Win32/DirectoryObject.cpp)
+else()
+    message(STATUS "PAL: DirectoryObject = POSIX")
+    list(APPEND MsixSrc PAL/FileSystem/POSIX/DirectoryObject.cpp)
+endif()
+
+# Xml Parser
+# If not defined as a cmake argument do a best effort
+if(NOT XML_PARSER)
+    include(CheckIncludeFileCXX)
+    check_include_file_cxx(msxml6.h HAVE_MSXML6)
+    if(HAVE_MSXML6)
+        set(XML_PARSER msxml6 CACHE STRING "XML Parser not defined. Using msxml6" FORCE)
+    elseif(AOSP)
+        set(XML_PARSER javaxml CACHE STRING "XML Parser not defined. Using javaxml" FORCE)
+    elseif(MAC OR IOS)
+        set(XML_PARSER applexml CACHE STRING "XML Parser not defined. Using applexml" FORCE)
+    else()
+        set(XML_PARSER xerces CACHE STRING "XML Parser not defined. Using xerces" FORCE)
+    endif()
+endif()
+
+if(XML_PARSER MATCHES xerces)
+    message(STATUS "PAL: XML             = Xerces-C")
+    list(APPEND MsixSrc PAL/XML/xerces-c/XmlObject.cpp)
+    add_definitions(-DUSING_XERCES=1)
+elseif(XML_PARSER MATCHES javaxml)
+    message(STATUS "PAL: XML             = javaxml")
+    list(APPEND MsixSrc PAL/XML/AOSP/XmlObject.cpp)
+    add_definitions(-DUSING_JAVAXML=1)
+elseif(XML_PARSER MATCHES applexml)
+    message(STATUS "PAL: XML             = apple xml")
+    set(XmlParser)
+    list(APPEND MsixSrc
+        "PAL/XML/APPLE/XmlObject.cpp"
+        "PAL/XML/APPLE/NSXmlParserDelegateWrapper.mm"
+        "PAL/XML/APPLE/NSXmlParserWrapper.mm"
+        "PAL/XML/APPLE/XmlDocumentReader.cpp"
+    )
+    add_definitions(-DUSING_APPLE_XML=1)
+elseif(XML_PARSER MATCHES msxml6)
+    message(STATUS "PAL: XML             = msxml")
+    list(APPEND MsixSrc PAL/XML/msxml6/XmlObject.cpp)
+    add_definitions(-DUSING_MSXML=1)
+endif()
+
+# Crypto
+# If not defined as a cmake argument do a best effort
+if(NOT CRYPTO_LIB)
+    include(CheckIncludeFileCXX)
+    check_include_file_cxx(wincrypt.h HAVE_CRYPT32)
+    if(HAVE_CRYPT32)
+        set(CRYPTO_LIB crypt32 CACHE STRING "Crypto Lib not defined. Using crypt32" FORCE)
+    else()
+        set(CRYPTO_LIB openssl CACHE STRING "Crypto Lib not defined. Using openssl" FORCE)
+    endif()
+endif()
+
+if(CRYPTO_LIB MATCHES crypt32)
+    message(STATUS "PAL: Crypto          = cryp32")
+    list(APPEND MsixSrc
+        PAL/Crypto/Win32/Crypto.cpp
+        PAL/Signature/Win32/SignatureValidator.cpp
+    )
+elseif(CRYPTO_LIB MATCHES openssl)
+    if(OpenSSL_FOUND)
+        message(STATUS "PAL: Crypto          = openssl ${OpenSLL_VERSION}")
+        list(APPEND MsixSrc
+            PAL/Crypto/OpenSSL/Crypto.cpp
+            PAL/Signature/OpenSSL/SignatureValidator.cpp
+        )
+    else()
+        # ... and were done here...  :/
+        message(FATAL_ERROR "OpenSSL NOT FOUND!")
+    endif()
+endif()
+
+# Interop
+if(AOSP)
+    list(APPEND MsixSrc
+        PAL/Interop/AOSP/JniHelper.hpp
+        PAL/Interop/AOSP/JniHelper.cpp
+    )
+endif()
 
 # Define the library
 add_library(${PROJECT_NAME} SHARED 
     msix.cpp
-    ${CommonSrc}
-    ${UnpackSrc}
-    ${PackSrc}
+    ${MsixSrc}
 )
 
 # Copy out public headers to <binary dir>/src/unpack

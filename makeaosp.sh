@@ -9,23 +9,24 @@ sdk=
 sdkver=24
 dataCompressionLib=NDK_libz
 bundle=off
-xmlparserLib=javaxml
-xmlparser="-DXML_PARSER=javaxml"
+xmlparser=javaxml
 validationParser=off
+pack=on
 
 usage()
 {
-    echo "usage: makeaosp [-ndk ndk_path] [-arch arch] [-ndkver ndk_version] [-sdk sdk_path] [-sdkver sdk_version] [-b buildType] [-xzlib] [-sb] [-parser-xerces]"
-    echo $'\t' "-ndk Path to Android NDK. Default $ANDROID_NDK_ROOT or $ANDROID_NDK"
-    echo $'\t' "-ndkver Android NDK version. Default/minimum 19."
-    echo $'\t' "-sdk Path to Android SDK. Default $ANDROID_HOME."
-    echo $'\t' "-sdkver Android SDK version. Default/minimum 24."
-    echo $'\t' "-arch Architecture ABI. Default x86"
-    echo $'\t' "-b Build type. Default MinSizeRel"
-    echo $'\t' "-xzlib Use MSIX SDK Zlib instead of inbox libz.so"
-    echo $'\t' "-parser-xerces Use xerces xml parser instead of default javaxml"
-    echo $'\t' "-sb Skip bundle support."
-    echo $'\t' "--validation-parser, -vp Enable XML schema validation."
+    echo "usage: makeaosp [options]"
+    echo $'\t' "[-ndk ndk_pack]           Path to Android NDK. Default $ANDROID_NDK_ROOT or $ANDROID_NDK"
+    echo $'\t' "[-ndkver ndk_version]     Android NDK version. Default/minimum 19."
+    echo $'\t' "[-sdk sdk_path]           Path to Android SDK. Default $ANDROID_HOME."
+    echo $'\t' "[-sdkver sdk_version]     Android SDK version. Default/minimum 24."
+    echo $'\t' "[-arch arch]              Architecture ABI. Default x86"
+    echo $'\t' "[-b build_type]           Default MinSizeRel"
+    echo $'\t' "[-xzlib]                  Use MSIX SDK Zlib insctead of inbox libz.so"
+    echo $'\t' "[-parser-xerces]          Use xerces xml parser instead of default javaxml"
+    echo $'\t' "[-sb]                     Skip bundle support."
+    echo $'\t' "[--validation-parser|-vp] Enable XML schema validation."
+    echo $'\t' "[--no-pack]               Don't include packaging features."
 }
 
 printsetup()
@@ -37,9 +38,10 @@ printsetup()
     echo "Architecture:" $arch
     echo "Build Type:" $build
     echo "Zlib:" $dataCompressionLib
-    echo "parser:" $xmlparserLib
+    echo "parser:" $xmlparser
     echo "Skip bundle support:" $bundle
     echo "Validation parser:" $validationParser
+    echo "Pack:" $pack
 }
 
 while [ "$1" != "" ]; do
@@ -62,8 +64,8 @@ while [ "$1" != "" ]; do
         -xzlib )  dataCompressionLib=MSIX_SDK_zlib
                   zlib="-DUSE_MSIX_SDK_ZLIB=on"
                   ;;
-        -parser-xerces )  xmlparserLib=xerces
-                  xmlparser="-DXML_PARSER=xerces"
+        -parser-xerces )
+                  xmlparser=xerces
                   ;;
         -sdk )    shift
                   sdk=$1
@@ -77,6 +79,8 @@ while [ "$1" != "" ]; do
                 ;;
         -vp )   validationParser=on
                 ;;
+        --no-pack ) pack=off
+                    ;;
         * )       usage
                   exit 1
     esac
@@ -114,8 +118,8 @@ find . -name *msix* -d | xargs rm -r
 
 echo "cmake -DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_NDK="$ndk "-DCMAKE_SYSTEM_VERSION="$version "-DANDROID_SDK="$sdk
 echo "-DANDROID_SDK_VERSION="$sdkver "-DCMAKE_ANDROID_ARCH_ABI="$arch "-DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang"
-echo "-DCMAKE_ANDROID_STL_TYPE=c++_shared -DCMAKE_BUILD_TYPE="$build "-DSKIP_BUNDLES="$bundle $xmlparser "-DUSE_VALIDATION_PARSER="$validationParser
-echo  $zlib "-DAOSP=on .."
+echo "-DCMAKE_ANDROID_STL_TYPE=c++_shared -DCMAKE_BUILD_TYPE="$build "-DSKIP_BUNDLES="$bundle "-DXML_PARSER="$xmlparser
+echo "-DUSE_VALIDATION_PARSER="$validationParser "-DMSIX_PACK="$pack $zlib "-DAOSP=on .."
 cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK="$ndk" \
     -DCMAKE_SYSTEM_VERSION="$version" \
@@ -126,7 +130,8 @@ cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_STL_TYPE=c++_shared \
     -DCMAKE_BUILD_TYPE="$build" \
     -DSKIP_BUNDLES=$bundle \
-    $xmlparser \
+    -DXML_PARSER=$xmlparser \
     -DUSE_VALIDATION_PARSER=$validationParser \
+    -DMSIX_PACK=$pack
     $zlib -DAOSP=on ..
 make

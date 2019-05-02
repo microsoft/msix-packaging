@@ -4,19 +4,20 @@ build=MinSizeRel
 arch=x86_64
 dataCompressionLib=libcompression
 bundle=off
-xmlparserLib=applexml
-xmlparser="-DXML_PARSER=applexml"
+xmlparser=applexml
 validationParser=off
+pack=on
 
 usage()
 {
-    echo "usage: makemac [-b buildType] [-arch] [-xzlib]"
-    echo $'\t' "-b Build type. Default MinSizeRel"
-    echo $'\t' "-arch OSX Architecture. Default x86_64 (simulator)"
-    echo $'\t' "-xzlib Use MSIX SDK Zlib instead of inbox libCompression api. Default on iOS is libCompression."
-    echo $'\t' "-sb Skip bundle support."
-    echo $'\t' "-parser-xerces Use xerces xml parser instead of default apple xml parser."
-    echo $'\t' "--validation-parser, -vp Enable XML schema validation."
+    echo "usage: makemac [options]"
+    echo $'\t' "[-b build_type]           Default MinSizeRel"
+    echo $'\t' "[-arch arch]              OSX Architecture. Default x86_64 (simulator)"
+    echo $'\t' "[-xzlib]                  Use MSIX SDK Zlib instead of inbox libCompression api. Default on iOS is libCompression. Required for pack support."
+    echo $'\t' "[-sb]                     Skip bundle support."
+    echo $'\t' "[-parser-xerces]          Use xerces xml parser instead of default apple xml parser."
+    echo $'\t' "[--validation-parser|-vp] Enable XML schema validation."
+    echo $'\t' "[--no-pack]               Don't include packaging features."
 }
 
 printsetup()
@@ -25,8 +26,9 @@ printsetup()
     echo "Architecture:" $arch
     echo "Data Compression library:" $dataCompressionLib
     echo "Skip bundle support:" $bundle
-    echo "parser:" $xmlparserLib
+    echo "Parser:" $xmlparser
     echo "Validation parser:" $validationParser
+    echo "Pack support:" $pack 
 }
 
 while [ "$1" != "" ]; do
@@ -41,7 +43,7 @@ while [ "$1" != "" ]; do
                 zlib="-DUSE_MSIX_SDK_ZLIB=on"
                 ;;
         -parser-xerces )  xmlparserLib=xerces
-                xmlparser="-DXML_PARSER=xerces"
+                xmlparser=xerces
                 ;;
         -sb )   bundle="on"
                 ;;
@@ -49,6 +51,8 @@ while [ "$1" != "" ]; do
                 ;;
         -vp )   validationParser=on
                 ;;
+        --no-pack ) pack=off
+                    ;;
         -h )    usage
                 exit
                 ;;
@@ -65,6 +69,14 @@ cd .vs
 # clean up any old builds of msix modules
 find . -name *msix* -d | xargs rm -r
 
-echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake -DCMAKE_OSX_ARCHITECTURES="$arch $xmlparser "-DUSE_VALIDATION_PARSER="$validationParser "-DSKIP_BUNDLES="$bundle "-DIOS=on .."
-cmake -DCMAKE_BUILD_TYPE=$build $zlib -DIOS=on -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake -DCMAKE_OSX_ARCHITECTURES=$arch $xmlparser -DUSE_VALIDATION_PARSER=$validationParser -DSKIP_BUNDLES=$bundle -DIOS=on ..
+echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake -DCMAKE_OSX_ARCHITECTURES="$arch 
+echo "-DXML_PARSER="$xmlparser "-DUSE_VALIDATION_PARSER="$validationParser "-DSKIP_BUNDLES="$bundle "-DIOS=on .."
+cmake -DCMAKE_BUILD_TYPE=$build \  
+    -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake \
+    -DCMAKE_OSX_ARCHITECTURES=$arch \
+    -DXML_PARSER=$xmlparser \
+    -DUSE_VALIDATION_PARSER=$validationParser \
+    -DSKIP_BUNDLES=$bundle \
+    -DMSIX_PACK=$pack \
+    $zlib -DIOS=on .. \
 make

@@ -34,6 +34,7 @@ set parser="-DXML_PARSER=msxml6"
 set crypto="-DCRYPTO_LIB=crypt32"
 set msvc="-DUSE_STATIC_MSVC=off"
 set bundle="-DSKIP_BUNDLES=off"
+set pack="-DMSIX_PACK=on"
 
 :parseArgs
 if /I "%~2" == "--debug" (
@@ -75,6 +76,9 @@ if /I "%~2" == "--skip-bundles" (
 if /I "%~2" == "-sb" (
     set bundle="-DSKIP_BUNDLES=on"
 )
+if /I "%~2" == "--no-pack" (
+    set pack="-DMSIX_PACK=off"
+)
 shift /2
 if not "%~2"=="" goto parseArgs
 
@@ -83,8 +87,8 @@ cd .vs
 if exist CMakeFiles rd /s /q CMakeFiles
 if exist CMakeCache.txt del CMakeCache.txt
 
-echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% -G"NMake Makefiles" ..
-cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% -G"NMake Makefiles" ..
+echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% %pack% -G"NMake Makefiles" ..
+cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% %pack% -G"NMake Makefiles" ..
 nmake /NOLOGO
 
 goto Exit
@@ -103,6 +107,7 @@ echo    --shared-zlib, -sz       = don't statically link zlib.
 echo    --crypto-openssl, -co    = use OpenSSL crypto [currently for testing]. Default Crypt32.
 echo    -mt                      = use compiler flag /MT to use static version of the run-time library.
 echo    --skip-bundles, -sb      = turn off bundle support.
+echo    --no-pack                = Don't include packaging features.
 echo    --help, -h, /?           = print this usage information and exit.
 :Exit
 EXIT /B 0
