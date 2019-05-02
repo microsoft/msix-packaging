@@ -71,12 +71,12 @@ find . -name *msix* -d | xargs rm -r
 
 echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake -DCMAKE_OSX_ARCHITECTURES="$arch 
 echo "-DXML_PARSER="$xmlparser "-DUSE_VALIDATION_PARSER="$validationParser "-DSKIP_BUNDLES="$bundle "-DIOS=on .."
-cmake -DCMAKE_BUILD_TYPE=$build \  
+cmake -DCMAKE_BUILD_TYPE=$build \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake \
     -DCMAKE_OSX_ARCHITECTURES=$arch \
     -DXML_PARSER=$xmlparser \
     -DUSE_VALIDATION_PARSER=$validationParser \
     -DSKIP_BUNDLES=$bundle \
     -DMSIX_PACK=$pack \
-    $zlib -DIOS=on .. \
+    $zlib -DIOS=on .. 
 make

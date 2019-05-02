@@ -132,6 +132,6 @@ cmake -DCMAKE_SYSTEM_NAME=Android \
     -DSKIP_BUNDLES=$bundle \
     -DXML_PARSER=$xmlparser \
     -DUSE_VALIDATION_PARSER=$validationParser \
-    -DMSIX_PACK=$pack
+    -DMSIX_PACK=$pack \
     $zlib -DAOSP=on ..
 make
