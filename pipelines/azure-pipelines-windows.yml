@@ -58,6 +58,9 @@ jobs:
       release_64_xerces:
         _arguments: x64 --parser-xerces
         _artifact: WIN32-x64Xerces
+      debug_32_nopack:
+        _arguments: x86 -d --no-pack
+        _artifact: WIN32chk-no-pack
 
   steps:
   - task: BatchScript@1

@@ -11,13 +11,13 @@ pack=on
 usage()
 {
     echo "usage: makemac [options]"
-    echo $'\t' "[-b build_type]           Default MinSizeRel"
-    echo $'\t' "[-xzlib]                  Use MSIX SDK Zlib instead of inbox libCompression api. Default on MacOS is libCompression. Required for pack support."
-    echo $'\t' "[-sb]                     Skip bundle support."
-    echo $'\t' "[-parser-xerces]          Use xerces xml parser instead of default apple xml parser."
-    echo $'\t' "[-asan]                   Turn on address sanitizer for memory corruption detection."
-    echo $'\t' "[--validation-parser|-vp] Enable XML schema validation."
-    echo $'\t' "[--no-pack]               Don't include packaging features."
+    echo $'\t' "-b build_type           Default MinSizeRel"
+    echo $'\t' "-xzlib                  Use MSIX SDK Zlib instead of inbox libCompression api. Default on MacOS is libCompression. Required for pack support."
+    echo $'\t' "-sb                     Skip bundle support."
+    echo $'\t' "-parser-xerces          Use xerces xml parser instead of default apple xml parser."
+    echo $'\t' "-asan                   Turn on address sanitizer for memory corruption detection."
+    echo $'\t' "--validation-parser|-vp Enable XML schema validation."
+    echo $'\t' "--no-pack               Don't include packaging features."
 }
 
 printsetup()

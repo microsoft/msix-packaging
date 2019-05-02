@@ -8,10 +8,10 @@ pack=on
 usage()
 {
     echo "usage: makelinux [options]"
-    echo $'\t' "[-b build_type]           Default MinSizeRel"
-    echo $'\t' "[-sb]                     Skip bundle support."
-    echo $'\t' "[--validation-parser|-vp] Enable XML schema validation."
-    echo $'\t' "[--no-pack]               Don't include packaging features."
+    echo $'\t' "-b build_type           Default MinSizeRel"
+    echo $'\t' "-sb                     Skip bundle support."
+    echo $'\t' "--validation-parser|-vp Enable XML schema validation."
+    echo $'\t' "--no-pack               Don't include packaging features."
 }
 
 printsetup()

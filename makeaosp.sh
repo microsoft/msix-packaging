@@ -16,17 +16,17 @@ pack=on
 usage()
 {
     echo "usage: makeaosp [options]"
-    echo $'\t' "[-ndk ndk_pack]           Path to Android NDK. Default $ANDROID_NDK_ROOT or $ANDROID_NDK"
-    echo $'\t' "[-ndkver ndk_version]     Android NDK version. Default/minimum 19."
-    echo $'\t' "[-sdk sdk_path]           Path to Android SDK. Default $ANDROID_HOME."
-    echo $'\t' "[-sdkver sdk_version]     Android SDK version. Default/minimum 24."
-    echo $'\t' "[-arch arch]              Architecture ABI. Default x86"
-    echo $'\t' "[-b build_type]           Default MinSizeRel"
-    echo $'\t' "[-xzlib]                  Use MSIX SDK Zlib insctead of inbox libz.so"
-    echo $'\t' "[-parser-xerces]          Use xerces xml parser instead of default javaxml"
-    echo $'\t' "[-sb]                     Skip bundle support."
-    echo $'\t' "[--validation-parser|-vp] Enable XML schema validation."
-    echo $'\t' "[--no-pack]               Don't include packaging features."
+    echo $'\t' "-ndk ndk_pack           Path to Android NDK. Default $ANDROID_NDK_ROOT or $ANDROID_NDK"
+    echo $'\t' "-ndkver ndk_version     Android NDK version. Default/minimum 19."
+    echo $'\t' "-sdk sdk_path           Path to Android SDK. Default $ANDROID_HOME."
+    echo $'\t' "-sdkver sdk_version     Android SDK version. Default/minimum 24."
+    echo $'\t' "-arch arch              Architecture ABI. Default x86"
+    echo $'\t' "-b build_type           Default MinSizeRel"
+    echo $'\t' "-xzlib                  Use MSIX SDK Zlib insctead of inbox libz.so"
+    echo $'\t' "-parser-xerces          Use xerces xml parser instead of default javaxml"
+    echo $'\t' "-sb                     Skip bundle support."
+    echo $'\t' "--validation-parser|-vp Enable XML schema validation."
+    echo $'\t' "--no-pack               Don't include packaging features."
 }
 
 printsetup()
