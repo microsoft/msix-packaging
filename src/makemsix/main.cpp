@@ -19,7 +19,9 @@ enum class UserSpecified
     Help,
     Unpack,
     Unbundle,
+#ifdef MSIX_PACK
     Pack
+#endif
 };
 
 // Tracks the state of the current parse operation as well as implements input validation
@@ -188,6 +190,7 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
         std::cout << "    specified output <directory>. The output has the same directory structure " << std::endl;
         std::cout << "    as the package. its packages will be unpacked in a directory named as the package full name" << std::endl;
         break;
+    #ifdef MSIX_PACK
     case UserSpecified::Pack:
         command = std::find(commands.begin(), commands.end(), "pack");
         std::cout << "    " << toolName << " pack -p <output package> -d <directory to pack> [options] " << std::endl;
@@ -196,6 +199,7 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
         std::cout << "------------" << std::endl;
         std::cout << "    TODO" << std::endl;
     }
+    #endif
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "--------" << std::endl;
@@ -277,8 +281,8 @@ int ParseAndRun(std::vector<Command>& commands, int argc, char* argv[])
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
         );
-    case UserSpecified::Pack:
     #ifdef MSIX_PACK
+    case UserSpecified::Pack:
         return PackPackage(state.validationOptions, 
             const_cast<char*>(state.directoryName.c_str()),
             const_cast<char*>(state.packageName.c_str()));
