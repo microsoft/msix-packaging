@@ -277,8 +277,8 @@ int ParseAndRun(std::vector<Command>& commands, int argc, char* argv[])
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
         );
-    #ifdef MSIX_PACK
     case UserSpecified::Pack:
+    #ifdef MSIX_PACK
         return PackPackage(state.validationOptions, 
             const_cast<char*>(state.directoryName.c_str()),
             const_cast<char*>(state.packageName.c_str()));
