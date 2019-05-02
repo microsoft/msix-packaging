@@ -26,6 +26,14 @@ namespace MSIX {
     protected:
         std::vector<std::uint8_t> Deflate(int disposition);
 
+        typedef enum
+        {
+            Open,
+            Closed,
+        }
+        State;
+
+        State m_state = State::Open;
         z_stream m_zstrm;
         ComPtr<IStream> m_stream;
     };

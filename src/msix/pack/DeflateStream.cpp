@@ -28,6 +28,7 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE DeflateStream::Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept try
     {
         // just forward to the VectorStream
+        ThrowErrorIf(Error::FileWrite, m_state != State::Closed, "DeflateStream needs to be closed before being consume");
         ThrowHrIfFailed(m_stream->Seek(move, origin, newPosition));
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -35,6 +36,7 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE DeflateStream::Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept try
     {
         // just forward to the VectorStream
+        ThrowErrorIf(Error::FileWrite, m_state != State::Closed, "DeflateStream needs to be closed before being consume");
         ThrowHrIfFailed(m_stream->Read(buffer, countBytes, bytesRead));
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -42,9 +44,15 @@ namespace MSIX {
     // Caller should NOT assume that bytesWritten returned is going to be equal to countBytes
     HRESULT STDMETHODCALLTYPE DeflateStream::Write(void const *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept try
     {
+        ThrowErrorIf(Error::FileWrite, m_state == State::Closed, "DeflateStream is already closed");
         // Important! If this stream is asked to write with 0 bytes, then it means that we are done.
-        // We need to terminate the stream anc call deflate with Z_FINISH.
-        int disposition = (countBytes > 0) ? Z_FULL_FLUSH : Z_FINISH;
+        // We need to terminate the stream and call deflate with Z_FINISH.
+        int disposition = Z_FULL_FLUSH;
+        if (countBytes == 0)
+        {
+            disposition = Z_FINISH;
+            m_state = State::Closed;
+        }
         m_zstrm.next_in = reinterpret_cast<Bytef *>(const_cast<void*>(buffer));
         m_zstrm.avail_in = static_cast<std::uint32_t>(countBytes);
         auto toWrite = Deflate(disposition);
