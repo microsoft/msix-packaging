@@ -19,7 +19,9 @@ enum class UserSpecified
     Help,
     Unpack,
     Unbundle,
+#ifdef MSIX_PACK
     Pack
+#endif
 };
 
 // Tracks the state of the current parse operation as well as implements input validation
@@ -188,6 +190,7 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
         std::cout << "    specified output <directory>. The output has the same directory structure " << std::endl;
         std::cout << "    as the package. its packages will be unpacked in a directory named as the package full name" << std::endl;
         break;
+    #ifdef MSIX_PACK
     case UserSpecified::Pack:
         command = std::find(commands.begin(), commands.end(), "pack");
         std::cout << "    " << toolName << " pack -p <output package> -d <directory to pack> [options] " << std::endl;
@@ -195,6 +198,7 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
         std::cout << "Description:" << std::endl;
         std::cout << "------------" << std::endl;
         std::cout << "    TODO" << std::endl;
+    #endif
     }
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
@@ -277,10 +281,12 @@ int ParseAndRun(std::vector<Command>& commands, int argc, char* argv[])
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
         );
+    #ifdef MSIX_PACK
     case UserSpecified::Pack:
         return PackPackage(state.validationOptions, 
             const_cast<char*>(state.directoryName.c_str()),
             const_cast<char*>(state.packageName.c_str()));
+    #endif
     }
     return -1; // should never end up here.
 }
@@ -347,6 +353,7 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return false; })
             })
         },
+        #ifdef MSIX_PACK
         {   Command("pack", "Pack files from disk to a package",
                 [](State& state) { return state.Specify(UserSpecified::Pack); },
             {
@@ -358,6 +365,7 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return false; })
             })
         },
+        #endif
         {   Command("-?", "Displays this help text.",
                 [](State& state) { return state.Specify(UserSpecified::Help);}, {})
         },

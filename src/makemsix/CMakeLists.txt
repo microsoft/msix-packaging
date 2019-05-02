@@ -8,8 +8,9 @@ project (makemsix)
 # Define two variables in order not to repeat ourselves.
 set(BINARY_NAME makemsix)
 
-# TODO: Only define this when we want pack
-add_definitions(-DMSIX_PACK=1)
+if(MSIX_PACK)
+    add_definitions(-DMSIX_PACK=1)
+endif()
 
 if(WIN32)
     set(DESCRIPTION "makemsix manifest")

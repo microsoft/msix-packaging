@@ -36,6 +36,8 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
     endif()
 
     if(USE_VALIDATION_PARSER)
+        message(STATUS "Using validation parser")
+        add_definitions(-DVALIDATING=1)
         # Schemas are defined in triplets in the form of
         # <namespace> <alias> <file location relative to root/resources>
         list(APPEND CONTENT_TYPES

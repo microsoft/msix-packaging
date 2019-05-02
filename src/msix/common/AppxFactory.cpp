@@ -21,10 +21,12 @@ namespace MSIX {
     {
         THROW_IF_PACK_NOT_ENABLED
         ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || *packageWriter != nullptr), "Invalid parameter");
-        // TODO: we problably will probably need the pass IMsixFactory to AppxPackageWriter constructor, but don't
-        // do it until is actually required.
+        // We should never be here is packing if disabled, but the compiler
+        // is not smart enough to remove it and the linker will fail.  
+        #ifdef MSIX_PACK 
         auto result = ComPtr<IAppxPackageWriter>::Make<AppxPackageWriter>(outputStream);
         *packageWriter = result.Detach();
+        #endif
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 

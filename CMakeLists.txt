@@ -31,6 +31,7 @@ option(USE_VALIDATION_PARSER "Turn on to validates using the resouce schemas. De
 option(USE_SHARED_ZLIB "Choose the type of dependency for zlib, Use the -DUSE_SHARED_ZLIB=on to have a shared dependency. Default is 'off' (static)" OFF)
 option(USE_STATIC_MSVC "Windows only. Pass /MT as a compiler flag to use the staic version of the run-time library. Default is 'off' (dynamic)" OFF)
 option(SKIP_BUNDLES "Removes bundle functionality from the MSIX SDK. Default is 'off'" OFF)
+option(MSIX_PACK "Include packaging features for the MSIX SDK. Default is 'on'" ON)
 
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel.  Use the -DCMAKE_BUILD_TYPE=[option] to specify.")
 set(XML_PARSER "" CACHE STRING "Choose the type of parser, options are: [xerces, msxml6, javaxml].  Use the -DXML_PARSER=[option] to specify.")
@@ -172,28 +173,6 @@ else()
     endif()
 endif()
 
-if(NOT XML_PARSER)
-    include(CheckIncludeFileCXX)
-    check_include_file_cxx(msxml6.h HAVE_MSXML6)
-    if(HAVE_MSXML6)
-        set(XML_PARSER msxml6 CACHE STRING "Using XML Parser: msxml6" FORCE)
-    elseif (AOSP)
-        set(XML_PARSER javaxml CACHE STRING "Using XML Parser: javaxml" FORCE)
-    else()
-        set(XML_PARSER xerces CACHE STRING "Using XML Parser: xerces" FORCE)
-    endif()
-endif()
-
-if(NOT CRYPTO_LIB)
-    include(CheckIncludeFileCXX)
-    check_include_file_cxx(wincrypt.h HAVE_CRYPT32)
-    if(HAVE_CRYPT32)
-        set(CRYPTO_LIB crypt32 CACHE STRING "Using Crypto Lib: crypt32" FORCE)
-    else()
-        set(CRYPTO_LIB openssl CACHE STRING "Using Crypto Lib: openssl" FORCE)
-    endif()
-endif()
-
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
 if((CMAKE_BUILD_TYPE MATCHES RelWithDebInfo) OR (CMAKE_BUILD_TYPE MATCHES Release) OR (CMAKE_BUILD_TYPE MATCHES MinSizeRel))
@@ -236,6 +215,31 @@ if((MACOS) OR (IOS))
 endif()
 
 enable_testing() # needed on top-level CMakeLists.txt
+
+# If not defined as a cmake argument do a best effort
+if(NOT XML_PARSER)
+    include(CheckIncludeFileCXX)
+    check_include_file_cxx(msxml6.h HAVE_MSXML6)
+    if(HAVE_MSXML6)
+        set(XML_PARSER msxml6 CACHE STRING "XML Parser not defined. Using msxml6" FORCE)
+    elseif(AOSP)
+        set(XML_PARSER javaxml CACHE STRING "XML Parser not defined. Using javaxml" FORCE)
+    elseif(MAC OR IOS)
+        set(XML_PARSER applexml CACHE STRING "XML Parser not defined. Using applexml" FORCE)
+    else()
+        set(XML_PARSER xerces CACHE STRING "XML Parser not defined. Using xerces" FORCE)
+    endif()
+endif()
+
+if(NOT CRYPTO_LIB)
+    include(CheckIncludeFileCXX)
+    check_include_file_cxx(wincrypt.h HAVE_CRYPT32)
+    if(HAVE_CRYPT32)
+        set(CRYPTO_LIB crypt32 CACHE STRING "Crypto Lib not defined. Using crypt32" FORCE)
+    else()
+        set(CRYPTO_LIB openssl CACHE STRING "Crypto Lib not defined. Using openssl" FORCE)
+    endif()
+endif()
 
 # CMake useful variables
 set(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})

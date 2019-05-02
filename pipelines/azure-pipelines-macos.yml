@@ -35,11 +35,14 @@ jobs:
     # TODO: add builds using xerces if needed.
     matrix:
       debug:
-        _arguments: -b Debug
+        _arguments: -b Debug -xzlib
         _artifact: MACOSchk
       release:
-        _arguments: -b MinSizeRel
+        _arguments: -b MinSizeRel -xzlib
         _artifact: MACOS
+      debug_nopack:
+        _arguments: -b Debug --no-pack
+        _artifact: MACOSchk-nopack
   steps:
   - task: Bash@3
     displayName: Build

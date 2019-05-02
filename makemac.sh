@@ -3,20 +3,21 @@
 build=MinSizeRel
 dataCompressionLib=libcompression
 bundle=off
-xmlparserLib=applexml
-xmlparser="-DXML_PARSER=applexml"
-addressSanitizerFlag=off
+xmlparser=applexml
+addressSanitizer=off
 validationParser=off
+pack=on
 
 usage()
 {
-    echo "usage: makemac [-b buildType] [-xzlib] [-parser-xerces] [-asan]"
-    echo $'\t' "-b Build type. Default MinSizeRel"
-    echo $'\t' "-xzlib Use MSIX SDK Zlib instead of inbox libCompression api. Default on MacOS is libCompression."
-    echo $'\t' "-sb Skip bundle support."
-    echo $'\t' "-parser-xerces Use xerces xml parser instead of default apple xml parser."
-    echo $'\t' "-asan Turn on address sanitizer for memory corruption detection."
-    echo $'\t' "--validation-parser, -vp Enable XML schema validation."
+    echo "usage: makemac [options]"
+    echo $'\t' "-b build_type           Default MinSizeRel"
+    echo $'\t' "-xzlib                  Use MSIX SDK Zlib instead of inbox libCompression api. Default on MacOS is libCompression. Required for pack support."
+    echo $'\t' "-sb                     Skip bundle support."
+    echo $'\t' "-parser-xerces          Use xerces xml parser instead of default apple xml parser."
+    echo $'\t' "-asan                   Turn on address sanitizer for memory corruption detection."
+    echo $'\t' "--validation-parser|-vp Enable XML schema validation."
+    echo $'\t' "--no-pack               Don't include packaging features."
 }
 
 printsetup()
@@ -27,6 +28,7 @@ printsetup()
     echo "parser:" $xmlparserLib
     echo "Address Sanitizer:" $addressSanitizerFlag
     echo "Validation parser:" $validationParser
+    echo "Pack support:" $pack 
 }
 
 while [ "$1" != "" ]; do
@@ -37,17 +39,17 @@ while [ "$1" != "" ]; do
         -xzlib )dataCompressionLib=MSIX_SDK_zlib
                 zlib="-DUSE_MSIX_SDK_ZLIB=on"
                 ;;
-        -parser-xerces )  xmlparserLib=xerces
-                xmlparser="-DXML_PARSER=xerces"
-                ;;
-        -asan ) addressSanitizerFlag=on
-                addressSanitizer="-DASAN=on"
+        -parser-xerces ) xmlparser=xerces
+                         ;;
+        -asan ) addressSanitizer=on
                 ;;
         -sb )   bundle="on"
                 ;;
         --validation-parser ) validationParser=on
                 ;;
         -vp )   validationParser=on
+                ;;
+        --no-pack ) pack=off
                 ;;
         -h )    usage
                 exit
@@ -65,6 +67,14 @@ cd .vs
 # clean up any old builds of msix modules
 find . -name *msix* -d | xargs rm -r
 
-echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DSKIP_BUNDLES="$bundle $xmlparser $addressSanitizer "-DUSE_VALIDATION_PARSER="$validationParser "-DMACOS=on .."
-cmake -DCMAKE_BUILD_TYPE=$build $zlib -DSKIP_BUNDLES=$bundle $xmlparser $addressSanitizer -DUSE_VALIDATION_PARSER=$validationParser -DMACOS=on ..
+echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DSKIP_BUNDLES="$bundle 
+echo "-DXML_PARSER="$xmlparser "-DASAN="$addressSanitizer "-DUSE_VALIDATION_PARSER="$validationParser 
+echo "-DMSIX_PACK="$pack "-DMACOS=on .."
+cmake -DCMAKE_BUILD_TYPE=$build \
+      -DXML_PARSER=$xmlparser \
+      -DSKIP_BUNDLES=$bundle \
+      -DASAN=$addressSanitizer \
+      -DUSE_VALIDATION_PARSER=$validationParser \
+      -DMSIX_PACK=$pack \
+      $zlib -DMACOS=on ..
 make

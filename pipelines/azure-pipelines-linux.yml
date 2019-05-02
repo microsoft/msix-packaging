@@ -43,6 +43,9 @@ jobs:
       release_xerces_validation_parser:
         _arguments: -b MinSizeRel -vp
         _artifact: LINUX
+      debug_nopack:
+        _arguments: -b Debug --no-pack
+        _artifact: LINUXchk-nopack
 
   steps:
   - task: Bash@3
