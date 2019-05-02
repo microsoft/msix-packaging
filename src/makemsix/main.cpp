@@ -198,8 +198,8 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
         std::cout << "Description:" << std::endl;
         std::cout << "------------" << std::endl;
         std::cout << "    TODO" << std::endl;
-    }
     #endif
+    }
     std::cout << std::endl;
     std::cout << "Options:" << std::endl;
     std::cout << "--------" << std::endl;
