@@ -6,6 +6,8 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "ComHelper.hpp"
+#include "MsixFeatureSelector.hpp"
+
 #include <vector>
 #include <algorithm>
 
@@ -42,6 +44,19 @@ namespace MSIX {
             }
             m_offset = std::min(newPos.u.LowPart, static_cast<ULONG>(m_data->size()));
             if (newPosition) { newPosition->QuadPart = newPos.QuadPart; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept override try
+        {
+            THROW_IF_PACK_NOT_ENABLED
+            // make sure that we can allocate the buffer
+            ULONG expected = static_cast<ULONG>(m_data->size()) + countBytes; 
+            m_data->resize(expected);
+            if (countBytes > 0) { memcpy(&(m_data->at(m_offset)), buffer, countBytes); }
+            m_offset = static_cast<ULONG>(m_data->size());
+            ThrowErrorIf(Error::FileWrite, expected != m_offset, "Error writing to stream");
+            if (bytesWritten) { *bytesWritten = countBytes; }
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 

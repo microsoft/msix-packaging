@@ -850,7 +850,6 @@ ZipObject::ZipObject(IMsixFactory* appxFactory, const ComPtr<IStream>& stream) :
         auto fileStream = ComPtr<IStream>::Make<ZipFileStream>(
             centralFileHeader.second->GetFileName(),
             "TODO: Implement", // TODO: put value from content type 
-            m_factory,
             localFileHeader->GetCompressionType() == CompressionType::Deflate,
             centralFileHeader.second->GetRelativeOffsetOfLocalHeader() + localFileHeader->Size(),
             localFileHeader->GetCompressedSize(),

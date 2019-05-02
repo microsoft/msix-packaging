@@ -74,6 +74,10 @@ namespace MSIX {
         // Bundle errors
         PackageIsBundle             = ERROR_FACILITY + 0x0071,
 
+        // Deflate errors
+        DeflateInitialize           = ERROR_FACILITY + 0x0081,
+        DeflateWrite                = ERROR_FACILITY + 0x0082,
+
         // XML parsing errors
         XmlWarning                  = XML_FACILITY + 0x0001,
         XmlError                    = XML_FACILITY + 0x0002,

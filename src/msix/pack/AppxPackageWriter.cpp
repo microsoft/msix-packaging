@@ -9,6 +9,8 @@
 #include "Exceptions.hpp"
 #include "ContentType.hpp"
 #include "Crypto.hpp"
+#include "ZipFileStream.hpp"
+#include "Encoding.hpp"
 
 #include <string>
 #include <memory>
@@ -116,8 +118,6 @@ namespace MSIX {
         // Add content type to [Content Types].xml
         m_contentTypeWriter.AddContentType(name, contentType);
 
-        // TODO: Encode file name, add to lfh to zip and get lfh size
-
         // This might be called with external IStream implementations. Don't rely on internal implementation of FileStream
         LARGE_INTEGER start = { 0 };
         ULARGE_INTEGER end = { 0 };
@@ -125,13 +125,16 @@ namespace MSIX {
         ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
         std::uint64_t uncompressedSize = static_cast<std::uint64_t>(end.u.LowPart);
 
+        auto opcFileName = Encoding::EncodeFileName(name);
+        // TODO: add to lfh to zip and get lfh size
+
         // Add file to block map
         m_blockMapWriter.AddFile(name, uncompressedSize, 0 /* TODO: change this to lfh size*/);
 
-        std::vector<std::uint8_t> buffer;
+        auto zipFileStream = ComPtr<IStream>::Make<ZipFileStream>(opcFileName, contentType, isCompress);
+
         std::uint64_t bytesToRead = uncompressedSize;
         std::uint32_t crc = 0;
-
         while (bytesToRead > 0)
         {
             // Calculate the size of the next block to add
@@ -144,7 +147,7 @@ namespace MSIX {
             ULONG bytesRead;
             ThrowHrIfFailed(stream->Read(static_cast<void*>(block.data()), static_cast<ULONG>(blockSize), &bytesRead));
             ThrowErrorIfNot(Error::FileRead, (static_cast<ULONG>(blockSize) == bytesRead), "Read stream file failed");
-            //crc = crc32(crc, block.data(), static_cast<uInt>(block.size()));
+            crc = crc32(crc, block.data(), static_cast<uInt>(block.size()));
 
             // hash block
             std::vector<std::uint8_t> hash;
@@ -155,18 +158,20 @@ namespace MSIX {
             // Add block to blockmap
             m_blockMapWriter.AddBlock(hash, block.size());
 
-            // TODO: compress block if needed
-            // if(isCompress)
-            //{
-            //    std::vector<std::uint8_t> compressedBuffer;
-            //    get new compressed block
-            //    block.swap(compressedBuffer);
-            //}
-
-            buffer.insert(buffer.end(), block.begin(), block.end());
+            // Write block and compress if needed
+            ULONG bytesWritten = 0;
+            ThrowHrIfFailed(zipFileStream->Write(block.data(), static_cast<ULONG>(block.size()), &bytesWritten));
         }
 
-        // TODO: add compressed/uncompressed data to zip
+        if (isCompress)
+        {
+            // Put the stream termination on
+            std::vector<std::uint8_t> buffer;
+            ULONG bytesWritten = 0;
+            ThrowHrIfFailed(zipFileStream->Write(buffer.data(), static_cast<ULONG>(buffer.size()), &bytesWritten));
+        }
+
+        // TODO: add compressed/uncompressed data (zipFileStream) to zip
 
         // TODO: add cdh to zip
     }
