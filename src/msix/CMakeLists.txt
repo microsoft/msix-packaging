@@ -162,21 +162,6 @@ else()
 endif()
 
 # Xml Parser
-# If not defined as a cmake argument do a best effort
-if(NOT XML_PARSER)
-    include(CheckIncludeFileCXX)
-    check_include_file_cxx(msxml6.h HAVE_MSXML6)
-    if(HAVE_MSXML6)
-        set(XML_PARSER msxml6 CACHE STRING "XML Parser not defined. Using msxml6" FORCE)
-    elseif(AOSP)
-        set(XML_PARSER javaxml CACHE STRING "XML Parser not defined. Using javaxml" FORCE)
-    elseif(MAC OR IOS)
-        set(XML_PARSER applexml CACHE STRING "XML Parser not defined. Using applexml" FORCE)
-    else()
-        set(XML_PARSER xerces CACHE STRING "XML Parser not defined. Using xerces" FORCE)
-    endif()
-endif()
-
 if(XML_PARSER MATCHES xerces)
     message(STATUS "PAL: XML             = Xerces-C")
     list(APPEND MsixSrc PAL/XML/xerces-c/XmlObject.cpp)
@@ -202,17 +187,6 @@ elseif(XML_PARSER MATCHES msxml6)
 endif()
 
 # Crypto
-# If not defined as a cmake argument do a best effort
-if(NOT CRYPTO_LIB)
-    include(CheckIncludeFileCXX)
-    check_include_file_cxx(wincrypt.h HAVE_CRYPT32)
-    if(HAVE_CRYPT32)
-        set(CRYPTO_LIB crypt32 CACHE STRING "Crypto Lib not defined. Using crypt32" FORCE)
-    else()
-        set(CRYPTO_LIB openssl CACHE STRING "Crypto Lib not defined. Using openssl" FORCE)
-    endif()
-endif()
-
 if(CRYPTO_LIB MATCHES crypt32)
     message(STATUS "PAL: Crypto          = cryp32")
     list(APPEND MsixSrc

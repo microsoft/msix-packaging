@@ -216,6 +216,31 @@ endif()
 
 enable_testing() # needed on top-level CMakeLists.txt
 
+# If not defined as a cmake argument do a best effort
+if(NOT XML_PARSER)
+    include(CheckIncludeFileCXX)
+    check_include_file_cxx(msxml6.h HAVE_MSXML6)
+    if(HAVE_MSXML6)
+        set(XML_PARSER msxml6 CACHE STRING "XML Parser not defined. Using msxml6" FORCE)
+    elseif(AOSP)
+        set(XML_PARSER javaxml CACHE STRING "XML Parser not defined. Using javaxml" FORCE)
+    elseif(MAC OR IOS)
+        set(XML_PARSER applexml CACHE STRING "XML Parser not defined. Using applexml" FORCE)
+    else()
+        set(XML_PARSER xerces CACHE STRING "XML Parser not defined. Using xerces" FORCE)
+    endif()
+endif()
+
+if(NOT CRYPTO_LIB)
+    include(CheckIncludeFileCXX)
+    check_include_file_cxx(wincrypt.h HAVE_CRYPT32)
+    if(HAVE_CRYPT32)
+        set(CRYPTO_LIB crypt32 CACHE STRING "Crypto Lib not defined. Using crypt32" FORCE)
+    else()
+        set(CRYPTO_LIB openssl CACHE STRING "Crypto Lib not defined. Using openssl" FORCE)
+    endif()
+endif()
+
 # CMake useful variables
 set(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
