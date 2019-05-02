@@ -214,6 +214,7 @@
     <ClInclude Include="..\MsixCoreInstaller\RegistryDevirtualizer.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\RegistryKey.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\StartMenuLink.hpp" />
+    <ClInclude Include="PrepareDevirtualizedRegistry.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\MsixCoreInstaller\ComInterface.cpp" />
@@ -239,6 +240,7 @@
     <ClCompile Include="..\MsixCoreInstaller\AddRemovePrograms.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\StartMenuLink.cpp" />
     <ClCompile Include="MsixCoreInstallerActions.cpp" />
+    <ClCompile Include="PrepareDevirtualizedRegistry.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
