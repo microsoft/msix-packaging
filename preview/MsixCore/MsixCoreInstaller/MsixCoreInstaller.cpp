@@ -84,14 +84,16 @@ int main(int argc, char * argv[])
             AutoPtr<IPackageManager> packageManager;
             RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
-            shared_ptr<IInstalledPackage> packageInfo = packageManager->FindPackage(cli.GetPackageFullName());
-            if (packageInfo == NULL)
+            shared_ptr<IInstalledPackage> packageInfo;
+            HRESULT hr = packageManager->FindPackage(cli.GetPackageFullName(), packageInfo);
+            if (packageInfo == NULL || FAILED(hr))
             {
                 std::wcout << std::endl;
-                std::wcout << L"No packages found" << std::endl;
+                std::wcout << L"No packages found " << hr << std::endl;
                 std::wcout << std::endl;
             }
-            else {
+            else
+            {
                 std::wcout << std::endl;
                 std::wcout << L"PackageFullName: " << packageInfo->GetPackageFullName().c_str() << std::endl;
                 std::wcout << L"DisplayName: " << packageInfo->GetDisplayName().c_str() << std::endl;
@@ -106,7 +108,8 @@ int main(int argc, char * argv[])
             AutoPtr<IPackageManager> packageManager;
             RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
-            auto packages = packageManager->FindPackages();
+            std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> packages;
+            RETURN_IF_FAILED(packageManager->FindPackages(packages));
 
             unsigned int numPackages = 0;
             for (auto& package : *packages)
@@ -115,7 +118,7 @@ int main(int argc, char * argv[])
                 numPackages++;
             }
 
-            std::cout << numPackages << " Packages found" << std::endl;
+            std::cout << numPackages << " Package(s) found" << std::endl;
             return S_OK;
         }
         default:
