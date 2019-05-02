@@ -77,6 +77,7 @@ namespace MSIX {
         // Deflate errors
         DeflateInitialize           = ERROR_FACILITY + 0x0081,
         DeflateWrite                = ERROR_FACILITY + 0x0082,
+        DeflateRead                 = ERROR_FACILITY + 0x0083,
 
         // XML parsing errors
         XmlWarning                  = XML_FACILITY + 0x0001,
