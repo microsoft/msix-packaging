@@ -1,6 +1,7 @@
 #include "ProcessPotentialUpdate.hpp"
 #include <filesystem>
 #include "MsixTraceLoggingProvider.hpp"
+#include "Database.hpp"
 
 using namespace MsixCoreLib;
 const PCWSTR ProcessPotentialUpdate::HandlerName = L"ProcessPotentialUpdate";
@@ -12,14 +13,17 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
     /// An alternate, more complicated design would have each handler to expose a new Update verb (e.g. ExecuteForUpdate that takes in the old package)
     /// and each handler would have the opportunity to reason between the old and new packages to perform more efficient updating.
     std::wstring currentPackageFamilyName = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
-    
-    for (auto& p : std::experimental::filesystem::directory_iterator(FilePathMappings::GetInstance().GetMsixCoreDirectory()))
+
+    std::vector<std::wstring> installedPackages;
+    RETURN_IF_FAILED(Database::FindPackagesForCurrentUser(installedPackages));
+
+    for (auto& package : installedPackages)
     {
-        std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
+        std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(package);
         if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
-            && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
+            && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), package))
         {
-            RETURN_IF_FAILED(RemovePackage(p.path().filename()));
+            RETURN_IF_FAILED(RemovePackage(package));
             return S_OK;
         }
     }

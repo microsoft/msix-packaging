@@ -31,6 +31,7 @@
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
 #include "ErrorHandler.hpp"
+#include "UpdateDatabase.hpp"
 #include "ValidateTargetDeviceFamily.hpp"
 
 #include "Constants.hpp"
@@ -60,7 +61,8 @@ std::map<PCWSTR, HandlerInfo> AddHandlers =
     {ComInterface::HandlerName,               {ComInterface::CreateHandler,               ComServer::HandlerName,                  ErrorHandler::HandlerName}},
     {ComServer::HandlerName,                  {ComServer::CreateHandler,                  StartupTask::HandlerName,                ErrorHandler::HandlerName}},
     {StartupTask::HandlerName,                {StartupTask::CreateHandler,                FileTypeAssociation::HandlerName,        ErrorHandler::HandlerName}},
-    {FileTypeAssociation::HandlerName,        {FileTypeAssociation::CreateHandler,        InstallComplete::HandlerName,            ErrorHandler::HandlerName}},
+    {FileTypeAssociation::HandlerName,        {FileTypeAssociation::CreateHandler,        UpdateDatabase::HandlerName,            ErrorHandler::HandlerName}},
+    {UpdateDatabase::HandlerName,             {UpdateDatabase::CreateHandler,             InstallComplete::HandlerName,                                 ErrorHandler::HandlerName}},
     {InstallComplete::HandlerName,            {InstallComplete::CreateHandler,            nullptr,                                 ErrorHandler::HandlerName}},
     {ErrorHandler::HandlerName,               {ErrorHandler::CreateHandler,               nullptr,                                 nullptr}},
 };
@@ -76,7 +78,8 @@ std::map<PCWSTR, HandlerInfo> RemoveHandlers =
     {ComServer::HandlerName,            {ComServer::CreateHandler,           StartupTask::HandlerName}},
     {StartupTask::HandlerName,          {StartupTask::CreateHandler,         FileTypeAssociation::HandlerName}},
     {FileTypeAssociation::HandlerName,  {FileTypeAssociation::CreateHandler, Extractor::HandlerName}},
-    {Extractor::HandlerName,            {Extractor::CreateHandler,           nullptr}},
+    {Extractor::HandlerName,            {Extractor::CreateHandler,           UpdateDatabase::HandlerName}},
+    {UpdateDatabase::HandlerName,       {UpdateDatabase::CreateHandler,      nullptr}},
 };
 
 HRESULT MsixRequest::Make(OperationType operationType, const std::wstring & packageFilePath, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest ** outInstance)
