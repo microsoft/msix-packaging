@@ -13,7 +13,7 @@
 
 using namespace MsixCoreLib;
 
-const PCWSTR PrepareDevirtualizedRegistry::HandlerName = L"PrepareDevirtualizedRegistry ";
+const PCWSTR PrepareDevirtualizedRegistry::HandlerName = L"PrepareDevirtualizedRegistry";
 
 HRESULT PrepareDevirtualizedRegistry::ExecuteForAddRequest()
 {
