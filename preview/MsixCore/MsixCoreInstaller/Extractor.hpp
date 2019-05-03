@@ -16,6 +16,9 @@ public:
     /// Copies over the VFS files from the package root directory to the actual file system location
     /// Devirtualizes the registry keys from the package's registry.dat
     HRESULT ExecuteForAddRequest();
+
+    /// Removes all the files, directories written during the add.
+    HRESULT ExecuteForRemoveRequest();
     
     static const PCWSTR HandlerName;
     static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
@@ -79,11 +82,21 @@ private:
     /// @param targetFullPath - The target location to copy to
     HRESULT CopyVfsFileIfNecessary(std::wstring sourceFullPath, std::wstring targetFullPath);
 
+    /// Removes a VFS file from the resolved location
+    /// This needs to first resolve the VFS file to the real location and then delete it
+    /// It also removes the folder if this is the last file in that folder
+    /// 
+    /// @param fileName - the VFS file name
+    HRESULT RemoveVfsFile(std::wstring fileName);
+
     /// Resolves the VFS file to the real location
     ///
     /// @param fileName - the VFS file name
     /// @param fileFullPath - the real location full path
     /// @return E_NOT_SET if the VFS name cannot be found in the mapping.
     HRESULT ConvertVfsNameToFullPath(std::wstring fileName, std::wstring &fileFullPath);
+
+    /// Removes all VFS files in the package
+    HRESULT RemoveVfsFiles();
 };
 }
