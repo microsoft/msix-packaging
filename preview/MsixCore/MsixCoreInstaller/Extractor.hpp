@@ -17,7 +17,7 @@ public:
     /// Devirtualizes the registry keys from the package's registry.dat
     HRESULT ExecuteForAddRequest();
 
-    /// Removes all the files, directories and registry keys written during the add.
+    /// Removes all the files, directories written during the add.
     HRESULT ExecuteForRemoveRequest();
     
     static const PCWSTR HandlerName;
@@ -66,11 +66,6 @@ private:
     ///
     /// @param nameStr - A filepath of the file in the VFS 
     HRESULT CopyVfsFileToLocal(std::wstring nameStr);
-
-    /// Extracts or removes the registry information contained inside Registry.dat
-    ///
-    /// @param remove - if true, removes registry information. if false, adds registry information
-    HRESULT ExtractRegistry(bool remove);
 
     /// Determines if a file needs to be copied. 
     /// If a file already exists in the target location, the highest version file will be retained
