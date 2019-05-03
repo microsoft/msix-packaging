@@ -8,6 +8,7 @@
 #include "StreamBase.hpp"
 #include "RangeStream.hpp"
 #include "AppxFactory.hpp"
+#include "MsixFeatureSelector.hpp"
 
 #include <string>
 
@@ -17,17 +18,26 @@ namespace MSIX {
     class ZipFileStream final : public RangeStream
     {
     public:
-        // TODO: define what streams to pass in on the .ctor
+        // Represents an stream taken from the zip file (unpack)
         ZipFileStream(
             std::string name,
             std::string contentType,
-            IMsixFactory* factory,
             bool isCompressed,
             std::uint64_t offset,
             std::uint64_t size,
-            const ComPtr<IStream>& stream
-        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream), m_name(name), m_contentType(contentType), m_factory(factory), m_compressedSize(size)
+            const ComPtr<IStream>& stream // this is the actual zip file stream
+        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream), m_name(name), m_contentType(contentType), m_compressedSize(size)
         {
+        }
+
+        // Represents an stream to be added to the zip file (pack)
+        ZipFileStream(
+            const std::string& name,
+            const std::string& contentType,
+            bool isCompressed
+        ) : m_isCompressed(isCompressed), m_name(name), m_contentType(contentType), RangeStream(isCompressed)
+        {
+            THROW_IF_PACK_NOT_ENABLED
         }
 
         // IStreamInternal
@@ -36,7 +46,6 @@ namespace MSIX {
         std::string GetName() override { return m_name; }
 
     protected:
-        IMsixFactory*   m_factory;
         std::string     m_name;
         std::string     m_contentType;
         bool            m_isCompressed = false;

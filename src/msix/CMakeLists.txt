@@ -113,6 +113,7 @@ if(MSIX_PACK)
         pack/AppxBlockMapWriter.cpp
         pack/ContentTypeWriter.cpp
         pack/ContentType.cpp
+        pack/DeflateStream.cpp
     )
 endif()
 

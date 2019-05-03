@@ -6,11 +6,13 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "ComHelper.hpp"
+#include "VectorStream.hpp"
+#include "MsixFeatureSelector.hpp"
+#include "DeflateStream.hpp"
 
 #include <string>
 #include <map>
 #include <functional>
-
 
 namespace MSIX {
 
@@ -23,6 +25,16 @@ namespace MSIX {
             m_size(size),
             m_stream(stream)
         {
+        }
+
+        RangeStream(bool isCompressed) : m_offset(0), m_size(0)
+        {
+            THROW_IF_PACK_NOT_ENABLED
+            m_stream = ComPtr<IStream>::Make<VectorStream>(&m_buffer);
+            if (isCompressed)
+            {
+                m_stream = ComPtr<IStream>::Make<DeflateStream>(m_stream);
+            }
         }
 
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override try
@@ -63,6 +75,20 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
+        HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept override try
+        {
+            THROW_IF_PACK_NOT_ENABLED
+            // Forward to VectorStream/DeflateStream
+            ULONG written = 0;
+            ThrowHrIfFailed(m_stream->Write(buffer, countBytes, bytesWritten));
+            m_size = static_cast<ULONG>(m_buffer.size());
+            m_relativePosition = m_size;
+            // VectorStream will validate if the written bytes are correct. 
+            // It is expected that countBytes != bytesWritten here because this can be a compression.
+            if (bytesWritten) { *bytesWritten = written; }
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
         std::uint64_t Size() { return m_size; }
 
     protected:
@@ -70,5 +96,7 @@ namespace MSIX {
         std::uint64_t m_size;
         std::uint64_t m_relativePosition = 0;
         ComPtr<IStream> m_stream;
+        // for pack, this is buffer were store the data, before writing it to the zip file
+        std::vector<std::uint8_t> m_buffer;
     };
 }
