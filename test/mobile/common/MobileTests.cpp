@@ -132,7 +132,7 @@ static HRESULT RunTestsInternal(std::string source, std::string target)
     hr = RunTest(source + "महसुस/StoreSigned_Desktop_x64_MoviesTV.appx", unpackFolder, full, 0);
     hr = RunTest(source + "TestAppxPackage_Win32.appx", unpackFolder, ss, 0);
     hr = RunTest(source + "TestAppxPackage_x64.appx", unpackFolder, ss, 0);
-    hr = RunTest(source + "UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx", unpackFolder, full, 18);
+    hr = RunTest(source + "UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx", unpackFolder, full, 49);
     hr = RunTest(source + "FileDoesNotExist.appx", unpackFolder, ss, 1);
     hr = RunTest(source + "BlockMap/Missing_Manifest_in_blockmap.appx", unpackFolder, ss, 81);
     hr = RunTest(source + "BlockMap/ContentTypes_in_blockmap.appx", unpackFolder, ss, 81);

@@ -101,7 +101,7 @@ RunTest 66 ./../appx/SignedTamperedContentTypes-TRUST_E_BAD_DIGEST.appx
 RunTest 66 ./../appx/SignedUntrustedCert-CERT_E_CHAINING.appx
 RunTest 0 ./../appx/TestAppxPackage_Win32.appx -ss
 RunTest 0 ./../appx/TestAppxPackage_x64.appx -ss
-RunTest 18 ./../appx/UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
+RunTest 49 ./../appx/UnsignedZip64WithCI-APPX_E_MISSING_REQUIRED_FILE.appx
 RunTest 1 ./../appx/FileDoesNotExist.appx -ss
 RunTest 81 ./../appx/BlockMap/Missing_Manifest_in_blockmap.appx -ss
 RunTest 81 ./../appx/BlockMap/ContentTypes_in_blockmap.appx -ss

@@ -5,7 +5,7 @@
 #include "AppxFactory.hpp"
 #include "UnicodeConversion.hpp"
 #include "Exceptions.hpp"
-#include "ZipObject.hpp"
+#include "ZipObjectReader.hpp"
 #include "AppxPackageObject.hpp"
 #include "MSIXResource.hpp"
 #include "VectorStream.hpp"
@@ -38,7 +38,7 @@ namespace MSIX {
         ComPtr<IMsixFactory> self;
         ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         ComPtr<IStream> input(inputStream);
-        auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), input);
+        auto zip = ComPtr<IStorageObject>::Make<ZipObjectReader>(input);
         auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, m_applicabilityFlags, zip);
         *packageReader = result.Detach();
         return static_cast<HRESULT>(Error::OK);
@@ -163,7 +163,7 @@ namespace MSIX {
             // Get stream of the resource zip file generated at CMake processing.
             m_resourcesVector = std::vector<std::uint8_t>(Resource::resourceByte, Resource::resourceByte + Resource::resourceLength);
             auto resourceStream = ComPtr<IStream>::Make<VectorStream>(&m_resourcesVector);
-            m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), resourceStream.Get());
+            m_resourcezip = ComPtr<IStorageObject>::Make<ZipObjectReader>(resourceStream.Get());
         }
         auto file = m_resourcezip->GetFile(resource);
         ThrowErrorIfNot(Error::FileNotFound, file, resource.c_str());

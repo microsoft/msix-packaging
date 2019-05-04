@@ -28,6 +28,8 @@ namespace MSIX {
         }
         State;
 
+        XmlWriter() = delete; // A root must be given
+
         XmlWriter(const std::string& root) 
         {
             m_stream = ComPtr<IStream>::Make<StringStream>();

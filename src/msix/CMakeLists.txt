@@ -92,6 +92,7 @@ list(APPEND MsixSrc
     common/Exceptions.cpp
     common/AppxPackageInfo.cpp
     common/AppxManifestObject.cpp
+    common/ZipObject.cpp
 )
 
 # Unpack. Always add
@@ -100,7 +101,7 @@ list(APPEND MsixSrc
     unpack/AppxPackageObject.cpp
     unpack/AppxSignature.cpp
     unpack/InflateStream.cpp
-    unpack/ZipObject.cpp
+    unpack/ZipObjectReader.cpp
 )
 
 # Pack
