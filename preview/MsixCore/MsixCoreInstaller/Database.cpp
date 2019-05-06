@@ -69,10 +69,28 @@ HRESULT Database::FindPackagesForCurrentUser(std::vector<std::wstring> & install
     RETURN_IF_FAILED(hklmKey.Open(HKEY_LOCAL_MACHINE, nullptr, KEY_READ | KEY_WRITE));
 
     RegistryKey databaseKey;
-    RETURN_IF_FAILED(hklmKey.OpenSubKey(DatabaseKeyPath, KEY_READ | KEY_WRITE, &databaseKey));
+    HRESULT hr = hklmKey.OpenSubKey(DatabaseKeyPath, KEY_READ | KEY_WRITE, &databaseKey);
+    if (FAILED(hr))
+    {
+        if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+        {
+            // No database key yet--this is created the first time anybody installs, so it's ok not to exist.
+            return S_OK;
+        }
+        RETURN_IF_FAILED(hr);
+    }
 
     RegistryKey userSidKey;
-    RETURN_IF_FAILED(databaseKey.OpenSubKey(userSidString.c_str(), KEY_READ | KEY_WRITE, &userSidKey));
+    hr = databaseKey.OpenSubKey(userSidString.c_str(), KEY_READ | KEY_WRITE, &userSidKey);
+    if (FAILED(hr))
+    {
+        if (hr == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+        {
+            // No userSid key yet-- this is created the first time this user installs, so it's ok not to exist.
+            return S_OK;
+        }
+        RETURN_IF_FAILED(hr);
+    }
 
     RETURN_IF_FAILED(RegistryKey::EnumKeyAndDoActionForAllSubkeys(&userSidKey,
         [&](PCWSTR subKeyName, RegistryKey*, bool*) -> HRESULT
@@ -93,10 +111,10 @@ HRESULT Database::IsInstalledForAnyOtherUser(PCWSTR packageFullName, bool& isIns
     RETURN_IF_FAILED(GetCurrentUserSidString(userSidString));
 
     RegistryKey hklmKey;
-    RETURN_IF_FAILED(hklmKey.Open(HKEY_LOCAL_MACHINE, nullptr, KEY_READ | KEY_WRITE));
+    RETURN_IF_FAILED(hklmKey.Open(HKEY_LOCAL_MACHINE, nullptr, KEY_READ));
 
     RegistryKey databaseKey;
-    RETURN_IF_FAILED(hklmKey.OpenSubKey(DatabaseKeyPath, KEY_READ | KEY_WRITE, &databaseKey));
+    RETURN_IF_FAILED(hklmKey.OpenSubKey(DatabaseKeyPath, KEY_READ, &databaseKey));
 
     RETURN_IF_FAILED(RegistryKey::EnumKeyAndDoActionForAllSubkeys(&databaseKey,
         [&](PCWSTR userSidKeyName, RegistryKey*, bool* foundPackageForOtherUser) -> HRESULT
@@ -106,23 +124,20 @@ HRESULT Database::IsInstalledForAnyOtherUser(PCWSTR packageFullName, bool& isIns
             /// Ignore the current user. We are looking for other users that have the package
             return S_OK;
         }
+        
+        RegistryKey userKey;
+        RETURN_IF_FAILED(databaseKey.OpenSubKey(userSidKeyName, KEY_READ, &userKey));
 
-        RETURN_IF_FAILED(RegistryKey::EnumKeyAndDoActionForAllSubkeys(&databaseKey,
-            [&](PCWSTR packageKeyName, RegistryKey*, bool* foundPackageForOtherUser)->HRESULT
+        RETURN_IF_FAILED(userKey.KeyExists(packageFullName, isInstalled));
+        
+        *foundPackageForOtherUser = isInstalled;
+        if (isInstalled)
         {
-            if (CaseInsensitiveEquals(packageFullName, packageKeyName))
-            {
-                isInstalled = true;
-                *foundPackageForOtherUser = true;
-                TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                    "Found user with package installed",
-                    TraceLoggingValue(userSidKeyName, "UserSid"),
-                    TraceLoggingValue(packageFullName, "Package"));
-                return S_OK;
-            }
-            return S_OK;
-        }));
-
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Found user with package installed",
+                TraceLoggingValue(userSidKeyName, "UserSid"),
+                TraceLoggingValue(packageFullName, "Package"));
+        }
         return S_OK;
     }));
 
