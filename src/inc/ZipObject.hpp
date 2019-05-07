@@ -194,10 +194,9 @@ namespace MSIX {
         void SetRelativeOffsetOfLocalHeader(std::uint32_t value) noexcept { Field<16>().value = value; }
         void SetFileName(std::string& name)
         {
-            auto data = Field<17>().value;
-            data.resize(name.size());
-            data.assign(name.begin(), name.end());
             SetFileNameLength(static_cast<std::uint16_t>(name.size()));
+            Field<17>().value.resize(name.size(), 0);
+            std::copy(name.begin(), name.end(), Field<17>().value.begin());
         }
         void SetExtraField(std::uint64_t compressedSize, std::uint64_t uncompressedSize, std::uint64_t relativeOffset)
         {
@@ -260,10 +259,9 @@ namespace MSIX {
         void SetExtraFieldLength(std::uint16_t value)       noexcept { Field<10>().value = value; }
         void SetFileName(std::string& name)
         {
-            auto data = Field<11>().value;
-            data.resize(name.size());
-            data.assign(name.begin(), name.end());
             SetFileNameLength(static_cast<std::uint16_t>(name.size()));
+            Field<11>().value.resize(name.size(), 0);
+            std::copy(name.begin(), name.end(), Field<11>().value.begin());
         }
     };
 

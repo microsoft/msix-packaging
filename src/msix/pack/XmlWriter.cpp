@@ -14,7 +14,7 @@
 
 namespace MSIX {
 
-        const static char* xmlStart = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"true\"?><";
+        const static char* xmlStart = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?><";
 
         // Adds xml header declaration plus the name of the root element
         void XmlWriter::StartWrite(const std::string& root)

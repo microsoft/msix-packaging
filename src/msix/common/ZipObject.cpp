@@ -153,7 +153,7 @@ void CentralDirectoryFileHeader::SetData(std::string& name, std::uint32_t crc, s
     SetCompressionMethod(compressionMethod);
     SetCrc(crc);
     SetFileName(name);
-    SetExtraField(compressedSize, uncompressedSize, relativeOffset);
+    SetExtraField(uncompressedSize, compressedSize, relativeOffset);
 }
 
 void CentralDirectoryFileHeader::Read(const ComPtr<IStream>& stream, bool isZip64)
@@ -407,9 +407,9 @@ void Zip64EndOfCentralDirectoryLocator::Read(const ComPtr<IStream>& stream)
 EndCentralDirectoryRecord::EndCentralDirectoryRecord()
 {
     SetSignature(static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory));
-    SetNumberOfDisk(0);
-    SetDiskStart(0);
-    // always use zip64
+    // Always use zip64
+    SetNumberOfDisk(std::numeric_limits<std::uint16_t>::max());
+    SetDiskStart(std::numeric_limits<std::uint16_t>::max());
     SetTotalNumberOfEntries(std::numeric_limits<std::uint16_t>::max());
     SetTotalEntriesInCentralDirectory(std::numeric_limits<std::uint16_t>::max());
     SetSizeOfCentralDirectory(std::numeric_limits<std::uint32_t>::max());

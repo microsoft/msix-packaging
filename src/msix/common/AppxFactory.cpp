@@ -11,6 +11,7 @@
 #include "VectorStream.hpp"
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
+#include "ZipObjectWriter.hpp"
 
 namespace MSIX {
     // IAppxFactory
@@ -22,9 +23,12 @@ namespace MSIX {
         THROW_IF_PACK_NOT_ENABLED
         ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || *packageWriter != nullptr), "Invalid parameter");
         // We should never be here is packing if disabled, but the compiler
-        // is not smart enough to remove it and the linker will fail.  
+        // is not smart enough to remove it and the linker will fail.
         #ifdef MSIX_PACK 
-        auto result = ComPtr<IAppxPackageWriter>::Make<AppxPackageWriter>(outputStream);
+        ComPtr<IMsixFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
+        auto zip = ComPtr<IZipWriter>::Make<ZipObjectWriter>(outputStream);
+        auto result = ComPtr<IAppxPackageWriter>::Make<AppxPackageWriter>(self.Get(), zip);
         *packageWriter = result.Detach();
         #endif
         return static_cast<HRESULT>(Error::OK);

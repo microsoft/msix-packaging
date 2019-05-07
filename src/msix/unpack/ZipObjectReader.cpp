@@ -91,7 +91,6 @@ namespace MSIX {
 
             auto fileStream = ComPtr<IStream>::Make<ZipFileStream>(
                 centralFileHeader->first,
-                "TODO: Implement", // TODO: put value from content type 
                 centralFileHeader->second.GetCompressionMethod() == CompressionType::Deflate,
                 centralFileHeader->second.GetRelativeOffsetOfLocalHeader() + lfh.Size(),
                 centralFileHeader->second.GetCompressedSize(),

@@ -21,34 +21,30 @@ namespace MSIX {
         // Represents an stream taken from the zip file (unpack)
         ZipFileStream(
             std::string name,
-            std::string contentType,
             bool isCompressed,
             std::uint64_t offset,
             std::uint64_t size,
             const ComPtr<IStream>& stream // this is the actual zip file stream
-        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream), m_name(name), m_contentType(contentType), m_compressedSize(size)
+        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream), m_name(name)
         {
         }
 
         // Represents an stream to be added to the zip file (pack)
         ZipFileStream(
             const std::string& name,
-            const std::string& contentType,
             bool isCompressed
-        ) : m_isCompressed(isCompressed), m_name(name), m_contentType(contentType), RangeStream(isCompressed)
+        ) : m_isCompressed(isCompressed), m_name(name), RangeStream(isCompressed)
         {
             THROW_IF_PACK_NOT_ENABLED
         }
 
         // IStreamInternal
-        std::uint64_t GetSizeOnZip() override { return m_compressedSize; }
+        std::uint64_t GetSize() override { return m_size; }
         bool IsCompressed() override { return m_isCompressed; }
         std::string GetName() override { return m_name; }
 
     protected:
         std::string     m_name;
-        std::string     m_contentType;
         bool            m_isCompressed = false;
-        std::uint64_t   m_compressedSize;
     };
 }

@@ -32,9 +32,9 @@ namespace MSIX {
         }
 
         // IStreamInternal
-        std::uint64_t GetSizeOnZip() override
+        std::uint64_t GetSize() override
         {   // The underlying ZipFileStream object knows, so go ask it.
-            return m_stream.As<IStreamInternal>()->GetSizeOnZip();
+            return m_stream.As<IStreamInternal>()->GetSize();
         }
 
         bool IsCompressed() override

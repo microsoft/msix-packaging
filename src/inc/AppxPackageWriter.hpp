@@ -9,6 +9,7 @@
 #include "DirectoryObject.hpp"
 #include "AppxBlockMapWriter.hpp"
 #include "ContentTypeWriter.hpp"
+#include "ZipObjectWriter.hpp"
 
 #include <map>
 #include <memory>
@@ -26,7 +27,7 @@ class IPackageWriter : public IUnknown
 {
 public:
     // TODO: add options if needed
-    virtual void Pack(const MSIX::ComPtr<IDirectoryObject>& from) = 0;
+    virtual void PackPayloadFiles(const MSIX::ComPtr<IDirectoryObject>& from) = 0;
 };
 MSIX_INTERFACE(IPackageWriter, 0x32e89da5,0x7cbb,0x4443,0x8c,0xf0,0xb8,0x4e,0xed,0xb5,0x1d,0x0a);
 
@@ -35,11 +36,11 @@ namespace MSIX {
         IAppxPackageWriterUtf8, IAppxPackageWriter3, IAppxPackageWriter3Utf8>
     {
     public:
-        AppxPackageWriter(IStream* outputStream);
+        AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip);
         ~AppxPackageWriter() {};
 
         // IPackageWriter
-        void Pack(const ComPtr<IDirectoryObject>& from) override;
+        void PackPayloadFiles(const ComPtr<IDirectoryObject>& from) override;
 
         // IAppxPackageWriter
         HRESULT STDMETHODCALLTYPE AddPayloadFile(LPCWSTR fileName, LPCWSTR contentType,
@@ -67,12 +68,14 @@ namespace MSIX {
         }
         WriterState;
 
-        void ProcessPayloadFile(const std::string& name, const ComPtr<IStream>& stream, 
-            const std::string& contentType, APPX_COMPRESSION_OPTION compressionOpt);
+        void ProcessFileAndAddToPackage(const std::string& name, const ComPtr<IStream>& stream, 
+            APPX_COMPRESSION_OPTION compressionOpt, const char* contentType, 
+            bool forceContentTypeOverride, bool addToBlockMap = true);
         bool IsFootPrintFile(std::string normalized);
 
         WriterState m_state;
-        ComPtr<IStream> m_outputStream;
+        ComPtr<IMsixFactory> m_factory;
+        ComPtr<IZipWriter> m_zipWriter;
         BlockMapWriter m_blockMapWriter;
         ContentTypeWriter m_contentTypeWriter;
     };

@@ -80,7 +80,9 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForFile, "Invalid zip writer state");
         // Write file stream
-        ULARGE_INTEGER bytesCount = {0};
+        LARGE_INTEGER start = { 0 };
+        ThrowHrIfFailed(fileStream->Seek(start, StreamBase::Reference::START, nullptr));
+        ULARGE_INTEGER bytesCount = { 0 };
         bytesCount.QuadPart = std::numeric_limits<std::uint64_t>::max();
         ThrowHrIfFailed(fileStream->CopyTo(m_stream.Get(), bytesCount, nullptr, nullptr));
         // Create and write data descriptor 
@@ -88,8 +90,9 @@ namespace MSIX {
         descriptor.WriteTo(m_stream);
         // Create and add cdh to map
         CentralDirectoryFileHeader cdh;
-        cdh.SetData(m_lastLFH.second.GetFileName(), crc, compressedSize, uncompressedSize, m_lastLFH.first, m_lastLFH.second.GetCompressionMethod());
-        m_centralDirectories.insert(std::make_pair(m_lastLFH.second.GetFileName(), std::move(cdh)));
+        auto name = m_lastLFH.second.GetFileName();
+        cdh.SetData(name, crc, compressedSize, uncompressedSize, m_lastLFH.first, m_lastLFH.second.GetCompressionMethod());
+        m_centralDirectories.insert(std::make_pair(name, std::move(cdh)));
         m_state = ZipObjectWriter::State::ReadyForLfhOrClose;
     }
 

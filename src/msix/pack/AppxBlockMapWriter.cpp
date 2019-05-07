@@ -53,10 +53,12 @@ namespace MSIX {
     }
 
     // <Block Size="2948" Hash="ORIk+3QF9mSpuOq51oT3Xqn0Gy0vcGbnBRn5lBg5irM="/>
-    void BlockMapWriter::AddBlock(const std::vector<std::uint8_t>& hash, std::size_t size)
+    void BlockMapWriter::AddBlock(const std::vector<std::uint8_t>& hash, ULONG size, bool isCompressed)
     {
         m_xmlWriter.StartElement(blockElement);
-        if(size != DefaultBlockSize)
+        // We only add the size attribute for compressed files, we cannot just check for the 
+        // size of the block because the last block is going to be smaller than the default.
+        if(isCompressed)
         {
             m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(size));
         }

@@ -222,7 +222,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
 
     auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
     // PackPackage assumes AppxManifest.xml to be in the directory provided.
-    auto manifest = from.As<IStorageObject>()->GetFile("AppxManifest.xml");
+    auto manifest = from.As<IStorageObject>()->GetFile(MSIX::footprintFiles[APPX_FOOTPRINT_FILE_TYPE_MANIFEST]);
 
     auto deleteFile = MSIX::scope_exit([&outputPackage]
     {
@@ -237,11 +237,10 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
 
     MSIX::ComPtr<IAppxPackageWriter> writer;
     ThrowHrIfFailed(factory->CreatePackageWriter(stream.Get(), nullptr, &writer));
-    writer.As<IPackageWriter>()->Pack(from);
+    writer.As<IPackageWriter>()->PackPayloadFiles(from);
     ThrowHrIfFailed(writer->Close(manifest.Get()));
-
-    // deleteFile.release(); uncomment when packaging is done
-    return static_cast<HRESULT>(MSIX::Error::NotImplemented);
+    deleteFile.release();
+    return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
 #endif // MSIX_PACK
