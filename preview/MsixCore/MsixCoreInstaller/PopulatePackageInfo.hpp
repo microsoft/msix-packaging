@@ -25,7 +25,7 @@ public:
     ~PopulatePackageInfo() {}
 
     static HRESULT GetPackageInfoFromManifest(const std::wstring & directoryPath, MSIX_VALIDATION_OPTION validationOption, std::shared_ptr<InstalledPackage> * packageInfo);
-    static HRESULT GetPackageInfoFromPackage(const std::wstring & packageFilePath, MSIX_VALIDATION_OPTION validationOption, std::shared_ptr<Package> * packageInfo);
+    static HRESULT GetPackageInfoFromPackage(IStream * packageStream, MSIX_VALIDATION_OPTION validationOption, std::shared_ptr<Package> * packageInfo);
 private:
     MsixRequest* m_msixRequest = nullptr;
 

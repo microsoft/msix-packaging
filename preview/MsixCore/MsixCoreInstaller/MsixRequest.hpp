@@ -16,7 +16,7 @@ class MsixRequest
 {
 private:
     /// Should always be available via constructor
-    std::wstring m_packageFilePath;
+    ComPtr<IStream> m_packageStream;
     std::wstring m_packageFullName;
     MSIX_VALIDATION_OPTION m_validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
     OperationType m_operationType = Add;
@@ -30,7 +30,7 @@ private:
 protected:
     MsixRequest() {}
 public:
-    static HRESULT Make(OperationType operationType, const std::wstring & packageFilePath, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest** outInstance);
+    static HRESULT Make(OperationType operationType, IStream * packageStream, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest** outInstance);
 
     /// The main function processes the request based on whichever operation type was requested and then
     /// going through the sequence of individual handlers.
@@ -48,7 +48,7 @@ public:
     }
 
     inline MSIX_VALIDATION_OPTION GetValidationOptions() { return m_validationOptions; }
-    inline PCWSTR GetPackageFilePath() { return m_packageFilePath.c_str(); }
+    inline IStream * GetPackageStream() { return m_packageStream.Get(); }
     inline PCWSTR GetPackageFullName() { return m_packageFullName.c_str(); }
 
     /// Retrieves the msixResponse object

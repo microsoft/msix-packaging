@@ -14,8 +14,19 @@ PackageManager::PackageManager()
 
 shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packageFilePath, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
 {
+    ComPtr<IStream> packageStream;
+    if (FAILED(CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &packageStream)))
+    {
+        return nullptr;
+    }
+
+    return AddPackageAsync(packageStream.Get(), options, callback);
+}
+
+shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStream, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
+{
     MsixRequest * impl;
-    auto res = (MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    auto res = (MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(res))
     {
         return nullptr;
@@ -35,10 +46,10 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packag
     return impl->GetMsixResponse();
 }
 
-HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
+HRESULT PackageManager::AddPackage(IStream * packageStream, DeploymentOptions options)
 {
     AutoPtr<MsixRequest> impl;
-    auto res = (MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    auto res = (MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(res))
     {
         return res;
@@ -46,10 +57,22 @@ HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOp
     return impl->ProcessRequest();
 }
 
+HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
+{
+    ComPtr<IStream> packageStream;
+    auto res = CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &packageStream);
+    if (FAILED(res))
+    {
+        return res;
+    }
+
+    return AddPackage(packageStream.Get(), options);
+}
+
 shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & packageFullName, function<void(const IMsixResponse&)> callback)
 {
     MsixRequest* impl;
-    auto res = (MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    auto res = (MsixRequest::Make(OperationType::Remove, nullptr, packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(res))
     {
         return nullptr;
@@ -64,7 +87,7 @@ shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & pac
         msixRequest->ProcessRequest();
         delete msixRequest;
         msixRequest = nullptr;
-    }, impl);
+        }, impl);
     t.detach();
     return impl->GetMsixResponse();
 }
@@ -72,7 +95,7 @@ shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & pac
 HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
 {
     AutoPtr<MsixRequest> impl;
-    auto res = (MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    auto res = (MsixRequest::Make(OperationType::Remove, nullptr, packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(res))
     {
         return res;
@@ -155,7 +178,12 @@ shared_ptr<IPackage> PackageManager::GetMsixPackageInfo(const wstring & msixFull
         return nullptr;
     }
     shared_ptr<Package> packageInfo;
-    res = PopulatePackageInfo::GetPackageInfoFromPackage(msixFullPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo);
+    ComPtr<IStream> packageStream;
+    if (FAILED(CreateStreamOnFileUTF16(msixFullPath.c_str(), /*forRead */ true, &packageStream)))
+    {
+        return nullptr;
+    }
+    res = PopulatePackageInfo::GetPackageInfoFromPackage(packageStream.Get(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo);
     if (FAILED(res))
     {
         return nullptr;

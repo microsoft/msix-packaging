@@ -7,15 +7,13 @@
 #include <experimental/filesystem> // C++-standard header file name
 #include "Constants.hpp"
 #include "MsixTraceLoggingProvider.hpp"
+using namespace std;
 using namespace MsixCoreLib;
 
 const PCWSTR PopulatePackageInfo::HandlerName = L"PopulatePackageInfo";
 
-HRESULT PopulatePackageInfo::GetPackageInfoFromPackage(const std::wstring & packageFilePath, MSIX_VALIDATION_OPTION validationOption, std::shared_ptr<Package> * packageInfo)
+HRESULT PopulatePackageInfo::GetPackageInfoFromPackage(IStream * packageStream, MSIX_VALIDATION_OPTION validationOption, std::shared_ptr<Package> * packageInfo)
 {
-    ComPtr<IStream> inputStream;
-    RETURN_IF_FAILED(CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &inputStream));
-
     // On Win32 platforms CoCreateAppxFactory defaults to CoTaskMemAlloc/CoTaskMemFree
     // On non-Win32 platforms CoCreateAppxFactory will return 0x80070032 (e.g. HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
     // So on all platforms, it's always safe to call CoCreateAppxFactoryWithHeap, just be sure to bring your own heap!
@@ -24,10 +22,9 @@ HRESULT PopulatePackageInfo::GetPackageInfoFromPackage(const std::wstring & pack
 
     // Create a new package reader using the factory.
     ComPtr<IAppxPackageReader> packageReader;
-    RETURN_IF_FAILED(appxFactory->CreatePackageReader(inputStream.Get(), &packageReader));
+    RETURN_IF_FAILED(appxFactory->CreatePackageReader(packageStream, &packageReader));
     RETURN_IF_FAILED(Package::MakeFromPackageReader(packageReader.Get(), packageInfo));
     packageReader.Release();
-    inputStream.Release();
 
     return S_OK;
 }
@@ -60,7 +57,7 @@ HRESULT PopulatePackageInfo::ExecuteForAddRequest()
 {
 
     std::shared_ptr<Package> packageInfo;
-    RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromPackage(m_msixRequest->GetPackageFilePath(), m_msixRequest->GetValidationOptions(), &packageInfo));
+    RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromPackage(m_msixRequest->GetPackageStream(), m_msixRequest->GetValidationOptions(), &packageInfo));
 
     if (packageInfo == nullptr)
     {
