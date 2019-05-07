@@ -3,6 +3,7 @@
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 #include "MsixRequest.hpp"
+#include "RegistryKey.hpp"
 
 namespace MsixCoreLib
 {
@@ -34,6 +35,6 @@ namespace MsixCoreLib
         AddRemovePrograms(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
         /// Writes the data to the already opened Uninstall key, which could be in HKLM or HKCU depending on whether it's for allusers or not
-        HRESULT WriteUninstallKey(RegistryKey & uninstallKey);
+        HRESULT WriteUninstallKey(MsixCoreLib::RegistryKey & uninstallKey);
     };
 }

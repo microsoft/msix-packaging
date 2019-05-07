@@ -17,7 +17,7 @@ public:
     virtual HRESULT ExecuteForRemoveRequest() { return S_OK; }
 
     // Add-for-all-users adds the package as per-machine. Everything is written to per-machine shared locations.
-    virtual HRESULT ExecuteForAddForAllUsersRequest() = 0;
+    virtual HRESULT ExecuteForAddForAllUsersRequest() { return S_OK; }
 
     // Remove-for-all-users removes packages that were added using ExecuteForAddForAllUsersRequest.
     // This does not work for packages that were per-user added.
