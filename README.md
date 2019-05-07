@@ -125,48 +125,49 @@ The following native platforms are in development now:
 ### Windows
 ||master|
 |---|---|
-**Debug x32**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=debug_32)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
-**Debug x64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=debug_64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
-**Release x32**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_32)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
-**Release x64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
-**Release x32 Validation Parser**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_32_validation_parser)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
-**Release x64 Validation Parser**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_64_validation_parser)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
-**Release x32 Xerces**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_32_xerces)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
-**Release x64 Xerces**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=release_64_xerces)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Debug x32**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=Windows%20debug_32)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Debug x64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=Windows%20debug_64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x32**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=Windows%20release_32)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=Windows%20release_64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x32 Validation Parser**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=Windows%20release_32_validation_parser)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x64 Validation Parser**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=Windows%20release_64_validation_parser)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x32 Xerces**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=Windows%20release_32_xerces)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
+**Release x64 Xerces**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&configuration=Windows%20release_64_xerces)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
 
 Built in the Azure Pipelines Hosted VS2017 pool. See specifications [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/win/Vs2017-Server2016-Readme.md)
 
 ### macOS
 ||master|
 |---|---|
-**Debug**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&configuration=debug)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
-**Release**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&configuration=release)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Debug**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20debug)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
 
 Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md)
 
 ### iOS
 ||master|
 |---|---|
-**Debug emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&configuration=debug_x86)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)|
-**Release emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&configuration=release_x86)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)|
-**Release arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&configuration=release_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)
+**Debug emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&jobName=iOS&configuration=iOS%20debug_x86)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)|
+**Release emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&jobName=iOS&configuration=iOS%20release_x86)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)|
+**Release arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&jobName=iOS&configuration=iOS%20release_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)
 
 Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md)
 
 ### Android
 ||master|
 |---|---|
-**Debug emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20aosp%20CI?branchName=master&configuration=debug_emulator)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=76&branchName=master)|
-**Release emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20aosp%20CI?branchName=master&configuration=release_emulator)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=76&branchName=master)|
-**Release arm**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20aosp%20CI?branchName=master&configuration=release_arm)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=76&branchName=master)|
+**Debug emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20aosp%20CI?branchName=master&jobName=AOSP&configuration=AOSP%20debug_emulator)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=76&branchName=master)|
+**Release emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20aosp%20CI?branchName=master&jobName=AOSP&configuration=AOSP%20release_emulator)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=76&branchName=master)|
+**Release arm**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20aosp%20CI?branchName=master&jobName=AOSP&configuration=AOSP%20release_arm)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=76&branchName=master)|
 
 Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md)
 
 ### Linux
 ||master|
 |---|---|
-**Debug**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&configuration=debug)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
-**Release**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&configuration=release)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
+**Debug**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&jobName=Linux&configuration=Linux%20debug)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
+**Release**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&jobName=Linux&configuration=Linux%20release)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
+**Release Validation Parser**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&jobName=Linux&configuration=Linux%20release_xerces_validation_parser)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
 
 Built in the Azure Pipelines Hosted Ubuntu 1604. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/linux/Ubuntu1604-README.md)
 
