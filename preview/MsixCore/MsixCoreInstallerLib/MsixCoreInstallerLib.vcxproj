@@ -103,7 +103,8 @@
       <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "$(ProjectDir)MSIXPackaging\x86\Debug\msix.*" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -126,7 +127,8 @@
       <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -153,7 +155,8 @@
       <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "$(ProjectDir)MSIXPackaging\x86\msix.dll" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -180,7 +183,8 @@
       <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
+      <Command>
+      </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
