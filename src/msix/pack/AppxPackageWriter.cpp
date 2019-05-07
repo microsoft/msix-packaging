@@ -76,7 +76,7 @@ namespace MSIX {
 
         // Process AppxManifest.xml
         // If the creating the AppxManifestObject succeeds, then the stream is valid.
-        auto manifest = ComPtr<IAppxManifestReader>::Make<AppxManifestObject>(m_factory.Get(), manifestStream.Get());
+        auto manifestObj = ComPtr<IAppxManifestReader>::Make<AppxManifestObject>(m_factory.Get(), manifestStream.Get());
         auto manifestContentType = ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE_MANIFEST);
         ProcessFileAndAddToPackage(footprintFiles[APPX_FOOTPRINT_FILE_TYPE_MANIFEST],
             manifestStream, APPX_COMPRESSION_OPTION_NORMAL, manifestContentType.c_str(), false);

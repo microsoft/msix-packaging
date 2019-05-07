@@ -36,8 +36,8 @@ namespace MSIX {
     BlockMapWriter::BlockMapWriter() : m_xmlWriter(XmlWriter(blockMapElement))
     {
         // For now, we always use SHA256.
-        m_xmlWriter.AddAttribute(hashMethodAttribute, hashMethodAttributeValue);
         m_xmlWriter.AddAttribute(xmlnsAttribute, blockMapNamespace);
+        m_xmlWriter.AddAttribute(hashMethodAttribute, hashMethodAttributeValue);
     }
 
     // <File Size="18944" Name="App1.exe" LfhSize="38">
@@ -47,8 +47,8 @@ namespace MSIX {
         std::string winName = name;
         std::replace(winName.begin(), winName.end(), '/', '\\');
         m_xmlWriter.StartElement(fileElement);
-        m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(uncompressedSize));
         m_xmlWriter.AddAttribute(nameAttribute, winName);
+        m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(uncompressedSize));
         m_xmlWriter.AddAttribute(lfhSizeAttribute, std::to_string(lfh));
     }
 
@@ -56,13 +56,13 @@ namespace MSIX {
     void BlockMapWriter::AddBlock(const std::vector<std::uint8_t>& hash, ULONG size, bool isCompressed)
     {
         m_xmlWriter.StartElement(blockElement);
+        m_xmlWriter.AddAttribute(hashAttribute, Base64::ComputeBase64(hash));
         // We only add the size attribute for compressed files, we cannot just check for the 
         // size of the block because the last block is going to be smaller than the default.
         if(isCompressed)
         {
             m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(size));
         }
-        m_xmlWriter.AddAttribute(hashAttribute, Base64::ComputeBase64(hash));
         m_xmlWriter.CloseElement();
     }
 

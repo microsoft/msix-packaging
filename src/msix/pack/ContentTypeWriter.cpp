@@ -31,7 +31,7 @@ namespace MSIX {
     static const char* partNameAttribute = "PartName";
 
     // <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-    ContentTypeWriter::ContentTypeWriter() : m_xmlWriter(XmlWriter(typesElement))
+    ContentTypeWriter::ContentTypeWriter() : m_xmlWriter(XmlWriter(typesElement, true))
     {
         m_xmlWriter.AddAttribute(xmlnsAttribute, typesNamespace);
     }
