@@ -66,17 +66,6 @@ enum class HeaderIDs : std::uint16_t
     RESERVED_3        = 0x4690, // POSZIP 4690 (reserved) 
 };
 
-// from ZIP file format specification detailed in AppNote.txt
-enum class Signatures : std::uint32_t
-{
-    LocalFileHeader         = 0x04034b50,
-    DataDescriptor          = 0x08074b50,
-    CentralFileHeader       = 0x02014b50,
-    Zip64EndOfCD            = 0x06064b50,
-    Zip64EndOfCDLocator     = 0x07064b50,
-    EndOfCentralDirectory   = 0x06054b50,
-};
-
 // Hat tip to the people at Facebook.  Timestamp for files in ZIP archive 
 // format held constant to make pack/unpack deterministic
 enum class MagicNumbers : std::uint16_t
@@ -113,7 +102,7 @@ Zip64ExtendedInformation::Zip64ExtendedInformation()
     SetSize(static_cast<std::uint16_t>(Size() - Field<0>().Size() - Field<1>().Size()));
 }
 
-void Zip64ExtendedInformation::Initialize(std::uint64_t uncompressedSize, std::uint64_t compressedSize, std::uint64_t relativeOffset)
+void Zip64ExtendedInformation::SetData(std::uint64_t uncompressedSize, std::uint64_t compressedSize, std::uint64_t relativeOffset)
 {
     THROW_IF_PACK_NOT_ENABLED
     SetUncompressedSize(uncompressedSize);
@@ -157,7 +146,7 @@ CentralDirectoryFileHeader::CentralDirectoryFileHeader()
     SetRelativeOffsetOfLocalHeader(std::numeric_limits<std::uint32_t>::max()); // always use zip64
 }
 
-void CentralDirectoryFileHeader::Initialize(std::string& name, std::uint32_t crc, std::uint64_t compressedSize, std::uint64_t uncompressedSize,
+void CentralDirectoryFileHeader::SetData(std::string& name, std::uint32_t crc, std::uint64_t compressedSize, std::uint64_t uncompressedSize,
     std::uint64_t relativeOffset,  std::uint16_t compressionMethod)
 {
     THROW_IF_PACK_NOT_ENABLED
@@ -260,7 +249,7 @@ LocalFileHeader::LocalFileHeader()
     SetExtraFieldLength(0);
 }
 
-void LocalFileHeader::Initialize(std::string& name, bool isCompressed)
+void LocalFileHeader::SetData(std::string& name, bool isCompressed)
 {
     THROW_IF_PACK_NOT_ENABLED
     auto compressMethod = (isCompressed) ? CompressionType::Deflate : CompressionType::Store; 
@@ -328,6 +317,13 @@ Zip64EndOfCentralDirectoryRecord::Zip64EndOfCentralDirectoryRecord()
     SetNumberOfTheDiskWithStartOfCD(0);
 }
 
+void Zip64EndOfCentralDirectoryRecord::SetData(std::uint64_t numCentralDirs, std::uint64_t sizeCentralDir, std::uint64_t offsetStartCentralDirectory)
+{
+    SetTotalNumberOfEntriesDisk(numCentralDirs);
+    SetSizeOfCD(sizeCentralDir);
+    SetOffsetfStartOfCD(offsetStartCentralDirectory);
+}
+
 void Zip64EndOfCentralDirectoryRecord::Read(const ComPtr<IStream>& stream)
 {
     StreamBase::Read(stream, &Field<0>().value);
@@ -381,6 +377,11 @@ Zip64EndOfCentralDirectoryLocator::Zip64EndOfCentralDirectoryLocator()
     SetSignature(static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator));
     SetNumberOfDisk(0);
     SetTotalNumberOfDisks(1);
+}
+
+void Zip64EndOfCentralDirectoryLocator::SetData(std::uint64_t zip64EndCdrOffset)
+{
+    SetRelativeOffset(zip64EndCdrOffset);
 }
 
 void Zip64EndOfCentralDirectoryLocator::Read(const ComPtr<IStream>& stream)
@@ -455,6 +456,17 @@ void EndCentralDirectoryRecord::Read(const ComPtr<IStream>& stream)
     {
        ThrowHrIfFailed(stream->Read(reinterpret_cast<void*>(Field<8>().value.data()), static_cast<ULONG>(Field<8>().Size()), nullptr));
     }
+}
+
+// Use for editing a package
+ZipObject::ZipObject(const ComPtr<IStorageObject>& storageObject)
+{
+    auto other = reinterpret_cast<ZipObject*>(storageObject.Get());
+    m_endCentralDirectoryRecord = other->m_endCentralDirectoryRecord;
+    m_zip64Locator = other->m_zip64Locator;
+    m_zip64EndOfCentralDirectory = other->m_zip64EndOfCentralDirectory;
+    m_centralDirectories = std::move(other->m_centralDirectories);
+    m_stream = std::move(m_stream);
 }
 
 } // namespace MSIX

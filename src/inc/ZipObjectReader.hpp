@@ -14,7 +14,7 @@
 
 namespace MSIX {
     // This represents a raw stream over a.zip file.
-    class ZipObjectReader final : public ZipObject
+    class ZipObjectReader final : public ComClass<ZipObjectReader, IStorageObject>, ZipObject
     {
     public:
         ZipObjectReader(const ComPtr<IStream>& stream);

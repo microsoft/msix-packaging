@@ -115,6 +115,7 @@ if(MSIX_PACK)
         pack/ContentTypeWriter.cpp
         pack/ContentType.cpp
         pack/DeflateStream.cpp
+        pack/ZipObjectWriter.cpp
     )
 endif()
 

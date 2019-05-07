@@ -12,7 +12,56 @@
 
 namespace MSIX {
 
-    std::vector<std::string> ZipObjectReader::GetFileNames(FileNameOptions)
+    ZipObjectReader::ZipObjectReader(const ComPtr<IStream>& stream) : ZipObject(stream)
+    {
+        LARGE_INTEGER pos = {0};
+        pos.QuadPart = -1 * m_endCentralDirectoryRecord.Size();
+        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
+        m_endCentralDirectoryRecord.Read(m_stream.Get());
+
+        // find where the zip central directory exists.
+        std::uint64_t offsetStartOfCD = 0;
+        std::uint64_t totalNumberOfEntries = 0;
+        if (!m_endCentralDirectoryRecord.GetArchiveHasZip64Locator())
+        {
+            offsetStartOfCD = m_endCentralDirectoryRecord.GetStartOfCentralDirectory();
+            totalNumberOfEntries = m_endCentralDirectoryRecord.GetNumberOfCentralDirectoryEntries();
+        }
+        else
+        {   // Make sure that we have a zip64 end of central directory locator
+            pos.QuadPart = -1*(m_endCentralDirectoryRecord.Size() + m_zip64Locator.Size());
+            ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
+            m_zip64Locator.Read(m_stream.Get());
+
+            // now read the end of zip central directory record
+            pos.QuadPart = m_zip64Locator.GetRelativeOffset();
+            ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
+            m_zip64EndOfCentralDirectory.Read(m_stream.Get());
+            offsetStartOfCD = m_zip64EndOfCentralDirectory.GetOffsetStartOfCD();
+            totalNumberOfEntries = m_zip64EndOfCentralDirectory.GetTotalNumberOfEntries();
+        }
+
+        // read the zip central directory
+        pos.QuadPart = offsetStartOfCD;
+        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
+        for (std::uint32_t index = 0; index < totalNumberOfEntries; index++)
+        {
+            auto centralFileHeader = CentralDirectoryFileHeader();
+            centralFileHeader.Read(m_stream.Get(), m_endCentralDirectoryRecord.GetIsZip64());
+            // TODO: ensure that there are no collisions on name!
+            m_centralDirectories.insert(std::make_pair(centralFileHeader.GetFileName(), std::move(centralFileHeader)));
+        }
+
+        if (m_endCentralDirectoryRecord.GetArchiveHasZip64Locator())
+        {   // We should have no data between the end of the last central directory header and the start of the EoCD
+            ULARGE_INTEGER uPos = {0};
+            ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &uPos));
+            ThrowErrorIfNot(Error::ZipHiddenData, (uPos.QuadPart == m_zip64Locator.GetRelativeOffset()), "hidden data unsupported");
+        }
+    }
+
+    // IStoreageObject
+        std::vector<std::string> ZipObjectReader::GetFileNames(FileNameOptions)
     {
         std::vector<std::string> result;
         std::for_each(m_centralDirectories.begin(), m_centralDirectories.end(), [&result](auto it)
@@ -63,53 +112,5 @@ namespace MSIX {
     std::string ZipObjectReader::GetFileName()
     {
         return m_stream.As<IStreamInternal>()->GetName();
-    }
-
-    ZipObjectReader::ZipObjectReader(const ComPtr<IStream>& stream) : ZipObject(stream)
-    {
-        LARGE_INTEGER pos = {0};
-        pos.QuadPart = -1 * m_endCentralDirectoryRecord.Size();
-        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
-        m_endCentralDirectoryRecord.Read(m_stream.Get());
-
-        // find where the zip central directory exists.
-        std::uint64_t offsetStartOfCD = 0;
-        std::uint64_t totalNumberOfEntries = 0;
-        if (!m_endCentralDirectoryRecord.GetArchiveHasZip64Locator())
-        {
-            offsetStartOfCD = m_endCentralDirectoryRecord.GetStartOfCentralDirectory();
-            totalNumberOfEntries = m_endCentralDirectoryRecord.GetNumberOfCentralDirectoryEntries();
-        }
-        else
-        {   // Make sure that we have a zip64 end of central directory locator
-            pos.QuadPart = -1*(m_endCentralDirectoryRecord.Size() + m_zip64Locator.Size());
-            ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
-            m_zip64Locator.Read(m_stream.Get());
-
-            // now read the end of zip central directory record
-            pos.QuadPart = m_zip64Locator.GetRelativeOffset();
-            ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
-            m_zip64EndOfCentralDirectory.Read(m_stream.Get());
-            offsetStartOfCD = m_zip64EndOfCentralDirectory.GetOffsetStartOfCD();
-            totalNumberOfEntries = m_zip64EndOfCentralDirectory.GetTotalNumberOfEntries();
-        }
-
-        // read the zip central directory
-        pos.QuadPart = offsetStartOfCD;
-        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
-        for (std::uint32_t index = 0; index < totalNumberOfEntries; index++)
-        {
-            auto centralFileHeader = CentralDirectoryFileHeader();
-            centralFileHeader.Read(m_stream.Get(), m_endCentralDirectoryRecord.GetIsZip64());
-            // TODO: ensure that there are no collisions on name!
-            m_centralDirectories.insert(std::make_pair(centralFileHeader.GetFileName(), std::move(centralFileHeader)));
-        }
-
-        if (m_endCentralDirectoryRecord.GetArchiveHasZip64Locator())
-        {   // We should have no data between the end of the last central directory header and the start of the EoCD
-            ULARGE_INTEGER uPos = {0};
-            ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &uPos));
-            ThrowErrorIfNot(Error::ZipHiddenData, (uPos.QuadPart == m_zip64Locator.GetRelativeOffset()), "hidden data unsupported");
-        }
     }
 }

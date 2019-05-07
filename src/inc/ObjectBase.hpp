@@ -163,7 +163,7 @@ public:
         return bytes;
     }
 
-    void Write(const ComPtr<IStream>& stream)
+    void WriteTo(const ComPtr<IStream>& stream)
     {
         THROW_IF_PACK_NOT_ENABLED
         auto bytes = GetBytes();

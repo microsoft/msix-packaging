@@ -58,6 +58,18 @@ namespace MSIX {
         Deflate = 8,
     };
 
+    // from ZIP file format specification detailed in AppNote.txt
+    enum class Signatures : std::uint32_t
+    {
+        LocalFileHeader         = 0x04034b50,
+        DataDescriptor          = 0x08074b50,
+        CentralFileHeader       = 0x02014b50,
+        Zip64EndOfCD            = 0x06064b50,
+        Zip64EndOfCDLocator     = 0x07064b50,
+        EndOfCentralDirectory   = 0x06054b50,
+    };
+
+
     class Zip64ExtendedInformation final : public Meta::StructuredObject<
         Meta::Field2Bytes,  // 0 - tag for the "extra" block type               2 bytes(0x0001)
         Meta::Field2Bytes,  // 1 - size of this "extra" block                   2 bytes
@@ -74,7 +86,7 @@ namespace MSIX {
     public:
         Zip64ExtendedInformation();
 
-        void Initialize(std::uint64_t uncompressedSize, std::uint64_t compressedSize, std::uint64_t relativeOffset);
+        void SetData(std::uint64_t uncompressedSize, std::uint64_t compressedSize, std::uint64_t relativeOffset);
 
         void Read(const ComPtr<IStream>& stream, ULARGE_INTEGER start);
 
@@ -116,7 +128,7 @@ namespace MSIX {
     public:
         CentralDirectoryFileHeader();
 
-        void Initialize(std::string& name, std::uint32_t crc, std::uint64_t compressedSize,
+        void SetData(std::string& name, std::uint32_t crc, std::uint64_t compressedSize,
             std::uint64_t uncompressedSize, std::uint64_t relativeOffset,  std::uint16_t compressionMethod);
 
         void Read(const ComPtr<IStream>& stream, bool isZip64);
@@ -189,7 +201,7 @@ namespace MSIX {
         }
         void SetExtraField(std::uint64_t compressedSize, std::uint64_t uncompressedSize, std::uint64_t relativeOffset)
         {
-            m_extendedInfo.Initialize(compressedSize, uncompressedSize, relativeOffset);
+            m_extendedInfo.SetData(compressedSize, uncompressedSize, relativeOffset);
             SetExtraFieldLength(static_cast<std::uint16_t>(m_extendedInfo.Size()));
             Field<18>().value = m_extendedInfo.GetBytes();
         }
@@ -217,11 +229,12 @@ namespace MSIX {
     public:
         LocalFileHeader();
 
-        void Initialize(std::string& name, bool isCompressed);
+        void SetData(std::string& name, bool isCompressed);
 
         void Read(const ComPtr<IStream>& stream, CentralDirectoryFileHeader& directoryEntry);
 
-        std::uint16_t GetFileNameLength()      noexcept { return Field<9>().value;  }
+        std::uint16_t GetCompressionMethod() noexcept { return Field<3>().value; }
+        std::uint16_t GetFileNameLength()    noexcept { return Field<9>().value;  }
         std::string GetFileName()
         {
             auto data = Field<11>().value;
@@ -272,15 +285,9 @@ namespace MSIX {
     public:
         Zip64EndOfCentralDirectoryRecord();
 
-        void Read(const ComPtr<IStream>& stream);
+        void SetData(std::uint64_t numCentralDirs, std::uint64_t sizeCentralDir, std::uint64_t offsetStartCentralDirectory);
 
-        void SetTotalNumberOfEntriesDisk(std::uint64_t value) noexcept
-        {
-            Field<6>().value = value;
-            Field<7>().value = value;
-        }
-        void SetSizeOfCD(std::uint64_t value)         noexcept { Field<8>().value = value; }
-        void SetOffsetfStartOfCD(std::uint64_t value) noexcept { Field<9>().value = value; }
+        void Read(const ComPtr<IStream>& stream);
 
         std::uint64_t GetTotalNumberOfEntries() noexcept { return Field<6>().value; }
         std::uint64_t GetOffsetStartOfCD()      noexcept { return Field<9>().value; }
@@ -292,6 +299,13 @@ namespace MSIX {
         void SetVersionNeededToExtract(std::uint16_t value)       noexcept { Field<3>().value = value; }
         void SetNumberOfThisDisk(std::uint32_t value)             noexcept { Field<4>().value = value; }
         void SetNumberOfTheDiskWithStartOfCD(std::uint32_t value) noexcept { Field<5>().value = value; }
+        void SetTotalNumberOfEntriesDisk(std::uint64_t value) noexcept
+        {
+            Field<6>().value = value;
+            Field<7>().value = value;
+        }
+        void SetSizeOfCD(std::uint64_t value)         noexcept { Field<8>().value = value; }
+        void SetOffsetfStartOfCD(std::uint64_t value) noexcept { Field<9>().value = value; }
     };
 
     class Zip64EndOfCentralDirectoryLocator final : public Meta::StructuredObject<
@@ -306,14 +320,16 @@ namespace MSIX {
     public:
         Zip64EndOfCentralDirectoryLocator();
 
+        void SetData(std::uint64_t zip64EndCdrOffset);
+
         void Read(const ComPtr<IStream>& stream);
 
-        void SetRelativeOffset(std::uint64_t value) noexcept { Field<2>().value = value; }
         std::uint64_t GetRelativeOffset()           noexcept { return Field<2>().value; }
 
     protected:
         void SetSignature(std::uint32_t value)          noexcept { Field<0>().value = value; }
         void SetNumberOfDisk(std::uint32_t value)       noexcept { Field<1>().value = value; }
+        void SetRelativeOffset(std::uint64_t value)     noexcept { Field<2>().value = value; }
         void SetTotalNumberOfDisks(std::uint32_t value) noexcept { Field<3>().value = value; }
     };
 
@@ -358,15 +374,11 @@ namespace MSIX {
         bool m_archiveHasZip64Locator = true;
     };
 
-    class ZipObject : public ComClass<ZipObject, IStorageObject>
+    class ZipObject
     {
     public:
         ZipObject(const ComPtr<IStream>& stream) : m_stream(stream) {}
-
-        // IStorageObject methods
-        std::vector<std::string> GetFileNames(FileNameOptions options) override { NOTIMPLEMENTED }
-        ComPtr<IStream> GetFile(const std::string& fileName) override { NOTIMPLEMENTED }
-        std::string GetFileName() override { NOTIMPLEMENTED }
+        ZipObject(const ComPtr<IStorageObject>& storageObject);
 
     protected:
         EndCentralDirectoryRecord m_endCentralDirectoryRecord;
