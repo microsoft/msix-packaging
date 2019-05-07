@@ -129,6 +129,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             UpdateWindow(hWnd);
             ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
             ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
+            ShowWindow(g_percentageTextHWnd, SW_HIDE);
+            ShowWindow(g_staticPercentText, SW_HIDE);
             ShowWindow(g_LaunchbuttonHWnd, SW_SHOW);
         }
     }
