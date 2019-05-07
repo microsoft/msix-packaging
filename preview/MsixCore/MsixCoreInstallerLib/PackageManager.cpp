@@ -2,6 +2,7 @@
 #include "MsixRequest.hpp"
 #include "Constants.hpp"
 #include "PopulatePackageInfo.hpp"
+#include "MsixTraceLoggingProvider.hpp"
 #include <experimental/filesystem>
 #include <thread>
 
@@ -15,8 +16,8 @@ PackageManager::PackageManager()
 shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packageFilePath, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
 {
     MsixRequest * impl;
-    auto res = (MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
-    if (FAILED(res))
+    HRESULT hr = (MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    if (FAILED(hr))
     {
         return nullptr;
     }
@@ -38,19 +39,17 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packag
 HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
 {
     AutoPtr<MsixRequest> impl;
-    auto res = (MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
-    if (FAILED(res))
-    {
-        return res;
-    }
-    return impl->ProcessRequest();
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    
+    RETURN_IF_FAILED(impl->ProcessRequest());
+    return S_OK;
 }
 
 shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & packageFullName, function<void(const IMsixResponse&)> callback)
 {
     MsixRequest* impl;
-    auto res = (MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
-    if (FAILED(res))
+    HRESULT hr = (MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    if (FAILED(hr))
     {
         return nullptr;
     }
@@ -72,46 +71,37 @@ shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & pac
 HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
 {
     AutoPtr<MsixRequest> impl;
-    auto res = (MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
-    if (FAILED(res))
-    {
-        return res;
-    }
-    return impl->ProcessRequest();
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    
+    RETURN_IF_FAILED(impl->ProcessRequest());
+    return S_OK;
 }
-shared_ptr<IInstalledPackage> PackageManager::GetPackageInfo(const wstring & msixCoreDirectory, const wstring & directoryPath)
+
+HRESULT PackageManager::GetPackageInfo(const wstring & msixCoreDirectory, const wstring & directoryPath, shared_ptr<IInstalledPackage> & installedPackage)
 {
     std::shared_ptr<InstalledPackage> packageInfo;
-    auto res = PopulatePackageInfo::GetPackageInfoFromManifest(directoryPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo);
-    if (FAILED(res))
-    {
-        return nullptr;
-    }
-    return std::dynamic_pointer_cast<IInstalledPackage>(packageInfo);
+    RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromManifest(directoryPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo));
+    
+    installedPackage = std::dynamic_pointer_cast<IInstalledPackage>(packageInfo);
+    return S_OK;
 }
 
-shared_ptr<IInstalledPackage> PackageManager::FindPackage(const wstring & packageFullName)
+HRESULT PackageManager::FindPackage(const wstring & packageFullName, shared_ptr<IInstalledPackage>& installedPackage)
 {
     auto filemapping = FilePathMappings::GetInstance();
-    auto res = filemapping.GetInitializationResult();
-    if (FAILED(res))
-    {
-        return nullptr;
-    }
+    RETURN_IF_FAILED(filemapping.GetInitializationResult());
+    
     wstring msixCoreDirectory = filemapping.GetMsixCoreDirectory();
     wstring packageDirectoryPath = msixCoreDirectory + packageFullName;
-    auto package = GetPackageInfo(msixCoreDirectory, packageDirectoryPath);
-    return package;
+    RETURN_IF_FAILED(GetPackageInfo(msixCoreDirectory, packageDirectoryPath, installedPackage));
+    return S_OK;
 }
 
-shared_ptr<IInstalledPackage> PackageManager::FindPackageByFamilyName(const wstring & packageFamilyName)
+HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyName, shared_ptr<IInstalledPackage>& installedPackage)
 {
     auto filemapping = FilePathMappings::GetInstance();
-    auto res = filemapping.GetInitializationResult();
-    if (FAILED(res))
-    {
-        return nullptr;
-    }
+    RETURN_IF_FAILED(filemapping.GetInitializationResult());
+    
     auto msixCoreDirectory = filemapping.GetMsixCoreDirectory();
     for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
     {
@@ -119,46 +109,39 @@ shared_ptr<IInstalledPackage> PackageManager::FindPackageByFamilyName(const wstr
         auto installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
         if (CaseInsensitiveEquals(installedAppFamilyName, packageFamilyName))
         {
-            return GetPackageInfo(msixCoreDirectory, p.path());
+            RETURN_IF_FAILED(GetPackageInfo(msixCoreDirectory, p.path(), installedPackage));
+            return S_OK;
         }
     }
-    return nullptr;
+    return S_OK;
 }
 
-unique_ptr<vector<shared_ptr<IInstalledPackage>>> PackageManager::FindPackages()
+HRESULT PackageManager::FindPackages(unique_ptr<vector<shared_ptr<IInstalledPackage>>> & installedPackages)
 {
     auto packages = std::make_unique<std::vector<shared_ptr<IInstalledPackage>>>();
     auto filemapping = FilePathMappings::GetInstance();
-    auto res = filemapping.GetInitializationResult();
-    if (FAILED(res))
-    {
-        return packages;
-    }
+    RETURN_IF_FAILED(filemapping.GetInitializationResult());
+    
     auto msixCoreDirectory = filemapping.GetMsixCoreDirectory();
     for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
     {
-        auto packageInfo = GetPackageInfo(msixCoreDirectory, p.path());
-        if (packageInfo != nullptr)
-        {
-            packages->push_back(packageInfo);
-        }
+        shared_ptr<IInstalledPackage> packageInfo;
+        RETURN_IF_FAILED(GetPackageInfo(msixCoreDirectory, p.path(), packageInfo));
+        
+        packages->push_back(packageInfo);
     }
-    return packages;
+    installedPackages.swap(packages);
+    return S_OK;
 }
 
-shared_ptr<IPackage> PackageManager::GetMsixPackageInfo(const wstring & msixFullPath)
+HRESULT PackageManager::GetMsixPackageInfo(const wstring & msixFullPath, shared_ptr<IPackage> & package)
 {
     auto filemapping = FilePathMappings::GetInstance();
-    auto res = filemapping.GetInitializationResult();
-    if (FAILED(res))
-    {
-        return nullptr;
-    }
+    RETURN_IF_FAILED(filemapping.GetInitializationResult());
+    
     shared_ptr<Package> packageInfo;
-    res = PopulatePackageInfo::GetPackageInfoFromPackage(msixFullPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo);
-    if (FAILED(res))
-    {
-        return nullptr;
-    }
-    return dynamic_pointer_cast<IPackage>(packageInfo);
+    RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromPackage(msixFullPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo));
+    
+    package = dynamic_pointer_cast<IPackage>(packageInfo);
+    return S_OK;
 }

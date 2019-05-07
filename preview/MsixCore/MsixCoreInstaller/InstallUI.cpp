@@ -184,7 +184,8 @@ void UI::ConfirmAppCancel(HWND hWnd)
 
 HRESULT UI::LaunchInstalledApp()
 {
-    auto installedPackage = m_packageManager->FindPackage(m_packageInfo->GetPackageFullName());
+    shared_ptr<IInstalledPackage> installedPackage;
+    RETURN_IF_FAILED(m_packageManager->FindPackage(m_packageInfo->GetPackageFullName(), installedPackage));
     //check for error while launching app here
     ShellExecute(NULL, NULL, installedPackage->GetFullExecutableFilePath().c_str(), NULL, NULL, SW_SHOW);
     return S_OK;
@@ -263,20 +264,14 @@ HRESULT UI::ParseInfoFromPackage()
         {
         case InstallUIAdd:
         {
-            m_packageInfo = m_packageManager->GetMsixPackageInfo(m_path);
-            if (m_packageInfo == nullptr)
-            {
-                return E_FAIL;
-            }
+            RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo));
         }
         break;
         case InstallUIRemove:
         {
-            m_packageInfo = m_packageManager->FindPackage(m_path);
-            if (m_packageInfo == nullptr)
-            {
-                return E_FAIL;
-            }
+            shared_ptr<IInstalledPackage> installedPackage;
+            RETURN_IF_FAILED(m_packageManager->FindPackage(m_path, installedPackage));
+            m_packageInfo = installedPackage;
         }
         break;
         }
@@ -312,8 +307,14 @@ HRESULT UI::ShowUI()
 
 void UI::PreprocessRequest()
 {
-    auto existingPackage = m_packageManager->FindPackageByFamilyName(m_packageInfo->GetPackageFamilyName());
-    if (existingPackage != nullptr)
+    if (FAILED(m_loadingPackageInfoCode))
+    {
+        return;
+    }
+
+    std::shared_ptr<IInstalledPackage> existingPackage;
+    HRESULT hr = m_packageManager->FindPackageByFamilyName(m_packageInfo->GetPackageFamilyName(), existingPackage);
+    if (existingPackage != nullptr && SUCCEEDED(hr))
     {
         if (CaseInsensitiveEquals(existingPackage->GetPackageFullName(), m_packageInfo->GetPackageFullName()))
         {

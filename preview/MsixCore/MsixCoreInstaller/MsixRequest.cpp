@@ -41,45 +41,61 @@
 using namespace std;
 #include <GdiPlus.h>
 using namespace MsixCoreLib;
-struct HandlerInfo
+
+enum ErrorHandlingMode
+{
+    IgnoreAndProcessNextHandler = 0,    // ignore the error and proceed with nextHandler as if the current handler were successful
+    ExecuteErrorHandler = 1,            // go to errorHandler instead of nextHandler
+    ReturnError = 2,                    // return immediately, do not process any further handlers
+};
+
+struct AddHandlerInfo
 {
     CreateHandler create;
     PCWSTR nextHandler;
+    ErrorHandlingMode errorMode;
     PCWSTR errorHandler;
 };
 
-std::map<PCWSTR, HandlerInfo> AddHandlers =
+struct RemoveHandlerInfo
 {
-    //HandlerName                               Function to create                            NextHandler                                ErrorHandlerInfo
-    {PopulatePackageInfo::HandlerName,          {PopulatePackageInfo::CreateHandler,          ValidateTargetDeviceFamily::HandlerName,   nullptr /*nothing to rollback if we can't open the package*/}},
-    {ValidateTargetDeviceFamily::HandlerName,   {ValidateTargetDeviceFamily::CreateHandler,   ProcessPotentialUpdate::HandlerName,       ErrorHandler::HandlerName}},
-    {ProcessPotentialUpdate::HandlerName,       {ProcessPotentialUpdate::CreateHandler,       Extractor::HandlerName,                    ErrorHandler::HandlerName}},
-    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    PrepareDevirtualizedRegistry::HandlerName, ErrorHandler::HandlerName}},
-    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, StartMenuLink::HandlerName,                ErrorHandler::HandlerName}},
-    {StartMenuLink::HandlerName,                {StartMenuLink::CreateHandler,                AddRemovePrograms::HandlerName,            ErrorHandler::HandlerName}},
-    {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            Protocol::HandlerName,                     ErrorHandler::HandlerName}},
-    {Protocol::HandlerName,                     {Protocol::CreateHandler,                     ComInterface::HandlerName,                 ErrorHandler::HandlerName}},
-    {ComInterface::HandlerName,                 {ComInterface::CreateHandler,                 ComServer::HandlerName,                    ErrorHandler::HandlerName}},
-    {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                  ErrorHandler::HandlerName}},
-    {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,          ErrorHandler::HandlerName}},
-    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          InstallComplete::HandlerName,              ErrorHandler::HandlerName}},
-    {InstallComplete::HandlerName,              {InstallComplete::CreateHandler,              nullptr,                                   ErrorHandler::HandlerName}},
-    {ErrorHandler::HandlerName,                 {ErrorHandler::CreateHandler,                 nullptr,                                   nullptr}},
+    CreateHandler create;
+    PCWSTR nextHandler;
+    ErrorHandlingMode errorMode;
 };
 
-std::map<PCWSTR, HandlerInfo> RemoveHandlers =
+std::map<PCWSTR, AddHandlerInfo> AddHandlers =
 {
-    //HandlerName                               Function to create                            NextHandler
-    {PopulatePackageInfo::HandlerName,          {PopulatePackageInfo::CreateHandler,          StartMenuLink::HandlerName}},
-    {StartMenuLink::HandlerName,                {StartMenuLink::CreateHandler,                AddRemovePrograms::HandlerName}},
-    {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            Protocol::HandlerName}},
-    {Protocol::HandlerName,                     {Protocol::CreateHandler,                     ComInterface::HandlerName}},
-    {ComInterface::HandlerName,                 {ComInterface::CreateHandler,                 ComServer::HandlerName}},
-    {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName}},
-    {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName}},
-    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          PrepareDevirtualizedRegistry::HandlerName}},
-    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, Extractor::HandlerName}},
-    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    nullptr}},
+    //HandlerName                               Function to create                            NextHandler (on success)                   ErrorHandlingMode    ErrorHandler (when ExecuteErrorHandler)
+    {PopulatePackageInfo::HandlerName,          {PopulatePackageInfo::CreateHandler,          ValidateTargetDeviceFamily::HandlerName,   ReturnError,         nullptr}},
+    {ValidateTargetDeviceFamily::HandlerName,   {ValidateTargetDeviceFamily::CreateHandler,   ProcessPotentialUpdate::HandlerName,       ReturnError,         nullptr}},
+    {ProcessPotentialUpdate::HandlerName,       {ProcessPotentialUpdate::CreateHandler,       Extractor::HandlerName,                    ReturnError,         nullptr}},
+    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    PrepareDevirtualizedRegistry::HandlerName, ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, StartMenuLink::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {StartMenuLink::HandlerName,                {StartMenuLink::CreateHandler,                AddRemovePrograms::HandlerName,            ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            Protocol::HandlerName,                     ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {Protocol::HandlerName,                     {Protocol::CreateHandler,                     ComInterface::HandlerName,                 ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {ComInterface::HandlerName,                 {ComInterface::CreateHandler,                 ComServer::HandlerName,                    ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                  ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,          ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {InstallComplete::HandlerName,              {InstallComplete::CreateHandler,              nullptr,                                   ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {ErrorHandler::HandlerName,                 {ErrorHandler::CreateHandler,                 nullptr,                                   ReturnError,         nullptr}},
+};
+
+std::map<PCWSTR, RemoveHandlerInfo> RemoveHandlers =
+{
+    //HandlerName                               Function to create                            NextHandler                                 ErrorHandling
+    {PopulatePackageInfo::HandlerName,          {PopulatePackageInfo::CreateHandler,          StartMenuLink::HandlerName,                 ReturnError}},
+    {StartMenuLink::HandlerName,                {StartMenuLink::CreateHandler,                AddRemovePrograms::HandlerName,             IgnoreAndProcessNextHandler}},
+    {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            Protocol::HandlerName,                      IgnoreAndProcessNextHandler}},
+    {Protocol::HandlerName,                     {Protocol::CreateHandler,                     ComInterface::HandlerName,                  IgnoreAndProcessNextHandler}},
+    {ComInterface::HandlerName,                 {ComInterface::CreateHandler,                 ComServer::HandlerName,                     IgnoreAndProcessNextHandler}},
+    {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                   IgnoreAndProcessNextHandler}},
+    {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,           IgnoreAndProcessNextHandler}},
+    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          PrepareDevirtualizedRegistry::HandlerName,  IgnoreAndProcessNextHandler}},
+    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
+    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    nullptr,                                    IgnoreAndProcessNextHandler}},
 };
 
 HRESULT MsixRequest::Make(OperationType operationType, const std::wstring & packageFilePath, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest ** outInstance)
@@ -135,22 +151,20 @@ HRESULT MsixRequest::ProcessAddRequest()
             "Executing handler",
             TraceLoggingValue(currentHandlerName, "HandlerName"));
 
-        HandlerInfo currentHandler = AddHandlers[currentHandlerName];
+        AddHandlerInfo currentHandler = AddHandlers[currentHandlerName];
         AutoPtr<IPackageHandler> handler;
-        auto hrExecute = currentHandler.create(this, &handler);
-        if (FAILED(hrExecute))
+        HRESULT hr = currentHandler.create(this, &handler);
+        if (SUCCEEDED(hr))
         {
-            if (handler->IsMandatoryForAddRequest())
-            {
-                m_msixResponse->SetErrorStatus(hrExecute, L"Can't create the handler " + std::wstring(currentHandlerName));
-                return hrExecute;
-            }
+            hr = handler->ExecuteForAddRequest();
         }
-
-        hrExecute = handler->ExecuteForAddRequest();
-        if (FAILED(hrExecute))
+        if (FAILED(hr) && currentHandler.errorMode != IgnoreAndProcessNextHandler)
         {
-            m_msixResponse->SetErrorStatus(hrExecute, L"Can't execute the handler " + std::wstring(currentHandlerName));
+            if (currentHandler.errorMode == ReturnError)
+            {
+                m_msixResponse->SetErrorStatus(hr, L"Failed to process add request");
+                return hr;
+            }
             currentHandlerName = currentHandler.errorHandler;
         }
         else
@@ -171,31 +185,26 @@ HRESULT MsixRequest::ProcessRemoveRequest()
             "Executing handler",
             TraceLoggingValue(currentHandlerName, "HandlerName"));
 
-        HandlerInfo currentHandler = RemoveHandlers[currentHandlerName];
+        RemoveHandlerInfo currentHandler = RemoveHandlers[currentHandlerName];
         AutoPtr<IPackageHandler> handler;
-        HRESULT hrExecute = currentHandler.create(this, &handler);
-        if (FAILED(hrExecute))
+        HRESULT hr = currentHandler.create(this, &handler);
+        if (SUCCEEDED(hr))
         {
-            if (handler->IsMandatoryForAddRequest())
-            {
-                m_msixResponse->SetErrorStatus(hrExecute, L"Can't create the handler " + std::wstring(currentHandlerName));
-                m_msixResponse->Update(InstallationStep::InstallationStepError, 0);
-                return hrExecute;
-            }
+            hr = handler->ExecuteForRemoveRequest();
         }
 
-        hrExecute = handler->ExecuteForRemoveRequest();
-        if (FAILED(hrExecute))
+        if (FAILED(hr))
         {
             TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                "Handler failed -- removal is best effort so error is non-fatal",
+                "Handler failed -- if errorMode is IgnoreAndProcessNextHandler(0), this is non-fatal",
                 TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
                 TraceLoggingValue(currentHandlerName, "HandlerName"),
-                TraceLoggingValue(hrExecute, "HR"));
-            if (handler->IsMandatoryForRemoveRequest())
+                TraceLoggingValue(hr, "HR"),
+                TraceLoggingUInt32(currentHandler.errorMode, "ErrorMode"));
+            if (currentHandler.errorMode == ReturnError)
             {
-                m_msixResponse->SetErrorStatus(hrExecute, L"Can't execute the handler " + std::wstring(currentHandlerName));
-                return hrExecute;
+                m_msixResponse->SetErrorStatus(hr, L"Failed to process add request");
+                return hr;
             }
         }
 
