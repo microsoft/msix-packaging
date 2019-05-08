@@ -7,6 +7,7 @@
 #include "ComHelper.hpp"
 #include "MSIXFactory.hpp"
 #include "Exceptions.hpp"
+#include "IXml.hpp"
 
 #include <string>
 #include <memory>
@@ -126,7 +127,7 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetPackageFamilyName(LPSTR* packageFamilyName) noexcept override;
 
     private:
-        void ValidatePackageString(std::string& packageString);
+        void ValidatePackageString(const std::string& packageString, XmlAttributeName identityPart);
         std::string ComputePublisherId(const std::string& publisher);
 
     protected:
