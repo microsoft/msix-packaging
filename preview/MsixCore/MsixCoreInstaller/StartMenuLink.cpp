@@ -55,7 +55,10 @@ HRESULT StartMenuLink::ExecuteForAddRequest()
     }
     auto packageInfo = m_msixRequest->GetPackageInfo();
 
-    std::wstring filePath = FilePathMappings::GetInstance().GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";
+    TextOle<WCHAR> programsPath;
+    RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_Programs, 0, NULL, &programsPath));
+
+    std::wstring filePath = std::wstring(programsPath.Get()) + L"\\" + packageInfo->GetDisplayName() + L".lnk";
 
     std::wstring resolvedExecutableFullPath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + packageInfo->GetRelativeExecutableFilePath();
     std::wstring appUserModelId = m_msixRequest->GetPackageInfo()->GetId();
@@ -65,6 +68,32 @@ HRESULT StartMenuLink::ExecuteForAddRequest()
 }
 
 HRESULT StartMenuLink::ExecuteForRemoveRequest()
+{
+    TextOle<WCHAR> programsPath;
+    RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_Programs, 0, NULL, &programsPath));
+
+    std::wstring filePath = std::wstring(programsPath.Get()) + L"\\" + m_msixRequest->GetPackageInfo()->GetDisplayName() + L".lnk";
+    RETURN_IF_FAILED(DeleteFile(filePath.c_str()));
+    return S_OK;
+}
+
+HRESULT StartMenuLink::ExecuteForAddForAllUsersRequest()
+{
+    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
+    {
+        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
+    }
+    auto packageInfo = m_msixRequest->GetPackageInfo();
+
+    std::wstring filePath = FilePathMappings::GetInstance().GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";
+    std::wstring resolvedExecutableFullPath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + packageInfo->GetRelativeExecutableFilePath();
+    std::wstring appUserModelId = m_msixRequest->GetPackageInfo()->GetId();
+    RETURN_IF_FAILED(CreateLink(resolvedExecutableFullPath.c_str(), filePath.c_str(), L"", appUserModelId.c_str()));
+
+    return S_OK;
+}
+
+HRESULT StartMenuLink::ExecuteForRemoveForAllUsersRequest()
 {
     auto packageInfo = m_msixRequest->GetPackageInfo();
 

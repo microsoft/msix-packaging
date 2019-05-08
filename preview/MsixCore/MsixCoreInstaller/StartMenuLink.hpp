@@ -10,11 +10,17 @@ namespace MsixCoreLib
 class StartMenuLink : IPackageHandler
 {
 public:
-    /// Creates the start menu shortcut to the executable for the application
+    /// Creates the start menu shortcut in the per-user CSIDL_PROGRAMS to the executable for the application
     HRESULT ExecuteForAddRequest();
 
-    /// Removes the start menu link
+    /// Removes the start menu link from the per-user folder
     HRESULT ExecuteForRemoveRequest();
+
+    /// Creates the start menu shortcut in the per-machine CSIDL_COMMON_PROGRAMS to the executable for the application
+    HRESULT ExecuteForAddForAllUsersRequest();
+
+    /// Removes the start menu link from the per-machine folder
+    HRESULT ExecuteForRemoveForAllUsersRequest();
 
     static const PCWSTR HandlerName;
     static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
