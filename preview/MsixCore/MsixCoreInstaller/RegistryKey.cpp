@@ -141,7 +141,7 @@ HRESULT RegistryKey::KeyExists(PCWSTR subkey, bool& exists)
         exists = true;
         return S_OK;
     }
-    else if ((rc == ERROR_FILE_NOT_FOUND) || (rc == ERROR_PATH_NOT_FOUND))  ///TODO ERROR_PATH_NOT_FOUND?
+    else if ((rc == ERROR_FILE_NOT_FOUND) || (rc == ERROR_PATH_NOT_FOUND))
     {
         exists = false;
         return S_OK;
