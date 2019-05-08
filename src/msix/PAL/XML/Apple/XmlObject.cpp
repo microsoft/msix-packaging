@@ -39,7 +39,7 @@ public:
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        auto intermediate = wstring_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]);
+        auto intermediate = std::string(GetAttributeNameStringUtf8(attribute));
         return GetAttributeValue(intermediate);
     }
 
@@ -144,7 +144,7 @@ public:
     {
         ComPtr<IAppleXmlElement> element = root.As<IAppleXmlElement>();
         XmlNode* xmlNode = element->GetXmlNode();
-        auto elements = xmlNode->FindElements(xPaths[static_cast<uint8_t>(query)]);
+        auto elements = xmlNode->FindElements(GetQueryString(query));
 
          for(auto element : elements)
          {

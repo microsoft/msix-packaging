@@ -54,7 +54,7 @@ public:
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        auto intermediate = wstring_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]);
+        auto intermediate = std::string(GetAttributeNameStringUtf8(attribute));
         return GetAttributeValue(intermediate);
     }
 
@@ -218,7 +218,7 @@ public:
     {
         ComPtr<IJavaXmlElement> element = root.As<IJavaXmlElement>();
 
-        std::unique_ptr<_jstring, JObjectDeleter> jquery(m_env->NewStringUTF(xPaths[static_cast<uint8_t>(query)]));
+        std::unique_ptr<_jstring, JObjectDeleter> jquery(m_env->NewStringUTF(GetQueryString(query)));
         std::unique_ptr<_jobjectArray, JObjectDeleter> javaElements(reinterpret_cast<jobjectArray>(m_env->CallObjectMethod(m_javaXmlDom.get(), getElementsFunc, element->GetJavaObject(), jquery.get())));
 
         for(int i = 0; i < m_env->GetArrayLength(javaElements.get()); i++)

@@ -137,11 +137,11 @@ public:
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
         Variant value;
-        if (GetAttribute(attributeNames[static_cast<std::uint8_t>(attribute)], value.AddressOf()))
+        if (GetAttribute(GetAttributeNameString(attribute), value.AddressOf()))
         {
             return wstring_to_utf8(static_cast<WCHAR*>(value.Get().bstrVal));
         }
-        return "";
+        return {};
     }
 
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
@@ -160,13 +160,13 @@ public:
         {
             return wstring_to_utf8(static_cast<WCHAR*>(value.Get()));
         }
-        return "";
+        return {};
     }
 
     // IMSXMLElement
     ComPtr<IXMLDOMNodeList> SelectNodes(XmlQueryName query) override
     {
-        Bstr xPath(xPaths[static_cast<std::uint8_t>(query)]);
+        Bstr xPath(GetQueryString(query));
         ComPtr<IXMLDOMNodeList> list;
         ThrowHrIfFailed(m_element->selectNodes(xPath, &list));
         return list;

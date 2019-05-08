@@ -9,6 +9,8 @@ enum OperationType
 {
     Add = 1,
     Remove = 2,
+    AddForAllUsers = 3, 
+    RemoveForAllUsers = 4,
 };
 
 /// MsixRequest represents what this instance of the executable will be doing and tracks the state of the current operation
