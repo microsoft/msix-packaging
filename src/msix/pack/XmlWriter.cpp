@@ -14,13 +14,23 @@
 
 namespace MSIX {
 
-        const static char* xmlStart = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"true\"?><";
+        const static char* xmlStart = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"";
+        const static char* xmlStartEnd = "\"?><";
 
         // Adds xml header declaration plus the name of the root element
-        void XmlWriter::StartWrite(const std::string& root)
+        void XmlWriter::StartWrite(const std::string& root, bool standalone)
         {
             m_elements.emplace(root);
             Write(xmlStart);
+            if (standalone)
+            {
+                Write("yes");
+            }
+            else
+            {
+                Write("no");
+            }
+            Write(xmlStartEnd);
             Write(root);
             m_state = State::OpenElement;
         }

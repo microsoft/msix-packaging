@@ -31,7 +31,7 @@ namespace MSIX {
     static const char* partNameAttribute = "PartName";
 
     // <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-    ContentTypeWriter::ContentTypeWriter() : m_xmlWriter(XmlWriter(typesElement))
+    ContentTypeWriter::ContentTypeWriter() : m_xmlWriter(XmlWriter(typesElement, true))
     {
         m_xmlWriter.AddAttribute(xmlnsAttribute, typesNamespace);
     }
@@ -40,7 +40,7 @@ namespace MSIX {
     {
         if (forceOverride)
         {
-            AddOverride(contentType, name);
+            AddOverride(name, contentType);
             return;
         }
 
@@ -53,12 +53,12 @@ namespace MSIX {
             if (find->second != contentType)
             {
                 // The extension is in the table but with a different content type
-                AddOverride(contentType, name);
+                AddOverride(name, contentType);
             }
         }
         else
         {
-            AddDefault(contentType, ext);
+            AddDefault(ext, contentType);
             m_defaultExtensions.emplace(ext, contentType);
         }
     }
@@ -82,7 +82,7 @@ namespace MSIX {
     void ContentTypeWriter::AddOverride(const std::string& file, const std::string& contentType)
     {
         std::string partName = "/" + file;
-        m_xmlWriter.StartElement(defaultElement);
+        m_xmlWriter.StartElement(overrideElement);
         m_xmlWriter.AddAttribute(contentTypeAttribute, contentType);
         m_xmlWriter.AddAttribute(partNameAttribute, partName);
         m_xmlWriter.CloseElement();

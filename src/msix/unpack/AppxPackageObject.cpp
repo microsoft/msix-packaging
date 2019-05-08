@@ -34,28 +34,6 @@
 
 namespace MSIX {
 
-    // names of footprint files.
-    #define APPXBLOCKMAP_XML       "AppxBlockMap.xml"
-    #define APPXMANIFEST_XML       "AppxManifest.xml"
-    #define CODEINTEGRITY_CAT      "AppxMetadata/CodeIntegrity.cat"
-    #define APPXSIGNATURE_P7X      "AppxSignature.p7x"
-    #define CONTENT_TYPES_XML      "[Content_Types].xml"
-    #define APPXBUNDLEMANIFEST_XML "AppxMetadata/AppxBundleManifest.xml"
-
-    static const std::array<const char*, 4> footprintFiles =
-    {   APPXMANIFEST_XML,
-        APPXBLOCKMAP_XML,
-        APPXSIGNATURE_P7X,
-        CODEINTEGRITY_CAT,
-    };
-
-    static const std::array<const char*, 3> bundleFootprintFiles =
-    {
-        APPXBUNDLEMANIFEST_XML,
-        APPXBLOCKMAP_XML,
-        APPXSIGNATURE_P7X,
-    };
-
     AppxPackageObject::AppxPackageObject(IMsixFactory* factory, MSIX_VALIDATION_OPTION validation,
         MSIX_APPLICABILITY_OPTIONS applicabilityFlags, const ComPtr<IStorageObject>& container) :
         m_factory(factory),
@@ -370,7 +348,7 @@ namespace MSIX {
     void AppxPackageObject::VerifyFile(const ComPtr<IStream>& stream, const std::string& fileName, const ComPtr<IAppxBlockMapInternal>& blockMapInternal)
     {
         auto zipStream = stream.As<IStreamInternal>();
-        auto sizeOnZip = zipStream->GetSizeOnZip();
+        auto sizeOnZip = zipStream->GetSize();
         bool isCompressed = zipStream->IsCompressed();
 
         auto blocks = blockMapInternal->GetBlocks(fileName);

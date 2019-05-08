@@ -28,15 +28,17 @@ namespace MSIX {
         }
         State;
 
-        XmlWriter(const std::string& root) 
+        XmlWriter() = delete; // A root must be given
+
+        XmlWriter(const std::string& root, bool standalone = false) 
         {
             m_stream = ComPtr<IStream>::Make<StringStream>();
-            StartWrite(root);
+            StartWrite(root, standalone);
         }
 
-        XmlWriter(const std::string& root, IStream* targetStream) : m_stream(ComPtr<IStream>(targetStream))
+        XmlWriter(const std::string& root, IStream* targetStream, bool standalone = false) : m_stream(ComPtr<IStream>(targetStream))
         {
-            StartWrite(root);
+            StartWrite(root, standalone);
         }
 
         void StartElement(const std::string& name);
@@ -46,7 +48,7 @@ namespace MSIX {
         ComPtr<IStream> GetStream();
 
     protected:
-        void StartWrite(const std::string& root);
+        void StartWrite(const std::string& root, bool standalone);
         void Write(const std::string& toWrite);
         State m_state;
         ComPtr<IStream> m_stream;

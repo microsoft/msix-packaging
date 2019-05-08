@@ -25,7 +25,7 @@ class IStreamInternal : public IUnknown
 #endif
 {
 public:
-    virtual std::uint64_t GetSizeOnZip() = 0;
+    virtual std::uint64_t GetSize() = 0;
     virtual bool IsCompressed() = 0;
     virtual std::string GetName() = 0;
 };
@@ -130,7 +130,7 @@ namespace MSIX {
         virtual HRESULT STDMETHODCALLTYPE Write(const void*, ULONG, ULONG*) noexcept override { return static_cast<HRESULT>(Error::NotImplemented); }
 
         // IStreamInternal
-        virtual std::uint64_t GetSizeOnZip() override { NOTIMPLEMENTED; }
+        virtual std::uint64_t GetSize() override { NOTIMPLEMENTED; }
         virtual bool IsCompressed() override { NOTIMPLEMENTED; }
         virtual std::string GetName() override { NOTIMPLEMENTED; }
 

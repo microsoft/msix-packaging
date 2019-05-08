@@ -114,7 +114,7 @@ namespace MSIX {
         DWORD encodedHashSize = 0;
         ThrowHrIfFalse(CryptBinaryToStringW(buffer.data(), static_cast<DWORD>(buffer.size()), encodingFlags, nullptr, &encodedHashSize),
             "CryptBinaryToStringW failed");
-        result.resize(encodedHashSize);
+        result.resize(encodedHashSize-1); // CryptBinaryToStringW returned size includes null termination
         ThrowHrIfFalse(CryptBinaryToStringW(buffer.data(), static_cast<DWORD>(buffer.size()), encodingFlags, const_cast<wchar_t*>(result.data()), &encodedHashSize),
             "CryptBinaryToStringW failed");
         return wstring_to_utf8(result);

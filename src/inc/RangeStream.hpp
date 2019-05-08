@@ -79,13 +79,11 @@ namespace MSIX {
         {
             THROW_IF_PACK_NOT_ENABLED
             // Forward to VectorStream/DeflateStream
-            ULONG written = 0;
             ThrowHrIfFailed(m_stream->Write(buffer, countBytes, bytesWritten));
             m_size = static_cast<ULONG>(m_buffer.size());
             m_relativePosition = m_size;
             // VectorStream will validate if the written bytes are correct. 
             // It is expected that countBytes != bytesWritten here because this can be a compression.
-            if (bytesWritten) { *bytesWritten = written; }
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
