@@ -3,6 +3,7 @@
 #include "Constants.hpp"
 #include "PopulatePackageInfo.hpp"
 #include "MsixTraceLoggingProvider.hpp"
+#include "Database.hpp"
 #include <experimental/filesystem>
 #include <thread>
 
@@ -77,7 +78,7 @@ HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
     return S_OK;
 }
 
-HRESULT PackageManager::GetPackageInfo(const wstring & msixCoreDirectory, const wstring & directoryPath, shared_ptr<IInstalledPackage> & installedPackage)
+HRESULT PackageManager::GetPackageInfo(const wstring & directoryPath, shared_ptr<IInstalledPackage> & installedPackage)
 {
     std::shared_ptr<InstalledPackage> packageInfo;
     RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromManifest(directoryPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo));
@@ -93,7 +94,7 @@ HRESULT PackageManager::FindPackage(const wstring & packageFullName, shared_ptr<
     
     wstring msixCoreDirectory = filemapping.GetMsixCoreDirectory();
     wstring packageDirectoryPath = msixCoreDirectory + packageFullName;
-    RETURN_IF_FAILED(GetPackageInfo(msixCoreDirectory, packageDirectoryPath, installedPackage));
+    RETURN_IF_FAILED(GetPackageInfo(packageDirectoryPath, installedPackage));
     return S_OK;
 }
 
@@ -101,15 +102,17 @@ HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyNam
 {
     auto filemapping = FilePathMappings::GetInstance();
     RETURN_IF_FAILED(filemapping.GetInitializationResult());
-    
     auto msixCoreDirectory = filemapping.GetMsixCoreDirectory();
-    for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
-    {
 
-        auto installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
+    std::vector<std::wstring> packageFullNames;
+    RETURN_IF_FAILED(Database::FindPackagesForCurrentUser(packageFullNames));
+    for (auto&packageFullName : packageFullNames)
+    {
+        auto installedAppFamilyName = GetFamilyNameFromFullName(packageFullName);
         if (CaseInsensitiveEquals(installedAppFamilyName, packageFamilyName))
         {
-            RETURN_IF_FAILED(GetPackageInfo(msixCoreDirectory, p.path(), installedPackage));
+            wstring packageDirectoryPath = msixCoreDirectory + packageFullName;
+            RETURN_IF_FAILED(GetPackageInfo(packageDirectoryPath, installedPackage));
             return S_OK;
         }
     }
@@ -119,17 +122,22 @@ HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyNam
 HRESULT PackageManager::FindPackages(unique_ptr<vector<shared_ptr<IInstalledPackage>>> & installedPackages)
 {
     auto packages = std::make_unique<std::vector<shared_ptr<IInstalledPackage>>>();
+
     auto filemapping = FilePathMappings::GetInstance();
     RETURN_IF_FAILED(filemapping.GetInitializationResult());
-    
-    auto msixCoreDirectory = filemapping.GetMsixCoreDirectory();
-    for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
+    wstring msixCoreDirectory = filemapping.GetMsixCoreDirectory();
+
+    std::vector<std::wstring> packageFullNames;
+    RETURN_IF_FAILED(Database::FindPackagesForCurrentUser(packageFullNames));
+    for (auto&packageFullName : packageFullNames)
     {
+        wstring packageDirectoryPath = msixCoreDirectory + packageFullName;
         shared_ptr<IInstalledPackage> packageInfo;
-        RETURN_IF_FAILED(GetPackageInfo(msixCoreDirectory, p.path(), packageInfo));
-        
+        RETURN_IF_FAILED(GetPackageInfo(packageDirectoryPath, packageInfo));
+
         packages->push_back(packageInfo);
     }
+    
     installedPackages.swap(packages);
     return S_OK;
 }
