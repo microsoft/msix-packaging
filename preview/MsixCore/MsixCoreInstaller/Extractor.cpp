@@ -269,15 +269,6 @@ HRESULT Extractor::ExecuteForRemoveRequest()
         return hrIsInstalled;
     }
 
-    HRESULT hrRemoveRegistry = ExtractRegistry(true);
-    if (FAILED(hrRemoveRegistry))
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Unable to remove registry",
-            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-            TraceLoggingValue(hrRemoveRegistry, "HR"));
-    }
-
     HRESULT hrRemoveVfsFiles = RemoveVfsFiles();
     if (FAILED(hrRemoveVfsFiles))
     {
@@ -319,7 +310,6 @@ HRESULT Extractor::ExtractPackage()
 {
     RETURN_IF_FAILED(ExtractFootprintFiles());
     RETURN_IF_FAILED(ExtractPayloadFiles());
-    RETURN_IF_FAILED(ExtractRegistry(false));
     return S_OK;
 }
 
@@ -577,15 +567,5 @@ HRESULT Extractor::CopyVfsFileToLocal(std::wstring fileName)
 
     RETURN_IF_FAILED(CopyVfsFileIfNecessary(sourceFullPath, targetFullPath));
 
-    return S_OK;
-}
-
-HRESULT Extractor::ExtractRegistry(bool remove)
-{
-    std::wstring registryFilePath = m_msixRequest->GetPackageDirectoryPath() + registryDatFile;
-
-    AutoPtr<RegistryDevirtualizer> registryDevirtualizer;
-    RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFilePath, m_msixRequest, &registryDevirtualizer));
-    RETURN_IF_FAILED(registryDevirtualizer->Run(remove));
     return S_OK;
 }
