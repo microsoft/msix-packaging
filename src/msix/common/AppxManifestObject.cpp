@@ -4,6 +4,7 @@
 //
 
 #include "AppxManifestObject.hpp"
+#include "AppxManifestValidation.hpp"
 #include "UnicodeConversion.hpp"
 #include "Encoding.hpp"
 #include "Enumerators.hpp"
@@ -32,6 +33,7 @@ namespace MSIX {
         Entry<MSIX_PLATFORMS>(u8"windows.team",           MSIX_PLATFORM_WINDOWS10),
         Entry<MSIX_PLATFORMS>(u8"windows.holographic",    MSIX_PLATFORM_WINDOWS10),
         Entry<MSIX_PLATFORMS>(u8"windows.iot",            MSIX_PLATFORM_WINDOWS10),
+        Entry<MSIX_PLATFORMS>(u8"windows.server",         MSIX_PLATFORM_WINDOWS10),
         Entry<MSIX_PLATFORMS>(u8"apple.ios.all",          MSIX_PLATFORM_IOS),
         Entry<MSIX_PLATFORMS>(u8"apple.ios.phone",        MSIX_PLATFORM_IOS),
         Entry<MSIX_PLATFORMS>(u8"apple.ios.tablet",       MSIX_PLATFORM_IOS),
@@ -44,8 +46,8 @@ namespace MSIX {
         Entry<MSIX_PLATFORMS>(u8"google.android.desktop", MSIX_PLATFORM_AOSP),
         Entry<MSIX_PLATFORMS>(u8"google.android.tv",      MSIX_PLATFORM_AOSP),
         Entry<MSIX_PLATFORMS>(u8"google.android.watch",   MSIX_PLATFORM_AOSP),
-        Entry<MSIX_PLATFORMS>(u8"windows7.desktop",       MSIX_PLATFORM_WINDOWS7),
-        Entry<MSIX_PLATFORMS>(u8"windows8.desktop",       MSIX_PLATFORM_WINDOWS8),
+        Entry<MSIX_PLATFORMS>(u8"msixcore.desktop",       MSIX_PLATFORM_CORE),
+        Entry<MSIX_PLATFORMS>(u8"msixcore.server",        MSIX_PLATFORM_CORE),
         Entry<MSIX_PLATFORMS>(u8"linux.all",              MSIX_PLATFORM_LINUX),
         Entry<MSIX_PLATFORMS>(u8"web.edge.all",           MSIX_PLATFORM_WEB),
         Entry<MSIX_PLATFORMS>(u8"web.blink.all",          MSIX_PLATFORM_WEB),
@@ -77,6 +79,10 @@ namespace MSIX {
         ThrowHrIfFailed(m_factory->QueryInterface(UuidOfImpl<IXmlFactory>::iid, reinterpret_cast<void**>(&xmlFactory)));
         m_dom = xmlFactory->CreateDomFromStream(XmlContentType::AppxManifestXml, stream);
 
+#if VALIDATING
+        AppxManifestValidation::ValidateManifest(m_dom.Get());
+#endif
+
         // Parse Identity element
         XmlVisitor visitor(static_cast<void*>(this), [](void* s, const ComPtr<IXmlElement>& identityNode)->bool
         {
@@ -107,6 +113,7 @@ namespace MSIX {
             self->m_tdf.push_back(std::move(tdf));
             std::transform(name.begin(), name.end(), name.begin(), ::tolower);
             const auto& tdfEntry = std::find(std::begin(targetDeviceFamilyList), std::end(targetDeviceFamilyList), name.c_str());
+            // TODO: Here and below; are unknown device families really an error?  I don't think so.
             ThrowErrorIf(Error::AppxManifestSemanticError, (tdfEntry == std::end(targetDeviceFamilyList)), "Unrecognized TargetDeviceFamily");
             self->m_platform = static_cast<MSIX_PLATFORMS>(self->m_platform | (*tdfEntry).value);
             return true;

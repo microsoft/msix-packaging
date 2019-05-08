@@ -403,13 +403,26 @@ namespace MSIX {
                 std::string targetName;
                 if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
                 {
-                    auto manifest = m_appxManifest.As<IAppxManifestReader>();
                     ComPtr<IAppxManifestPackageId> packageId;
-                    ThrowHrIfFailed(manifest->GetPackageId(&packageId));
+                    if (m_isBundle)
+                    {
+                        auto manifest = m_appxBundleManifest.As<IAppxBundleManifestReader>();
+                        ThrowHrIfFailed(manifest->GetPackageId(&packageId));
+                    }
+                    else
+                    {
+                        auto manifest = m_appxManifest.As<IAppxManifestReader>();
+                        ThrowHrIfFailed(manifest->GetPackageId(&packageId));
+                    }
+                    // Don't use to->GetPathSeparator(). DirectoryObject::OpenFile created directories
+                    // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with
+                    // the package full name won't be created on Windows, but it will on other platforms.
+                    // This means that we have different behaviors in non-Win platforms.
                     targetName = packageId.As<IAppxManifestPackageIdInternal>()->GetPackageFullName() + "/" + fileName;
                 }
                 else
-                {   targetName = Encoding::DecodeFileName(fileName);
+                {
+                    targetName = Encoding::DecodeFileName(fileName);
                 }
 
                 auto deleteFile = MSIX::scope_exit([&targetName]
@@ -430,10 +443,24 @@ namespace MSIX {
 #ifdef BUNDLE_SUPPORT
         if(m_isBundle)
         {
+            ComPtr<IStorageObject> toPackages;
+            if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
+            {
+                auto manifest = m_appxBundleManifest.As<IAppxBundleManifestReader>();
+                ComPtr<IAppxManifestPackageId> packageId;
+                ThrowHrIfFailed(manifest->GetPackageId(&packageId));
+                std::string newLocation = to->GetFileName() + "/" + 
+                    packageId.As<IAppxManifestPackageIdInternal>()->GetPackageFullName();
+                toPackages = MSIX::ComPtr<IStorageObject>::Make<DirectoryObject>(newLocation);
+            }
+            else
+            {
+                toPackages = to;
+            }
             for(const auto& appx : m_applicablePackages)
             {
                 appx.As<IPackage>()->Unpack(
-                    static_cast<MSIX_PACKUNPACK_OPTION>(options | MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER), to.Get());
+                    static_cast<MSIX_PACKUNPACK_OPTION>(options | MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER), toPackages.Get());
             }
         }
 #endif

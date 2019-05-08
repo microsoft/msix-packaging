@@ -1,0 +1,59 @@
+
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27703.2026
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MsixCoreInstaller", "MsixCoreInstaller\MsixCoreInstaller.vcxproj", "{AAD31763-5E65-47FD-958A-08E35AB83025}"
+	ProjectSection(ProjectDependencies) = postProject
+		{46BE19BD-72E0-4452-9919-33A1F8A5F064} = {46BE19BD-72E0-4452-9919-33A1F8A5F064}
+	EndProjectSection
+EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "MsixCoreInstallerSetup", "MsixCoreInstallerSetup\MsixCoreInstallerSetup.vdproj", "{C79C79A4-00CE-40C8-BCCE-A5C8F28A4E8D}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MsixCoreInstallerLib", "MsixCoreInstallerLib\MsixCoreInstallerLib.vcxproj", "{46BE19BD-72E0-4452-9919-33A1F8A5F064}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B0C6E315-832B-4665-B979-4111A8C2F93B}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Debug|x64.ActiveCfg = Debug|x64
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Debug|x64.Build.0 = Debug|x64
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Debug|x64.Deploy.0 = Debug|x64
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Debug|x86.ActiveCfg = Debug|Win32
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Debug|x86.Build.0 = Debug|Win32
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Debug|x86.Deploy.0 = Debug|Win32
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Release|x64.ActiveCfg = Release|x64
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Release|x64.Build.0 = Release|x64
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Release|x64.Deploy.0 = Release|x64
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Release|x86.ActiveCfg = Release|Win32
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Release|x86.Build.0 = Release|Win32
+		{AAD31763-5E65-47FD-958A-08E35AB83025}.Release|x86.Deploy.0 = Release|Win32
+		{C79C79A4-00CE-40C8-BCCE-A5C8F28A4E8D}.Debug|x64.ActiveCfg = Debug
+		{C79C79A4-00CE-40C8-BCCE-A5C8F28A4E8D}.Debug|x86.ActiveCfg = Debug
+		{C79C79A4-00CE-40C8-BCCE-A5C8F28A4E8D}.Release|x64.ActiveCfg = Release
+		{C79C79A4-00CE-40C8-BCCE-A5C8F28A4E8D}.Release|x86.ActiveCfg = Release
+		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Debug|x64.ActiveCfg = Debug|x64
+		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Debug|x64.Build.0 = Debug|x64
+		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Debug|x86.ActiveCfg = Debug|Win32
+		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Debug|x86.Build.0 = Debug|Win32
+		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Release|x64.ActiveCfg = Release|x64
+		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Release|x64.Build.0 = Release|x64
+		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Release|x86.ActiveCfg = Release|Win32
+		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Release|x86.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5E600B53-441D-434D-810A-4F0D87698183}
+	EndGlobalSection
+EndGlobal

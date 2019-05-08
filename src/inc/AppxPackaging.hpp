@@ -1512,6 +1512,7 @@ enum MSIX_PLATFORMS
         MSIX_PLATFORM_AOSP      = 0x20,
         MSIX_PLATFORM_LINUX     = 0x40,
         MSIX_PLATFORM_WEB       = 0x80,
+        MSIX_PLATFORM_CORE      = 0x100,
     }   MSIX_PLATFORMS;
 
 typedef /* [v1_enum] */
@@ -1530,7 +1531,8 @@ enum MSIX_APPLICABILITY_OPTIONS
                           MSIX_PLATFORM_IOS            | \
                           MSIX_PLATFORM_AOSP           | \
                           MSIX_PLATFORM_LINUX          | \
-                          MSIX_PLATFORM_WEB              \
+                          MSIX_PLATFORM_WEB            | \
+                          MSIX_PLATFORM_CORE             \
 
 // Unpack
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(

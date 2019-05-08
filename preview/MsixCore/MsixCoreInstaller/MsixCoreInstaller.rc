@@ -1,0 +1,113 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICONBIG             ICON                    "icon1.ico"
+
+IDI_ICONSMALL           ICON                    "icon2.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_STRING_FAILED_REQUEST "Failed to process request"
+    IDS_STRING_FAILED_COM_INITIALIZATION "Failed to initialize com"
+    IDS_STRING_HELP_OPTION_ADDPACKAGE 
+                            "Add the package at the specified file path."
+    IDS_STRING_HELP_OPTION_REMOVEPACKAGE 
+                            "Remove the package with the specified package full name."
+    IDS_STRING_HELP_OPTION_QUIETMODE "Quiet mode - no user interaction."
+    IDS_STRING_HELP_OPTION_FINDALLPACKAGES "Find all installed packages."
+    IDS_STRING_HELP_OPTION_FINDPACKAGE 
+                            "Find package with the specific package full name."
+    IDS_STRING_HELP_OPTION_HELP "Display this help text."
+    IDS_STRING_HELPTEXT     " Usage:\n ------\n \tMsixCoreInstaller.exe [options]\n\n Description:\n-----------\n \tInstalls an msix package, removes an msix package or queries for msix packages\n\n Options:\n -------\n"
+    IDS_STRING_UI_CANCEL    "Cancel"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STRING_UI_CLOSE     "Close"
+    IDS_STRING_UI_TITLE     "MSIX Installer"
+    IDS_STRING_UI_INSTALL_COMPLETE "Installation Completed"
+    IDS_STRING_UI_UNINSTALL_COMPLETE "Uninstallation Completed"
+    IDS_STRING_UI_COMPLETION_MESSAGE "You may close this installation window"
+    IDS_STRING_INSTALLTEXT  "Install"
+    IDS_STRING_UPDATETEXT   "Update"
+    IDS_STRING_CANCEL_INSTALLPOPUP 
+                            "Are you sure you want to cancel the install?"
+    IDS_STRING_CANCEL_POPUP_TITLE "Cancel App install"
+    IDS_STRING_CANCEL_UPDATEPOPUP 
+                            "Clicking on Yes will uninstall the app. Are you sure you want to cancel the install?"
+    IDS_STRING_REINSTALLAPP "Reinstall"
+    IDS_RUNFULLTRUST_CAPABILITY "Uses all system resources"
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

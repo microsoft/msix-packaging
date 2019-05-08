@@ -426,7 +426,7 @@ namespace MSIX
         return IsAuthenticodeTrustedChain(certChainContext.get());
     }
 
-    static bool GetPublisherName(/*in*/byte* signatureBuffer, /*in*/ ULONG cbSignatureBuffer, /*inout*/ std::string& publisher)
+    static bool GetPublisherDisplayName(/*in*/byte* signatureBuffer, /*in*/ ULONG cbSignatureBuffer, /*inout*/ std::string& publisher)
     {
         unique_cert_context certificateContext(GetCertContext(signatureBuffer, cbSignatureBuffer, true));
 		if (certificateContext.get() == NULL)
@@ -606,7 +606,7 @@ namespace MSIX
             "Unknown signature origin");
 
         ThrowErrorIfNot(Error::SignatureInvalid,
-            GetPublisherName(p7s, p7sSize, publisher) == true,
+            GetPublisherDisplayName(p7s, p7sSize, publisher) == true,
             "Could not retrieve publisher name");
                 
         return true;

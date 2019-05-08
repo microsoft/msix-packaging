@@ -93,6 +93,8 @@ list(APPEND MsixSrc
     common/AppxPackageInfo.cpp
     common/AppxManifestObject.cpp
     common/ZipObject.cpp
+    common/AppxManifestValidation.cpp
+    common/IXml.cpp
 )
 
 # Unpack. Always add
