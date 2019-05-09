@@ -14,16 +14,6 @@
 #include <map>
 #include <algorithm>
 
-#ifdef WIN32
-    #define UNICODE
-    #include <windows.h>
-#else
-    // required posix-specific headers
-    #include <sys/types.h>
-    #include <sys/stat.h>
-    #include <unistd.h>
-#endif
-
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
 

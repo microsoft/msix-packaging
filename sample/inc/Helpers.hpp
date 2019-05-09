@@ -9,6 +9,16 @@
 #include <string>
 #include <algorithm>
 
+#ifdef WIN32
+    #define UNICODE
+    #include <windows.h>
+#else
+    // required posix-specific headers
+    #include <sys/types.h>
+    #include <sys/stat.h>
+    #include <unistd.h>
+#endif
+
 // Flow control macros
 #define RETURN_IF_FAILED(a) \
     {   HRESULT __hr = a;   \
@@ -17,6 +27,10 @@
     }
 
 namespace MsixSample { namespace Helper {
+
+        // Allocators
+    LPVOID STDMETHODCALLTYPE MyAllocate(SIZE_T cb)  { return std::malloc(cb); }
+    void STDMETHODCALLTYPE MyFree(LPVOID pv)        { std::free(pv); }
 
     // Stripped down ComPtr provided for those platforms that do not already have a ComPtr class.
     template <class T>
@@ -89,10 +103,6 @@ namespace MsixSample { namespace Helper {
     protected:
         void Cleanup() { if (content) { MyFree(content); content = nullptr; } }
     };
-
-    // Allocators
-    LPVOID STDMETHODCALLTYPE MyAllocate(SIZE_T cb)  { return std::malloc(cb); }
-    void STDMETHODCALLTYPE MyFree(LPVOID pv)        { std::free(pv); }
 
     // Useful string convertions functions
     std::string utf16_to_utf8(const std::wstring& utf16string)
