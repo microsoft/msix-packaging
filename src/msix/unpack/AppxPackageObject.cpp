@@ -443,15 +443,15 @@ namespace MSIX {
 #ifdef BUNDLE_SUPPORT
         if(m_isBundle)
         {
-            ComPtr<IStorageObject> toPackages;
+            ComPtr<IDirectoryObject> toPackages;
             if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
             {
                 auto manifest = m_appxBundleManifest.As<IAppxBundleManifestReader>();
                 ComPtr<IAppxManifestPackageId> packageId;
                 ThrowHrIfFailed(manifest->GetPackageId(&packageId));
-                std::string newLocation = to->GetFileName() + "/" + 
+                std::string newLocation = to.As<IStorageObject>()->GetFileName() + "/" + 
                     packageId.As<IAppxManifestPackageIdInternal>()->GetPackageFullName();
-                toPackages = MSIX::ComPtr<IStorageObject>::Make<DirectoryObject>(newLocation);
+                toPackages = MSIX::ComPtr<IDirectoryObject>::Make<DirectoryObject>(newLocation);
             }
             else
             {
