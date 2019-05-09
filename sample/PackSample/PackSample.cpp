@@ -6,7 +6,15 @@
 #include <iostream>
 #include <vector>
 #include <map>
-#include <experimental/filesystem> // This is a sample...
+
+#ifdef WIN32
+#include <experimental/filesystem>
+using namespace std::experimental::filesystem;
+#else 
+#include <queue>
+#include <fts.h>
+#include <dirent.h>
+#endif
 
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
@@ -14,7 +22,6 @@
 #include "Helpers.hpp"
 
 using namespace MsixSample::Helper;
-using namespace std::experimental::filesystem;
 
 int Help()
 {
@@ -131,21 +138,74 @@ static const std::map<std::string, APPX_COMPRESSION_OPTION> extToContentType =
     { "wmv",   APPX_COMPRESSION_OPTION_NONE }
 };
 
-// Add payload files to the package and returns the AppxManifest stream
-HRESULT AddPayloadFilesAndGetManifestStream(IAppxPackageWriterUtf8* packageWriter, const std::string& directory, IStream** appxManifestStream)
+#ifdef WIN32
+std::vector<std::string> GetAllFilesInDirectory(const std::string& directory)
 {
-    *appxManifestStream = nullptr;
+    std::vector<std::string> files;
     for (const auto& file : recursive_directory_iterator(directory))
     {
         if (!is_directory(file))
         {
+            files.push_back(file.path().string());
+        }
+    }
+    return files;
+}
+#else
+std::vector<std::string> GetAllFilesInDirectory(const std::string& directory)
+{
+    std::vector<std::string> files;
+    std::queue<std::string> directories;
+    directories.push(directory);
+
+    static std::string dot(".");
+    static std::string dotdot("..");
+    do
+    {
+        auto root = directories.front();
+        directories.pop();
+        std::unique_ptr<DIR, decltype(&closedir)> dir(opendir(root.c_str()), closedir);
+        if (dir.get() != nullptr)
+        {
+            struct dirent* dp;
+            while((dp = readdir(dir.get())) != nullptr)
+            {
+                std::string fileName = std::string(dp->d_name);
+                std::string child = root + "/" + fileName;
+                if (dp->d_type == DT_DIR)
+                {
+                    if ((fileName != dot) && (fileName != dotdot))
+                    {
+                        directories.push(child);
+                    }
+                }
+                else
+                {
+                    files.push_back(child);
+                }
+            }
+        }
+    } while (!directories.empty());
+    return files;
+}
+#endif
+
+// Add payload files to the package and returns the AppxManifest stream
+HRESULT AddPayloadFilesAndGetManifestStream(IAppxPackageWriterUtf8* packageWriter, const std::string& directory, IStream** appxManifestStream)
+{
+    *appxManifestStream = nullptr;
+    auto payloadFiles = GetAllFilesInDirectory(directory);
+    for (const auto& file : payloadFiles)
+    {
+        if (!is_directory(file))
+        {
             // Remove the top level directory from the name
-            std::string name = file.path().string().substr(directory.size()+1);
+            std::string name = file.substr(directory.size()+1);
             if (!IsFootPrintFile(name))
             {
                 std::cout << "Packing payload file: "  << name << std::endl;
                 ComPtr<IStream> stream;
-                RETURN_IF_FAILED(CreateStreamOnFile(const_cast<char*>(file.path().string().c_str()), true, &stream));
+                RETURN_IF_FAILED(CreateStreamOnFile(const_cast<char*>(file.c_str()), true, &stream));
 
                 std::string ext = name.substr(name.find_last_of('.')+1);
                 APPX_COMPRESSION_OPTION compressOpt = APPX_COMPRESSION_OPTION_NORMAL; // default
@@ -164,7 +224,7 @@ HRESULT AddPayloadFilesAndGetManifestStream(IAppxPackageWriterUtf8* packageWrite
             }
             else if(IsAppxManifest(name))
             {
-                RETURN_IF_FAILED(CreateStreamOnFile(const_cast<char*>(file.path().string().c_str()), true, appxManifestStream));
+                RETURN_IF_FAILED(CreateStreamOnFile(const_cast<char*>(file.c_str()), true, appxManifestStream));
             }
         }
     }
