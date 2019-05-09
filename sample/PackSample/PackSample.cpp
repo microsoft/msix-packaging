@@ -197,35 +197,32 @@ HRESULT AddPayloadFilesAndGetManifestStream(IAppxPackageWriterUtf8* packageWrite
     auto payloadFiles = GetAllFilesInDirectory(directory);
     for (const auto& file : payloadFiles)
     {
-        if (!is_directory(file))
+        // Remove the top level directory from the name
+        std::string name = file.substr(directory.size()+1);
+        if (!IsFootPrintFile(name))
         {
-            // Remove the top level directory from the name
-            std::string name = file.substr(directory.size()+1);
-            if (!IsFootPrintFile(name))
-            {
-                std::cout << "Packing payload file: "  << name << std::endl;
-                ComPtr<IStream> stream;
-                RETURN_IF_FAILED(CreateStreamOnFile(const_cast<char*>(file.c_str()), true, &stream));
+            std::cout << "Packing payload file: "  << name << std::endl;
+            ComPtr<IStream> stream;
+            RETURN_IF_FAILED(CreateStreamOnFile(const_cast<char*>(file.c_str()), true, &stream));
 
-                std::string ext = name.substr(name.find_last_of('.')+1);
-                APPX_COMPRESSION_OPTION compressOpt = APPX_COMPRESSION_OPTION_NORMAL; // default
-                auto compression = extToContentType.find(ext);
-                if (compression != extToContentType.end())
-                {
-                    compressOpt = compression->second;
-                }
+            std::string ext = name.substr(name.find_last_of('.')+1);
+            APPX_COMPRESSION_OPTION compressOpt = APPX_COMPRESSION_OPTION_NORMAL; // default
+            auto compression = extToContentType.find(ext);
+            if (compression != extToContentType.end())
+           {
+                compressOpt = compression->second;
+            }
 
-                RETURN_IF_FAILED(packageWriter->AddPayloadFile(
-                    name.c_str(),
-                    "application/fake-content-type", // sample :)
-                    compressOpt,
-                    stream.Get()
-                ));
-            }
-            else if(IsAppxManifest(name))
-            {
-                RETURN_IF_FAILED(CreateStreamOnFile(const_cast<char*>(file.c_str()), true, appxManifestStream));
-            }
+            RETURN_IF_FAILED(packageWriter->AddPayloadFile(
+                name.c_str(),
+                "application/fake-content-type", // sample :)
+                compressOpt,
+                stream.Get()
+            ));
+        }
+        else if(IsAppxManifest(name))
+        {
+            RETURN_IF_FAILED(CreateStreamOnFile(const_cast<char*>(file.c_str()), true, appxManifestStream));
         }
     }
 
