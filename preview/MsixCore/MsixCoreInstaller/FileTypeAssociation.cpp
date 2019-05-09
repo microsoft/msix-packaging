@@ -10,6 +10,13 @@
 #include <TraceLoggingProvider.h>
 #include "RegistryKey.hpp"
 #include "MsixTraceLoggingProvider.hpp"
+#include <filesystem>
+#include <fstream>
+
+// GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
+using namespace std;
+#include <GdiPlus.h>
+
 using namespace MsixCoreLib;
 
 const PCWSTR FileTypeAssociation::HandlerName = L"FileTypeAssociation";
@@ -145,11 +152,71 @@ HRESULT FileTypeAssociation::ParseManifest()
 
 HRESULT FileTypeAssociation::ExecuteForAddRequest()
 {
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     for (auto fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
     {
         RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
     }
 
+    return S_OK;
+}
+
+HRESULT FileTypeAssociation::ExecuteForAddForAllUsersRequest()
+{
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    for (auto fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
+    {
+        RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
+    }
+
+    return S_OK;
+}
+
+/// Creates an .ico file next to the logo path which is .png by simply prepending the ICO header.
+HRESULT ConvertLogoToIcon(std::wstring logoPath, std::wstring & iconPath)
+{
+    experimental::filesystem::path path(logoPath);
+    iconPath = path.replace_extension(L".ico");
+
+    bool fileExists = false;
+    RETURN_IF_FAILED(FileExists(iconPath, fileExists));
+    if (fileExists)
+    {
+        return S_OK;
+    }
+
+    DWORD size = experimental::filesystem::file_size(logoPath);
+    ifstream input(logoPath, std::ios::binary);
+    ofstream output(iconPath, std::ios::binary);
+
+    Gdiplus::Image image(logoPath.c_str());
+
+    //See https://en.wikipedia.org/wiki/ICO_(file_format)
+    BYTE iconHeader[] = {
+        0,0,                                    // reserved
+        1,0,                                    // 1 for .ico icon
+        1,0,                                    // 1 image in file
+        static_cast<BYTE>(image.GetWidth()),    // width
+        static_cast<BYTE>(image.GetHeight()),   // height
+        0,                                      // colors in color palette
+        0,                                      // reserved
+        1,0,                                    // color planes
+        32,0,                                   // bits per pixel
+        0,0,0,0,                                // size of image in bytes
+        0,0,0,0 };                              // offset from start of file of actual image
+
+    // fill in size
+    iconHeader[14] = static_cast<BYTE>(size % 256);
+    iconHeader[15] = static_cast<BYTE>(size / 256);
+
+    // fill in offset from start of file, which is the size of this header
+    iconHeader[18] = static_cast<BYTE>(ARRAYSIZE(iconHeader));
+
+    for (int i = 0; i < ARRAYSIZE(iconHeader); i++)
+    {
+        output << iconHeader[i];
+    }
+    output << input.rdbuf();
     return S_OK;
 }
 
@@ -198,9 +265,13 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
 
     if (fta.logo.c_str() != nullptr)
     {
+        //DefaultIcon requires an icon type image to display properly on Windows 7 -- convert logo PNG to Icon
+        std::wstring iconPath;
+        RETURN_IF_FAILED(ConvertLogoToIcon(fta.logo, iconPath));
+
         RegistryKey defaultIconKey;
         RETURN_IF_FAILED(progIdKey.CreateSubKey(defaultIconKeyName.c_str(), KEY_WRITE, &defaultIconKey));
-        RETURN_IF_FAILED(defaultIconKey.SetStringValue(L"", fta.logo.c_str()));
+        RETURN_IF_FAILED(defaultIconKey.SetStringValue(L"", iconPath.c_str()));
     }
 
     RegistryKey shellKey;
@@ -238,6 +309,18 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
 
 HRESULT FileTypeAssociation::ExecuteForRemoveRequest()
 {
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    for (auto fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
+    {
+        RETURN_IF_FAILED(ProcessFtaForRemove(*fta));
+    }
+
+    return S_OK;
+}
+
+HRESULT FileTypeAssociation::ExecuteForRemoveForAllUsersRequest()
+{
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     for (auto fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
     {
         RETURN_IF_FAILED(ProcessFtaForRemove(*fta));
@@ -304,8 +387,6 @@ HRESULT FileTypeAssociation::CreateHandler(MsixRequest * msixRequest, IPackageHa
     {
         return E_OUTOFMEMORY;
     }
-
-    RETURN_IF_FAILED(localInstance->m_classesKey.Open(HKEY_CLASSES_ROOT, nullptr, KEY_READ | KEY_WRITE | WRITE_DAC));
 
     std::wstring registryFilePath = msixRequest->GetPackageDirectoryPath() + registryDatFile;
     RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFilePath, msixRequest, &localInstance->m_registryDevirtualizer));
