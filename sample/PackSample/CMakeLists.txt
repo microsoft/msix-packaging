@@ -21,7 +21,4 @@ add_executable(${BINARY_NAME}
 target_include_directories(${BINARY_NAME} PRIVATE ${CMAKE_BINARY_DIR}/src/msix ../inc)
 
 add_dependencies(${BINARY_NAME} msix)
-if (LINUX OR AOSP)
-    target_link_libraries(${BINARY_NAME} PRIVATE stdc++fs)
-endif()
 target_link_libraries(${BINARY_NAME} PUBLIC msix)
