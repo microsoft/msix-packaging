@@ -276,6 +276,10 @@
     #define E_BOUNDS 0x8000000b
     #endif
 
+    #ifdef E_FAIL
+    #define E_FAIL 0x80004005
+    #endif
+
     #if !defined (_SYS_GUID_OPERATORS_)
     #define _SYS_GUID_OPERATORS_
 

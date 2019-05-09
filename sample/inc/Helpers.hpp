@@ -5,7 +5,18 @@
 // This is a helper file for the samples. Includes useful RAII wrappers, flow control
 // macros and other common functions used by the samples.
 
-namespace MsixSample { namespace Helper 
+#include <codecvt>
+#include <string>
+#include <algorithm>
+
+// Flow control macros
+#define RETURN_IF_FAILED(a) \
+    {   HRESULT __hr = a;   \
+        if (FAILED(__hr))   \
+        {   return __hr; }  \
+    }
+
+namespace MsixSample { namespace Helper {
 
     // Stripped down ComPtr provided for those platforms that do not already have a ComPtr class.
     template <class T>
@@ -17,8 +28,34 @@ namespace MsixSample { namespace Helper
         ComPtr(T* ptr) : m_ptr(ptr) { InternalAddRef(); }
 
         ~ComPtr() { InternalRelease(); }
+
+        // For use instead of ComPtr<T> t(new Foo(...)); given that the class has an Initialize function
+        template<class U, class... Args>
+        static HRESULT MakeAndInitialize(T** result, Args&&... args)
+        {
+            ComPtr<U> inner(new U());
+            RETURN_IF_FAILED(inner->Initialize(std::forward<Args>(args)...));
+            RETURN_IF_FAILED(inner->QueryInterface(UuidOfImpl<T>::iid,  reinterpret_cast<void**>(result)));
+            return S_OK;
+        }
+
+        // For use instead of ComPtr<T> t(new Foo(...));
+        template<class U, class... Args>
+        static ComPtr<T> Make(Args&&... args)
+        {
+            ComPtr<T> result;
+            result.m_ptr = new U(std::forward<Args>(args)...);
+            return result;
+        }
+        
         inline T* operator->() const { return m_ptr; }
         inline T* Get() const { return m_ptr; }
+        T* Detach() 
+        {
+            T* temp = m_ptr;
+            m_ptr = nullptr;
+            return temp;
+        }
 
         inline T** operator&()
         {   InternalRelease();
@@ -147,11 +184,22 @@ namespace MsixSample { namespace Helper
             return 0;
         }
     #endif
-} }
 
-// Flow control macros
-#define RETURN_IF_FAILED(a) \
-    {   HRESULT __hr = a;   \
-        if (FAILED(__hr))   \
-        {   return __hr; }  \
+    // Footprint files helpers
+    bool IsFootPrintFile(std::string normalized)
+    {
+        std::transform(normalized.begin(), normalized.end(), normalized.begin(), ::tolower);
+        return ((normalized == "appxmanifest.xml") ||
+                (normalized == "appxsignature.p7x") ||
+                (normalized == "appxblockmap.xml") ||
+                (normalized == "[content_types].xml") ||
+                (normalized.rfind("appxmetadata", 0) != std::string::npos) ||
+                (normalized.rfind("microsoft.system.package.metadata", 0) != std::string::npos));
     }
+
+    bool IsAppxManifest(std::string normalized)
+    {
+        std::transform(normalized.begin(), normalized.end(), normalized.begin(), ::tolower);
+        return (normalized == "appxmanifest.xml");
+    }
+} }

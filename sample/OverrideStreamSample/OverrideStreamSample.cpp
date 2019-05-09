@@ -29,7 +29,7 @@ int Help()
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
     std::cout << "------" << std::endl;
-    std::cout << "\t" << "OverrideStreamSample.cpp -p <flat bundle> -rp <relative path of payload packages> -d <output directory>" << std::endl;
+    std::cout << "\t" << "OverrideStreamSample -p <flat bundle> -rp <relative path of payload packages> -d <output directory>" << std::endl;
     std::cout << std::endl;
     std::cout << "Description:" << std::endl;
     std::cout << "------------" << std::endl;

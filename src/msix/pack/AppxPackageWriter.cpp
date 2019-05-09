@@ -254,6 +254,7 @@ namespace MSIX {
         std::transform(normalized.begin(), normalized.end(), normalized.begin(), ::tolower);
         return ((normalized == "appxmanifest.xml") ||
                 (normalized == "appxsignature.p7x") ||
+                (normalized == "appxblockmap.xml") ||
                 (normalized == "[content_types].xml") ||
                 (normalized.rfind("appxmetadata", 0) != std::string::npos) ||
                 (normalized.rfind("microsoft.system.package.metadata", 0) != std::string::npos));
