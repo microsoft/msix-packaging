@@ -8,6 +8,7 @@
 #include <codecvt>
 #include <string>
 #include <algorithm>
+#include <locale>
 
 #ifdef WIN32
     #define UNICODE
