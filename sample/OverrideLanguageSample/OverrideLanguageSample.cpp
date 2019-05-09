@@ -9,89 +9,9 @@
 #include <iostream>
 #include <atomic>
 
-#define RETURN_IF_FAILED(a) \
-    {   HRESULT __hr = a;   \
-        if (FAILED(__hr))   \
-        {   return __hr; }  \
-    }
+#include "Helpers.hpp"
 
-// Stripped down ComPtr provided for those platforms that do not already have a ComPtr class.
-template <class T>
-class ComPtr
-{
-public:
-    // default ctor
-    ComPtr() = default;
-    ComPtr(T* ptr) : m_ptr(ptr) { InternalAddRef(); }
-
-    // For use instead of ComPtr<T> t(new Foo(...)); given that the class has an Initialize function
-    template<class U, class... Args>
-    static HRESULT MakeAndInitialize(T** result, Args&&... args)
-    {
-        ComPtr<U> inner(new U());
-        RETURN_IF_FAILED(inner->Initialize(std::forward<Args>(args)...));
-        RETURN_IF_FAILED(inner->QueryInterface(UuidOfImpl<T>::iid, reinterpret_cast<void**>(result)));
-        return S_OK;
-    }
-
-    // For use instead of ComPtr<T> t(new Foo(...));
-    template<class U, class... Args>
-    static ComPtr<T> Make(Args&&... args)
-    {
-        ComPtr<T> result;
-        result.m_ptr = new U(std::forward<Args>(args)...);
-        return result;
-    }
-
-    ~ComPtr() { InternalRelease(); }
-    inline T* operator->() const { return m_ptr; }
-    inline T* Get() const { return m_ptr; }
-
-    inline T** operator&()
-    {
-        InternalRelease();
-        return &m_ptr;
-    }
-
-    T* Detach()
-    {
-        T* temp = m_ptr;
-        m_ptr = nullptr;
-        return temp;
-    }
-
-protected:
-    T* m_ptr = nullptr;
-
-    inline void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
-    inline void InternalRelease()
-    {
-        T* temp = m_ptr;
-        if (temp)
-        {
-            m_ptr = nullptr;
-            temp->Release();
-        }
-    }
-};
-
-// Or you can use what-ever allocator/deallocator is best for your platform...
-LPVOID STDMETHODCALLTYPE MyAllocate(SIZE_T cb) { return std::malloc(cb); }
-void STDMETHODCALLTYPE MyFree(LPVOID pv) { std::free(pv); }
-
-// Helper class to free string buffers obtained from the packaging APIs.
-template<typename T>
-class Text
-{
-public:
-    T** operator&() { return &content; }
-    ~Text() { Cleanup(); }
-    T* Get() { return content; }
-
-    T* content = nullptr;
-protected:
-    void Cleanup() { if (content) { MyFree(content); content = nullptr; } }
-};
+using namespace MsixSample::Helper;
 
 int Help()
 {
