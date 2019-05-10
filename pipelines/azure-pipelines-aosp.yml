@@ -43,9 +43,6 @@ jobs:
       release_arm:
         _arguments: -b MinSizeRel -arch armeabi-v7a 
         _artifact: AOSP-arm
-      debug_emulator_nopack:
-        _arguments: -b Debug --no-pack
-        _artifact: AOSP-x86chk-nopack
   steps:
   - task: Bash@3
     displayName: Build

@@ -35,17 +35,14 @@ jobs:
     # TODO: add builds using xerces if needed.
     matrix:
       debug_x86:
-        _arguments: -b Debug -xzlib
+        _arguments: -b Debug
         _artifact: iOS-x86chk
       release_x86:
-        _arguments: -b MinSizeRel -xzlib
+        _arguments: -b MinSizeRel
         _artifact: iOS-x86
       release_arm64:
-        _arguments: -b MinSizeRel -arch arm64 -xzlib
+        _arguments: -b MinSizeRel -arch arm64
         _artifact: iOS-arm64
-      debug_x86_nopack:
-        _arguments: -b Debug --no-pack
-        _artifact: iOS-x86chk-nopack
   steps:
   - task: Bash@3
     displayName: Build
