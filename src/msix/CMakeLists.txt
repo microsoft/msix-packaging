@@ -16,9 +16,6 @@ if(NOT WIN32)
         "UnpackBundleFromStream"
     )
     if(MSIX_PACK)
-        if (AOSP OR IOS)
-            message(FATAL_ERROR "Packaging is not supported for mobile devices.")
-        endif()
         list(APPEND MSIX_PACK_EXPORTS
             "PackPackage"
         )

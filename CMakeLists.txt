@@ -216,6 +216,12 @@ endif()
 
 enable_testing() # needed on top-level CMakeLists.txt
 
+# Packing is not enabled for mobile devices
+if(MSIX_PACK AND (AOSP OR IOS))
+    set(MSIX_PACK OFF)
+    message(STATUS "Packaging is not supported for mobile devices.")
+endif()
+
 # If not defined as a cmake argument do a best effort
 if(NOT XML_PARSER)
     include(CheckIncludeFileCXX)
