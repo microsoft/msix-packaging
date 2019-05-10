@@ -83,11 +83,13 @@ namespace MSIX {
             // It is valid for a user to create an IAppxPackageReader and then QI for IAppxBundleReader, but
             // not when bundle support is off.
             THROW_IF_BUNDLE_NOT_ENABLED
+            #ifdef BUNDLE_SUPPORT
             std::string pathInWindows(APPXBUNDLEMANIFEST_XML);
             std::replace(pathInWindows.begin(), pathInWindows.end(), '/', '\\');
             stream = m_appxBlockMap->GetValidationStream(pathInWindows, appxBundleManifestInContainer);
             m_appxBundleManifest = ComPtr<IVerifierObject>::Make<AppxBundleManifestObject>(factory, stream);
             m_isBundle = true;
+            #endif
         }
 
         if ((m_validation & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
