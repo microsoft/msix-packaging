@@ -152,7 +152,7 @@ HRESULT FileTypeAssociation::ParseManifest()
 
 HRESULT FileTypeAssociation::ExecuteForAddRequest()
 {
-    RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     for (auto fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
     {
         RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
@@ -309,7 +309,7 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
 
 HRESULT FileTypeAssociation::ExecuteForRemoveRequest()
 {
-    RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     for (auto fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
     {
         RETURN_IF_FAILED(ProcessFtaForRemove(*fta));
