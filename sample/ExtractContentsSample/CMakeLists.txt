@@ -18,7 +18,7 @@ add_executable(${BINARY_NAME}
     ${MANIFEST}
     )
 
-target_include_directories(${BINARY_NAME} PRIVATE ${CMAKE_BINARY_DIR}/src/msix)
+target_include_directories(${BINARY_NAME} PRIVATE ${CMAKE_BINARY_DIR}/src/msix ../inc)
 
 add_dependencies(${BINARY_NAME} msix)
 target_link_libraries(${BINARY_NAME} msix)

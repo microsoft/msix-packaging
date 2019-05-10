@@ -193,11 +193,13 @@ int Help(char* toolName, std::vector<Command>& commands, State& state)
     #ifdef MSIX_PACK
     case UserSpecified::Pack:
         command = std::find(commands.begin(), commands.end(), "pack");
-        std::cout << "    " << toolName << " pack -p <output package> -d <directory to pack> [options] " << std::endl;
+        std::cout << "    " << toolName << " pack -p <output package> -d <directory to pack> " << std::endl;
         std::cout << std::endl;
         std::cout << "Description:" << std::endl;
         std::cout << "------------" << std::endl;
-        std::cout << "    TODO" << std::endl;
+        std::cout << "    Creates an app package at <output package> by adding all the files from the" << std::endl;
+        std::cout << "    specified input <directory>. You must include a valid app package manifest file named " << std::endl;
+        std::cout << "    AppxManifest.xml in the directory provided" << std::endl;
     #endif
     }
     std::cout << std::endl;

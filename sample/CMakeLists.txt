@@ -12,3 +12,8 @@ add_dependencies(ExtractContentsSample msix)
 add_dependencies(BundleSample msix)
 add_dependencies(OverrideStreamSample msix)
 add_dependencies(OverrideLanguageSample msix)
+
+if (MSIX_PACK)
+    add_subdirectory(PackSample)
+    add_dependencies(PackSample msix)
+endif()
