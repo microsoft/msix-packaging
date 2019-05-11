@@ -163,8 +163,11 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
             return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
         }
 
+        //bool registryHasExtension = false;
+        //RETURN_IF_FAILED(m_registryDevirtualizer->HasFTA(*extensionName, registryHasExtension));
+
         bool registryHasExtension = false;
-        RETURN_IF_FAILED(m_registryDevirtualizer->HasFTA(*extensionName, registryHasExtension));
+        RETURN_IF_FAILED(m_registryDevirtualizer->HasRegistryKey(HKEY_CURRENT_USER, classesKeyPath.c_str(), *extensionName, registryHasExtension));
 
         if (registryHasExtension)
         {
@@ -305,7 +308,8 @@ HRESULT FileTypeAssociation::CreateHandler(MsixRequest * msixRequest, IPackageHa
         return E_OUTOFMEMORY;
     }
 
-    RETURN_IF_FAILED(localInstance->m_classesKey.Open(HKEY_CLASSES_ROOT, nullptr, KEY_READ | KEY_WRITE | WRITE_DAC));
+    //RETURN_IF_FAILED(localInstance->m_classesKey.Open(HKEY_CLASSES_ROOT, nullptr, KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(localInstance->m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
 
     std::wstring registryFilePath = msixRequest->GetPackageDirectoryPath() + registryDatFile;
     RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFilePath, msixRequest, &localInstance->m_registryDevirtualizer));

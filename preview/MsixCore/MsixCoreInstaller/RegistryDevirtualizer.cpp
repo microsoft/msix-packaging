@@ -68,6 +68,62 @@ HRESULT RegistryDevirtualizer::Run(_In_ bool remove)
     return S_OK;
 }
 
+HRESULT RegistryDevirtualizer::DeleteKeyIfPresent(_In_ RegistryKey * registryKey)
+{
+    return S_OK;
+}
+
+HRESULT RegistryDevirtualizer::HasRegistryKey(HKEY registryKey, std::wstring subkeyPath, std::wstring extensionName, bool & hasRegistryKey)
+{
+    hasRegistryKey = false;
+    if (!m_hiveFileNameExists)
+    {
+        return S_OK;
+    }
+    std::wstring rootPath = m_loadedHiveKeyName + L"\\Registry";
+    RETURN_IF_FAILED(m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ)); // root key until registry
+
+    // map real root hive to virtual root hive
+    PCWSTR virtualKeyPath = L"";
+    for (auto mapping : mappings)
+    {
+        if (mapping.actualRootHive == registryKey && mapping.actualSubkey == subkeyPath)
+        {
+            virtualKeyPath = mapping.virtualKey;
+        }
+    }
+
+    // Per user mapping
+    RegistryKey perUserKey;
+    HRESULT hrOpenUserClassesKey = m_rootKey.OpenSubKey(virtualKeyPath, KEY_READ, &perUserKey);
+    if (SUCCEEDED(hrOpenUserClassesKey))
+    {
+        RegistryKey extensionKey;
+        HRESULT hrExtensionKey = perUserKey.OpenSubKey(extensionName.c_str(), KEY_READ, &extensionKey);
+        if (SUCCEEDED(hrExtensionKey))
+        {
+            hasRegistryKey = true;
+            return S_OK;
+        }
+    }
+
+    //Per machine key, retrieve subkey from mapping table for different subkeys(TODO)
+    RegistryKey machineClassesKey;
+    HRESULT hrOpenMachineClassesKey = m_rootKey.OpenSubKey(L"MACHINE\\Software\\Classes", KEY_READ, &machineClassesKey);
+    if (SUCCEEDED(hrOpenMachineClassesKey))
+    {
+        RegistryKey ftaKey;
+        HRESULT hrFtaKey = machineClassesKey.OpenSubKey(extensionName.c_str(), KEY_READ, &ftaKey);
+        if (SUCCEEDED(hrFtaKey))
+        {
+            hasRegistryKey = true;
+            return S_OK;
+        }
+    }
+
+    return S_OK;
+}
+
 HRESULT RegistryDevirtualizer::HasFTA(std::wstring ftaName, bool & hasFTA)
 {
     hasFTA = false;
@@ -453,7 +509,7 @@ HRESULT RegistryDevirtualizer::CreateTempKeyName(std::wstring &tempName)
 
 RegistryDevirtualizer::~RegistryDevirtualizer()
 {
-    if (m_hiveFileNameExists)
+    /*if (m_hiveFileNameExists)
     {
         m_rootKey.Close();
 
@@ -467,5 +523,5 @@ RegistryDevirtualizer::~RegistryDevirtualizer()
                 TraceLoggingValue(status, "Error LSTATUS"),
                 TraceLoggingValue(m_loadedHiveKeyName.c_str(), "Hive key name"));
         }
-    }
+    }*/
 }

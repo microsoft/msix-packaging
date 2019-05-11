@@ -33,6 +33,7 @@
 #include "ErrorHandler.hpp"
 #include "ValidateTargetDeviceFamily.hpp"
 #include "PrepareDevirtualizedRegistry.hpp"
+#include "WriteDevirtualizedRegistry.hpp"
 
 #include "Constants.hpp"
 
@@ -78,7 +79,8 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {ComInterface::HandlerName,                 {ComInterface::CreateHandler,                 ComServer::HandlerName,                    ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                  ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,          ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {InstallComplete::HandlerName,              {InstallComplete::CreateHandler,              nullptr,                                   ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ErrorHandler::HandlerName,                 {ErrorHandler::CreateHandler,                 nullptr,                                   ReturnError,         nullptr}},
 };

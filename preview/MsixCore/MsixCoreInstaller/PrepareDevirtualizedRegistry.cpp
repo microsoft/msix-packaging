@@ -27,7 +27,8 @@ HRESULT PrepareDevirtualizedRegistry::ExtractRegistry(bool remove)
 
     AutoPtr<RegistryDevirtualizer> registryDevirtualizer;
     RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFilePath, m_msixRequest, &registryDevirtualizer));
-    RETURN_IF_FAILED(registryDevirtualizer->Run(remove));
+    //TODO: This should run only for remove, not add(move to remove method)
+    //RETURN_IF_FAILED(registryDevirtualizer->Run(remove));
     return S_OK;
 }
 

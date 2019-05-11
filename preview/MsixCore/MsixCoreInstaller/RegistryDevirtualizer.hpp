@@ -20,6 +20,16 @@ public:
     /// @param remove - if true, remove all the keys and values; if false, add all the keys and values
     HRESULT Run(_In_ bool remove);
 
+    /// Deletes the registry key from the mounted Registry.dat if present since per user values take precedence
+    ///
+    /// @param registryKey - the registry key to be deleted from the mounted Registry.dat
+    HRESULT DeleteKeyIfPresent(_In_ RegistryKey * registryKey);
+
+    /// Determines whether the mounted Registry.dat contains the registry key. Does not perform any modifications to the system.
+    /// 
+    /// @param registryKey - the registry key to look for in the mounted Registry.dat
+    HRESULT HasRegistryKey(_In_ HKEY registryKey, _In_ std::wstring subkeyPath, _In_ std::wstring extensionName,  _Out_ bool& hasRegistryKey);
+
     /// Determines whether Registry.dat contains a FTA (file type association). Does not perform any modifications to the system.
     /// 
     /// @param ftaName - the name of the FTA extension (i.e. .mp4)
