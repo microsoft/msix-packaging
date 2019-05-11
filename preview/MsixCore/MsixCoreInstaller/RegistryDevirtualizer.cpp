@@ -509,6 +509,7 @@ HRESULT RegistryDevirtualizer::CreateTempKeyName(std::wstring &tempName)
 
 RegistryDevirtualizer::~RegistryDevirtualizer()
 {
+    //TODO:: move to WriteDevirtualizedRegistry destructor
     /*if (m_hiveFileNameExists)
     {
         m_rootKey.Close();
