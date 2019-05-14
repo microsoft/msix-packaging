@@ -36,7 +36,7 @@ HRESULT ProcessPotentialUpdate::RemovePackage(std::wstring packageFullName)
         TraceLoggingValue(packageFullName.c_str(), "PackageToBeRemoved"));
 
     AutoPtr<MsixRequest> localRequest;
-    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, std::wstring(), packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &localRequest));
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, nullptr, packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &localRequest));
 
     const HRESULT hrProcessRequest = localRequest->ProcessRequest();
     if (FAILED(hrProcessRequest))

@@ -10,7 +10,9 @@ namespace MsixCoreLib {
     public:
         PackageManager();
         std::shared_ptr<IMsixResponse> AddPackageAsync(const std::wstring & packageFilePath, DeploymentOptions options, std::function<void(const IMsixResponse&)> callback = nullptr) override;
+        std::shared_ptr<IMsixResponse> AddPackageAsync(IStream * packageStream, DeploymentOptions options, std::function<void(const IMsixResponse&)> callback = nullptr) override;
         HRESULT AddPackage(const std::wstring & packageFilePath, DeploymentOptions options) override;
+        HRESULT AddPackage(IStream * packageStream, DeploymentOptions options) override;
         std::shared_ptr<IMsixResponse> RemovePackageAsync(const std::wstring & packageFullName, std::function<void(const IMsixResponse&)> callback = nullptr) override;
         HRESULT RemovePackage(const std::wstring & packageFullName) override;
         HRESULT FindPackage(const std::wstring & packageFullName, std::shared_ptr<IInstalledPackage> & installedPackage) override;

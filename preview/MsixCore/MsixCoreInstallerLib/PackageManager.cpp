@@ -15,8 +15,19 @@ PackageManager::PackageManager()
 
 shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packageFilePath, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
 {
+    ComPtr<IStream> packageStream;
+    if (FAILED(CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &packageStream)))
+    {
+        return nullptr;
+    }
+
+    return AddPackageAsync(packageStream.Get(), options, callback);
+}
+
+shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStream, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
+{
     MsixRequest * impl;
-    HRESULT hr = (MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    HRESULT hr = (MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(hr))
     {
         return nullptr;
@@ -36,19 +47,31 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packag
     return impl->GetMsixResponse();
 }
 
-HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
+HRESULT PackageManager::AddPackage(IStream * packageStream, DeploymentOptions options)
 {
     AutoPtr<MsixRequest> impl;
-    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Add, packageFilePath, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     
     RETURN_IF_FAILED(impl->ProcessRequest());
     return S_OK;
 }
 
+HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
+{
+    ComPtr<IStream> packageStream;
+    auto res = CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &packageStream);
+    if (FAILED(res))
+    {
+        return res;
+    }
+
+    return AddPackage(packageStream.Get(), options);
+}
+
 shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & packageFullName, function<void(const IMsixResponse&)> callback)
 {
     MsixRequest* impl;
-    HRESULT hr = (MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    HRESULT hr = (MsixRequest::Make(OperationType::Remove, nullptr, packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(hr))
     {
         return nullptr;
@@ -63,7 +86,7 @@ shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & pac
         msixRequest->ProcessRequest();
         delete msixRequest;
         msixRequest = nullptr;
-    }, impl);
+        }, impl);
     t.detach();
     return impl->GetMsixResponse();
 }
@@ -71,7 +94,7 @@ shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & pac
 HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
 {
     AutoPtr<MsixRequest> impl;
-    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, L"", packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, nullptr, packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     
     RETURN_IF_FAILED(impl->ProcessRequest());
     return S_OK;
@@ -140,7 +163,9 @@ HRESULT PackageManager::GetMsixPackageInfo(const wstring & msixFullPath, shared_
     RETURN_IF_FAILED(filemapping.GetInitializationResult());
     
     shared_ptr<Package> packageInfo;
-    RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromPackage(msixFullPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo));
+    ComPtr<IStream> packageStream;
+    RETURN_IF_FAILED(CreateStreamOnFileUTF16(msixFullPath.c_str(), /*forRead */ true, &packageStream));
+    RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromPackage(packageStream.Get(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo));
     
     package = dynamic_pointer_cast<IPackage>(packageInfo);
     return S_OK;
