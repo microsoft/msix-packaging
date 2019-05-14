@@ -1569,6 +1569,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
 
 // TODO: expand flags flags as needed.
 MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
     char* directoryPath,
     char* outputPackage

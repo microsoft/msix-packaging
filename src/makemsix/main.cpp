@@ -40,7 +40,7 @@ struct State
 
     bool CreatePackageSubfolder()
     {
-        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
+        packUnpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(packUnpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
         return true;
     }
 
@@ -101,7 +101,7 @@ struct State
     std::string directoryName;
     UserSpecified specified                  = UserSpecified::Nothing;
     MSIX_VALIDATION_OPTION validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
-    MSIX_PACKUNPACK_OPTION unpackOptions     = MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE;
+    MSIX_PACKUNPACK_OPTION packUnpackOptions     = MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE;
     MSIX_APPLICABILITY_OPTIONS applicability = MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL;
 };
 
@@ -273,19 +273,19 @@ int ParseAndRun(std::vector<Command>& commands, int argc, char* argv[])
     case UserSpecified::Nothing:
         return Help(argv[0], commands, state);
     case UserSpecified::Unpack:
-        return UnpackPackage(state.unpackOptions, state.validationOptions,
+        return UnpackPackage(state.packUnpackOptions, state.validationOptions,
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
         );
     case UserSpecified::Unbundle:
-        return UnpackBundle(state.unpackOptions, state.validationOptions,
+        return UnpackBundle(state.packUnpackOptions, state.validationOptions,
             state.applicability,
             const_cast<char*>(state.packageName.c_str()),
             const_cast<char*>(state.directoryName.c_str())
         );
     #ifdef MSIX_PACK
     case UserSpecified::Pack:
-        return PackPackage(state.validationOptions, 
+        return PackPackage(state.packUnpackOptions, state.validationOptions, 
             const_cast<char*>(state.directoryName.c_str()),
             const_cast<char*>(state.packageName.c_str()));
     #endif
