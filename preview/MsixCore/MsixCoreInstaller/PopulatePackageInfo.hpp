@@ -18,8 +18,6 @@ public:
     /// @return E_NOT_SET when the package cannot be found
     HRESULT ExecuteForRemoveRequest();
 
-    bool IsMandatoryForRemoveRequest() { return true; }
-
     static const PCWSTR HandlerName;
     static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
     ~PopulatePackageInfo() {}

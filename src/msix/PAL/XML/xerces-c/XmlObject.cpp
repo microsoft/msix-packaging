@@ -251,13 +251,13 @@ public:
     // IXmlElement
     std::string GetAttributeValue(XmlAttributeName attribute) override
     {
-        auto attributeName = wstring_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]);
+        auto attributeName = GetAttributeNameStringUtf8(attribute);
         return GetAttributeValue(attributeName);
     }
 
     std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) override
     {
-        XercesXMLChPtr nameAttr(XMLString::transcode(wstring_to_utf8(attributeNames[static_cast<uint8_t>(attribute)]).c_str()));
+        XercesXMLChPtr nameAttr(XMLString::transcode(GetAttributeNameStringUtf8(attribute)));
         XMLSize_t len = 0;
         XercesXMLBytePtr decodedData(XERCES_CPP_NAMESPACE::Base64::decodeToXMLByte(
             m_element->getAttribute(nameAttr.Get()),
@@ -441,7 +441,7 @@ public:
     {
         ComPtr<IXercesElement> element = root.As<IXercesElement>();
 
-        XercesXMLChPtr xPath(XMLString::transcode(xPaths[static_cast<uint8_t>(query)]));
+        XercesXMLChPtr xPath(XMLString::transcode(GetQueryString(query)));
         XercesPtr<DOMXPathResult> result(m_parser->getDocument()->evaluate(
             xPath.Get(),
             element->GetElement(),

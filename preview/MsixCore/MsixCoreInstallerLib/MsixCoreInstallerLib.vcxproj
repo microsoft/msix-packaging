@@ -92,7 +92,7 @@
       <PreprocessorDefinitions>MsixCoreInstallerLib_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.;..\MsixCoreInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -102,9 +102,6 @@
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Y /D "$(ProjectDir)MSIXPackaging\x86\Debug\msix.*" "$(OutDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -115,7 +112,7 @@
       <PreprocessorDefinitions>MsixCoreInstallerLib_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>.;..\MsixCoreInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -125,9 +122,6 @@
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -152,9 +146,6 @@
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Y /D "$(ProjectDir)MSIXPackaging\x86\msix.dll" "$(OutDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -179,9 +170,6 @@
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PostBuildEvent>
-      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\MsixCoreInstaller\AddRemovePrograms.hpp" />

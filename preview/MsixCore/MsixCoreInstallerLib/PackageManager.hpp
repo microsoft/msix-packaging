@@ -15,11 +15,11 @@ namespace MsixCoreLib {
         HRESULT AddPackage(IStream * packageStream, DeploymentOptions options) override;
         std::shared_ptr<IMsixResponse> RemovePackageAsync(const std::wstring & packageFullName, std::function<void(const IMsixResponse&)> callback = nullptr) override;
         HRESULT RemovePackage(const std::wstring & packageFullName) override;
-        std::shared_ptr<IInstalledPackage> FindPackage(const std::wstring & packageFullName) override;
-        std::shared_ptr<IInstalledPackage> FindPackageByFamilyName(const std::wstring & packageFamilyName) override;
-        std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> FindPackages() override;
-        std::shared_ptr<IPackage> GetMsixPackageInfo(const std::wstring & msixFullPath) override;
+        HRESULT FindPackage(const std::wstring & packageFullName, std::shared_ptr<IInstalledPackage> & installedPackage) override;
+        HRESULT FindPackageByFamilyName(const std::wstring & packageFamilyName, std::shared_ptr<IInstalledPackage> & installedPackage) override;
+        HRESULT FindPackages(std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> & installedPackages) override;
+        HRESULT GetMsixPackageInfo(const std::wstring & msixFullPath, std::shared_ptr<IPackage> & package) override;
     private:
-        std::shared_ptr<IInstalledPackage> GetPackageInfo(const std::wstring & msixCoreDirectory, const std::wstring & directoryPath);
+        HRESULT GetPackageInfo(const std::wstring & msixCoreDirectory, const std::wstring & directoryPath, std::shared_ptr<IInstalledPackage> & installedPackage);
     };
 }
