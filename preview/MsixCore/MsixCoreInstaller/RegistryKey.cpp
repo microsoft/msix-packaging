@@ -131,3 +131,20 @@ HRESULT RegistryKey::DeleteTree(PCWSTR subkey)
 {
     return HRESULT_FROM_WIN32(RegDeleteTreeW(this->m_hkey, subkey));
 }
+
+HRESULT RegistryKey::KeyExists(PCWSTR subkey, bool& exists)
+{
+    RegistryKey target;
+    LONG rc = RegOpenKeyExW(this->m_hkey, subkey, 0, KEY_READ, target.AddressOfHkey());
+    if (rc == ERROR_SUCCESS)
+    {
+        exists = true;
+        return S_OK;
+    }
+    else if ((rc == ERROR_FILE_NOT_FOUND) || (rc == ERROR_PATH_NOT_FOUND))
+    {
+        exists = false;
+        return S_OK;
+    }
+    return HRESULT_FROM_WIN32(rc);
+}
