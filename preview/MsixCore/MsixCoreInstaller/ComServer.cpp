@@ -15,31 +15,59 @@ const PCWSTR ComServer::HandlerName = L"ComServer";
 
 HRESULT ComServer::ExecuteForAddRequest()
 {
-    for (auto exeServer = m_exeServers.begin(); exeServer != m_exeServers.end(); ++exeServer)
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(AddServersAndProgIds());
+    return S_OK;
+}
+
+HRESULT ComServer::ExecuteForAddForAllUsersRequest()
+{
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(AddServersAndProgIds());
+    return S_OK;
+}
+
+HRESULT ComServer::AddServersAndProgIds()
+{
+    for (auto& exeServer : m_exeServers)
     {
-        RETURN_IF_FAILED(ProcessExeServerForAdd(*exeServer));
+        RETURN_IF_FAILED(ProcessExeServerForAdd(exeServer));
     }
 
-    for (auto progId = m_progIds.begin(); progId != m_progIds.end(); ++progId)
+    for (auto& progId : m_progIds)
     {
-        RETURN_IF_FAILED(ProcessProgIdForAdd(*progId));
+        RETURN_IF_FAILED(ProcessProgIdForAdd(progId));
     }
-
     return S_OK;
 }
 
 HRESULT ComServer::ExecuteForRemoveRequest()
 {
-    for (auto exeServer = m_exeServers.begin(); exeServer != m_exeServers.end(); ++exeServer)
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(RemoveServersAndProgIds());
+
+    return S_OK;
+}
+
+HRESULT ComServer::ExecuteForRemoveForAllUsersRequest()
+{
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(RemoveServersAndProgIds());
+
+    return S_OK;
+}
+
+HRESULT ComServer::RemoveServersAndProgIds()
+{
+    for (auto& exeServer : m_exeServers)
     {
-        RETURN_IF_FAILED(ProcessExeServerForRemove(*exeServer));
+        RETURN_IF_FAILED(ProcessExeServerForRemove(exeServer));
     }
 
-    for (auto progId = m_progIds.begin(); progId != m_progIds.end(); ++progId)
+    for (auto& progId : m_progIds)
     {
-        RETURN_IF_FAILED(ProcessProgIdForRemove(*progId));
+        RETURN_IF_FAILED(ProcessProgIdForRemove(progId));
     }
-
     return S_OK;
 }
 
@@ -694,8 +722,6 @@ HRESULT ComServer::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** i
     {
         return E_OUTOFMEMORY;
     }
-
-    RETURN_IF_FAILED(localInstance->m_classesKey.Open(HKEY_CLASSES_ROOT, nullptr, KEY_READ | KEY_WRITE | WRITE_DAC));
 
     RETURN_IF_FAILED(localInstance->ParseManifest());
 

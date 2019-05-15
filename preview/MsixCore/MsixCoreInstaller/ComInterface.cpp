@@ -15,33 +15,63 @@ const PCWSTR ComInterface::HandlerName = L"ComInterface";
 
 HRESULT ComInterface::ExecuteForAddRequest()
 {
-    for (auto comInterface = m_interfaces.begin(); comInterface != m_interfaces.end(); ++comInterface)
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(AddInterfacesAndTypeLibs());
+    return S_OK;
+}
+
+HRESULT ComInterface::ExecuteForAddForAllUsersRequest()
+{
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(AddInterfacesAndTypeLibs());
+    return S_OK;
+}
+
+HRESULT ComInterface::AddInterfacesAndTypeLibs()
+{
+    for (auto& comInterface : m_interfaces)
     {
-        RETURN_IF_FAILED(ProcessInterfaceForAddRequest(*comInterface));
+        RETURN_IF_FAILED(ProcessInterfaceForAddRequest(comInterface));
     }
 
-    for (auto typeLib = m_typeLibs.begin(); typeLib != m_typeLibs.end(); ++typeLib)
+    for (auto& typeLib : m_typeLibs)
     {
-        RETURN_IF_FAILED(ProcessTypeLibForAddRequest(*typeLib));
+        RETURN_IF_FAILED(ProcessTypeLibForAddRequest(typeLib));
     }
-
     return S_OK;
 }
 
 HRESULT ComInterface::ExecuteForRemoveRequest()
 {
-    for (auto comInterface = m_interfaces.begin(); comInterface != m_interfaces.end(); ++comInterface)
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(RemoveInterfacesAndTypeLibs());
+
+    return S_OK;
+}
+
+HRESULT ComInterface::ExecuteForRemoveForAllUsersRequest()
+{
+    RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+    RETURN_IF_FAILED(RemoveInterfacesAndTypeLibs());
+
+    return S_OK;
+}
+
+HRESULT ComInterface::RemoveInterfacesAndTypeLibs()
+{
+    for (auto& comInterface : m_interfaces)
     {
-        RETURN_IF_FAILED(ProcessInterfaceForRemoveRequest(*comInterface));
+        RETURN_IF_FAILED(ProcessInterfaceForRemoveRequest(comInterface));
     }
 
-    for (auto typeLib = m_typeLibs.begin(); typeLib != m_typeLibs.end(); ++typeLib)
+    for (auto& typeLib : m_typeLibs)
     {
-        RETURN_IF_FAILED(ProcessTypeLibForRemoveRequest(*typeLib));
+        RETURN_IF_FAILED(ProcessTypeLibForRemoveRequest(typeLib));
     }
 
     return S_OK;
 }
+
 
 HRESULT ComInterface::ProcessInterfaceForAddRequest(Interface& comInterface)
 {
@@ -319,8 +349,6 @@ HRESULT ComInterface::CreateHandler(MsixRequest * msixRequest, IPackageHandler *
     {
         return E_OUTOFMEMORY;
     }
-
-    RETURN_IF_FAILED(localInstance->m_classesKey.Open(HKEY_CLASSES_ROOT, nullptr, KEY_READ | KEY_WRITE | WRITE_DAC));
 
     RETURN_IF_FAILED(localInstance->ParseManifest());
 

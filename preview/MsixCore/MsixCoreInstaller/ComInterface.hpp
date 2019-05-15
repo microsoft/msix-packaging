@@ -10,8 +10,17 @@ namespace MsixCoreLib
 class ComInterface : IPackageHandler
 {
 public:
+    /// Adds the com interface registrations to the per-user registry
     HRESULT ExecuteForAddRequest();
+
+    /// Removes the com interface registrations from the per-user registry.
     HRESULT ExecuteForRemoveRequest();
+
+    /// Adds the com interface registrations to the per-machine registry
+    HRESULT ExecuteForAddForAllUsersRequest();
+
+    /// Removes the com interface registrations from the per-machine registry.
+    HRESULT ExecuteForRemoveForAllUsersRequest();
 
     static const PCWSTR HandlerName;
     
@@ -88,6 +97,12 @@ private:
     ///
     /// @param typeLib - TypeLib struct representing data from the manifest
     HRESULT ProcessTypeLibForRemoveRequest(TypeLib & typeLib);
+
+    /// Adds all the registry entries associated with the interfaces and typelibs
+    HRESULT AddInterfacesAndTypeLibs();
+
+    /// Removes all the registry entries associated with the interfaces and typelibs
+    HRESULT RemoveInterfacesAndTypeLibs();
 
     ComInterface() {}
     ComInterface(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
