@@ -63,8 +63,11 @@ if(NOT WIN32)
                 "JNI_OnLoad"
             )
         endif()
-        # on Linux and linux-derived platforms, you use a version script to achieve similar ends.
-        set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} -fvisibility=hidden")
+        # Hide visibility and discard unused functions
+        set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fvisibility=hidden -ffunction-sections -fdata-sections")
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden -ffunction-sections -fdata-sections")
+        set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--gc-sections")
+        # On Linux and linux-derived platforms, you use a version script to achieve similar ends.
         # Make it look readable. The last ; is in the symbol.map.cmakein file
         string(REGEX REPLACE ";" ";\n\t" MSIX_EXPORTS "${MSIX_EXPORTS}")
         configure_file(${CMAKE_CURRENT_SOURCE_DIR}/symbol.map.cmakein ${CMAKE_CURRENT_BINARY_DIR}/symbol.map CRLF)
