@@ -21,7 +21,7 @@ HRESULT ErrorHandler::ExecuteForAddRequest()
 HRESULT ErrorHandler::RemovePackage(std::wstring packageFullName)
 {
     AutoPtr<MsixRequest> removePackageRequest;
-    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, std::wstring(), packageFullName,
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, nullptr, packageFullName,
         MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &removePackageRequest));
 
     const HRESULT hrCancelRequest = removePackageRequest->ProcessRequest();

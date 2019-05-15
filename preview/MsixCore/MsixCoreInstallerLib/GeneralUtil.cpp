@@ -3,6 +3,7 @@
 #include <string>
 #include <codecvt>
 #include <iostream>
+#include <sddl.h>
 
 namespace MsixCoreLib
 {
@@ -77,4 +78,43 @@ namespace MsixCoreLib
         }
         return S_OK;
     }
+
+    HRESULT GetCurrentUserSidString(std::wstring & userSidString)
+    {
+        HANDLE token;
+        if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        DWORD tokenSize = 0;
+        GetTokenInformation(token, TokenUser, nullptr /*token buffer */, tokenSize, &tokenSize);
+        DWORD lastError = GetLastError();
+        if (lastError != ERROR_INSUFFICIENT_BUFFER)
+        {
+            return HRESULT_FROM_WIN32(lastError);
+        }
+
+        std::unique_ptr<BYTE[]> tokenBuffer(new BYTE[tokenSize]);
+        if (!tokenBuffer)
+        {
+            return E_OUTOFMEMORY;
+        }
+
+        if (!GetTokenInformation(token, TokenUser, tokenBuffer.get(), tokenSize, &tokenSize))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        auto pTokenUser = reinterpret_cast<PTOKEN_USER>(tokenBuffer.get());
+
+        PWSTR stringSid = nullptr;
+        if (!ConvertSidToStringSid(pTokenUser->User.Sid, &stringSid))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+        userSidString = stringSid;
+        LocalFree(stringSid);
+
+        return S_OK;
+    }
+
 }
