@@ -9,8 +9,17 @@ namespace MsixCoreLib
 class ComServer : IPackageHandler
 {
 public:
+    /// Adds the com server registrations to the per-user registry
     HRESULT ExecuteForAddRequest();
+
+    /// Removes the com server registrations from the per-user registry.
     HRESULT ExecuteForRemoveRequest();
+
+    /// Adds the com server registrations to the per-machine registry
+    HRESULT ExecuteForAddForAllUsersRequest();
+
+    /// Removes the com server registrations from the per-machine registry.
+    HRESULT ExecuteForRemoveForAllUsersRequest();
 
     static const PCWSTR HandlerName;
     static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
@@ -166,6 +175,12 @@ private:
     ///
     /// @param progId - ProgId struct representing data from the manifest
     HRESULT ProcessProgIdForRemove(ProgId & progId);
+
+    /// Adds all the registry entries associated with the servers and progIds
+    HRESULT AddServersAndProgIds();
+
+    /// Removes all the registry entries associated with the servers and progIds
+    HRESULT RemoveServersAndProgIds();
 
     ComServer() {}
     ComServer(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
