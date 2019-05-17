@@ -25,9 +25,11 @@ HRESULT PrepareDevirtualizedRegistry::ExtractRegistry(bool remove)
 {
     std::wstring registryFilePath = m_msixRequest->GetPackageDirectoryPath() + registryDatFile;
 
-    AutoPtr<RegistryDevirtualizer> registryDevirtualizer;
+    std::shared_ptr<RegistryDevirtualizer> registryDevirtualizer;
     RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFilePath, m_msixRequest, &registryDevirtualizer));
-    RETURN_IF_FAILED(registryDevirtualizer->Run(remove));
+    m_msixRequest->SetRegistryDevirtualizer(registryDevirtualizer);
+
+    //RETURN_IF_FAILED(registryDevirtualizer->Run(remove));
     return S_OK;
 }
 

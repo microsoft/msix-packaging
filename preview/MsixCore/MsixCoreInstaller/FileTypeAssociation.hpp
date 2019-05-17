@@ -45,7 +45,6 @@ public:
 private:
     MsixRequest* m_msixRequest = nullptr;
     RegistryKey m_classesKey;
-    AutoPtr<RegistryDevirtualizer> m_registryDevirtualizer; 
     std::vector<Fta> m_Ftas;
 
     FileTypeAssociation() {}
@@ -60,7 +59,7 @@ private:
     HRESULT ParseFtaElement(IMsixElement* ftaElement);
 
     /// Adds the file type association (fta) entries if necessary
-    HRESULT ProcessFtaForAdd(Fta& fta);
+    HRESULT ProcessFtaForAdd(Fta& fta, HKEY rootHive);
 
     /// Removes the file type association (fta) entries if necessary
     HRESULT ProcessFtaForRemove(Fta& fta);

@@ -155,7 +155,7 @@ HRESULT FileTypeAssociation::ExecuteForAddRequest()
     RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     for (auto fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
     {
-        RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
+        RETURN_IF_FAILED(ProcessFtaForAdd(*fta, HKEY_CURRENT_USER));
     }
 
     return S_OK;
@@ -166,7 +166,7 @@ HRESULT FileTypeAssociation::ExecuteForAddForAllUsersRequest()
     RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     for (auto fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
     {
-        RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
+        RETURN_IF_FAILED(ProcessFtaForAdd(*fta, HKEY_LOCAL_MACHINE));
     }
 
     return S_OK;
@@ -220,9 +220,8 @@ HRESULT ConvertLogoToIcon(std::wstring logoPath, std::wstring & iconPath)
     return S_OK;
 }
 
-HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
+HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta, HKEY rootHive)
 {
-    bool needToProcessAnyExtensions = false;
     for (auto extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
     {
         if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
@@ -230,34 +229,13 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
             return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
         }
 
-        bool registryHasExtension = false;
-        RETURN_IF_FAILED(m_registryDevirtualizer->HasFTA(*extensionName, registryHasExtension));
+        RegistryKey ftaKey;
+        RETURN_IF_FAILED(m_classesKey.CreateSubKey(extensionName->c_str(), KEY_WRITE, &ftaKey));
+        RETURN_IF_FAILED(ftaKey.SetStringValue(L"", fta.progID));
 
-        if (registryHasExtension)
-        {
-            TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                "Registry devirtualization already wrote an entry for this extension -- not processing extension",
-                TraceLoggingValue(extensionName->c_str(), "Extension"));
-        }
-        else
-        {
-            needToProcessAnyExtensions = true;
-            RegistryKey ftaKey;
-            RETURN_IF_FAILED(m_classesKey.CreateSubKey(extensionName->c_str(), KEY_WRITE, &ftaKey));
-            RETURN_IF_FAILED(ftaKey.SetStringValue(L"", fta.progID));
-
-            RegistryKey openWithProgIdsKey;
-            RETURN_IF_FAILED(ftaKey.CreateSubKey(openWithProgIdsKeyName.c_str(), KEY_WRITE, &openWithProgIdsKey));
-            RETURN_IF_FAILED(openWithProgIdsKey.SetValue(fta.progID.c_str(), nullptr, 0, REG_NONE));
-        }
-    }
-
-    if (!needToProcessAnyExtensions)
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Registry devirtualization already wrote entries for all extensions associated with this FTA, nothing more to process for this FTA",
-            TraceLoggingValue(fta.name.c_str(), "Name"));
-        return S_OK;
+        RegistryKey openWithProgIdsKey;
+        RETURN_IF_FAILED(ftaKey.CreateSubKey(openWithProgIdsKeyName.c_str(), KEY_WRITE, &openWithProgIdsKey));
+        RETURN_IF_FAILED(openWithProgIdsKey.SetValue(fta.progID.c_str(), nullptr, 0, REG_NONE));
     }
 
     RegistryKey progIdKey;
@@ -304,6 +282,13 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
         RETURN_IF_FAILED(verbCommandKey.SetStringValue(L"", verbCommand));
     }
 
+    for (auto extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
+    {
+        m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(rootHive, classesKeyPath.c_str(), *extensionName);
+    }
+
+    m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(rootHive, classesKeyPath.c_str(), fta.progID);
+
     return S_OK;
 }
 
@@ -335,7 +320,7 @@ HRESULT FileTypeAssociation::ProcessFtaForRemove(Fta& fta)
     for (auto extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
     {
         bool registryHasExtension = false;
-        RETURN_IF_FAILED(m_registryDevirtualizer->HasFTA(*extensionName, registryHasExtension));
+        RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->HasFTA(*extensionName, registryHasExtension));
 
         if (registryHasExtension)
         {
@@ -389,7 +374,6 @@ HRESULT FileTypeAssociation::CreateHandler(MsixRequest * msixRequest, IPackageHa
     }
 
     std::wstring registryFilePath = msixRequest->GetPackageDirectoryPath() + registryDatFile;
-    RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFilePath, msixRequest, &localInstance->m_registryDevirtualizer));
 
     RETURN_IF_FAILED(localInstance->ParseManifest());
 

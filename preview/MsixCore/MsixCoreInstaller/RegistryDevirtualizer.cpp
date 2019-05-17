@@ -68,6 +68,54 @@ HRESULT RegistryDevirtualizer::Run(_In_ bool remove)
     return S_OK;
 }
 
+HRESULT RegistryDevirtualizer::DeleteKeyIfPresent(HKEY rootHive, std::wstring subKeyPath, std::wstring extensionName)
+{
+    if (!m_hiveFileNameExists)
+    {
+        return S_OK;
+    }
+    std::wstring rootPath = m_loadedHiveKeyName + L"\\Registry";
+    RETURN_IF_FAILED(m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ)); // root key until registry
+
+    // map real root hive to virtual root hive
+    PCWSTR virtualKeyPath = L"";
+    for (auto mapping : mappings)
+    {
+        if (mapping.actualRootHive == rootHive && mapping.actualSubkey == subKeyPath)
+        {
+            virtualKeyPath = mapping.virtualKey;
+        }
+    }
+
+    // Per user mapping
+    RegistryKey userClassesKey;
+    HRESULT hrOpenUserClassesKey = m_rootKey.OpenSubKey(virtualKeyPath, KEY_READ, &userClassesKey);
+    if (SUCCEEDED(hrOpenUserClassesKey))
+    {
+        RegistryKey extensionKey;
+        HRESULT hrUserExtensionKey = userClassesKey.OpenSubKey(extensionName.c_str(), KEY_READ, &extensionKey);
+        if (SUCCEEDED(hrUserExtensionKey))
+        {
+            HRESULT deleteUserKey = userClassesKey.DeleteSubKey(extensionName.c_str());
+        }
+    }
+
+    //Per machine key
+    RegistryKey machineClassesKey;
+    HRESULT hrOpenMachineClassesKey = m_rootKey.OpenSubKey(L"MACHINE\\Software\\Classes", KEY_READ, &machineClassesKey);
+    if (SUCCEEDED(hrOpenMachineClassesKey))
+    {
+        RegistryKey extensionKey;
+        HRESULT hrMachineExtensionKey = machineClassesKey.OpenSubKey(extensionName.c_str(), KEY_READ, &extensionKey);
+        if (SUCCEEDED(hrMachineExtensionKey))
+        {
+            HRESULT deleteMachineKey = machineClassesKey.DeleteSubKey(extensionName.c_str());
+        }
+    }
+
+    return S_OK;
+}
+
 HRESULT RegistryDevirtualizer::HasFTA(std::wstring ftaName, bool & hasFTA)
 {
     hasFTA = false;
@@ -371,12 +419,12 @@ HRESULT RegistryDevirtualizer::RemoveDevirtualizeRegistryTree(RegistryKey * virt
     return S_OK;
 }
 
-HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* msixRequest, RegistryDevirtualizer ** instance)
+HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* msixRequest, std::shared_ptr<RegistryDevirtualizer> * instance)
 {
     bool registryFileExists = false;
     RETURN_IF_FAILED(FileExists(hiveFileName, registryFileExists));
 
-    std::unique_ptr<RegistryDevirtualizer> localInstance(new RegistryDevirtualizer(hiveFileName, msixRequest));
+    std::shared_ptr<RegistryDevirtualizer> localInstance(new RegistryDevirtualizer(hiveFileName, msixRequest));
     if (localInstance == nullptr)
     {
         RETURN_IF_FAILED(E_OUTOFMEMORY);
@@ -434,7 +482,7 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
         RETURN_IF_FAILED(HRESULT_FROM_WIN32(RegLoadKey(HKEY_USERS, localInstance->m_loadedHiveKeyName.c_str(), localInstance->m_registryHiveFileName.c_str())));
     }
 
-    *instance = localInstance.release();
+    *instance = localInstance;
     
     return S_OK;
 }
@@ -451,7 +499,7 @@ HRESULT RegistryDevirtualizer::CreateTempKeyName(std::wstring &tempName)
     return S_OK;
 }
 
-RegistryDevirtualizer::~RegistryDevirtualizer()
+HRESULT RegistryDevirtualizer::UnloadMountedHive()
 {
     if (m_hiveFileNameExists)
     {
@@ -468,4 +516,5 @@ RegistryDevirtualizer::~RegistryDevirtualizer()
                 TraceLoggingValue(m_loadedHiveKeyName.c_str(), "Hive key name"));
         }
     }
+    return S_OK;
 }
