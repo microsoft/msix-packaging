@@ -263,7 +263,7 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
     RegistryKey progIdKey;
     RETURN_IF_FAILED(m_classesKey.CreateSubKey(fta.progID.c_str(), KEY_WRITE, &progIdKey));
 
-    if (fta.logo.c_str() != nullptr)
+    if (!fta.logo.empty())
     {
         //DefaultIcon requires an icon type image to display properly on Windows 7 -- convert logo PNG to Icon
         std::wstring iconPath;
@@ -297,7 +297,7 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
         RETURN_IF_FAILED(verbKey.CreateSubKey(commandKeyName.c_str(), KEY_WRITE, &verbCommandKey));
 
         std::wstring verbCommand = executablePath;
-        if (verb->parameter.c_str() != nullptr)
+        if (!verb->parameter.empty())
         {
             verbCommand += std::wstring(L" ") + verb->parameter.c_str();
         }
