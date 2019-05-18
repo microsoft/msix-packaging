@@ -344,7 +344,7 @@ endif()
 
 if(OpenSSL_FOUND)
     # include the libraries needed to use OpenSSL
-    target_include_directories(${PROJECT_NAME} PRIVATE ${OpenSLL_INCLUDE_PATH})
+    target_include_directories(${PROJECT_NAME} PRIVATE ${OpenSSL_INCLUDE_PATH})
     if((IOS) OR (MACOS))
         target_link_libraries(${PROJECT_NAME} PRIVATE crypto -Wl,-dead_strip)
     elseif(NOT MSVC)
