@@ -18,8 +18,10 @@ const PCWSTR StartupTask::TaskDefinitionXmlPrefix =
     L"<Task xmlns=\"http://schemas.microsoft.com/windows/2004/02/mit/task\">\
         <Principals>\
             <Principal id=\"Author\">\
-                <LogonType>InteractiveToken</LogonType>\
-                <RunLevel>LeastPrivilege</RunLevel>\
+                <LogonType>InteractiveToken</LogonType>";
+
+const PCWSTR StartupTask::TaskDefinitionXmlMiddle =
+                L"<RunLevel>LeastPrivilege</RunLevel>\
             </Principal>\
         </Principals>\
         <Triggers>\
@@ -51,10 +53,29 @@ const PCWSTR StartupTask::TaskDefinitionXmlPostfix =
         </Actions>\
     </Task>";
 
+const PCWSTR StartupTask::TaskDefinitionXmlGroupIdForAllUsers =
+    L"<GroupId>S-1-5-32-545</GroupId>";
 const PCWSTR windowsTaskFolderName = L"\\Microsoft\\Windows";
 const PCWSTR taskFolderName = L"MsixCore";
 
+std::wstring StartupTask::CreateTaskXml(std::wstring& executable)
+{
+    std::wstring groupIdXml = ((m_forAllUsers) ? TaskDefinitionXmlGroupIdForAllUsers : L"");
+    return std::wstring(TaskDefinitionXmlPrefix) +
+        groupIdXml + 
+        TaskDefinitionXmlMiddle +
+        executable +
+        TaskDefinitionXmlPostfix;
+}
+
 HRESULT StartupTask::ExecuteForAddRequest()
+{
+    m_forAllUsers = false;
+    RETURN_IF_FAILED(CreateScheduledTasks());
+    return S_OK;
+}
+
+HRESULT StartupTask::CreateScheduledTasks()
 {
     if (m_tasks.empty())
     {
@@ -98,13 +119,16 @@ HRESULT StartupTask::ExecuteForAddRequest()
         ComPtr<ITaskDefinition> taskDefinition;
         RETURN_IF_FAILED(taskService->NewTask(0, &taskDefinition));
 
-        for (auto task = m_tasks.begin(); task != m_tasks.end(); ++task)
+        std::wstring userSidString;
+        RETURN_IF_FAILED(GetCurrentUserSidString(userSidString));
+
+        for (auto& task : m_tasks)
         {
-            std::wstring taskDefinitionXml = TaskDefinitionXmlPrefix + task->executable + TaskDefinitionXmlPostfix;
+            std::wstring taskDefinitionXml = CreateTaskXml(task.executable);
             Bstr taskDefinitionXmlBstr(taskDefinitionXml);
             RETURN_IF_FAILED(taskDefinition->put_XmlText(taskDefinitionXmlBstr));
 
-            Bstr taskNameBstr(task->name);
+            Bstr taskNameBstr(task.name + L" " + userSidString);
             ComPtr<IRegisteredTask> registeredTask;
             RETURN_IF_FAILED(msixCoreFolder->RegisterTaskDefinition(taskNameBstr, taskDefinition.Get(), TASK_CREATE_OR_UPDATE,
                 variantNull /*userId*/, variantNull /*password*/, TASK_LOGON_INTERACTIVE_TOKEN, variantNull /*sddl*/, &registeredTask));
@@ -113,7 +137,28 @@ HRESULT StartupTask::ExecuteForAddRequest()
     return S_OK;
 }
 
+HRESULT StartupTask::ExecuteForAddForAllUsersRequest()
+{
+    m_forAllUsers = true;
+    RETURN_IF_FAILED(CreateScheduledTasks());
+    return S_OK;
+}
+
 HRESULT StartupTask::ExecuteForRemoveRequest()
+{
+    m_forAllUsers = false;
+    RETURN_IF_FAILED(DeleteScheduledTasks())
+    return S_OK;
+}
+
+HRESULT StartupTask::ExecuteForRemoveForAllUsersRequest()
+{
+    m_forAllUsers = true;
+    RETURN_IF_FAILED(DeleteScheduledTasks())
+    return S_OK;
+}
+
+HRESULT StartupTask::DeleteScheduledTasks()
 {
     if (m_tasks.empty())
     {
@@ -145,9 +190,12 @@ HRESULT StartupTask::ExecuteForRemoveRequest()
         ComPtr<ITaskFolder> msixCoreFolder;
         RETURN_IF_FAILED(rootFolder->GetFolder(taskFolderBstr, &msixCoreFolder));
 
-        for (auto task = m_tasks.begin(); task != m_tasks.end(); ++task)
+        std::wstring userSidString;
+        RETURN_IF_FAILED(GetCurrentUserSidString(userSidString));
+
+        for (auto& task : m_tasks)
         {
-            Bstr taskNameBstr(task->name);
+            Bstr taskNameBstr(task.name + L" " + userSidString);
             ComPtr<IRegisteredTask> registeredTask;
             RETURN_IF_FAILED(msixCoreFolder->DeleteTask(taskNameBstr, 0 /*flags*/));
         }
