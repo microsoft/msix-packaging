@@ -179,8 +179,9 @@ if(NOT SKIP_BUNDLES)
     )
 endif()
 
-# Define the library
-add_library(${PROJECT_NAME} SHARED 
+# Define the object library
+set(MSIX_OBJECT_LIBRARY_NAME "${PROJECT_NAME}-object")
+add_library(${MSIX_OBJECT_LIBRARY_NAME} OBJECT 
     AppxBlockMapObject.cpp
     AppxFactory.cpp
     AppxManifestObject.cpp
@@ -206,6 +207,10 @@ add_library(${PROJECT_NAME} SHARED
     ${BundleSources}
 )
 
+# Define the shared library
+add_library(${PROJECT_NAME} SHARED $<TARGET_OBJECTS:${MSIX_OBJECT_LIBRARY_NAME}>)
+
+
 # Copy out public headers to <binary dir>/src/msix
 configure_file(../inc/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
 configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
@@ -213,13 +218,13 @@ configure_file(../inc/MsixErrors.hpp ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
 
 # Linker and includes
 # Include MSIX headers
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/inc)
+target_include_directories(${MSIX_OBJECT_LIBRARY_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/inc)
 
 
 
 if(WIN32)
     string(REPLACE "/GR" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    set_target_properties(${PROJECT_NAME} PROPERTIES
+    set_target_properties(${MSIX_OBJECT_LIBRARY_NAME} PROPERTIES
         COMPILE_FLAGS "/source-charset:utf-8 /Gw /GL /GR-"
         )
     # Using /DELAYLOAD as linker option will use a helper funtion provided by
@@ -254,7 +259,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 if(((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
     # for macos and ios use the inbox libcompression zlib apis instead of zlib, unless zlib is explicitly requested.
     message(STATUS "MSIX takes a dependency on inbox libcompression")
-    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Apple)
+    target_include_directories(${MSIX_OBJECT_LIBRARY_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Apple)
     target_link_libraries(${PROJECT_NAME} PRIVATE libcompression.dylib)
 elseif((AOSP) AND (NOT USE_MSIX_SDK_ZLIB))
     # for AOSP, use the libz.so from the android ndk.
@@ -262,7 +267,7 @@ elseif((AOSP) AND (NOT USE_MSIX_SDK_ZLIB))
     find_package(ZLIB REQUIRED)
     target_link_libraries(${PROJECT_NAME} PRIVATE -lz)
 else() # WIN32 or USE_MSIX_SDK_ZLIB
-    target_include_directories(${PROJECT_NAME} PRIVATE 
+    target_include_directories(${MSIX_OBJECT_LIBRARY_NAME} PRIVATE 
             ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
             ${CMAKE_PROJECT_ROOT}/lib/zlib
             ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Zlib
@@ -278,7 +283,7 @@ endif()
 
 # Parser
 if(XML_PARSER MATCHES xerces)
-    target_include_directories(${PROJECT_NAME} PRIVATE
+    target_include_directories(${MSIX_OBJECT_LIBRARY_NAME} PRIVATE
         ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
         ${CMAKE_PROJECT_ROOT}/lib/xerces/src
     )
@@ -286,13 +291,13 @@ if(XML_PARSER MATCHES xerces)
 endif()
 
 if(XML_PARSER MATCHES applexml)
-    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/PAL/XML/Apple)
+    target_include_directories(${MSIX_OBJECT_LIBRARY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/PAL/XML/Apple)
 endif()
 
 if(AOSP)
     target_link_libraries(${PROJECT_NAME} PRIVATE -latomic)
     if((NOT SKIP_BUNDLES) OR (XML_PARSER MATCHES javaxml))
-        target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/PAL/Interop/AOSP)
+        target_include_directories(${MSIX_OBJECT_LIBRARY_NAME} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/PAL/Interop/AOSP)
         # JNI
         find_package(Java REQUIRED)
         if(NOT ANDROID_SDK)
@@ -344,7 +349,7 @@ endif()
 
 if(OpenSSL_FOUND)
     # include the libraries needed to use OpenSSL
-    target_include_directories(${PROJECT_NAME} PRIVATE ${OpenSLL_INCLUDE_PATH})
+    target_include_directories(${MSIX_OBJECT_LIBRARY_NAME} PRIVATE ${OpenSLL_INCLUDE_PATH})
     if((IOS) OR (MACOS))
         target_link_libraries(${PROJECT_NAME} PRIVATE crypto -Wl,-dead_strip)
     else()
