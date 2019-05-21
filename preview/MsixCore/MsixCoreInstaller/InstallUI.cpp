@@ -4,6 +4,10 @@
 #include <commctrl.h>
 #include <sys/types.h>
 #include <thread>
+#include <shldisp.h>
+#include <shlobj.h>
+#include <exdisp.h>
+#include <stdlib.h>
 
 #include <algorithm>
 #include <sstream>
@@ -182,12 +186,63 @@ void UI::ConfirmAppCancel(HWND hWnd)
     }
 }
 
+// Avoid launching the app elevated, we need to ShellExecute from Explorer in order to launch as the currently logged in user.
+// See https://devblogs.microsoft.com/oldnewthing/?p=2643 
+// ExecInExplorer.cpp sample from https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/dd940355(v=vs.85)
+HRESULT GetDesktopAutomationObject(REFIID riid, void **ppv)
+{
+    ComPtr<IShellWindows> shellWindows;
+    RETURN_IF_FAILED(CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&shellWindows)));
+
+    HWND hwnd;
+    ComPtr<IDispatch> dispatch;
+    VARIANT vEmpty = {}; // VT_EMPTY
+    RETURN_IF_FAILED(shellWindows->FindWindowSW(&vEmpty /*varLoc*/, &vEmpty /*varLocRoot*/, SWC_DESKTOP, (long*)&hwnd, SWFO_NEEDDISPATCH, &dispatch));
+
+    ComPtr<IServiceProvider> serviceProvider;
+    RETURN_IF_FAILED(dispatch->QueryInterface(IID_PPV_ARGS(&serviceProvider)));
+
+    ComPtr<IShellBrowser> shellBrowser;
+    RETURN_IF_FAILED(serviceProvider->QueryService(SID_STopLevelBrowser, &shellBrowser));
+
+    ComPtr<IShellView> shellView;
+    RETURN_IF_FAILED(shellBrowser->QueryActiveShellView(&shellView));
+
+    ComPtr<IDispatch> dispatchView;
+    RETURN_IF_FAILED(shellView->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&dispatchView)));
+    RETURN_IF_FAILED(dispatchView->QueryInterface(riid, ppv));
+    return S_OK;
+}
+
+HRESULT ShellExecuteFromExplorer(PCWSTR pszFile)
+{
+    ComPtr<IShellFolderViewDual> folderView;
+    RETURN_IF_FAILED(GetDesktopAutomationObject(IID_PPV_ARGS(&folderView)));
+    ComPtr<IDispatch> dispatch;
+    RETURN_IF_FAILED(folderView->get_Application(&dispatch));
+
+    Bstr file(pszFile);
+    VARIANT vtEmpty = {}; // VT_EMPTY
+    ComPtr<IShellDispatch2> shellDispatch;
+    RETURN_IF_FAILED(dispatch->QueryInterface(IID_PPV_ARGS(&shellDispatch)));
+    RETURN_IF_FAILED(shellDispatch->ShellExecute(file, vtEmpty /*arguments*/, vtEmpty /*directory*/, vtEmpty /*operation*/, vtEmpty /*show*/));
+    return S_OK;
+}
+
+
 HRESULT UI::LaunchInstalledApp()
 {
     shared_ptr<IInstalledPackage> installedPackage;
     RETURN_IF_FAILED(m_packageManager->FindPackage(m_packageInfo->GetPackageFullName(), installedPackage));
-    //check for error while launching app here
-    ShellExecute(NULL, NULL, installedPackage->GetFullExecutableFilePath().c_str(), NULL, NULL, SW_SHOW);
+    
+    HRESULT hrShellExecute = ShellExecuteFromExplorer(installedPackage->GetFullExecutableFilePath().c_str());
+    if (FAILED(hrShellExecute))
+    {
+        TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+            "ShellExecute Failed",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrShellExecute, "HR"));
+    }
     return S_OK;
 }
 
