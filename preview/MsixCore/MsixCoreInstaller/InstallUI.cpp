@@ -221,11 +221,11 @@ HRESULT ShellExecuteFromExplorer(PCWSTR pszFile)
     ComPtr<IDispatch> dispatch;
     RETURN_IF_FAILED(folderView->get_Application(&dispatch));
 
-    Bstr file(pszFile);
+    Bstr bstrfile(pszFile);
     VARIANT vtEmpty = {}; // VT_EMPTY
     ComPtr<IShellDispatch2> shellDispatch;
     RETURN_IF_FAILED(dispatch->QueryInterface(IID_PPV_ARGS(&shellDispatch)));
-    RETURN_IF_FAILED(shellDispatch->ShellExecute(file, vtEmpty /*arguments*/, vtEmpty /*directory*/, vtEmpty /*operation*/, vtEmpty /*show*/));
+    RETURN_IF_FAILED(shellDispatch->ShellExecute(bstrfile, vtEmpty /*arguments*/, vtEmpty /*directory*/, vtEmpty /*operation*/, vtEmpty /*show*/));
     return S_OK;
 }
 
@@ -624,7 +624,7 @@ void UI::ButtonClicked()
             m_msixResponse = m_packageManager->AddPackageAsync(m_path, DeploymentOptions::None, [this](const IMsixResponse & sender) {
 
             ShowWindow(g_percentageTextHWnd, SW_SHOW);
-            UpdateDisplayPercent((WPARAM)sender.GetPercentage());
+            UpdateDisplayPercent(sender.GetPercentage());
             SendMessage(g_progressHWnd, PBM_SETPOS, (WPARAM)sender.GetPercentage(), 0);
             switch (sender.GetStatus())
             {
