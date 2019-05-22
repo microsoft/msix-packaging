@@ -28,6 +28,10 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
     RETURN_IF_FAILED(hkcuKey.CreateSubKey(uninstallKeyPath.c_str(), KEY_WRITE, &uninstallKey));
 
     RETURN_IF_FAILED(WriteUninstallKey(uninstallKey));
+
+    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(L"Software\\Microsoft\\Windows\\CurrentVersion", L"Uninstall"));
+    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(L"Software\\WOW6432NODE\\Microsoft\\Windows\\CurrentVersion", L"Uninstall"));
+
     return S_OK;
 }
 

@@ -84,9 +84,11 @@ HRESULT RegistryDevirtualizer::DeleteKeyIfPresent(std::wstring subKeyPath, std::
     {
         keyPath.append(L"USER\\[{AppVCurrentUserSID}]_CLASSES");
     }
-    else if (CaseInsensitiveEquals(subKeyPath, L""))
+    else if (CaseInsensitiveEquals(subKeyPath, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion") || CaseInsensitiveEquals(subKeyPath, L"SOFTWARE\\WOW6432NODE\\Microsoft\\Windows\\CurrentVersion"))
     {
         keyPath.append(L"USER\\[{AppVCurrentUserSID}]");
+        keyPath.append(L"\\");
+        keyPath.append(subKeyPath);
     }
 
     DeleteSubKey(keyPath, extensionName);
@@ -171,7 +173,7 @@ HRESULT RegistryDevirtualizer::GetFTAProgID(_In_ std::wstring extensionName, _Ou
         }
     }
 
-    return ERROR_NOT_FOUND;
+    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
 }
 
 HRESULT RegistryDevirtualizer::HasFTA(std::wstring ftaName, bool & hasFTA)
