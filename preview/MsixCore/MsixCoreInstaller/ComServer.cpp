@@ -211,6 +211,8 @@ HRESULT ComServer::ProcessExeServerForAdd(ExeServer& exeServer)
         }
     }
 
+    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), clsidKeyName.c_str()));
+
     return S_OK;
 }
 
@@ -243,6 +245,9 @@ HRESULT ComServer::ProcessProgIdForAdd(ProgId& progId)
         RETURN_IF_FAILED(progIdKey.CreateSubKey(curVerKeyName.c_str(), KEY_WRITE, &curVerKey));
         RETURN_IF_FAILED(curVerKey.SetStringValue(L"", progId.currentVersion));
     }
+
+    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), progId.id.c_str()));
+
     return S_OK;
 }
 

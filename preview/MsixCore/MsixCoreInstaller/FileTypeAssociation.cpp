@@ -293,13 +293,12 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
         }
     }
 
-    //virtualprogid is the same as extension name above to be searched everywhere, just pass that to exisiting deleteifpresent function
-    m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), virtualFTAProgId);
+    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), virtualFTAProgId));
 
     //delete extension key
     for (auto extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
     {
-        m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), *extensionName);
+        RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), *extensionName));
     }
 
     return S_OK;
