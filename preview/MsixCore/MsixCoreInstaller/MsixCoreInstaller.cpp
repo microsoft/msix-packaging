@@ -16,10 +16,36 @@
 #include "..\MsixCoreInstallerLib\GeneralUtil.hpp"
 #include "resource.h"
 #include <VersionHelpers.h>
+#include <winrt/Windows.Foundation.h>
+//#include <winrt/Windows.Management.Deployment.h>
+//#using <Windows.winmd>
 
 #include <MsixCoreInstallerActions.hpp>
 using namespace std;
 using namespace MsixCoreLib;
+
+//using namespace winrt;
+//using namespace Windows::Foundation;
+//using namespace Windows::Management::Deployment;
+
+BOOL IsWindows10RS3OrLater()
+{
+    OSVERSIONINFOEX osvi;
+    ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+
+    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+    osvi.dwMajorVersion = 10;
+    osvi.dwMinorVersion = 0;
+    osvi.dwBuildNumber = 16299;
+
+    DWORDLONG dwlConditionMask = 0;
+    VER_SET_CONDITION(dwlConditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+    VER_SET_CONDITION(dwlConditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
+    VER_SET_CONDITION(dwlConditionMask, VER_BUILDNUMBER, VER_GREATER_EQUAL);
+
+    return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask);
+}
+
 
 TRACELOGGING_DECLARE_PROVIDER(g_MsixTraceLoggingProvider);
 
@@ -45,6 +71,23 @@ int main(int argc, char * argv[])
         {
         case OperationType::Add:
         {
+            // Before doing any actual processing of an add request, see if this is RS3 or later.
+            if (IsWindows10RS3OrLater())
+            {
+                //std::wstring packageUriString{ argv[1] };
+               // Uri packageUri{ packageUriString };
+                //PackageManager packageManager;
+
+                //auto deploymentOperation{ packageManager.AddPackageAsync(packageUri, nullptr, DeploymentOptions::None) };
+                //deploymentOperation.get();
+
+                // use the desktopappinstaller UI
+                //std::wstring protocol = std::wstring(L"ms-appinstaller:?source=") + m_packageFilePath;
+                //ShellExecuteW(nullptr, L"Open", protocol.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+
+                exit(0);
+            }
+
             AutoPtr<IPackageManager> packageManager;
             RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 

@@ -13,11 +13,14 @@
 
 #include "Util.hpp"
 #include "MsixCoreInstallerLogger.hpp"
-// MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
-// GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
+// MSIXWindows.hpp defines NOMINMAX and undefines min and max because we want to use std::min/std::max from <algorithm>
+// GdiPlus.h requires a definiton for min and max. We can't use namespace std because c++17 defines std::byte, which conflicts with ::byte
+#define max std::max
+#define min std::min
+#include <GdiPlus.h>
 using namespace std;
 using namespace MsixCoreLib;
-#include <GdiPlus.h>
+
 
 static const int g_width = 500;  // width of window
 static const int g_height = 400; // height of window
