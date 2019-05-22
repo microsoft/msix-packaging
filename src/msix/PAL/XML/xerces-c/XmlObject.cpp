@@ -454,7 +454,7 @@ public:
             result->snapshotItem(i);
             auto node = static_cast<DOMElement*>(result->getNodeValue());
             auto item = ComPtr<IXmlElement>::Make<XercesElement>(m_factory, node, m_parser.get());
-            if (!visitor.Callback(visitor.context, item))
+            if (!visitor(item))
             {
                 return false;
             }
