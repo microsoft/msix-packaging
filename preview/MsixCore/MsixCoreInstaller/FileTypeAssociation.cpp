@@ -331,37 +331,15 @@ HRESULT FileTypeAssociation::ProcessFtaForRemove(Fta& fta)
     bool needToProcessAnyExtensions = false;
     for (auto extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
     {
-        bool registryHasExtension = false;
-        RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->HasFTA(*extensionName, registryHasExtension));
-
-        if (registryHasExtension)
+        HRESULT hrDeleteKey = m_classesKey.DeleteTree(extensionName->c_str());
+        if (FAILED(hrDeleteKey))
         {
             TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                "Registry devirtualization already wrote an entry for this extension -- not processing extension",
+                "Unable to delete extension",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(hrDeleteKey, "HR"),
                 TraceLoggingValue(extensionName->c_str(), "Extension"));
-        }
-        else
-        {
-            needToProcessAnyExtensions = true;
-
-            HRESULT hrDeleteKey = m_classesKey.DeleteTree(extensionName->c_str());
-            if (FAILED(hrDeleteKey))
-            {
-                TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                    "Unable to delete extension",
-                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-                    TraceLoggingValue(hrDeleteKey, "HR"),
-                    TraceLoggingValue(extensionName->c_str(), "Extension"));
-            }
-        }
-    }
-
-    if (!needToProcessAnyExtensions)
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Registry devirtualization already wrote entries for all extensions associated with this FTA, nothing more to process for this FTA",
-            TraceLoggingValue(fta.name.c_str(), "Name"));
-        return S_OK;
+        } 
     }
 
     HRESULT hrDeleteKey = m_classesKey.DeleteTree(fta.progID.c_str());

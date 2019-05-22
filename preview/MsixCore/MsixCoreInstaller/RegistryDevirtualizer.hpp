@@ -37,11 +37,6 @@ public:
     /// @param tempName - string containing the name
     static HRESULT CreateTempKeyName(std::wstring & tempName);
 
-    /// Determines whether Registry.dat contains a FTA (file type association). Does not perform any modifications to the system.
-    /// 
-    /// @param ftaName - the name of the FTA extension (i.e. .mp4)
-    HRESULT HasFTA(_In_ std::wstring ftaName, _Out_ bool& hasFTA);
-
     HRESULT UnloadMountedHive();
 
     ~RegistryDevirtualizer();

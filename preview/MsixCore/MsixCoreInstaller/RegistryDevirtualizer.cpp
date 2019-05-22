@@ -176,45 +176,6 @@ HRESULT RegistryDevirtualizer::GetFTAProgID(_In_ std::wstring extensionName, _Ou
     return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
 }
 
-HRESULT RegistryDevirtualizer::HasFTA(std::wstring ftaName, bool & hasFTA)
-{
-    hasFTA = false;
-    if (!m_hiveFileNameExists)
-    {
-        return S_OK;
-    }
-    std::wstring rootPath = m_loadedHiveKeyName + L"\\Registry";
-    RETURN_IF_FAILED(m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ));
-
-    RegistryKey userClassesKey;
-    HRESULT hrOpenUserClassesKey = m_rootKey.OpenSubKey(L"USER\\[{AppVCurrentUserSID}]_CLASSES", KEY_READ, &userClassesKey);
-    if (SUCCEEDED(hrOpenUserClassesKey))
-    {
-        RegistryKey ftaKey;
-        HRESULT hrFtaKey = userClassesKey.OpenSubKey(ftaName.c_str(), KEY_READ, &ftaKey);
-        if (SUCCEEDED(hrFtaKey))
-        {
-            hasFTA = true;
-            return S_OK;
-        }
-    }
-
-    RegistryKey machineClassesKey;
-    HRESULT hrOpenMachineClassesKey = m_rootKey.OpenSubKey(L"MACHINE\\Software\\Classes", KEY_READ, &machineClassesKey);
-    if (SUCCEEDED(hrOpenMachineClassesKey))
-    {
-        RegistryKey ftaKey;
-        HRESULT hrFtaKey = machineClassesKey.OpenSubKey(ftaName.c_str(), KEY_READ, &ftaKey);
-        if (SUCCEEDED(hrFtaKey))
-        {
-            hasFTA = true;
-            return S_OK;
-        }
-    }
-
-    return S_OK;
-}
-
 bool RegistryDevirtualizer::IsExcludeKey(RegistryKey* realKey)
 {
     const std::wstring excludeKeys[] = 
