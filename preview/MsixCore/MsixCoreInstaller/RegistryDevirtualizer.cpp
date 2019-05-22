@@ -118,11 +118,11 @@ HRESULT RegistryDevirtualizer::DeleteSubKey(std::wstring keyPath, std::wstring e
             HRESULT hrDeleteTree = virtualKey.DeleteTree(extensionName.c_str());
             if (FAILED(hrDeleteTree))
             {
-                /*TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                TraceLoggingWrite(g_MsixTraceLoggingProvider,
                     "Unable to delete extension",
                     TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
                     TraceLoggingValue(hrDeleteTree, "HR"),
-                    TraceLoggingValue(extensionName->c_str(), "Extension"));*/
+                    TraceLoggingValue(extensionName.c_str(), "Extension"));
             }
         }
     }

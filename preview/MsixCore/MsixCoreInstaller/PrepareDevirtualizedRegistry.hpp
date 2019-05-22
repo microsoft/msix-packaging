@@ -26,6 +26,6 @@ namespace MsixCoreLib
         /// Extracts or removes the registry information contained inside Registry.dat
         ///
         /// @param remove - if true, removes registry information. if false, adds registry information
-        HRESULT ExtractRegistry(bool remove);
+        HRESULT ExtractRegistry();
     };
 }
