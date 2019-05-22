@@ -25,7 +25,10 @@ HRESULT PrepareDevirtualizedRegistry::ExtractRegistry()
 {
     std::wstring registryFilePath = m_msixRequest->GetPackageDirectoryPath() + registryDatFile;
     std::wstring registryFileCopyPath = m_msixRequest->GetPackageDirectoryPath() + registryDatFileCopy;
-    RETURN_IF_FAILED(CopyFile(registryFilePath.c_str(), registryFileCopyPath.c_str(), false));
+    if (!CopyFile(registryFilePath.c_str(), registryFileCopyPath.c_str(), false))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
 
     std::shared_ptr<RegistryDevirtualizer> registryDevirtualizer;
     RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFileCopyPath, m_msixRequest, &registryDevirtualizer));
