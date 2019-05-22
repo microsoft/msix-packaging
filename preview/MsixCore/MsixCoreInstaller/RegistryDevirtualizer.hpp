@@ -23,7 +23,11 @@ public:
     /// Determines whether Registry.dat contains a FTA (file type association). Does not perform any modifications to the system.
     /// 
     /// @param ftaName - the name of the FTA extension (i.e. .mp4)
-    HRESULT DeleteKeyIfPresent(_In_ HKEY rootHive, _In_ std::wstring subKeyPath, std::wstring extensionName);
+    HRESULT DeleteKeyIfPresent(_In_ std::wstring subKeyPath, _In_ std::wstring extensionName);
+
+    HRESULT DeleteSubKey(_In_ std::wstring keyPath, _In_ std::wstring extensionName);
+
+    HRESULT GetFTAProgID(_In_ std::wstring extensionName, _Out_ std::wstring& virtualFTAProgId);
 
     static HRESULT Create(_In_ std::wstring hiveFileName, _In_ MsixRequest* msixRequest, _Out_ std::shared_ptr<RegistryDevirtualizer>* instance);
 
@@ -39,6 +43,8 @@ public:
     HRESULT HasFTA(_In_ std::wstring ftaName, _Out_ bool& hasFTA);
 
     HRESULT UnloadMountedHive();
+
+    ~RegistryDevirtualizer();
 
 private:
     /// Determines if the registry key in question should not be written to the actual registry.

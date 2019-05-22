@@ -59,7 +59,7 @@ private:
     HRESULT ParseFtaElement(IMsixElement* ftaElement);
 
     /// Adds the file type association (fta) entries if necessary
-    HRESULT ProcessFtaForAdd(Fta& fta, HKEY rootHive);
+    HRESULT ProcessFtaForAdd(Fta& fta);
 
     /// Removes the file type association (fta) entries if necessary
     HRESULT ProcessFtaForRemove(Fta& fta);

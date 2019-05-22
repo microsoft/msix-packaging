@@ -155,7 +155,7 @@ HRESULT FileTypeAssociation::ExecuteForAddRequest()
     RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     for (auto fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
     {
-        RETURN_IF_FAILED(ProcessFtaForAdd(*fta, HKEY_CURRENT_USER));
+        RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
     }
 
     return S_OK;
@@ -166,7 +166,7 @@ HRESULT FileTypeAssociation::ExecuteForAddForAllUsersRequest()
     RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     for (auto fta = m_Ftas.begin(); fta != m_Ftas.end(); ++fta)
     {
-        RETURN_IF_FAILED(ProcessFtaForAdd(*fta, HKEY_LOCAL_MACHINE));
+        RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
     }
 
     return S_OK;
@@ -220,7 +220,7 @@ HRESULT ConvertLogoToIcon(std::wstring logoPath, std::wstring & iconPath)
     return S_OK;
 }
 
-HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta, HKEY rootHive)
+HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
 {
     for (auto extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
     {
@@ -282,12 +282,25 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta, HKEY rootHive)
         RETURN_IF_FAILED(verbCommandKey.SetStringValue(L"", verbCommand));
     }
 
+    //Obtain virtual prog id from extension in mounted hive first and delete prog id
+    std::wstring virtualFTAProgId;
     for (auto extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
     {
-        m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(rootHive, classesKeyPath.c_str(), *extensionName);
+        HRESULT hrGetVirtualFTAProgId = m_msixRequest->GetRegistryDevirtualizer()->GetFTAProgID(*extensionName, virtualFTAProgId);
+        if (SUCCEEDED(hrGetVirtualFTAProgId))
+        {
+            break;
+        }
     }
 
-    m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(rootHive, classesKeyPath.c_str(), fta.progID);
+    //virtualprogid is the same as extension name above to be searched everywhere, just pass that to exisiting deleteifpresent function
+    m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), virtualFTAProgId);
+
+    //delete extension key
+    for (auto extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
+    {
+        m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), *extensionName);
+    }
 
     return S_OK;
 }
