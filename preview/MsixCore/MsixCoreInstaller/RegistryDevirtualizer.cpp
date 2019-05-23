@@ -528,7 +528,11 @@ HRESULT RegistryDevirtualizer::UnloadMountedHive()
 
         LSTATUS status = RegUnLoadKey(HKEY_USERS, m_loadedHiveKeyName.c_str());
 
-        if (status != ERROR_SUCCESS)
+        if (status == ERROR_SUCCESS)
+        {
+            m_hiveFileNameExists = false;
+        }
+        else
         {
             TraceLoggingWrite(g_MsixTraceLoggingProvider,
                 "Failed to unload key",
@@ -542,19 +546,5 @@ HRESULT RegistryDevirtualizer::UnloadMountedHive()
 
 RegistryDevirtualizer::~RegistryDevirtualizer()
 {
-    if (m_hiveFileNameExists)
-    {
-        m_rootKey.Close();
-
-        LSTATUS status = RegUnLoadKey(HKEY_USERS, m_loadedHiveKeyName.c_str());
-
-        if (status != ERROR_SUCCESS)
-        {
-            TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                "Failed to unload key",
-                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-                TraceLoggingValue(status, "Error LSTATUS"),
-                TraceLoggingValue(m_loadedHiveKeyName.c_str(), "Hive key name"));
-        }
-    }
+    UnloadMountedHive();
 }
