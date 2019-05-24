@@ -107,12 +107,12 @@ The following table shows the target device families to declare in the manifest:
   <tr>
     <td class="tg-yw4l" rowspan="2">Windows</td>
     <td class="tg-yw4l">7</td>
-    <td class="tg-baqh" colspan="2">Windows7.Desktop</td>
+    <td class="tg-baqh" colspan="2">MsixCore.Desktop</td>
     <td class="tg-yw4l">Windows 7 devices</td>
   </tr>
   <tr>
     <td class="tg-yw4l">8</td>
-    <td class="tg-baqh" colspan="2">Windows8.Desktop</td>
+    <td class="tg-baqh" colspan="2">MsixCore.Desktop</td>
     <td class="tg-yw4l">Windows 8/8.1 devices</td>
   </tr>
   <tr>
