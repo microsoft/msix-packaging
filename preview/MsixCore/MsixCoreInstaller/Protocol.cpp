@@ -173,6 +173,8 @@ HRESULT Protocol::ProcessProtocolForAdd(ProtocolData& protocol)
     }
     RETURN_IF_FAILED(commandKey.SetStringValue(L"", command));
 
+    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), protocol.name.c_str()));
+
     return S_OK;
 }
 

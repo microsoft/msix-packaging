@@ -17,23 +17,30 @@ const PCWSTR PrepareDevirtualizedRegistry::HandlerName = L"PrepareDevirtualizedR
 
 HRESULT PrepareDevirtualizedRegistry::ExecuteForAddRequest()
 {
-    RETURN_IF_FAILED(ExtractRegistry(false));
+    RETURN_IF_FAILED(ExtractRegistry());
     return S_OK;
 }
 
-HRESULT PrepareDevirtualizedRegistry::ExtractRegistry(bool remove)
+HRESULT PrepareDevirtualizedRegistry::ExtractRegistry()
 {
     std::wstring registryFilePath = m_msixRequest->GetPackageDirectoryPath() + registryDatFile;
+    std::wstring registryFileCopyPath = m_msixRequest->GetPackageDirectoryPath() + registryDatFileCopy;
+    if (!CopyFile(registryFilePath.c_str(), registryFileCopyPath.c_str(), false))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
 
-    AutoPtr<RegistryDevirtualizer> registryDevirtualizer;
-    RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFilePath, m_msixRequest, &registryDevirtualizer));
-    RETURN_IF_FAILED(registryDevirtualizer->Run(remove));
+    std::shared_ptr<RegistryDevirtualizer> registryDevirtualizer;
+    RETURN_IF_FAILED(RegistryDevirtualizer::Create(registryFileCopyPath, m_msixRequest, &registryDevirtualizer));
+    m_msixRequest->SetRegistryDevirtualizer(registryDevirtualizer);
+
     return S_OK;
 }
 
 HRESULT PrepareDevirtualizedRegistry::ExecuteForRemoveRequest()
 {
-    HRESULT hrRemoveRegistry = ExtractRegistry(true);
+    HRESULT hrRemoveRegistry = ExtractRegistry();
+    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->Run(true));
     if (FAILED(hrRemoveRegistry))
     {
         TraceLoggingWrite(g_MsixTraceLoggingProvider,

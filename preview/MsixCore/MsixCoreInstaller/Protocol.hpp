@@ -4,6 +4,7 @@
 #include "IPackageHandler.hpp"
 #include "RegistryKey.hpp"
 #include <vector>
+#include "RegistryDevirtualizer.hpp"
 #include "MsixRequest.hpp"
 
 namespace MsixCoreLib
