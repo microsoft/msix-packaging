@@ -45,7 +45,6 @@ public:
 private:
     MsixRequest* m_msixRequest = nullptr;
     RegistryKey m_classesKey;
-    AutoPtr<RegistryDevirtualizer> m_registryDevirtualizer; 
     std::vector<Fta> m_Ftas;
 
     FileTypeAssociation() {}

@@ -2,6 +2,7 @@
 
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
+#include "RegistryDevirtualizer.hpp"
 #include "MsixRequest.hpp"
 #include "RegistryKey.hpp"
 

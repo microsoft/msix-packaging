@@ -89,6 +89,9 @@ HRESULT ComInterface::ProcessInterfaceForAddRequest(Interface& comInterface)
     RETURN_IF_FAILED(interfaceIdKey.CreateSubKey(typeLibKeyName.c_str(), KEY_WRITE, &typeLibKey));
     RETURN_IF_FAILED(typeLibKey.SetStringValue(L"", comInterface.typeLibId));
     RETURN_IF_FAILED(typeLibKey.SetStringValue(versionValueName.c_str(), comInterface.typeLibVersion));
+
+    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), interfaceKeyName.c_str()));
+
     return S_OK;
 }
 
@@ -146,6 +149,8 @@ HRESULT ComInterface::ProcessTypeLibForAddRequest(TypeLib& typeLib)
             RETURN_IF_FAILED(helpDirKey.SetStringValue(L"", helpDirFullPath));
         }
     }
+
+    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), typeLibKeyName.c_str()));
 
     return S_OK;
 }
