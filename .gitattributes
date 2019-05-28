@@ -1,2 +1,2 @@
-preview/*.appx filter=lfs diff=lfs merge=lfs -text
-preview/*.msix filter=lfs diff=lfs merge=lfs -text
+preview/MsixCore/Tests/*.appx filter=lfs diff=lfs merge=lfs -text
+preview/MsixCore/Tests/*.msix filter=lfs diff=lfs merge=lfs -text
