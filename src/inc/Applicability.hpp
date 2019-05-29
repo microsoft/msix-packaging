@@ -53,7 +53,7 @@ namespace MSIX {
         void InitializeLanguages();
         void InitializeLanguages(IMsixApplicabilityLanguagesEnumerator* languagesEnumerator);
 
-        void AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, ComPtr<IAppxBundleManifestPackageInfo> bundlePackageInfo);
+        void AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, const ComPtr<IAppxBundleManifestPackageInfo>& bundlePackageInfo);
 
         void GetApplicablePackages(std::vector<ComPtr<IAppxPackageReader>>* applicablePackages, std::vector<std::string>* applicablePackagesNames);
 

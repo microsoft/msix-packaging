@@ -43,8 +43,8 @@ struct State
 
     bool UnpackWithFlatStructure()
     {
-	    unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE);
-	    return true;
+        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE);
+        return true;
     }
 
     bool SkipManifestValidation()
@@ -79,8 +79,8 @@ struct State
 
     bool SkipAll()
     {
-	    applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_NONE);
-	    return true;
+        applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_NONE);
+        return true;
     }
 
     bool SetPackageName(const std::string& name)

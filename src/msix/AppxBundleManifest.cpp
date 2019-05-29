@@ -72,7 +72,7 @@ namespace MSIX {
 				std::vector<std::string> scales;
                 bool                  hasResources;
             };
-            _resourcesContext resourcesContext = { {}, {}, false };
+            _resourcesContext resourcesContext = { {}, {}, false};
             XmlVisitor visitor(static_cast<void*>(&resourcesContext), [](void* c, const ComPtr<IXmlElement>& resourceNode)->bool
             {
                 _resourcesContext* resourcesContext = reinterpret_cast<_resourcesContext*>(c);
