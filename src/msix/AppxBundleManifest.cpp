@@ -80,10 +80,11 @@ namespace MSIX {
                 if (!language.empty()) { resourcesContext->languages.push_back(Bcp47Tag(language)); }
 
                 const auto& scale = resourceNode->GetAttributeValue(XmlAttributeName::Scale);
-                if (!scale.empty()) { 
+                if (!scale.empty()) 
+                { 
                     UINT32 scaleInt = std::stoi(scale);
                     resourcesContext->scales.push_back(scaleInt); 
-				}
+                }
 
                 resourcesContext->hasResources = true;
                 return true;

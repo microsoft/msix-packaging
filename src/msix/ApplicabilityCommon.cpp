@@ -176,7 +176,7 @@ namespace MSIX {
         // with scale, but not language, as NOT applicable.
         if (packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE && !packageScales.empty() && packageLanguages.empty())
         {
-	        return;
+            return;
         }
 
         MSIX_PLATFORMS platform = (m_applicabilityFlags & MSIX_APPLICABILITY_OPTION_SKIPPLATFORM) ?
