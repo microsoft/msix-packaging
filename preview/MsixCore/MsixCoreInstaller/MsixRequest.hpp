@@ -13,6 +13,8 @@ enum OperationType
     RemoveForAllUsers = 4,
 };
 
+class RegistryDevirtualizer;
+
 /// MsixRequest represents what this instance of the executable will be doing and tracks the state of the current operation
 class MsixRequest
 {
@@ -28,6 +30,8 @@ private:
 
     /// MsixResponse object populated by handlers
     std::shared_ptr<MsixResponse> m_msixResponse;
+
+    std::shared_ptr<RegistryDevirtualizer> m_registryDevirtualizer;
 
 protected:
     MsixRequest() {}
@@ -64,6 +68,12 @@ public:
 
     /// @return can return null if called before PopulatePackageInfo.
     std::shared_ptr<PackageBase> GetPackageInfo() { return m_packageInfo; }
+
+    std::shared_ptr<RegistryDevirtualizer> GetRegistryDevirtualizer() {
+        return m_registryDevirtualizer;
+    }
+
+    void SetRegistryDevirtualizer(std::shared_ptr<RegistryDevirtualizer> registryDevirualizer);
 
 private:
     /// This handles Add operation and proceeds through each of the AddSequenceHandlers to install the package

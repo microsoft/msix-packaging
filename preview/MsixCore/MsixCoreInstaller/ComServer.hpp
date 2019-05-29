@@ -2,8 +2,10 @@
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 #include "RegistryKey.hpp"
+#include "RegistryDevirtualizer.hpp"
 #include "MsixRequest.hpp"
 #include <vector>
+
 namespace MsixCoreLib
 {
 class ComServer : IPackageHandler
