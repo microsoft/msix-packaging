@@ -331,7 +331,6 @@ namespace MSIX {
                 APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType;
                 ThrowHrIfFailed(package->GetPackageType(&packageType));
                 
-                //auto bundlePackageInfo = package.As<IAppxBundleManifestPackageInfo>();
                 // Validation is done, now see if the package is applicable.
                 applicability.AddPackageIfApplicable(reader, packageType, package);
 

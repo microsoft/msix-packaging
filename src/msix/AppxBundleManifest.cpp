@@ -69,7 +69,7 @@ namespace MSIX {
             struct _resourcesContext
             {
                 std::vector<Bcp47Tag> languages;
-                std::vector<std::string> scales;
+                std::vector<UINT32> scales;
                 bool                  hasResources;
             };
             _resourcesContext resourcesContext = { {}, {}, false};
@@ -80,7 +80,10 @@ namespace MSIX {
                 if (!language.empty()) { resourcesContext->languages.push_back(Bcp47Tag(language)); }
 
                 const auto& scale = resourceNode->GetAttributeValue(XmlAttributeName::Scale);
-                if (!scale.empty()) { resourcesContext->scales.push_back(scale); }
+                if (!scale.empty()) { 
+                    UINT32 scaleInt = std::stoi(scale);
+                    resourcesContext->scales.push_back(scaleInt); 
+				}
 
                 resourcesContext->hasResources = true;
                 return true;
@@ -141,7 +144,7 @@ namespace MSIX {
         const std::string& architecture,
         const std::string& publisher,
         std::vector<Bcp47Tag>& languages,
-        std::vector<std::string>& scales,
+        std::vector<UINT32>& scales,
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType):
         m_factory(factory), m_fileName(name), m_size(size), m_offset(offset), m_languages(std::move(languages)), m_scales(scales), m_packageType(packageType)
     {

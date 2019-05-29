@@ -159,10 +159,10 @@ namespace MSIX {
 
 	void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, const ComPtr<IAppxBundleManifestPackageInfo>& bundlePackageInfo)
     {
-	    auto bundlePackageInfoInternal = bundlePackageInfo.As<IAppxBundleManifestPackageInfoInternal>();
-	    auto packageName = bundlePackageInfoInternal->GetFileName();
-	    auto packageLanguages = bundlePackageInfoInternal->GetLanguages();
-	    auto packageScales = bundlePackageInfoInternal->GetScales();
+        auto bundlePackageInfoInternal = bundlePackageInfo.As<IAppxBundleManifestPackageInfoInternal>();
+        auto packageName = bundlePackageInfoInternal->GetFileName();
+        auto packageLanguages = bundlePackageInfoInternal->GetLanguages();
+        auto packageScales = bundlePackageInfoInternal->GetScales();
 		
         // If there are not qualified resources the package is always applicable
         // MSIX_APPLICABILITY_NONE indicates that we should skip all applicability checks
