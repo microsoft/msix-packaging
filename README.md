@@ -48,6 +48,7 @@ The Android NDK is only required for targeting the Android platform.
 
 ## Prerequisites
 The project uses git-lfs to store some large binary test files. You can find out more and install it from here:
+
 https://git-lfs.github.com/
 
 Make sure that you have CMAKE installed on your machine 
