@@ -29,7 +29,6 @@
 #include <limits>
 #include <algorithm>
 #include <array>
-#include <atlstr.h>
 
 namespace MSIX {
 
@@ -246,21 +245,16 @@ namespace MSIX {
 
             for (const auto& package : bundleInfo->GetPackages())
             {
-				LPWSTR packageName = nullptr;
-				auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfo>();
-				bundleInfoInternal->GetFileName(&packageName);
-				std::string packageNameStr = CW2A(packageName);
-				auto packageStream = m_container->GetFile(Encoding::EncodeFileName(packageNameStr));
-				UINT64 offset = 0;
-				bundleInfoInternal->GetOffset(&offset);
+                auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
+                auto packageName = bundleInfoInternal->GetFileName();
+                auto packageStream = m_container->GetFile(Encoding::EncodeFileName(packageName));
 
                 if (packageStream)
                 {   // The package is in the bundle. Verify is not compressed.
                     auto zipStream = packageStream.As<IStreamInternal>();
                     ThrowErrorIf(Error::AppxManifestSemanticError, zipStream->IsCompressed(), "Packages cannot be compressed");
                 }
-				
-				else if (!packageStream && (offset == 0)) // This is a flat bundle.
+                else if (!packageStream && (bundleInfoInternal->GetOffset() == 0)) // This is a flat bundle.
                 {
                     // We should only do this for flat bundles. If we do it for normal bundles and the user specify a 
                     // stream factory we will basically unpack any package the user wants with the same name as the package
@@ -271,7 +265,7 @@ namespace MSIX {
                     if(streamFactoryUnk.Get() != nullptr)
                     {
                         auto streamFactory = streamFactoryUnk.As<IMsixStreamFactory>();
-						ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePathUtf8(packageNameStr.c_str(), &packageStream));
+                        ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePathUtf8(packageName.c_str(), &packageStream));
                     }
                     else
                     {   // User didn't specify a stream factory implementation. Assume packages are in the same location
@@ -282,7 +276,7 @@ namespace MSIX {
                         #else
                         auto lastSeparator = containerName.find_last_of('/');
                         #endif
-						auto expandedPackageName = containerName.substr(0, lastSeparator + 1 ) + packageNameStr;
+                        auto expandedPackageName = containerName.substr(0, lastSeparator + 1) + packageName;
                         ThrowHrIfFailed(CreateStreamOnFile(const_cast<char*>(expandedPackageName.c_str()), true, &packageStream));
                     }
                     ThrowErrorIfNot(Error::FileNotFound, packageStream, "Package from a flat bundle is not present");
@@ -337,10 +331,11 @@ namespace MSIX {
                 APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType;
                 ThrowHrIfFailed(package->GetPackageType(&packageType));
                 
+                auto bundlePackageInfo = package.As<IAppxBundleManifestPackageInfo>();
                 // Validation is done, now see if the package is applicable.
-				applicability.AddPackageIfApplicable(reader, packageType, bundleInfoInternal.Get());
+                applicability.AddPackageIfApplicable(reader, packageType, bundlePackageInfo.Get());
 
-				m_files[packageNameStr] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageNameStr, std::move(packageStream));
+                m_files[packageName] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
                 // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
                 // resource packages that are not languages packages.
             }
@@ -430,7 +425,7 @@ namespace MSIX {
             if (file == std::end(m_applicablePackagesNames))
             {
                 std::string targetName;
-				if ((options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER) || options & MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE)
+                if ((options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER) || options & MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE)
 				{   // Don't use to->GetPathSeparator(). DirectoryObject::OpenFile created directories
                     // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with
                     // the package full name won't be created on Windows, but it will on other platforms.

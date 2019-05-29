@@ -41,11 +41,11 @@ struct State
         return true;
     }
 
-	bool UnpackWithFlatStructure()
-	{
-		unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE);
-		return true;
-	}
+    bool UnpackWithFlatStructure()
+    {
+	    unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE);
+	    return true;
+    }
 
     bool SkipManifestValidation()
     {
@@ -77,11 +77,11 @@ struct State
         return true;
     }
 
-	bool SkipAll()
-	{
-		applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_NONE);
-		return true;
-	}
+    bool SkipAll()
+    {
+	    applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_NONE);
+	    return true;
+    }
 
     bool SetPackageName(const std::string& name)
     {
@@ -343,10 +343,10 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return state.SkipLanguage(); }),
                 Option("-sp", false, "Only for bundles. Skips matching packages with of the same system. By default unpacked application packages will only match the platform.",
                     [](State& state, const std::string&) { return state.SkipPlatform(); }),
-				Option("-sa", false, "Only for bundles. Skips all applicability checks for packages.",
-					[](State& state, const std::string&) { return state.SkipAll(); }),
-			    Option("-flat", false, "Only for bundles. Places unpacked packages side-by-side with the bundle folder. By default unpacked packages will be nested inside the bundle folder",
-					[](State& state, const std::string&) { return state.UnpackWithFlatStructure(); }),
+                Option("-sa", false, "Only for bundles. Skips all applicability checks for packages.",
+                    [](State& state, const std::string&) { return state.SkipAll(); }),
+                Option("-flat", false, "Only for bundles. Places unpacked packages side-by-side with the bundle folder. By default unpacked packages will be nested inside the bundle folder",
+	                [](State& state, const std::string&) { return state.UnpackWithFlatStructure(); }),
                 Option("-?", false, "Displays this help text.",
                     [](State& state, const std::string&) { return false; })                
             })

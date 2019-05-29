@@ -26,6 +26,7 @@ public:
 };
 MSIX_INTERFACE(IBundleInfo, 0xff82ffcd,0x747a,0x4df9,0x88,0x79,0x85,0x3a,0xb9,0xdd,0x15,0xa1);
 
+// {32e6fcf0-729b-401d-9dbc-f927b494f9af}
 #ifndef WIN32
 interface IAppxBundleManifestPackageInfoInternal : public IUnknown
 #else
@@ -37,7 +38,7 @@ class IAppxBundleManifestPackageInfoInternal : public IUnknown
 public:
     virtual const std::string& GetFileName() = 0;
     virtual const std::vector<MSIX::Bcp47Tag>& GetLanguages() = 0;
-	virtual const std::vector<std::string>& GetScales() = 0;
+    virtual const std::vector<std::string>& GetScales() = 0;
     virtual const std::uint64_t GetOffset() = 0;
     virtual bool HasQualifiedResources() = 0;
 };
@@ -117,7 +118,7 @@ namespace MSIX {
             const std::string& architecture,
             const std::string& publisherId,
             std::vector<Bcp47Tag>& languages,
-			std::vector<std::string>& scales,
+            std::vector<std::string>& scales,
             APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType);
 
         // IAppxBundleManifestPackageInfo
@@ -131,7 +132,7 @@ namespace MSIX {
         // IAppxBundleManifestPackageInfoInternal
         const std::string& GetFileName() override { return m_fileName; }
         const std::vector<Bcp47Tag>& GetLanguages() override { return m_languages; }
-		const std::vector<std::string>& GetScales() override { return m_scales; }
+        const std::vector<std::string>& GetScales() override { return m_scales; }
         const std::uint64_t GetOffset() override { return m_offset; }
         bool HasQualifiedResources() override { return !m_languages.empty() || !m_scales.empty(); }
 
@@ -145,7 +146,7 @@ namespace MSIX {
         std::uint64_t m_size;
         std::uint64_t m_offset;
         std::vector<Bcp47Tag> m_languages;
-		std::vector<std::string> m_scales;
+        std::vector<std::string> m_scales;
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE m_packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
     };
 }

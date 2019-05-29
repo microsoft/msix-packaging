@@ -157,13 +157,13 @@ namespace MSIX {
         }
     }
 
-	void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, ComPtr<IAppxBundleManifestPackageInfo> bundleInfo)
+	void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, ComPtr<IAppxBundleManifestPackageInfo> bundlePackageInfo)
     {
-		auto bundleInfoInternal = bundleInfo.As<IAppxBundleManifestPackageInfoInternal>();
-		auto packageName = bundleInfoInternal->GetFileName();
-		auto packageLanguages = bundleInfoInternal->GetLanguages();
-		auto packageScales = bundleInfoInternal->GetScales();
-		bool hasQualifiedResources = bundleInfoInternal->HasQualifiedResources();
+	    auto bundlePackageInfoInternal = bundlePackageInfo.As<IAppxBundleManifestPackageInfoInternal>();
+	    auto packageName = bundlePackageInfoInternal->GetFileName();
+	    auto packageLanguages = bundlePackageInfoInternal->GetLanguages();
+	    auto packageScales = bundlePackageInfoInternal->GetScales();
+	    bool hasQualifiedResources = bundlePackageInfoInternal->HasQualifiedResources();
 		
 		// If there are not qualified resources the package is always applicable
 		// MSIX_APPLICABILITY_NONE indicates that we should skip all applicability checks
@@ -173,12 +173,12 @@ namespace MSIX {
             return;
         }
 
-		// Unless the user has specified the "skip all" applicability flag, we will treat resource packages
-		// with scale, but not language, as NOT applicable.
-		if (packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE && !packageScales.empty() && packageLanguages.empty())
-		{
-			return;
-		}
+        // Unless the user has specified the "skip all" applicability flag, we will treat resource packages
+        // with scale, but not language, as NOT applicable.
+        if (packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE && !packageScales.empty() && packageLanguages.empty())
+        {
+	        return;
+        }
 
         MSIX_PLATFORMS platform = (m_applicabilityFlags & MSIX_APPLICABILITY_OPTION_SKIPPLATFORM) ?
             static_cast<MSIX_PLATFORMS>(MSIX_PLATFORM_ALL) : GetPlatform();

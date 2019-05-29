@@ -72,15 +72,15 @@ namespace MSIX {
 				std::vector<std::string> scales;
                 bool                  hasResources;
             };
-			_resourcesContext resourcesContext = { {}, {}, false };
+            _resourcesContext resourcesContext = { {}, {}, false };
             XmlVisitor visitor(static_cast<void*>(&resourcesContext), [](void* c, const ComPtr<IXmlElement>& resourceNode)->bool
             {
                 _resourcesContext* resourcesContext = reinterpret_cast<_resourcesContext*>(c);
                 const auto& language = resourceNode->GetAttributeValue(XmlAttributeName::Language);
                 if (!language.empty()) { resourcesContext->languages.push_back(Bcp47Tag(language)); }
 
-				const auto& scale = resourceNode->GetAttributeValue(XmlAttributeName::Scale);
-				if (!scale.empty()) { resourcesContext->scales.push_back(scale); }
+                const auto& scale = resourceNode->GetAttributeValue(XmlAttributeName::Scale);
+                if (!scale.empty()) { resourcesContext->scales.push_back(scale); }
 
                 resourcesContext->hasResources = true;
                 return true;
@@ -141,9 +141,9 @@ namespace MSIX {
         const std::string& architecture,
         const std::string& publisher,
         std::vector<Bcp47Tag>& languages,
-		std::vector<std::string>& scales,
+        std::vector<std::string>& scales,
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType):
-        m_factory(factory), m_fileName(name), m_size(size), m_offset(offset), m_languages(std::move(languages)), m_scales(std::move(scales)), m_packageType(packageType)
+        m_factory(factory), m_fileName(name), m_size(size), m_offset(offset), m_languages(std::move(languages)), m_scales(scales), m_packageType(packageType)
     {
         std::regex e (".+\\.((appx)|(msix))");
         ThrowErrorIf(Error::AppxManifestSemanticError, !std::regex_match(m_fileName, e), "Invalid FileName attribute in AppxBundleManifest.xml");
