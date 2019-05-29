@@ -31,13 +31,13 @@ MSIX_INTERFACE(IBundleInfo, 0xff82ffcd,0x747a,0x4df9,0x88,0x79,0x85,0x3a,0xb9,0x
 //]
  //{32e6fcf0-729b-401d-9dbc-f927b494f9af}
 #ifndef WIN32
-interface __declspec(uuid("32e6fcf0-729b-401d-9dbc-f927b494f9af")) IAppxBundleManifestPackageInfoInternal : public IUnknown
-//interface IAppxBundleManifestPackageInfoInternal : public IUnknown
+//interface __declspec(uuid("32e6fcf0-729b-401d-9dbc-f927b494f9af")) IAppxBundleManifestPackageInfoInternal : public IUnknown
+interface IAppxBundleManifestPackageInfoInternal : public IUnknown
 #else
 #include "Unknwn.h"
 #include "Objidl.h"
-//class IAppxBundleManifestPackageInfoInternal : public IUnknown
-class __declspec(uuid("32e6fcf0-729b-401d-9dbc-f927b494f9af")) IAppxBundleManifestPackageInfoInternal : public IUnknown
+class IAppxBundleManifestPackageInfoInternal : public IUnknown
+//class __declspec(uuid("32e6fcf0-729b-401d-9dbc-f927b494f9af")) IAppxBundleManifestPackageInfoInternal : public IUnknown
 #endif
 {
 public:

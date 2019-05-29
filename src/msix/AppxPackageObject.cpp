@@ -246,13 +246,10 @@ namespace MSIX {
 
             for (const auto& package : bundleInfo->GetPackages())
             {
-                //auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
 				LPWSTR packageName = nullptr;
 				auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfo>();
 				bundleInfoInternal->GetFileName(&packageName);
 				std::string packageNameStr = CW2A(packageName);
-                //auto packageName = bundleInfoInternal->GetFileName();
-                //auto packageStream = m_container->GetFile(Encoding::EncodeFileName(packageName));
 				auto packageStream = m_container->GetFile(Encoding::EncodeFileName(packageNameStr));
 				UINT64 offset = 0;
 				bundleInfoInternal->GetOffset(&offset);
@@ -264,7 +261,6 @@ namespace MSIX {
                 }
 				
 				else if (!packageStream && (offset == 0)) // This is a flat bundle.
-                //else if (!packageStream && (bundleInfoInternal->GetOffset() == 0)) // This is a flat bundle.
                 {
                     // We should only do this for flat bundles. If we do it for normal bundles and the user specify a 
                     // stream factory we will basically unpack any package the user wants with the same name as the package
@@ -275,7 +271,6 @@ namespace MSIX {
                     if(streamFactoryUnk.Get() != nullptr)
                     {
                         auto streamFactory = streamFactoryUnk.As<IMsixStreamFactory>();
-                        //ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePathUtf8(packageName.c_str(), &packageStream));
 						ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePathUtf8(packageNameStr.c_str(), &packageStream));
                     }
                     else
@@ -287,7 +282,6 @@ namespace MSIX {
                         #else
                         auto lastSeparator = containerName.find_last_of('/');
                         #endif
-                        //auto expandedPackageName = containerName.substr(0, lastSeparator + 1 ) + packageName;
 						auto expandedPackageName = containerName.substr(0, lastSeparator + 1 ) + packageNameStr;
                         ThrowHrIfFailed(CreateStreamOnFile(const_cast<char*>(expandedPackageName.c_str()), true, &packageStream));
                     }
@@ -344,12 +338,9 @@ namespace MSIX {
                 ThrowHrIfFailed(package->GetPackageType(&packageType));
                 
                 // Validation is done, now see if the package is applicable.
-                //applicability.AddPackageIfApplicable(reader, packageName, bundleInfoInternal->GetLanguages(), bundleInfoInternal->GetScales(),
-                //    packageType, bundleInfoInternal->HasQualifiedResources());
 				applicability.AddPackageIfApplicable(reader, packageType, bundleInfoInternal.Get());
 
 				m_files[packageNameStr] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageNameStr, std::move(packageStream));
-                //m_files[packageName] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
                 // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
                 // resource packages that are not languages packages.
             }

@@ -157,13 +157,9 @@ namespace MSIX {
         }
     }
 
-	//void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, std::string& packageName,
-	//	const std::vector<Bcp47Tag>& packageLanguages, const std::vector<std::string>& packageScales, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, bool hasQualifiedResources)
-	void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, IAppxBundleManifestPackageInfo* bundleInfo)
+	void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, ComPtr<IAppxBundleManifestPackageInfo> bundleInfo)
     {
-		ComPtr<IAppxBundleManifestPackageInfoInternal> bundleInfoInternal;
-		bundleInfo->QueryInterface(IID_PPV_ARGS(&bundleInfoInternal));
-
+		auto bundleInfoInternal = bundleInfo.As<IAppxBundleManifestPackageInfoInternal>();
 		auto packageName = bundleInfoInternal->GetFileName();
 		auto packageLanguages = bundleInfoInternal->GetLanguages();
 		auto packageScales = bundleInfoInternal->GetScales();
