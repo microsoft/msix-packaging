@@ -114,7 +114,7 @@ public:
     XmlVisitor(const void* c, lambda f) : context(const_cast<void*>(c)), Callback(f) {}
 
     // Allow a lambda that doesn't take a context to be more easily implemented.
-    XmlVisitor(noContextLambda f) : context(f), Callback(NoContextCallbackImpl) {}
+    XmlVisitor(noContextLambda f) : context(static_cast<void*>(f)), Callback(NoContextCallbackImpl) {}
 
     bool operator()(const MSIX::ComPtr<IXmlElement>& element) { return Callback(context, element); }
 };
