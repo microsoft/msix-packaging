@@ -69,7 +69,7 @@ namespace MSIX {
             struct _resourcesContext
             {
                 std::vector<Bcp47Tag> languages;
-				std::vector<std::string> scales;
+                std::vector<std::string> scales;
                 bool                  hasResources;
             };
             _resourcesContext resourcesContext = { {}, {}, false};

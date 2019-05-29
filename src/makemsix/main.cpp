@@ -346,7 +346,7 @@ int main(int argc, char* argv[])
                 Option("-sa", false, "Only for bundles. Skips all applicability checks for packages.",
                     [](State& state, const std::string&) { return state.SkipApplicability(); }),
                 Option("-flat", false, "Only for bundles. Places unpacked packages side-by-side with the bundle folder. By default unpacked packages will be nested inside the bundle folder",
-	                [](State& state, const std::string&) { return state.UnpackWithFlatStructure(); }),
+                    [](State& state, const std::string&) { return state.UnpackWithFlatStructure(); }),
                 Option("-?", false, "Displays this help text.",
                     [](State& state, const std::string&) { return false; })                
             })

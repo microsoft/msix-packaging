@@ -331,9 +331,9 @@ namespace MSIX {
                 APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType;
                 ThrowHrIfFailed(package->GetPackageType(&packageType));
                 
-                auto bundlePackageInfo = package.As<IAppxBundleManifestPackageInfo>();
+                //auto bundlePackageInfo = package.As<IAppxBundleManifestPackageInfo>();
                 // Validation is done, now see if the package is applicable.
-                applicability.AddPackageIfApplicable(reader, packageType, bundlePackageInfo.Get());
+                applicability.AddPackageIfApplicable(reader, packageType, package);
 
                 m_files[packageName] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
                 // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
@@ -426,7 +426,7 @@ namespace MSIX {
             {
                 std::string targetName;
                 if ((options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER) || options & MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE)
-				{   // Don't use to->GetPathSeparator(). DirectoryObject::OpenFile created directories
+                {   // Don't use to->GetPathSeparator(). DirectoryObject::OpenFile created directories
                     // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with
                     // the package full name won't be created on Windows, but it will on other platforms.
                     // This means that we have different behaviors in non-Win platforms.
@@ -460,8 +460,8 @@ namespace MSIX {
         if(m_isBundle)
         {
             ComPtr<IStorageObject> toPackages;
-			// Only execute this block if the -pfn option is specified by itself. We should treat "-flat -pfn" the same way we treat "-flat"
-			// since -flat implies we want a bundle folder named according to its full name
+            // Only execute this block if the -pfn option is specified by itself. We should treat "-flat -pfn" the same way we treat "-flat"
+            // since -flat implies we want a bundle folder named according to its full name
             if ((options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER) && !(options & MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE))
             {
                 auto manifest = m_appxBundleManifest.As<IAppxBundleManifestReader>();
