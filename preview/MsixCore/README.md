@@ -28,7 +28,7 @@ The MsixCoreInstallerSetup Project creates a .msi package to deploy the msix.dll
 
 ## Using the Command Line
 The executables can also be manually deployed to a Windows 7 SP1 or higher machine without using the MSI setup project. Place the msix.dll and MsixCoreInstaller.exe in the same location. 
-Sample packages can be found at msix-packaging/preview/MsixCore/tests; these can be copied over to a Windows 7 SP1 or higher machine and installed, although they may require adding the APPX_TEST_ROOT.cer (in the same tests folder) to the trusted store in order to install.
+Sample packages can be found at msix-packaging/preview/MsixCore/tests; these can be copied over to a Windows 7 SP1 or higher machine and installed, although they may require adding the APPX_TEST_ROOT.cer (in the same tests folder) to the trusted store in order to install. Some of these packages are large and are stored using git lfs (Large File Storage).
 
 ```
 certutil -addstore root APPX_TEST_ROOT.cer
