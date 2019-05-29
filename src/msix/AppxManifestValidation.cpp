@@ -193,8 +193,8 @@ namespace MSIX {
         }
 
         const TargetAttribute Identifiers[] = {
-            { XmlQueryName::Any_Identity, XmlAttributeName::Name },
-            { XmlQueryName::Any_Identity, XmlAttributeName::ResourceId },
+            { XmlQueryName::Child_Identity, XmlAttributeName::Name },
+            { XmlQueryName::Child_Identity, XmlAttributeName::ResourceId },
             { XmlQueryName::Package_Dependencies_PackageDependency, XmlAttributeName::Name },
             { XmlQueryName::Package_Dependencies_MainPackageDependency, XmlAttributeName::Name },
         };
