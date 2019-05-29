@@ -77,7 +77,7 @@ struct State
         return true;
     }
 
-    bool SkipAll()
+    bool SkipApplicability()
     {
         applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_NONE);
         return true;
@@ -344,7 +344,7 @@ int main(int argc, char* argv[])
                 Option("-sp", false, "Only for bundles. Skips matching packages with of the same system. By default unpacked application packages will only match the platform.",
                     [](State& state, const std::string&) { return state.SkipPlatform(); }),
                 Option("-sa", false, "Only for bundles. Skips all applicability checks for packages.",
-                    [](State& state, const std::string&) { return state.SkipAll(); }),
+                    [](State& state, const std::string&) { return state.SkipApplicability(); }),
                 Option("-flat", false, "Only for bundles. Places unpacked packages side-by-side with the bundle folder. By default unpacked packages will be nested inside the bundle folder",
 	                [](State& state, const std::string&) { return state.UnpackWithFlatStructure(); }),
                 Option("-?", false, "Displays this help text.",
