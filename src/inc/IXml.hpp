@@ -66,7 +66,8 @@ enum class XmlAttributeName : std::uint8_t
     Language                                   = 12,
     MinVersion                                 = 13,
     Dependencies_Tdf_MaxVersionTested          = 14,
-    Package_Applications_Application_Id        = 15,
+	Scale                                      = 15,
+    Package_Applications_Application_Id        = 16,
     Category,
 };
 

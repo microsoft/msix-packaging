@@ -1431,7 +1431,8 @@ typedef /* [v1_enum] */
 enum MSIX_PACKUNPACK_OPTION
     {
         MSIX_PACKUNPACK_OPTION_NONE                    = 0x0,
-        MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER  = 0x1
+        MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER  = 0x1,
+		MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE = 0x2
     }   MSIX_PACKUNPACK_OPTION;
 
 typedef /* [v1_enum] */
@@ -1467,6 +1468,9 @@ enum MSIX_APPLICABILITY_OPTIONS
                           MSIX_PLATFORM_LINUX          | \
                           MSIX_PLATFORM_WEB            | \
                           MSIX_PLATFORM_CORE             \
+
+#define MSIX_APPLICABILITY_NONE MSIX_APPLICABILITY_OPTION_SKIPPLATFORM         | \
+                                MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE           \
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,

@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "AppxBundleManifest.hpp"
+
 namespace MSIX {
 
     struct Bcp47Entry
@@ -155,15 +157,32 @@ namespace MSIX {
         }
     }
 
-    void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, std::string& packageName, 
-        const std::vector<Bcp47Tag>& packageLanguages, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, bool hasQualifiedResources)
+	//void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, std::string& packageName,
+	//	const std::vector<Bcp47Tag>& packageLanguages, const std::vector<std::string>& packageScales, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, bool hasQualifiedResources)
+	void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, IAppxBundleManifestPackageInfo* bundleInfo)
     {
-        // If there are not qualified resources the package is always applicable
-        if (!hasQualifiedResources)
+		ComPtr<IAppxBundleManifestPackageInfoInternal> bundleInfoInternal;
+		bundleInfo->QueryInterface(IID_PPV_ARGS(&bundleInfoInternal));
+
+		auto packageName = bundleInfoInternal->GetFileName();
+		auto packageLanguages = bundleInfoInternal->GetLanguages();
+		auto packageScales = bundleInfoInternal->GetScales();
+		bool hasQualifiedResources = bundleInfoInternal->HasQualifiedResources();
+		
+		// If there are not qualified resources the package is always applicable
+		// MSIX_APPLICABILITY_NONE indicates that we should skip all applicability checks
+        if (!hasQualifiedResources || (m_applicabilityFlags == static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE)))
         {
             m_applicablePackages.push_back(std::make_pair(packageName,std::move(reader)));
             return;
         }
+
+		// Unless the user has specified the "skip all" applicability flag, we will treat resource packages
+		// with scale, but not language, as NOT applicable.
+		if (packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE && !packageScales.empty() && packageLanguages.empty())
+		{
+			return;
+		}
 
         MSIX_PLATFORMS platform = (m_applicabilityFlags & MSIX_APPLICABILITY_OPTION_SKIPPLATFORM) ?
             static_cast<MSIX_PLATFORMS>(MSIX_PLATFORM_ALL) : GetPlatform();
