@@ -10,6 +10,7 @@
 #include <algorithm>
 #include <string>
 #include <iostream>
+#include <memory>
 
 namespace MsixTest {
 

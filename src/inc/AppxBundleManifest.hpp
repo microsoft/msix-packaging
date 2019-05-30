@@ -38,6 +38,7 @@ class IAppxBundleManifestPackageInfoInternal : public IUnknown
 public:
     virtual const std::string& GetFileName() = 0;
     virtual const std::vector<MSIX::Bcp47Tag>& GetLanguages() = 0;
+    virtual const std::vector<UINT32>& GetScales() = 0;
     virtual const std::uint64_t GetOffset() = 0;
     virtual bool HasQualifiedResources() = 0;
 };
@@ -75,6 +76,8 @@ namespace MSIX {
     public:
         AppxBundleQualifiedResource(IMsixFactory* factory, const std::string& language) : m_factory(factory), m_language(language) {}
 
+        AppxBundleQualifiedResource(IMsixFactory* factory, const UINT32& scale) : m_factory(factory), m_scale(scale) {}
+
         // IAppxManifestQualifiedResource
         HRESULT STDMETHODCALLTYPE GetLanguage(LPWSTR *language) noexcept override try
         {
@@ -84,7 +87,8 @@ namespace MSIX {
         // For now we don't having other resources other than language
         HRESULT STDMETHODCALLTYPE GetScale(UINT32 *scale) noexcept override
         {
-            return static_cast<HRESULT>(Error::NotImplemented);
+            *scale = m_scale;
+            return S_OK;
         }
 
         HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL *dxFeatureLevel) noexcept override
@@ -101,6 +105,7 @@ namespace MSIX {
     protected:
         IMsixFactory* m_factory;
         std::string m_language;
+        UINT32 m_scale = 0;
     };
 
     class AppxBundleManifestPackageInfo final : public ComClass<AppxBundleManifestPackageInfo, IAppxBundleManifestPackageInfo, IAppxBundleManifestPackageInfoInternal, IAppxBundleManifestPackageInfoUtf8>
@@ -117,6 +122,7 @@ namespace MSIX {
             const std::string& architecture,
             const std::string& publisherId,
             std::vector<Bcp47Tag>& languages,
+            std::vector<UINT32>& scales,
             APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType);
 
         // IAppxBundleManifestPackageInfo
@@ -130,8 +136,9 @@ namespace MSIX {
         // IAppxBundleManifestPackageInfoInternal
         const std::string& GetFileName() override { return m_fileName; }
         const std::vector<Bcp47Tag>& GetLanguages() override { return m_languages; }
+        const std::vector<UINT32>& GetScales() override { return m_scales; }
         const std::uint64_t GetOffset() override { return m_offset; }
-        bool HasQualifiedResources() override { return !m_languages.empty(); }
+        bool HasQualifiedResources() override { return !m_languages.empty() || !m_scales.empty(); }
 
         // IAppxBundleManifestPackageInfoUtf8
         HRESULT STDMETHODCALLTYPE GetFileName(LPSTR *fileName) noexcept override;
@@ -143,6 +150,7 @@ namespace MSIX {
         std::uint64_t m_size;
         std::uint64_t m_offset;
         std::vector<Bcp47Tag> m_languages;
+        std::vector<UINT32> m_scales;
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE m_packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
     };
 }

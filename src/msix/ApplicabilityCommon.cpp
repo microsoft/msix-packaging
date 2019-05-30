@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "AppxBundleManifest.hpp"
+
 namespace MSIX {
 
     struct Bcp47Entry
@@ -155,13 +157,25 @@ namespace MSIX {
         }
     }
 
-    void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, std::string& packageName, 
-        const std::vector<Bcp47Tag>& packageLanguages, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, bool hasQualifiedResources)
+    void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, const ComPtr<IAppxBundleManifestPackageInfo>& bundlePackageInfo)
     {
+        auto bundlePackageInfoInternal = bundlePackageInfo.As<IAppxBundleManifestPackageInfoInternal>();
+        auto packageName = bundlePackageInfoInternal->GetFileName();
+        auto packageLanguages = bundlePackageInfoInternal->GetLanguages();
+        auto packageScales = bundlePackageInfoInternal->GetScales();
+        
         // If there are not qualified resources the package is always applicable
-        if (!hasQualifiedResources)
+        // MSIX_APPLICABILITY_NONE indicates that we should skip all applicability checks
+        if (!bundlePackageInfoInternal->HasQualifiedResources() || (m_applicabilityFlags == static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE)))
         {
             m_applicablePackages.push_back(std::make_pair(packageName,std::move(reader)));
+            return;
+        }
+
+        // Unless the user has specified the "skip all" applicability flag, we will treat resource packages
+        // with scale, but not language, as NOT applicable.
+        if (packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE && !packageScales.empty() && packageLanguages.empty())
+        {
             return;
         }
 

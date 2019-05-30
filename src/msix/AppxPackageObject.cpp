@@ -276,7 +276,7 @@ namespace MSIX {
                         #else
                         auto lastSeparator = containerName.find_last_of('/');
                         #endif
-                        auto expandedPackageName = containerName.substr(0, lastSeparator + 1 ) + packageName;
+                        auto expandedPackageName = containerName.substr(0, lastSeparator + 1) + packageName;
                         ThrowHrIfFailed(CreateStreamOnFile(const_cast<char*>(expandedPackageName.c_str()), true, &packageStream));
                     }
                     ThrowErrorIfNot(Error::FileNotFound, packageStream, "Package from a flat bundle is not present");
@@ -332,8 +332,7 @@ namespace MSIX {
                 ThrowHrIfFailed(package->GetPackageType(&packageType));
                 
                 // Validation is done, now see if the package is applicable.
-                applicability.AddPackageIfApplicable(reader, packageName, bundleInfoInternal->GetLanguages(),
-                    packageType, bundleInfoInternal->HasQualifiedResources());
+                applicability.AddPackageIfApplicable(reader, packageType, package);
 
                 m_files[packageName] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
                 // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
@@ -425,7 +424,7 @@ namespace MSIX {
             if (file == std::end(m_applicablePackagesNames))
             {
                 std::string targetName;
-                if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
+                if ((options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER) || options & MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE)
                 {   // Don't use to->GetPathSeparator(). DirectoryObject::OpenFile created directories
                     // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with
                     // the package full name won't be created on Windows, but it will on other platforms.
@@ -460,6 +459,8 @@ namespace MSIX {
         if(m_isBundle)
         {
             ComPtr<IStorageObject> toPackages;
+            // Only execute this block if the -pfn option is specified by itself. We should treat "-flat -pfn" the same way we treat "-flat"
+            // since -flat implies we want a bundle folder named according to its full name
             if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
             {
                 auto manifest = m_appxBundleManifest.As<IAppxBundleManifestReader>();

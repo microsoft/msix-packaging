@@ -256,6 +256,7 @@ TEST_CASE("Api_AppxBundleManifestReader_PackageInfo", "[api]")
         BOOL hasCurrentResource = FALSE;
         REQUIRE_SUCCEEDED(manifestQualifiedResourcesEnumerator->GetHasCurrent(&hasCurrentResource));
         int numOfLangs = 0;
+        int numOfScales = 0;
         while (hasCurrentResource)
         {
             MsixTest::ComPtr<IAppxManifestQualifiedResource> manifestQualifiedResources;
@@ -263,16 +264,28 @@ TEST_CASE("Api_AppxBundleManifestReader_PackageInfo", "[api]")
 
             MsixTest::Wrappers::Buffer<wchar_t> language;
             REQUIRE_SUCCEEDED(manifestQualifiedResources->GetLanguage(&language));
-            REQUIRE(expectedPackage.languages[numOfLangs] == language.ToString());
+            if (language.Get() != nullptr)
+            {
+                REQUIRE(expectedPackage.languages[numOfLangs] == language.ToString());
 
-            MsixTest::ComPtr<IAppxManifestQualifiedResourceUtf8> manifestQualifiedResourcesUtf8;
-            REQUIRE_SUCCEEDED(manifestQualifiedResources->QueryInterface(UuidOfImpl<IAppxManifestQualifiedResourceUtf8>::iid, reinterpret_cast<void**>(&manifestQualifiedResourcesUtf8)));
-            MsixTest::Wrappers::Buffer<char> languageUtf8;
-            REQUIRE_SUCCEEDED(manifestQualifiedResourcesUtf8->GetLanguage(&languageUtf8));
-            REQUIRE(expectedPackage.languages[numOfLangs] == languageUtf8.ToString());
+                MsixTest::ComPtr<IAppxManifestQualifiedResourceUtf8> manifestQualifiedResourcesUtf8;
+                REQUIRE_SUCCEEDED(manifestQualifiedResources->QueryInterface(UuidOfImpl<IAppxManifestQualifiedResourceUtf8>::iid, reinterpret_cast<void**>(&manifestQualifiedResourcesUtf8)));
+                MsixTest::Wrappers::Buffer<char> languageUtf8;
+                REQUIRE_SUCCEEDED(manifestQualifiedResourcesUtf8->GetLanguage(&languageUtf8));
+                REQUIRE(expectedPackage.languages[numOfLangs] == languageUtf8.ToString());
 
+                numOfLangs++;
+            }
+
+            UINT32 scale = 0;
+            REQUIRE_SUCCEEDED(manifestQualifiedResources->GetScale(&scale));
+            if (scale != 0)
+            {
+                REQUIRE(expectedPackage.scales[numOfScales] == scale);
+                numOfScales++;
+            }
+            
             REQUIRE_SUCCEEDED(manifestQualifiedResourcesEnumerator->MoveNext(&hasCurrentResource));
-            numOfLangs++;
         }
         REQUIRE(expectedPackage.languages.size() == numOfLangs);
         REQUIRE_SUCCEEDED(bundleManifestPackageInfoEnumerator->MoveNext(&hasCurrent));

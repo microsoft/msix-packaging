@@ -24,6 +24,7 @@ static const char* attributeNames[] = {
     /* Language                               */"Language",
     /* MinVersion                             */"MinVersion",
     /* Dependencies_Tdf_MaxVersionTested      */"MaxVersionTested",
+    /* Scale                                  */"Scale",
     /* Package_Applications_Application_Id    */"Id",
     /* Category                               */"Category",
     /* MaxMajorVersionTested                  */"MaxMajorVersionTested",
