@@ -89,7 +89,7 @@ namespace MSIX {
                 resourcesContext->hasResources = true;
                 return true;
             });
-            context->dom->ForEachElementIn(packageNode, XmlQueryName::Bundle_Packages_Package_Resources_Resource, visitor);
+            context->dom->ForEachElementIn(packageNode, XmlQueryName::Child_Resources_Resource, visitor);
 
             ComPtr<IAppxManifestPackageIdInternal> packageIdInternal = context->self->m_packageId.As<IAppxManifestPackageIdInternal>();
             auto package = ComPtr<IAppxBundleManifestPackageInfo>::Make<AppxBundleManifestPackageInfo>(
