@@ -39,6 +39,9 @@ jobs:
       release_x86:
         _arguments: -b MinSizeRel
         _artifact: iOS-x86
+      release_x86_nobundle:
+        _arguments: -b MinSizeRel -sb
+        _artifact: iOS-x86-nobundle
       release_arm64:
         _arguments: -b MinSizeRel -arch arm64
         _artifact: iOS-arm64
@@ -58,11 +61,18 @@ jobs:
     displayName: iOS BVTs
     inputs:
       targetType: filePath
-      filePath: './test/MacOS-Linux/testios.sh'
-      arguments: '-p ../mobile/iOSBVT/iOSBVT.xcodeproj'
-      workingDirectory: './test/MacOS-Linux'
+      filePath: './src/test/mobile/testios.sh'
+      arguments: '-p iOSBVT/iOSBVT.xcodeproj -o TEST-MsixSDK-$(_artifact).xml'
+      workingDirectory: './src/test/mobile/'
       failOnStderr: true
     condition: and(succeeded(), contains(variables['Agent.JobName'], 'release_x86'))
+  
+  - task: PublishTestResults@2
+    displayName: 'Publish $(_artifact) Test Results'
+    inputs:
+      failTaskOnFailedTests: true
+      testRunTitle: $(_artifact)
+    condition: and(succeededOrFailed(), contains(variables['Agent.JobName'], 'release'))
 
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
@@ -79,10 +89,10 @@ jobs:
         Package.nuspec
         build/**
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: succeeded()
+    condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact $(_artifact)'
     inputs:
       ArtifactName: $(_artifact)
-    condition: succeeded()
+    condition: succeededOrFailed()
