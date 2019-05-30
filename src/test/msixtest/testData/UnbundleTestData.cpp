@@ -808,11 +808,10 @@ namespace MsixTest { namespace Unbundle {
             ExpectedPackage("resources.language-zh-hans.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4110442, 44058, { "zh-Hans-CN"}), // real value is zn-cn, but we return the correct Bcp47Tag in this case
             ExpectedPackage("resources.language-zh-hant.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4154589, 74495, { "zh-Hant-HK" ,"zh-Hant-TW"}), // same as above, zh-hk and zh-tw
             ExpectedPackage("resources.language-zu.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4229168, 35527, { "zu-za"}),
-            // Currently, we don't support resource packages without language.
-            //ExpectedPackage("resources.scale-125.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4264777, 31410, }),
-            //ExpectedPackage("resources.scale-150.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4296269, 34552, }),
-            //ExpectedPackage("resources.scale-200.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4330903, 43136, }),
-            //ExpectedPackage("resources.scale-400.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4374121, 90452, }),
+            ExpectedPackage("resources.scale-125.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4264777, 31410, }),
+            ExpectedPackage("resources.scale-150.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4296269, 34552, }),
+            ExpectedPackage("resources.scale-200.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4330903, 43136, }),
+            ExpectedPackage("resources.scale-400.map.appx", APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE, 4374121, 90452, }),
         };
 
         return packagesInfo;
