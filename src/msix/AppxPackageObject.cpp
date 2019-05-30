@@ -461,7 +461,7 @@ namespace MSIX {
             ComPtr<IStorageObject> toPackages;
             // Only execute this block if the -pfn option is specified by itself. We should treat "-flat -pfn" the same way we treat "-flat"
             // since -flat implies we want a bundle folder named according to its full name
-            if ((options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER) && !(options & MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE))
+            if (options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER)
             {
                 auto manifest = m_appxBundleManifest.As<IAppxBundleManifestReader>();
                 ComPtr<IAppxManifestPackageId> packageId;
