@@ -157,7 +157,7 @@ namespace MSIX {
         }
     }
 
-	void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, const ComPtr<IAppxBundleManifestPackageInfo>& bundlePackageInfo)
+    void Applicability::AddPackageIfApplicable(ComPtr<IAppxPackageReader>& reader, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, const ComPtr<IAppxBundleManifestPackageInfo>& bundlePackageInfo)
     {
         auto bundlePackageInfoInternal = bundlePackageInfo.As<IAppxBundleManifestPackageInfoInternal>();
         auto packageName = bundlePackageInfoInternal->GetFileName();

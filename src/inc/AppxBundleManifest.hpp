@@ -74,7 +74,7 @@ namespace MSIX {
     class AppxBundleQualifiedResource final : public MSIX::ComClass<AppxBundleQualifiedResource, IAppxManifestQualifiedResource, IAppxManifestQualifiedResourceUtf8>
     {
     public:
-        AppxBundleQualifiedResource(IMsixFactory* factory, const std::string& language) : m_factory(factory), m_language(language) {}
+        AppxBundleQualifiedResource(IMsixFactory* factory, const std::string& language, const UINT32 scale = 0) : m_factory(factory), m_language(language), m_scale(scale) {}
 
         // IAppxManifestQualifiedResource
         HRESULT STDMETHODCALLTYPE GetLanguage(LPWSTR *language) noexcept override try
@@ -85,7 +85,8 @@ namespace MSIX {
         // For now we don't having other resources other than language
         HRESULT STDMETHODCALLTYPE GetScale(UINT32 *scale) noexcept override
         {
-            return static_cast<HRESULT>(Error::NotImplemented);
+            *scale = m_scale;
+            return S_OK;
         }
 
         HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL *dxFeatureLevel) noexcept override
@@ -102,6 +103,7 @@ namespace MSIX {
     protected:
         IMsixFactory* m_factory;
         std::string m_language;
+        UINT32 m_scale = 0;
     };
 
     class AppxBundleManifestPackageInfo final : public ComClass<AppxBundleManifestPackageInfo, IAppxBundleManifestPackageInfo, IAppxBundleManifestPackageInfoInternal, IAppxBundleManifestPackageInfoUtf8>

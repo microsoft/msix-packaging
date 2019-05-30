@@ -192,14 +192,22 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxBundleManifestPackageInfo::GetResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (resources == nullptr || *resources != nullptr), "bad pointer.");
-        std::vector<ComPtr<IAppxManifestQualifiedResource>> languages;
+        std::vector<ComPtr<IAppxManifestQualifiedResource>> m_resources;
         for(auto& bcp47 : m_languages)
         {
             auto resource = ComPtr<IAppxManifestQualifiedResource>::Make<AppxBundleQualifiedResource>(m_factory, bcp47.GetFullTag());
-            languages.push_back(std::move(resource));
+            m_resources.push_back(std::move(resource));
         }
+
+        for (auto& scale : m_scales)
+        {
+	        std::string language;
+	        auto resource = ComPtr<IAppxManifestQualifiedResource>::Make<AppxBundleQualifiedResource>(m_factory, language, scale);
+	        m_resources.push_back(std::move(resource));
+        }
+
         *resources = ComPtr<IAppxManifestQualifiedResourcesEnumerator>::
-            Make<EnumeratorCom<IAppxManifestQualifiedResourcesEnumerator, IAppxManifestQualifiedResource>>(languages).Detach();
+            Make<EnumeratorCom<IAppxManifestQualifiedResourcesEnumerator, IAppxManifestQualifiedResource>>(m_resources).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
