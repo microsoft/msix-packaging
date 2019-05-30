@@ -149,7 +149,7 @@ public:
          for(auto element : elements)
          {
             auto item = ComPtr<IXmlElement>::Make<XmlElement>(m_factory, element);
-            if (!visitor.Callback(visitor.context, item))
+            if (!visitor(item))
             {
                 return false;
             }

@@ -89,7 +89,7 @@ namespace MSIX {
                 contextBlock->blocks->push_back(GetBlock(blockNode, contextBlock->fallbackSize));
                 return true;
             });
-            context->dom->ForEachElementIn(fileNode, XmlQueryName::BlockMap_File_Block, visitor);
+            context->dom->ForEachElementIn(fileNode, XmlQueryName::Child_Block, visitor);
 
             ThrowErrorIf(Error::BlockMapSemanticError, (0 == blocks.size() && 0 != sizeAttribute), "If size is non-zero, then there must be 1+ blocks.");
 
