@@ -321,7 +321,11 @@ int main(int argc, char* argv[])
                 Option("-ss", false, "Skips enforcement of signed packages.  By default packages must be signed.",
                     [](State& state, const std::string&) { return state.SkipSignature(); }),
                 Option("-?", false, "Displays this help text.",
-                    [](State& state, const std::string&) { return false; })                
+                    [](State& state, const std::string&) { return false; }),     
+                // Identical behavior as -pfn. This option was created to create parity with unbundle's -pfn-flat option so that IT pros
+                // creating packages for app attach only need to be aware of a single option.
+                Option("-pfn-flat", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
+                    [](State& state, const std::string&) {return state.CreatePackageSubfolder(); })
             })
         },
         {   Command("unbundle", "Unpack files from a package to disk",
@@ -345,7 +349,7 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return state.SkipPlatform(); }),
                 Option("-sa", false, "Only for bundles. Skips all applicability checks for packages.",
                     [](State& state, const std::string&) { return state.SkipApplicability(); }),
-                Option("-flat", false, "Only for bundles. Places unpacked packages side-by-side with the bundle folder. By default unpacked packages will be nested inside the bundle folder",
+                Option("-pfn-flat", false, "Unpacks bundle's files to a subdirectory under the specified output path, named after the package full name. Unpacks packages to subdirectories also under the specified output path, named after the package full name. By default unpacked packages will be nested inside the bundle folder",
                     [](State& state, const std::string&) { return state.UnpackWithFlatStructure(); }),
                 Option("-?", false, "Displays this help text.",
                     [](State& state, const std::string&) { return false; })                

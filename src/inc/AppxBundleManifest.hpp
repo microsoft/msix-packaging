@@ -74,7 +74,9 @@ namespace MSIX {
     class AppxBundleQualifiedResource final : public MSIX::ComClass<AppxBundleQualifiedResource, IAppxManifestQualifiedResource, IAppxManifestQualifiedResourceUtf8>
     {
     public:
-        AppxBundleQualifiedResource(IMsixFactory* factory, const std::string& language, const UINT32 scale = 0) : m_factory(factory), m_language(language), m_scale(scale) {}
+        AppxBundleQualifiedResource(IMsixFactory* factory, const std::string& language) : m_factory(factory), m_language(language) {}
+
+        AppxBundleQualifiedResource(IMsixFactory* factory, const UINT32& scale) : m_factory(factory), m_scale(scale) {}
 
         // IAppxManifestQualifiedResource
         HRESULT STDMETHODCALLTYPE GetLanguage(LPWSTR *language) noexcept override try

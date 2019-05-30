@@ -201,8 +201,7 @@ namespace MSIX {
 
         for (auto& scale : m_scales)
         {
-	        std::string language;
-	        auto resource = ComPtr<IAppxManifestQualifiedResource>::Make<AppxBundleQualifiedResource>(m_factory, language, scale);
+	        auto resource = ComPtr<IAppxManifestQualifiedResource>::Make<AppxBundleQualifiedResource>(m_factory, scale);
 	        m_resources.push_back(std::move(resource));
         }
 
