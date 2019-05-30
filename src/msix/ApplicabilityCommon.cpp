@@ -163,7 +163,7 @@ namespace MSIX {
         auto packageName = bundlePackageInfoInternal->GetFileName();
         auto packageLanguages = bundlePackageInfoInternal->GetLanguages();
         auto packageScales = bundlePackageInfoInternal->GetScales();
-		
+        
         // If there are not qualified resources the package is always applicable
         // MSIX_APPLICABILITY_NONE indicates that we should skip all applicability checks
         if (!bundlePackageInfoInternal->HasQualifiedResources() || (m_applicabilityFlags == static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE)))

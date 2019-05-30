@@ -201,8 +201,8 @@ namespace MSIX {
 
         for (auto& scale : m_scales)
         {
-	        auto resource = ComPtr<IAppxManifestQualifiedResource>::Make<AppxBundleQualifiedResource>(m_factory, scale);
-	        m_resources.push_back(std::move(resource));
+            auto resource = ComPtr<IAppxManifestQualifiedResource>::Make<AppxBundleQualifiedResource>(m_factory, scale);
+            m_resources.push_back(std::move(resource));
         }
 
         *resources = ComPtr<IAppxManifestQualifiedResourcesEnumerator>::
