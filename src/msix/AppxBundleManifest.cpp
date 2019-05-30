@@ -80,7 +80,7 @@ namespace MSIX {
                 resourcesContext->hasResources = true;
                 return true;
             });
-            context->dom->ForEachElementIn(packageNode, XmlQueryName::Bundle_Packages_Package_Resources_Resource, visitor);
+            context->dom->ForEachElementIn(packageNode, XmlQueryName::Child_Resources_Resource, visitor);
 
             if ((packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE) && resourcesContext.languages.empty() && resourcesContext.hasResources)
             {   // For now, we only support languages resource packages

@@ -224,7 +224,7 @@ public:
         for(int i = 0; i < m_env->GetArrayLength(javaElements.get()); i++)
         {
             auto item = ComPtr<IXmlElement>::Make<JavaXmlElement>(m_factory, m_env->GetObjectArrayElement(javaElements.get(), i));
-            if (!visitor.Callback(visitor.context, item))
+            if (!visitor(item))
             {
                 return false;
             }

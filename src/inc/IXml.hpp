@@ -21,53 +21,60 @@ enum class XmlContentType : std::uint8_t
     AppxBundleManifestXml,
 };
 
+// TODO: Strongly consider creating a more flexible/dynamic way of query construction, rather than this hardcoding
 // defines queries for use in IXmlDom::ForEachElementIn
 enum class XmlQueryName : std::uint8_t
 {
-    Package_Identity                           = 0,
-    BlockMap_File                              = 1,
-    BlockMap_File_Block                        = 2,
-    Bundle_Identity                            = 3,
-    Bundle_Packages_Package                    = 4,
-    Bundle_Packages_Package_Resources_Resource = 5,
-    Package_Dependencies_TargetDeviceFamily    = 6,
-    Package_Applications_Application           = 7,
-    Package_Properties                         = 8,
-    Package_Properties_Description             = 9,
-    Package_Properties_DisplayName             = 10,
-    Package_Properties_PublisherDisplayName    = 11,
-    Package_Properties_Logo                    = 12,
-    Package_Properties_Framework               = 13,
-    Package_Properties_ResourcePackage         = 14,
-    Package_Properties_AllowExecution          = 15,
-    Package_Dependencies_PackageDependency     = 16,
-    Package_Capabilities_Capability            = 17,
-    Package_Resources_Resource                 = 18,
-    Any_Identity,
+    Package_Identity,
+    BlockMap_File,
+    Child_Block,
+    Bundle_Identity,
+    Bundle_Packages_Package,
+    Child_Resources_Resource,
+    Package_Dependencies_TargetDeviceFamily,
+    Package_Applications_Application,
+    Package_Properties,
+    Child_Description,
+    Child_DisplayName,
+    Child_PublisherDisplayName,
+    Child_Logo,
+    Child_Framework,
+    Child_ResourcePackage,
+    Child_AllowExecution,
+    Package_Dependencies_PackageDependency,
+    Package_Capabilities_Capability,
+    Package_Resources_Resource,
+    Child_Identity,
     Package_Dependencies_MainPackageDependency,
-    Applications_Application_Extensions_Extension,
+    Package_Applications,
+    Package_Capabilities,
+    Package_Extensions,
+    Package_Properties_Framework,
+    Package_Properties_ResourcePackage,
+    Package_Properties_SupportedUsers,
 };
 
 // defines attribute names for use in IXmlElement:: [GetAttributeValue|GetBase64DecodedAttributeValue]
 enum class XmlAttributeName : std::uint8_t
 {
-    Name                                       = 0,
-    ResourceId                                 = 1,
-    Version                                    = 2,
-    Size                                       = 3,
-    Identity_ProcessorArchitecture             = 4,
-    Publisher                                  = 5,
-    BlockMap_File_LocalFileHeaderSize          = 6,
-    BlockMap_File_Block_Hash                   = 7,
-    Bundle_Package_FileName                    = 8,
-    Bundle_Package_Offset                      = 9,
-    Bundle_Package_Type                        = 10,
-    Bundle_Package_Architecture                = 11,
-    Language                                   = 12,
-    MinVersion                                 = 13,
-    Dependencies_Tdf_MaxVersionTested          = 14,
-    Package_Applications_Application_Id        = 15,
+    Name,
+    ResourceId,
+    Version,
+    Size,
+    Identity_ProcessorArchitecture,
+    Publisher,
+    BlockMap_File_LocalFileHeaderSize,
+    BlockMap_File_Block_Hash,
+    Bundle_Package_FileName,
+    Bundle_Package_Offset,
+    Bundle_Package_Type,
+    Bundle_Package_Architecture,
+    Language,
+    MinVersion,
+    Dependencies_Tdf_MaxVersionTested,
+    Package_Applications_Application_Id,
     Category,
+    MaxMajorVersionTested,
 };
 
 // {ac94449e-442d-4bed-8fca-83770c0f7ee9}
@@ -88,15 +95,62 @@ public:
 MSIX_INTERFACE(IXmlElement, 0xac94449e,0x442d,0x4bed,0x8f,0xca,0x83,0x77,0x0c,0x0f,0x7e,0xe9);
 
 struct XmlVisitor
-{        
-    typedef bool(*lambda)(void*, const MSIX::ComPtr<IXmlElement>& );
+{
+public:
+    typedef bool(*lambda)(void*, const MSIX::ComPtr<IXmlElement>&);
+    typedef bool(*noContextLambda)(const MSIX::ComPtr<IXmlElement>&);
 
-    void*   context;
-    lambda  Callback;
+private:
+    void* context = nullptr;
+    lambda Callback = nullptr;
 
+    static bool NoContextCallbackImpl(void* context, const MSIX::ComPtr<IXmlElement>& element)
+    {
+        return reinterpret_cast<noContextLambda>(context)(element);
+    }
+
+public:
     // Allow for const data to be passed in, but strip the const.
     XmlVisitor(const void* c, lambda f) : context(const_cast<void*>(c)), Callback(f) {}
+
+    // Allow a lambda that doesn't take a context to be more easily implemented.
+    XmlVisitor(noContextLambda f) : context(reinterpret_cast<void*>(f)), Callback(NoContextCallbackImpl) {}
+
+    bool operator()(const MSIX::ComPtr<IXmlElement>& element) { return Callback(context, element); }
 };
+
+// TODO: Evaluate impact to binary size.
+// Type erased XmlVisitor, allowing for capture based lambdas to pass to ForEachElementIn.
+//struct XmlVisitor
+//{
+//private:
+//    struct XmlVisitorConcept
+//    {
+//        virtual bool operator()(const MSIX::ComPtr<IXmlElement>& element) = 0;
+//    };
+//
+//    template <typename L>
+//    struct XmlVisitorModel : public XmlVisitorConcept
+//    {
+//        XmlVisitorModel(L& l) : lambda(l) {}
+//
+//        bool operator()(const MSIX::ComPtr<IXmlElement>& element) override { return lambda(element); }
+//
+//    private:
+//        L lambda;
+//    };
+//
+//    std::unique_ptr<XmlVisitorConcept> visitor;
+//
+//public:
+//    template <typename L>
+//    XmlVisitor(L& l)
+//    {
+//        visitor = std::make_unique<XmlVisitorModel<L>>(l);
+//    }
+//
+//    bool operator()(const MSIX::ComPtr<IXmlElement>& element) { return (*visitor)(element); }
+//};
 
 // {0e7a446e-baf7-44c1-b38a-216bfa18a1a8}
 #ifndef WIN32
@@ -154,6 +208,7 @@ namespace MSIX {
 #endif
 
     const XmlQueryNameCharType* GetQueryString(XmlQueryName query);
+    std::string GetQueryStringUtf8(XmlQueryName query);
 
     std::wstring GetAttributeNameString(XmlAttributeName attr);
     const char* GetAttributeNameStringUtf8(XmlAttributeName attr);
