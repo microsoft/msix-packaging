@@ -5,21 +5,18 @@
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 project (makemsix)
 
-# Define two variables in order not to repeat ourselves.
-set(BINARY_NAME makemsix)
-
 if(WIN32)
     set(DESCRIPTION "makemsix manifest")
-    configure_file(${CMAKE_PROJECT_ROOT}/manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest CRLF)
-    set(MANIFEST ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest)
+    configure_file(${CMAKE_PROJECT_ROOT}/manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.exe.manifest CRLF)
+    set(MANIFEST ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.exe.manifest)
 endif()
 
-add_executable(${BINARY_NAME}
+add_executable(${PROJECT_NAME}
     main.cpp
     ${MANIFEST}
     )
 
-target_include_directories(${BINARY_NAME} PRIVATE ${CMAKE_BINARY_DIR}/src/msix)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/src/msix)
 
-add_dependencies(${BINARY_NAME} msix)
-target_link_libraries(${BINARY_NAME} msix)
+add_dependencies(${PROJECT_NAME} msix)
+target_link_libraries(${PROJECT_NAME} msix)

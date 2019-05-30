@@ -1,0 +1,5 @@
+/build
+src/main/assets/
+src/main/jniLibs/
+src/main/libs
+src/main/cpp/msixtest.hpp
