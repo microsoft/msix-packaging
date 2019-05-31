@@ -194,10 +194,6 @@ TEST_CASE("Unbundle_StoreSigned_Desktop_x86_x64_MoviesTV_pfn-flat", "[unbundle]"
 
     std::cout << "Expected Files Present" << '\n';
 
-    // Verify non expected files aren't present
-    auto filesNotApplicable = MsixTest::Unbundle::GetExpectedFilesNoApplicable();
-    CHECK(!MsixTest::Directory::CompareDirectory(outputDir, filesNotApplicable));
-
     // Clean directory
     CHECK(MsixTest::Directory::CleanDirectory(outputDir));
 }
