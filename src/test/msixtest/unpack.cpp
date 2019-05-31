@@ -83,6 +83,34 @@ TEST_CASE("Unpack_StoreSigned_Desktop_x64_MoviesTV_pfn", "[unpack]")
     CHECK(MsixTest::Directory::CleanDirectory(outputDir));
 }
 
+// For packages we expect identical behavior between MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE and MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER
+TEST_CASE("Unpack_StoreSigned_Desktop_x64_MoviesTV_pfn-flat", "[unpack]")
+{
+    HRESULT expected = S_OK;
+    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
+    MSIX_VALIDATION_OPTION validation = MSIX_VALIDATION_OPTION_FULL;
+    MSIX_PACKUNPACK_OPTION packUnpack = MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE;
+
+    RunUnpackTest(expected, package, validation, packUnpack, false);
+
+    // Verify all the files extracted on disk are correct
+    auto files = MsixTest::Unpack::GetExpectedFiles();
+    // The expected folder structure should be <output>/Microsoft.ZuneVideo_3.6.25071.0_x64__8wekyb3d8bbwe/<files>
+    // Append it to the already existing expected files map
+    std::string pfn = "Microsoft.ZuneVideo_3.6.25071.0_x64__8wekyb3d8bbwe/";
+    std::map<std::string, uint64_t> filesWithPfn;
+    for (const auto& file : files)
+    {
+        filesWithPfn.emplace(pfn + file.first, file.second);
+    }
+
+    auto outputDir = MsixTest::TestPath::GetInstance()->GetPath(MsixTest::TestPath::Directory::Output);
+    CHECK(MsixTest::Directory::CompareDirectory(outputDir, filesWithPfn));
+
+    // Clean directory
+    CHECK(MsixTest::Directory::CleanDirectory(outputDir));
+}
+
 TEST_CASE("Unpack_Empty", "[unpack]")
 {
     HRESULT expected                  = static_cast<HRESULT>(MSIX::Error::FileSeek);
