@@ -324,7 +324,7 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return false; }),     
                 // Identical behavior as -pfn. This option was created to create parity with unbundle's -pfn-flat option so that IT pros
                 // creating packages for app attach only need to be aware of a single option.
-                Option("-pfn-flat", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
+                Option("-pfn-flat", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name. Same behavior as -pfn",
                     [](State& state, const std::string&) {return state.CreatePackageSubfolder(); })
             })
         },
