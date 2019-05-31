@@ -38,7 +38,7 @@ namespace MsixTest {
         const std::map<std::string, std::uint64_t>& GetExpectedFilesNoApplicable();
 
         // Expected files to be extracted when unbundling StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle
-        // with full applicability and the "pfn-flat" unpcack option. 
+        // with full applicability and the "pfn-flat" unpack option. 
         const std::map<std::string, std::uint64_t>& GetExpectedBundleFilesPfnFlatFullApplicable();
 
         // Expected bundle manifest information from MainBundle.appxbundle
