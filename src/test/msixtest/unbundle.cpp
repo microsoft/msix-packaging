@@ -56,7 +56,7 @@ TEST_CASE("Unbundle_StoreSigned_Desktop_x86_x64_MoviesTV", "[unbundle]")
     CHECK(MsixTest::Directory::CompareDirectory(outputDir, files));
 
     // Verify non expected files aren't present
-    auto filesNotApplicable = MsixTest::Unbundle::GetExpectedFilesNoLanguageApplicable();
+    auto filesNotApplicable = MsixTest::Unbundle::GetExpectedFilesNoApplicable();
     CHECK(!MsixTest::Directory::CompareDirectory(outputDir, filesNotApplicable));
 
     // Clean directory
