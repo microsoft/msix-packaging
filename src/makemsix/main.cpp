@@ -324,7 +324,7 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return false; }),     
                 // Identical behavior as -pfn. This option was created to create parity with unbundle's -pfn-flat option so that IT pros
                 // creating packages for app attach only need to be aware of a single option.
-                Option("-pfn-flat", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
+                Option("-pfn-flat", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name. Same behavior as -pfn",
                     [](State& state, const std::string&) {return state.CreatePackageSubfolder(); })
             })
         },
@@ -347,7 +347,7 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return state.SkipLanguage(); }),
                 Option("-sp", false, "Only for bundles. Skips matching packages with of the same system. By default unpacked application packages will only match the platform.",
                     [](State& state, const std::string&) { return state.SkipPlatform(); }),
-                Option("-sa", false, "Only for bundles. Skips all applicability checks for packages.",
+                Option("-extract-all", false, "Only for bundles. Extracts all packages from the bundle.",
                     [](State& state, const std::string&) { return state.SkipApplicability(); }),
                 Option("-pfn-flat", false, "Unpacks bundle's files to a subdirectory under the specified output path, named after the package full name. Unpacks packages to subdirectories also under the specified output path, named after the package full name. By default unpacked packages will be nested inside the bundle folder",
                     [](State& state, const std::string&) { return state.UnpackWithFlatStructure(); }),

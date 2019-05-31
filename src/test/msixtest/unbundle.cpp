@@ -105,11 +105,118 @@ TEST_CASE("Unbundle_StoreSigned_Desktop_x86_x64_MoviesTV_lang_applicability_off"
     // Verify all the files extracted on disk are correct
     // We ran without language applicability, so expect all files to be there.
     auto files = MsixTest::Unbundle::GetExpectedFilesFullApplicable();
+    auto filesNotApplicable = MsixTest::Unbundle::GetExpectedFilesNoLanguageApplicable();
+
+    std::map<std::string, std::uint64_t> allFiles;
+    allFiles.insert(files.begin(), files.end());
+    allFiles.insert(filesNotApplicable.begin(), filesNotApplicable.end());
+    CHECK(MsixTest::Directory::CompareDirectory(outputDir, allFiles));
+
+    // Clean directory
+    CHECK(MsixTest::Directory::CleanDirectory(outputDir));
+}
+
+TEST_CASE("Unbundle_StoreSigned_Desktop_x86_x64_MoviesTV_extract-all", "[unbundle]")
+{
+    HRESULT expected = S_OK;
+    std::string bundle = "StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle";
+    MSIX_VALIDATION_OPTION validation = MSIX_VALIDATION_OPTION_FULL;
+    MSIX_PACKUNPACK_OPTION packUnpack = MSIX_PACKUNPACK_OPTION_NONE;
+    MSIX_APPLICABILITY_OPTIONS applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE);
+
+    RunUnbundleTest(expected, bundle, validation, packUnpack, applicability, MsixTest::TestPath::Directory::Unbundle, false);
+
+    auto outputDir = MsixTest::TestPath::GetInstance()->GetPath(MsixTest::TestPath::Directory::Output);
+
+    // Verify all the files extracted on disk are correct
+    // We ran without language or scale applicability, so expect all files to be there.
+    auto files = MsixTest::Unbundle::GetExpectedFilesFullApplicable();
     auto filesNotApplicable = MsixTest::Unbundle::GetExpectedFilesNoApplicable();
 
     std::map<std::string, std::uint64_t> allFiles;
     allFiles.insert(files.begin(), files.end());
     allFiles.insert(filesNotApplicable.begin(), filesNotApplicable.end());
+
+    CHECK(MsixTest::Directory::CompareDirectory(outputDir, allFiles));
+
+    // Clean directory
+    CHECK(MsixTest::Directory::CleanDirectory(outputDir));
+}
+
+TEST_CASE("Unbundle_StoreSigned_Desktop_x86_x64_MoviesTV_pfn_extract-all", "[unbundle]")
+{
+    HRESULT expected = S_OK;
+    std::string bundle = "StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle";
+    MSIX_VALIDATION_OPTION validation = MSIX_VALIDATION_OPTION_FULL;
+    MSIX_PACKUNPACK_OPTION packUnpack = MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER;
+    MSIX_APPLICABILITY_OPTIONS applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE);
+
+    RunUnbundleTest(expected, bundle, validation, packUnpack, applicability, MsixTest::TestPath::Directory::Unbundle, false);
+
+    // The expected folder structure should be <output>/Microsoft.ZuneVideo_2019.6.25071.0_neutral_~_8wekyb3d8bbwe/<files>
+    // Append it to the already existing expected files map
+    std::string pfn = "Microsoft.ZuneVideo_2019.6.25071.0_neutral_~_8wekyb3d8bbwe/";
+    auto files = MsixTest::Unbundle::GetExpectedFilesFullApplicable();
+    std::map<std::string, uint64_t> filesWithPfn;
+    for (const auto& file : files)
+    {
+        filesWithPfn.emplace(pfn + file.first, file.second);
+    }
+
+    auto resourceFiles = MsixTest::Unbundle::GetExpectedFilesNoApplicable();
+    for (const auto& file : resourceFiles)
+    {
+        filesWithPfn.emplace(pfn + file.first, file.second);
+    }
+
+    auto outputDir = MsixTest::TestPath::GetInstance()->GetPath(MsixTest::TestPath::Directory::Output);
+    CHECK(MsixTest::Directory::CompareDirectory(outputDir, filesWithPfn));
+
+    // Clean directory
+    CHECK(MsixTest::Directory::CleanDirectory(outputDir));
+}
+
+TEST_CASE("Unbundle_StoreSigned_Desktop_x86_x64_MoviesTV_pfn-flat", "[unbundle]")
+{
+    HRESULT expected = S_OK;
+    std::string bundle = "StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle";
+    MSIX_VALIDATION_OPTION validation = MSIX_VALIDATION_OPTION_FULL;
+    MSIX_PACKUNPACK_OPTION packUnpack = MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE;
+    MSIX_APPLICABILITY_OPTIONS applicability = MSIX_APPLICABILITY_OPTION_FULL;
+
+    RunUnbundleTest(expected, bundle, validation, packUnpack, applicability, MsixTest::TestPath::Directory::Unbundle, false);
+
+    auto outputDir = MsixTest::TestPath::GetInstance()->GetPath(MsixTest::TestPath::Directory::Output);
+
+    // Verify all the files extracted on disk are correct
+    auto files = MsixTest::Unbundle::GetExpectedBundleFilesPfnFlatFullApplicable();
+    CHECK(MsixTest::Directory::CompareDirectory(outputDir, files));
+
+    std::cout << "Expected Files Present" << '\n';
+
+    // Clean directory
+    CHECK(MsixTest::Directory::CleanDirectory(outputDir));
+}
+
+TEST_CASE("Unbundle_StoreSigned_Desktop_x86_x64_MoviesTV_pfn-flat_extract-all", "[unbundle]")
+{
+    HRESULT expected = S_OK;
+    std::string bundle = "StoreSigned_Desktop_x86_x64_MoviesTV.appxbundle";
+    MSIX_VALIDATION_OPTION validation = MSIX_VALIDATION_OPTION_FULL;
+    MSIX_PACKUNPACK_OPTION packUnpack = MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE;
+    MSIX_APPLICABILITY_OPTIONS applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE);
+
+    RunUnbundleTest(expected, bundle, validation, packUnpack, applicability, MsixTest::TestPath::Directory::Unbundle, false);
+
+    auto outputDir = MsixTest::TestPath::GetInstance()->GetPath(MsixTest::TestPath::Directory::Output);
+
+    auto filesFullApplicable = MsixTest::Unbundle::GetExpectedBundleFilesPfnFlatFullApplicable();
+    auto filesNoApplicable = MsixTest::Unbundle::GetExpectedFilesNoApplicable();
+
+    // Verify all the files extracted on disk are correct
+    std::map<std::string, std::uint64_t> allFiles;
+    allFiles.insert(filesFullApplicable.begin(), filesFullApplicable.end());
+    allFiles.insert(filesNoApplicable.begin(), filesNoApplicable.end());
     CHECK(MsixTest::Directory::CompareDirectory(outputDir, allFiles));
 
     // Clean directory
