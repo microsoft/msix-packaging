@@ -69,14 +69,14 @@ int main(int argc, char * argv[])
             // Before doing any actual processing of an add request, see if this is RS3 or later.
             if (IsWindows10RS3OrLater())
             {
-                
+             //*
                 std::wstring packageUriString{ cli.GetPackageFilePathToInstall() };
                 winrt::Windows::Foundation::Uri packageUri{ packageUriString };
                 winrt::Windows::Management::Deployment::PackageManager packageManager;
 
                 auto deploymentOperation{ packageManager.AddPackageAsync(packageUri, nullptr, winrt::Windows::Management::Deployment::DeploymentOptions::None) };
                 deploymentOperation.get();
-                
+              // */ 
                 // use the desktopappinstaller UI
                 //std::wstring protocol = std::wstring(L"ms-appinstaller:?source=") + m_packageFilePath;
                 //ShellExecuteW(nullptr, L"Open", protocol.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
