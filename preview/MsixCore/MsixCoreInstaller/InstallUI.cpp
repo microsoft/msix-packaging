@@ -669,7 +669,7 @@ void UI::ButtonClicked()
                 break;
                 case InstallationStep::InstallationStepError:
                 {
-                    DisplayError(sender.GetHResultTextCode(), sender.GetTextStatus());
+                    DisplayError(sender.GetHResultTextCode());
                 }
                 break;
             }
@@ -693,7 +693,7 @@ void UI::UpdateDisplayPercent(float displayPercent)
     ShowWindow(g_staticPercentText, SW_SHOW);
 }
 
-void UI::DisplayError(HRESULT hr, std::wstring textDescription)
+void UI::DisplayError(HRESULT hr)
 {
     g_installing = false;
     ShowWindow(g_percentageTextHWnd, SW_HIDE);

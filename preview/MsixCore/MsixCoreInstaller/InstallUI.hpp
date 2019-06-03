@@ -180,7 +180,7 @@ public:
     /// @param displayPercent - the percentage from the msixresponse object
     void UpdateDisplayPercent(float displayPercent);
 
-    void DisplayError(HRESULT hr, std::wstring textDescription);
+    void DisplayError(HRESULT hr);
 
     HRESULT ShowUI();
 
