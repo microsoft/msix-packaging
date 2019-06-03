@@ -57,6 +57,12 @@ jobs:
       release_64_xerces:
         _arguments: x64 --parser-xerces
         _artifact: WIN32-x64Xerces
+      release_32_nobundle:
+        _arguments: x86 -sb
+        _artifact: WIN32-nobundle
+      release_64_nobundle:
+        _arguments: x64 -sb
+        _artifact: WIN32-x64-nobundle
 
   steps:
   - task: BatchScript@1
@@ -68,14 +74,17 @@ jobs:
     condition: always()
 
   # Note: We skip BVTs in Debug mode because of assert()
-  - task: PowerShell@2
-    displayName: Windows BVTs
-    inputs:
-      targetType: filePath
-      filePath: ./test\Win32\Win32.ps1
-      failOnStderr: true
-      workingDirectory: test\Win32
+  - script: 'msixtest\msixtest.exe -s -r junit -o TEST-MsixSDK-$(_artifact).xml'
+    workingDirectory: .vs
+    displayName: 'Windows BVTs'
     condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'))
+  
+  - task: PublishTestResults@2
+    displayName: 'Publish $(_artifact) Test Results'
+    inputs:
+      failTaskOnFailedTests: true
+      testRunTitle: $(_artifact)
+    condition: and(succeededOrFailed(), contains(variables['Agent.JobName'], 'release'))
 
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
@@ -91,10 +100,10 @@ jobs:
         Package.nuspec
         build\**
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: succeeded()
+    condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact $(_artifact)'
     inputs:
       ArtifactName: $(_artifact)
-    condition: succeeded()
+    condition: succeededOrFailed()

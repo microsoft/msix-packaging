@@ -353,3 +353,13 @@ if(OpenSSL_FOUND)
         target_link_libraries(${PROJECT_NAME} PRIVATE crypto)
     endif()
 endif()
+
+# For windows copy the library to the msix and samples directory
+if(WIN32)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "bin/${PROJECT_NAME}.dll" "msixtest/${PROJECT_NAME}.dll"
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "bin/${PROJECT_NAME}.dll" "samples/${PROJECT_NAME}.dll"
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+endif()

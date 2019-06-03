@@ -532,7 +532,7 @@ public:
             ComPtr<IXMLDOMElement> elementItem;
             ThrowHrIfFailed(node->QueryInterface(__uuidof(IXMLDOMElement), reinterpret_cast<void**>(&elementItem)));
             auto item = ComPtr<IXmlElement>::Make<MSXMLElement>(m_factory, elementItem);
-            if (!visitor.Callback(visitor.context, item))
+            if (!visitor(item))
             {
                 return false;
             }
