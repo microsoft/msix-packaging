@@ -16,6 +16,7 @@
 #define IDC_CANCELBUTTON 103
 #define IDC_LAUNCHBUTTON 104
 #define IDC_STATICPERCENTCONTROL 105
+#define IDC_STATICERRORCONTROL 106
 #define WM_INSTALLCOMPLETE_MSG (WM_APP+1)
 
 /// Global variables
@@ -26,6 +27,8 @@ static HWND g_CancelbuttonHWnd = NULL;
 static HWND g_LaunchbuttonHWnd = NULL;
 static HWND g_percentageTextHWnd = NULL;
 static HWND g_staticPercentText = NULL;
+static HWND g_staticErrorTextHWnd = NULL;
+static HWND g_staticErrorDescHWnd = NULL;
 static bool g_launchCheckBoxState = true; /// launch checkbox is checked by default
 static bool g_installing = false; /// variable used to indicate that app installation is in progress
 
@@ -151,6 +154,12 @@ public:
     /// @param parentRect - the specs of the parent window
     BOOL CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect);
 
+    /// Creates the text which displays error text and hresult on the UI in case of an error
+    /// 
+    /// @param parentHWnd - the HWND of the window to add the checkbox to
+    /// @param parentRect - the specs of the parent window
+    BOOL CreateDisplayErrorText(HWND parentHWnd, RECT parentRect);
+
     /// Change the text of the installation window based on the given input
     ///
     /// @param parentHWnd - the HWND of the window to be changed
@@ -170,6 +179,8 @@ public:
     ///
     /// @param displayPercent - the percentage from the msixresponse object
     void UpdateDisplayPercent(float displayPercent);
+
+    void DisplayError(HRESULT hr, std::wstring textDescription);
 
     HRESULT ShowUI();
 

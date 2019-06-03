@@ -20,13 +20,21 @@ public:
     /// @param remove - if true, remove all the keys and values; if false, add all the keys and values
     HRESULT Run(_In_ bool remove);
 
-    /// Determines whether Registry.dat contains a FTA (file type association). Does not perform any modifications to the system.
+    /// Determines whether Registry.dat contains the extension passed and deletes it from the virtual registry if present
     /// 
-    /// @param ftaName - the name of the FTA extension (i.e. .mp4)
+    /// @param subKeyPath - the registry subpath to look for the extension 
+    /// @param extensionName - the name of the DEH extension to look for in the virtual mount(i.e. .mp4)
     HRESULT DeleteKeyIfPresent(_In_ std::wstring subKeyPath, _In_ std::wstring extensionName);
 
+    /// Deletes the passed extension from the virtual registry
+    /// 
+    /// @param subKeyPath - the registry subpath to look for the extension 
+    /// @param extensionName - the name of the DEH extension to look for in the virtual mount(i.e. .mp4)
     HRESULT DeleteSubKey(_In_ std::wstring keyPath, _In_ std::wstring extensionName);
 
+    /// Obtains the prog id for the passed FTA extension
+    /// 
+    /// @param extensionName - the name of the FTA extension to look for in the virtual mount(i.e. .mp4)
     HRESULT GetFTAProgID(_In_ std::wstring extensionName, _Out_ std::wstring& virtualFTAProgId);
 
     static HRESULT Create(_In_ std::wstring hiveFileName, _In_ MsixRequest* msixRequest, _Out_ std::shared_ptr<RegistryDevirtualizer>* instance);

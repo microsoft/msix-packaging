@@ -68,6 +68,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         ui->InstallButton(hWnd, windowRect);
         ui->CreateLaunchButton(hWnd, windowRect, 275, 60);
         ui->CreateDisplayPercentageText(hWnd, windowRect);
+        ui->CreateDisplayErrorText(hWnd, windowRect);
         break;
     case WM_PAINT:
     {
@@ -523,6 +524,39 @@ BOOL UI::CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect)
     return TRUE;
 }
 
+BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
+{
+    g_staticErrorTextHWnd = CreateWindowEx(
+        WS_EX_LEFT,
+        L"Static",
+        L"Reason:",
+        WS_CHILD,
+        parentRect.left + 50,
+        parentRect.bottom - 80,
+        120,
+        20,
+        parentHWnd,
+        (HMENU)IDC_STATICERRORCONTROL,
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+        0);
+
+    g_staticErrorDescHWnd = CreateWindowEx(
+        WS_EX_LEFT,
+        L"Static",
+        L"",
+        WS_CHILD | WS_BORDER,
+        parentRect.left + 50,
+        parentRect.bottom - 60,
+        375,
+        40,
+        parentHWnd,
+        (HMENU)IDC_STATICERRORCONTROL,
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+        0);
+
+    return TRUE;
+}
+
 BOOL UI::ChangeInstallButtonText(const std::wstring& newMessage)
 {
     SendMessage(g_buttonHWnd, WM_SETTEXT, NULL, reinterpret_cast<LPARAM>(newMessage.c_str()));
@@ -628,17 +662,16 @@ void UI::ButtonClicked()
             SendMessage(g_progressHWnd, PBM_SETPOS, (WPARAM)sender.GetPercentage(), 0);
             switch (sender.GetStatus())
             {
-            case InstallationStep::InstallationStepCompleted:
-            {
-                SendInstallCompleteMsg();
-            }
-            break;
-            case InstallationStep::InstallationStepError:
-            {
-                //auto error = sender->GetTextStatus();
-                CloseUI();
-            }
-            break;
+                case InstallationStep::InstallationStepCompleted:
+                {
+                    SendInstallCompleteMsg();
+                }
+                break;
+                case InstallationStep::InstallationStepError:
+                {
+                    DisplayError(sender.GetHResultTextCode(), sender.GetTextStatus());
+                }
+                break;
             }
         });
     }
@@ -658,6 +691,23 @@ void UI::UpdateDisplayPercent(float displayPercent)
     SetWindowText(g_staticPercentText, ss.str().c_str());
     ShowWindow(g_staticPercentText, SW_HIDE);
     ShowWindow(g_staticPercentText, SW_SHOW);
+}
+
+void UI::DisplayError(HRESULT hr, std::wstring textDescription)
+{
+    g_installing = false;
+    ShowWindow(g_percentageTextHWnd, SW_HIDE);
+    ShowWindow(g_staticPercentText, SW_HIDE);
+    ShowWindow(g_progressHWnd, SW_HIDE);
+    ShowWindow(g_checkboxHWnd, SW_HIDE);
+    ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
+    
+    //Show Error Box
+    ShowWindow(g_staticErrorTextHWnd, SW_SHOW);
+    ShowWindow(g_staticErrorDescHWnd, SW_SHOW);
+    std::wstringstream errorDescription;
+    errorDescription << "App installation failed with error message: An internal error occurred with error " << hr << ".";
+    SetWindowText(g_staticErrorDescHWnd, errorDescription.str().c_str());
 }
 
 void UI::CloseUI()

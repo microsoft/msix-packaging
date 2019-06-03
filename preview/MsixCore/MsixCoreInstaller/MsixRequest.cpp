@@ -147,11 +147,6 @@ HRESULT MsixRequest::ProcessRequest()
     return S_OK;
 }
 
-void MsixRequest::SetRegistryDevirtualizer(std::shared_ptr<RegistryDevirtualizer> registryDevirualizer)
-{
-    m_registryDevirtualizer = registryDevirualizer;
-}
-
 HRESULT MsixRequest::ProcessAddRequest()
 {
     PCWSTR currentHandlerName = PopulatePackageInfo::HandlerName;
@@ -235,4 +230,9 @@ std::wstring MsixRequest::GetPackageDirectoryPath()
         return nullptr;
 
     return FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_packageInfo->GetPackageFullName();
+}
+
+void MsixRequest::SetRegistryDevirtualizer(std::shared_ptr<RegistryDevirtualizer> registryDevirualizer)
+{
+    m_registryDevirtualizer = registryDevirualizer;
 }
