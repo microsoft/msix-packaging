@@ -31,6 +31,7 @@ private:
     /// MsixResponse object populated by handlers
     std::shared_ptr<MsixResponse> m_msixResponse;
 
+    /// Registry Devirtualizer object to access and update the virtual registry
     std::shared_ptr<RegistryDevirtualizer> m_registryDevirtualizer;
 
 protected:
@@ -73,6 +74,9 @@ public:
         return m_registryDevirtualizer;
     }
 
+    /// Sets the registry Devirtualizer object
+    ///
+    /// @param registryDevirualizer - the registry devirtualizer object to set
     void SetRegistryDevirtualizer(std::shared_ptr<RegistryDevirtualizer> registryDevirualizer);
 
 private:
