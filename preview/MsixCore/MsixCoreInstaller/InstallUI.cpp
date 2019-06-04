@@ -702,11 +702,11 @@ void UI::DisplayError(HRESULT hr)
     ShowWindow(g_checkboxHWnd, SW_HIDE);
     ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
     
-    //Show Error Box
+    //Show Error Window
     ShowWindow(g_staticErrorTextHWnd, SW_SHOW);
     ShowWindow(g_staticErrorDescHWnd, SW_SHOW);
     std::wstringstream errorDescription;
-    errorDescription << "App installation failed with error message: An internal error occurred with error " << hr << ".";
+    errorDescription << GetStringResource(IDS_STRING_ERROR_MSG) << std::hex << hr << ".";
     SetWindowText(g_staticErrorDescHWnd, errorDescription.str().c_str());
 }
 
