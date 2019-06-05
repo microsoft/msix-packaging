@@ -2,7 +2,9 @@
 
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
+#include "RegistryDevirtualizer.hpp"
 #include "MsixRequest.hpp"
+#include "RegistryKey.hpp"
 
 namespace MsixCoreLib
 {
@@ -10,12 +12,19 @@ namespace MsixCoreLib
     class AddRemovePrograms : IPackageHandler
     {
     public:
-        /// Creates a registry entry in the Uninstall key.
+        /// Creates a registry entry in the user's Uninstall key (in HKCU)
         /// This is read by the control panel's AddRemovePrograms to show packages that can be removed.
         HRESULT ExecuteForAddRequest();
 
-        /// Removes the registry entry.
+        /// Creates a registry entry in the machine's Uninstall key (in HKLM)
+        /// This is read by the control panel's AddRemovePrograms to show packages that can be removed.
+        HRESULT ExecuteForAddForAllUsersRequest();
+
+        /// Removes the registry entry from the user's Uninstall key (HKCU)
         HRESULT ExecuteForRemoveRequest();
+
+        /// Removes the registry entry from the user's Uninstall key (HKLM)
+        HRESULT ExecuteForRemoveForAllUsersRequest();
 
         static const PCWSTR HandlerName;
         static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
@@ -26,5 +35,7 @@ namespace MsixCoreLib
         AddRemovePrograms() {}
         AddRemovePrograms(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
+        /// Writes the data to the already opened Uninstall key, which could be in HKLM or HKCU depending on whether it's for allusers or not
+        HRESULT WriteUninstallKey(MsixCoreLib::RegistryKey & uninstallKey);
     };
 }

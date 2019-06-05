@@ -402,6 +402,6 @@ src/msix/common/MSIXResource.cpp
 
 .vscode/
 
-test/MacOS-Linux/testApiResults.txt
-test/MacOS-Linux/testResults.txt
-test/mobile/iOSBVT/iOSBVT.xcodeproj/project.xcworkspace/
+src/test/MacOS-Linux/testApiResults.txt
+src/test/mobile/iOSBVT/iOSBVT.xcodeproj/project.xcworkspace/
+src/test/mobile/TEST-MsixSDK-AOSP.xml

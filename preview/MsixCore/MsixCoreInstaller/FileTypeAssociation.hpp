@@ -27,11 +27,17 @@ struct Fta
 class FileTypeAssociation : IPackageHandler
 {
 public:
-    /// Adds the file type associations to the registry so this application can handle specific file types.
+    /// Adds the file type associations to the per-user registry so this application can handle specific file types.
     HRESULT ExecuteForAddRequest();
 
-    /// Removes the file type associations from the registry.
+    /// Removes the file type associations from the per-user registry.
     HRESULT ExecuteForRemoveRequest();
+
+    /// Adds the file type associations to the per-machine registry so this application can handle specific file types.
+    HRESULT ExecuteForAddForAllUsersRequest();
+
+    /// Removes the file type associations from the per-machine registry.
+    HRESULT ExecuteForRemoveForAllUsersRequest();
 
     static const PCWSTR HandlerName;
     static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
@@ -39,7 +45,6 @@ public:
 private:
     MsixRequest* m_msixRequest = nullptr;
     RegistryKey m_classesKey;
-    AutoPtr<RegistryDevirtualizer> m_registryDevirtualizer; 
     std::vector<Fta> m_Ftas;
 
     FileTypeAssociation() {}

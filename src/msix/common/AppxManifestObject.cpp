@@ -164,28 +164,28 @@ namespace MSIX {
                 contextProperties->stringValues->insert(std::pair<std::string, std::string>(contextProperties->value, value));
                 return true;
             });
-            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Package_Properties_Description, visitorString);
+            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Child_Description, visitorString);
             if (!contextPropertiesString.wasFound)
             {   // If there's no node we need to add an empty string
                 context->stringValues->insert(std::pair<std::string, std::string>(contextPropertiesString.value, ""));
             }
             contextPropertiesString.value = "DisplayName";
             contextPropertiesString.wasFound = false;
-            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Package_Properties_DisplayName, visitorString);
+            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Child_DisplayName, visitorString);
             if (!contextPropertiesString.wasFound)
             {   // If there's no node we need to add an empty string
                 context->stringValues->insert(std::pair<std::string, std::string>(contextPropertiesString.value, ""));
             }
             contextPropertiesString.value = "PublisherDisplayName";
             contextPropertiesString.wasFound = false;
-            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Package_Properties_PublisherDisplayName, visitorString);
+            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Child_PublisherDisplayName, visitorString);
             if (!contextPropertiesString.wasFound)
             {   // If there's no node we need to add an empty string
                 context->stringValues->insert(std::pair<std::string, std::string>(contextPropertiesString.value, ""));
             }
             contextPropertiesString.value = "Logo";
             contextPropertiesString.wasFound = false;
-            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Package_Properties_Logo, visitorString);
+            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Child_Logo, visitorString);
             if (!contextPropertiesString.wasFound)
             {   // If there's no node we need to add an empty string
                 context->stringValues->insert(std::pair<std::string, std::string>(contextPropertiesString.value, ""));
@@ -223,7 +223,7 @@ namespace MSIX {
 
             contextPropertiesBool.value = "AllowExecution";
             contextPropertiesBool.wasFound = false;
-            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Package_Properties_AllowExecution, visitorBool);
+            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Child_AllowExecution, visitorBool);
             if (!contextPropertiesBool.wasFound)
             {   // True is default value for AllowExecution
                 context->boolValues->insert(std::pair<std::string, bool>(contextPropertiesBool.value, true));

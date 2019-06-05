@@ -124,7 +124,11 @@ public:
 
     HRESULT DeleteTree(
         _In_ PCWSTR subkey);
-    
+
+    HRESULT KeyExists(
+        _In_ PCWSTR subkey,
+        _Out_ bool& exists);
+
     template<typename TAction> static HRESULT EnumKeyAndDoActionForAllSubkeys(
         _In_ RegistryKey* registryKey,
         _In_ TAction subkeyActionFunction)

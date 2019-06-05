@@ -176,8 +176,10 @@
     <ClInclude Include="..\MsixCoreInstaller\ComInterface.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\ComServer.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\Constants.hpp" />
+    <ClInclude Include="..\MsixCoreInstaller\Database.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\ErrorHandler.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\StartupTask.hpp" />
+    <ClInclude Include="..\MsixCoreInstaller\UpdateDatabase.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\ValidateTargetDeviceFamily.hpp" />
     <ClInclude Include="inc\IMsixResponse.hpp" />
     <ClInclude Include="inc\DeploymentOptions.hpp" />
@@ -203,10 +205,12 @@
     <ClInclude Include="..\MsixCoreInstaller\RegistryKey.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\StartMenuLink.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\PrepareDevirtualizedRegistry.hpp" />
+    <ClInclude Include="..\MsixCoreInstaller\WriteDevirtualizedRegistry.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\MsixCoreInstaller\ComInterface.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\ComServer.cpp" />
+    <ClCompile Include="..\MsixCoreInstaller\Database.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\ErrorHandler.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\Extractor.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\FilePaths.cpp" />
@@ -214,6 +218,7 @@
     <ClCompile Include="..\MsixCoreInstaller\InstallComplete.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\MsixRequest.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\StartupTask.cpp" />
+    <ClCompile Include="..\MsixCoreInstaller\UpdateDatabase.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\ValidateTargetDeviceFamily.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\MsixResponse.cpp" />
@@ -229,6 +234,7 @@
     <ClCompile Include="..\MsixCoreInstaller\StartMenuLink.cpp" />
     <ClCompile Include="MsixCoreInstallerActions.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\PrepareDevirtualizedRegistry.cpp" />
+    <ClCompile Include="..\MsixCoreInstaller\WriteDevirtualizedRegistry.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,6 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <vector>
+#include <memory>
 namespace MsixCoreLib {
 
     class IPackage {

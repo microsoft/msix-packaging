@@ -40,6 +40,12 @@ jobs:
       release:
         _arguments: -b MinSizeRel -xzlib
         _artifact: MACOS
+      release_nobundle:
+        _arguments: -b MinSizeRel -sb --no-pack
+        _artifact: MACOS-nobundle
+      relaese_nopack:
+        _arguments: -b MinSizeRel --no-pack
+        _artifact: MACOSchk-nopack
       debug_nopack:
         _arguments: -b Debug --no-pack
         _artifact: MACOSchk-nopack
@@ -56,15 +62,17 @@ jobs:
     # Because of the azure pipeline issue we won't fail compiling the code, but 
     # we will fail doing the test because there are no binaries
     # Note: We skip BVTs in Debug mode because of assert()
-  - task: Bash@3
-    displayName: macOS BVTs
-    inputs:
-      targetType: filePath
-      filePath: './test/MacOS-Linux/MacOS-Linux-Etc.sh'
-      arguments: Apple
-      workingDirectory: './test/MacOS-Linux'
-      failOnStderr: true
+  - script: 'msixtest/msixtest -s -r junit -o TEST-MsixSDK-$(_artifact).xml'
+    workingDirectory: .vs
+    displayName: 'macOS BVTs'
     condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'))
+  
+  - task: PublishTestResults@2
+    displayName: 'Publish $(_artifact) Test Results'
+    inputs:
+      failTaskOnFailedTests: true
+      testRunTitle: $(_artifact)
+    condition: and(succeededOrFailed(), contains(variables['Agent.JobName'], 'release'))
 
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
@@ -81,10 +89,10 @@ jobs:
         Package.nuspec
         build/**
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: succeeded()
+    condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact $(_artifact)'
     inputs:
       ArtifactName: $(_artifact)
-    condition: succeeded()
+    condition: succeededOrFailed()

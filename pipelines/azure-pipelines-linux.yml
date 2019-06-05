@@ -40,9 +40,15 @@ jobs:
       release:
         _arguments: -b MinSizeRel
         _artifact: LINUX
-      release_xerces_validation_parser:
+      release_nobundle:
+        _arguments: -b MinSizeRel -sb --no-pack
+        _artifact: LINUX-nobundle
+      release_validation_parser:
         _arguments: -b MinSizeRel -vp
-        _artifact: LINUX
+        _artifact: LINUX-ValidationParser
+      release_nopack:
+        _arguments: -b MinSizeRel --no-pack
+        _artifact: LINUX-nopack
       debug_nopack:
         _arguments: -b Debug --no-pack
         _artifact: LINUXchk-nopack
@@ -58,15 +64,17 @@ jobs:
     condition: succeeded()
 
     # Note: We skip BVTs in Debug mode because of assert()
-  - task: Bash@3
-    displayName: Linux BVTs
-    inputs:
-      targetType: filePath
-      filePath: './test/MacOS-Linux/MacOS-Linux-Etc.sh'
-      arguments: Linux
-      workingDirectory: './test/MacOS-Linux'
-      failOnStderr: true
+  - script: 'msixtest/msixtest -s -r junit -o TEST-MsixSDK-$(_artifact).xml'
+    workingDirectory: .vs
+    displayName: 'Linux BVTs'
     condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'))
+  
+  - task: PublishTestResults@2
+    displayName: 'Publish $(_artifact) Test Results'
+    inputs:
+      failTaskOnFailedTests: true
+      testRunTitle: $(_artifact)
+    condition: and(succeededOrFailed(), contains(variables['Agent.JobName'], 'release'))
 
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
@@ -80,10 +88,10 @@ jobs:
         src/msix/MSIXWindows.hpp
         src/msix/MsixErrors.hpp
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
-    condition: succeeded()
+    condition: succeededOrFailed()
 
   - task: PublishBuildArtifacts@1
     displayName: 'Publish Artifact $(_artifact)'
     inputs:
       ArtifactName: $(_artifact)
-    condition: succeeded()
+    condition: succeededOrFailed()

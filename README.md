@@ -47,6 +47,10 @@ of these subtrees for build related optimizations are tracked within this reposi
 The Android NDK is only required for targeting the Android platform.
 
 ## Prerequisites
+The project uses git-lfs to store some large binary test files. You can find out more and install it from here:
+
+https://git-lfs.github.com/
+
 Make sure that you have CMAKE installed on your machine 
 
    * https://cmake.org/download/
@@ -142,7 +146,7 @@ Built in the Azure Pipelines Hosted VS2017 pool. See specifications [here](https
 **Debug**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20debug)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
 **Release**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
 
-Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md)
+Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-10.14-Readme.md)
 
 ### iOS
 ||master|
@@ -151,7 +155,7 @@ Built in the Azure Pipelines macOS pool. See specification [here](https://github
 **Release emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&jobName=iOS&configuration=iOS%20release_x86)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)|
 **Release arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&jobName=iOS&configuration=iOS%20release_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)
 
-Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md)
+Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-10.14-Readme.md)
 
 ### Android
 ||master|
@@ -160,7 +164,7 @@ Built in the Azure Pipelines macOS pool. See specification [here](https://github
 **Release emulator**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20aosp%20CI?branchName=master&jobName=AOSP&configuration=AOSP%20release_emulator)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=76&branchName=master)|
 **Release arm**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20aosp%20CI?branchName=master&jobName=AOSP&configuration=AOSP%20release_arm)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=76&branchName=master)|
 
-Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-Readme.md)
+Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-10.14-Readme.md)
 
 ### Linux
 ||master|

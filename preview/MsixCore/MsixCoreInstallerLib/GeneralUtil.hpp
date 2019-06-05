@@ -53,6 +53,11 @@ namespace MsixCoreLib
     /// @return true if the strings equal, false otherwise
     bool CaseInsensitiveEquals(const std::wstring& left, const std::wstring& right);
 
+    /// Returns the current user sid as a string.
+    ///
+    /// @param userSidString - current user sid stirng
+    HRESULT GetCurrentUserSidString(std::wstring & userSidString);
+
     //
     // Stripped down ComPtr class provided for those platforms that do not already have a ComPtr class.
     //

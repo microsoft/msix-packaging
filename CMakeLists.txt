@@ -214,8 +214,6 @@ if((MACOS) OR (IOS))
     endif()
 endif()
 
-enable_testing() # needed on top-level CMakeLists.txt
-
 # Packing is not enabled for mobile devices
 if(MSIX_PACK AND (AOSP OR IOS))
     set(MSIX_PACK OFF)
@@ -253,6 +251,10 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 
+# Create a bin directory for samples and msixtest to be self contained
+set(MSIX_SAMPLE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/samples")
+set(MSIX_TEST_OUTPUT_DIRECTORY   "${CMAKE_CURRENT_BINARY_DIR}/msixtest")
+
 # Mac needed variables
 # [TODO: adapt as needed]
 set(CMAKE_MACOSX_RPATH ON)
@@ -273,6 +275,4 @@ ADD_DEPENDENCIES(SRC LIBS)
 message(STATUS "dependencies added")
 add_subdirectory(sample)
 message(STATUS "sample processed")
-add_subdirectory(test)
-message(STATUS "tests processed")
 message(STATUS "DONE!")

@@ -31,8 +31,10 @@
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
 #include "ErrorHandler.hpp"
+#include "UpdateDatabase.hpp"
 #include "ValidateTargetDeviceFamily.hpp"
 #include "PrepareDevirtualizedRegistry.hpp"
+#include "WriteDevirtualizedRegistry.hpp"
 
 #include "Constants.hpp"
 
@@ -78,7 +80,9 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {ComInterface::HandlerName,                 {ComInterface::CreateHandler,                 ComServer::HandlerName,                    ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                  ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,          ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   UpdateDatabase::HandlerName,               ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {UpdateDatabase::HandlerName,               {UpdateDatabase::CreateHandler,               InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {InstallComplete::HandlerName,              {InstallComplete::CreateHandler,              nullptr,                                   ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ErrorHandler::HandlerName,                 {ErrorHandler::CreateHandler,                 nullptr,                                   ReturnError,         nullptr}},
 };
@@ -95,10 +99,11 @@ std::map<PCWSTR, RemoveHandlerInfo> RemoveHandlers =
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,           IgnoreAndProcessNextHandler}},
     {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          PrepareDevirtualizedRegistry::HandlerName,  IgnoreAndProcessNextHandler}},
     {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
-    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    nullptr,                                    IgnoreAndProcessNextHandler}},
+    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    UpdateDatabase::HandlerName,                IgnoreAndProcessNextHandler}},
+    {UpdateDatabase::HandlerName,               {UpdateDatabase::CreateHandler,               nullptr,                                    IgnoreAndProcessNextHandler}},
 };
 
-HRESULT MsixRequest::Make(OperationType operationType, const std::wstring & packageFilePath, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest ** outInstance)
+HRESULT MsixRequest::Make(OperationType operationType, IStream * packageStream, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest ** outInstance)
 {
     AutoPtr<MsixRequest> instance(new MsixRequest());
     if (instance == nullptr)
@@ -106,7 +111,7 @@ HRESULT MsixRequest::Make(OperationType operationType, const std::wstring & pack
         return E_OUTOFMEMORY;
     }
     instance->m_operationType = operationType;
-    instance->m_packageFilePath = packageFilePath;
+    instance->m_packageStream = packageStream;
     instance->m_packageFullName = packageFullName;
     instance->m_validationOptions = validationOption;
     RETURN_IF_FAILED(FilePathMappings::GetInstance().GetInitializationResult());
@@ -219,11 +224,15 @@ void MsixRequest::SetPackageInfo(std::shared_ptr<PackageBase> packageInfo)
     m_packageInfo = packageInfo;
 }
 
-
 std::wstring MsixRequest::GetPackageDirectoryPath()
 {
     if (m_packageInfo == nullptr)
         return nullptr;
 
     return FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_packageInfo->GetPackageFullName();
+}
+
+void MsixRequest::SetRegistryDevirtualizer(std::shared_ptr<RegistryDevirtualizer> registryDevirualizer)
+{
+    m_registryDevirtualizer = registryDevirualizer;
 }

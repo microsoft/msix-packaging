@@ -364,10 +364,22 @@ endif()
 
 if(OpenSSL_FOUND)
     # include the libraries needed to use OpenSSL
-    target_include_directories(${PROJECT_NAME} PRIVATE ${OpenSLL_INCLUDE_PATH})
+    target_include_directories(${PROJECT_NAME} PRIVATE ${OpenSSL_INCLUDE_PATH})
     if((IOS) OR (MACOS))
         target_link_libraries(${PROJECT_NAME} PRIVATE crypto -Wl,-dead_strip)
-    else()
+    elseif(NOT MSVC)
         target_link_libraries(${PROJECT_NAME} PRIVATE crypto -Wl,--gc-sections)
+    else()
+        target_link_libraries(${PROJECT_NAME} PRIVATE crypto)
     endif()
+endif()
+
+# For windows copy the library to the msix and samples directory
+if(WIN32)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "bin/${PROJECT_NAME}.dll" "msixtest/${PROJECT_NAME}.dll"
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "bin/${PROJECT_NAME}.dll" "samples/${PROJECT_NAME}.dll"
+        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 endif()
