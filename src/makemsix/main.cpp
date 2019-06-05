@@ -46,7 +46,7 @@ struct State
 
     bool UnpackWithFlatStructure()
     {
-        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE);
+        packUnpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(packUnpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE);
         return true;
     }
 
