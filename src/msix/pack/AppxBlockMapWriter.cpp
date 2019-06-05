@@ -57,9 +57,9 @@ namespace MSIX {
     {
         // hash block
         std::vector<std::uint8_t> hash;
-        ThrowErrorIfNot(MSIX::Error::SignatureInvalid, 
+        ThrowErrorIfNot(MSIX::Error::BlockMapInvalidData,
             MSIX::SHA256::ComputeHash(const_cast<std::uint8_t*>(block.data()), static_cast<uint32_t>(block.size()), hash), 
-            "Invalid signature");
+            "Failed computing hash");
 
         m_xmlWriter.StartElement(blockElement);
         m_xmlWriter.AddAttribute(hashAttribute, Base64::ComputeBase64(hash));
