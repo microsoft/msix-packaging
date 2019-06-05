@@ -8,7 +8,6 @@
 #include "MsixErrors.hpp"
 #include "Exceptions.hpp"
 #include "ContentType.hpp"
-#include "Crypto.hpp"
 #include "ZipFileStream.hpp"
 #include "Encoding.hpp"
 #include "ZipObjectWriter.hpp"
@@ -216,16 +215,10 @@ namespace MSIX {
             ULONG bytesWritten = 0;
             ThrowHrIfFailed(zipFileStream->Write(block.data(), static_cast<ULONG>(block.size()), &bytesWritten));
 
-            // hash block
-            std::vector<std::uint8_t> hash;
-            ThrowErrorIfNot(MSIX::Error::SignatureInvalid, 
-                MSIX::SHA256::ComputeHash(block.data(), static_cast<uint32_t>(block.size()), hash), 
-                "Invalid signature");
-
             // Add block to blockmap
             if (addToBlockMap)
             {
-                m_blockMapWriter.AddBlock(hash, bytesWritten, toCompress);
+                m_blockMapWriter.AddBlock(block, bytesWritten, toCompress);
             }
 
         }

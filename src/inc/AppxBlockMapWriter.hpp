@@ -19,7 +19,7 @@ namespace MSIX {
         BlockMapWriter();
 
         void AddFile(const std::string& name, std::uint64_t uncompressedSize, std::uint32_t lfh);
-        void AddBlock(const std::vector<std::uint8_t>& hash, ULONG size, bool isCompressed);
+        void AddBlock(const std::vector<std::uint8_t>& block, ULONG size, bool isCompressed);
         void CloseFile();
         void Close();
         ComPtr<IStream> GetStream() { return m_xmlWriter.GetStream(); }

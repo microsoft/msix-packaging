@@ -53,8 +53,14 @@ namespace MSIX {
     }
 
     // <Block Size="2948" Hash="ORIk+3QF9mSpuOq51oT3Xqn0Gy0vcGbnBRn5lBg5irM="/>
-    void BlockMapWriter::AddBlock(const std::vector<std::uint8_t>& hash, ULONG size, bool isCompressed)
+    void BlockMapWriter::AddBlock(const std::vector<std::uint8_t>& block, ULONG size, bool isCompressed)
     {
+        // hash block
+        std::vector<std::uint8_t> hash;
+        ThrowErrorIfNot(MSIX::Error::BlockMapInvalidData,
+            MSIX::SHA256::ComputeHash(const_cast<std::uint8_t*>(block.data()), static_cast<uint32_t>(block.size()), hash), 
+            "Failed computing hash");
+
         m_xmlWriter.StartElement(blockElement);
         m_xmlWriter.AddAttribute(hashAttribute, Base64::ComputeBase64(hash));
         // We only add the size attribute for compressed files, we cannot just check for the 

@@ -67,6 +67,7 @@ namespace MSIX {
 
         // Blockmap semantic errors
         BlockMapSemanticError       = ERROR_FACILITY + 0x0051,
+        BlockMapInvalidData         = ERROR_FACILITY + 0x0052,
 
         // AppxManifest semantic errors
         AppxManifestSemanticError   = ERROR_FACILITY + 0x0061,
