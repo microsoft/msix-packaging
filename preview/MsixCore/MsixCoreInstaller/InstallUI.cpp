@@ -570,7 +570,8 @@ void UI::ButtonClicked()
     case InstallUIAdd:
     {
             m_msixResponse = m_packageManager->AddPackageAsync(m_path, DeploymentOptions::None, [this](const IMsixResponse & sender) {
-
+                std::wcout << "callback " << sender.GetPercentage() << std::endl;
+                
             ShowWindow(g_percentageTextHWnd, SW_SHOW);
             UpdateDisplayPercent((WPARAM)sender.GetPercentage());
             SendMessage(g_progressHWnd, PBM_SETPOS, (WPARAM)sender.GetPercentage(), 0);

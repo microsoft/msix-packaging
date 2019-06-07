@@ -19,8 +19,15 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packag
 {
     if (IsWindows10RS3OrLater())
     {
-        Windows10Redirector::AddPackageAsync(packageFilePath, callback);
-        return S_OK;
+        auto msixResponse = std::make_shared<MsixResponse>();
+        msixResponse->SetCallback(callback);
+
+        auto t = thread([&](shared_ptr<MsixResponse> response) {
+            Windows10Redirector::AddPackageWithProgress(packageFilePath, response);
+        }, msixResponse);
+        t.detach();
+
+        return msixResponse;
     }
 
     ComPtr<IStream> packageStream;
