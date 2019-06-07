@@ -4,7 +4,7 @@
 #include <codecvt>
 #include <iostream>
 #include <sddl.h>
-
+#pragma warning(disable : 4996)
 namespace MsixCoreLib
 {
     std::string utf16_to_utf8(const std::wstring& utf16string)
@@ -117,4 +117,21 @@ namespace MsixCoreLib
         return S_OK;
     }
 
+    BOOL IsWindows10RS3OrLater()
+    {
+        OSVERSIONINFOEX osvi;
+        ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
+
+        osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
+        osvi.dwMajorVersion = 10;
+        osvi.dwMinorVersion = 0;
+        osvi.dwBuildNumber = 16299;
+
+        DWORDLONG dwlConditionMask = 0;
+        VER_SET_CONDITION(dwlConditionMask, VER_MAJORVERSION, VER_GREATER_EQUAL);
+        VER_SET_CONDITION(dwlConditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
+        VER_SET_CONDITION(dwlConditionMask, VER_BUILDNUMBER, VER_GREATER_EQUAL);
+
+        return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask);
+    }
 }

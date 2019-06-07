@@ -223,7 +223,7 @@ void CommandFunc(HWND hWnd, RECT windowRect) {
 void StartUIThread(UI* ui)
 {
     // Free the console that we started with
-    FreeConsole();
+    //FreeConsole();
 
     // Register WindowClass and create the window
     HINSTANCE hInstance = GetModuleHandle(NULL);

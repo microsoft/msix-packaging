@@ -6,6 +6,7 @@
 #include "Database.hpp"
 #include <experimental/filesystem>
 #include <thread>
+#include "Windows10Redirector.hpp"
 
 using namespace std;
 using namespace MsixCoreLib;
@@ -16,6 +17,12 @@ PackageManager::PackageManager()
 
 shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packageFilePath, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
 {
+    if (IsWindows10RS3OrLater())
+    {
+        Windows10Redirector::AddPackageAsync(packageFilePath, callback);
+        return S_OK;
+    }
+
     ComPtr<IStream> packageStream;
     if (FAILED(CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &packageStream)))
     {
@@ -59,6 +66,12 @@ HRESULT PackageManager::AddPackage(IStream * packageStream, DeploymentOptions op
 
 HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
 {
+    if (IsWindows10RS3OrLater())
+    {
+        RETURN_IF_FAILED(Windows10Redirector::AddPackage(packageFilePath));
+        return S_OK;
+    }
+
     ComPtr<IStream> packageStream;
     auto res = CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &packageStream);
     if (FAILED(res))
