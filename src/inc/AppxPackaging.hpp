@@ -1482,7 +1482,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromPackageReader(
     IAppxPackageReader* packageReader,
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
-    MSIX_VALIDATION_OPTION validationOption,
     char* utf8Destination
 ) noexcept;
 

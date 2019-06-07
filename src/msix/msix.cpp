@@ -73,20 +73,19 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromPackageReader(
     IAppxPackageReader* packageReader,
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
-    MSIX_VALIDATION_OPTION validationOption,
     char* utf8Destination) noexcept try
 {
     ThrowErrorIfNot(MSIX::Error::InvalidParameter,
-        utf8Destination != nullptr,
+        (packageReader != nullptr && utf8Destination != nullptr),
         "Invalid parameters"
     );
 
     auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
 
-    MSIX::ComPtr<IAppxPackageReader> reader;
-    ThrowHrIfFailed(packageReader->QueryInterface(UuidOfImpl<IAppxPackageReader>::iid, reinterpret_cast<void**>(&reader)));
+    MSIX::ComPtr<IPackage> reader;
+    ThrowHrIfFailed(packageReader->QueryInterface(UuidOfImpl<IPackage>::iid, reinterpret_cast<void**>(&reader)));
 
-    reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+    reader->Unpack(packUnpackOptions, to.Get());
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
@@ -155,15 +154,15 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromBundleReader(
 {
 #ifdef BUNDLE_SUPPORT
     ThrowErrorIfNot(MSIX::Error::InvalidParameter,
-        utf8Destination != nullptr,
+        (bundleReader != nullptr && utf8Destination != nullptr),
         "Invalid parameters"
     );
 
-    MSIX::ComPtr<IAppxBundleReader> reader;
-    ThrowHrIfFailed(bundleReader->QueryInterface(UuidOfImpl<IAppxBundleReader>::iid, reinterpret_cast<void**>(&reader)));
+    MSIX::ComPtr<IPackage> reader;
+    ThrowHrIfFailed(bundleReader->QueryInterface(UuidOfImpl<IPackage>::iid, reinterpret_cast<void**>(&reader)));
 
     auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
-    reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+    reader->Unpack(packUnpackOptions, to.Get());
     return static_cast<HRESULT>(MSIX::Error::OK);
 #else
     return static_cast<HRESULT>(MSIX::Error::NotSupported);
