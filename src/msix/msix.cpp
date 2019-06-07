@@ -71,9 +71,9 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
 } CATCH_RETURN();
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromPackageReader(
-    IAppxPackageReader* packageReader,
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
-    char* utf8Destination) noexcept try
+    char* utf8Destination,
+    IAppxPackageReader* packageReader) noexcept try
 {
     ThrowErrorIfNot(MSIX::Error::InvalidParameter,
         (packageReader != nullptr && utf8Destination != nullptr),
@@ -146,11 +146,9 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
 } CATCH_RETURN();
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromBundleReader(
-    IAppxBundleReader* bundleReader,
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
-    MSIX_VALIDATION_OPTION validationOption,
-    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
-    char* utf8Destination) noexcept try
+    char* utf8Destination,
+    IAppxBundleReader* bundleReader) noexcept try
 {
 #ifdef BUNDLE_SUPPORT
     ThrowErrorIfNot(MSIX::Error::InvalidParameter,
