@@ -41,6 +41,12 @@ struct State
         return true;
     }
 
+    bool UnpackWithFlatStructure()
+    {
+        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE);
+        return true;
+    }
+
     bool SkipManifestValidation()
     {
         validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST);
@@ -68,6 +74,12 @@ struct State
     bool SkipPlatform()
     {
         applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_SKIPPLATFORM);
+        return true;
+    }
+
+    bool SkipApplicability()
+    {
+        applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_NONE);
         return true;
     }
 
@@ -309,7 +321,11 @@ int main(int argc, char* argv[])
                 Option("-ss", false, "Skips enforcement of signed packages.  By default packages must be signed.",
                     [](State& state, const std::string&) { return state.SkipSignature(); }),
                 Option("-?", false, "Displays this help text.",
-                    [](State& state, const std::string&) { return false; })                
+                    [](State& state, const std::string&) { return false; }),     
+                // Identical behavior as -pfn. This option was created to create parity with unbundle's -pfn-flat option so that IT pros
+                // creating packages for app attach only need to be aware of a single option.
+                Option("-pfn-flat", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name. Same behavior as -pfn",
+                    [](State& state, const std::string&) {return state.CreatePackageSubfolder(); })
             })
         },
         {   Command("unbundle", "Unpack files from a package to disk",
@@ -331,6 +347,10 @@ int main(int argc, char* argv[])
                     [](State& state, const std::string&) { return state.SkipLanguage(); }),
                 Option("-sp", false, "Only for bundles. Skips matching packages with of the same system. By default unpacked application packages will only match the platform.",
                     [](State& state, const std::string&) { return state.SkipPlatform(); }),
+                Option("-extract-all", false, "Only for bundles. Extracts all packages from the bundle.",
+                    [](State& state, const std::string&) { return state.SkipApplicability(); }),
+                Option("-pfn-flat", false, "Unpacks bundle's files to a subdirectory under the specified output path, named after the package full name. Unpacks packages to subdirectories also under the specified output path, named after the package full name. By default unpacked packages will be nested inside the bundle folder",
+                    [](State& state, const std::string&) { return state.UnpackWithFlatStructure(); }),
                 Option("-?", false, "Displays this help text.",
                     [](State& state, const std::string&) { return false; })                
             })

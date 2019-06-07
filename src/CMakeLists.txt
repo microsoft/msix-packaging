@@ -6,5 +6,4 @@ cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 add_custom_target(SRC)
 add_subdirectory(msix)
 add_subdirectory(makemsix)
-
-add_dependencies(makemsix msix)
+add_subdirectory(test)

@@ -67,18 +67,21 @@ namespace MSIX {
         size_t position = 0;
         size_t found = 0;
         int segmentNumber = 0;
-        auto delimiter = '.';
-        while(found != std::string::npos)
+        constexpr auto delimiter = '.';
+
+        while (found != std::string::npos && segmentNumber < 4)
         {
             segmentNumber++;
             found = version.find(delimiter, position);
             auto segment = version.substr(position, found - position);
             auto sub = ConvertSubVersion(segment);
-            std::uint16_t* cursor = reinterpret_cast<std::uint16_t*>(&result) + 4 - segmentNumber;
-            *cursor = sub;
+            result |= (static_cast<std::uint64_t>(sub) << (16 * (4 - segmentNumber)));
             position = found + 1;
         }
-        ThrowErrorIf(Error::InvalidParameter, segmentNumber != 4, "Bad format" );
+
+        // If we didn't reach the end of the string, format was bad
+        ThrowErrorIf(Error::InvalidParameter, found != std::string::npos, "Bad format" );
+
         return result;
     }
 

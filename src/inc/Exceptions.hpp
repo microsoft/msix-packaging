@@ -114,4 +114,5 @@ namespace MSIX {
         {   MSIX::RaiseException<MSIX::Exception> (__LINE__, __FILE__, m, HRESULT_FROM_WIN32(GetLastError())); \
         }                                                                                                      \
     }
+    #define ThrowLastErrorIf(a, m) { if (a) { MSIX::RaiseException<MSIX::Exception> (__LINE__, __FILE__, m, HRESULT_FROM_WIN32(GetLastError())); }}
 #endif

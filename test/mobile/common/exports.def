@@ -1,8 +1,0 @@
-# exports.def
-# written 1/29/2018 by Phil Smith (psmith@microsoft.com)
-# This file defines the list of c-style exports for common test shared library 
-# do not remove, reorder, or overload, these exported functions as doing so
-# will break the ABI contract with clients.
-# ---------------------------------------------------------------------------
-_RunTests
-_RunApiTest
