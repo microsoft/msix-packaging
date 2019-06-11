@@ -264,7 +264,6 @@ int ParseAndRun(std::vector<Command>& commands, int argc, char* argv[])
     if (!ParseInput(commands, state, argc, argv)) { 
         return Help(argv[0], commands, state);
     }
-
     switch (state.specified)
     {
     case UserSpecified::Help:

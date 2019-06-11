@@ -1479,6 +1479,12 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     char* utf8Destination
 ) noexcept;
 
+MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromPackageReader(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    IAppxPackageReader* packageReader,
+    char* utf8Destination
+) noexcept;
+
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
@@ -1491,6 +1497,12 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
     MSIX_VALIDATION_OPTION validationOption,
     MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     char* utf8SourcePackage,
+    char* utf8Destination
+) noexcept;
+
+MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromBundleReader(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    IAppxBundleReader* bundleReader,
     char* utf8Destination
 ) noexcept;
 
