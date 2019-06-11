@@ -69,28 +69,32 @@ namespace MSIX {
             struct _resourcesContext
             {
                 std::vector<Bcp47Tag> languages;
+                std::vector<UINT32> scales;
                 bool                  hasResources;
             };
-            _resourcesContext resourcesContext = { {}, false};
+            _resourcesContext resourcesContext = { {}, {}, false};
             XmlVisitor visitor(static_cast<void*>(&resourcesContext), [](void* c, const ComPtr<IXmlElement>& resourceNode)->bool
             {
                 _resourcesContext* resourcesContext = reinterpret_cast<_resourcesContext*>(c);
                 const auto& language = resourceNode->GetAttributeValue(XmlAttributeName::Language);
                 if (!language.empty()) { resourcesContext->languages.push_back(Bcp47Tag(language)); }
+
+                const auto& scale = resourceNode->GetAttributeValue(XmlAttributeName::Scale);
+                if (!scale.empty()) 
+                { 
+                    UINT32 scaleInt = std::stoi(scale);
+                    resourcesContext->scales.push_back(scaleInt); 
+                }
+
                 resourcesContext->hasResources = true;
                 return true;
             });
-            context->dom->ForEachElementIn(packageNode, XmlQueryName::Bundle_Packages_Package_Resources_Resource, visitor);
-
-            if ((packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE) && resourcesContext.languages.empty() && resourcesContext.hasResources)
-            {   // For now, we only support languages resource packages
-                return true;
-            }
+            context->dom->ForEachElementIn(packageNode, XmlQueryName::Child_Resources_Resource, visitor);
 
             ComPtr<IAppxManifestPackageIdInternal> packageIdInternal = context->self->m_packageId.As<IAppxManifestPackageIdInternal>();
             auto package = ComPtr<IAppxBundleManifestPackageInfo>::Make<AppxBundleManifestPackageInfo>(
                 context->self->m_factory, name, packageIdInternal->GetName(), version, size, offset, resourceId,
-                architecture, packageIdInternal->GetPublisher(), resourcesContext.languages, packageType);
+                architecture, packageIdInternal->GetPublisher(), resourcesContext.languages, resourcesContext.scales, packageType);
             context->self->m_packages.push_back(std::move(package));
 
             if(packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
@@ -141,8 +145,9 @@ namespace MSIX {
         const std::string& architecture,
         const std::string& publisher,
         std::vector<Bcp47Tag>& languages,
+        std::vector<UINT32>& scales,
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType):
-        m_factory(factory), m_fileName(name), m_size(size), m_offset(offset), m_languages(std::move(languages)), m_packageType(packageType)
+        m_factory(factory), m_fileName(name), m_size(size), m_offset(offset), m_languages(std::move(languages)), m_scales(scales), m_packageType(packageType)
     {
         std::regex e (".+\\.((appx)|(msix))");
         ThrowErrorIf(Error::AppxManifestSemanticError, !std::regex_match(m_fileName, e), "Invalid FileName attribute in AppxBundleManifest.xml");
@@ -187,14 +192,21 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxBundleManifestPackageInfo::GetResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (resources == nullptr || *resources != nullptr), "bad pointer.");
-        std::vector<ComPtr<IAppxManifestQualifiedResource>> languages;
+        std::vector<ComPtr<IAppxManifestQualifiedResource>> m_resources;
         for(auto& bcp47 : m_languages)
         {
             auto resource = ComPtr<IAppxManifestQualifiedResource>::Make<AppxBundleQualifiedResource>(m_factory, bcp47.GetFullTag());
-            languages.push_back(std::move(resource));
+            m_resources.push_back(std::move(resource));
         }
+
+        for (auto& scale : m_scales)
+        {
+            auto resource = ComPtr<IAppxManifestQualifiedResource>::Make<AppxBundleQualifiedResource>(m_factory, scale);
+            m_resources.push_back(std::move(resource));
+        }
+
         *resources = ComPtr<IAppxManifestQualifiedResourcesEnumerator>::
-            Make<EnumeratorCom<IAppxManifestQualifiedResourcesEnumerator, IAppxManifestQualifiedResource>>(languages).Detach();
+            Make<EnumeratorCom<IAppxManifestQualifiedResourcesEnumerator, IAppxManifestQualifiedResource>>(m_resources).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 

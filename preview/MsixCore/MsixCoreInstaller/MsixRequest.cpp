@@ -34,6 +34,7 @@
 #include "UpdateDatabase.hpp"
 #include "ValidateTargetDeviceFamily.hpp"
 #include "PrepareDevirtualizedRegistry.hpp"
+#include "WriteDevirtualizedRegistry.hpp"
 
 #include "Constants.hpp"
 
@@ -76,7 +77,8 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {ComInterface::HandlerName,                 {ComInterface::CreateHandler,                 ComServer::HandlerName,                    ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                  ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,          ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          UpdateDatabase::HandlerName,               ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   UpdateDatabase::HandlerName,               ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {UpdateDatabase::HandlerName,               {UpdateDatabase::CreateHandler,               InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {InstallComplete::HandlerName,              {InstallComplete::CreateHandler,              nullptr,                                   ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ErrorHandler::HandlerName,                 {ErrorHandler::CreateHandler,                 nullptr,                                   ReturnError,         nullptr}},
@@ -219,11 +221,15 @@ void MsixRequest::SetPackageInfo(std::shared_ptr<PackageBase> packageInfo)
     m_packageInfo = packageInfo;
 }
 
-
 std::wstring MsixRequest::GetPackageDirectoryPath()
 {
     if (m_packageInfo == nullptr)
         return nullptr;
 
     return FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_packageInfo->GetPackageFullName();
+}
+
+void MsixRequest::SetRegistryDevirtualizer(std::shared_ptr<RegistryDevirtualizer> registryDevirualizer)
+{
+    m_registryDevirtualizer = registryDevirualizer;
 }

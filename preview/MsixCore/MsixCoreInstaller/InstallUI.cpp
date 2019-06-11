@@ -4,6 +4,10 @@
 #include <commctrl.h>
 #include <sys/types.h>
 #include <thread>
+#include <shldisp.h>
+#include <shlobj.h>
+#include <exdisp.h>
+#include <stdlib.h>
 
 #include <algorithm>
 #include <sstream>
@@ -67,6 +71,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         ui->InstallButton(hWnd, windowRect);
         ui->CreateLaunchButton(hWnd, windowRect, 275, 60);
         ui->CreateDisplayPercentageText(hWnd, windowRect);
+        ui->CreateDisplayErrorText(hWnd, windowRect);
         break;
     case WM_PAINT:
     {
@@ -185,12 +190,63 @@ void UI::ConfirmAppCancel(HWND hWnd)
     }
 }
 
+// Avoid launching the app elevated, we need to ShellExecute from Explorer in order to launch as the currently logged in user.
+// See https://devblogs.microsoft.com/oldnewthing/?p=2643 
+// ExecInExplorer.cpp sample from https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/dd940355(v=vs.85)
+HRESULT GetDesktopAutomationObject(REFIID riid, void **ppv)
+{
+    ComPtr<IShellWindows> shellWindows;
+    RETURN_IF_FAILED(CoCreateInstance(CLSID_ShellWindows, NULL, CLSCTX_LOCAL_SERVER, IID_PPV_ARGS(&shellWindows)));
+
+    HWND hwnd;
+    ComPtr<IDispatch> dispatch;
+    VARIANT vEmpty = {}; // VT_EMPTY
+    RETURN_IF_FAILED(shellWindows->FindWindowSW(&vEmpty /*varLoc*/, &vEmpty /*varLocRoot*/, SWC_DESKTOP, (long*)&hwnd, SWFO_NEEDDISPATCH, &dispatch));
+
+    ComPtr<IServiceProvider> serviceProvider;
+    RETURN_IF_FAILED(dispatch->QueryInterface(IID_PPV_ARGS(&serviceProvider)));
+
+    ComPtr<IShellBrowser> shellBrowser;
+    RETURN_IF_FAILED(serviceProvider->QueryService(SID_STopLevelBrowser, &shellBrowser));
+
+    ComPtr<IShellView> shellView;
+    RETURN_IF_FAILED(shellBrowser->QueryActiveShellView(&shellView));
+
+    ComPtr<IDispatch> dispatchView;
+    RETURN_IF_FAILED(shellView->GetItemObject(SVGIO_BACKGROUND, IID_PPV_ARGS(&dispatchView)));
+    RETURN_IF_FAILED(dispatchView->QueryInterface(riid, ppv));
+    return S_OK;
+}
+
+HRESULT ShellExecuteFromExplorer(PCWSTR pszFile)
+{
+    ComPtr<IShellFolderViewDual> folderView;
+    RETURN_IF_FAILED(GetDesktopAutomationObject(IID_PPV_ARGS(&folderView)));
+    ComPtr<IDispatch> dispatch;
+    RETURN_IF_FAILED(folderView->get_Application(&dispatch));
+
+    Bstr bstrfile(pszFile);
+    VARIANT vtEmpty = {}; // VT_EMPTY
+    ComPtr<IShellDispatch2> shellDispatch;
+    RETURN_IF_FAILED(dispatch->QueryInterface(IID_PPV_ARGS(&shellDispatch)));
+    RETURN_IF_FAILED(shellDispatch->ShellExecute(bstrfile, vtEmpty /*arguments*/, vtEmpty /*directory*/, vtEmpty /*operation*/, vtEmpty /*show*/));
+    return S_OK;
+}
+
+
 HRESULT UI::LaunchInstalledApp()
 {
     shared_ptr<IInstalledPackage> installedPackage;
     RETURN_IF_FAILED(m_packageManager->FindPackage(m_packageInfo->GetPackageFullName(), installedPackage));
-    //check for error while launching app here
-    ShellExecute(NULL, NULL, installedPackage->GetFullExecutableFilePath().c_str(), NULL, NULL, SW_SHOW);
+    
+    HRESULT hrShellExecute = ShellExecuteFromExplorer(installedPackage->GetFullExecutableFilePath().c_str());
+    if (FAILED(hrShellExecute))
+    {
+        TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+            "ShellExecute Failed",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrShellExecute, "HR"));
+    }
     return S_OK;
 }
 
@@ -471,6 +527,39 @@ BOOL UI::CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect)
     return TRUE;
 }
 
+BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
+{
+    g_staticErrorTextHWnd = CreateWindowEx(
+        WS_EX_LEFT,
+        L"Static",
+        L"Reason:",
+        WS_CHILD,
+        parentRect.left + 50,
+        parentRect.bottom - 80,
+        120,
+        20,
+        parentHWnd,
+        (HMENU)IDC_STATICERRORCONTROL,
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+        0);
+
+    g_staticErrorDescHWnd = CreateWindowEx(
+        WS_EX_LEFT,
+        L"Static",
+        L"",
+        WS_CHILD | WS_BORDER,
+        parentRect.left + 50,
+        parentRect.bottom - 60,
+        375,
+        40,
+        parentHWnd,
+        (HMENU)IDC_STATICERRORCONTROL,
+        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
+        0);
+
+    return TRUE;
+}
+
 BOOL UI::ChangeInstallButtonText(const std::wstring& newMessage)
 {
     SendMessage(g_buttonHWnd, WM_SETTEXT, NULL, reinterpret_cast<LPARAM>(newMessage.c_str()));
@@ -573,21 +662,20 @@ void UI::ButtonClicked()
                 std::wcout << "callback " << sender.GetPercentage() << std::endl;
                 
             ShowWindow(g_percentageTextHWnd, SW_SHOW);
-            UpdateDisplayPercent((WPARAM)sender.GetPercentage());
+            UpdateDisplayPercent(sender.GetPercentage());
             SendMessage(g_progressHWnd, PBM_SETPOS, (WPARAM)sender.GetPercentage(), 0);
             switch (sender.GetStatus())
             {
-            case InstallationStep::InstallationStepCompleted:
-            {
-                SendInstallCompleteMsg();
-            }
-            break;
-            case InstallationStep::InstallationStepError:
-            {
-                //auto error = sender->GetTextStatus();
-                CloseUI();
-            }
-            break;
+                case InstallationStep::InstallationStepCompleted:
+                {
+                    SendInstallCompleteMsg();
+                }
+                break;
+                case InstallationStep::InstallationStepError:
+                {
+                    DisplayError(sender.GetHResultTextCode());
+                }
+                break;
             }
         });
     }
@@ -607,6 +695,23 @@ void UI::UpdateDisplayPercent(float displayPercent)
     SetWindowText(g_staticPercentText, ss.str().c_str());
     ShowWindow(g_staticPercentText, SW_HIDE);
     ShowWindow(g_staticPercentText, SW_SHOW);
+}
+
+void UI::DisplayError(HRESULT hr)
+{
+    g_installing = false;
+    ShowWindow(g_percentageTextHWnd, SW_HIDE);
+    ShowWindow(g_staticPercentText, SW_HIDE);
+    ShowWindow(g_progressHWnd, SW_HIDE);
+    ShowWindow(g_checkboxHWnd, SW_HIDE);
+    ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
+    
+    //Show Error Window
+    ShowWindow(g_staticErrorTextHWnd, SW_SHOW);
+    ShowWindow(g_staticErrorDescHWnd, SW_SHOW);
+    std::wstringstream errorDescription;
+    errorDescription << GetStringResource(IDS_STRING_ERROR_MSG) << std::hex << hr << ".";
+    SetWindowText(g_staticErrorDescHWnd, errorDescription.str().c_str());
 }
 
 void UI::CloseUI()

@@ -23,9 +23,7 @@ namespace MsixCoreLib
         PrepareDevirtualizedRegistry() {}
         PrepareDevirtualizedRegistry(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
-        /// Extracts or removes the registry information contained inside Registry.dat
-        ///
-        /// @param remove - if true, removes registry information. if false, adds registry information
-        HRESULT ExtractRegistry(bool remove);
+        /// Extracts the registry information contained inside Registry.dat
+        HRESULT ExtractRegistry();
     };
 }
