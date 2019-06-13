@@ -203,11 +203,11 @@ struct Invocation
         const InvokedOption* opt = GetInvokedOption(name);
         if (!opt)
         {
-            throw new std::exception("Expected option not present");
+            throw std::runtime_error("Expected option not present");
         }
         if (opt->option.ParameterCount != 1)
         {
-            throw new std::exception("Given option does not take exactly one parameter");
+            throw std::runtime_error("Given option does not take exactly one parameter");
         }
         return opt->params[0];
     }
@@ -337,7 +337,7 @@ std::underlying_type_t<EnumType> asut(EnumType e)
 }
 
 template <typename EnumType>
-std::enable_if_t<std::is_enum_v<EnumType>, EnumType> operator|=(EnumType& a, EnumType b)
+std::enable_if_t<std::is_enum<EnumType>::value, EnumType> operator|=(EnumType& a, EnumType b)
 {
     a = static_cast<EnumType>(asut(a) | asut(b));
     return a;
