@@ -16,8 +16,8 @@
 #include "..\MsixCoreInstallerLib\GeneralUtil.hpp"
 #include "resource.h"
 #include <VersionHelpers.h>
-#include <MsixCoreInstallerActions.hpp>
 
+#include <MsixCoreInstallerActions.hpp>
 using namespace std;
 using namespace MsixCoreLib;
 
