@@ -42,13 +42,19 @@ HRESULT FirewallRules::ParseManifest()
         RETURN_IF_FAILED(firewallRuleEnum->GetCurrent(&ruleElement));
 
         Text<wchar_t> direction;
-        RETURN_IF_FAILED(ruleElement->GetAttributeValue(ruleDirectionAttribute.c_str(), &direction));
+        RETURN_IF_FAILED(ruleElement->GetAttributeValue(firewallRuleDirectionAttribute.c_str(), &direction));
 
         Text<wchar_t> protocol;
-        RETURN_IF_FAILED(ruleElement->GetAttributeValue(ruleProtocolAttribute.c_str(), &protocol));
+        RETURN_IF_FAILED(ruleElement->GetAttributeValue(protocolAttribute.c_str(), &protocol));
 
         Text<wchar_t> profile;
-        RETURN_IF_FAILED(ruleElement->GetAttributeValue(ruleProfileAttribute.c_str(), &profile));
+        RETURN_IF_FAILED(ruleElement->GetAttributeValue(profileAttribute.c_str(), &profile));
+
+        Text<wchar_t> localPortMin, localPortMax, remotePortMin, remotePortMax;
+        RETURN_IF_FAILED(ruleElement->GetAttributeValue(localPortMinAttribute.c_str(), &localPortMin));
+        RETURN_IF_FAILED(ruleElement->GetAttributeValue(localPortMaxAttribute.c_str(), &localPortMax));
+        RETURN_IF_FAILED(ruleElement->GetAttributeValue(remotePortMinAttribute.c_str(), &remotePortMin));
+        RETURN_IF_FAILED(ruleElement->GetAttributeValue(remotePortMaxAttribute.c_str(), &remotePortMax));
 
         INetFwPolicy2 *pNetFwPolicy2 = NULL;
         INetFwRules *pFwRules = NULL;
@@ -79,10 +85,25 @@ HRESULT FirewallRules::ParseManifest()
         //Map protocol
         pFwRule->put_Protocol(ConvertToProtocol(protocol.Get()));
 
-        std::wstring portNums = L"80";
-        BSTR localPorts = SysAllocString(portNums.data());
-        HRESULT portsResult = pFwRule->put_LocalPorts(localPorts);
-        pFwRule->put_RemotePorts(localPorts);
+        //Local ports
+        if (localPortMin.Get() != nullptr && localPortMax.Get() != nullptr)
+        {
+            std::wstring localPortRange = localPortMin.Get();
+            localPortRange.append(L"-");
+            localPortRange.append(localPortMax.Get());
+            BSTR localPorts = SysAllocString(localPortRange.data());
+            pFwRule->put_LocalPorts(localPorts);      
+        }
+
+        //Remote ports
+        if (remotePortMin.Get() != nullptr && remotePortMax.Get() != nullptr)
+        {
+            std::wstring remotePortRange = remotePortMin.Get();
+            remotePortRange.append(L"-");
+            remotePortRange.append(remotePortMax.Get());
+            BSTR remotePorts = SysAllocString(remotePortRange.data());
+            pFwRule->put_RemotePorts(remotePorts);
+        }
 
         //Map direction
         if (_wcsicmp(direction.Get(), directionIn.c_str()) == 0)
