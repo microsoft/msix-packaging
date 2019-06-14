@@ -114,6 +114,12 @@ shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & pac
 
 HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
 {
+    if (IsWindows10RS3OrLater())
+    {
+        RETURN_IF_FAILED(Windows10Redirector::RemovePackage(packageFullName));
+        return S_OK;
+    }
+
     AutoPtr<MsixRequest> impl;
     RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, nullptr, packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     

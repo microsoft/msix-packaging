@@ -11,5 +11,6 @@ namespace MsixCoreLib
     {
         HRESULT AddPackageWithProgress(const std::wstring & packageFilePath, std::shared_ptr<MsixResponse>& msixResponse);
         HRESULT AddPackage(const std::wstring & packageFilePath);
+        HRESULT RemovePackage(const std::wstring & packageFullName);
     };
 }

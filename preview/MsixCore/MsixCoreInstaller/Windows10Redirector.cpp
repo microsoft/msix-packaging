@@ -44,3 +44,15 @@ HRESULT MsixCoreLib::Windows10Redirector::AddPackage(const std::wstring & packag
 
     return S_OK;
 }
+
+HRESULT MsixCoreLib::Windows10Redirector::RemovePackage(const std::wstring & packageFullName)
+{
+    winrt::init_apartment();
+
+    winrt::Windows::Management::Deployment::PackageManager packageManager;
+
+    auto deploymentOperation{ packageManager.RemovePackageAsync(packageFullName) };
+    deploymentOperation.get();
+
+    return S_OK;
+}

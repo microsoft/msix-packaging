@@ -45,16 +45,6 @@ int main(int argc, char * argv[])
         {
         case OperationType::Add:
         {
-            // Before doing any actual processing of an add request, see if this is RS3 or later.
-            if (IsWindows10RS3OrLater())
-            {
-                // use the desktopappinstaller UI
-                //std::wstring protocol = std::wstring(L"ms-appinstaller:?source=") + m_packageFilePath;
-                //ShellExecuteW(nullptr, L"Open", protocol.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
-
-                //exit(0);
-            }
-
             AutoPtr<IPackageManager> packageManager;
             RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
