@@ -93,9 +93,9 @@ HRESULT FirewallRules::ParseManifest()
 
 HRESULT FirewallRules::AddFirewallRules(FirewallRule& firewallRule)
 {
-    INetFwPolicy2 *pNetFwPolicy2 = NULL;
-    INetFwRules *pFwRules = NULL;
-    INetFwRule *pFwRule = NULL;
+    ComPtr<INetFwPolicy2> pNetFwPolicy2;
+    ComPtr<INetFwRules> pFwRules;
+    ComPtr<INetFwRule> pFwRule;
 
     // Retrieve INetFwPolicy2
     RETURN_IF_FAILED(WFCOMInitialize(&pNetFwPolicy2));
@@ -109,18 +109,18 @@ HRESULT FirewallRules::AddFirewallRules(FirewallRule& firewallRule)
     std::wstring packageDisplayName = m_msixRequest->GetPackageInfo()->GetDisplayName();
     BSTR ruleName = SysAllocString(packageDisplayName.data());
     BSTR ruleDescription = SysAllocString(packageDisplayName.data());
-    pFwRule->put_Name(ruleName);
-    pFwRule->put_Description(ruleDescription);
-    pFwRule->put_Enabled(VARIANT_TRUE);
+    RETURN_IF_FAILED(pFwRule->put_Name(ruleName));
+    RETURN_IF_FAILED(pFwRule->put_Description(ruleDescription));
+    RETURN_IF_FAILED(pFwRule->put_Enabled(VARIANT_TRUE));
 
-    pFwRule->put_Action(NET_FW_ACTION_ALLOW);
+    RETURN_IF_FAILED(pFwRule->put_Action(NET_FW_ACTION_ALLOW));
 
     std::wstring resolvedExecutableFullPath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + m_msixRequest->GetPackageInfo()->GetDisplayName();
     BSTR applicationName = SysAllocString(resolvedExecutableFullPath.data());
-    pFwRule->put_ApplicationName(applicationName);
+    RETURN_IF_FAILED(pFwRule->put_ApplicationName(applicationName));
 
     //Map protocol
-    pFwRule->put_Protocol(ConvertToProtocol(firewallRule.protocol.c_str()));
+    RETURN_IF_FAILED(pFwRule->put_Protocol(ConvertToProtocol(firewallRule.protocol.c_str())));
 
     //Local ports
     if (!firewallRule.localPortMin.empty() && !firewallRule.localPortMax.empty() )
@@ -129,7 +129,7 @@ HRESULT FirewallRules::AddFirewallRules(FirewallRule& firewallRule)
         localPortRange.append(L"-");
         localPortRange.append(firewallRule.localPortMax.c_str());
         BSTR localPorts = SysAllocString(localPortRange.data());
-        pFwRule->put_LocalPorts(localPorts);
+        RETURN_IF_FAILED(pFwRule->put_LocalPorts(localPorts));
     }
 
     //Remote ports
@@ -139,24 +139,24 @@ HRESULT FirewallRules::AddFirewallRules(FirewallRule& firewallRule)
         remotePortRange.append(L"-");
         remotePortRange.append(firewallRule.remotePortMax.c_str());
         BSTR remotePorts = SysAllocString(remotePortRange.data());
-        pFwRule->put_RemotePorts(remotePorts);
+        RETURN_IF_FAILED(pFwRule->put_RemotePorts(remotePorts));
     }
 
     //Map direction
     if (_wcsicmp(firewallRule.direction.c_str(), directionIn.c_str()) == 0)
     {
-        pFwRule->put_Direction(NET_FW_RULE_DIR_IN);
+        RETURN_IF_FAILED(pFwRule->put_Direction(NET_FW_RULE_DIR_IN));
     }
     else
     {
-        pFwRule->put_Direction(NET_FW_RULE_DIR_OUT);
+        RETURN_IF_FAILED(pFwRule->put_Direction(NET_FW_RULE_DIR_OUT));
     }
 
     //Map profile
-    pFwRule->put_Profiles(ConvertToProfileType(firewallRule.profile.c_str()));
+    RETURN_IF_FAILED(pFwRule->put_Profiles(ConvertToProfileType(firewallRule.profile.c_str())));
 
     // Populate the Firewall Rule object
-    RETURN_IF_FAILED(pFwRules->Add(pFwRule));
+    RETURN_IF_FAILED(pFwRules->Add(pFwRule.Get()));
 
     return S_OK;
 }
