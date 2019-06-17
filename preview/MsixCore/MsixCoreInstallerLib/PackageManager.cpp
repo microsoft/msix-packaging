@@ -6,6 +6,7 @@
 #include "Database.hpp"
 #include <experimental/filesystem>
 #include <thread>
+#include "Windows10Redirector.hpp"
 
 using namespace std;
 using namespace MsixCoreLib;
@@ -16,6 +17,19 @@ PackageManager::PackageManager()
 
 shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packageFilePath, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
 {
+    if (IsWindows10RS3OrLater())
+    {
+        auto msixResponse = std::make_shared<MsixResponse>();
+        msixResponse->SetCallback(callback);
+
+        auto t = thread([&](shared_ptr<MsixResponse> response) {
+            Windows10Redirector::AddPackageWithProgress(packageFilePath, response);
+        }, msixResponse);
+        t.detach();
+
+        return msixResponse;
+    }
+
     ComPtr<IStream> packageStream;
     if (FAILED(CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &packageStream)))
     {
@@ -59,6 +73,12 @@ HRESULT PackageManager::AddPackage(IStream * packageStream, DeploymentOptions op
 
 HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
 {
+    if (IsWindows10RS3OrLater())
+    {
+        RETURN_IF_FAILED(Windows10Redirector::AddPackage(packageFilePath));
+        return S_OK;
+    }
+
     ComPtr<IStream> packageStream;
     auto res = CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &packageStream);
     if (FAILED(res))
@@ -94,6 +114,12 @@ shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & pac
 
 HRESULT PackageManager::RemovePackage(const wstring & packageFullName)
 {
+    if (IsWindows10RS3OrLater())
+    {
+        RETURN_IF_FAILED(Windows10Redirector::RemovePackage(packageFullName));
+        return S_OK;
+    }
+
     AutoPtr<MsixRequest> impl;
     RETURN_IF_FAILED(MsixRequest::Make(OperationType::Remove, nullptr, packageFullName, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     

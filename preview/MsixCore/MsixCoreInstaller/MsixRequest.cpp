@@ -39,10 +39,7 @@
 
 #include "Constants.hpp"
 
-// MSIXWindows.hpp define NOMINMAX because we want to use std::min/std::max from <algorithm>
-// GdiPlus.h requires a definiton for min and max. Use std namespace *BEFORE* including it.
 using namespace std;
-#include <GdiPlus.h>
 using namespace MsixCoreLib;
 
 enum ErrorHandlingMode
