@@ -229,6 +229,7 @@ NET_FW_PROFILE_TYPE2 FirewallRules::ConvertToProfileType(PCWSTR key)
 HRESULT FirewallRules::WFCOMInitialize(INetFwPolicy2 ** ppNetFwPolicy2)
 {
     RETURN_IF_FAILED(CoCreateInstance(__uuidof(NetFwPolicy2), NULL, CLSCTX_INPROC_SERVER, __uuidof(INetFwPolicy2), (void**)ppNetFwPolicy2));
+    return S_OK;
 }
 
 HRESULT FirewallRules::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** instance)
