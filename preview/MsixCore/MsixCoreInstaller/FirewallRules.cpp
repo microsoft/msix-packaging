@@ -156,19 +156,8 @@ HRESULT FirewallRules::AddFirewallRules(FirewallRule& firewallRule)
     pFwRule->put_Profiles(ConvertToProfileType(firewallRule.profile.c_str()));
 
     // Populate the Firewall Rule object
-    HRESULT hr = pFwRules->Add(pFwRule);
-    if (SUCCEEDED(hr))
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Success",
-            TraceLoggingValue(hr, "HR"));
-    }
-    else
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Failure",
-            TraceLoggingValue(hr, "HR"));
-    }
+    RETURN_IF_FAILED(pFwRules->Add(pFwRule));
+
     return S_OK;
 }
 
@@ -239,23 +228,7 @@ NET_FW_PROFILE_TYPE2 FirewallRules::ConvertToProfileType(PCWSTR key)
 
 HRESULT FirewallRules::WFCOMInitialize(INetFwPolicy2 ** ppNetFwPolicy2)
 {
-    HRESULT hr = S_OK;
-
-    hr = CoCreateInstance(
-        __uuidof(NetFwPolicy2),
-        NULL,
-        CLSCTX_INPROC_SERVER,
-        __uuidof(INetFwPolicy2),
-        (void**)ppNetFwPolicy2);
-
-    if (FAILED(hr))
-    {
-        printf("CoCreateInstance for INetFwPolicy2 failed: 0x%08lx\n", hr);
-        goto Cleanup;
-    }
-
-Cleanup:
-    return hr;
+    RETURN_IF_FAILED(CoCreateInstance(__uuidof(NetFwPolicy2), NULL, CLSCTX_INPROC_SERVER, __uuidof(INetFwPolicy2), (void**)ppNetFwPolicy2));
 }
 
 HRESULT FirewallRules::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** instance)
