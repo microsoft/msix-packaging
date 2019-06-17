@@ -7,12 +7,22 @@
 
 namespace MsixCoreLib
 {
+    struct FirewallRule
+    {
+        std::wstring direction;
+        std::wstring protocol;
+        std::wstring profile;
+        std::wstring localPortMin;
+        std::wstring localPortMax;
+        std::wstring remotePortMin;
+        std::wstring remotePortMax;
+    };
+
     class FirewallRules : IPackageHandler
     {
     public:
         HRESULT ExecuteForAddRequest();
 
-        /// Removes all the registry keys written during the add.
         HRESULT ExecuteForRemoveRequest();
 
         static const PCWSTR HandlerName;
@@ -20,11 +30,14 @@ namespace MsixCoreLib
         ~FirewallRules() {}
     private:
         MsixRequest * m_msixRequest = nullptr;
+        std::vector<FirewallRule> m_firewallRules;
 
         FirewallRules() {}
         FirewallRules(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
         HRESULT ParseManifest();
+
+        HRESULT AddFirewallRules(FirewallRule& firewallRule);
 
         HRESULT WFCOMInitialize(INetFwPolicy2** ppNetFwPolicy2);
 

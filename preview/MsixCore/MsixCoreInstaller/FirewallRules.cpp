@@ -21,6 +21,10 @@ const PCWSTR FirewallRules::HandlerName = L"FirewallRules";
 
 HRESULT FirewallRules::ExecuteForAddRequest()
 {
+    for (auto firewallRule = m_firewallRules.begin(); firewallRule != m_firewallRules.end(); ++firewallRule)
+    {
+        RETURN_IF_FAILED(AddFirewallRules(*firewallRule));
+    }
     return S_OK;
 }
 
@@ -38,104 +42,133 @@ HRESULT FirewallRules::ParseManifest()
     RETURN_IF_FAILED(firewallRuleEnum->GetHasCurrent(&hasCurrent));
     while (hasCurrent)
     {
+        FirewallRule firewallRule;
         ComPtr<IMsixElement> ruleElement;
         RETURN_IF_FAILED(firewallRuleEnum->GetCurrent(&ruleElement));
 
         Text<wchar_t> direction;
         RETURN_IF_FAILED(ruleElement->GetAttributeValue(firewallRuleDirectionAttribute.c_str(), &direction));
+        firewallRule.direction = direction.Get();
 
         Text<wchar_t> protocol;
         RETURN_IF_FAILED(ruleElement->GetAttributeValue(protocolAttribute.c_str(), &protocol));
+        firewallRule.protocol = protocol.Get();
 
         Text<wchar_t> profile;
         RETURN_IF_FAILED(ruleElement->GetAttributeValue(profileAttribute.c_str(), &profile));
+        firewallRule.profile = profile.Get();
 
         Text<wchar_t> localPortMin, localPortMax, remotePortMin, remotePortMax;
         RETURN_IF_FAILED(ruleElement->GetAttributeValue(localPortMinAttribute.c_str(), &localPortMin));
+        if (localPortMin.Get() != nullptr)
+        {
+            firewallRule.localPortMin = localPortMin.Get();
+        }
+
         RETURN_IF_FAILED(ruleElement->GetAttributeValue(localPortMaxAttribute.c_str(), &localPortMax));
+        if (localPortMax.Get() != nullptr)
+        {
+            firewallRule.localPortMax = localPortMax.Get();
+        }
+
         RETURN_IF_FAILED(ruleElement->GetAttributeValue(remotePortMinAttribute.c_str(), &remotePortMin));
+        if (remotePortMin.Get() != nullptr)
+        {
+            firewallRule.remotePortMin = remotePortMin.Get();
+        }
+
         RETURN_IF_FAILED(ruleElement->GetAttributeValue(remotePortMaxAttribute.c_str(), &remotePortMax));
-
-        INetFwPolicy2 *pNetFwPolicy2 = NULL;
-        INetFwRules *pFwRules = NULL;
-        INetFwRule *pFwRule = NULL;
-
-        // Retrieve INetFwPolicy2
-        RETURN_IF_FAILED(WFCOMInitialize(&pNetFwPolicy2));
-
-        // Retrieve INetFwRules
-        RETURN_IF_FAILED(pNetFwPolicy2->get_Rules(&pFwRules));
-
-        // Create a new Firewall Rule object.
-        RETURN_IF_FAILED(CoCreateInstance(__uuidof(NetFwRule), NULL, CLSCTX_INPROC_SERVER, __uuidof(INetFwRule), (void**)&pFwRule));
-
-        std::wstring packageDisplayName = m_msixRequest->GetPackageInfo()->GetDisplayName();
-        BSTR ruleName = SysAllocString(packageDisplayName.data());
-        BSTR ruleDescription = SysAllocString(packageDisplayName.data());
-        pFwRule->put_Name(ruleName);
-        pFwRule->put_Description(ruleDescription);
-        pFwRule->put_Enabled(VARIANT_TRUE);
-
-        pFwRule->put_Action(NET_FW_ACTION_ALLOW);
-
-        std::wstring resolvedExecutableFullPath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + m_msixRequest->GetPackageInfo()->GetDisplayName();
-        BSTR applicationName = SysAllocString(resolvedExecutableFullPath.data());
-        pFwRule->put_ApplicationName(applicationName);
-
-        //Map protocol
-        pFwRule->put_Protocol(ConvertToProtocol(protocol.Get()));
-
-        //Local ports
-        if (localPortMin.Get() != nullptr && localPortMax.Get() != nullptr)
+        if (remotePortMax.Get() != nullptr)
         {
-            std::wstring localPortRange = localPortMin.Get();
-            localPortRange.append(L"-");
-            localPortRange.append(localPortMax.Get());
-            BSTR localPorts = SysAllocString(localPortRange.data());
-            pFwRule->put_LocalPorts(localPorts);      
+            firewallRule.remotePortMax = remotePortMax.Get();
         }
 
-        //Remote ports
-        if (remotePortMin.Get() != nullptr && remotePortMax.Get() != nullptr)
-        {
-            std::wstring remotePortRange = remotePortMin.Get();
-            remotePortRange.append(L"-");
-            remotePortRange.append(remotePortMax.Get());
-            BSTR remotePorts = SysAllocString(remotePortRange.data());
-            pFwRule->put_RemotePorts(remotePorts);
-        }
-
-        //Map direction
-        if (_wcsicmp(direction.Get(), directionIn.c_str()) == 0)
-        {
-            pFwRule->put_Direction(NET_FW_RULE_DIR_IN);
-        }
-        else
-        {
-            pFwRule->put_Direction(NET_FW_RULE_DIR_OUT);
-        }
-
-        //Map profile
-        pFwRule->put_Profiles(ConvertToProfileType(profile.Get()));
-
-        // Populate the Firewall Rule object
-        HRESULT hr = pFwRules->Add(pFwRule);
-        if (SUCCEEDED(hr))
-        {
-            TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                "Success",
-                TraceLoggingValue(hr, "HR"));
-        }
-        else
-        {
-            TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                "Failure",
-                TraceLoggingValue(hr, "HR"));
-        }
+        m_firewallRules.push_back(firewallRule);
 
         RETURN_IF_FAILED(firewallRuleEnum->MoveNext(&hasCurrent));
     }
 
+    return S_OK;
+}
+
+HRESULT FirewallRules::AddFirewallRules(FirewallRule& firewallRule)
+{
+    INetFwPolicy2 *pNetFwPolicy2 = NULL;
+    INetFwRules *pFwRules = NULL;
+    INetFwRule *pFwRule = NULL;
+
+    // Retrieve INetFwPolicy2
+    RETURN_IF_FAILED(WFCOMInitialize(&pNetFwPolicy2));
+
+    // Retrieve INetFwRules
+    RETURN_IF_FAILED(pNetFwPolicy2->get_Rules(&pFwRules));
+
+    // Create a new Firewall Rule object.
+    RETURN_IF_FAILED(CoCreateInstance(__uuidof(NetFwRule), NULL, CLSCTX_INPROC_SERVER, __uuidof(INetFwRule), (void**)&pFwRule));
+
+    std::wstring packageDisplayName = m_msixRequest->GetPackageInfo()->GetDisplayName();
+    BSTR ruleName = SysAllocString(packageDisplayName.data());
+    BSTR ruleDescription = SysAllocString(packageDisplayName.data());
+    pFwRule->put_Name(ruleName);
+    pFwRule->put_Description(ruleDescription);
+    pFwRule->put_Enabled(VARIANT_TRUE);
+
+    pFwRule->put_Action(NET_FW_ACTION_ALLOW);
+
+    std::wstring resolvedExecutableFullPath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + m_msixRequest->GetPackageInfo()->GetDisplayName();
+    BSTR applicationName = SysAllocString(resolvedExecutableFullPath.data());
+    pFwRule->put_ApplicationName(applicationName);
+
+    //Map protocol
+    pFwRule->put_Protocol(ConvertToProtocol(firewallRule.protocol.c_str()));
+
+    //Local ports
+    if (!firewallRule.localPortMin.empty() && !firewallRule.localPortMax.empty() )
+    {
+        std::wstring localPortRange = firewallRule.localPortMin.c_str();
+        localPortRange.append(L"-");
+        localPortRange.append(firewallRule.localPortMax.c_str());
+        BSTR localPorts = SysAllocString(localPortRange.data());
+        pFwRule->put_LocalPorts(localPorts);
+    }
+
+    //Remote ports
+    if (!firewallRule.remotePortMin.empty() && !firewallRule.remotePortMax.empty())
+    {
+        std::wstring remotePortRange = firewallRule.remotePortMin.c_str();
+        remotePortRange.append(L"-");
+        remotePortRange.append(firewallRule.remotePortMax.c_str());
+        BSTR remotePorts = SysAllocString(remotePortRange.data());
+        pFwRule->put_RemotePorts(remotePorts);
+    }
+
+    //Map direction
+    if (_wcsicmp(firewallRule.direction.c_str(), directionIn.c_str()) == 0)
+    {
+        pFwRule->put_Direction(NET_FW_RULE_DIR_IN);
+    }
+    else
+    {
+        pFwRule->put_Direction(NET_FW_RULE_DIR_OUT);
+    }
+
+    //Map profile
+    pFwRule->put_Profiles(ConvertToProfileType(firewallRule.profile.c_str()));
+
+    // Populate the Firewall Rule object
+    HRESULT hr = pFwRules->Add(pFwRule);
+    if (SUCCEEDED(hr))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Success",
+            TraceLoggingValue(hr, "HR"));
+    }
+    else
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Failure",
+            TraceLoggingValue(hr, "HR"));
+    }
     return S_OK;
 }
 
