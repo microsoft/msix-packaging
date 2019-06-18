@@ -59,9 +59,17 @@ int main(int argc, char * argv[])
             }
             else
             {
-
-                auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
-                ui->ShowUI();
+                if (IsWindows10RS3OrLater())
+                {
+                    std::wstring protocol = std::wstring(L"ms-appinstaller:?source=");
+                    protocol.append(cli.GetPackageFilePathToInstall());
+                    ShellExecuteW(nullptr, L"Open", protocol.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+                }
+                else
+                {
+                    auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
+                    ui->ShowUI();
+                }
             }
             break;
         }
