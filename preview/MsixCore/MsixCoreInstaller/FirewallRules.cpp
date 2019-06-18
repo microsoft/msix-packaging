@@ -28,6 +28,37 @@ HRESULT FirewallRules::ExecuteForAddRequest()
     return S_OK;
 }
 
+HRESULT FirewallRules::ExecuteForRemoveRequest()
+{
+    for (auto firewallRule = m_firewallRules.begin(); firewallRule != m_firewallRules.end(); ++firewallRule)
+    {
+        std::wstring packageDisplayName = m_msixRequest->GetPackageInfo()->GetDisplayName();
+        BSTR ruleName = SysAllocString(packageDisplayName.data());
+        RETURN_IF_FAILED(RemoveFirewallRules(ruleName));
+    }  
+    return S_OK;
+}
+
+HRESULT FirewallRules::RemoveFirewallRules(BSTR firewallRuleName)
+{
+    ComPtr<INetFwPolicy2> pNetFwPolicy2;
+    ComPtr<INetFwRules> pFwRules;
+    ComPtr<INetFwRule> pFwRule;
+
+    // Retrieve INetFwPolicy2
+    RETURN_IF_FAILED(WFCOMInitialize(&pNetFwPolicy2));
+
+    // Retrieve INetFwRules
+    RETURN_IF_FAILED(pNetFwPolicy2->get_Rules(&pFwRules));
+
+    // Create a new Firewall Rule object.
+    RETURN_IF_FAILED(CoCreateInstance(__uuidof(NetFwRule), NULL, CLSCTX_INPROC_SERVER, __uuidof(INetFwRule), (void**)&pFwRule));
+
+    RETURN_IF_FAILED(pFwRules->Remove(firewallRuleName));
+
+    return S_OK;
+}
+
 HRESULT FirewallRules::ParseManifest()
 {
     ComPtr<IMsixDocumentElement> domElement;
@@ -244,11 +275,6 @@ HRESULT FirewallRules::CreateHandler(MsixRequest * msixRequest, IPackageHandler 
 
     *instance = localInstance.release();
 
-    return S_OK;
-}
-
-HRESULT FirewallRules::ExecuteForRemoveRequest()
-{
     return S_OK;
 }
 

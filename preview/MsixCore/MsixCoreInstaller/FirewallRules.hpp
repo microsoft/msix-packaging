@@ -39,6 +39,8 @@ namespace MsixCoreLib
 
         HRESULT AddFirewallRules(FirewallRule& firewallRule);
 
+        HRESULT RemoveFirewallRules(BSTR firewallRuleName);
+
         HRESULT WFCOMInitialize(INetFwPolicy2** ppNetFwPolicy2);
 
         unsigned short ConvertToProtocol(PCWSTR key);
