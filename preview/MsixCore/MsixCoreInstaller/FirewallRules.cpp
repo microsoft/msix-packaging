@@ -32,6 +32,7 @@ HRESULT FirewallRules::ExecuteForRemoveRequest()
 {
     for (auto firewallRule = m_firewallRules.begin(); firewallRule != m_firewallRules.end(); ++firewallRule)
     {
+        //Create rule name
         std::wstring packageDisplayName = m_msixRequest->GetPackageInfo()->GetDisplayName();
         std::wstring ruleNameString = packageDisplayName.data();
         ruleNameString.append(L" (");
