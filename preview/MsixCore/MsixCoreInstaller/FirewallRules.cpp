@@ -33,7 +33,15 @@ HRESULT FirewallRules::ExecuteForRemoveRequest()
     for (auto firewallRule = m_firewallRules.begin(); firewallRule != m_firewallRules.end(); ++firewallRule)
     {
         std::wstring packageDisplayName = m_msixRequest->GetPackageInfo()->GetDisplayName();
-        BSTR ruleName = SysAllocString(packageDisplayName.data());
+        std::wstring ruleNameString = packageDisplayName.data();
+        ruleNameString.append(L" (");
+        ruleNameString.append(firewallRule->protocol);
+        ruleNameString.append(L"-");
+        ruleNameString.append(firewallRule->direction);
+        ruleNameString.append(L")");
+
+        BSTR ruleName = SysAllocString(ruleNameString.data());
+
         RETURN_IF_FAILED(RemoveFirewallRules(ruleName));
     }  
     return S_OK;
@@ -137,8 +145,17 @@ HRESULT FirewallRules::AddFirewallRules(FirewallRule& firewallRule)
     // Create a new Firewall Rule object.
     RETURN_IF_FAILED(CoCreateInstance(__uuidof(NetFwRule), NULL, CLSCTX_INPROC_SERVER, __uuidof(INetFwRule), (void**)&pFwRule));
 
+    // Create rule name
     std::wstring packageDisplayName = m_msixRequest->GetPackageInfo()->GetDisplayName();
-    BSTR ruleName = SysAllocString(packageDisplayName.data());
+
+    std::wstring ruleNameString = packageDisplayName.data();
+    ruleNameString.append(L" (");
+    ruleNameString.append(firewallRule.protocol.c_str());
+    ruleNameString.append(L"-");
+    ruleNameString.append(firewallRule.direction.c_str());
+    ruleNameString.append(L")");
+
+    BSTR ruleName = SysAllocString(ruleNameString.data());
     BSTR ruleDescription = SysAllocString(packageDisplayName.data());
     RETURN_IF_FAILED(pFwRule->put_Name(ruleName));
     RETURN_IF_FAILED(pFwRule->put_Description(ruleDescription));
