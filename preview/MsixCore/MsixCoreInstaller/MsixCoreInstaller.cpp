@@ -61,8 +61,16 @@ int main(int argc, char * argv[])
             {
                 if (IsWindows10RS3OrLater())
                 {
+                    const int bufSize = 1024;
+                    wchar_t path[bufSize];
+                    if (!GetFullPathNameW(cli.GetPackageFilePathToInstall().c_str(), bufSize, path, nullptr))
+                    {
+                        return HRESULT_FROM_WIN32(GetLastError());
+                    }
+
                     std::wstring protocol = std::wstring(L"ms-appinstaller:?source=");
-                    protocol.append(cli.GetPackageFilePathToInstall());
+                    protocol.append(path);
+                    
                     ShellExecuteW(nullptr, L"Open", protocol.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
                 }
                 else
