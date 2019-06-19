@@ -34,16 +34,7 @@ HRESULT PrepareDevirtualizedRegistry::ExtractRegistry()
 
 HRESULT PrepareDevirtualizedRegistry::ExecuteForRemoveRequest()
 {
-    HRESULT hrRemoveRegistry = ExtractRegistry();
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->Run(true));
-    if (FAILED(hrRemoveRegistry))
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Unable to remove registry",
-            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-            TraceLoggingValue(hrRemoveRegistry, "HR"));
-    }
-
+    RETURN_IF_FAILED(ExtractRegistry());
     return S_OK;
 }
 

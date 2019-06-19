@@ -90,13 +90,14 @@ std::map<PCWSTR, RemoveHandlerInfo> RemoveHandlers =
     //HandlerName                               Function to create                            NextHandler                                 ErrorHandling
     {PopulatePackageInfo::HandlerName,          {PopulatePackageInfo::CreateHandler,          StartMenuLink::HandlerName,                 ReturnError}},
     {StartMenuLink::HandlerName,                {StartMenuLink::CreateHandler,                AddRemovePrograms::HandlerName,             IgnoreAndProcessNextHandler}},
-    {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            Protocol::HandlerName,                      IgnoreAndProcessNextHandler}},
+    {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            PrepareDevirtualizedRegistry::HandlerName,  IgnoreAndProcessNextHandler}},
+    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, Protocol::HandlerName,                      IgnoreAndProcessNextHandler}},
     {Protocol::HandlerName,                     {Protocol::CreateHandler,                     ComInterface::HandlerName,                  IgnoreAndProcessNextHandler}},
     {ComInterface::HandlerName,                 {ComInterface::CreateHandler,                 ComServer::HandlerName,                     IgnoreAndProcessNextHandler}},
     {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                   IgnoreAndProcessNextHandler}},
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,           IgnoreAndProcessNextHandler}},
-    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          PrepareDevirtualizedRegistry::HandlerName,  IgnoreAndProcessNextHandler}},
-    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
+    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          WriteDevirtualizedRegistry::HandlerName,    IgnoreAndProcessNextHandler}},
+    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
     {Extractor::HandlerName,                    {Extractor::CreateHandler,                    nullptr,                                    IgnoreAndProcessNextHandler}},
 };
 

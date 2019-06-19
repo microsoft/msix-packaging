@@ -15,12 +15,15 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
 
     for (auto& p : std::experimental::filesystem::directory_iterator(FilePathMappings::GetInstance().GetMsixCoreDirectory()))
     {
-        std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
-        if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
-            && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
+        if (std::experimental::filesystem::is_directory(p.path()))
         {
-            RETURN_IF_FAILED(RemovePackage(p.path().filename()));
-            return S_OK;
+            std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
+            if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
+                && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
+            {
+                RETURN_IF_FAILED(RemovePackage(p.path().filename()));
+                return S_OK;
+            }
         }
     }
 
