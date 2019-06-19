@@ -59,7 +59,6 @@ int main(int argc, char * argv[])
             }
             else
             {
-
                 auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
                 ui->ShowUI();
             }

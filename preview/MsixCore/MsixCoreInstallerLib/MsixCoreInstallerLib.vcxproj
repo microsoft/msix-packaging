@@ -185,6 +185,7 @@
     <ClInclude Include="..\MsixCoreInstaller\StartupTask.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\UpdateDatabase.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\ValidateTargetDeviceFamily.hpp" />
+    <ClInclude Include="..\MsixCoreInstaller\FirewallRules.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\Windows10Redirector.hpp" />
     <ClInclude Include="inc\IMsixResponse.hpp" />
     <ClInclude Include="inc\DeploymentOptions.hpp" />
@@ -225,6 +226,7 @@
     <ClCompile Include="..\MsixCoreInstaller\StartupTask.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\UpdateDatabase.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\ValidateTargetDeviceFamily.cpp" />
+    <ClCompile Include="..\MsixCoreInstaller\FirewallRules.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\Windows10Redirector.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\MsixResponse.cpp" />
