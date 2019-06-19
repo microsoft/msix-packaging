@@ -60,7 +60,7 @@ const PCWSTR taskFolderName = L"MsixCore";
 
 std::wstring StartupTask::CreateTaskXml(std::wstring& executable)
 {
-    std::wstring groupIdXml = ((m_forAllUsers) ? TaskDefinitionXmlGroupIdForAllUsers : L"");
+    std::wstring groupIdXml = TaskDefinitionXmlGroupIdForAllUsers;
     return std::wstring(TaskDefinitionXmlPrefix) +
         groupIdXml + 
         TaskDefinitionXmlMiddle +
@@ -70,7 +70,6 @@ std::wstring StartupTask::CreateTaskXml(std::wstring& executable)
 
 HRESULT StartupTask::ExecuteForAddRequest()
 {
-    m_forAllUsers = false;
     RETURN_IF_FAILED(CreateScheduledTasks());
     return S_OK;
 }
@@ -137,23 +136,8 @@ HRESULT StartupTask::CreateScheduledTasks()
     return S_OK;
 }
 
-HRESULT StartupTask::ExecuteForAddForAllUsersRequest()
-{
-    m_forAllUsers = true;
-    RETURN_IF_FAILED(CreateScheduledTasks());
-    return S_OK;
-}
-
 HRESULT StartupTask::ExecuteForRemoveRequest()
 {
-    m_forAllUsers = false;
-    RETURN_IF_FAILED(DeleteScheduledTasks())
-    return S_OK;
-}
-
-HRESULT StartupTask::ExecuteForRemoveForAllUsersRequest()
-{
-    m_forAllUsers = true;
     RETURN_IF_FAILED(DeleteScheduledTasks())
     return S_OK;
 }

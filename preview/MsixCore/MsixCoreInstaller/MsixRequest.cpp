@@ -31,7 +31,6 @@
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
 #include "ErrorHandler.hpp"
-#include "UpdateDatabase.hpp"
 #include "ValidateTargetDeviceFamily.hpp"
 #include "PrepareDevirtualizedRegistry.hpp"
 #include "WriteDevirtualizedRegistry.hpp"
@@ -73,16 +72,15 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {ValidateTargetDeviceFamily::HandlerName,   {ValidateTargetDeviceFamily::CreateHandler,   ProcessPotentialUpdate::HandlerName,       ReturnError,         nullptr}},
     {ProcessPotentialUpdate::HandlerName,       {ProcessPotentialUpdate::CreateHandler,       Extractor::HandlerName,                    ReturnError,         nullptr}},
     {Extractor::HandlerName,                    {Extractor::CreateHandler,                    PrepareDevirtualizedRegistry::HandlerName, ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, StartMenuLink::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   StartMenuLink::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartMenuLink::HandlerName,                {StartMenuLink::CreateHandler,                AddRemovePrograms::HandlerName,            ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            Protocol::HandlerName,                     ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {Protocol::HandlerName,                     {Protocol::CreateHandler,                     ComInterface::HandlerName,                 ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ComInterface::HandlerName,                 {ComInterface::CreateHandler,                 ComServer::HandlerName,                    ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                  ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,          ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   UpdateDatabase::HandlerName,               ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {UpdateDatabase::HandlerName,               {UpdateDatabase::CreateHandler,               InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {InstallComplete::HandlerName,              {InstallComplete::CreateHandler,              nullptr,                                   ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ErrorHandler::HandlerName,                 {ErrorHandler::CreateHandler,                 nullptr,                                   ReturnError,         nullptr}},
 };
@@ -99,8 +97,7 @@ std::map<PCWSTR, RemoveHandlerInfo> RemoveHandlers =
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,           IgnoreAndProcessNextHandler}},
     {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          PrepareDevirtualizedRegistry::HandlerName,  IgnoreAndProcessNextHandler}},
     {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
-    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    UpdateDatabase::HandlerName,                IgnoreAndProcessNextHandler}},
-    {UpdateDatabase::HandlerName,               {UpdateDatabase::CreateHandler,               nullptr,                                    IgnoreAndProcessNextHandler}},
+    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    nullptr,                                    IgnoreAndProcessNextHandler}},
 };
 
 HRESULT MsixRequest::Make(OperationType operationType, IStream * packageStream, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest ** outInstance)

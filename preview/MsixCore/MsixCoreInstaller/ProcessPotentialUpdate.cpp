@@ -1,7 +1,6 @@
 #include "ProcessPotentialUpdate.hpp"
 #include <filesystem>
 #include "MsixTraceLoggingProvider.hpp"
-#include "Database.hpp"
 
 using namespace MsixCoreLib;
 const PCWSTR ProcessPotentialUpdate::HandlerName = L"ProcessPotentialUpdate";
@@ -14,16 +13,13 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
     /// and each handler would have the opportunity to reason between the old and new packages to perform more efficient updating.
     std::wstring currentPackageFamilyName = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
 
-    std::vector<std::wstring> installedPackages;
-    RETURN_IF_FAILED(Database::FindPackagesForCurrentUser(installedPackages));
-
-    for (auto& package : installedPackages)
+    for (auto& p : std::experimental::filesystem::directory_iterator(FilePathMappings::GetInstance().GetMsixCoreDirectory()))
     {
-        std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(package);
+        std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
         if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
-            && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), package))
+            && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
         {
-            RETURN_IF_FAILED(RemovePackage(package));
+            RETURN_IF_FAILED(RemovePackage(p.path().filename()));
             return S_OK;
         }
     }

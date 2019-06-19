@@ -15,13 +15,6 @@ const PCWSTR ComServer::HandlerName = L"ComServer";
 
 HRESULT ComServer::ExecuteForAddRequest()
 {
-    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
-    RETURN_IF_FAILED(AddServersAndProgIds());
-    return S_OK;
-}
-
-HRESULT ComServer::ExecuteForAddForAllUsersRequest()
-{
     RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     RETURN_IF_FAILED(AddServersAndProgIds());
     return S_OK;
@@ -42,14 +35,6 @@ HRESULT ComServer::AddServersAndProgIds()
 }
 
 HRESULT ComServer::ExecuteForRemoveRequest()
-{
-    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
-    RETURN_IF_FAILED(RemoveServersAndProgIds());
-
-    return S_OK;
-}
-
-HRESULT ComServer::ExecuteForRemoveForAllUsersRequest()
 {
     RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     RETURN_IF_FAILED(RemoveServersAndProgIds());
@@ -211,8 +196,6 @@ HRESULT ComServer::ProcessExeServerForAdd(ExeServer& exeServer)
         }
     }
 
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), clsidKeyName.c_str()));
-
     return S_OK;
 }
 
@@ -245,8 +228,6 @@ HRESULT ComServer::ProcessProgIdForAdd(ProgId& progId)
         RETURN_IF_FAILED(progIdKey.CreateSubKey(curVerKeyName.c_str(), KEY_WRITE, &curVerKey));
         RETURN_IF_FAILED(curVerKey.SetStringValue(L"", progId.currentVersion));
     }
-
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), progId.id.c_str()));
 
     return S_OK;
 }

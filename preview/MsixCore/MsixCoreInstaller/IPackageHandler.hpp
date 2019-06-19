@@ -9,19 +9,11 @@ namespace MsixCoreLib
     {
     public:
 
-        // Add request follows the hybrid per user, where files are written into a per-machine shared location,
-        // but OS integration points are written to per-user visible locations so one user's adds is not visible to other users.
+        // Add request adds the package as per-machine. Everything is written to per-machine shared locations.
         virtual HRESULT ExecuteForAddRequest() = 0; 
 
         // Removes packages added by ExecuteForAddRequest. 
         virtual HRESULT ExecuteForRemoveRequest() { return S_OK; }
-
-        // Add-for-all-users adds the package as per-machine. Everything is written to per-machine shared locations.
-        virtual HRESULT ExecuteForAddForAllUsersRequest() { return S_OK; }
-
-        // Remove-for-all-users removes packages that were added using ExecuteForAddForAllUsersRequest.
-        // This does not work for packages that were per-user added.
-        virtual HRESULT ExecuteForRemoveForAllUsersRequest() { return S_OK; }
 
         virtual ~IPackageHandler() {};
     };

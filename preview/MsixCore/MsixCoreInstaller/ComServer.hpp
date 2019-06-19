@@ -2,7 +2,6 @@
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 #include "RegistryKey.hpp"
-#include "RegistryDevirtualizer.hpp"
 #include "MsixRequest.hpp"
 #include <vector>
 
@@ -11,17 +10,11 @@ namespace MsixCoreLib
 class ComServer : IPackageHandler
 {
 public:
-    /// Adds the com server registrations to the per-user registry
+    /// Adds the com server registrations to the per-machine registry
     HRESULT ExecuteForAddRequest();
 
-    /// Removes the com server registrations from the per-user registry.
-    HRESULT ExecuteForRemoveRequest();
-
-    /// Adds the com server registrations to the per-machine registry
-    HRESULT ExecuteForAddForAllUsersRequest();
-
     /// Removes the com server registrations from the per-machine registry.
-    HRESULT ExecuteForRemoveForAllUsersRequest();
+    HRESULT ExecuteForRemoveRequest();
 
     static const PCWSTR HandlerName;
     static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
