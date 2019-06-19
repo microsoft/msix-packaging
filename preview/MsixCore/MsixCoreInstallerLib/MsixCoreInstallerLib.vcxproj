@@ -132,9 +132,11 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>MsixCoreInstallerLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>.;..\MsixCoreInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/await</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -156,9 +158,11 @@
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>MsixCoreInstallerLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;MsixCoreInstaller_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
+      <ConformanceMode>false</ConformanceMode>
       <AdditionalIncludeDirectories>.;..\MsixCoreInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/await</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -179,6 +183,8 @@
     <ClInclude Include="..\MsixCoreInstaller\ErrorHandler.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\StartupTask.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\ValidateTargetDeviceFamily.hpp" />
+    <ClInclude Include="..\MsixCoreInstaller\FirewallRules.hpp" />
+    <ClInclude Include="..\MsixCoreInstaller\Windows10Redirector.hpp" />
     <ClInclude Include="inc\IMsixResponse.hpp" />
     <ClInclude Include="inc\DeploymentOptions.hpp" />
     <ClInclude Include="..\MsixCoreInstaller\Extractor.hpp" />
@@ -216,6 +222,8 @@
     <ClCompile Include="..\MsixCoreInstaller\MsixRequest.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\StartupTask.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\ValidateTargetDeviceFamily.cpp" />
+    <ClCompile Include="..\MsixCoreInstaller\FirewallRules.cpp" />
+    <ClCompile Include="..\MsixCoreInstaller\Windows10Redirector.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="..\MsixCoreInstaller\MsixResponse.cpp" />
     <ClCompile Include="MsixTraceLoggingProvider.cpp" />

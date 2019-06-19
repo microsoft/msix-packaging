@@ -58,6 +58,11 @@ namespace MsixCoreLib
     /// @param userSidString - current user sid stirng
     HRESULT GetCurrentUserSidString(std::wstring & userSidString);
 
+    /// Determines if the currently running OS is Windows 10 RS3 or later.
+    /// For this to work correctly, the calling exe needs to have compatibility manifest to allow it to detect windows 10 versions
+    /// https://docs.microsoft.com/en-us/windows/desktop/SysInfo/targeting-your-application-at-windows-8-1
+    BOOL IsWindows10RS3OrLater();
+
     //
     // Stripped down ComPtr class provided for those platforms that do not already have a ComPtr class.
     //

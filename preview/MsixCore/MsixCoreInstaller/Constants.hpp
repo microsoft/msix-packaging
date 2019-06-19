@@ -89,6 +89,23 @@ static const std::wstring toolboxBitmapQuery = L"*[local-name()='ToolboxBitmap32
 static const std::wstring comVerbQuery = L"*[local-name()='Verbs']/*[local-name()='Verb']";
 static const std::wstring startupTaskQuery = L"*[local-name()='StartupTask']";
 
+/// Constants for Firewall DEH
+static const std::wstring firewallExtensionQuery = L"/*[local-name()='Package']/*[local-name()='Extensions']/*[local-name()='Extension']/*[local-name()='FirewallRules']/*[local-name()='Rule']";
+static const std::wstring firewallRuleDirectionAttribute = L"Direction";
+static const std::wstring protocolAttribute = L"IPProtocol";
+static const std::wstring profileAttribute = L"Profile";
+static const std::wstring localPortMinAttribute = L"LocalPortMin";
+static const std::wstring localPortMaxAttribute = L"LocalPortMax";
+static const std::wstring remotePortMinAttribute = L"RemotePortMin";
+static const std::wstring remotePortMaxAttribute = L"RemotePortMax";
+static const std::wstring directionIn = L"in";
+static const std::wstring directionOut = L"out";
+static const std::wstring protocolTCP = L"TCP";
+static const std::wstring protocolUDP = L"UDP";
+static const std::wstring profileDomain = L"domain";
+static const std::wstring profilePrivate = L"private";
+static const std::wstring profilePublic = L"public";
+
 static const std::wstring clsidKeyName = L"CLSID";
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";
 static const std::wstring defaultInprocHandler = L"ole32.dll";
