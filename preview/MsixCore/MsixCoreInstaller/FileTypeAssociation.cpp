@@ -176,7 +176,7 @@ HRESULT ConvertLogoToIcon(std::wstring logoPath, std::wstring & iconPath)
         return S_OK;
     }
 
-    DWORD size = experimental::filesystem::file_size(logoPath);
+    uintmax_t size = experimental::filesystem::file_size(logoPath);
     ifstream input(logoPath, std::ios::binary);
     ofstream output(iconPath, std::ios::binary);
 
