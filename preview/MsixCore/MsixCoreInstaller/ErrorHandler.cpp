@@ -15,7 +15,7 @@ const PCWSTR ErrorHandler::HandlerName = L"ErrorHandler";
 HRESULT ErrorHandler::ExecuteForAddRequest()
 {
     RETURN_IF_FAILED(RemovePackage(m_msixRequest->GetPackageInfo()->GetPackageFullName()));
-    return S_OK;
+    return m_msixRequest->GetMsixResponse()->GetHResultTextCode();
 }
 
 HRESULT ErrorHandler::RemovePackage(std::wstring packageFullName)

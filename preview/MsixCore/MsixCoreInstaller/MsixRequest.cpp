@@ -163,9 +163,9 @@ HRESULT MsixRequest::ProcessAddRequest()
         }
         if (FAILED(hr) && currentHandler.errorMode != IgnoreAndProcessNextHandler)
         {
+            m_msixResponse->SetErrorStatus(hr, L"Failed to process add request");
             if (currentHandler.errorMode == ReturnError)
             {
-                m_msixResponse->SetErrorStatus(hr, L"Failed to process add request");
                 return hr;
             }
             currentHandlerName = currentHandler.errorHandler;
