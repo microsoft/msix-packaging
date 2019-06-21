@@ -68,8 +68,9 @@ HRESULT RegistryDevirtualizer::Run(_In_ bool remove)
     return S_OK;
 }
 
-HRESULT RegistryDevirtualizer::DeleteKeyIfPresent(std::wstring subKeyPath, std::wstring extensionName)
+HRESULT RegistryDevirtualizer::HasFTA(std::wstring ftaName, bool & hasFTA)
 {
+    hasFTA = false;
     if (!m_hiveFileNameExists)
     {
         return S_OK;
@@ -77,103 +78,33 @@ HRESULT RegistryDevirtualizer::DeleteKeyIfPresent(std::wstring subKeyPath, std::
     std::wstring rootPath = m_loadedHiveKeyName + L"\\Registry";
     RETURN_IF_FAILED(m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ));
 
-    std::wstring keyPath = L"";
-
-    //User key
-    if(CaseInsensitiveEquals(subKeyPath, L"Software\\Classes"))
+    RegistryKey userClassesKey;
+    HRESULT hrOpenUserClassesKey = m_rootKey.OpenSubKey(L"USER\\[{AppVCurrentUserSID}]_CLASSES", KEY_READ, &userClassesKey);
+    if (SUCCEEDED(hrOpenUserClassesKey))
     {
-        keyPath.append(L"USER\\[{AppVCurrentUserSID}]_CLASSES");
+        RegistryKey ftaKey;
+        HRESULT hrFtaKey = userClassesKey.OpenSubKey(ftaName.c_str(), KEY_READ, &ftaKey);
+        if (SUCCEEDED(hrFtaKey))
+        {
+            hasFTA = true;
+            return S_OK;
+        }
     }
-    else if (CaseInsensitiveEquals(subKeyPath, L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion") || CaseInsensitiveEquals(subKeyPath, L"SOFTWARE\\WOW6432NODE\\Microsoft\\Windows\\CurrentVersion"))
+
+    RegistryKey machineClassesKey;
+    HRESULT hrOpenMachineClassesKey = m_rootKey.OpenSubKey(L"MACHINE\\Software\\Classes", KEY_READ, &machineClassesKey);
+    if (SUCCEEDED(hrOpenMachineClassesKey))
     {
-        keyPath.append(L"USER\\[{AppVCurrentUserSID}]");
-        keyPath.append(L"\\");
-        keyPath.append(subKeyPath);
+        RegistryKey ftaKey;
+        HRESULT hrFtaKey = machineClassesKey.OpenSubKey(ftaName.c_str(), KEY_READ, &ftaKey);
+        if (SUCCEEDED(hrFtaKey))
+        {
+            hasFTA = true;
+            return S_OK;
+        }
     }
-
-    DeleteSubKey(keyPath, extensionName);
-
-    keyPath.clear();
-
-    //Machine key
-    keyPath.append(L"MACHINE");
-    keyPath.append(L"\\");
-    keyPath.append(subKeyPath);
-
-    DeleteSubKey(keyPath, extensionName);
 
     return S_OK;
-}
-
-HRESULT RegistryDevirtualizer::DeleteSubKey(std::wstring keyPath, std::wstring extensionName)
-{
-    RegistryKey virtualKey;
-    HRESULT hrOpenVirtualKey = m_rootKey.OpenSubKey(keyPath.c_str(), KEY_READ, &virtualKey);
-    if (SUCCEEDED(hrOpenVirtualKey))
-    {
-        RegistryKey extensionKey;
-        HRESULT hrExtensionKey = virtualKey.OpenSubKey(extensionName.c_str(), KEY_WRITE, &extensionKey);
-        if (SUCCEEDED(hrExtensionKey))
-        {
-            HRESULT hrDeleteTree = virtualKey.DeleteTree(extensionName.c_str());
-            if (FAILED(hrDeleteTree))
-            {
-                TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                    "Unable to delete extension",
-                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-                    TraceLoggingValue(hrDeleteTree, "HR"),
-                    TraceLoggingValue(extensionName.c_str(), "Extension"));
-            }
-        }
-    }
-    return S_OK;
-}
-
-HRESULT RegistryDevirtualizer::GetFTAProgID(_In_ std::wstring extensionName, _Out_ std::wstring& virtualFTAProgId)
-{
-    if (!m_hiveFileNameExists)
-    {
-        return S_OK;
-    }
-    std::wstring rootPath = m_loadedHiveKeyName + L"\\Registry";
-    RETURN_IF_FAILED(m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ));
-
-    std::wstring keyPath = L"";
-
-    //User key
-    keyPath.append(L"USER\\[{AppVCurrentUserSID}]_CLASSES");
-
-    RegistryKey virtualUserKey;
-    HRESULT hrOpenUserKey = m_rootKey.OpenSubKey(keyPath.c_str(), KEY_READ, &virtualUserKey);
-    if (SUCCEEDED(hrOpenUserKey))
-    {
-        RegistryKey extensionKey;
-        HRESULT hrExtensionKey = virtualUserKey.OpenSubKey(extensionName.c_str(), KEY_READ, &extensionKey);
-        if (SUCCEEDED(hrExtensionKey))
-        {
-            HRESULT hrFtaProgId = extensionKey.GetStringValue(L"", virtualFTAProgId);
-            return hrFtaProgId;
-        }
-    }
-
-    keyPath.clear();
-
-    //Machine key
-    keyPath.append(L"MACHINE\\Software\\Classes");
-    RegistryKey virtualMachineKey;
-    HRESULT hrOpenMachineKey = m_rootKey.OpenSubKey(keyPath.c_str(), KEY_READ, &virtualMachineKey);
-    if (SUCCEEDED(hrOpenMachineKey))
-    {
-        RegistryKey extensionKey;
-        HRESULT hrExtensionKey = virtualMachineKey.OpenSubKey(extensionName.c_str(), KEY_READ, &extensionKey);
-        if (SUCCEEDED(hrExtensionKey))
-        {
-            HRESULT hrFtaProgId = extensionKey.GetStringValue(L"", virtualFTAProgId);
-            return hrFtaProgId;
-        }
-    }
-
-    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
 }
 
 bool RegistryDevirtualizer::IsExcludeKey(RegistryKey* realKey)

@@ -9,8 +9,6 @@ enum OperationType
 {
     Add = 1,
     Remove = 2,
-    AddForAllUsers = 3, 
-    RemoveForAllUsers = 4,
 };
 
 class RegistryDevirtualizer;

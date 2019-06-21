@@ -117,17 +117,6 @@ HRESULT Protocol::ParseManifest()
 
 HRESULT Protocol::ExecuteForAddRequest()
 {
-    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
-    for (auto protocol = m_protocols.begin(); protocol != m_protocols.end(); ++protocol)
-    {
-        RETURN_IF_FAILED(ProcessProtocolForAdd(*protocol));
-    }
-
-    return S_OK;
-}
-
-HRESULT Protocol::ExecuteForAddForAllUsersRequest()
-{
     RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     for (auto protocol = m_protocols.begin(); protocol != m_protocols.end(); ++protocol)
     {
@@ -173,23 +162,10 @@ HRESULT Protocol::ProcessProtocolForAdd(ProtocolData& protocol)
     }
     RETURN_IF_FAILED(commandKey.SetStringValue(L"", command));
 
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), protocol.name.c_str()));
-
     return S_OK;
 }
 
 HRESULT Protocol::ExecuteForRemoveRequest()
-{
-    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
-    for (auto protocol = m_protocols.begin(); protocol != m_protocols.end(); ++protocol)
-    {
-        RETURN_IF_FAILED(ProcessProtocolForRemove(*protocol));
-    }
-
-    return S_OK;
-}
-
-HRESULT Protocol::ExecuteForRemoveForAllUsersRequest()
 {
     RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     for (auto protocol = m_protocols.begin(); protocol != m_protocols.end(); ++protocol)
@@ -199,7 +175,6 @@ HRESULT Protocol::ExecuteForRemoveForAllUsersRequest()
 
     return S_OK;
 }
-
 
 bool Protocol::IsCurrentlyAssociatedWithPackage(PCWSTR name)
 {

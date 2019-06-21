@@ -31,7 +31,6 @@
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
 #include "ErrorHandler.hpp"
-#include "UpdateDatabase.hpp"
 #include "ValidateTargetDeviceFamily.hpp"
 #include "PrepareDevirtualizedRegistry.hpp"
 #include "WriteDevirtualizedRegistry.hpp"
@@ -71,7 +70,8 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {ValidateTargetDeviceFamily::HandlerName,   {ValidateTargetDeviceFamily::CreateHandler,   ProcessPotentialUpdate::HandlerName,       ReturnError,         nullptr}},
     {ProcessPotentialUpdate::HandlerName,       {ProcessPotentialUpdate::CreateHandler,       Extractor::HandlerName,                    ReturnError,         nullptr}},
     {Extractor::HandlerName,                    {Extractor::CreateHandler,                    PrepareDevirtualizedRegistry::HandlerName, ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, StartMenuLink::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   StartMenuLink::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartMenuLink::HandlerName,                {StartMenuLink::CreateHandler,                AddRemovePrograms::HandlerName,            ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            Protocol::HandlerName,                     ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {Protocol::HandlerName,                     {Protocol::CreateHandler,                     ComInterface::HandlerName,                 ExecuteErrorHandler, ErrorHandler::HandlerName}},
@@ -79,9 +79,7 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                  ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,          ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          FirewallRules::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   UpdateDatabase::HandlerName,               ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {UpdateDatabase::HandlerName,               {UpdateDatabase::CreateHandler,               InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {InstallComplete::HandlerName,              {InstallComplete::CreateHandler,              nullptr,                                   ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ErrorHandler::HandlerName,                 {ErrorHandler::CreateHandler,                 nullptr,                                   ReturnError,         nullptr}},
 };
@@ -91,16 +89,16 @@ std::map<PCWSTR, RemoveHandlerInfo> RemoveHandlers =
     //HandlerName                               Function to create                            NextHandler                                 ErrorHandling
     {PopulatePackageInfo::HandlerName,          {PopulatePackageInfo::CreateHandler,          StartMenuLink::HandlerName,                 ReturnError}},
     {StartMenuLink::HandlerName,                {StartMenuLink::CreateHandler,                AddRemovePrograms::HandlerName,             IgnoreAndProcessNextHandler}},
-    {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            Protocol::HandlerName,                      IgnoreAndProcessNextHandler}},
+    {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            PrepareDevirtualizedRegistry::HandlerName,  IgnoreAndProcessNextHandler}},
+    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, Protocol::HandlerName,                      IgnoreAndProcessNextHandler}},
     {Protocol::HandlerName,                     {Protocol::CreateHandler,                     ComInterface::HandlerName,                  IgnoreAndProcessNextHandler}},
     {ComInterface::HandlerName,                 {ComInterface::CreateHandler,                 ComServer::HandlerName,                     IgnoreAndProcessNextHandler}},
     {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                   IgnoreAndProcessNextHandler}},
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,           IgnoreAndProcessNextHandler}},
     {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          FirewallRules::HandlerName,                 IgnoreAndProcessNextHandler}},
-    {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                PrepareDevirtualizedRegistry::HandlerName,  IgnoreAndProcessNextHandler}},
-    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
-    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    UpdateDatabase::HandlerName,                IgnoreAndProcessNextHandler}},
-    {UpdateDatabase::HandlerName,               {UpdateDatabase::CreateHandler,               nullptr,                                    IgnoreAndProcessNextHandler}},
+    {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                WriteDevirtualizedRegistry::HandlerName,    IgnoreAndProcessNextHandler}},
+    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
+    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    nullptr,                                    IgnoreAndProcessNextHandler}},
 };
 
 HRESULT MsixRequest::Make(OperationType operationType, IStream * packageStream, std::wstring packageFullName, MSIX_VALIDATION_OPTION validationOption, MsixRequest ** outInstance)
@@ -165,9 +163,9 @@ HRESULT MsixRequest::ProcessAddRequest()
         }
         if (FAILED(hr) && currentHandler.errorMode != IgnoreAndProcessNextHandler)
         {
+            m_msixResponse->SetErrorStatus(hr, L"Failed to process add request");
             if (currentHandler.errorMode == ReturnError)
             {
-                m_msixResponse->SetErrorStatus(hr, L"Failed to process add request");
                 return hr;
             }
             currentHandlerName = currentHandler.errorHandler;

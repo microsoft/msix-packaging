@@ -20,48 +20,15 @@ HRESULT AddRemovePrograms::ExecuteForAddRequest()
         return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
-    // Because the per-user key might not already exist, we cannot always open the key directly. So first open HKCU, then create the subkey.
-    RegistryKey hkcuKey;
-    RETURN_IF_FAILED(hkcuKey.Open(HKEY_CURRENT_USER, nullptr /*subkey*/, KEY_WRITE));
-
-    RegistryKey uninstallKey;
-    RETURN_IF_FAILED(hkcuKey.CreateSubKey(uninstallKeyPath.c_str(), KEY_WRITE, &uninstallKey));
-
-    RETURN_IF_FAILED(WriteUninstallKey(uninstallKey));
-
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(L"Software\\Microsoft\\Windows\\CurrentVersion", L"Uninstall"));
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(L"Software\\WOW6432NODE\\Microsoft\\Windows\\CurrentVersion", L"Uninstall"));
-
-    return S_OK;
-}
-
-HRESULT AddRemovePrograms::ExecuteForAddForAllUsersRequest()
-{
-    if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
-    {
-        return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
-    }
-
     RegistryKey uninstallKey;
     RETURN_IF_FAILED(uninstallKey.Open(HKEY_LOCAL_MACHINE, uninstallKeyPath.c_str(), KEY_WRITE));
 
     RETURN_IF_FAILED(WriteUninstallKey(uninstallKey));
+
     return S_OK;
 }
 
 HRESULT AddRemovePrograms::ExecuteForRemoveRequest()
-{
-    RegistryKey uninstallKey;
-    RETURN_IF_FAILED(uninstallKey.Open(HKEY_CURRENT_USER, uninstallKeyPath.c_str(), KEY_WRITE));
-
-    RETURN_IF_FAILED(uninstallKey.DeleteSubKey(m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str()));
-
-    TraceLoggingWrite(g_MsixTraceLoggingProvider,
-        "Removed Uninstall key successfully");
-    return S_OK;
-}
-
-HRESULT AddRemovePrograms::ExecuteForRemoveForAllUsersRequest()
 {
     RegistryKey uninstallKey;
     RETURN_IF_FAILED(uninstallKey.Open(HKEY_LOCAL_MACHINE, uninstallKeyPath.c_str(), KEY_WRITE));

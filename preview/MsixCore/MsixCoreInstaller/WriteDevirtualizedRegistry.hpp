@@ -11,6 +11,8 @@ namespace MsixCoreLib
     public:
         HRESULT ExecuteForAddRequest();
 
+        HRESULT ExecuteForRemoveRequest();
+
         static const PCWSTR HandlerName;
         static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
     private:
