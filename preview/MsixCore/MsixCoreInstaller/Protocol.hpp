@@ -4,7 +4,6 @@
 #include "IPackageHandler.hpp"
 #include "RegistryKey.hpp"
 #include <vector>
-#include "RegistryDevirtualizer.hpp"
 #include "MsixRequest.hpp"
 
 namespace MsixCoreLib
@@ -22,17 +21,11 @@ struct ProtocolData
 class Protocol : IPackageHandler
 {
 public:
-    /// Adds the protocol registrations to the per-user registry
+    /// Adds the protocol registrations to the per-machine registry
     HRESULT ExecuteForAddRequest();
 
-    /// Removes the protocol registrations from the per-user registry.
-    HRESULT ExecuteForRemoveRequest();
-
-    /// Adds the protocol registrations to the per-machine registry
-    HRESULT ExecuteForAddForAllUsersRequest();
-
     /// Removes the protocol registrations from the per-machine registry.
-    HRESULT ExecuteForRemoveForAllUsersRequest();
+    HRESULT ExecuteForRemoveRequest();
 
     static const PCWSTR HandlerName;
     static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
