@@ -12,7 +12,6 @@
 #include "RegistryDevirtualizer.hpp"
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
-#include "Database.hpp"
 using namespace MsixCoreLib;
 
 const PCWSTR Extractor::HandlerName = L"Extractor";
@@ -258,17 +257,6 @@ HRESULT Extractor::RemoveVfsFiles()
 
 HRESULT Extractor::ExecuteForRemoveRequest()
 {
-    bool isInstalledForOtherUsers = false;
-    HRESULT hrIsInstalled = Database::IsInstalledForAnyOtherUser(m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str(), isInstalledForOtherUsers);
-    if (FAILED(hrIsInstalled) || isInstalledForOtherUsers)
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Not removing the package's files; another user has it installed",
-            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-            TraceLoggingValue(hrIsInstalled, "HR"));
-        return hrIsInstalled;
-    }
-
     HRESULT hrRemoveVfsFiles = RemoveVfsFiles();
     if (FAILED(hrRemoveVfsFiles))
     {

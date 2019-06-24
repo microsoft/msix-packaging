@@ -9,9 +9,10 @@ namespace MsixCoreLib
     class PrepareDevirtualizedRegistry : IPackageHandler
     {
     public:
+        /// Mount the registry.dat file and set it in the msixRequest so future handlers can access the information within
         HRESULT ExecuteForAddRequest();
 
-        /// Removes all the registry keys written during the add.
+        /// Mount the registry.dat file and set it in the msixRequest so future handlers can access the information within
         HRESULT ExecuteForRemoveRequest();
 
         static const PCWSTR HandlerName;
@@ -23,7 +24,7 @@ namespace MsixCoreLib
         PrepareDevirtualizedRegistry() {}
         PrepareDevirtualizedRegistry(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
 
-        /// Extracts the registry information contained inside Registry.dat
+        /// Mount the registry.dat file and set it in the msixRequest so future handlers can access the information within
         HRESULT ExtractRegistry();
     };
 }

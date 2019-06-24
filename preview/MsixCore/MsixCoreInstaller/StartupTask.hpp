@@ -24,12 +24,6 @@ namespace MsixCoreLib
         /// Removes the scheduled tasks added
         HRESULT ExecuteForRemoveRequest();
 
-        /// Adds a scheduled task which will run for all users logons. 
-        HRESULT ExecuteForAddForAllUsersRequest();
-
-        /// Removes the scheduled tasks added
-        HRESULT ExecuteForRemoveForAllUsersRequest();
-
         static const PCWSTR HandlerName;
         static HRESULT CreateHandler(_In_ MsixRequest* msixRequest, _Out_ IPackageHandler** instance);
         ~StartupTask() {}
@@ -38,7 +32,6 @@ namespace MsixCoreLib
         MsixRequest* m_msixRequest = nullptr;
 
         std::vector<Task> m_tasks;
-        bool m_forAllUsers = false;
 
         /// Parses the manifest to find the executable to run as part of startup task
         HRESULT ParseManifest();

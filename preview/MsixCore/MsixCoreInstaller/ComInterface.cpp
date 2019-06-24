@@ -15,13 +15,6 @@ const PCWSTR ComInterface::HandlerName = L"ComInterface";
 
 HRESULT ComInterface::ExecuteForAddRequest()
 {
-    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
-    RETURN_IF_FAILED(AddInterfacesAndTypeLibs());
-    return S_OK;
-}
-
-HRESULT ComInterface::ExecuteForAddForAllUsersRequest()
-{
     RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     RETURN_IF_FAILED(AddInterfacesAndTypeLibs());
     return S_OK;
@@ -42,14 +35,6 @@ HRESULT ComInterface::AddInterfacesAndTypeLibs()
 }
 
 HRESULT ComInterface::ExecuteForRemoveRequest()
-{
-    RETURN_IF_FAILED(m_classesKey.Open(HKEY_CURRENT_USER, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
-    RETURN_IF_FAILED(RemoveInterfacesAndTypeLibs());
-
-    return S_OK;
-}
-
-HRESULT ComInterface::ExecuteForRemoveForAllUsersRequest()
 {
     RETURN_IF_FAILED(m_classesKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
     RETURN_IF_FAILED(RemoveInterfacesAndTypeLibs());
@@ -89,8 +74,6 @@ HRESULT ComInterface::ProcessInterfaceForAddRequest(Interface& comInterface)
     RETURN_IF_FAILED(interfaceIdKey.CreateSubKey(typeLibKeyName.c_str(), KEY_WRITE, &typeLibKey));
     RETURN_IF_FAILED(typeLibKey.SetStringValue(L"", comInterface.typeLibId));
     RETURN_IF_FAILED(typeLibKey.SetStringValue(versionValueName.c_str(), comInterface.typeLibVersion));
-
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), interfaceKeyName.c_str()));
 
     return S_OK;
 }
@@ -149,8 +132,6 @@ HRESULT ComInterface::ProcessTypeLibForAddRequest(TypeLib& typeLib)
             RETURN_IF_FAILED(helpDirKey.SetStringValue(L"", helpDirFullPath));
         }
     }
-
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->DeleteKeyIfPresent(classesKeyPath.c_str(), typeLibKeyName.c_str()));
 
     return S_OK;
 }
