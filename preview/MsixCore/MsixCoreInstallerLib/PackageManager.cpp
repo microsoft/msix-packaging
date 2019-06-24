@@ -41,6 +41,28 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packag
 
 shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStream, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
 {
+    if (IsWindows10RS3OrLater())
+    {
+        // convert stream to file and pass it to win10 callback api
+        ULONG bytesRead = 0;
+        std::vector<BYTE> buffer;
+        packageStream->Read(buffer.data(), static_cast<ULONG>(buffer.size()), &bytesRead);
+
+        //create file at temp location now and write contents to it
+        TCHAR lpTempPathBuffer[MAX_PATH];
+        TCHAR szTempFileName[MAX_PATH];
+        GetTempPath(MAX_PATH, lpTempPathBuffer);
+
+        GetTempFileName(lpTempPathBuffer, TEXT("DEMO"), 0, szTempFileName);
+
+        HANDLE hTempFile = INVALID_HANDLE_VALUE;
+        hTempFile = CreateFile((LPTSTR)szTempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+        DWORD dwBytesWritten = 0;
+        WriteFile(hTempFile, buffer.data(), bytesRead, &dwBytesWritten, NULL);
+        
+    }
+
     MsixRequest * impl;
     HRESULT hr = (MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(hr))
