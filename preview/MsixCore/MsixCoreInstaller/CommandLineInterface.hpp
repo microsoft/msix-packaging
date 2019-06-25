@@ -4,7 +4,6 @@
 #include <functional>
 #include <IPackage.hpp>
 #include <AppxPackaging.hpp>
-
 enum OperationType
 {
     Undefined = 0,
@@ -15,7 +14,6 @@ enum OperationType
     Unpack = 5,
     ApplyACLs = 6
 };
-
 
 class CommandLineInterface;
 /// Describes an option to a command that the user may specify used for the command line tool

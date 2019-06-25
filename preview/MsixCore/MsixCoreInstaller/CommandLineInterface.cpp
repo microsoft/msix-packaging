@@ -14,7 +14,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     {
         L"-AddPackage",
         Options(true, IDS_STRING_HELP_OPTION_ADDPACKAGE,
-        [&](CommandLineInterface* commandLineInterface, const std::string& path)
+            [&](CommandLineInterface* commandLineInterface, const std::string& path)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
             {
@@ -28,7 +28,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     {
         L"-RemovePackage",
         Options(true, IDS_STRING_HELP_OPTION_REMOVEPACKAGE,
-        [&](CommandLineInterface* commandLineInterface, const std::string& packageFullName)
+            [&](CommandLineInterface* commandLineInterface, const std::string& packageFullName)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
             {
@@ -42,7 +42,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     {
         L"-quietUX",
         Options(false, IDS_STRING_HELP_OPTION_QUIETMODE,
-        [&](CommandLineInterface* commandLineInterface, const std::string&)
+            [&](CommandLineInterface* commandLineInterface, const std::string&)
         {
             commandLineInterface->m_quietMode = true;
             return S_OK;
@@ -51,7 +51,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     {
         L"-FindAllPackages",
         Options(false, IDS_STRING_HELP_OPTION_FINDALLPACKAGES,
-        [&](CommandLineInterface* commandLineInterface, const std::string&)
+            [&](CommandLineInterface* commandLineInterface, const std::string&)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
             {
@@ -64,7 +64,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     {
         L"-FindPackage",
         Options(true, IDS_STRING_HELP_OPTION_FINDPACKAGE,
-        [&](CommandLineInterface* commandLineInterface, const std::string& packageFullName)
+            [&](CommandLineInterface* commandLineInterface, const std::string& packageFullName)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
             {
@@ -78,7 +78,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     {
         L"-Unpack",
         Options(false, IDS_STRING_HELP_OPTION_UNPACK,
-        [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
+            [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
             {
@@ -92,7 +92,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             {
                 L"-packagePath",
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_PATH,
-                [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
+                    [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
                 {
                 if (commandLineInterface->m_operationType != OperationType::Unpack)
                 {
@@ -105,7 +105,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             {
                 L"-destination",
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
-                [&](CommandLineInterface* commandLineInterface, const std::string& destination)
+                    [&](CommandLineInterface* commandLineInterface, const std::string& destination)
                 {
                     if (commandLineInterface->m_operationType != OperationType::Unpack)
                     {
@@ -118,7 +118,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             {
                 L"-applyACLs",
                 Option(false, IDS_STRING_HELP_OPTION_UNPACK_APPLYACLS,
-                [&](CommandLineInterface* commandLineInterface, const std::string&)
+                    [&](CommandLineInterface* commandLineInterface, const std::string&)
                 {
                     if (commandLineInterface->m_operationType != OperationType::Unpack)
                     {
@@ -133,7 +133,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     {
         L"-?",
         Options(false, IDS_STRING_HELP_OPTION_HELP,
-        [&](CommandLineInterface*, const std::string&)
+            [&](CommandLineInterface*, const std::string&)
         {
             return E_INVALIDARG;
         })
@@ -142,8 +142,8 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
 
 std::map<std::wstring, std::wstring> CommandLineInterface::s_optionAliases =
 {
-    { L"-p", L"-AddPackage" },
-    { L"-x", L"-RemovePackage" },
+    {L"-p", L"-AddPackage"},
+    {L"-x", L"-RemovePackage"},
 };
 
 void CommandLineInterface::DisplayHelp()
