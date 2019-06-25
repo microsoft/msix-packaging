@@ -4,6 +4,7 @@
 #include <codecvt>
 #include <iostream>
 #include <sddl.h>
+#include <memory>
 #pragma warning(disable : 4996)
 namespace MsixCoreLib
 {
