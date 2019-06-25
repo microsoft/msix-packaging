@@ -34,8 +34,11 @@ struct Options
 {
     using CallbackFunction = std::function<HRESULT(CommandLineInterface* commandLineInterface, const std::string& value)>;
 
-    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback, std::map<std::wstring, Option> suboptions) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), Suboptions(suboptions), HasSuboptions(!Suboptions.empty()) {}
-    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), HasSuboptions(!Suboptions.empty()) {}
+    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), HasSuboptions(false) {}
+    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback, std::map<std::wstring, Option> suboptions) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), Suboptions(suboptions)
+    {
+        HasSuboptions = !Suboptions.empty();
+    }
 
     bool HasSuboptions;
     bool TakesParameter;
