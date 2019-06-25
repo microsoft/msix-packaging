@@ -63,6 +63,12 @@ namespace MsixCoreLib
     /// https://docs.microsoft.com/en-us/windows/desktop/SysInfo/targeting-your-application-at-windows-8-1
     BOOL IsWindows10RS3OrLater();
 
+    bool EndsWith(std::wstring const &fullString, std::wstring const &ending);
+
+    bool IsPackageFile(std::wstring const& packageFilePath);
+
+    bool IsBundleFile(std::wstring const& bundleFilePath);
+
     //
     // Stripped down ComPtr class provided for those platforms that do not already have a ComPtr class.
     //

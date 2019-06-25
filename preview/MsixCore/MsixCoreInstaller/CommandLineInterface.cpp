@@ -209,8 +209,8 @@ HRESULT CommandLineInterface::Init()
             auto suboptions = option->second.Suboptions;
             while (index < m_argc)
             {
-                std::wstring optionString = utf8_to_utf16(m_argv[index]);
-                auto suboption = suboptions.find(optionString);
+                std::wstring suboptionString = utf8_to_utf16(m_argv[index]);
+                auto suboption = suboptions.find(suboptionString);
                 if (suboption == suboptions.end())
                 {
                     TraceLoggingWrite(g_MsixUITraceLoggingProvider,
@@ -226,9 +226,9 @@ HRESULT CommandLineInterface::Init()
                     {
                         return E_INVALIDARG;
                     }
-                    parameter = m_argv[index];
+                    suboptionParameter = m_argv[index];
                 }
-                RETURN_IF_FAILED(option->second.DefaultCallback(this, parameter));
+                RETURN_IF_FAILED(suboption->second.Callback(this, suboptionParameter));
 
                 ++index;
             }

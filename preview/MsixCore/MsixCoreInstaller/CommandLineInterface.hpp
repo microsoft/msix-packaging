@@ -81,8 +81,10 @@ public:
     void DisplayHelp();
     HRESULT Init();
     bool IsQuietMode() { return m_quietMode; }
+    bool IsApplyACLs() { return m_applyACLs; }
     std::wstring GetPackageFilePathToInstall() { return m_packageFilePath; }
     std::wstring GetPackageFullName() { return m_packageFullName; }
+    std::wstring GetUnpackDestination() { return m_unpackDestination; }
     OperationType GetOperationType() { return m_operationType; }
 private:
     int m_argc = 0;

@@ -135,4 +135,24 @@ namespace MsixCoreLib
 
         return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask);
     }
+
+    bool EndsWith(std::wstring const &fullString, std::wstring const &ending) {
+        if (fullString.length() >= ending.length()) {
+            return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
+        }
+        else {
+            return false;
+        }
+    }
+
+    bool IsPackageFile(std::wstring const& packageFilePath)
+    {
+        return EndsWith(packageFilePath, L".appx") || EndsWith(packageFilePath, L".msix");
+    }
+
+    bool IsBundleFile(std::wstring const& bundleFilePath)
+    {
+        return EndsWith(bundleFilePath, L".appxbundle") || EndsWith(bundleFilePath, L".msixbundle");
+    }
+
 }
