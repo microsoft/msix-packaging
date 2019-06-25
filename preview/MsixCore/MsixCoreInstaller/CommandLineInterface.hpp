@@ -11,6 +11,8 @@ enum OperationType
     Remove = 2,
     FindPackage = 3,
     FindAllPackages = 4,
+    Unpack = 5,
+    ApplyACLs = 6
 };
 
 class CommandLineInterface;
@@ -26,6 +28,24 @@ struct Option
     std::wstring Name;
     UINT Help;
     CallbackFunction Callback;
+};
+
+struct Options
+{
+    using CallbackFunction = std::function<HRESULT(CommandLineInterface* commandLineInterface, const std::string& value)>;
+
+    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), HasSuboptions(false) {}
+    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback, std::map<std::wstring, Option> suboptions) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), Suboptions(suboptions)
+    {
+        HasSuboptions = !Suboptions.empty();
+    }
+
+    bool HasSuboptions;
+    bool TakesParameter;
+    std::wstring Name;
+    UINT Help;
+    CallbackFunction DefaultCallback;
+    std::map<std::wstring, Option> Suboptions;
 };
 
 struct CaseInsensitiveLess
@@ -68,12 +88,14 @@ private:
     int m_argc = 0;
     char ** m_argv = nullptr;
     char * m_toolName = nullptr;
-    static std::map<std::wstring, Option, CaseInsensitiveLess> s_options;
+    static std::map<std::wstring, Options, CaseInsensitiveLess> s_options;
     static std::map<std::wstring, std::wstring> s_optionAliases;
 
     std::wstring m_packageFilePath;
     std::wstring m_packageFullName;
+    std::wstring m_unpackDestination;
     bool m_quietMode;
+    bool m_applyACLs;
 
     OperationType m_operationType = OperationType::Undefined;
 

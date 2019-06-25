@@ -9,11 +9,11 @@
 
 using namespace MsixCoreLib;
 
-std::map<std::wstring, Option, CaseInsensitiveLess> CommandLineInterface::s_options =
+std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_options =
 {
     {
         L"-AddPackage",
-        Option(true, IDS_STRING_HELP_OPTION_ADDPACKAGE,
+        Options(true, IDS_STRING_HELP_OPTION_ADDPACKAGE,
             [&](CommandLineInterface* commandLineInterface, const std::string& path)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
@@ -26,8 +26,8 @@ std::map<std::wstring, Option, CaseInsensitiveLess> CommandLineInterface::s_opti
         })
     },
     {
-        L"-RemovePackage", 
-        Option(true, IDS_STRING_HELP_OPTION_REMOVEPACKAGE,
+        L"-RemovePackage",
+        Options(true, IDS_STRING_HELP_OPTION_REMOVEPACKAGE,
             [&](CommandLineInterface* commandLineInterface, const std::string& packageFullName)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
@@ -40,52 +40,107 @@ std::map<std::wstring, Option, CaseInsensitiveLess> CommandLineInterface::s_opti
         })
     },
     {
-        L"-quietUX", 
-        Option(false, IDS_STRING_HELP_OPTION_QUIETMODE,
+        L"-quietUX",
+        Options(false, IDS_STRING_HELP_OPTION_QUIETMODE,
             [&](CommandLineInterface* commandLineInterface, const std::string&)
-            {
-                commandLineInterface->m_quietMode = true;
-                return S_OK; 
-            })
+        {
+            commandLineInterface->m_quietMode = true;
+            return S_OK;
+        })
     },
     {
         L"-FindAllPackages",
-        Option(false, IDS_STRING_HELP_OPTION_FINDALLPACKAGES,
+        Options(false, IDS_STRING_HELP_OPTION_FINDALLPACKAGES,
             [&](CommandLineInterface* commandLineInterface, const std::string&)
+        {
+            if (commandLineInterface->m_operationType != OperationType::Undefined)
             {
-                if (commandLineInterface->m_operationType != OperationType::Undefined)
-                {
-                    return E_INVALIDARG;
-                }
-                commandLineInterface->m_operationType = OperationType::FindAllPackages;
-                return S_OK;
-            })
+                return E_INVALIDARG;
+            }
+            commandLineInterface->m_operationType = OperationType::FindAllPackages;
+            return S_OK;
+        })
     },
     {
         L"-FindPackage",
-        Option(true, IDS_STRING_HELP_OPTION_FINDPACKAGE,
+        Options(true, IDS_STRING_HELP_OPTION_FINDPACKAGE,
             [&](CommandLineInterface* commandLineInterface, const std::string& packageFullName)
+        {
+            if (commandLineInterface->m_operationType != OperationType::Undefined)
             {
-                if (commandLineInterface->m_operationType != OperationType::Undefined)
+                return E_INVALIDARG;
+            }
+            commandLineInterface->m_operationType = OperationType::FindPackage;
+            commandLineInterface->m_packageFullName = utf8_to_utf16(packageFullName);
+            return S_OK;
+        })
+    },
+    {
+        L"-Unpack",
+        Options(false, IDS_STRING_HELP_OPTION_UNPACK,
+            [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
+        {
+            if (commandLineInterface->m_operationType != OperationType::Undefined)
+            {
+                return E_INVALIDARG;
+            }
+            commandLineInterface->m_operationType = OperationType::Unpack;
+            return S_OK;
+        },
+        // suboptions
+        {
+            {
+                L"-packagePath",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_PATH,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
+                {
+                if (commandLineInterface->m_operationType != OperationType::Unpack)
                 {
                     return E_INVALIDARG;
                 }
-                commandLineInterface->m_operationType = OperationType::FindPackage;
-                commandLineInterface->m_packageFullName = utf8_to_utf16(packageFullName);
+                commandLineInterface->m_packageFilePath = utf8_to_utf16(packagePath);
                 return S_OK;
-            })
+                }),
+            },
+            {
+                L"-destination",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& destination)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_unpackDestination = utf8_to_utf16(destination);
+                    return S_OK;
+                }),
+            },
+            {
+                L"-applyACLs",
+                Option(false, IDS_STRING_HELP_OPTION_UNPACK_APPLYACLS,
+                    [&](CommandLineInterface* commandLineInterface, const std::string&)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_applyACLs = true;
+                    return S_OK;
+                }),
+            }
+        })
     },
     {
-        L"-?", 
-        Option(false, IDS_STRING_HELP_OPTION_HELP,
+        L"-?",
+        Options(false, IDS_STRING_HELP_OPTION_HELP,
             [&](CommandLineInterface*, const std::string&)
-            {
-                return E_INVALIDARG; 
-            })
-    },
+        {
+            return E_INVALIDARG;
+        })
+    }
 };
 
-std::map<std::wstring, std::wstring> CommandLineInterface::s_optionAliases = 
+std::map<std::wstring, std::wstring> CommandLineInterface::s_optionAliases =
 {
     {L"-p", L"-AddPackage"},
     {L"-x", L"-RemovePackage"},
@@ -145,9 +200,39 @@ HRESULT CommandLineInterface::Init()
             }
             parameter = m_argv[index];
         }
-        RETURN_IF_FAILED(option->second.Callback(this, parameter));
-        
+        RETURN_IF_FAILED(option->second.DefaultCallback(this, parameter));
+
         ++index;
+
+        if (option->second.HasSuboptions)
+        {
+            auto suboptions = option->second.Suboptions;
+            while (index < m_argc)
+            {
+                std::wstring optionString = utf8_to_utf16(m_argv[index]);
+                auto suboption = suboptions.find(optionString);
+                if (suboption == suboptions.end())
+                {
+                    TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+                        "Unknown Argument",
+                        TraceLoggingLevel(WINEVENT_LEVEL_ERROR),
+                        TraceLoggingValue(m_argv[index], "arg"));
+                    return E_INVALIDARG;
+                }
+                char const *suboptionParameter = "";
+                if (suboption->second.TakesParameter)
+                {
+                    if (++index == m_argc)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    parameter = m_argv[index];
+                }
+                RETURN_IF_FAILED(option->second.DefaultCallback(this, parameter));
+
+                ++index;
+            }
+        }
     }
 
     return S_OK;
