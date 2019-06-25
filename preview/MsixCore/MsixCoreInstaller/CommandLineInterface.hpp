@@ -16,6 +16,25 @@ enum OperationType
 };
 
 class CommandLineInterface;
+
+struct CaseInsensitiveLess
+{
+    struct CaseInsensitiveCompare
+    {
+        bool operator() (const wchar_t& c1, const wchar_t& c2) const
+        {
+            return tolower(c1) < tolower(c2);
+        }
+    };
+    bool operator() (const std::wstring & s1, const std::wstring & s2) const
+    {
+        return std::lexicographical_compare(
+            s1.begin(), s1.end(),   // source range
+            s2.begin(), s2.end(),   // dest range
+            CaseInsensitiveCompare());  // comparison
+    }
+};
+
 /// Describes an option to a command that the user may specify used for the command line tool
 struct Option
 {
@@ -35,7 +54,7 @@ struct Options
     using CallbackFunction = std::function<HRESULT(CommandLineInterface* commandLineInterface, const std::string& value)>;
 
     Options(bool takesParam, const UINT help, CallbackFunction defaultCallback) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), HasSuboptions(false) {}
-    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback, std::map<std::wstring, Option> suboptions) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), Suboptions(suboptions)
+    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback, std::map<std::wstring, Option, CaseInsensitiveLess> suboptions) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), Suboptions(suboptions)
     {
         HasSuboptions = !Suboptions.empty();
     }
@@ -45,25 +64,7 @@ struct Options
     std::wstring Name;
     UINT Help;
     CallbackFunction DefaultCallback;
-    std::map<std::wstring, Option> Suboptions;
-};
-
-struct CaseInsensitiveLess
-{
-    struct CaseInsensitiveCompare
-    {
-        bool operator() (const wchar_t& c1, const wchar_t& c2) const
-        {
-            return tolower(c1) < tolower(c2);
-        }
-    };
-    bool operator() (const std::wstring & s1, const std::wstring & s2) const
-    {
-        return std::lexicographical_compare(
-            s1.begin(), s1.end(),   // source range
-            s2.begin(), s2.end(),   // dest range
-            CaseInsensitiveCompare());  // comparison
-    }
+    std::map<std::wstring, Option, CaseInsensitiveLess> Suboptions;
 };
 
 /// Parses the command line specified and creates a request.
