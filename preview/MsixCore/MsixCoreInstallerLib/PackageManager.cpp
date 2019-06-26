@@ -6,6 +6,7 @@
 #include <experimental/filesystem>
 #include <thread>
 #include "Windows10Redirector.hpp"
+#include <iostream>
 
 using namespace std;
 using namespace MsixCoreLib;
@@ -40,28 +41,6 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packag
 
 shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStream, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
 {
-    if (IsWindows10RS3OrLater())
-    {
-        // convert stream to file and pass it to win10 callback api
-        ULONG bytesRead = 0;
-        std::vector<BYTE> buffer;
-        packageStream->Read(buffer.data(), static_cast<ULONG>(buffer.size()), &bytesRead);
-
-        //create file at temp location now and write contents to it
-        TCHAR lpTempPathBuffer[MAX_PATH];
-        TCHAR szTempFileName[MAX_PATH];
-        GetTempPath(MAX_PATH, lpTempPathBuffer);
-
-        GetTempFileName(lpTempPathBuffer, TEXT("DEMO"), 0, szTempFileName);
-
-        HANDLE hTempFile = INVALID_HANDLE_VALUE;
-        hTempFile = CreateFile((LPTSTR)szTempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-        DWORD dwBytesWritten = 0;
-        WriteFile(hTempFile, buffer.data(), bytesRead, &dwBytesWritten, NULL);
-        
-    }
-
     MsixRequest * impl;
     HRESULT hr = (MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(hr))
@@ -83,15 +62,6 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStrea
     return impl->GetMsixResponse();
 }
 
-HRESULT PackageManager::AddPackage(IStream * packageStream, DeploymentOptions options)
-{
-    AutoPtr<MsixRequest> impl;
-    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
-    
-    RETURN_IF_FAILED(impl->ProcessRequest());
-    return S_OK;
-}
-
 HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
 {
     if (IsWindows10RS3OrLater())
@@ -108,6 +78,70 @@ HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOp
     }
 
     return AddPackage(packageStream.Get(), options);
+}
+
+HRESULT PackageManager::AddPackage(IStream * packageStream, DeploymentOptions options)
+{
+    if (IsWindows10RS3OrLater())
+    {
+        TCHAR tempPathBuffer[MAX_PATH];
+        TCHAR tempFileName[MAX_PATH];
+
+        if (!GetTempPath(MAX_PATH, tempPathBuffer))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        if (!GetTempFileName(tempPathBuffer, TEXT("MSIX"), 0, tempFileName))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        std::wcout << tempFileName << "\n";
+
+        HANDLE tempFileHandle = INVALID_HANDLE_VALUE;
+        tempFileHandle = CreateFile((LPTSTR)tempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+        if (tempFileHandle == INVALID_HANDLE_VALUE)
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        ULONG dwBytesRead = 0;
+        DWORD dwBytesWritten = 0;
+
+        const int numOfBytes = 2048;
+        BYTE buffer[numOfBytes];
+        HRESULT hr;
+
+        while ((hr = packageStream->Read(buffer, numOfBytes, &dwBytesRead)) == S_OK)
+        {
+            if (dwBytesRead > 0)
+            {
+                if (!WriteFile(tempFileHandle, buffer, dwBytesRead, &dwBytesWritten, NULL))
+                {
+                    return HRESULT_FROM_WIN32(GetLastError());
+                }
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        if (!CloseHandle(tempFileHandle))
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        RETURN_IF_FAILED(Windows10Redirector::AddPackage(tempFileName));
+        return S_OK;
+    }
+
+    AutoPtr<MsixRequest> impl;
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    
+    RETURN_IF_FAILED(impl->ProcessRequest());
+    return S_OK;
 }
 
 shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & packageFullName, function<void(const IMsixResponse&)> callback)

@@ -101,3 +101,14 @@ void MsixCoreTest::InstallWithLibAndGetProgressTest()
 
     VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
 }
+
+void MsixCoreTest::InstallIstreamPackageTest()
+{
+    std::wstring packagePath = std::wstring(m_testDeploymentDir) + L"\\" + scribbleFileName;
+    std::wstring expectedPackageFullName = scribblePackageFullName;
+
+    IStream *packageStream = NULL;
+    CreateStreamOnFileUTF16(packagePath.c_str(), /*forRead */ true, &packageStream);
+
+    VERIFY_SUCCEEDED(m_packageManager->AddPackage(packageStream, DeploymentOptions::None));
+}
