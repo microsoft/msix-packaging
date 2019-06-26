@@ -41,6 +41,25 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packag
 
 shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStream, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
 {
+    if (IsWindows10RS3OrLater())
+    {
+        auto msixResponse = std::make_shared<MsixResponse>();
+        msixResponse->SetCallback(callback);
+
+        TCHAR tempFileName[MAX_PATH];
+        if (FAILED(Windows10Redirector::ConvertIStreamToPackagePath(packageStream, tempFileName)))
+        {
+            return nullptr;
+        }
+
+        auto t = thread([&](shared_ptr<MsixResponse> response) {
+            Windows10Redirector::AddPackageWithProgress(tempFileName, response);
+        }, msixResponse);
+        t.detach();
+
+        return msixResponse;
+    }
+
     MsixRequest * impl;
     HRESULT hr = (MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(hr))

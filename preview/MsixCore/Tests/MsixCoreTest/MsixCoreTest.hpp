@@ -23,7 +23,11 @@ public:
     TEST_METHOD_PROPERTY(L"RunAs", L"ElevatedUser")
     END_TEST_METHOD()
 
-    BEGIN_TEST_METHOD(InstallIstreamPackageTest)
+    BEGIN_TEST_METHOD(InstallIStreamPackageTest)
+    TEST_METHOD_PROPERTY(L"RunAs", L"ElevatedUser")
+    END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(InstallIStreamAndGetProgressTest)
     TEST_METHOD_PROPERTY(L"RunAs", L"ElevatedUser")
     END_TEST_METHOD()
 

@@ -106,5 +106,6 @@ HRESULT MsixCoreLib::Windows10Redirector::ConvertIStreamToPackagePath(IStream * 
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
-	return S_OK;
+
+    return S_OK;
 }

@@ -102,7 +102,7 @@ void MsixCoreTest::InstallWithLibAndGetProgressTest()
     VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
 }
 
-void MsixCoreTest::InstallIstreamPackageTest()
+void MsixCoreTest::InstallIStreamPackageTest()
 {
     std::wstring packagePath = std::wstring(m_testDeploymentDir) + L"\\" + scribbleFileName;
     std::wstring expectedPackageFullName = scribblePackageFullName;
@@ -137,6 +137,36 @@ void MsixCoreTest::InstallIstreamPackageTest()
         std::wstring windows10Location = windows10PackageRoot + L"\\" + expectedPackageFullName;
         VERIFY_IS_TRUE(std::experimental::filesystem::exists(windows10Location));
     }
+
+    VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
+}
+
+void MsixCoreTest::InstallIStreamAndGetProgressTest()
+{
+    std::wstring packagePath = std::wstring(m_testDeploymentDir) + L"\\" + scribbleFileName;
+    std::wstring expectedPackageFullName = scribblePackageFullName;
+
+    HANDLE completion = CreateEvent(nullptr, false, false, nullptr);
+    UINT32 receivedCallbacks = 0;
+
+    //Create package stream for scribble.appx
+    IStream *packageStream = NULL;
+    CreateStreamOnFileUTF16(packagePath.c_str(), /*forRead */ true, &packageStream);
+
+    auto response = m_packageManager->AddPackageAsync(packageStream, DeploymentOptions::None, [&](const MsixCoreLib::IMsixResponse & sender)
+    {
+        receivedCallbacks++;
+        if (sender.GetStatus() == MsixCoreLib::InstallationStep::InstallationStepCompleted)
+        {
+            SetEvent(completion);
+        }
+        WEX::Logging::Log::Comment(WEX::Common::String().Format(L"Received progress callback: %f", sender.GetPercentage()));
+    });
+
+    // Wait 10 seconds for completion.
+    DWORD waitReturn = WaitForSingleObject(completion, 10000);
+    VERIFY_IS_TRUE(receivedCallbacks > 1);
+    VERIFY_ARE_EQUAL(waitReturn, WAIT_OBJECT_0);
 
     VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
 }
