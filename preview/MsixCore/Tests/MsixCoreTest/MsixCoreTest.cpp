@@ -107,8 +107,36 @@ void MsixCoreTest::InstallIstreamPackageTest()
     std::wstring packagePath = std::wstring(m_testDeploymentDir) + L"\\" + scribbleFileName;
     std::wstring expectedPackageFullName = scribblePackageFullName;
 
+    //Create package stream for scribble.appx
     IStream *packageStream = NULL;
     CreateStreamOnFileUTF16(packagePath.c_str(), /*forRead */ true, &packageStream);
 
     VERIFY_SUCCEEDED(m_packageManager->AddPackage(packageStream, DeploymentOptions::None));
+
+    std::unique_ptr<std::vector<std::shared_ptr<MsixCoreLib::IInstalledPackage>>> packages;
+    VERIFY_SUCCEEDED(m_packageManager->FindPackages(packages));
+
+    bool found = false;
+    for (auto& package : *packages)
+    {
+        if (expectedPackageFullName == package->GetPackageFullName())
+        {
+            found = true;
+        }
+    }
+
+    if (!MsixCoreLib::IsWindows10RS3OrLater())
+    {
+        VERIFY_IS_TRUE(found);
+    }
+    else
+    {
+        // FindPackages is NOT redirected on windows10, so we should not be able to find it using MsixCore because we MsixCore not actually install it.
+        VERIFY_IS_FALSE(found);
+
+        std::wstring windows10Location = windows10PackageRoot + L"\\" + expectedPackageFullName;
+        VERIFY_IS_TRUE(std::experimental::filesystem::exists(windows10Location));
+    }
+
+    VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
 }
