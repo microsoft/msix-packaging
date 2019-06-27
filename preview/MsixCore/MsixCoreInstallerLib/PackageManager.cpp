@@ -6,7 +6,6 @@
 #include <experimental/filesystem>
 #include <thread>
 #include "Windows10Redirector.hpp"
-#include <iostream>
 
 using namespace std;
 using namespace MsixCoreLib;
