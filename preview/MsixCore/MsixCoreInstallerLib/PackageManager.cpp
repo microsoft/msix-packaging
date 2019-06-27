@@ -51,21 +51,10 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStrea
             return nullptr;
         }
 
-        HANDLE packageFileHandle = CreateFile((LPTSTR)tempPackagePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
-        if (packageFileHandle == INVALID_HANDLE_VALUE)
-        {
-            return nullptr;
-        }
-
         auto t = thread([&](shared_ptr<MsixResponse> response) {
             Windows10Redirector::AddPackageWithProgress(tempPackagePath, response);
         }, msixResponse);
         t.detach();
-
-        if (!CloseHandle(packageFileHandle))
-        {
-            return nullptr;
-        }
 
         return msixResponse;
     }
@@ -115,19 +104,7 @@ HRESULT PackageManager::AddPackage(IStream * packageStream, DeploymentOptions op
     {
         TCHAR tempPackagePath[MAX_PATH];
         RETURN_IF_FAILED(Windows10Redirector::ConvertIStreamToPackagePath(packageStream, tempPackagePath));
-
-        HANDLE packageFileHandle = CreateFile((LPTSTR)tempPackagePath, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, NULL);
-        if (packageFileHandle == INVALID_HANDLE_VALUE)
-        {
-            return HRESULT_FROM_WIN32(GetLastError());
-        }
-
         RETURN_IF_FAILED(Windows10Redirector::AddPackage(tempPackagePath));
-
-        if (!CloseHandle(packageFileHandle))
-        {
-            return HRESULT_FROM_WIN32(GetLastError());
-        }
 
         return S_OK;
     }
