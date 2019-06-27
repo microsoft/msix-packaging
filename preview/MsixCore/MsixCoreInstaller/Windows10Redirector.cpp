@@ -40,6 +40,11 @@ HRESULT MsixCoreLib::Windows10Redirector::AddPackage(const std::wstring & packag
 
     auto deploymentOperation{ packageManager.AddPackageAsync(packageUri, nullptr, winrt::Windows::Management::Deployment::DeploymentOptions::None) };
     deploymentOperation.get();
+    if (deploymentOperation.Status() == winrt::Windows::Foundation::AsyncStatus::Error)
+    {
+        auto deploymentResult{ deploymentOperation.GetResults() };
+        return HRESULT_FROM_WIN32(deploymentOperation.ErrorCode());
+    }
 
     return S_OK;
 }
