@@ -1,7 +1,6 @@
 #include "Windows10Redirector.hpp"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
-#include <iostream>
 
 HRESULT MsixCoreLib::Windows10Redirector::AddPackageWithProgress(const std::wstring & packageFilePath, std::shared_ptr<MsixResponse>& msixResponse)
 {
@@ -57,7 +56,7 @@ HRESULT MsixCoreLib::Windows10Redirector::RemovePackage(const std::wstring & pac
     return S_OK;
 }
 
-HRESULT MsixCoreLib::Windows10Redirector::ConvertIStreamToPackagePath(IStream * packageStream, TCHAR tempFileName[])
+HRESULT MsixCoreLib::Windows10Redirector::ConvertIStreamToPackagePath(IStream * packageStream, TCHAR tempPackagePath[])
 {
     TCHAR tempPathBuffer[MAX_PATH];
 
@@ -66,15 +65,13 @@ HRESULT MsixCoreLib::Windows10Redirector::ConvertIStreamToPackagePath(IStream * 
         return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    if (!GetTempFileName(tempPathBuffer, TEXT("MSIX"), 0, tempFileName))
+    if (!GetTempFileName(tempPathBuffer, TEXT("MSIX"), 0, tempPackagePath))
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    std::wcout << tempFileName << "\n";
-
     HANDLE tempFileHandle = INVALID_HANDLE_VALUE;
-    tempFileHandle = CreateFile((LPTSTR)tempFileName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    tempFileHandle = CreateFile((LPTSTR)tempPackagePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (tempFileHandle == INVALID_HANDLE_VALUE)
     {
         return HRESULT_FROM_WIN32(GetLastError());
