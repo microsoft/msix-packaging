@@ -37,7 +37,6 @@ int main(int argc, char * argv[])
     }
 
     CommandLineInterface cli(argc, argv);
-
     const HRESULT hrCreateRequest = cli.Init();
     if (SUCCEEDED(hrCreateRequest))
     {
@@ -167,7 +166,6 @@ int main(int argc, char * argv[])
                 if (cli.IsApplyACLs())
                 {
                     PWSTR packageFullName = nullptr;
-                    //std::wstring packageFullName;
 
                     ComPtr<IAppxManifestReader> manifestReader;
                     RETURN_IF_FAILED(reader->GetManifest(&manifestReader));
@@ -262,11 +260,8 @@ int main(int argc, char * argv[])
                         RETURN_IF_FAILED(file->GetName(&packageFileName));
 
                         std::wstring stdPackageFileName = packageFileName;
-
                         auto packageFullName = packagesMap[packageFileName];
-
                         std::wstring packageFolderName = unpackDestination + L"\\" + packageFullName;
-
                         packageFolders.push_back(packageFolderName);
 
                         RETURN_IF_FAILED(packageFilesEnumerator->MoveNext(&hasCurrent));
@@ -279,12 +274,28 @@ int main(int argc, char * argv[])
                 return E_INVALIDARG;
             }
 
+            HMODULE applyACLsDll;
+            applyACLsDll = (LoadLibrary(L"applyacls.dll"));
+            if (applyACLsDll == nullptr)
+            {
+                std::wcout << "Failed to load applyacls.dll. Please confirm the dll is next to this exe" << std::endl;
+            }
+
+            typedef HRESULT(STDMETHODCALLTYPE *APPLYACLSTOPACKAGEFOLDER)(PCWSTR folderPath);
+
+            APPLYACLSTOPACKAGEFOLDER ApplyACLsToPackageFolder =
+                reinterpret_cast<APPLYACLSTOPACKAGEFOLDER>
+                (GetProcAddress(applyACLsDll, "ApplyACLsToPackageFolder"));
+
             // Update this to pass folder names to API that apply ACLs to those folders
             for (auto folder : packageFolders)
             {
                 std::wcout << folder << std::endl;
+                RETURN_IF_FAILED(ApplyACLsToPackageFolder(folder.c_str()));
             }
 
+            FreeLibrary(applyACLsDll);
+            return S_OK;
         }
 
         default:
