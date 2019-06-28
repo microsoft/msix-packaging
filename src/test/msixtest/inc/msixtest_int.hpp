@@ -107,6 +107,10 @@ namespace MsixTest {
         void PrintMsixLog(HRESULT actual, HRESULT result);
     }
 
+    // Initialize helpers
+    void InitializePackageReader(const std::string& package, IAppxPackageReader** packageReader);
+    void InitializeBundleReader(const std::string& package, IAppxBundleReader** bundleReader);
+
     template <class T>
     class ComPtr
     {

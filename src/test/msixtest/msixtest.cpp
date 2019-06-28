@@ -6,6 +6,8 @@
 #include "catch.hpp"
 
 #include "msixtest_int.hpp"
+#include "FileHelpers.hpp"
+#include "macros.hpp"
 
 #include <iostream>
 #include <locale>
@@ -103,6 +105,49 @@ namespace MsixTest {
             std::cout << std::string(CATCH_CONFIG_CONSOLE_WIDTH, '-') << std::endl;
         }
     }
+
+    void InitializePackageReader(const std::string& package, IAppxPackageReader** packageReader)
+    {
+        *packageReader = nullptr;
+
+        auto packagePath = TestPath::GetInstance()->GetPath(TestPath::Directory::Unpack) + "/" + package;
+        packagePath = Directory::PathAsCurrentPlatform(packagePath);
+
+        ComPtr<IAppxFactory> factory;
+        ComPtr<IStream> inputStream;
+
+        REQUIRE_SUCCEEDED(CreateStreamOnFile(const_cast<char*>(packagePath.c_str()), true, &inputStream));
+        REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(Allocators::Allocate, Allocators::Free, MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &factory));
+        REQUIRE_SUCCEEDED(factory->CreatePackageReader(inputStream.Get(), packageReader));
+        REQUIRE_NOT_NULL(*packageReader);
+        return;
+    }
+
+    void InitializeBundleReader(const std::string& package, IAppxBundleReader** bundleReader)
+    {
+        *bundleReader = nullptr;
+
+        auto bundlePath = TestPath::GetInstance()->GetPath(TestPath::Directory::Unbundle) + "/" + package;
+        bundlePath = Directory::PathAsCurrentPlatform(bundlePath);
+
+        ComPtr<IAppxBundleFactory> bundleFactory;
+        ComPtr<IStream> inputStream;
+
+        REQUIRE_SUCCEEDED(CreateStreamOnFile(const_cast<char*>(bundlePath.c_str()), true, &inputStream));
+        REQUIRE_SUCCEEDED(CoCreateAppxBundleFactoryWithHeap(
+            Allocators::Allocate,
+            Allocators::Free,
+            MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE,
+            static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_SKIPPLATFORM |
+                                                    MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE),
+            &bundleFactory));
+
+        REQUIRE_SUCCEEDED(bundleFactory->CreateBundleReader(inputStream.Get(), bundleReader));
+        REQUIRE_NOT_NULL(*bundleReader);
+        return;
+    }
+
+
 }
 
 #ifndef WIN32
