@@ -40,6 +40,25 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packag
 
 shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStream, DeploymentOptions options, function<void(const IMsixResponse&)> callback)
 {
+    if (IsWindows10RS3OrLater())
+    {
+        auto msixResponse = std::make_shared<MsixResponse>();
+        msixResponse->SetCallback(callback);
+
+        TCHAR tempPackagePath[MAX_PATH];
+        if (FAILED(Windows10Redirector::ConvertIStreamToPackagePath(packageStream, tempPackagePath)))
+        {
+            return nullptr;
+        }
+
+        auto t = thread([&](shared_ptr<MsixResponse> response) {
+            Windows10Redirector::AddPackageWithProgress(tempPackagePath, response);
+        }, msixResponse);
+        t.detach();
+
+        return msixResponse;
+    }
+
     MsixRequest * impl;
     HRESULT hr = (MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
     if (FAILED(hr))
@@ -61,15 +80,6 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStrea
     return impl->GetMsixResponse();
 }
 
-HRESULT PackageManager::AddPackage(IStream * packageStream, DeploymentOptions options)
-{
-    AutoPtr<MsixRequest> impl;
-    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
-    
-    RETURN_IF_FAILED(impl->ProcessRequest());
-    return S_OK;
-}
-
 HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
 {
     if (IsWindows10RS3OrLater())
@@ -86,6 +96,24 @@ HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOp
     }
 
     return AddPackage(packageStream.Get(), options);
+}
+
+HRESULT PackageManager::AddPackage(IStream * packageStream, DeploymentOptions options)
+{
+    if (IsWindows10RS3OrLater())
+    {
+        TCHAR tempPackagePath[MAX_PATH];
+        RETURN_IF_FAILED(Windows10Redirector::ConvertIStreamToPackagePath(packageStream, tempPackagePath));
+        RETURN_IF_FAILED(Windows10Redirector::AddPackage(tempPackagePath));
+
+        return S_OK;
+    }
+
+    AutoPtr<MsixRequest> impl;
+    RETURN_IF_FAILED(MsixRequest::Make(OperationType::Add, packageStream, L"", MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &impl));
+    
+    RETURN_IF_FAILED(impl->ProcessRequest());
+    return S_OK;
 }
 
 shared_ptr<IMsixResponse> PackageManager::RemovePackageAsync(const wstring & packageFullName, function<void(const IMsixResponse&)> callback)
