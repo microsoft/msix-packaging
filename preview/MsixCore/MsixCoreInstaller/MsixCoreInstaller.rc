@@ -96,6 +96,10 @@ BEGIN
     IDS_STRING_REINSTALLAPP "Reinstall"
     IDS_RUNFULLTRUST_CAPABILITY "Uses all system resources"
     IDS_STRING_ERROR_MSG    "App installation failed with error message: An internal error occurred with error 0x"
+    IDS_STRING_HELP_OPTION_UNPACK "Unpack package - Extract package contents to folder"
+    IDS_STRING_HELP_OPTION_UNPACK_PATH "Path to package to unpack"
+    IDS_STRING_HELP_OPTION_UNPACK_DESTINATION "Path to location where package should be unpacked to"
+    IDS_STRING_HELP_OPTION_UNPACK_APPLYACLS "Apply ACLs - apply ACLs to the folder created by unpack"
 END
 
 #endif    // English (United States) resources
