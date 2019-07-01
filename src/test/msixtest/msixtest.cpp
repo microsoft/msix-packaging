@@ -111,12 +111,9 @@ namespace MsixTest {
         *packageReader = nullptr;
 
         auto packagePath = TestPath::GetInstance()->GetPath(TestPath::Directory::Unpack) + "/" + package;
-        packagePath = Directory::PathAsCurrentPlatform(packagePath);
+        auto inputStream = Stream(packagePath, true);
 
         ComPtr<IAppxFactory> factory;
-        ComPtr<IStream> inputStream;
-
-        REQUIRE_SUCCEEDED(CreateStreamOnFile(const_cast<char*>(packagePath.c_str()), true, &inputStream));
         REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(Allocators::Allocate, Allocators::Free, MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &factory));
         REQUIRE_SUCCEEDED(factory->CreatePackageReader(inputStream.Get(), packageReader));
         REQUIRE_NOT_NULL(*packageReader);
@@ -128,12 +125,9 @@ namespace MsixTest {
         *bundleReader = nullptr;
 
         auto bundlePath = TestPath::GetInstance()->GetPath(TestPath::Directory::Unbundle) + "/" + package;
-        bundlePath = Directory::PathAsCurrentPlatform(bundlePath);
+        auto inputStream = Stream(bundlePath, true);
 
         ComPtr<IAppxBundleFactory> bundleFactory;
-        ComPtr<IStream> inputStream;
-
-        REQUIRE_SUCCEEDED(CreateStreamOnFile(const_cast<char*>(bundlePath.c_str()), true, &inputStream));
         REQUIRE_SUCCEEDED(CoCreateAppxBundleFactoryWithHeap(
             Allocators::Allocate,
             Allocators::Free,
@@ -147,7 +141,19 @@ namespace MsixTest {
         return;
     }
 
+    Stream::Stream(std::string fileName, bool toRead, bool toDelete): m_toDelete(toDelete)
+    {
+        m_fileName = Directory::PathAsCurrentPlatform(fileName);
+        REQUIRE_SUCCEEDED(CreateStreamOnFile(const_cast<char*>(m_fileName.c_str()), toRead, &m_stream));
+    }
 
+    Stream::~Stream()
+    {
+        if (m_toDelete)
+        {
+            remove(m_fileName.c_str());
+        }
+    }
 }
 
 #ifndef WIN32

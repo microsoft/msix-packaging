@@ -157,4 +157,21 @@ namespace MsixTest {
             }
         }
     };
+
+    // Helper class that creates a stream from a given file name.
+    // toRead - true if the file already exists, false to create it
+    // toDelete - true if the file should be deleted when the this object
+    // goes out of scope.
+    class Stream
+    {
+    public:
+        Stream(std::string fileName, bool toRead, bool toDelete = false);
+        ~Stream();
+        inline IStream* Get() const { return m_stream.Get(); }
+
+    protected:
+        bool m_toDelete;
+        std::string m_fileName;
+        ComPtr<IStream> m_stream;
+    };
 }
