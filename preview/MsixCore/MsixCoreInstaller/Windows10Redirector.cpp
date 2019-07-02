@@ -1,7 +1,6 @@
 #include "Windows10Redirector.hpp"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
-#include <iostream>
 
 HRESULT MsixCoreLib::Windows10Redirector::AddPackageWithProgress(const std::wstring & packageFilePath, std::shared_ptr<MsixResponse>& msixResponse)
 {
@@ -41,6 +40,11 @@ HRESULT MsixCoreLib::Windows10Redirector::AddPackage(const std::wstring & packag
 
     auto deploymentOperation{ packageManager.AddPackageAsync(packageUri, nullptr, winrt::Windows::Management::Deployment::DeploymentOptions::None) };
     deploymentOperation.get();
+    if (deploymentOperation.Status() == winrt::Windows::Foundation::AsyncStatus::Error)
+    {
+        auto deploymentResult{ deploymentOperation.GetResults() };
+        return deploymentOperation.ErrorCode();
+    }
 
     return S_OK;
 }
@@ -53,6 +57,57 @@ HRESULT MsixCoreLib::Windows10Redirector::RemovePackage(const std::wstring & pac
 
     auto deploymentOperation{ packageManager.RemovePackageAsync(packageFullName) };
     deploymentOperation.get();
+
+    return S_OK;
+}
+
+HRESULT MsixCoreLib::Windows10Redirector::ConvertIStreamToPackagePath(IStream * packageStream, TCHAR tempPackagePath[])
+{
+    TCHAR tempPathBuffer[MAX_PATH];
+
+    if (!GetTempPath(MAX_PATH, tempPathBuffer))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    if (!GetTempFileName(tempPathBuffer, TEXT("MSIX"), 0, tempPackagePath))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    HANDLE tempFileHandle = INVALID_HANDLE_VALUE;
+    tempFileHandle = CreateFile((LPTSTR)tempPackagePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (tempFileHandle == INVALID_HANDLE_VALUE)
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    ULONG dwBytesRead = 0;
+    DWORD dwBytesWritten = 0;
+
+    const int numOfBytes = 2048;
+    BYTE buffer[numOfBytes];
+    HRESULT hr;
+
+    while ((hr = packageStream->Read(buffer, numOfBytes, &dwBytesRead)) == S_OK)
+    {
+        if (dwBytesRead > 0)
+        {
+            if (!WriteFile(tempFileHandle, buffer, dwBytesRead, &dwBytesWritten, NULL))
+            {
+                return HRESULT_FROM_WIN32(GetLastError());
+            }
+        }
+        else
+        {
+            break;
+        }
+    }
+
+    if (!CloseHandle(tempFileHandle))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
 
     return S_OK;
 }

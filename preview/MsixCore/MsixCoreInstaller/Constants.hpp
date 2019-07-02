@@ -100,11 +100,6 @@ static const std::wstring remotePortMinAttribute = L"RemotePortMin";
 static const std::wstring remotePortMaxAttribute = L"RemotePortMax";
 static const std::wstring directionIn = L"in";
 static const std::wstring directionOut = L"out";
-static const std::wstring protocolTCP = L"TCP";
-static const std::wstring protocolUDP = L"UDP";
-static const std::wstring profileDomain = L"domain";
-static const std::wstring profilePrivate = L"private";
-static const std::wstring profilePublic = L"public";
 
 static const std::wstring clsidKeyName = L"CLSID";
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";
