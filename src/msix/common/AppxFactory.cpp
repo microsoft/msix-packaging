@@ -21,7 +21,7 @@ namespace MSIX {
         IAppxPackageWriter** packageWriter) noexcept try
     {
         THROW_IF_PACK_NOT_ENABLED
-        ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || *packageWriter != nullptr), "Invalid parameter");
+        ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || packageWriter == nullptr || *packageWriter != nullptr), "Invalid parameter");
         // We should never be here is packing if disabled, but the compiler
         // is not smart enough to remove it and the linker will fail.
         #ifdef MSIX_PACK 

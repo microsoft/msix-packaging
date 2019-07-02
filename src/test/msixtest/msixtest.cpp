@@ -54,6 +54,8 @@ namespace MsixTest {
                 return m_root + "testData/unpack/flat";
             case BadFlat:
                 return m_root + "testData/unpack/badFlat";
+            case Pack:
+                return m_root + "testData/pack";
         }
         return {};
     }
@@ -120,6 +122,16 @@ namespace MsixTest {
         return;
     }
 
+    void InitializePackageReader(IStream* stream, IAppxPackageReader** packageReader)
+    {
+        ComPtr<IAppxFactory> factory;
+        REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(Allocators::Allocate, Allocators::Free, MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &factory));
+        HRESULT hr = factory->CreatePackageReader(stream, packageReader);
+        MsixTest::Log::PrintMsixLog(S_OK, hr);
+        REQUIRE_NOT_NULL(*packageReader);
+        return;
+    }
+
     void InitializeBundleReader(const std::string& package, IAppxBundleReader** bundleReader)
     {
         *bundleReader = nullptr;
@@ -147,11 +159,25 @@ namespace MsixTest {
         REQUIRE_SUCCEEDED(CreateStreamOnFile(const_cast<char*>(m_fileName.c_str()), toRead, &m_stream));
     }
 
+    Stream::Stream(std::wstring fileName, bool toRead, bool toDelete): m_toDelete(toDelete)
+    {
+        auto fileNameUtf8 = String::utf16_to_utf8(fileName);
+        m_fileName = Directory::PathAsCurrentPlatform(fileNameUtf8);
+        REQUIRE_SUCCEEDED(CreateStreamOnFile(const_cast<char*>(m_fileName.c_str()), toRead, &m_stream));
+    }
+
     Stream::~Stream()
     {
         if (m_toDelete)
         {
-            remove(m_fileName.c_str());
+            // best effort to delete the file. If someone else has a reference to this stream
+            // and this object is deleted, the file WILL NOT be deleted.
+            auto ref = m_stream->Release();
+            if (ref == 0)
+            {
+                m_stream = nullptr;
+                remove(m_fileName.c_str());
+            }
         }
     }
 }

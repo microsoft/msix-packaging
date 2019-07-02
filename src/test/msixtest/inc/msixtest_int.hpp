@@ -24,7 +24,8 @@ namespace MsixTest {
             Unpack,
             Unbundle,
             Flat,
-            BadFlat
+            BadFlat,
+            Pack
         } Directory;
 
         static TestPath* GetInstance();
@@ -109,6 +110,7 @@ namespace MsixTest {
 
     // Initialize helpers
     void InitializePackageReader(const std::string& package, IAppxPackageReader** packageReader);
+    void InitializePackageReader(IStream* stream, IAppxPackageReader** packageReader);
     void InitializeBundleReader(const std::string& package, IAppxBundleReader** bundleReader);
 
     template <class T>
@@ -165,9 +167,16 @@ namespace MsixTest {
     class Stream
     {
     public:
+
         Stream(std::string fileName, bool toRead, bool toDelete = false);
+        Stream(std::wstring fileName, bool toRead, bool toDelete = false);
         ~Stream();
         inline IStream* Get() const { return m_stream.Get(); }
+        IStream* Detach()
+        {
+            m_toDelete = false;
+            return m_stream.Detach();
+        }
 
     protected:
         bool m_toDelete;

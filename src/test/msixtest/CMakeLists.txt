@@ -38,6 +38,12 @@ else()
     )
 endif()
 
+if(MSIX_PACK)
+    list(APPEND MsixTestFiles
+        api_packagewriter.cpp
+        testData/PackTestData.cpp)
+endif()
+
 if (WIN32)
     list(APPEND MsixTestFiles
         "PAL/File/WIN32/FileHelpers.cpp"
