@@ -31,8 +31,14 @@ public:
     TEST_METHOD_PROPERTY(L"RunAs", L"ElevatedUser")
     END_TEST_METHOD()
 
+
+    BEGIN_TEST_METHOD(InstallFromStreamTest)
+    TEST_METHOD_PROPERTY(L"RunAs", L"ElevatedUser")
+    END_TEST_METHOD()
 private:
     MsixCoreLib::IPackageManager * m_packageManager;
     WEX::Common::String m_testDeploymentDir;
+
+    void VerifyPackageInstalled(std::wstring &packageFullName);
     ~MsixCoreTest();
 };
