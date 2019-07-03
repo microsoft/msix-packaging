@@ -81,7 +81,7 @@ namespace MSIX {
             Write(" "); // always write a space. We just wrote either an element or an attribute
             Write(name); // name="value"
             Write("=\"");
-            Write(value);
+            WriteTextValue(value);
             Write("\"");
         }
 
@@ -91,8 +91,46 @@ namespace MSIX {
             return m_stream;
         }
 
+        // Following msxml6 rule for text values
+        //  all ampersands (&) are replaced by &amp;
+        //  all open angle brackets (<) are replaced by &lt;
+        //  all closing angle brackets (>) are replaced by &gt;
+        //  and all #xD characters are replaced by &#xD; 
+        void XmlWriter::WriteTextValue(const std::string& value)
+        {
+            for(int i = 0; i < value.size(); i++)
+            {
+                if (value[i] == '&')
+                {
+                    Write("&amp;");
+                }
+                else if (value[i] == '<')
+                {
+                    Write("&lt;");
+                }
+                else if (value[i] == '>')
+                {
+                    Write("&gt;");
+                }
+                else if (value[i] == 0xd)
+                {
+                    Write("&#xD;");
+                }
+                else
+                {
+                    Write(value[i]);
+                }
+            }
+        }
+
         void XmlWriter::Write(const std::string& toWrite)
         {
             Helper::WriteStringToStream(m_stream, toWrite);
         }
+
+        void XmlWriter::Write(const char toWrite)
+        {
+            Helper::WriteStringToStream(m_stream, std::string(1, toWrite));
+        }
+
 }

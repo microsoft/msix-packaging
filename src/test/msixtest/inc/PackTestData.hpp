@@ -65,7 +65,7 @@ namespace MsixTest { namespace Pack {
             { "test_file_16.txt" , L"a\\__cdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxy12345"} ,
             { "test_file_17.txt" , L"a\\___defghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxyabcdefghijklmnopqrstuvwxy12345\\b"} ,
             // File name with exactly MAX_PATH characters
-            { "test_file_18.txt" , L"123456789\\123456789\\123456789\\123456789\\123456789\\123456789\\123456789\\123456789\\123456789\\123456789\\987654321\\987654321\\987654321\\987654321\\987654321\\987654321\\987654321\\987654321\\987654321\\987654321\\123456789\\123456789\\123456789\\123456789\\123456789\\1234567890} " }
+            { "test_file_18.txt" , L"123456789\\123456789\\123456789\\123456789\\123456789\\123456789\\123456789\\123456789\\123456789\\123456789\\987654321\\987654321\\987654321\\987654321\\987654321\\987654321\\987654321\\987654321\\987654321\\987654321\\123456789\\123456789\\123456789\\123456789\\123456789\\1234567890" }
         } };
 
         // Filenames that should be invalid for adding to a package

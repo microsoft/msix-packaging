@@ -24,10 +24,7 @@ namespace MSIX {
     protected:
         void AddDefault(const std::string& ext, const std::string& contentType);
         void AddOverride(const std::string& file, const std::string& contentType);
-
-        // File extension to MIME value map that are added as default elements
-        // If the extension is already in the map and its content type is different,
-        // AddOverride is called.
+        
         std::map<std::string, std::string> m_defaultExtensions;
         XmlWriter m_xmlWriter;
     };
