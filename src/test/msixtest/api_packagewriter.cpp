@@ -33,7 +33,7 @@ TEST_CASE("Api_AppxPackageWriter_create", "[api]")
     REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(MsixTest::Allocators::Allocate, MsixTest::Allocators::Free,
         MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &appxFactory));
 
-    auto outputStream = MsixTest::Stream("testpackage.msix", false, true);
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
     MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
 
     // Test incorrect nullptr parameter. Note, currently we don't support APPX_PACKAGE_SETTINGS in the MSIX SDK
@@ -49,7 +49,7 @@ TEST_CASE("Api_AppxPackageWriter_create", "[api]")
 // Test creating a valid msix package via IAppxPackageWriter with different file sizes
 TEST_CASE("Api_AppxPackageWriter_good", "[api]")
 {
-    auto outputStream = MsixTest::Stream("testpackage.msix", false, false);
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
 
     MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
     InitializePackageWriter(outputStream.Get(), &packageWriter);
@@ -63,10 +63,9 @@ TEST_CASE("Api_AppxPackageWriter_good", "[api]")
     for(const auto& fileName : TestConstants::GoodFileNames)
     {
         // Create file and write random data to it
-        auto fileStream = MsixTest::Stream(fileName.first, false, true);
+        auto fileStream = MsixTest::StreamFile(fileName.first, false, true);
         WriteContentToStream(contentSize, fileStream.Get());
-        // TODO, if this fails says with file was it
-        CHECK_SUCCEDDED(packageWriter->AddPayloadFile(
+        REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
             fileName.second.c_str(),
             TestConstants::ContentType,
             APPX_COMPRESSION_OPTION_NORMAL,
@@ -74,8 +73,7 @@ TEST_CASE("Api_AppxPackageWriter_good", "[api]")
         contentSize += contentSizeIncrement;
     }
 
-    // Finalize package
-    // create manifest stream
+    // Finalize package, create manifest stream
     MsixTest::ComPtr<IStream> manifestStream;
     MakeManifestStream(&manifestStream);
     REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
@@ -91,15 +89,16 @@ TEST_CASE("Api_AppxPackageWriter_good", "[api]")
 // Test creating a valid msix package via IAppxPackageWriter.
 // Create a package with empty files in start, middle and end positions, 
 // and reuse the same content streams packaged under different names.
+// IAppxPackageWriter::AddPayloadFile calls internally IAppxPackageWriterUtf8::AddPayloadFile
 TEST_CASE("Api_AppxPackageWriter_good_with_empty_files", "[api]")
 {
-    auto outputStream = MsixTest::Stream("testpackage.msix", false, true);
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
 
     MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
     InitializePackageWriter(outputStream.Get(), &packageWriter);
 
-    auto emptyStream = MsixTest::Stream("test_empty_file.txt", false, true);
-    auto contentStream = MsixTest::Stream("test_file.txt", false, true);
+    auto emptyStream = MsixTest::StreamFile("test_empty_file.txt", false, true);
+    auto contentStream = MsixTest::StreamFile("test_file.txt", false, true);
     WriteContentToStream(618963, contentStream.Get());
 
     REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
@@ -127,9 +126,16 @@ TEST_CASE("Api_AppxPackageWriter_good_with_empty_files", "[api]")
         TestConstants::ContentType,
         APPX_COMPRESSION_OPTION_NONE,
         emptyStream.Get()));
-    //REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
+
+    // Finalize package, create manifest stream
+    MsixTest::ComPtr<IStream> manifestStream;
+    MakeManifestStream(&manifestStream);
+    REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
 
     // Reopen the package, validates that the written package is readable
+    // return to the beginning
+    LARGE_INTEGER zero = { 0 };
+    REQUIRE_SUCCEEDED(outputStream.Get()->Seek(zero, STREAM_SEEK_SET, nullptr));
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
     MsixTest::InitializePackageReader(outputStream.Get(), &packageReader);
 }
@@ -137,32 +143,146 @@ TEST_CASE("Api_AppxPackageWriter_good_with_empty_files", "[api]")
 // Create new package writer to write out a package with no payload files
 TEST_CASE("Api_AppxPackageWriter_good_no_payload", "[api]")
 {
-    auto outputStream = MsixTest::Stream("testpackage.msix", false, true);
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
 
     MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
     InitializePackageWriter(outputStream.Get(), &packageWriter);
 
-    //REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
+    // Finalize package, create manifest stream
+    MsixTest::ComPtr<IStream> manifestStream;
+    MakeManifestStream(&manifestStream);
+    REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
 
     // Reopen the package, validates that the written package is readable
+    // return to the beginning
+    LARGE_INTEGER zero = { 0 };
+    REQUIRE_SUCCEEDED(outputStream.Get()->Seek(zero, STREAM_SEEK_SET, nullptr));
+    MsixTest::ComPtr<IAppxPackageReader> packageReader;
+    MsixTest::InitializePackageReader(outputStream.Get(), &packageReader);
+}
+
+// Test creating a valid msix package via IAppxPackageWriter3
+TEST_CASE("Api_AppxPackageWriter_payloadfiles", "[api]")
+{
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
+
+    MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
+    InitializePackageWriter(outputStream.Get(), &packageWriter);
+
+    std::vector<APPX_PACKAGE_WRITER_PAYLOAD_STREAM> payloadFiles;
+    std::vector<MsixTest::StreamFile> streams;
+    payloadFiles.resize(TestConstants::GoodFileNames.size());
+    streams.resize(TestConstants::GoodFileNames.size());
+
+    // These values are set so that the files added to the package have increasingly
+    // larger sizes, with the first file having a small size < DefaultBlockSize, and
+    // the last file having a large size > 10x DefaultBlockSize.
+    const std::uint32_t contentSizeIncrement = DefaultBlockSize * 10 / static_cast<uint32_t>(TestConstants::GoodFileNames.size()) + 1;
+    std::uint32_t contentSize = 10;
+
+    for(size_t i = 0; i < TestConstants::GoodFileNames.size(); i++)
+    {
+        // Create file and write random data to it
+        streams[i].Initialize(TestConstants::GoodFileNames[i].first, false, true);
+        WriteContentToStream(contentSize, streams[i].Get());
+
+        payloadFiles[i].fileName = TestConstants::GoodFileNames[i].second.c_str();
+        payloadFiles[i].contentType = TestConstants::ContentType;
+        payloadFiles[i].compressionOption = APPX_COMPRESSION_OPTION_NORMAL;
+        payloadFiles[i].inputStream = streams[i].Get();
+        contentSize += contentSizeIncrement;
+    }
+
+    auto packageWriter3 = packageWriter.As<IAppxPackageWriter3>();
+
+    // memoryLimist isn't implemented yet, but set a very small memory limit to force
+    // all the handling loops when we do: 320kb.
+    REQUIRE_SUCCEEDED(packageWriter3->AddPayloadFiles(
+        static_cast<UINT32>(TestConstants::GoodFileNames.size()),
+        payloadFiles.data(),
+        327680
+    ));
+
+    // Finalize package, create manifest stream
+    MsixTest::ComPtr<IStream> manifestStream;
+    MakeManifestStream(&manifestStream);
+    REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
+
+    // Reopen the package, validates that the written package is readable
+    // return to the beginning
+    LARGE_INTEGER zero = { 0 };
+    REQUIRE_SUCCEEDED(outputStream.Get()->Seek(zero, STREAM_SEEK_SET, nullptr));
+    MsixTest::ComPtr<IAppxPackageReader> packageReader;
+    MsixTest::InitializePackageReader(outputStream.Get(), &packageReader);
+}
+
+// Test creating a valid msix package via IAppxPackageWriter3Utf8
+TEST_CASE("Api_AppxPackageWriter_payloadfiles_utf8", "[api]")
+{
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
+
+    MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
+    InitializePackageWriter(outputStream.Get(), &packageWriter);
+
+    std::vector<APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8> payloadFiles;
+    std::vector<std::string> payloadFilesNames;
+    std::vector<MsixTest::StreamFile> streams;
+    payloadFiles.resize(TestConstants::GoodFileNames.size());
+    streams.resize(TestConstants::GoodFileNames.size());
+    payloadFilesNames.resize(TestConstants::GoodFileNames.size());
+
+    std::string contentType = MsixTest::String::utf16_to_utf8(TestConstants::ContentType);
+
+    // These values are set so that the files added to the package have increasingly
+    // larger sizes, with the first file having a small size < DefaultBlockSize, and
+    // the last file having a large size > 10x DefaultBlockSize.
+    const std::uint32_t contentSizeIncrement = DefaultBlockSize * 10 / static_cast<uint32_t>(TestConstants::GoodFileNames.size()) + 1;
+    std::uint32_t contentSize = 10;
+
+    for(size_t i = 0; i < TestConstants::GoodFileNames.size(); i++)
+    {
+        // Create file and write random data to it
+        streams[i].Initialize(TestConstants::GoodFileNames[i].first, false, true);
+        WriteContentToStream(contentSize, streams[i].Get());
+
+        payloadFilesNames[i] = MsixTest::String::utf16_to_utf8(TestConstants::GoodFileNames[i].second);
+
+        payloadFiles[i].fileName = payloadFilesNames[i].c_str();
+        payloadFiles[i].contentType = contentType.c_str();
+        payloadFiles[i].compressionOption = APPX_COMPRESSION_OPTION_NORMAL;
+        payloadFiles[i].inputStream = streams[i].Get();
+        contentSize += contentSizeIncrement;
+    }
+
+    auto packageWriter3utf8 = packageWriter.As<IAppxPackageWriter3Utf8>();
+
+    // memoryLimist isn't implemented yet, but set a very small memory limit to force
+    // all the handling loops when we do: 320kb.
+    REQUIRE_SUCCEEDED(packageWriter3utf8->AddPayloadFiles(
+        static_cast<UINT32>(TestConstants::GoodFileNames.size()),
+        payloadFiles.data(),
+        327680
+    ));
+
+    // Finalize package, create manifest stream
+    MsixTest::ComPtr<IStream> manifestStream;
+    MakeManifestStream(&manifestStream);
+    REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
+
+    // Reopen the package, validates that the written package is readable
+    // return to the beginning
+    LARGE_INTEGER zero = { 0 };
+    REQUIRE_SUCCEEDED(outputStream.Get()->Seek(zero, STREAM_SEEK_SET, nullptr));
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
     MsixTest::InitializePackageReader(outputStream.Get(), &packageReader);
 }
 
 /*
-// Test creating a valid msix package via IAppxPackageWriter3
-TEST_CASE("Api_AppxPackageWriter_payloadfiles", "[api]")
-{
-    MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
-    auto outputStream = MsixTest::Stream("pack/package.msix");
-    InitializePackageWriter(outputStream.Get(), &packageWriter);
-}
-
 // Tests failure cases for IAppxPackageWriter
 TEST_CASE("Api_AppxPackageWriter_errors", "[api]")
 {
     MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
-    auto outputStream = MsixTest::Stream("pack/package.msix");
+    auto outputStream = MsixTest::StreamFile("pack/package.msix");
     InitializePackageWriter(outputStream.Get(), &packageWriter);
 }
 */

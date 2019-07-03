@@ -68,21 +68,33 @@ namespace MsixTest {
 
     namespace String {
 
-        std::string utf16_to_utf8(const std::wstring& utf16string)
+        std::wstring utf8_to_utf16(const std::string& utf8string)
         {
+            if (utf8string.empty()) { return {}; }
+            #ifdef WIN32
+            int size = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8string.data(), static_cast<int>(utf8string.size()), nullptr, 0);
+            REQUIRE(size != 0);
+            std::wstring result(size, 0);
+            MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8string.data(), static_cast<int>(utf8string.size()), &result[0], size);
+            #else
             auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
-            std::string result(converted.begin(), converted.end());
+            std::wstring result(converted.begin(), converted.end());
+            #endif
             return result;
         }
 
-        std::wstring utf8_to_utf16(const std::string& utf8string)
+        std::string utf16_to_utf8(const std::wstring& utf16string)
         {
+            if (utf16string.empty()) { return {}; }
             #ifdef WIN32
-            auto converted = std::wstring_convert<std::codecvt_utf8_utf16<unsigned short>, unsigned short>{}.from_bytes(utf8string.data());
+            int size = WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, utf16string.data(), static_cast<int>(utf16string.size()), nullptr, 0, nullptr, nullptr);
+            REQUIRE(size != 0);
+            std::string result(size, 0);
+            WideCharToMultiByte(CP_UTF8, WC_ERR_INVALID_CHARS, utf16string.data(), static_cast<int>(utf16string.size()), &result[0], size, nullptr, nullptr);
             #else
-            auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data());
+            auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
+            std::string result(converted.begin(), converted.end());
             #endif
-            std::wstring result(converted.begin(), converted.end());
             return result;
         }
     }
@@ -113,11 +125,13 @@ namespace MsixTest {
         *packageReader = nullptr;
 
         auto packagePath = TestPath::GetInstance()->GetPath(TestPath::Directory::Unpack) + "/" + package;
-        auto inputStream = Stream(packagePath, true);
+        auto inputStream = StreamFile(packagePath, true);
 
         ComPtr<IAppxFactory> factory;
         REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(Allocators::Allocate, Allocators::Free, MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &factory));
-        REQUIRE_SUCCEEDED(factory->CreatePackageReader(inputStream.Get(), packageReader));
+        //REQUIRE_SUCCEEDED(factory->CreatePackageReader(inputStream.Get(), packageReader));
+        HRESULT hr = factory->CreatePackageReader(inputStream.Get(), packageReader);
+        MsixTest::Log::PrintMsixLog(S_OK, hr);
         REQUIRE_NOT_NULL(*packageReader);
         return;
     }
@@ -126,7 +140,9 @@ namespace MsixTest {
     {
         ComPtr<IAppxFactory> factory;
         REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(Allocators::Allocate, Allocators::Free, MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &factory));
-        REQUIRE_SUCCEEDED(factory->CreatePackageReader(stream, packageReader));
+        //REQUIRE_SUCCEEDED(factory->CreatePackageReader(stream, packageReader));
+        HRESULT hr = factory->CreatePackageReader(stream, packageReader);
+        MsixTest::Log::PrintMsixLog(S_OK, hr);
         REQUIRE_NOT_NULL(*packageReader);
         return;
     }
@@ -136,7 +152,7 @@ namespace MsixTest {
         *bundleReader = nullptr;
 
         auto bundlePath = TestPath::GetInstance()->GetPath(TestPath::Directory::Unbundle) + "/" + package;
-        auto inputStream = Stream(bundlePath, true);
+        auto inputStream = StreamFile(bundlePath, true);
 
         ComPtr<IAppxBundleFactory> bundleFactory;
         REQUIRE_SUCCEEDED(CoCreateAppxBundleFactoryWithHeap(
@@ -152,29 +168,48 @@ namespace MsixTest {
         return;
     }
 
-    Stream::Stream(std::string fileName, bool toRead, bool toDelete): m_toDelete(toDelete)
+    StreamFile::StreamFile(std::string fileName, bool toRead, bool toDelete): m_toDelete(toDelete)
+    {
+        InitializeStream(fileName, toRead);
+    }
+
+    StreamFile::StreamFile(std::wstring fileName, bool toRead, bool toDelete): m_toDelete(toDelete)
+    {
+        auto fileNameUtf8 = String::utf16_to_utf8(fileName);
+        InitializeStream(fileNameUtf8, toRead);
+    }
+
+    void StreamFile::Initialize(std::string fileName, bool toRead, bool toDelete)
+    {
+        Clean();
+        m_toDelete = toDelete;
+        InitializeStream(fileName, toRead);
+    }
+
+    void StreamFile::Initialize(std::wstring fileName, bool toRead, bool toDelete)
+    {
+        Clean();
+        m_toDelete = toDelete;
+        auto fileNameUtf8 = String::utf16_to_utf8(fileName);
+        InitializeStream(fileNameUtf8, toRead);
+    }
+
+    void StreamFile::InitializeStream(std::string fileName, bool toRead)
     {
         m_fileName = Directory::PathAsCurrentPlatform(fileName);
         REQUIRE_SUCCEEDED(CreateStreamOnFile(const_cast<char*>(m_fileName.c_str()), toRead, &m_stream));
     }
 
-    Stream::Stream(std::wstring fileName, bool toRead, bool toDelete): m_toDelete(toDelete)
+    void StreamFile::Clean()
     {
-        auto fileNameUtf8 = String::utf16_to_utf8(fileName);
-        m_fileName = Directory::PathAsCurrentPlatform(fileNameUtf8);
-        REQUIRE_SUCCEEDED(CreateStreamOnFile(const_cast<char*>(m_fileName.c_str()), toRead, &m_stream));
-    }
-
-    Stream::~Stream()
-    {
-        if (m_toDelete)
+        if (m_toDelete && (m_stream.Get() != nullptr))
         {
             // best effort to delete the file. If someone else has a reference to this stream
             // and this object is deleted, the file WILL NOT be deleted.
             auto ref = m_stream->Release();
+            m_stream = nullptr;
             if (ref == 0)
             {
-                m_stream = nullptr;
                 remove(m_fileName.c_str());
             }
         }

@@ -88,6 +88,7 @@ namespace MSIX {
         ComPtr<IStream> XmlWriter::GetStream()
         {
             ThrowErrorIf(Error::XmlError, m_state != State::Finish, "Invalid call, the stream can only be accessed when the writer is done");
+            static_cast<StringStream*>(m_stream.Get())->Print();
             return m_stream;
         }
 

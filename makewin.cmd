@@ -27,7 +27,7 @@ if exist %VCINSTALLDIR%\Auxiliary\Build\vcvarsall.bat (
 )
 popd
 
-set build="MinSizeRel"
+set build="RelWithDebInfo"
 set validationParser="-DUSE_VALIDATION_PARSER=off"
 set zlib="-DUSE_SHARED_ZLIB=off"
 set parser="-DXML_PARSER=msxml6"

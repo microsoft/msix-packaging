@@ -8,6 +8,7 @@
 #include "MsixErrors.hpp"
 
 #include "msixtest.hpp"
+#include "macros.hpp"
 
 #include <string>
 #include <map>
@@ -141,6 +142,14 @@ namespace MsixTest {
             return temp;
         }
 
+        template <class U>
+        ComPtr<U> As() const
+        {
+            ComPtr<U> out;
+            REQUIRE_SUCCEEDED(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(&out)));
+            return out;
+        }
+
         inline T** operator&()
         {   InternalRelease();
             return &m_ptr;
@@ -164,13 +173,17 @@ namespace MsixTest {
     // toRead - true if the file already exists, false to create it
     // toDelete - true if the file should be deleted when the this object
     // goes out of scope.
-    class Stream
+    class StreamFile
     {
     public:
+        StreamFile() : m_toDelete(false) {}
+        StreamFile(std::string fileName, bool toRead, bool toDelete = false);
+        StreamFile(std::wstring fileName, bool toRead, bool toDelete = false);
+        ~StreamFile() { Clean(); }
 
-        Stream(std::string fileName, bool toRead, bool toDelete = false);
-        Stream(std::wstring fileName, bool toRead, bool toDelete = false);
-        ~Stream();
+        void Initialize(std::string fileName, bool toRead, bool toDelete = false);
+        void Initialize(std::wstring fileName, bool toRead, bool toDelete = false);
+
         inline IStream* Get() const { return m_stream.Get(); }
         IStream* Detach()
         {
@@ -179,6 +192,9 @@ namespace MsixTest {
         }
 
     protected:
+        void InitializeStream(std::string fileName, bool toRead);
+        void Clean();
+
         bool m_toDelete;
         std::string m_fileName;
         ComPtr<IStream> m_stream;

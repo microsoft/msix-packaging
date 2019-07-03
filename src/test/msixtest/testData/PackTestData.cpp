@@ -74,7 +74,7 @@ namespace MsixTest { namespace Pack {
     void MakeManifestStream(IStream** manifestStream)
     {
         auto manifestPath = TestPath::GetInstance()->GetPath(TestPath::Directory::Pack) + "/" + "Manifest_Good.xml";
-        auto stream = Stream(manifestPath, true);
+        auto stream = StreamFile(manifestPath, true);
         *manifestStream = stream.Detach(); 
     }
 
