@@ -135,4 +135,57 @@ namespace MsixCoreLib
 
         return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask);
     }
+
+
+    /// Replaces all oldchars in input with newchar
+    ///
+    /// @param input   - The input string that contains the characters to be changed
+    /// @param oldchar - Old character that are to be replaced
+    /// @param newchar - New character that replaces oldchar
+    void replace(std::wstring& input, const wchar_t oldchar, const wchar_t newchar)
+    {
+        std::size_t found = input.find_first_of(oldchar);
+        while (found != std::string::npos)
+        {
+            input[found] = newchar;
+            found = input.find_first_of(oldchar, found + 1);
+        }
+    }
+
+    /// Makes a directory, including all parent directories based on the inputted filepath
+    ///
+    /// @param utf16Path - The filepath to create a directory in utf16
+    int mkdirp(std::wstring& utf16Path)
+    {
+        replace(utf16Path, L'/', L'\\');
+        for (std::size_t i = 3; i < utf16Path.size(); i++) // 3 skips past c:
+        {
+            if (utf16Path[i] == L'\0')
+            {
+                break;
+            }
+            else if (utf16Path[i] == L'\\')
+            {
+                // Temporarily set string to terminate at the '\' character
+                // to obtain name of the subdirectory to create
+                utf16Path[i] = L'\0';
+
+                if (!CreateDirectoryW(utf16Path.c_str(), nullptr))
+                {
+                    int lastError = static_cast<int>(GetLastError());
+
+                    // It is normal for CreateDirectory to fail if the subdirectory
+                    // already exists.  Other errors should not be ignored.
+                    if (lastError != ERROR_ALREADY_EXISTS)
+                    {
+                        return lastError;
+                    }
+                }
+                // Restore original string
+                utf16Path[i] = L'\\';
+            }
+        }
+        return 0;
+    }
+
 }

@@ -12,67 +12,24 @@
 #include "RegistryDevirtualizer.hpp"
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
-#include "Database.hpp"
+
 using namespace MsixCoreLib;
 
 const PCWSTR VirtualFileHandler::HandlerName = L"VirtualFileHandler";
 
-/// Replaces all oldchars in input with newchar
-///
-/// @param input   - The input string that contains the characters to be changed
-/// @param oldchar - Old character that are to be replaced
-/// @param newchar - New character that replaces oldchar
-void replace(std::wstring& input, const wchar_t oldchar, const wchar_t newchar)
-{
-    std::size_t found = input.find_first_of(oldchar);
-    while (found != std::string::npos)
-    {
-        input[found] = newchar;
-        found = input.find_first_of(oldchar, found + 1);
-    }
-}
-
-/// Makes a directory, including all parent directories based on the inputted filepath
-///
-/// @param utf16Path - The filepath to create a directory in utf16
-int mkdirp(std::wstring& utf16Path)
-{
-    replace(utf16Path, L'/', L'\\');
-    for (std::size_t i = 3; i < utf16Path.size(); i++) // 3 skips past c:
-    {
-        if (utf16Path[i] == L'\0')
-        {
-            break;
-        }
-        else if (utf16Path[i] == L'\\')
-        {
-            // Temporarily set string to terminate at the '\' character
-            // to obtain name of the subdirectory to create
-            utf16Path[i] = L'\0';
-
-            if (!CreateDirectoryW(utf16Path.c_str(), nullptr))
-            {
-                int lastError = static_cast<int>(GetLastError());
-
-                // It is normal for CreateDirectory to fail if the subdirectory
-                // already exists.  Other errors should not be ignored.
-                if (lastError != ERROR_ALREADY_EXISTS)
-                {
-                    return lastError;
-                }
-            }
-            // Restore original string
-            utf16Path[i] = L'\\';
-        }
-    }
-    return 0;
-}
-
-
 HRESULT VirtualFileHandler::ExecuteForAddRequest()
 {
-    // loop over all vfs files
-   // RETURN_IF_FAILED(CopyVfsFileIfNecessary());
+    auto vfsDirectoryPath = m_msixRequest->GetPackageDirectoryPath() + L"\\VFS";
+
+    for (auto& p : std::experimental::filesystem::recursive_directory_iterator(vfsDirectoryPath))
+    {
+        if (std::experimental::filesystem::is_regular_file(p.path()))
+        {
+            RETURN_IF_FAILED(CopyVfsFileToLocal(p.path()));
+        }
+    }
+    
+    
     return S_OK;
 }
 
@@ -116,17 +73,6 @@ HRESULT VirtualFileHandler::RemoveVfsFiles()
 
 HRESULT VirtualFileHandler::ExecuteForRemoveRequest()
 {
-    bool isInstalledForOtherUsers = false;
-    HRESULT hrIsInstalled = Database::IsInstalledForAnyOtherUser(m_msixRequest->GetPackageInfo()->GetPackageFullName().c_str(), isInstalledForOtherUsers);
-    if (FAILED(hrIsInstalled) || isInstalledForOtherUsers)
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Not removing the package's files; another user has it installed",
-            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-            TraceLoggingValue(hrIsInstalled, "HR"));
-        return hrIsInstalled;
-    }
-
     HRESULT hrRemoveVfsFiles = RemoveVfsFiles();
     if (FAILED(hrRemoveVfsFiles))
     {
@@ -135,20 +81,7 @@ HRESULT VirtualFileHandler::ExecuteForRemoveRequest()
             TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
             TraceLoggingValue(hrRemoveVfsFiles, "HR"));
     }
-
-    // First release manifest so we can delete the file.
-    m_msixRequest->GetPackageInfo()->ReleaseManifest();
-
-    std::error_code error;
-    auto packageDirectoryPath = m_msixRequest->GetPackageDirectoryPath();
-    uintmax_t numRemoved = std::experimental::filesystem::remove_all(packageDirectoryPath, error);
-
-    TraceLoggingWrite(g_MsixTraceLoggingProvider,
-        "Removed directory",
-        TraceLoggingValue(packageDirectoryPath.c_str(), "PackageDirectoryPath"),
-        TraceLoggingValue(error.value(), "Error"),
-        TraceLoggingValue(numRemoved, "NumRemoved"));
-
+    
     return S_OK;
 }
 
@@ -373,11 +306,11 @@ HRESULT VirtualFileHandler::RemoveVfsFile(std::wstring fileName)
     return S_OK;
 }
 
-HRESULT VirtualFileHandler::ConvertVfsNameToFullPath(std::wstring fileName, std::wstring& fileFullPath)
+HRESULT VirtualFileHandler::ConvertVfsNameToFullPath(std::wstring sourceFullPath, std::wstring& targetFullPath)
 {
-    //The following code gets remainingFilePath from "VFS\FirstDir\...\file.ext" to "\...\file.ext"
-    std::wstring remainingFilePath = fileName;
-    MsixCoreLib_GetPathChild(remainingFilePath); // remove the VFS directory
+    //Convert sourceFullPath "c:\program files\MsixCoreApps\<package>\VFS\FirstDir\...\file.ext" to remainingFilePath  to "\...\file.ext"
+    std::wstring vfsDirectoryPath = m_msixRequest->GetPackageDirectoryPath() + L"\\VFS";
+    std::wstring remainingFilePath = sourceFullPath.substr(vfsDirectoryPath.size(), sourceFullPath.size());
 
     std::map<std::wstring, std::wstring> map = FilePathMappings::GetInstance().GetMap();
     for (auto& pair : map)
@@ -387,7 +320,7 @@ HRESULT VirtualFileHandler::ConvertVfsNameToFullPath(std::wstring fileName, std:
             MsixCoreLib_GetPathChild(remainingFilePath); // remove the FirstDir directory.
 
             // Pre-pend the VFS target directory to obtain the full path for the target location
-            fileFullPath = pair.second + std::wstring(L"\\") + remainingFilePath;
+            targetFullPath = pair.second + std::wstring(L"\\") + remainingFilePath;
 
             //Stop looping through the list
             return S_OK;
@@ -397,21 +330,19 @@ HRESULT VirtualFileHandler::ConvertVfsNameToFullPath(std::wstring fileName, std:
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Could not find VFS mapping",
         TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-        TraceLoggingValue(fileName.c_str(), "FileName"));
+        TraceLoggingValue(sourceFullPath.c_str(), "SourceFullPath"));
 
     return E_NOT_SET;
 }
 
-HRESULT VirtualFileHandler::CopyVfsFileToLocal(std::wstring fileName)
+HRESULT VirtualFileHandler::CopyVfsFileToLocal(std::wstring sourceFullPath)
 {
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "CopyVfsFileToLocal",
-        TraceLoggingValue(fileName.c_str(), "FileName"));
-
-    std::wstring sourceFullPath = m_msixRequest->GetPackageDirectoryPath() + std::wstring(L"\\") + fileName;
-
+        TraceLoggingValue(sourceFullPath.c_str(), "FileName"));
+    
     std::wstring targetFullPath;
-    if (FAILED(ConvertVfsNameToFullPath(fileName, targetFullPath)))
+    if (FAILED(ConvertVfsNameToFullPath(sourceFullPath, targetFullPath)))
     {
         return S_OK;
     }

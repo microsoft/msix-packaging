@@ -32,8 +32,8 @@ namespace MsixCoreLib
         /// to c:\program files (x86)\Notepadplusplus\notepadplusplus.exe 
         /// The mapping between the VFS path and the resolved location is obtained through FilePathMappings::GetMap
         ///
-        /// @param nameStr - A filepath of the file in the VFS 
-        HRESULT CopyVfsFileToLocal(std::wstring nameStr);
+        /// @param nameStr - A full path of the file in the VFS directory
+        HRESULT CopyVfsFileToLocal(std::wstring sourceFullPath);
 
         /// Determines if a file needs to be copied. 
         /// If a file already exists in the target location, the highest version file will be retained
@@ -62,7 +62,7 @@ namespace MsixCoreLib
         /// @param fileName - the VFS file name
         /// @param fileFullPath - the real location full path
         /// @return E_NOT_SET if the VFS name cannot be found in the mapping.
-        HRESULT ConvertVfsNameToFullPath(std::wstring fileName, std::wstring &fileFullPath);
+        HRESULT ConvertVfsNameToFullPath(std::wstring sourceFullPath, std::wstring &fileFullPath);
 
         /// Removes all VFS files in the package
         HRESULT RemoveVfsFiles();
