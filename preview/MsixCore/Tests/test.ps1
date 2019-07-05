@@ -1,9 +1,9 @@
 # Caution: MAY DESTROY TEST ENVIRONMENT!!! Do Not Execute on a production machine
-# Setup: Copy entire msixtest folder (which includes this script) onto Win7 SP1 or higher test machine. Install the MSI or copy the binaries (msix.dll and MsixCoreInstaller.exe) to the test machine
+# Setup: Copy entire msixtest folder (which includes this script) onto Win7 SP1 or higher test machine. Install the MSI or copy the binaries (msix.dll and msixmgr.exe) to the test machine
 # assumption: all the files in the msixtest folder are co-located and in the working directory when this script is executed.
 # assumption: Windows installed to c:\ drive, Program Files etc. folders are in expected places
 
-# binaryFolder points to the location of the msix.dll and MsixCoreInstaller.exe binaries
+# binaryFolder points to the location of the msix.dll and msixmgr.exe binaries
 # if omitted, assumes you've copied the binaries into the working directory
 param (
     [Parameter(ParameterSetName="binaryFolder", Mandatory=$false)]
@@ -17,11 +17,11 @@ if (-not $PSBoundParameters.ContainsKey('binaryFolder'))
 	$binaryFolder = $pwd 
 }
 
-$executable = join-path $binaryFolder "MsixCoreInstaller.exe"
+$executable = join-path $binaryFolder "msixmgr.exe"
 
 if (-not (test-path $executable))
 {
-	write-host ("Cannot run tests: $executable not found. Use -binaryFolder parameter to point to location of MsixCoreInstaller.exe") -foregroundcolor red
+	write-host ("Cannot run tests: $executable not found. Use -binaryFolder parameter to point to location of msixmgr.exe") -foregroundcolor red
 	exit
 }
 

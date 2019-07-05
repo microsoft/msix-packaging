@@ -1,5 +1,5 @@
-// MsixCoreInstaller.cpp :
-// The main entry point for MsixCoreInstaller.exe. This application is
+// msixmgr.cpp :
+// The main entry point for msixmgr.exe. This application manages various facets of msix packages, including
 // a working preview for the MSIX/APPX installer for Windows 7 SP1 and higher OS versions
 #include "MSIXWindows.hpp"
 #include <shlobj_core.h>
@@ -11,13 +11,13 @@
 #include <TraceLoggingProvider.h>
 #include "InstallUI.hpp"
 #include "CommandLineInterface.hpp"
-#include "MsixCoreInstallerLogger.hpp"
+#include "msixmgrLogger.hpp"
 #include "Util.hpp"
-#include "..\MsixCoreInstallerLib\GeneralUtil.hpp"
+#include "..\msixmgrLib\GeneralUtil.hpp"
 #include "resource.h"
 #include <VersionHelpers.h>
 
-#include <MsixCoreInstallerActions.hpp>
+#include <msixmgrActions.hpp>
 using namespace std;
 using namespace MsixCoreLib;
 

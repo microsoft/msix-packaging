@@ -1,4 +1,4 @@
-#include "MsixCoreInstallerLogger.hpp"
+#include "msixmgrLogger.hpp"
 // Define the GUID to use in TraceLoggingProviderRegister 
 // {db5b779e-2dcf-41bc-ab0e-40a6e02f1438}
 // One way to enable:
