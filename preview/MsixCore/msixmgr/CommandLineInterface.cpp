@@ -1,9 +1,9 @@
 #include <iostream>
 #include <iomanip>
 #include "CommandLineInterface.hpp"
-#include "MsixCoreInstallerLogger.hpp"
+#include "msixmgrLogger.hpp"
 #include <TraceLoggingProvider.h>
-#include "..\MsixCoreInstallerLib\GeneralUtil.hpp"
+#include "..\msixmgrLib\GeneralUtil.hpp"
 #include "Util.hpp"
 #include "resource.h"
 

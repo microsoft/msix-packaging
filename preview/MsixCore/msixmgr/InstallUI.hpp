@@ -4,7 +4,7 @@
 #include <windows.h>
 #include <string>
 #include "Util.hpp"
-#include "..\MsixCoreInstallerLib\GeneralUtil.hpp"
+#include "..\msixmgrLib\GeneralUtil.hpp"
 #include <IPackageManager.hpp>
 #include <IMsixResponse.hpp>
 #include "resource.h"

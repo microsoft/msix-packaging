@@ -16,7 +16,7 @@
 #include <filesystem>
 
 #include "Util.hpp"
-#include "MsixCoreInstallerLogger.hpp"
+#include "msixmgrLogger.hpp"
 // MSIXWindows.hpp defines NOMINMAX and undefines min and max because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. We can't use namespace std because c++17 defines std::byte, which conflicts with ::byte
 #define max std::max

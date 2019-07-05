@@ -1,6 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by MsixCoreInstaller.rc
+// Used by msixmgr.rc
 //
 #define IDS_STRING_FAILED_REQUEST       102
 #define IDS_STRING_FAILED_COM_INITIALIZATION 103
