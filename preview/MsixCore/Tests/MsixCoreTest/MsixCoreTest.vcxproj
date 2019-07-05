@@ -92,7 +92,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;MSIXCORETEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\MsixCoreInstallerLib\inc;..\..\..\..\.vs\src\msix;..\..\MsixCoreInstallerLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\msixmgrLib\inc;..\..\..\..\.vs\src\msix;..\..\msixmgrLib</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -102,7 +102,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>..\..\x64\Release;..\..\..\..\.vs\lib;C:\Program Files (x86)\Windows Kits\10\Testing\Development\lib\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>msixcoreinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msixmgrlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>api-ms-win-core-winrt-string-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-1.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>
@@ -115,14 +115,14 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;MSIXCORETEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\MsixCoreInstallerLib\inc;..\..\..\..\.vs\src\msix;..\..\MsixCoreInstallerLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\msixmgrLib\inc;..\..\..\..\.vs\src\msix;..\..\msixmgrLib</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\lib\x86</AdditionalLibraryDirectories>
-      <AdditionalDependencies>msixcoreinstallerlib.lib;msix.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msixmgrlib.lib;msix.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -134,14 +134,14 @@
       <PreprocessorDefinitions>_DEBUG;MSIXCORETEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\MsixCoreInstallerLib\inc;..\..\..\..\.vs\src\msix;..\..\MsixCoreInstallerLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\msixmgrLib\inc;..\..\..\..\.vs\src\msix;..\..\msixmgrLib</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\lib\x64</AdditionalLibraryDirectories>
-      <AdditionalDependencies>msixcoreinstallerlib.lib;msix.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msixmgrlib.lib;msix.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -154,7 +154,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;MSIXCORETEST_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\MsixCoreInstallerLib\inc;..\..\..\..\.vs\src\msix;..\..\MsixCoreInstallerLib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\msixmgrLib\inc;..\..\..\..\.vs\src\msix;..\..\msixmgrLib</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
@@ -164,7 +164,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\lib\x86</AdditionalLibraryDirectories>
-      <AdditionalDependencies>msixcoreinstallerlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msixmgrlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>api-ms-win-core-winrt-string-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-1.dll</DelayLoadDLLs>
     </Link>
   </ItemDefinitionGroup>

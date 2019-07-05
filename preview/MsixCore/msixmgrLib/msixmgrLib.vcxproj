@@ -22,9 +22,9 @@
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{46BE19BD-72E0-4452-9919-33A1F8A5F064}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>MsixCoreInstaller</RootNamespace>
+    <RootNamespace>msixmgr</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
-    <ProjectName>MsixCoreInstallerLib</ProjectName>
+    <ProjectName>msixmgrLib</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -89,10 +89,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MsixCoreInstallerLib_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..\MsixCoreInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>msixmgrLib_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>.;..\msixmgr;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -109,10 +110,11 @@
       <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MsixCoreInstallerLib_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..\MsixCoreInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>msixmgrLib_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>.;..\msixmgr;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -131,9 +133,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MsixCoreInstallerLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>msixmgrLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..\MsixCoreInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\msixmgr;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/await</AdditionalOptions>
@@ -157,9 +159,9 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>MsixCoreInstallerLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;MsixCoreInstaller_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>msixmgrLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;msixmgr_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..\MsixCoreInstaller;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\msixmgr;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/await</AdditionalOptions>
@@ -176,69 +178,69 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\MsixCoreInstaller\AddRemovePrograms.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\ComInterface.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\ComServer.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\Constants.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\ErrorHandler.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\StartupTask.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\ValidateTargetDeviceFamily.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\FirewallRules.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\Windows10Redirector.hpp" />
+    <ClInclude Include="..\msixmgr\AddRemovePrograms.hpp" />
+    <ClInclude Include="..\msixmgr\ComInterface.hpp" />
+    <ClInclude Include="..\msixmgr\ComServer.hpp" />
+    <ClInclude Include="..\msixmgr\Constants.hpp" />
+    <ClInclude Include="..\msixmgr\ErrorHandler.hpp" />
+    <ClInclude Include="..\msixmgr\StartupTask.hpp" />
+    <ClInclude Include="..\msixmgr\ValidateTargetDeviceFamily.hpp" />
+    <ClInclude Include="..\msixmgr\FirewallRules.hpp" />
+    <ClInclude Include="..\msixmgr\Windows10Redirector.hpp" />
     <ClInclude Include="inc\IMsixResponse.hpp" />
     <ClInclude Include="inc\DeploymentOptions.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\Extractor.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\FileTypeAssociation.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\FootprintFiles.hpp" />
+    <ClInclude Include="..\msixmgr\Extractor.hpp" />
+    <ClInclude Include="..\msixmgr\FileTypeAssociation.hpp" />
+    <ClInclude Include="..\msixmgr\FootprintFiles.hpp" />
     <ClInclude Include="inc\IPackageManager.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\InstallComplete.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\MsixRequest.hpp" />
+    <ClInclude Include="..\msixmgr\InstallComplete.hpp" />
+    <ClInclude Include="..\msixmgr\MsixRequest.hpp" />
     <ClInclude Include="GeneralUtil.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\FilePaths.hpp" />
+    <ClInclude Include="..\msixmgr\FilePaths.hpp" />
     <ClInclude Include="inc\IPackage.hpp" />
-    <ClInclude Include="inc\MsixCoreInstallerActions.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\IPackageHandler.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\MsixResponse.hpp" />
+    <ClInclude Include="inc\msixmgrActions.hpp" />
+    <ClInclude Include="..\msixmgr\IPackageHandler.hpp" />
+    <ClInclude Include="..\msixmgr\MsixResponse.hpp" />
     <ClInclude Include="MsixTraceLoggingProvider.hpp" />
     <ClInclude Include="PackageManager.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\Package.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\PopulatePackageInfo.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\ProcessPotentialUpdate.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\Protocol.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\RegistryDevirtualizer.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\RegistryKey.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\StartMenuLink.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\PrepareDevirtualizedRegistry.hpp" />
-    <ClInclude Include="..\MsixCoreInstaller\WriteDevirtualizedRegistry.hpp" />
+    <ClInclude Include="..\msixmgr\Package.hpp" />
+    <ClInclude Include="..\msixmgr\PopulatePackageInfo.hpp" />
+    <ClInclude Include="..\msixmgr\ProcessPotentialUpdate.hpp" />
+    <ClInclude Include="..\msixmgr\Protocol.hpp" />
+    <ClInclude Include="..\msixmgr\RegistryDevirtualizer.hpp" />
+    <ClInclude Include="..\msixmgr\RegistryKey.hpp" />
+    <ClInclude Include="..\msixmgr\StartMenuLink.hpp" />
+    <ClInclude Include="..\msixmgr\PrepareDevirtualizedRegistry.hpp" />
+    <ClInclude Include="..\msixmgr\WriteDevirtualizedRegistry.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\MsixCoreInstaller\ComInterface.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\ComServer.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\ErrorHandler.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\Extractor.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\FilePaths.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\FileTypeAssociation.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\InstallComplete.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\MsixRequest.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\StartupTask.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\ValidateTargetDeviceFamily.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\FirewallRules.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\Windows10Redirector.cpp" />
+    <ClCompile Include="..\msixmgr\ComInterface.cpp" />
+    <ClCompile Include="..\msixmgr\ComServer.cpp" />
+    <ClCompile Include="..\msixmgr\ErrorHandler.cpp" />
+    <ClCompile Include="..\msixmgr\Extractor.cpp" />
+    <ClCompile Include="..\msixmgr\FilePaths.cpp" />
+    <ClCompile Include="..\msixmgr\FileTypeAssociation.cpp" />
+    <ClCompile Include="..\msixmgr\InstallComplete.cpp" />
+    <ClCompile Include="..\msixmgr\MsixRequest.cpp" />
+    <ClCompile Include="..\msixmgr\StartupTask.cpp" />
+    <ClCompile Include="..\msixmgr\ValidateTargetDeviceFamily.cpp" />
+    <ClCompile Include="..\msixmgr\FirewallRules.cpp" />
+    <ClCompile Include="..\msixmgr\Windows10Redirector.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\MsixResponse.cpp" />
+    <ClCompile Include="..\msixmgr\MsixResponse.cpp" />
     <ClCompile Include="MsixTraceLoggingProvider.cpp" />
     <ClCompile Include="PackageManager.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\Package.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\PopulatePackageInfo.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\ProcessPotentialUpdate.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\Protocol.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\RegistryDevirtualizer.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\RegistryKey.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\AddRemovePrograms.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\StartMenuLink.cpp" />
-    <ClCompile Include="MsixCoreInstallerActions.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\PrepareDevirtualizedRegistry.cpp" />
-    <ClCompile Include="..\MsixCoreInstaller\WriteDevirtualizedRegistry.cpp" />
+    <ClCompile Include="..\msixmgr\Package.cpp" />
+    <ClCompile Include="..\msixmgr\PopulatePackageInfo.cpp" />
+    <ClCompile Include="..\msixmgr\ProcessPotentialUpdate.cpp" />
+    <ClCompile Include="..\msixmgr\Protocol.cpp" />
+    <ClCompile Include="..\msixmgr\RegistryDevirtualizer.cpp" />
+    <ClCompile Include="..\msixmgr\RegistryKey.cpp" />
+    <ClCompile Include="..\msixmgr\AddRemovePrograms.cpp" />
+    <ClCompile Include="..\msixmgr\StartMenuLink.cpp" />
+    <ClCompile Include="msixmgrActions.cpp" />
+    <ClCompile Include="..\msixmgr\PrepareDevirtualizedRegistry.cpp" />
+    <ClCompile Include="..\msixmgr\WriteDevirtualizedRegistry.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
