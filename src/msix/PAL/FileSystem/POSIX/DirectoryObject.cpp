@@ -40,7 +40,7 @@ namespace MSIX {
             {
                 // TODO: ignore .DS_STORE for mac?
                 struct stat sb;
-                ThrowErrorIf(Error::Unexpected, stat(child.c_str(), &sb) == -1, std::string("stat call failed" + std::to_string(errno)).c_str());
+                ThrowErrorIf(Error::Unexpected, stat(child.c_str(), &sb) == -1, std::string("stat call failed " + std::to_string(errno)).c_str());
                 if (!visitor(root, std::move(fileName), static_cast<std::uint64_t>(sb.st_mtime)))
                 {
                     break;

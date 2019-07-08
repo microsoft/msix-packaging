@@ -53,6 +53,15 @@ namespace MSIX {
         }
     };
 
+    class POSIXException final : public Exception
+    {
+    public:
+        POSIXException(std::string& message, int error) : Exception(message, 0xA0070000 + error)
+        {
+            Global::Log::Append(Message());
+        }
+    };
+
     // Provides an ABI exception boundary with parameter validation
     #define CATCH_RETURN()                                                  \
     catch (MSIX::Exception& e)                                              \
@@ -108,11 +117,20 @@ namespace MSIX {
 #define ThrowHrIfFailed(a) MSIX::RaiseExceptionIfFailed(a, __LINE__, __FILE__);
 
 #ifdef WIN32
-    #define ThrowHrIfFalse(a, m)                                                                               \
-    {   BOOL _result = a;                                                                                      \
-        if (!_result)                                                                                          \
-        {   MSIX::RaiseException<MSIX::Exception> (__LINE__, __FILE__, m, HRESULT_FROM_WIN32(GetLastError())); \
-        }                                                                                                      \
+    #define ThrowHrIfFalse(a, m)                                                                              \
+    {   BOOL _result = a;                                                                                     \
+        if (!_result)                                                                                         \
+        {   MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, m, HRESULT_FROM_WIN32(GetLastError())); \
+        }                                                                                                     \
     }
     #define ThrowLastErrorIf(a, m) { if (a) { MSIX::RaiseException<MSIX::Exception> (__LINE__, __FILE__, m, HRESULT_FROM_WIN32(GetLastError())); }}
+#else
+    #define ThrowHrIfPOSIXFailed(a, m) \
+    { \
+        int _result = a; \
+        if (_result < 0) \
+        { \
+            MSIX::RaiseException<MSIX::POSIXException>(__LINE__, __FILE__, m, errno); \
+        } \
+    }
 #endif

@@ -13,6 +13,8 @@
 #include "ZipObjectWriter.hpp"
 #include "AppxManifestObject.hpp"
 #include "ScopeExit.hpp"
+#include "SignatureCreator.hpp"
+#include "StreamHelper.hpp"
 
 #include <string>
 #include <memory>
@@ -26,7 +28,16 @@ namespace MSIX {
 
     AppxPackageWriter::AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip) : m_factory(factory), m_zipWriter(zip)
     {
-        m_state = WriterState::Open;
+    }
+
+    AppxPackageWriter::AppxPackageWriter(IPackage* packageToSign, std::unique_ptr<SignatureAccumulator>&& accumulator, ContentTypeWriter&& writer) :
+        m_signatureAccumulator(std::move(accumulator)), m_contentTypeWriter(std::move(writer))
+    {
+        m_factory = packageToSign->GetFactory();
+        m_zipWriter = ComPtr<IZipWriter>::Make<ZipObjectWriter>(packageToSign->GetUnderlyingStorageObject().As<IZipObject>().Get());
+
+        // Remove the files that are modified by signing
+        m_zipWriter->RemoveFiles({ CONTENT_TYPES_XML, CODEINTEGRITY_CAT, APPXSIGNATURE_P7X });
     }
 
     // IPackageWriter
@@ -48,11 +59,70 @@ namespace MSIX {
                 std::string ext = file.second.substr(file.second.find_last_of(".") + 1);
                 std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
                 auto contentType = ContentType::GetContentTypeByExtension(ext);
-                ProcessFileAndAddToPackage(file.second, from.As<IStorageObject>()->GetFile(file.second),
+                ProcessFileAndAddToPackage(file.second, from.As<IStorageObject>()->GetFile(file.second).Get(),
                     contentType.GetCompressionOpt(), contentType.GetContentType().c_str(), false);
             }
         }
         failState.release();
+    }
+
+    void AppxPackageWriter::Close(
+        MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
+        IStream* signingCertificate,
+        IStream* privateKey)
+    {
+        bool signing = static_cast<bool>(m_signatureAccumulator);
+        ThrowErrorIf(Error::InvalidParameter, signing && signingCertificate == nullptr, "Writer opened for signing needs a certificate");
+
+        auto failState = MSIX::scope_exit([this]
+        {
+            this->m_state = WriterState::Failed;
+        });
+
+        ComPtr<IStream> catalogStream;
+
+        if (signing)
+        {
+            // Add content type for signature
+            m_contentTypeWriter.AddContentType(APPXSIGNATURE_P7X, ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE_SIGNATURE), true);
+
+            // Add content type for the catalog file if it exists
+            catalogStream = m_signatureAccumulator->GetCodeIntegrityStream(signingCertificateFormat, signingCertificate, privateKey);
+            if (catalogStream)
+            {
+                m_contentTypeWriter.AddContentType(CODEINTEGRITY_CAT, ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY), true);
+            }
+        }
+
+        // Close content types and add it to package
+        m_contentTypeWriter.Close();
+        auto contentTypeStream = m_contentTypeWriter.GetStream();
+        ProcessFileAndAddToPackage(CONTENT_TYPES_XML, contentTypeStream.Get(), APPX_COMPRESSION_OPTION_NORMAL,
+            nullptr /*dont add to content type*/, false, false /*addToBlockMap*/);
+
+        if (signing)
+        {
+            // Add the catalog after the content types to preserve historical ordering
+            if (catalogStream)
+            {
+                ProcessFileAndAddToPackage(CODEINTEGRITY_CAT, catalogStream.Get(), APPX_COMPRESSION_OPTION_NORMAL, nullptr, false, false);
+            }
+
+            auto digestData = m_signatureAccumulator->GetSignatureObject(m_zipWriter.Get());
+            auto signatureStream = SignatureCreator::Sign(digestData.Get(), signingCertificateFormat, signingCertificate, privateKey);
+            ProcessFileAndAddToPackage(APPXSIGNATURE_P7X, signatureStream.Get(), APPX_COMPRESSION_OPTION_NORMAL, nullptr, false, false);
+        }
+
+        m_zipWriter->Close();
+
+        // Ensure that the stream does not have any additional data hanging off the end
+        ComPtr<IStream> zipStream = m_zipWriter.As<IZipObject>()->GetStream();
+        ULARGE_INTEGER fileSize = { 0 };
+        ThrowHrIfFailed(zipStream->Seek({ 0 }, StreamBase::Reference::CURRENT, &fileSize));
+        ThrowHrIfFailed(zipStream->SetSize(fileSize));
+
+        failState.release();
+        m_state = WriterState::Closed;
     }
 
     // IAppxPackageWriter
@@ -78,24 +148,20 @@ namespace MSIX {
         auto manifestObj = ComPtr<IAppxManifestReader>::Make<AppxManifestObject>(m_factory.Get(), manifestStream.Get());
         auto manifestContentType = ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE_MANIFEST);
         ProcessFileAndAddToPackage(footprintFiles[APPX_FOOTPRINT_FILE_TYPE_MANIFEST],
-            manifestStream, APPX_COMPRESSION_OPTION_NORMAL, manifestContentType.c_str(), false);
+            manifestStream.Get(), APPX_COMPRESSION_OPTION_NORMAL, manifestContentType.c_str(), false);
 
         // Close blockmap and add it to package
         m_blockMapWriter.Close();
         auto blockMapStream = m_blockMapWriter.GetStream();
         auto blockMapContentType = ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP);
         ProcessFileAndAddToPackage(footprintFiles[APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP],
-            blockMapStream, APPX_COMPRESSION_OPTION_NORMAL, blockMapContentType.c_str(), true /* forceOverride*/ ,false /*addToBlockMap*/ );
+            blockMapStream.Get(), APPX_COMPRESSION_OPTION_NORMAL, blockMapContentType.c_str(), true /* forceOverride*/ ,false /*addToBlockMap*/ );
 
-        // Close content types and add it to package
-        m_contentTypeWriter.Close();
-        auto contentTypeStream = m_contentTypeWriter.GetStream();
-        ProcessFileAndAddToPackage(CONTENT_TYPES_XML, contentTypeStream.Get(), APPX_COMPRESSION_OPTION_NORMAL,
-            nullptr /*dont add to content type*/, false, false /*addToBlockMap*/);
-
-        m_zipWriter->Close();
         failState.release();
-        m_state = WriterState::Closed;
+
+        // Merge with standalone signing path, with no signing information.
+        Close(MSIX_CERTIFICATE_FORMAT::MSIX_CERTIFICATE_FORMAT_UNKNOWN, nullptr, nullptr);
+
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
@@ -109,8 +175,7 @@ namespace MSIX {
         {
             this->m_state = WriterState::Failed;
         });
-        ComPtr<IStream> stream(inputStream);
-        ProcessFileAndAddToPackage(fileName, stream, compressionOption, contentType, false);
+        ProcessFileAndAddToPackage(fileName, inputStream, compressionOption, contentType, false);
         failState.release();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -129,9 +194,8 @@ namespace MSIX {
         {
             std::string fileName = wstring_to_utf8(payloadFiles[i].fileName);
             ThrowErrorIf(Error::InvalidParameter, IsFootPrintFile(fileName), "Trying to add footprint file to package");
-            ComPtr<IStream> stream(payloadFiles[i].inputStream);
             std::string contentType = wstring_to_utf8(payloadFiles[i].contentType);
-            ProcessFileAndAddToPackage(fileName, stream, payloadFiles[i].compressionOption, contentType.c_str(), false);
+            ProcessFileAndAddToPackage(fileName, payloadFiles[i].inputStream, payloadFiles[i].compressionOption, contentType.c_str(), false);
         }
         failState.release();
         return static_cast<HRESULT>(Error::OK);
@@ -150,14 +214,13 @@ namespace MSIX {
         for(UINT32 i = 0; i < fileCount; i++)
         {
             ThrowErrorIf(Error::InvalidParameter, IsFootPrintFile(payloadFiles[i].fileName), "Trying to add footprint file to package");
-            ComPtr<IStream> stream(payloadFiles[i].inputStream);
-            ProcessFileAndAddToPackage(payloadFiles[i].fileName, stream, payloadFiles[i].compressionOption, payloadFiles[i].contentType, false);
+            ProcessFileAndAddToPackage(payloadFiles[i].fileName, payloadFiles[i].inputStream, payloadFiles[i].compressionOption, payloadFiles[i].contentType, false);
         }
         failState.release();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    void AppxPackageWriter::ProcessFileAndAddToPackage(const std::string& name, const ComPtr<IStream>& stream,
+    void AppxPackageWriter::ProcessFileAndAddToPackage(const std::string& name, IStream* stream,
         APPX_COMPRESSION_OPTION compressionOpt, const char* contentType, bool forceContentTypeOverride, bool addToBlockMap)
     {
         bool toCompress = (compressionOpt != APPX_COMPRESSION_OPTION_NONE );
@@ -195,6 +258,12 @@ namespace MSIX {
 
         auto zipFileStream = ComPtr<IStream>::Make<ZipFileStream>(opcFileName, toCompress);
 
+        std::unique_ptr<SignatureAccumulator::FileAccumulator> fileAccumulator;
+        if (m_signatureAccumulator)
+        {
+            fileAccumulator = m_signatureAccumulator->GetFileAccumulator(name);
+        }
+
         std::uint64_t bytesToRead = uncompressedSize;
         std::uint32_t crc = 0;
         while (bytesToRead > 0)
@@ -215,12 +284,17 @@ namespace MSIX {
             ULONG bytesWritten = 0;
             ThrowHrIfFailed(zipFileStream->Write(block.data(), static_cast<ULONG>(block.size()), &bytesWritten));
 
+            // Send data to file accumulator for signature creation
+            if (fileAccumulator)
+            {
+                fileAccumulator->AccumulateRaw(block);
+            }
+
             // Add block to blockmap
             if (addToBlockMap)
             {
                 m_blockMapWriter.AddBlock(block, bytesWritten, toCompress);
             }
-
         }
 
         if (toCompress)
@@ -240,6 +314,15 @@ namespace MSIX {
         // This could be the compressed or uncompressed size
         auto streamSize =  zipFileStream.As<IStreamInternal>()->GetSize();
         m_zipWriter->AddFile(zipFileStream, crc, streamSize, uncompressedSize);
+
+        // Send entire zip stream to accumulator
+        if (fileAccumulator)
+        {
+            // We have to ensure that we reset the output stream position
+            ComPtr<IZipObject> zipObj = m_zipWriter.As<IZipObject>();
+            Helper::StreamPositionReset positionReset{ zipObj->GetStream().Get() };
+            fileAccumulator->AccumulateZip(zipObj->GetEntireZipFileStream(opcFileName).Get());
+        }
     }
 
     bool AppxPackageWriter::IsFootPrintFile(std::string normalized)

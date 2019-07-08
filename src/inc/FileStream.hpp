@@ -4,6 +4,13 @@
 // 
 #pragma once
 
+// For SetSize file truncation support.
+#ifdef WIN32
+#include <io.h>
+#else
+#include <unistd.h>
+#endif
+
 #include <iostream>
 #include <string>
 #include <cstdio>
@@ -74,10 +81,8 @@ namespace MSIX {
         // IStream
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER* newPosition) noexcept override try
         {
-            int rc = std::fseek(m_file, static_cast<long>(move.QuadPart), origin);
-            ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
-            m_offset = Ftell();
-            if (newPosition) { newPosition->QuadPart = m_offset; }
+            SeekInternal(move.QuadPart, origin);
+            if (newPosition) { newPosition->QuadPart = Ftell(); }
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
@@ -86,7 +91,6 @@ namespace MSIX {
             if (bytesRead) { *bytesRead = 0; }
             ULONG result = static_cast<ULONG>(std::fread(buffer, sizeof(std::uint8_t), countBytes, m_file));
             ThrowErrorIfNot(Error::FileRead, (result == countBytes || Feof()), "read failed");
-            m_offset = Ftell();
             if (bytesRead) { *bytesRead = result; }
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
@@ -96,9 +100,26 @@ namespace MSIX {
             if (bytesWritten) { *bytesWritten = 0; }
             ULONG result = static_cast<ULONG>(std::fwrite(buffer, sizeof(std::uint8_t), countBytes, m_file));
             ThrowErrorIfNot(Error::FileWrite, (result == countBytes), "write failed");
-            m_offset = Ftell();
             if (bytesWritten) { *bytesWritten = result; }
             return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER size) noexcept override try
+        {
+#ifdef WIN32
+            // Store the current location...
+            uint64_t resetLocation = Ftell();
+            // ... then move to the end of the stream, as this is how SetEndOfFile works.
+            SeekInternal(size.QuadPart, StreamBase::Reference::START);
+
+            // Get the HANDLE of the file to pass to SetEndOfFile
+            ThrowHrIfFalse(SetEndOfFile(reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(m_file)))), "Failed to set the end of the file");
+
+            // Return to the previous location
+            SeekInternal(resetLocation, StreamBase::Reference::START);
+#else
+            ThrowHrIfPOSIXFailed(ftruncate(_fileno(m_file), static_cast<off_t>(size.QuadPart)));
+#endif
         } CATCH_RETURN();
 
         // IStreamInternal
@@ -109,13 +130,18 @@ namespace MSIX {
         inline bool Feof()  { return 0 != std::feof(m_file); }
         inline void Flush() { std::fflush(m_file); }
 
+        inline void SeekInternal(int64_t move, DWORD origin)
+        {
+            int rc = std::fseek(m_file, static_cast<long>(move), origin);
+            ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
+        }
+
         inline std::uint64_t Ftell()
         {
             auto result = std::ftell(m_file);
             return static_cast<std::uint64_t>(result);
         }
 
-        std::uint64_t m_offset = 0;
         std::uint64_t m_size = 0;
         std::string m_name;
         FILE* m_file;

@@ -5,6 +5,8 @@
 
 #include "XmlWriter.hpp"
 #include "ContentTypeWriter.hpp"
+#include "StreamHelper.hpp"
+#include "AppxFactory.hpp"
 
 #include <map>
 #include <algorithm>
@@ -31,13 +33,34 @@ namespace MSIX {
     static const char* partNameAttribute = "PartName";
 
     // <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-    ContentTypeWriter::ContentTypeWriter() : m_xmlWriter(XmlWriter(typesElement, true))
+    ContentTypeWriter::ContentTypeWriter() : m_xmlWriter(typesElement, true)
     {
         m_xmlWriter.AddAttribute(xmlnsAttribute, typesNamespace);
     }
 
+    ContentTypeWriter::ContentTypeWriter(IStream* stream)
+    {
+        // Check to see if we already have signing content types
+        std::string sourceXml = Helper::CreateStringFromStream(stream);
+
+        // Determine if the signature file overrides are already present
+        std::string signaturePartNameSearch = GetPartNameSearchString(APPXSIGNATURE_P7X);
+        std::string ciPartNameSearch = GetPartNameSearchString(CODEINTEGRITY_CAT);
+        m_hasSignatureOverride = (sourceXml.rfind(signaturePartNameSearch) != std::string::npos);
+        m_hasCIOverride = (sourceXml.rfind(ciPartNameSearch) != std::string::npos);
+
+        m_xmlWriter.Initialize(sourceXml, typesElement);
+    }
+
     void ContentTypeWriter::AddContentType(const std::string& name, const std::string& contentType, bool forceOverride)
     {
+        // Skip the signature files if they are already present
+        if ((name == APPXSIGNATURE_P7X && m_hasSignatureOverride) ||
+            (name == CODEINTEGRITY_CAT && m_hasCIOverride))
+        {
+            return;
+        }
+
         if (forceOverride)
         {
             AddOverride(name, contentType);
@@ -86,5 +109,11 @@ namespace MSIX {
         m_xmlWriter.AddAttribute(contentTypeAttribute, contentType);
         m_xmlWriter.AddAttribute(partNameAttribute, partName);
         m_xmlWriter.CloseElement();
+    }
+
+    // Gets the search string from a file name; AppxSignature.p7x => "/AppxSignature.p7x"
+    std::string ContentTypeWriter::GetPartNameSearchString(const std::string& fileName)
+    {
+        return "\"/" + fileName + '"';
     }
 }

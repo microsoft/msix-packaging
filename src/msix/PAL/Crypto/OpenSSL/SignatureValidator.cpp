@@ -13,78 +13,10 @@
 #include <sstream>
 #include <iostream>
 
-#include <openssl/err.h>
-#include <openssl/bio.h>
-#include <openssl/objects.h>
-#include <openssl/evp.h>
-#include <openssl/x509v3.h>
-#include <openssl/pkcs7.h>
-#include <openssl/pem.h>
-#include <openssl/crypto.h>
+#include "SharedOpenSSL.hpp"
 
 namespace MSIX
 {
-    const char* SPC_INDIRECT_DATA_OBJID = {"1.3.6.1.4.1.311.2.1.4"};
-
-    struct unique_BIO_deleter {
-        void operator()(BIO *b) const { if (b) BIO_free(b); };
-    };
-    
-    struct unique_PKCS7_deleter {
-        void operator()(PKCS7 *p) const { if (p) PKCS7_free(p); };
-    };
-
-    struct unique_X509_deleter {
-        void operator()(X509 *x) const { if (x) X509_free(x); };
-    };
-    
-    struct unique_X509_STORE_deleter {
-        void operator()(X509_STORE *xs) const { if (xs) X509_STORE_free(xs); };
-    };
-
-    struct unique_X509_STORE_CTX_deleter {
-        void operator()(X509_STORE_CTX *xsc) const { if (xsc) {X509_STORE_CTX_cleanup(xsc); X509_STORE_CTX_free(xsc);} };
-    };
-
-    struct unique_OPENSSL_string_deleter {
-        void operator()(char *os) const { if (os) OPENSSL_free(os); };
-    };
-
-    struct unique_STACK_X509_deleter {
-        void operator()(STACK_OF(X509) *sx) const { if (sx) sk_X509_free(sx); };
-    };
-
-    struct shared_BIO_deleter {
-        void operator()(BIO *b) const { if (b) BIO_free(b); };
-    };
-
-    typedef std::unique_ptr<BIO, unique_BIO_deleter> unique_BIO;
-    typedef std::unique_ptr<PKCS7, unique_PKCS7_deleter> unique_PKCS7;
-    typedef std::unique_ptr<X509, unique_X509_deleter> unique_X509;
-    typedef std::unique_ptr<X509_STORE, unique_X509_STORE_deleter> unique_X509_STORE;
-    typedef std::unique_ptr<X509_STORE_CTX, unique_X509_STORE_CTX_deleter> unique_X509_STORE_CTX;
-    typedef std::unique_ptr<char, unique_OPENSSL_string_deleter> unique_OPENSSL_string;
-    typedef std::unique_ptr<STACK_OF(X509), unique_STACK_X509_deleter> unique_STACK_X509;
-    
-    typedef struct Asn1Sequence
-    {
-        std::uint8_t tag;
-        std::uint8_t encoding;
-        union 
-        {   
-            struct {
-                std::uint8_t length;
-                std::uint8_t content;
-            } rle8;
-            struct {
-                std::uint8_t lengthHigh;
-                std::uint8_t lengthLow;
-                std::uint8_t content;
-            } rle16;
-            std::uint8_t content;
-        };
-    } Asn1Sequence;
-
     // Best effort to determine whether the signature file is associated with a store cert
     static bool IsStoreOrigin(std::uint8_t* signatureBuffer, std::uint32_t cbSignatureBuffer)
     {
@@ -178,10 +110,12 @@ namespace MSIX
         unique_BIO bioMem(BIO_new_mem_buf(spcIndirectDataContent, spcIndirectDataContentSize));
         signatureDigest.swap(bioMem);
         
+        // TODO: We can potentially do better to decode the ASN1 and ensure that it's the correct SIP GUID and version
         // Scan through the spcIndirectData for the APPX header
         bool found = false;
         while (spcIndirectDataContent < spcIndirectDataContentEnd && !found)
         {
+            // TODO: Endianess concerns abound
             if (*reinterpret_cast<DigestName*>(spcIndirectDataContent) == DigestName::HEAD)
             {
                 found = true;
@@ -298,6 +232,7 @@ namespace MSIX
         return false;
     }
 
+    // TODO: Needs a pass to ensure proper behavior and correctness
     bool SignatureValidator::Validate(
         IMsixFactory* factory,
         MSIX_VALIDATION_OPTION option,
@@ -322,11 +257,11 @@ namespace MSIX
         std::uint32_t p7sSize = end.u.LowPart - sizeof(fileID);
         std::vector<std::uint8_t> p7s(p7sSize);
         ULONG actualRead = 0;
-        ThrowHrIfFailed(stream->Read(p7s.data(), p7s.size(), &actualRead));
+        ThrowHrIfFailed(stream->Read(p7s.data(), static_cast<ULONG>(p7s.size()), &actualRead));
         ThrowErrorIf(Error::SignatureInvalid, (actualRead != p7s.size()), "read error");
 
         // Load the p7s into a BIO buffer
-        unique_BIO bmem(BIO_new_mem_buf(p7s.data(), p7s.size()));
+        unique_BIO bmem(BIO_new_mem_buf(p7s.data(), static_cast<int>(p7s.size())));
         // Initialize the PKCS7 object from the BIO buffer
         unique_PKCS7 p7(d2i_PKCS7_bio(bmem.get(), nullptr));
 
@@ -349,7 +284,7 @@ namespace MSIX
         {
             auto certBuffer = Helper::CreateBufferFromStream(appxCert.second);
             // Load the cert into memory
-            unique_BIO bcert(BIO_new_mem_buf(certBuffer.data(), certBuffer.size()));
+            unique_BIO bcert(BIO_new_mem_buf(certBuffer.data(), static_cast<int>(certBuffer.size())));
 
             // Create a cert from the memory buffer
             unique_X509 cert(PEM_read_bio_X509(bcert.get(), nullptr, nullptr, nullptr));
@@ -394,8 +329,8 @@ namespace MSIX
         }
 
         origin = MSIX::SignatureOrigin::Unknown;
-        if (IsStoreOrigin(p7s.data(), p7s.size())) { origin = MSIX::SignatureOrigin::Store; }
-        else if (IsAuthenticodeOrigin(p7s.data(), p7s.size())) { origin = MSIX::SignatureOrigin::LOB; }
+        if (IsStoreOrigin(p7s.data(), static_cast<uint32_t>(p7s.size()))) { origin = MSIX::SignatureOrigin::Store; }
+        else if (IsAuthenticodeOrigin(p7s.data(), static_cast<uint32_t>(p7s.size()))) { origin = MSIX::SignatureOrigin::LOB; }
 
         bool SignatureOriginUnknownAllowed = (option & MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN) == MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
         ThrowErrorIf(Error::CertNotTrusted, 

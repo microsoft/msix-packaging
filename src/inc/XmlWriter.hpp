@@ -28,7 +28,10 @@ namespace MSIX {
         }
         State;
 
-        XmlWriter() = delete; // A root must be given
+        // Used for editing an existing XML stream; copies the given stream
+        // and moves the cursor back to before the end of the root element.
+        // Must call Initialize in order to get to the correct state.
+        XmlWriter() = default;
 
         XmlWriter(const std::string& root, bool standalone = false) 
         {
@@ -40,6 +43,8 @@ namespace MSIX {
         {
             StartWrite(root, standalone);
         }
+
+        void Initialize(const std::string& source, const std::string& root);
 
         void StartElement(const std::string& name);
         void CloseElement();
