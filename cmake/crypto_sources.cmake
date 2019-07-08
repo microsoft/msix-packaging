@@ -481,6 +481,30 @@ else()
     )
 endif()
 
+if(MSIX_PACK)
+    # Enable better error reporting in signing scenarios
+    list(APPEND XSRC
+    ${CRYPTO}/ocsp/ocsp_err.c
+    )
+
+    # Added for DES support
+    list(APPEND XSRC
+    ${CRYPTO}/evp/e_des.c
+    ${CRYPTO}/evp/e_des3.c
+    ${CRYPTO}/evp/e_xcbc_d.c
+    ${CRYPTO}/des/cfb_enc.c
+    ${CRYPTO}/des/ecb_enc.c
+    ${CRYPTO}/des/cfb64enc.c
+    ${CRYPTO}/des/cfb64ede.c
+    ${CRYPTO}/des/ofb64enc.c
+    ${CRYPTO}/des/ofb64ede.c
+    ${CRYPTO}/des/ecb3_enc.c
+    ${CRYPTO}/des/des_enc.c
+    ${CRYPTO}/des/xcbc_enc.c
+    ${CRYPTO}/des/set_key.c
+    )
+endif()
+
 if( WIN32 )
     list(APPEND XSRC
     ${CRYPTO}/async/arch/async_win.c

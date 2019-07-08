@@ -5,7 +5,6 @@
 #include "AppxFactory.hpp"
 #include "UnicodeConversion.hpp"
 #include "Exceptions.hpp"
-#include "ZipObjectReader.hpp"
 #include "AppxPackageObject.hpp"
 #include "MSIXResource.hpp"
 #include "VectorStream.hpp"
@@ -29,12 +28,10 @@ namespace MSIX {
         ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || packageWriter == nullptr || *packageWriter != nullptr), "Invalid parameter");
         // We should never be here is packing if disabled, but the compiler
         // is not smart enough to remove it and the linker will fail.
-        #ifdef MSIX_PACK 
-        ComPtr<IMsixFactory> self;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
+        #ifdef MSIX_PACK
         auto zip = ComPtr<IZipWriter>::Make<ZipObjectWriter>(outputStream);
         bool enableFileHash = m_factoryOptions & MSIX_FACTORY_OPTION_WRITER_ENABLE_FILE_HASH;
-        auto result = ComPtr<IAppxPackageWriter>::Make<AppxPackageWriter>(self.Get(), zip, enableFileHash);
+        auto result = ComPtr<IAppxPackageWriter>::Make<AppxPackageWriter>(this, zip, enableFileHash);
         *packageWriter = result.Detach();
         #endif
         return static_cast<HRESULT>(Error::OK);
@@ -45,8 +42,7 @@ namespace MSIX {
         IAppxPackageReader** packageReader) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
-        ComPtr<IStream> input(inputStream);
-        auto zip = ComPtr<IStorageObject>::Make<ZipObjectReader>(input);
+        auto zip = ComPtr<IStorageObject>::Make<ZipObject>(inputStream);
         auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(this, m_validationOptions, m_applicabilityFlags, zip);
         *packageReader = result.Detach();
         return static_cast<HRESULT>(Error::OK);
@@ -185,7 +181,7 @@ namespace MSIX {
             // Get stream of the resource zip file generated at CMake processing.
             m_resourcesVector = std::vector<std::uint8_t>(Resource::resourceByte, Resource::resourceByte + Resource::resourceLength);
             auto resourceStream = ComPtr<IStream>::Make<VectorStream>(&m_resourcesVector);
-            m_resourcezip = ComPtr<IStorageObject>::Make<ZipObjectReader>(resourceStream.Get());
+            m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(resourceStream.Get());
         }
         auto file = m_resourcezip->GetFile(resource);
         ThrowErrorIfNot(Error::FileNotFound, file, resource.c_str());

@@ -38,6 +38,8 @@ class IPackage : public IUnknown
 public:
     virtual void Unpack(MSIX_PACKUNPACK_OPTION options, const MSIX::ComPtr<IDirectoryObject>& to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
+    virtual MSIX::ComPtr<IMsixFactory> GetFactory() = 0;
+    virtual MSIX::ComPtr<IStorageObject> GetUnderlyingStorageObject() = 0;
 };
 MSIX_INTERFACE(IPackage, 0x51b2c456,0xaaa9,0x46d6,0x8e,0xc9,0x29,0x82,0x20,0x55,0x91,0x89);
 
@@ -108,6 +110,8 @@ namespace MSIX {
         // internal IPackage methods
         void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IDirectoryObject>& to) override;
         std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
+        MSIX::ComPtr<IMsixFactory> GetFactory() override { return m_factory; }
+        MSIX::ComPtr<IStorageObject> GetUnderlyingStorageObject() override { return m_container; }
 
         // IAppxPackageReader
         HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept override;

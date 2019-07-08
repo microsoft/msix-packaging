@@ -20,6 +20,7 @@
 #include "AppxPackageWriter.hpp"
 #include "AppxBundleWriter.hpp"
 #include "ScopeExit.hpp"
+#include "Signing.hpp"
 #include "VersionHelpers.hpp"
 #include "MappingFileParser.hpp"
 #include "FileStream.hpp"
@@ -62,7 +63,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE MsixGetLogTextUTF8(COTASKMEMALLOC* memalloc, 
 } CATCH_RETURN();
 
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
-    char* utf8File,
+    LPCSTR utf8File,
     bool forRead,
     IStream** stream) noexcept try
 {
@@ -154,8 +155,8 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
-    char* utf8SourcePackage,
-    char* utf8Destination) noexcept try
+    LPCSTR utf8SourcePackage,
+    LPCSTR utf8Destination) noexcept try
 {
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
         (utf8SourcePackage != nullptr && utf8Destination != nullptr), 
@@ -172,7 +173,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromPackageReader(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     IAppxPackageReader* packageReader,
-    char* utf8Destination) noexcept try
+    LPCSTR utf8Destination) noexcept try
 {
     ThrowErrorIfNot(MSIX::Error::InvalidParameter,
         (packageReader != nullptr && utf8Destination != nullptr),
@@ -192,7 +193,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
     IStream* stream,
-    char* utf8Destination) noexcept try
+    LPCSTR utf8Destination) noexcept try
 {
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
         (stream != nullptr && utf8Destination != nullptr), 
@@ -216,8 +217,8 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
     MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
-    char* utf8SourcePackage,
-    char* utf8Destination) noexcept try
+    LPCSTR utf8SourcePackage,
+    LPCSTR utf8Destination) noexcept try
 {
     THROW_IF_BUNDLE_NOT_ENABLED
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
@@ -234,7 +235,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromBundleReader(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     IAppxBundleReader* bundleReader,
-    char* utf8Destination) noexcept try
+    LPCSTR utf8Destination) noexcept try
 {
     THROW_IF_BUNDLE_NOT_ENABLED
     ThrowErrorIfNot(MSIX::Error::InvalidParameter,
@@ -255,7 +256,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     MSIX_VALIDATION_OPTION validationOption,
     MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     IStream* stream,
-    char* utf8Destination) noexcept try
+    LPCSTR utf8Destination) noexcept try
 {
     THROW_IF_BUNDLE_NOT_ENABLED
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
@@ -281,8 +282,8 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
 MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
-    char* directoryPath,
-    char* outputPackage
+    LPCSTR directoryPath,
+    LPCSTR outputPackage
 ) noexcept try
 {
     ThrowErrorIfNot(MSIX::Error::InvalidParameter, 
@@ -309,6 +310,54 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     writer.As<IPackageWriter>()->PackPayloadFiles(from);
     ThrowHrIfFailed(writer->Close(manifest.Get()));
     deleteFile.release();
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
+MSIX_API HRESULT STDMETHODCALLTYPE SignPackage(
+    MSIX_SIGNING_OPTIONS signingOptions,
+    LPCSTR package,
+    MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
+    LPCSTR signingCertificate,
+    LPCSTR privateKey
+) noexcept try
+{
+    ThrowErrorIf(MSIX::Error::InvalidParameter,
+        (package == nullptr || signingCertificate == nullptr),
+        "Invalid parameters");
+
+    if (signingCertificateFormat == MSIX_CERTIFICATE_FORMAT::MSIX_CERTIFICATE_FORMAT_UNKNOWN)
+    {
+        signingCertificateFormat = MSIX::DetermineCertificateFormat(signingCertificate);
+
+        ThrowErrorIf(MSIX::Error::InvalidParameter,
+            signingCertificateFormat == MSIX_CERTIFICATE_FORMAT::MSIX_CERTIFICATE_FORMAT_UNKNOWN,
+            "Certificate format could not be determined");
+
+        ThrowErrorIf(MSIX::Error::InvalidParameter,
+            (MSIX::DoesCertificateFormatRequirePrivateKey(signingCertificateFormat) && privateKey == nullptr),
+            "Certificate format requires separate private key");
+    }
+
+    MSIX::ComPtr<IStream> packageStream = 
+        MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(MSIX::utf8_to_wstring(package).c_str(), MSIX::FileStream::Mode::READ_UPDATE);
+
+    MSIX::ComPtr<IStream> certificateStream;
+    ThrowHrIfFailed(CreateStreamOnFile(signingCertificate, true, &certificateStream));
+
+    MSIX::ComPtr<IStream> privateKeyStream;
+    if (MSIX::DoesCertificateFormatRequirePrivateKey(signingCertificateFormat))
+    {
+        ThrowHrIfFailed(CreateStreamOnFile(privateKey, true, &privateKeyStream));
+    }
+
+    MSIX::ComPtr<IAppxFactory> factory;
+    ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, MSIX_VALIDATION_NONE, &factory));
+
+    MSIX::ComPtr<IAppxPackageReader> reader;
+    ThrowHrIfFailed(factory->CreatePackageReader(packageStream.Get(), &reader));
+
+    MSIX::SignPackage(reader.Get(), signingCertificateFormat, certificateStream.Get(), privateKeyStream.Get());
+
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 

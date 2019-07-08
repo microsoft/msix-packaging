@@ -1703,6 +1703,10 @@ enum MSIX_APPLICABILITY_OPTIONS
         MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE = 0x2,
     }   MSIX_APPLICABILITY_OPTIONS;
 
+#define MSIX_VALIDATION_NONE static_cast<MSIX_VALIDATION_OPTION>(           \
+                                MSIX_VALIDATION_OPTION_SKIPSIGNATURE        \
+                             )
+
 typedef /* [v1_enum] */
 enum MSIX_BUNDLE_OPTIONS
     {
@@ -1736,39 +1740,52 @@ enum MSIX_FACTORY_OPTIONS
 #define MSIX_APPLICABILITY_NONE MSIX_APPLICABILITY_OPTION_SKIPPLATFORM         | \
                                 MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE           \
 
+typedef /* [v1_enum] */
+enum MSIX_SIGNING_OPTIONS
+    {
+        MSIX_SIGNING_OPTIONS_NONE       = 0x0,
+    }   MSIX_SIGNING_OPTIONS;
+
+typedef /* [v1_enum] */
+enum MSIX_CERTIFICATE_FORMAT
+    {
+        MSIX_CERTIFICATE_FORMAT_UNKNOWN     = 0x0,
+        MSIX_CERTIFICATE_FORMAT_PFX         = 0x1,
+    }   MSIX_CERTIFICATE_FORMAT;
+
 // Unpack
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
-    char* utf8SourcePackage,
-    char* utf8Destination
+    LPCSTR utf8SourcePackage,
+    LPCSTR utf8Destination
 ) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromPackageReader(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     IAppxPackageReader* packageReader,
-    char* utf8Destination
+    LPCSTR utf8Destination
 ) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
     IStream* stream,
-    char* utf8Destination
+    LPCSTR utf8Destination
 ) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
     MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
-    char* utf8SourcePackage,
-    char* utf8Destination
+    LPCSTR utf8SourcePackage,
+    LPCSTR utf8Destination
 ) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromBundleReader(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     IAppxBundleReader* bundleReader,
-    char* utf8Destination
+    LPCSTR utf8Destination
 ) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
@@ -1776,7 +1793,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     MSIX_VALIDATION_OPTION validationOption,
     MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
     IStream* stream,
-    char* utf8Destination
+    LPCSTR utf8Destination
 ) noexcept;
 
 #ifdef MSIX_PACK
@@ -1784,8 +1801,16 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
 MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
-    char* directoryPath,
-    char* outputPackage
+    LPCSTR directoryPath,
+    LPCSTR outputPackage
+) noexcept;
+
+MSIX_API HRESULT STDMETHODCALLTYPE SignPackage(
+    MSIX_SIGNING_OPTIONS signingOptions,
+    LPCSTR package,
+    MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
+    LPCSTR signingCertificate,
+    LPCSTR privateKey
 ) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
@@ -1852,7 +1877,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
 
 // provided as a helper for platforms that do not have an implementation of SHCreateStreamOnFileEx
 MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFile(
-    char* utf8File,
+    LPCSTR utf8File,
     bool forRead,
     IStream** stream) noexcept;
 

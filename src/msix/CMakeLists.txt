@@ -19,6 +19,7 @@ list(APPEND MSIX_UNPACK_EXPORTS
 if(MSIX_PACK)
     list(APPEND MSIX_PACK_EXPORTS
         "PackPackage"
+        "SignPackage"
         "PackBundle"
     )
 endif()
@@ -111,6 +112,7 @@ list(APPEND MsixSrc
     common/FileNameValidation.cpp
     common/AppxManifestValidation.cpp
     common/IXml.cpp
+    common/StreamHelper.cpp
     common/TimeHelpers.cpp
 )
 
@@ -120,7 +122,6 @@ list(APPEND MsixSrc
     unpack/AppxPackageObject.cpp
     unpack/AppxSignature.cpp
     unpack/InflateStream.cpp
-    unpack/ZipObjectReader.cpp
 )
 
 # Pack
@@ -134,6 +135,7 @@ if(MSIX_PACK)
         pack/ContentType.cpp
         pack/DeflateStream.cpp
         pack/ZipObjectWriter.cpp
+        pack/Signing.cpp
         pack/BundleManifestWriter.cpp
         pack/BundleWriterHelper.cpp
         pack/AppxBundleWriter.cpp
@@ -202,14 +204,25 @@ endif()
 if(CRYPTO_LIB MATCHES crypt32)
     list(APPEND MsixSrc
         PAL/Crypto/Win32/Crypto.cpp
-        PAL/Signature/Win32/SignatureValidator.cpp
+        PAL/Crypto/Win32/SignatureValidator.cpp
     )
+    if(MSIX_PACK)
+        list(APPEND MsixSrc
+            PAL/Crypto/Win32/SignatureCreator.cpp
+        )
+    endif()
 elseif(CRYPTO_LIB MATCHES openssl)
     if(OpenSSL_FOUND)
         list(APPEND MsixSrc
             PAL/Crypto/OpenSSL/Crypto.cpp
-            PAL/Signature/OpenSSL/SignatureValidator.cpp
+            PAL/Crypto/OpenSSL/SignatureValidator.cpp
         )
+        if(MSIX_PACK)
+            list(APPEND MsixSrc
+                PAL/Crypto/OpenSSL/OpenSSLWriting.cpp
+                PAL/Crypto/OpenSSL/SignatureCreator.cpp
+            )
+        endif()
     else()
         # ... and were done here...  :/
         message(FATAL_ERROR "OpenSSL NOT FOUND!")
