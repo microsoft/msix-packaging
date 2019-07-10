@@ -193,7 +193,7 @@ namespace MSIX {
             return false;
         }
         #else
-        // Unix-based systems can have '\' in their name, but restrict
+        // Unix-based systems can have '\' in their file names, but restrict
         // it to allow real "cross plat" packages 
         auto findBackSlash = name.find("\\");
         if (findBackSlash != std::string::npos)

@@ -64,8 +64,6 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        void Print() { /*std::cout << m_data.str() << std::endl;*/ }
-
     protected:
         std::stringstream m_data;
     };

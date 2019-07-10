@@ -59,7 +59,7 @@ namespace MSIX {
     {                                                                       \
         return static_cast<HRESULT>(e.Code());                              \
     }                                                                       \
-    catch (const std::bad_alloc& e)                                           \
+    catch (const std::bad_alloc& e)                                         \
     {                                                                       \
         MSIX::Global::Log::Append(e.what());                                \
         return static_cast<HRESULT>(MSIX::Error::OutOfMemory);              \
