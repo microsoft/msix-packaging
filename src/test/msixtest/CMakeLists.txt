@@ -41,7 +41,8 @@ endif()
 if(MSIX_PACK)
     list(APPEND MsixTestFiles
         api_packagewriter.cpp
-        testData/PackTestData.cpp)
+        testData/PackTestData.cpp
+        )
 endif()
 
 if (WIN32)

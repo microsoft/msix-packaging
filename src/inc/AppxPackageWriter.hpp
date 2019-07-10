@@ -68,10 +68,16 @@ namespace MSIX {
         }
         WriterState;
 
+        typedef enum
+        {
+            Footprint = 1,
+            AppxPayload = 2,
+        }
+        FileType;
+
         void ProcessFileAndAddToPackage(const std::string& name, const ComPtr<IStream>& stream, 
-            APPX_COMPRESSION_OPTION compressionOpt, const char* contentType, 
-            bool forceContentTypeOverride, bool addToBlockMap = true);
-        bool IsFootPrintFile(std::string normalized);
+            APPX_COMPRESSION_OPTION compressionOpt, const char* contentType, FileType fileType);
+        void ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt);
 
         WriterState m_state;
         ComPtr<IMsixFactory> m_factory;

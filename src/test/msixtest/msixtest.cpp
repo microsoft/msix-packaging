@@ -129,9 +129,7 @@ namespace MsixTest {
 
         ComPtr<IAppxFactory> factory;
         REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(Allocators::Allocate, Allocators::Free, MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &factory));
-        //REQUIRE_SUCCEEDED(factory->CreatePackageReader(inputStream.Get(), packageReader));
-        HRESULT hr = factory->CreatePackageReader(inputStream.Get(), packageReader);
-        MsixTest::Log::PrintMsixLog(S_OK, hr);
+        REQUIRE_SUCCEEDED(factory->CreatePackageReader(inputStream.Get(), packageReader));
         REQUIRE_NOT_NULL(*packageReader);
         return;
     }
@@ -140,9 +138,7 @@ namespace MsixTest {
     {
         ComPtr<IAppxFactory> factory;
         REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(Allocators::Allocate, Allocators::Free, MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &factory));
-        //REQUIRE_SUCCEEDED(factory->CreatePackageReader(stream, packageReader));
-        HRESULT hr = factory->CreatePackageReader(stream, packageReader);
-        MsixTest::Log::PrintMsixLog(S_OK, hr);
+        REQUIRE_SUCCEEDED(factory->CreatePackageReader(stream, packageReader));
         REQUIRE_NOT_NULL(*packageReader);
         return;
     }

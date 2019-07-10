@@ -277,12 +277,76 @@ TEST_CASE("Api_AppxPackageWriter_payloadfiles_utf8", "[api]")
     MsixTest::InitializePackageReader(outputStream.Get(), &packageReader);
 }
 
-/*
 // Tests failure cases for IAppxPackageWriter
-TEST_CASE("Api_AppxPackageWriter_errors", "[api]")
+TEST_CASE("Api_AppxPackageWriter_state_errors", "[api]")
 {
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
+
     MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
-    auto outputStream = MsixTest::StreamFile("pack/package.msix");
     InitializePackageWriter(outputStream.Get(), &packageWriter);
+
+    auto contentStream = MsixTest::StreamFile("test_file.txt", false, true);
+    WriteContentToStream(200, contentStream.Get());
+
+    MsixTest::ComPtr<IStream> manifestStream;
+    MakeManifestStream(&manifestStream);
+
+    // Try to add a file with bad compression option
+    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidParameter),
+        packageWriter->AddPayloadFile(
+            TestConstants::GoodFileNames[0].second.c_str(),
+            TestConstants::ContentType,
+            static_cast<APPX_COMPRESSION_OPTION>(12345),
+            contentStream.Get()));
+
+    // Package writer should not accept calls after a failure
+    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidState),
+        packageWriter->AddPayloadFile(
+            TestConstants::GoodFileNames[0].second.c_str(),
+            TestConstants::ContentType,
+            APPX_COMPRESSION_OPTION_NORMAL,
+            contentStream.Get()));
+    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidState), 
+        packageWriter->Close(manifestStream.Get()));
 }
-*/
+
+TEST_CASE("Api_AppxPackageWriter_invalid_names", "[api]")
+{
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
+
+    auto fileStream = MsixTest::StreamFile("test_file.txt", false, true);
+    WriteContentToStream(200, fileStream.Get());
+    for(const auto& fileName : TestConstants::BadFileNames)
+    {
+        MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
+        InitializePackageWriter(outputStream.Get(), &packageWriter);
+        REQUIRE_FAILED(packageWriter->AddPayloadFile(
+                fileName.c_str(),
+                TestConstants::ContentType,
+                APPX_COMPRESSION_OPTION_NORMAL,
+                fileStream.Get()));
+    }
+}
+
+TEST_CASE("Api_AppxPackageWriter_closed", "[api]")
+{
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
+
+    MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
+    InitializePackageWriter(outputStream.Get(), &packageWriter);
+
+    auto fileStream = MsixTest::StreamFile("test_file.txt", false, true);
+    WriteContentToStream(200, fileStream.Get());
+
+    // Try to add a file after the writer is closed
+    MsixTest::ComPtr<IStream> manifestStream;
+    MakeManifestStream(&manifestStream);
+    REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
+
+    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidState),
+          packageWriter->AddPayloadFile(
+            TestConstants::GoodFileNames[0].second.c_str(),
+            TestConstants::ContentType,
+            APPX_COMPRESSION_OPTION_NORMAL,
+            fileStream.Get()));
+}
