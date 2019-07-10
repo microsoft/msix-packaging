@@ -23,7 +23,7 @@ namespace MSIX {
             return s;
         }
 
-        inline std::string toBackLash(std::string s)
+        inline std::string toBackSlash(std::string s)
         {
             std::replace(s.begin(), s.end(), '/', '\\');
             return s;

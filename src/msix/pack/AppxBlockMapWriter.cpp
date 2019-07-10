@@ -45,7 +45,7 @@ namespace MSIX {
     void BlockMapWriter::AddFile(const std::string& name, std::uint64_t uncompressedSize, std::uint32_t lfh)
     {
         // For the blockmap we always use the windows separator.
-        std::string winName = Helper::toBackLash(name);
+        std::string winName = Helper::toBackSlash(name);
         m_xmlWriter.StartElement(fileElement);
         m_xmlWriter.AddAttribute(nameAttribute, winName);
         m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(uncompressedSize));

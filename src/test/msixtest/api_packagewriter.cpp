@@ -13,7 +13,7 @@
 
 using namespace MsixTest::Pack;
 
-constexpr std::uint32_t DefaultBlockSize = 65535;
+constexpr std::uint32_t DefaultBlockSize = 65536;
 
 void InitializePackageWriter(IStream* outputStream, IAppxPackageWriter** packageWriter)
 {

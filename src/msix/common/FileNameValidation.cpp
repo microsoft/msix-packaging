@@ -13,7 +13,6 @@ namespace MSIX {
 
     namespace
     {
-        constexpr std::size_t ReservedTableSize = 0x7F;
         static const std::array<bool, 0x7D> IsReservedFileNameChar = {
             true,  true,  true,  true,  true,  true,  true,  true,
             true,  true,  true,  true,  true,  true,  true,  true,
@@ -202,7 +201,7 @@ namespace MSIX {
         }
         #endif
 
-        std::string backSlashName = Helper::toBackLash(name);
+        std::string backSlashName = Helper::toBackSlash(name);
         if (backSlashName[0] == '\\')
         {
             return false;
@@ -218,7 +217,7 @@ namespace MSIX {
             wchar_t currentChar = nameUtf16[i];
 
             // Reserved characters in the file name
-            if ((currentChar < ReservedTableSize) && IsReservedFileNameChar[currentChar])
+            if ((currentChar < IsReservedFileNameChar.size()) && IsReservedFileNameChar[currentChar])
             {
                 return false;
             }

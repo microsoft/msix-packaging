@@ -50,7 +50,7 @@ namespace MsixTest { namespace Pack {
         #endif
 
         #ifdef WIN32
-        // File names that should be vaild for adding to a package
+        // File names that should be valid for adding to a package
         // First from pair is the name that will be on disk
         // Second from pair is the actual name we are testing
         // This makes way easier the creating/cleaning of the file stream.

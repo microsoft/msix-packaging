@@ -68,15 +68,12 @@ namespace MSIX {
         }
         WriterState;
 
-        typedef enum
-        {
-            Footprint = 1,
-            AppxPayload = 2,
-        }
-        FileType;
+        void ValidateAndAddPayloadFile(const std::string& name, IStream* stream,
+            APPX_COMPRESSION_OPTION compressionOpt, const char* contentType);
 
-        void ProcessFileAndAddToPackage(const std::string& name, const ComPtr<IStream>& stream, 
-            APPX_COMPRESSION_OPTION compressionOpt, const char* contentType, FileType fileType);
+        void AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
+            bool addToBlockMap, const char* contentType, bool forceContentTypeOverride = false);
+
         void ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt);
 
         WriterState m_state;

@@ -85,7 +85,7 @@ namespace MSIX {
             // not when bundle support is off.
             THROW_IF_BUNDLE_NOT_ENABLED
             #ifdef BUNDLE_SUPPORT
-            std::string pathInWindows = Helper::toBackLash(APPXBUNDLEMANIFEST_XML);
+            std::string pathInWindows = Helper::toBackSlash(APPXBUNDLEMANIFEST_XML);
             stream = m_appxBlockMap->GetValidationStream(pathInWindows, appxBundleManifestInContainer);
             m_appxBundleManifest = ComPtr<IVerifierObject>::Make<AppxBundleManifestObject>(factory, stream);
             m_isBundle = true;

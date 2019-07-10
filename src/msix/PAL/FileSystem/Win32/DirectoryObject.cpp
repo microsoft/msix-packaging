@@ -116,7 +116,6 @@ namespace MSIX {
     // IDirectoryObject
     ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
-        // TODO: verify this on Win7
         DWORD absPathSize = GetCurrentDirectory(0, NULL);
         std::wstring absPath;
         absPath.resize(absPathSize-1);

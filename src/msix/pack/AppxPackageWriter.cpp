@@ -49,8 +49,8 @@ namespace MSIX {
             {
                 std::string ext = Helper::tolower(file.second.substr(file.second.find_last_of(".") + 1));
                 auto contentType = ContentType::GetContentTypeByExtension(ext);
-                ProcessFileAndAddToPackage(file.second, from.As<IStorageObject>()->GetFile(file.second),
-                    contentType.GetCompressionOpt(), contentType.GetContentType().c_str(), FileType::AppxPayload);
+                auto stream = from.As<IStorageObject>()->GetFile(file.second);
+                ValidateAndAddPayloadFile(file.second, stream.Get(), contentType.GetCompressionOpt(), contentType.GetContentType().c_str());
             }
         }
         failState.release();
@@ -78,21 +78,18 @@ namespace MSIX {
         // If the creating the AppxManifestObject succeeds, then the stream is valid.
         auto manifestObj = ComPtr<IAppxManifestReader>::Make<AppxManifestObject>(m_factory.Get(), manifestStream.Get());
         auto manifestContentType = ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE_MANIFEST);
-        ProcessFileAndAddToPackage(footprintFiles[APPX_FOOTPRINT_FILE_TYPE_MANIFEST],
-            manifestStream, APPX_COMPRESSION_OPTION_NORMAL, manifestContentType.c_str(), FileType::Footprint);
+        AddFileToPackage(APPXMANIFEST_XML, manifestStream.Get(), true, true, manifestContentType.c_str());
 
         // Close blockmap and add it to package
         m_blockMapWriter.Close();
         auto blockMapStream = m_blockMapWriter.GetStream();
         auto blockMapContentType = ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP);
-        ProcessFileAndAddToPackage(footprintFiles[APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP],
-            blockMapStream, APPX_COMPRESSION_OPTION_NORMAL, blockMapContentType.c_str(), FileType::Footprint);
+        AddFileToPackage(APPXBLOCKMAP_XML, blockMapStream.Get(), true, false, blockMapContentType.c_str());
 
         // Close content types and add it to package
         m_contentTypeWriter.Close();
         auto contentTypeStream = m_contentTypeWriter.GetStream();
-        ProcessFileAndAddToPackage(CONTENT_TYPES_XML, contentTypeStream.Get(), APPX_COMPRESSION_OPTION_NORMAL,
-            nullptr /*dont add to content type*/, FileType::Footprint);
+        AddFileToPackage(CONTENT_TYPES_XML, contentTypeStream.Get(), true, false, nullptr);
 
         m_zipWriter->Close();
         failState.release();
@@ -110,7 +107,7 @@ namespace MSIX {
             this->m_state = WriterState::Failed;
         });
         ComPtr<IStream> stream(inputStream);
-        ProcessFileAndAddToPackage(fileName, stream, compressionOption, contentType, FileType::AppxPayload);
+        ValidateAndAddPayloadFile(fileName, stream.Get(), compressionOption, contentType);
         failState.release();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -130,7 +127,7 @@ namespace MSIX {
             std::string fileName = wstring_to_utf8(payloadFiles[i].fileName);
             ComPtr<IStream> stream(payloadFiles[i].inputStream);
             std::string contentType = wstring_to_utf8(payloadFiles[i].contentType);
-            ProcessFileAndAddToPackage(fileName, stream, payloadFiles[i].compressionOption, contentType.c_str(), FileType::AppxPayload);
+            ValidateAndAddPayloadFile(fileName, stream.Get(), payloadFiles[i].compressionOption, contentType.c_str());
         }
         failState.release();
         return static_cast<HRESULT>(Error::OK);
@@ -149,34 +146,28 @@ namespace MSIX {
         for(UINT32 i = 0; i < fileCount; i++)
         {
             ComPtr<IStream> stream(payloadFiles[i].inputStream);
-            ProcessFileAndAddToPackage(payloadFiles[i].fileName, stream, payloadFiles[i].compressionOption, payloadFiles[i].contentType, FileType::AppxPayload);
+            ValidateAndAddPayloadFile(payloadFiles[i].fileName, stream.Get(), payloadFiles[i].compressionOption, payloadFiles[i].contentType);
         }
         failState.release();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    void AppxPackageWriter::ProcessFileAndAddToPackage(const std::string& name, const ComPtr<IStream>& stream,
-        APPX_COMPRESSION_OPTION compressionOpt, const char* contentType, FileType fileType)
+    void AppxPackageWriter::ValidateAndAddPayloadFile(const std::string& name, IStream* stream,
+        APPX_COMPRESSION_OPTION compressionOpt, const char* contentType)
     {
-        if (fileType != FileType::Footprint)
-        {
-            ThrowErrorIfNot(Error::InvalidParameter, FileNameValidation::IsFileNameValid(name), "Invalid file name");
-            ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsFootPrintFile(name), "Trying to add footprint file to package");
-            ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsReservedFolder(name), "Trying to add file in reserved folder");
-        }
+        ThrowErrorIfNot(Error::InvalidParameter, FileNameValidation::IsFileNameValid(name), "Invalid file name");
+        ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsFootPrintFile(name), "Trying to add footprint file to package");
+        ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsReservedFolder(name), "Trying to add file in reserved folder");
         ValidateCompressionOption(compressionOpt);
+        AddFileToPackage(name, stream, compressionOpt != APPX_COMPRESSION_OPTION_NONE, true, contentType);
+    }
 
-        bool toCompress = (compressionOpt != APPX_COMPRESSION_OPTION_NONE );
-
+    void AppxPackageWriter::AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
+        bool addToBlockMap, const char* contentType, bool forceContentTypeOverride)
+    {
         // Add content type to [Content Types].xml
         if (contentType != nullptr)
         {
-            bool forceContentTypeOverride = false;
-            if (fileType == FileType::Footprint && 
-                name == footprintFiles[APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP]) // TODO: add AppxSignature here.
-            {
-                forceContentTypeOverride = true;
-            }
             m_contentTypeWriter.AddContentType(name, contentType, forceContentTypeOverride);
         }
 
@@ -200,14 +191,6 @@ namespace MSIX {
         auto lfhSize = m_zipWriter->PrepareToAddFile(opcFileName, toCompress);
 
         // Add file to block map.
-        bool addToBlockMap = true;
-        if (fileType == FileType::Footprint &&
-            (name == footprintFiles[APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP] ||
-             name == CONTENT_TYPES_XML)) // TODO: add AppxSignature here.
-        {
-            addToBlockMap = false;
-        }
-
         if (addToBlockMap)
         {
             m_blockMapWriter.AddFile(name, uncompressedSize, lfhSize);
