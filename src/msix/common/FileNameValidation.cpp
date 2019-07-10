@@ -185,10 +185,18 @@ namespace MSIX {
             return false;
         }
 
-        // Windows files cannot have '/', but Unix-based system can have '\'
+        // Windows files cannot have '/'.
         #ifdef WIN32
         auto findSlash = name.find("/");
         if (findSlash != std::string::npos)
+        {
+            return false;
+        }
+        #else
+        // Unix-based systems can have '\' in their name, but restrict
+        // it to allow real "cross plat" packages 
+        auto findBackSlash = name.find("\\");
+        if (findBackSlash != std::string::npos)
         {
             return false;
         }

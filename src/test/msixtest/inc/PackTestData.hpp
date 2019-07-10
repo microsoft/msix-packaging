@@ -21,7 +21,11 @@ namespace MsixTest { namespace Pack {
         constexpr wchar_t UnicodeFileName[] = { 0x65e5, 0x672c, 0x8a9e, 0 };
 
         // Valid surrogate pairs (0xD800,0xDFFF) and (0xDBFF,0xDC00) bookended by non-surrogate characters
+        #ifdef WIN32
         constexpr wchar_t ValidSurrogates[] = { 0xd7ff, 0xd800, 0xdfff, L'\\', 0xdbff, 0xdc00, 0xe000, 0 };
+        #else
+        constexpr wchar_t ValidSurrogates[] = { 0xd7ff, 0xd800, 0xdfff, L'/', 0xdbff, 0xdc00, 0xe000, 0 };
+        #endif
 
         // Contains Unicode defined non-characters 0xfffe, 0xffff
         constexpr wchar_t NonCharacter1[] = { L'A', 0xfffe, L'.', L't', L'x', L't', 0 };
@@ -32,12 +36,18 @@ namespace MsixTest { namespace Pack {
         // followed by a low surrogate in the range [0xdc00, 0xdfff]
         constexpr wchar_t IncompleteHighSurrogate1[] = { 0xd800, 0 };
         constexpr wchar_t IncompleteHighSurrogate2[] = { 0xdbff, L'x', 0 };
-        constexpr wchar_t IncompleteHighSurrogate3[] = { L'x', 0xdbff, L'\\', L'x', 0 };
         constexpr wchar_t ConsecutiveHighSurrogates[] = { 0xd800, 0xdbff, 0 };
         constexpr wchar_t UnexpectedLowSurrogate1[] = { 0xdc00, 0 };
         constexpr wchar_t UnexpectedLowSurrogate2[] = { L'x', 0xdfff, 0 };
-        constexpr wchar_t UnexpectedLowSurrogate3[] = { 0xd800, 0xdc00, L'\\', 0xdfff, 0 };
         constexpr wchar_t ConsecutiveLowSurrogates[] = { 0xdbff, 0xdc00, 0xdfff, 0 };
+
+        #ifdef WIN32
+        constexpr wchar_t IncompleteHighSurrogate3[] = { L'x', 0xdbff, L'\\', L'x', 0 };
+        constexpr wchar_t UnexpectedLowSurrogate3[] = { 0xd800, 0xdc00, L'\\', 0xdfff, 0 };
+        #else
+        constexpr wchar_t IncompleteHighSurrogate3[] = { L'x', 0xdbff, L'/', L'x', 0 };
+        constexpr wchar_t UnexpectedLowSurrogate3[] = { 0xd800, 0xdc00, L'/', 0xdfff, 0 };
+        #endif
 
         #ifdef WIN32
         // File names that should be vaild for adding to a package
@@ -121,7 +131,7 @@ namespace MsixTest { namespace Pack {
             { "test_file_5.txt" , L"%20ppxBlockMap.xml"} ,
             { "test_file_6.txt" , L" !#$%&'()+,-.0123456789;=@ABCDEFGHIJKLMNOPQRSTUVWXYZ[]^_`abcdefghijklmnopqrstuvwxyz{}~"} ,
             { "test_file_7.txt" , UnicodeFileName} ,
-            { "test_file_8.txt" , ValidSurrogates} ,
+            // { "test_file_8.txt" , ValidSurrogates} , Not valid on non-Windows. wstring_convert:: to_bytes throws std::range_error
             { "test_file_9.txt" , L".rels"} ,
             { "test_file_10.txt" , L"abc/something.rels"} ,
             { "test_file_11.txt" , L"abc/_rels/blah.rels/file.txt"} ,

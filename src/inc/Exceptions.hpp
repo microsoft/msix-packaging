@@ -56,13 +56,22 @@ namespace MSIX {
     // Provides an ABI exception boundary with parameter validation
     #define CATCH_RETURN()                                                  \
     catch (MSIX::Exception& e)                                              \
-    {   return static_cast<HRESULT>(e.Code());                              \
+    {                                                                       \
+        return static_cast<HRESULT>(e.Code());                              \
     }                                                                       \
-    catch (std::bad_alloc&)                                                 \
-    {   return static_cast<HRESULT>(MSIX::Error::OutOfMemory);              \
+    catch (const std::bad_alloc& e)                                           \
+    {                                                                       \
+        MSIX::Global::Log::Append(e.what());                                \
+        return static_cast<HRESULT>(MSIX::Error::OutOfMemory);              \
+    }                                                                       \
+    catch (const std::exception& e)                                         \
+    {                                                                       \
+        MSIX::Global::Log::Append(e.what());                                \
+        return static_cast<HRESULT>(MSIX::Error::Unexpected);               \
     }                                                                       \
     catch (...)                                                             \
-    {   return static_cast<HRESULT>(MSIX::Error::Unexpected);               \
+    {                                                                       \
+        return static_cast<HRESULT>(MSIX::Error::Unexpected);               \
     }
 
     template <typename E, class C>
