@@ -27,8 +27,8 @@ namespace MSIX { namespace Encoding {
         L"%40",  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // @
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
-        nullptr, nullptr, nullptr, L"%5B",  nullptr, L"%5D",  nullptr, nullptr, // [ ]
-        nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
+        nullptr, nullptr, nullptr, L"%5B",  nullptr, L"%5D",  L"%5E",  nullptr, // [ ] ^
+        L"%60",  nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, // `
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr,
         nullptr, nullptr, nullptr, L"%7B",  nullptr, L"%7D",  nullptr,          // { }

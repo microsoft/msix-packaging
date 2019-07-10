@@ -11,6 +11,7 @@
 #include "Exceptions.hpp"
 #include "StringHelper.hpp"
 #include "IXml.hpp"
+#include "FileNameValidation.hpp"
 
 namespace MSIX {
 
@@ -84,102 +85,6 @@ namespace MSIX {
         }
 
 #pragma region ValidateIdentifiers
-
-        const char* ProhibitedFileNames[] = {
-            ".",
-            "..",
-            "con",
-            "prn",
-            "aux",
-            "nul",
-            "com1",
-            "com2",
-            "com3",
-            "com4",
-            "com5",
-            "com6",
-            "com7",
-            "com8",
-            "com9",
-            "lpt1",
-            "lpt2",
-            "lpt3",
-            "lpt4",
-            "lpt5",
-            "lpt6",
-            "lpt7",
-            "lpt8",
-            "lpt9",
-        };
-
-        // Caller must pass in a lowercase string!
-        bool IsProhibitedFileName(const std::string& identifier)
-        {
-            for (const auto& name : ProhibitedFileNames)
-            {
-                if (identifier == name)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        const std::string ProhibitedPrefixes[] = {
-            "con.",
-            "prn.",
-            "aux.",
-            "nul.",
-            "com1.",
-            "com2.",
-            "com3.",
-            "com4.",
-            "com5.",
-            "com6.",
-            "com7.",
-            "com8.",
-            "com9.",
-            "lpt1.",
-            "lpt2.",
-            "lpt3.",
-            "lpt4.",
-            "lpt5.",
-            "lpt6.",
-            "lpt7.",
-            "lpt8.",
-            "lpt9.",
-            "xn--",
-        };
-
-        bool HasProhibitedPrefix(const std::string& identifier)
-        {
-            for (const auto& prefix : ProhibitedPrefixes)
-            {
-                if (identifier.size() >= prefix.size() &&
-                    identifier.substr(0, prefix.size()) == prefix)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        const std::string ProhibitedSuffixes[] = {
-            ".",
-        };
-
-        bool HasProhibitedSuffix(const std::string& identifier)
-        {
-            for (const auto& suffix : ProhibitedSuffixes)
-            {
-                if (identifier.size() >= suffix.size() &&
-                    identifier.substr(identifier.size() - suffix.size()) == suffix)
-                {
-                    return true;
-                }
-            }
-            return false;
-        }
 
         void ValidateIdentifier(const TargetAttribute& target, const MSIX::ComPtr<IXmlElement>& element)
         {
@@ -365,9 +270,7 @@ namespace MSIX {
             return false;
         }
 #endif
-
-        std::string lowIdent = Helper::tolower(identifier);
-        return !IsProhibitedFileName(lowIdent) && !HasProhibitedPrefix(lowIdent) && !HasProhibitedSuffix(lowIdent);
+        return FileNameValidation::IsIdentifierValid(identifier);
     }
 
     void AppxManifestValidation::ValidateManifest(IXmlDom* manifest)

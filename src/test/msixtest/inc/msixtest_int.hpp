@@ -8,6 +8,7 @@
 #include "MsixErrors.hpp"
 
 #include "msixtest.hpp"
+#include "macros.hpp"
 
 #include <string>
 #include <map>
@@ -24,7 +25,8 @@ namespace MsixTest {
             Unpack,
             Unbundle,
             Flat,
-            BadFlat
+            BadFlat,
+            Pack
         } Directory;
 
         static TestPath* GetInstance();
@@ -107,6 +109,11 @@ namespace MsixTest {
         void PrintMsixLog(HRESULT actual, HRESULT result);
     }
 
+    // Initialize helpers
+    void InitializePackageReader(const std::string& package, IAppxPackageReader** packageReader);
+    void InitializePackageReader(IStream* stream, IAppxPackageReader** packageReader);
+    void InitializeBundleReader(const std::string& package, IAppxBundleReader** bundleReader);
+
     template <class T>
     class ComPtr
     {
@@ -135,6 +142,14 @@ namespace MsixTest {
             return temp;
         }
 
+        template <class U>
+        ComPtr<U> As() const
+        {
+            ComPtr<U> out;
+            REQUIRE_SUCCEEDED(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(&out)));
+            return out;
+        }
+
         inline T** operator&()
         {   InternalRelease();
             return &m_ptr;
@@ -152,5 +167,36 @@ namespace MsixTest {
                 temp->Release();
             }
         }
+    };
+
+    // Helper class that creates a stream from a given file name.
+    // toRead - true if the file already exists, false to create it
+    // toDelete - true if the file should be deleted when the this object
+    // goes out of scope.
+    class StreamFile
+    {
+    public:
+        StreamFile() : m_toDelete(false) {}
+        StreamFile(std::string fileName, bool toRead, bool toDelete = false);
+        StreamFile(std::wstring fileName, bool toRead, bool toDelete = false);
+        ~StreamFile() { Clean(); }
+
+        void Initialize(std::string fileName, bool toRead, bool toDelete = false);
+        void Initialize(std::wstring fileName, bool toRead, bool toDelete = false);
+
+        inline IStream* Get() const { return m_stream.Get(); }
+        IStream* Detach()
+        {
+            m_toDelete = false;
+            return m_stream.Detach();
+        }
+
+    protected:
+        void InitializeStream(std::string fileName, bool toRead);
+        void Clean();
+
+        bool m_toDelete;
+        std::string m_fileName;
+        ComPtr<IStream> m_stream;
     };
 }

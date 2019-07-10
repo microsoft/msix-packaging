@@ -6,15 +6,27 @@
 
 #include <algorithm>
 #include <string>
+#include <cwctype>
 
 namespace MSIX {
     namespace Helper {
 
-        std::string tolower(std::string s)
+        inline std::string tolower(std::string s)
         {
             std::transform(s.begin(), s.end(), s.begin(), ::tolower);
             return s;
         }
 
+        inline std::wstring towlower(std::wstring s)
+        {
+            std::transform(s.begin(), s.end(), s.begin(), std::towlower);
+            return s;
+        }
+
+        inline std::string toBackSlash(std::string s)
+        {
+            std::replace(s.begin(), s.end(), '/', '\\');
+            return s;
+        }
     }
 }
