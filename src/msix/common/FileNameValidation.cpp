@@ -185,15 +185,10 @@ namespace MSIX {
             return false;
         }
 
+        // Windows files cannot have '/', but Unix-based system can have '\'
         #ifdef WIN32
         auto findSlash = name.find("/");
         if (findSlash != std::string::npos)
-        {
-            return false;
-        }
-        #else
-        auto findBackSlash = name.find("\\");
-        if (findBackSlash != std::string::npos)
         {
             return false;
         }

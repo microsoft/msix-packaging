@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <cwctype>
 
 namespace MSIX {
     namespace Helper {
@@ -18,7 +19,7 @@ namespace MSIX {
 
         inline std::wstring towlower(std::wstring s)
         {
-            std::transform(s.begin(), s.end(), s.begin(), ::towlower);
+            std::transform(s.begin(), s.end(), s.begin(), std::towlower);
             return s;
         }
 

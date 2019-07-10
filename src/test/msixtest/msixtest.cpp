@@ -77,7 +77,7 @@ namespace MsixTest {
             std::wstring result(size, 0);
             MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8string.data(), static_cast<int>(utf8string.size()), &result[0], size);
             #else
-            auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(utf16string.data());
+            auto converted = std::wstring_convert<std::codecvt_utf8_utf16<char16_t>, char16_t>{}.from_bytes(utf8string.data());
             std::wstring result(converted.begin(), converted.end());
             #endif
             return result;

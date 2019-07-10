@@ -67,7 +67,7 @@ TEST_CASE("Api_AppxPackageWriter_good", "[api]")
         WriteContentToStream(contentSize, fileStream.Get());
         REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
             fileName.second.c_str(),
-            TestConstants::ContentType,
+            TestConstants::ContentType.c_str(),
             APPX_COMPRESSION_OPTION_NORMAL,
             fileStream.Get()));
         contentSize += contentSizeIncrement;
@@ -103,27 +103,27 @@ TEST_CASE("Api_AppxPackageWriter_good_with_empty_files", "[api]")
 
     REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
         TestConstants::GoodFileNames[0].second.c_str(),
-        TestConstants::ContentType,
+        TestConstants::ContentType.c_str(),
         APPX_COMPRESSION_OPTION_NORMAL,
         emptyStream.Get()));
     REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
         TestConstants::GoodFileNames[1].second.c_str(),
-        TestConstants::ContentType,
+        TestConstants::ContentType.c_str(),
         APPX_COMPRESSION_OPTION_NORMAL,
         contentStream.Get()));
     REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
         TestConstants::GoodFileNames[2].second.c_str(),
-        TestConstants::ContentType,
+        TestConstants::ContentType.c_str(),
         APPX_COMPRESSION_OPTION_NORMAL,
         emptyStream.Get()));
     REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
         TestConstants::GoodFileNames[3].second.c_str(),
-        TestConstants::ContentType,
+        TestConstants::ContentType.c_str(),
         APPX_COMPRESSION_OPTION_NONE,
         contentStream.Get()));
     REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
         TestConstants::GoodFileNames[4].second.c_str(),
-        TestConstants::ContentType,
+        TestConstants::ContentType.c_str(),
         APPX_COMPRESSION_OPTION_NONE,
         emptyStream.Get()));
 
@@ -187,7 +187,7 @@ TEST_CASE("Api_AppxPackageWriter_payloadfiles", "[api]")
         WriteContentToStream(contentSize, streams[i].Get());
 
         payloadFiles[i].fileName = TestConstants::GoodFileNames[i].second.c_str();
-        payloadFiles[i].contentType = TestConstants::ContentType;
+        payloadFiles[i].contentType = TestConstants::ContentType.c_str();
         payloadFiles[i].compressionOption = APPX_COMPRESSION_OPTION_NORMAL;
         payloadFiles[i].inputStream = streams[i].Get();
         contentSize += contentSizeIncrement;
@@ -295,7 +295,7 @@ TEST_CASE("Api_AppxPackageWriter_state_errors", "[api]")
     REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidParameter),
         packageWriter->AddPayloadFile(
             TestConstants::GoodFileNames[0].second.c_str(),
-            TestConstants::ContentType,
+            TestConstants::ContentType.c_str(),
             static_cast<APPX_COMPRESSION_OPTION>(12345),
             contentStream.Get()));
 
@@ -303,7 +303,7 @@ TEST_CASE("Api_AppxPackageWriter_state_errors", "[api]")
     REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidState),
         packageWriter->AddPayloadFile(
             TestConstants::GoodFileNames[0].second.c_str(),
-            TestConstants::ContentType,
+            TestConstants::ContentType.c_str(),
             APPX_COMPRESSION_OPTION_NORMAL,
             contentStream.Get()));
     REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidState), 
@@ -322,7 +322,7 @@ TEST_CASE("Api_AppxPackageWriter_invalid_names", "[api]")
         InitializePackageWriter(outputStream.Get(), &packageWriter);
         REQUIRE_FAILED(packageWriter->AddPayloadFile(
                 fileName.c_str(),
-                TestConstants::ContentType,
+                TestConstants::ContentType.c_str(),
                 APPX_COMPRESSION_OPTION_NORMAL,
                 fileStream.Get()));
     }
@@ -346,7 +346,7 @@ TEST_CASE("Api_AppxPackageWriter_closed", "[api]")
     REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidState),
           packageWriter->AddPayloadFile(
             TestConstants::GoodFileNames[0].second.c_str(),
-            TestConstants::ContentType,
+            TestConstants::ContentType.c_str(),
             APPX_COMPRESSION_OPTION_NORMAL,
             fileStream.Get()));
 }
