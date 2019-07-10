@@ -124,6 +124,12 @@ namespace MSIX {
             return (Field<2>() || Field<3>() || Field<4>() || Field<5>());
         }
 
+        std::vector<std::uint8_t> GetBytes()
+        {
+            SetSize(static_cast<uint16_t>(Size() - NonOptionalSize));
+            return StructuredObject::GetBytes();
+        }
+
     protected:
         constexpr static size_t NonOptionalSize = 4;
 

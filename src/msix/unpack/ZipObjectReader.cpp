@@ -15,7 +15,8 @@ namespace MSIX {
     ZipObjectReader::ZipObjectReader(const ComPtr<IStream>& stream) : ZipObject(stream)
     {
         LARGE_INTEGER pos = {0};
-        pos.QuadPart = -1 * m_endCentralDirectoryRecord.Size();
+        pos.QuadPart = m_endCentralDirectoryRecord.Size();
+        pos.QuadPart *= -1;
         ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
         m_endCentralDirectoryRecord.Read(m_stream.Get());
 
@@ -29,7 +30,8 @@ namespace MSIX {
         }
         else
         {   // Make sure that we have a zip64 end of central directory locator
-            pos.QuadPart = -1*(m_endCentralDirectoryRecord.Size() + m_zip64Locator.Size());
+            pos.QuadPart = m_endCentralDirectoryRecord.Size() + m_zip64Locator.Size();
+            pos.QuadPart *= -1;
             ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
             m_zip64Locator.Read(m_stream.Get());
 

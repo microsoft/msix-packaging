@@ -81,7 +81,7 @@ namespace MSIX {
             ULONG amountToRead = std::min(countBytes, static_cast<ULONG>(m_size - m_relativePosition));
             ULONG amountRead = 0;
             ThrowHrIfFailed(m_stream->Read(buffer, amountToRead, &amountRead));
-            ThrowErrorIf(Error::FileRead, (amountToRead != amountRead), "Did not read as much as requesteed.");
+            ThrowErrorIf(Error::FileRead, (amountToRead != amountRead), "Did not read as much as requested.");
             m_relativePosition += amountRead;
             if (bytesRead) { *bytesRead = amountRead; }
             ThrowErrorIf(Error::FileSeekOutOfRange, (m_relativePosition > m_size), "seek pointer out of bounds.");
@@ -96,7 +96,7 @@ namespace MSIX {
             ThrowHrIfFailed(m_stream->Seek(offset, StreamBase::START, nullptr));
             ULONG amountWritten = 0;
             ThrowHrIfFailed(m_stream->Write(buffer, countBytes, &amountWritten));
-            ThrowErrorIf(Error::FileWrite, (countBytes != amountWritten), "Did not write as much as requesteed.");
+            ThrowErrorIf(Error::FileWrite, (countBytes != amountWritten), "Did not write as much as requested.");
             m_relativePosition += amountWritten;
             m_size = std::max(m_size, m_relativePosition);
             if (bytesWritten) { *bytesWritten = amountWritten; }

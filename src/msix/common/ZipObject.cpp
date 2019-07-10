@@ -93,8 +93,7 @@ constexpr static const GeneralPurposeBitFlags UnsupportedFlagsMask =
 Zip64ExtendedInformation::Zip64ExtendedInformation()
 {
     SetSignature(static_cast<std::uint16_t>(HeaderIDs::Zip64ExtendedInfo));
-    // Should be 0x18, but do it this way if we end up field 5
-    SetSize(static_cast<std::uint16_t>(Size() - Field<0>().Size() - Field<1>().Size()));
+    SetSize(NonOptionalSize);
 }
 
 void Zip64ExtendedInformation::Read(const ComPtr<IStream>& stream, ULARGE_INTEGER start, uint32_t uncompressedSize, uint32_t compressedSize, uint32_t offset, uint16_t disk)
