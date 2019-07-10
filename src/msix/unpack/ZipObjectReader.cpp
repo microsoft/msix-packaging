@@ -15,21 +15,23 @@ namespace MSIX {
     ZipObjectReader::ZipObjectReader(const ComPtr<IStream>& stream) : ZipObject(stream)
     {
         LARGE_INTEGER pos = {0};
-        pos.QuadPart = -1 * m_endCentralDirectoryRecord.Size();
+        pos.QuadPart = m_endCentralDirectoryRecord.Size();
+        pos.QuadPart *= -1;
         ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
         m_endCentralDirectoryRecord.Read(m_stream.Get());
 
         // find where the zip central directory exists.
         std::uint64_t offsetStartOfCD = 0;
         std::uint64_t totalNumberOfEntries = 0;
-        if (!m_endCentralDirectoryRecord.GetArchiveHasZip64Locator())
+        if (!m_endCentralDirectoryRecord.GetIsZip64())
         {
             offsetStartOfCD = m_endCentralDirectoryRecord.GetStartOfCentralDirectory();
             totalNumberOfEntries = m_endCentralDirectoryRecord.GetNumberOfCentralDirectoryEntries();
         }
         else
         {   // Make sure that we have a zip64 end of central directory locator
-            pos.QuadPart = -1*(m_endCentralDirectoryRecord.Size() + m_zip64Locator.Size());
+            pos.QuadPart = m_endCentralDirectoryRecord.Size() + m_zip64Locator.Size();
+            pos.QuadPart *= -1;
             ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
             m_zip64Locator.Read(m_stream.Get());
 
@@ -52,7 +54,7 @@ namespace MSIX {
             m_centralDirectories.insert(std::make_pair(centralFileHeader.GetFileName(), std::move(centralFileHeader)));
         }
 
-        if (m_endCentralDirectoryRecord.GetArchiveHasZip64Locator())
+        if (m_endCentralDirectoryRecord.GetIsZip64())
         {   // We should have no data between the end of the last central directory header and the start of the EoCD
             ULARGE_INTEGER uPos = {0};
             ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &uPos));
@@ -94,7 +96,7 @@ namespace MSIX {
                 centralFileHeader->second.GetCompressionMethod() == CompressionType::Deflate,
                 centralFileHeader->second.GetRelativeOffsetOfLocalHeader() + lfh.Size(),
                 centralFileHeader->second.GetCompressedSize(),
-                m_stream
+                m_stream.Get()
             );
 
             if (centralFileHeader->second.GetCompressionMethod() == CompressionType::Deflate)

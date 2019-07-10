@@ -6,6 +6,7 @@
 
 #include "AppxPackaging.hpp"
 #include "Exceptions.hpp"
+#include "StreamBase.hpp"
 
 #include <utility>
 
@@ -56,5 +57,39 @@ namespace MSIX {
             ThrowHrIfFailed(stream->Write(static_cast<const void*>(toWrite.data()), static_cast<ULONG>(toWrite.size()), &written));
             ThrowErrorIf(Error::FileWrite, (static_cast<ULONG>(toWrite.size()) != written), "write failed");
         }
+
+        // Reverts a stream's position on destruction
+        struct StreamPositionReset
+        {
+            StreamPositionReset(IStream* stream) : m_stream(stream)
+            {
+                ThrowHrIfFailed(m_stream->Seek({ 0 }, StreamBase::Reference::CURRENT, &m_pos));
+            }
+
+            ~StreamPositionReset()
+            {
+                Reset();
+            }
+
+            void Reset()
+            {
+                if (m_stream)
+                {
+                    LARGE_INTEGER target;
+                    target.QuadPart = static_cast<LONGLONG>(m_pos.QuadPart);
+                    ThrowHrIfFailed(m_stream->Seek(target, StreamBase::Reference::START, nullptr));
+                    m_stream = nullptr;
+                }
+            }
+
+            void Release()
+            {
+                m_stream = nullptr;
+            }
+
+        private:
+            ComPtr<IStream> m_stream;
+            ULARGE_INTEGER m_pos;
+        };
     }
 }

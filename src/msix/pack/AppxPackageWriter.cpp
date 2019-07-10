@@ -8,7 +8,6 @@
 #include "MsixErrors.hpp"
 #include "Exceptions.hpp"
 #include "ContentType.hpp"
-#include "ZipFileStream.hpp"
 #include "Encoding.hpp"
 #include "ZipObjectWriter.hpp"
 #include "AppxManifestObject.hpp"
@@ -185,15 +184,15 @@ namespace MSIX {
         {
             opcFileName = name;
         }
-        auto lfhSize = m_zipWriter->PrepareToAddFile(opcFileName, toCompress);
+        auto fileInfo = m_zipWriter->PrepareToAddFile(opcFileName, toCompress);
 
         // Add file to block map
         if (addToBlockMap)
         {
-            m_blockMapWriter.AddFile(name, uncompressedSize, lfhSize);
+            m_blockMapWriter.AddFile(name, uncompressedSize, fileInfo.first);
         }
 
-        auto zipFileStream = ComPtr<IStream>::Make<ZipFileStream>(opcFileName, toCompress);
+        auto& zipFileStream = fileInfo.second;
 
         std::uint64_t bytesToRead = uncompressedSize;
         std::uint32_t crc = 0;
@@ -238,8 +237,8 @@ namespace MSIX {
         }
 
         // This could be the compressed or uncompressed size
-        auto streamSize =  zipFileStream.As<IStreamInternal>()->GetSize();
-        m_zipWriter->AddFile(zipFileStream, crc, streamSize, uncompressedSize);
+        auto streamSize = zipFileStream.As<IStreamInternal>()->GetSize();
+        m_zipWriter->EndFile(crc, streamSize, uncompressedSize, true);
     }
 
     bool AppxPackageWriter::IsFootPrintFile(std::string normalized)

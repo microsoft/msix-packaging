@@ -7,6 +7,9 @@
 #include "ZipObject.hpp"
 #include "MsixErrors.hpp"
 #include "Exceptions.hpp"
+#include "ZipFileStream.hpp"
+#include "DeflateStream.hpp"
+#include "StreamHelper.hpp"
 
 namespace MSIX {
 
@@ -22,10 +25,10 @@ namespace MSIX {
     public:
         DataDescriptor(std::uint32_t crc, std::uint64_t compressSize, std::uint64_t uncompressSize)
         {
-            Field<0>().value = static_cast<std::uint32_t>(Signatures::DataDescriptor);
-            Field<1>().value = crc;
-            Field<2>().value = compressSize;
-            Field<3>().value = uncompressSize;
+            Field<0>() = static_cast<std::uint32_t>(Signatures::DataDescriptor);
+            Field<1>() = crc;
+            Field<2>() = compressSize;
+            Field<3>() = uncompressSize;
         }
     };
 
@@ -37,7 +40,7 @@ namespace MSIX {
     ZipObjectWriter::ZipObjectWriter(const ComPtr<IStorageObject>& storageObject) : ZipObject(storageObject)
     {
         // The storage object provided should had already initialize all the data.
-        ThrowErrorIfNot(Error::Zip64EOCDLocator, m_endCentralDirectoryRecord.GetArchiveHasZip64Locator(),
+        ThrowErrorIfNot(Error::Zip64EOCDRecord, m_endCentralDirectoryRecord.GetIsZip64(),
             "Editing non zip64 packages not supported");
 
         // Move the stream at the start of central directory record so we can start overwritting.
@@ -61,38 +64,64 @@ namespace MSIX {
     }
 
     // IZipWriter
-    std::uint32_t ZipObjectWriter::PrepareToAddFile(std::string& name, bool isCompressed)
+    std::pair<std::uint32_t, ComPtr<IStream>> ZipObjectWriter::PrepareToAddFile(const std::string& name, bool isCompressed)
     {
         ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForLfhOrClose, "Invalid zip writer state");
+
         // Get position were the lfh is going to be written
         ULARGE_INTEGER pos = {0};
         ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
-        // write lfh
+
+        // Write lfh
         LocalFileHeader lfh;
         lfh.SetData(name, isCompressed);
         lfh.WriteTo(m_stream);
+
         m_lastLFH = std::make_pair(static_cast<std::uint64_t>(pos.QuadPart), std::move(lfh));
         m_state = ZipObjectWriter::State::ReadyForFile;
-        return static_cast<std::uint32_t>(m_lastLFH.second.Size());
+
+        ComPtr<IStream> zipStream = ComPtr<IStream>::Make<ZipFileStream>(name, isCompressed, m_stream.Get());
+        if (isCompressed)
+        {
+            zipStream = ComPtr<IStream>::Make<DeflateStream>(zipStream);
+        }
+
+        return std::make_pair(static_cast<std::uint32_t>(m_lastLFH.second.Size()), std::move(zipStream));
     }
 
-    void ZipObjectWriter::AddFile(MSIX::ComPtr<IStream>& fileStream, std::uint32_t crc, std::uint64_t compressedSize, std::uint64_t uncompressedSize)
+    void ZipObjectWriter::EndFile(std::uint32_t crc, std::uint64_t compressedSize, std::uint64_t uncompressedSize, bool forceDataDescriptor)
     {
         ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForFile, "Invalid zip writer state");
-        // Write file stream
-        LARGE_INTEGER start = { 0 };
-        ThrowHrIfFailed(fileStream->Seek(start, StreamBase::Reference::START, nullptr));
-        ULARGE_INTEGER bytesCount = { 0 };
-        bytesCount.QuadPart = std::numeric_limits<std::uint64_t>::max();
-        ThrowHrIfFailed(fileStream->CopyTo(m_stream.Get(), bytesCount, nullptr, nullptr));
-        // Create and write data descriptor 
-        DataDescriptor descriptor = DataDescriptor(crc, compressedSize, uncompressedSize);
-        descriptor.WriteTo(m_stream);
+
+        if (forceDataDescriptor ||
+            compressedSize > MaxSizeToNotUseDataDescriptor ||
+            uncompressedSize > MaxSizeToNotUseDataDescriptor)
+        {
+            // Create and write data descriptor 
+            DataDescriptor descriptor = DataDescriptor(crc, compressedSize, uncompressedSize);
+            descriptor.WriteTo(m_stream);
+        }
+        else
+        {
+            // The sizes can fit in the LFH, rewrite it with the new data
+            Helper::StreamPositionReset resetAfterLFHWrite{ m_stream.Get() };
+
+            LARGE_INTEGER lfhLocation;
+            lfhLocation.QuadPart = static_cast<LONGLONG>(m_lastLFH.first);
+            ThrowHrIfFailed(m_stream->Seek(lfhLocation, StreamBase::Reference::START, nullptr));
+
+            // We cannot change the size of the LFH, ensure that we don't accidentally
+            size_t currentSize = m_lastLFH.second.Size();
+            m_lastLFH.second.SetData(crc, compressedSize, uncompressedSize);
+            ThrowErrorIf(Error::Unexpected, currentSize != m_lastLFH.second.Size(), "Cannot change the LFH size when updating it");
+
+            m_lastLFH.second.WriteTo(m_stream);
+        }
+
         // Create and add cdh to map
         CentralDirectoryFileHeader cdh;
-        auto name = m_lastLFH.second.GetFileName();
-        cdh.SetData(name, crc, compressedSize, uncompressedSize, m_lastLFH.first, m_lastLFH.second.GetCompressionMethod());
-        m_centralDirectories.insert(std::make_pair(name, std::move(cdh)));
+        cdh.SetData(m_lastLFH.second.GetFileName(), crc, compressedSize, uncompressedSize, m_lastLFH.first, m_lastLFH.second.GetCompressionMethod(), forceDataDescriptor);
+        m_centralDirectories.insert(std::make_pair(m_lastLFH.second.GetFileName(), std::move(cdh)));
         m_state = ZipObjectWriter::State::ReadyForLfhOrClose;
     }
 

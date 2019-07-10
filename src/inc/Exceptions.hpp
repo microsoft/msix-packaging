@@ -76,7 +76,15 @@ namespace MSIX {
     #endif
     RaiseException(const int line, const char* const file, const char* details, C c)
     {
-        assert(false);
+#ifdef WIN32
+#ifndef NDEBUG
+        if (IsDebuggerPresent())
+#endif
+#endif
+        {
+            assert(false);
+        }
+
         std::ostringstream builder;
         if (details) { builder << details << "\n"; }
         builder << "Call failed in " << file << " on line " << line;
