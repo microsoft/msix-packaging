@@ -22,6 +22,11 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override;
         HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override;
         HRESULT STDMETHODCALLTYPE Write(void const *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept override;
+
+        // IStreamInternal
+        std::uint64_t GetSize() override { return m_stream.As<IStreamInternal>()->GetSize(); }
+        bool IsCompressed() override { return m_stream.As<IStreamInternal>()->IsCompressed(); }
+        std::string GetName() override { return m_stream.As<IStreamInternal>()->GetName(); }
     
     protected:
         std::vector<std::uint8_t> Deflate(int disposition);

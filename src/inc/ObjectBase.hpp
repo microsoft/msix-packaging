@@ -46,71 +46,124 @@ class FieldBase
 public:
     FieldBase() = default;
 
-    size_t Size() { return sizeof(T); }
-    std::vector<std::uint8_t> GetBytes() { return std::vector<std::uint8_t>(); }
-    
+    constexpr size_t Size() const { return sizeof(T); }
+
+    void GetBytes(std::vector<std::uint8_t>& bytes) const
+    {
+        THROW_IF_PACK_NOT_ENABLED
+        for (size_t i = 0; i < Size(); ++i)
+        {
+            bytes.push_back(static_cast<std::uint8_t>(this->value >> (i * 8)));
+        }
+    }
+
+    FieldBase& operator=(const T& v)
+    {
+        value = v;
+        return *this;
+    }
+
+    operator T() const
+    {
+        return value;
+    }
+
+    T& get()
+    {
+        return value;
+    }
+
+    const T& get() const
+    {
+        return value;
+    }
+
+    T* operator &()
+    {
+        return &value;
+    }
+
+protected:
     T value;
 };
 
 // Simple 2, 4, and 8 byte fields
-class Field2Bytes final : public FieldBase<std::uint16_t>
-{
-public:
-    std::vector<std::uint8_t> GetBytes()
-    {
-        THROW_IF_PACK_NOT_ENABLED
-        std::vector<std::uint8_t> result;
-        result.push_back(static_cast<std::uint8_t>(this->value));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 8));
-        return result;
-    }
-};
-
-class Field4Bytes final : public FieldBase<std::uint32_t>
-{
-public:
-    std::vector<std::uint8_t> GetBytes()
-    {
-        THROW_IF_PACK_NOT_ENABLED
-        std::vector<std::uint8_t> result;
-        result.push_back(static_cast<std::uint8_t>(this->value));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 8));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 16));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 24));
-        return result;
-    }
-};
-
-class Field8Bytes final : public FieldBase<std::uint64_t>
-{
-public:
-    std::vector<std::uint8_t> GetBytes()
-    {
-        THROW_IF_PACK_NOT_ENABLED
-        std::vector<std::uint8_t> result;
-        result.push_back(static_cast<std::uint8_t>(this->value));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 8));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 16));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 24));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 32));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 40));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 48));
-        result.push_back(static_cast<std::uint8_t>(this->value >> 56));
-        return result;
-    }    
-};
+using Field2Bytes = FieldBase<std::uint16_t>;
+using Field4Bytes = FieldBase<std::uint32_t>;
+using Field8Bytes = FieldBase<std::uint64_t>;
 
 // variable length field.
 class FieldNBytes : public FieldBase<std::vector<std::uint8_t>>
 {
 public:
-    size_t Size() { return this->value.size(); }
-    std::vector<std::uint8_t> GetBytes()
+    size_t Size() const { return this->value.size(); }
+
+    void GetBytes(std::vector<std::uint8_t>& result) const
     {
         THROW_IF_PACK_NOT_ENABLED
-        return this->value;
+        result.insert(result.end(), value.begin(), value.end());
     }
 };
+
+//////////////////////////////////////////////////////////////////////////////////////////////
+//          Base type for individual serializable/deserializable optional fields            //
+//////////////////////////////////////////////////////////////////////////////////////////////
+template <class T>
+class OptionalFieldBase
+{
+public:
+    OptionalFieldBase() = default;
+
+    constexpr size_t Size() { return (hasValue ? value.Size() : 0); }
+
+    void GetBytes(std::vector<std::uint8_t>& bytes)
+    {
+        THROW_IF_PACK_NOT_ENABLED
+        if (hasValue)
+        {
+            value.GetBytes(bytes);
+        }
+    }
+
+    OptionalFieldBase& operator=(const T& v)
+    {
+        hasValue = true;
+        value = v;
+        return *this;
+    }
+
+    operator bool() const
+    {
+        return hasValue;
+    }
+
+    operator T() const
+    {
+        ThrowErrorIfNot(Error::InvalidState, hasValue, "Cannot retrieve value if none is set");
+        return value;
+    }
+
+    const T& get() const
+    {
+        ThrowErrorIfNot(Error::InvalidState, hasValue, "Cannot retrieve value if none is set");
+        return value.get();
+    }
+
+    T* operator &()
+    {
+        hasValue = true;
+        return &value;
+    }
+
+protected:
+    FieldBase<T> value;
+    bool hasValue = false;
+};
+
+// Simple 2, 4, and 8 byte fields
+using OptionalField2Bytes = OptionalFieldBase<std::uint16_t>;
+using OptionalField4Bytes = OptionalFieldBase<std::uint32_t>;
+using OptionalField8Bytes = OptionalFieldBase<std::uint64_t>;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 //      Heterogeneous collection of types that are operated on as a compile-time vector     //
@@ -118,9 +171,10 @@ public:
 template <typename... Types>
 class TypeList
 {
-    static constexpr std::size_t last_index { std::tuple_size<std::tuple<Types...>>::value };
+    static constexpr std::size_t last_index { sizeof...(Types) };
 public:
-    std::tuple<Types...> fields;    
+    std::tuple<Types...> fields;
+
     template<std::size_t index = 0, typename FuncT, class... Args>
     inline typename std::enable_if<index == last_index, void>::type for_each(FuncT, Args&&... args) { }
 
@@ -133,6 +187,9 @@ public:
 
     template <size_t index>
     auto& Field() noexcept { return std::get<index>(fields); }
+
+    template <size_t index>
+    const auto& Field() const noexcept { return std::get<index>(fields); }
 };
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -146,7 +203,8 @@ public:
     {
         size_t result = 0;
         this->for_each([](auto& field, std::size_t index, size_t& result)
-        {   result += field.Size();
+        {
+            result += field.Size();
         }, result);
         return result;
     }
@@ -157,8 +215,7 @@ public:
         std::vector<std::uint8_t> bytes;
         this->for_each([](auto& field, std::size_t index, std::vector<std::uint8_t>& bytes)
         {
-            auto fieldBytes = field.GetBytes();
-            bytes.insert(bytes.end(), fieldBytes.begin(), fieldBytes.end());
+            field.GetBytes(bytes);
         }, bytes);
         return bytes;
     }

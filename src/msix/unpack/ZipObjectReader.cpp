@@ -22,7 +22,7 @@ namespace MSIX {
         // find where the zip central directory exists.
         std::uint64_t offsetStartOfCD = 0;
         std::uint64_t totalNumberOfEntries = 0;
-        if (!m_endCentralDirectoryRecord.GetArchiveHasZip64Locator())
+        if (!m_endCentralDirectoryRecord.GetIsZip64())
         {
             offsetStartOfCD = m_endCentralDirectoryRecord.GetStartOfCentralDirectory();
             totalNumberOfEntries = m_endCentralDirectoryRecord.GetNumberOfCentralDirectoryEntries();
@@ -52,7 +52,7 @@ namespace MSIX {
             m_centralDirectories.insert(std::make_pair(centralFileHeader.GetFileName(), std::move(centralFileHeader)));
         }
 
-        if (m_endCentralDirectoryRecord.GetArchiveHasZip64Locator())
+        if (m_endCentralDirectoryRecord.GetIsZip64())
         {   // We should have no data between the end of the last central directory header and the start of the EoCD
             ULARGE_INTEGER uPos = {0};
             ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &uPos));
@@ -94,7 +94,7 @@ namespace MSIX {
                 centralFileHeader->second.GetCompressionMethod() == CompressionType::Deflate,
                 centralFileHeader->second.GetRelativeOffsetOfLocalHeader() + lfh.Size(),
                 centralFileHeader->second.GetCompressedSize(),
-                m_stream
+                m_stream.Get()
             );
 
             if (centralFileHeader->second.GetCompressionMethod() == CompressionType::Deflate)

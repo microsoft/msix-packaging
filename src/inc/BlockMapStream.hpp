@@ -61,7 +61,7 @@ namespace MSIX {
             std::uint64_t sizeRemaining = m_streamSize;
             for (auto block = blocks.begin(); ((sizeRemaining != 0) && (block != blocks.end())); block++)
             {
-                auto rangeStream = ComPtr<IStream>::Make<RangeStream>(offset, std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE), stream);                
+                auto rangeStream = ComPtr<IStream>::Make<RangeStream>(offset, std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE), stream.Get());                
                 auto hashStream = ComPtr<IStream>::Make<HashStream>(rangeStream, block->hash);
                 std::uint64_t blockSize = std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE);
 

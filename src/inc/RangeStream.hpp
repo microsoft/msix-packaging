@@ -6,9 +6,7 @@
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
 #include "ComHelper.hpp"
-#include "VectorStream.hpp"
 #include "MsixFeatureSelector.hpp"
-#include "DeflateStream.hpp"
 
 #include <string>
 #include <map>
@@ -20,41 +18,56 @@ namespace MSIX {
     class RangeStream : public StreamBase
     {
     public:
-        RangeStream(std::uint64_t offset, std::uint64_t size, const ComPtr<IStream>& stream) :
+        RangeStream(std::uint64_t offset, std::uint64_t size, IStream* stream) :
             m_offset(offset),
             m_size(size),
             m_stream(stream)
         {
         }
 
-        RangeStream(bool isCompressed) : m_offset(0), m_size(0)
+        // For writing/pack
+        // This simply keeps track of the amount of data written to the stream, as well as
+        // limiting any Read/Seek to the data written, rather than the entire underlying stream.
+        RangeStream(IStream* stream) : m_stream(stream), m_size(0)
         {
             THROW_IF_PACK_NOT_ENABLED
-            m_stream = ComPtr<IStream>::Make<VectorStream>(&m_buffer);
-            if (isCompressed)
-            {
-                m_stream = ComPtr<IStream>::Make<DeflateStream>(m_stream);
-            }
+            ULARGE_INTEGER pos = { 0 };
+            ThrowHrIfFailed(m_stream->Seek({ 0 }, Reference::CURRENT, &pos));
+            m_offset = pos.QuadPart;
         }
 
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override try
         {
+            // Determine new range relative position
             LARGE_INTEGER newPos = { 0 };
             switch (origin)
             {
             case Reference::CURRENT:
-                newPos.QuadPart = m_offset + m_relativePosition + move.QuadPart;
+                newPos.QuadPart = m_relativePosition + move.QuadPart;
                 break;
             case Reference::START:
-                newPos.QuadPart = m_offset + move.QuadPart;
+                newPos.QuadPart = move.QuadPart;
                 break;
             case Reference::END:
-                newPos.QuadPart = m_offset + m_size + move.QuadPart;
+                newPos.QuadPart = m_size + move.QuadPart;
                 break;
             }
-            //TODO: We need to constrain newPos so that it can't exceed the end of the stream
+
+            // Constrain newPos to range relative values
+            if (newPos.QuadPart < 0)
+            {
+                newPos.QuadPart = 0;
+            }
+            else if (static_cast<uint64_t>(newPos.QuadPart) > m_size)
+            {
+                newPos.QuadPart = m_size;
+            }
+
+            // Add in the underlying stream offset
+            newPos.QuadPart += m_offset;
+
             ULARGE_INTEGER pos = { 0 };
-            m_stream->Seek(newPos, Reference::START, &pos);
+            ThrowHrIfFailed(m_stream->Seek(newPos, Reference::START, &pos));
             m_relativePosition = std::min(static_cast<std::uint64_t>(pos.QuadPart - m_offset), m_size);
             if (newPosition) { newPosition->QuadPart = m_relativePosition; }
             return static_cast<HRESULT>(Error::OK);
@@ -78,12 +91,15 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE Write(const void *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept override try
         {
             THROW_IF_PACK_NOT_ENABLED
-            // Forward to VectorStream/DeflateStream
-            ThrowHrIfFailed(m_stream->Write(buffer, countBytes, bytesWritten));
-            m_size = static_cast<ULONG>(m_buffer.size());
-            m_relativePosition = m_size;
-            // VectorStream will validate if the written bytes are correct. 
-            // It is expected that countBytes != bytesWritten here because this can be a compression.
+            LARGE_INTEGER offset = { 0 };
+            offset.QuadPart = m_relativePosition + m_offset;
+            ThrowHrIfFailed(m_stream->Seek(offset, StreamBase::START, nullptr));
+            ULONG amountWritten = 0;
+            ThrowHrIfFailed(m_stream->Write(buffer, countBytes, &amountWritten));
+            ThrowErrorIf(Error::FileWrite, (countBytes != amountWritten), "Did not write as much as requesteed.");
+            m_relativePosition += amountWritten;
+            m_size = std::max(m_size, m_relativePosition);
+            if (bytesWritten) { *bytesWritten = amountWritten; }
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
@@ -94,7 +110,5 @@ namespace MSIX {
         std::uint64_t m_size;
         std::uint64_t m_relativePosition = 0;
         ComPtr<IStream> m_stream;
-        // for pack, this is buffer were store the data, before writing it to the zip file
-        std::vector<std::uint8_t> m_buffer;
     };
 }
