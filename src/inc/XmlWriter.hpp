@@ -55,6 +55,8 @@ namespace MSIX {
     protected:
         void StartWrite(const std::string& root, bool standalone);
         void Write(const std::string& toWrite);
+        void Write(const char toWrite);
+        void WriteTextValue(const std::string& value);
         State m_state;
         ComPtr<IStream> m_stream;
         std::stack<std::string> m_elements;

@@ -116,6 +116,12 @@ namespace MSIX {
     // IDirectoryObject
     ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
+        DWORD absPathSize = GetCurrentDirectory(0, NULL);
+        std::wstring absPath;
+        absPath.resize(absPathSize-1);
+        ThrowLastErrorIf(GetCurrentDirectory(absPathSize, const_cast<wchar_t*>(absPath.data())) == 0, "Failed getting full path.");
+        absPath = L"\\\\?\\" + absPath;
+
         std::queue<std::string> directories;
         auto PopFirst = [&directories]()
         {
@@ -134,7 +140,7 @@ namespace MSIX {
 
         // Enforce that directory structure exists before creating file at specified location.
         bool found = false;
-        std::string path = PopFirst();
+        std::string path = wstring_to_utf8(absPath) + GetPathSeparator() +PopFirst();
         do
         {
             WalkDirectory(path, WalkOptions::Directories, [&](
@@ -159,7 +165,7 @@ namespace MSIX {
                 if (!CreateDirectory(utf16Name.c_str(), nullptr))
                 {
                     auto lastError = GetLastError();
-                    ThrowWin32ErrorIfNot(lastError, (lastError == ERROR_ALREADY_EXISTS), "CreateDirectory");
+                    ThrowWin32ErrorIfNot(lastError, (lastError == ERROR_ALREADY_EXISTS), std::string("Call to CreateDirectory failed creating: " + path).c_str());
                 }
             }
             path = path + GetPathSeparator() + PopFirst();

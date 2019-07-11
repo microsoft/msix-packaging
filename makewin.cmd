@@ -43,6 +43,12 @@ if /I "%~2" == "--debug" (
 if /I "%~2" == "-d" (
     set build="Debug"
 )
+if /I "%~2" == "--symbols" (
+    set build="RelWithDebInfo"
+)
+if /I "%~2" == "-sym" (
+    set build="RelWithDebInfo"
+)
 if /I "%~2" == "--parser-xerces" (
     set parser="-DXML_PARSER=xerces"
 )

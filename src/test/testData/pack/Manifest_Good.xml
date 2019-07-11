@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package IgnorableNamespaces="mp uap uap3" xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10" xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3">
+    <Identity Name="CoolPublisher" Publisher="CN=CoolPublisher" Version="1.0.0.0"/>
+    <Properties>
+        <DisplayName>DisplayName</DisplayName>
+        <PublisherDisplayName>PublisherDisplayName</PublisherDisplayName>
+        <Description>Description</Description>
+        <Logo>Assets\StoreLogo.png</Logo>
+    </Properties>
+    <Dependencies>
+        <TargetDeviceFamily MaxVersionTested="11.0.0.0" MinVersion="11.0.0.0" Name="Windows.Universal"/>
+    </Dependencies>
+    <Resources>
+        <Resource Language="en-US"/>
+    </Resources>
+    <Applications>
+        <Application Id="App">
+            <uap:VisualElements AppListEntry="none" BackgroundColor="white" Description="Description" DisplayName="DisplayName" Square150x150Logo="images\squareTile-sdk.png" Square44x44Logo="images\smallTile-sdk.png"/>
+        </Application>
+    </Applications>
+</Package>

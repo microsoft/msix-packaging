@@ -11,7 +11,12 @@ static bool CompareComPtr(T* const& left, T* const& right)
     return (reinterpret_cast<const void* const&>(left) == reinterpret_cast<const void* const&>(right));
 }
 
+// Use this for fatal test errors
 #define REQUIRE_SUCCEEDED(__hr) { REQUIRE(__hr == S_OK ); }
+#define REQUIRE_FAILED(__hr)    { REQUIRE(__hr != S_OK ); }
 #define REQUIRE_HR(__exp, __hr) { REQUIRE(__hr == __exp ); }
 #define REQUIRE_NOT_NULL(__ptr) { REQUIRE(__ptr != nullptr); }
 #define REQUIRE_ARE_SAME(__left, __right) { REQUIRE(CompareComPtr(__left, __right)); }
+
+// Use this if the test can continue even if it fails
+#define CHECK_SUCCEDDED(__hr)   { CHECK(__hr == S_OK ); }

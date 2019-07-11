@@ -18,6 +18,7 @@
 #include "DirectoryObject.hpp"
 #include "MsixFeatureSelector.hpp"
 #include "ScopeExit.hpp"
+#include "StringHelper.hpp"
 
 #ifdef BUNDLE_SUPPORT
 #include "Applicability.hpp"
@@ -84,8 +85,7 @@ namespace MSIX {
             // not when bundle support is off.
             THROW_IF_BUNDLE_NOT_ENABLED
             #ifdef BUNDLE_SUPPORT
-            std::string pathInWindows(APPXBUNDLEMANIFEST_XML);
-            std::replace(pathInWindows.begin(), pathInWindows.end(), '/', '\\');
+            std::string pathInWindows = Helper::toBackSlash(APPXBUNDLEMANIFEST_XML);
             stream = m_appxBlockMap->GetValidationStream(pathInWindows, appxBundleManifestInContainer);
             m_appxBundleManifest = ComPtr<IVerifierObject>::Make<AppxBundleManifestObject>(factory, stream);
             m_isBundle = true;

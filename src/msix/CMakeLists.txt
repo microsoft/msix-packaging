@@ -98,6 +98,7 @@ list(APPEND MsixSrc
     common/AppxPackageInfo.cpp
     common/AppxManifestObject.cpp
     common/ZipObject.cpp
+    common/FileNameValidation.cpp
     common/AppxManifestValidation.cpp
     common/IXml.cpp
     common/StreamHelper.cpp

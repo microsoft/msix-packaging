@@ -104,6 +104,5 @@ namespace MSIX {
             ComPtr<IStream> m_stream;
             ULARGE_INTEGER m_pos;
         };
-
     }
 }

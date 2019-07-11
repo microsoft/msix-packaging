@@ -80,10 +80,13 @@ namespace MSIX {
         }
         WriterState;
 
-        void ProcessFileAndAddToPackage(const std::string& name, IStream* stream, 
-            APPX_COMPRESSION_OPTION compressionOpt, const char* contentType, 
-            bool forceContentTypeOverride, bool addToBlockMap = true);
-        bool IsFootPrintFile(std::string normalized);
+        void ValidateAndAddPayloadFile(const std::string& name, IStream* stream,
+            APPX_COMPRESSION_OPTION compressionOpt, const char* contentType);
+
+        void AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
+            bool addToBlockMap, const char* contentType, bool forceContentTypeOverride = false);
+
+        void ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt);
 
         WriterState m_state = WriterState::Open;
         ComPtr<IMsixFactory> m_factory;

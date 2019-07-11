@@ -19,7 +19,9 @@ set(MsixTestFiles)
 list(APPEND MsixTestFiles
     msixtest.cpp
     unpack.cpp
-    api_package.cpp
+    api_packagereader.cpp
+    api_manifestreader.cpp
+    api_blockmapreader.cpp
     testData/UnpackTestData.cpp
     testData/BlockMapTestData.cpp
 )
@@ -30,9 +32,17 @@ if(SKIP_BUNDLES)
 else()
     list(APPEND MsixTestFiles
         unbundle.cpp
-        api_bundle.cpp
+        api_bundlereader.cpp
+        api_bundlemanifestreader.cpp
         testData/UnbundleTestData.cpp
     )
+endif()
+
+if(MSIX_PACK)
+    list(APPEND MsixTestFiles
+        api_packagewriter.cpp
+        testData/PackTestData.cpp
+        )
 endif()
 
 if (WIN32)

@@ -5,6 +5,7 @@
 
 #include "XmlWriter.hpp"
 #include "ContentTypeWriter.hpp"
+#include "Encoding.hpp"
 #include "StreamHelper.hpp"
 #include "AppxFactory.hpp"
 
@@ -52,6 +53,9 @@ namespace MSIX {
         m_xmlWriter.Initialize(sourceXml, typesElement);
     }
 
+// File extension to MIME value map that are added as default elements
+// If the extension is already in the map and its content type is different or
+// if the file doesn't have an extensions AddOverride is called.
     void ContentTypeWriter::AddContentType(const std::string& name, const std::string& contentType, bool forceOverride)
     {
         // Skip the signature files if they are already present
@@ -61,28 +65,39 @@ namespace MSIX {
             return;
         }
 
+        auto percentageEncodedName = Encoding::EncodeFileName(name);
+
         if (forceOverride)
         {
-            AddOverride(name, contentType);
+            AddOverride(percentageEncodedName, contentType);
             return;
         }
 
-        // See if already exist
-        std::string ext = name.substr(name.find_last_of(".") + 1);
-        std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-        auto find = m_defaultExtensions.find(ext);
-        if (find != m_defaultExtensions.end())
+        auto findLastPeriod = percentageEncodedName.find_last_of(".");
+        if (findLastPeriod != std::string::npos)
         {
-            if (find->second != contentType)
+            // See if already exist
+            std::string ext = percentageEncodedName.substr(percentageEncodedName.find_last_of(".") + 1);
+            std::string normalizedExt = ext;
+            std::transform(normalizedExt.begin(), normalizedExt.end(), normalizedExt.begin(), ::tolower);
+            auto find = m_defaultExtensions.find(normalizedExt);
+            if (find != m_defaultExtensions.end())
             {
-                // The extension is in the table but with a different content type
-                AddOverride(name, contentType);
+                if (find->second != contentType)
+                {
+                    // The extension is in the table but with a different content type
+                    AddOverride(percentageEncodedName, contentType);
+                }
+            }
+            else
+            {
+                auto result = m_defaultExtensions.emplace(normalizedExt, contentType);
+                AddDefault(ext, contentType);
             }
         }
         else
         {
-            AddDefault(ext, contentType);
-            m_defaultExtensions.emplace(ext, contentType);
+            AddOverride(percentageEncodedName, contentType);
         }
     }
 

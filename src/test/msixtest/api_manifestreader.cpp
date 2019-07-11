@@ -2,168 +2,21 @@
 //  Copyright (C) 2019 Microsoft.  All rights reserved.
 //  See LICENSE file in the project root for full license information.
 // 
+//  Validates IAppxManifestReader interface and interfaces related to the AppxManifest.xml
 #include "catch.hpp"
 #include "msixtest_int.hpp"
 #include "FileHelpers.hpp"
-#include "UnpackTestData.hpp"
-#include "BlockMapTestData.hpp"
 #include "macros.hpp"
 
 #include <iostream>
 #include <array>
-
-void InitializePackageReader(const std::string& package, IAppxPackageReader** packageReader)
-{
-    *packageReader = nullptr;
-
-    auto packagePath = MsixTest::TestPath::GetInstance()->GetPath(MsixTest::TestPath::Directory::Unpack) + "/" + package;
-    packagePath = MsixTest::Directory::PathAsCurrentPlatform(packagePath);
-
-    MsixTest::ComPtr<IAppxFactory> factory;
-    MsixTest::ComPtr<IStream> inputStream;
-
-    REQUIRE_SUCCEEDED(CreateStreamOnFile(const_cast<char*>(packagePath.c_str()), true, &inputStream));
-    REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(MsixTest::Allocators::Allocate, MsixTest::Allocators::Free, MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &factory));
-    REQUIRE_SUCCEEDED(factory->CreatePackageReader(inputStream.Get(), packageReader));
-    REQUIRE_NOT_NULL(*packageReader);
-    return;
-}
-
-// Validates all payload files from the package are correct
-TEST_CASE("Api_AppxPackageReader_PayloadFiles", "[api]")
-{
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
-
-    // Expected files in the package
-    auto expectedFiles = MsixTest::Unpack::GetExpectedFiles();
-
-    MsixTest::ComPtr<IAppxFilesEnumerator> files;
-    REQUIRE_SUCCEEDED(packageReader->GetPayloadFiles(&files));
-    BOOL hasCurrent = FALSE;
-    REQUIRE_SUCCEEDED(files->GetHasCurrent(&hasCurrent));
-    while (hasCurrent)
-    {
-        MsixTest::ComPtr<IAppxFile> file;
-        REQUIRE_SUCCEEDED(files->GetCurrent(&file));
-
-        MsixTest::Wrappers::Buffer<wchar_t> fileName;
-        REQUIRE_SUCCEEDED(file->GetName(&fileName));
-        auto name = fileName.ToString();
-        std::replace(name.begin(), name.end(), '\\', '/'); // expected files uses / separator
-        auto find = expectedFiles.find(name);
-        REQUIRE(find != expectedFiles.end());
-        expectedFiles.erase(find);
-
-        MsixTest::ComPtr<IAppxFileUtf8> fileUtf8;
-        REQUIRE_SUCCEEDED(file->QueryInterface(UuidOfImpl<IAppxFileUtf8>::iid, reinterpret_cast<void**>(&fileUtf8)));
-        MsixTest::Wrappers::Buffer<char> fileNameUtf8;
-        REQUIRE_SUCCEEDED(fileUtf8->GetName(&fileNameUtf8));
-        REQUIRE(fileName.ToString() == fileNameUtf8.ToString());
-
-        // Compare that the file from GetPayloadFile is the same file
-        MsixTest::ComPtr<IAppxFile> file2;
-        REQUIRE_SUCCEEDED(packageReader->GetPayloadFile(fileName.Get(), &file2));
-        REQUIRE_ARE_SAME(file.Get(), file2.Get());
-
-        MsixTest::ComPtr<IAppxPackageReaderUtf8> packageReaderUtf8;
-        REQUIRE_SUCCEEDED(packageReader->QueryInterface(UuidOfImpl<IAppxPackageReaderUtf8>::iid, reinterpret_cast<void**>(&packageReaderUtf8)));
-        MsixTest::ComPtr<IAppxFile> file3;
-        REQUIRE_SUCCEEDED(packageReaderUtf8->GetPayloadFile(fileNameUtf8.Get(), &file3));
-        REQUIRE_ARE_SAME(file2.Get(), file3.Get());
-
-        REQUIRE_SUCCEEDED(files->MoveNext(&hasCurrent));
-    }
-    // The only files left should be footprint files
-    expectedFiles.erase(MsixTest::Constants::Package::AppxBlockMap.second);
-    expectedFiles.erase(MsixTest::Constants::Package::AppxManifest.second);
-    expectedFiles.erase(MsixTest::Constants::Package::AppxSignature.second);
-    expectedFiles.erase(MsixTest::Constants::Package::CodeIntegrity.second);
-    REQUIRE(expectedFiles.empty());
-}
-
-// Verifies a payload file information from the package
-TEST_CASE("Api_AppxPackageReader_PayloadFile", "[api]")
-{
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
-
-    MsixTest::ComPtr<IAppxFile> appxFile;
-
-    // Even on non windows, GetPayloadFile expects a '\'
-    std::string fileName = "Assets\\video_offline_demo_page2.jpg";
-    auto fileNameW = MsixTest::String::utf8_to_utf16(fileName);
-
-    REQUIRE_SUCCEEDED(packageReader->GetPayloadFile(fileNameW.c_str(), &appxFile));
-    REQUIRE_NOT_NULL(appxFile.Get());
-
-    MsixTest::Wrappers::Buffer<wchar_t> appxFileName;
-    REQUIRE_SUCCEEDED(appxFile->GetName(&appxFileName));
-    REQUIRE(fileName == appxFileName.ToString());
-
-    APPX_COMPRESSION_OPTION fileCompression;
-    REQUIRE_SUCCEEDED(appxFile->GetCompressionOption(&fileCompression));
-    REQUIRE(APPX_COMPRESSION_OPTION_NONE == fileCompression);
-
-    UINT64 fileSize;
-    REQUIRE_SUCCEEDED(appxFile->GetSize(&fileSize));
-    REQUIRE(78720 == static_cast<std::uint64_t>(fileSize));
-}
-
-// Validate a file is not in the package.
-TEST_CASE("Api_AppxPackageReader_PayloadFile_DoesNotExist", "[api]")
-{
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
-
-    MsixTest::ComPtr<IAppxFile> appxFile;
-    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::FileNotFound),
-        packageReader->GetPayloadFile(L"thisIsAFakeFile.txt", &appxFile));
-}
-
-// Validates a footprint files
-TEST_CASE("Api_AppxPackageReader_FootprintFile", "[api]")
-{
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
-
-    MsixTest::ComPtr<IAppxFile> appxBlockMap;
-    REQUIRE_SUCCEEDED(packageReader->GetFootprintFile(MsixTest::Constants::Package::AppxBlockMap.first, &appxBlockMap));
-    MsixTest::Wrappers::Buffer<wchar_t> appxBlockMapName;
-    REQUIRE_SUCCEEDED(appxBlockMap->GetName(&appxBlockMapName));
-    REQUIRE(MsixTest::Constants::Package::AppxBlockMap.second == appxBlockMapName.ToString());
-
-    MsixTest::ComPtr<IAppxFile> appxManifest;
-    REQUIRE_SUCCEEDED(packageReader->GetFootprintFile(MsixTest::Constants::Package::AppxManifest.first, &appxManifest));
-    MsixTest::Wrappers::Buffer<wchar_t> appxManifestName;
-    REQUIRE_SUCCEEDED(appxManifest->GetName(&appxManifestName));
-    REQUIRE(MsixTest::Constants::Package::AppxManifest.second == appxManifestName.ToString());
-
-    MsixTest::ComPtr<IAppxFile> appxSignature;
-    REQUIRE_SUCCEEDED(packageReader->GetFootprintFile(MsixTest::Constants::Package::AppxSignature.first, &appxSignature));
-    MsixTest::Wrappers::Buffer<wchar_t> appxSignatureName;
-    REQUIRE_SUCCEEDED(appxSignature->GetName(&appxSignatureName));
-    REQUIRE(MsixTest::Constants::Package::AppxSignature.second == appxSignatureName.ToString());
-
-    MsixTest::ComPtr<IAppxFile> appxCodeIntegrity;
-    REQUIRE_SUCCEEDED(packageReader->GetFootprintFile(MsixTest::Constants::Package::CodeIntegrity.first, &appxCodeIntegrity));
-    MsixTest::Wrappers::Buffer<wchar_t> appxCodeIntegrityName;
-    REQUIRE_SUCCEEDED(appxCodeIntegrity->GetName(&appxCodeIntegrityName));
-    auto codeIntegrityName = MsixTest::Constants::Package::CodeIntegrity.second;
-    std::replace(codeIntegrityName.begin(), codeIntegrityName.end(), '/', '\\');
-    REQUIRE(codeIntegrityName == appxCodeIntegrityName.ToString());
-}
 
 // Validates IAppxManifestReader::GetStream
 TEST_CASE("Api_AppxManifestReader_Stream", "[api]")
 {
     std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
+    MsixTest::InitializePackageReader(package, &packageReader);
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
     REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
     REQUIRE_NOT_NULL(manifestReader.Get());
@@ -178,7 +31,7 @@ TEST_CASE("Api_AppxManifestReader_Applications", "[api]")
 {
     std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
+    MsixTest::InitializePackageReader(package, &packageReader);
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
     REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
     REQUIRE_NOT_NULL(manifestReader.Get());
@@ -220,7 +73,7 @@ TEST_CASE("Api_AppxManifestReader_Properties", "[api]")
 {
     std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
+    MsixTest::InitializePackageReader(package, &packageReader);
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
     REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
     REQUIRE_NOT_NULL(manifestReader.Get());
@@ -290,7 +143,7 @@ TEST_CASE("Api_AppxManifestReader_PackageDependencies", "[api]")
 {
     std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
+    MsixTest::InitializePackageReader(package, &packageReader);
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
     REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
     REQUIRE_NOT_NULL(manifestReader.Get());
@@ -346,7 +199,7 @@ TEST_CASE("Api_AppxManifestReader_Capabilities", "[api][!hide]")
 {
     std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
+    MsixTest::InitializePackageReader(package, &packageReader);
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
     REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
     REQUIRE_NOT_NULL(manifestReader.Get());
@@ -367,7 +220,7 @@ TEST_CASE("Api_AppxManifestReader_Resources", "[api]")
 {
     std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
+    MsixTest::InitializePackageReader(package, &packageReader);
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
     REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
     REQUIRE_NOT_NULL(manifestReader.Get());
@@ -408,7 +261,7 @@ TEST_CASE("Api_AppxManifestReader_Tdf", "[api]")
 {
     std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
+    MsixTest::InitializePackageReader(package, &packageReader);
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
     REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
     REQUIRE_NOT_NULL(manifestReader.Get());
@@ -457,7 +310,7 @@ TEST_CASE("Api_AppxManifestReader_MsixDocument", "[api]")
 {
     std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
+    MsixTest::InitializePackageReader(package, &packageReader);
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
     REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
     REQUIRE_NOT_NULL(manifestReader.Get());
@@ -535,7 +388,7 @@ TEST_CASE("Api_AppxManifestReader_PackageId", "[api]")
 {
     std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
     MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
+    MsixTest::InitializePackageReader(package, &packageReader);
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
     REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
     REQUIRE_NOT_NULL(manifestReader.Get());
@@ -605,120 +458,4 @@ TEST_CASE("Api_AppxManifestReader_PackageId", "[api]")
     MsixTest::Wrappers::Buffer<char> packageFamilyNameUtf8;
     REQUIRE_SUCCEEDED(packageIdUtf8->GetPackageFamilyName(&packageFamilyNameUtf8));
     REQUIRE(expectedFamily == packageFamilyNameUtf8.ToString());
-}
-
-// Validates IAppxBlockMapReader::GetStream
-TEST_CASE("Api_AppxBlockMapReader_Stream", "[api]")
-{
-    std::string package = "TestAppxPackage_Win32.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
-    MsixTest::ComPtr<IAppxBlockMapReader> blockMapReader;
-    REQUIRE_SUCCEEDED(packageReader->GetBlockMap(&blockMapReader));
-    REQUIRE_NOT_NULL(blockMapReader.Get());
-
-    MsixTest::ComPtr<IStream> stream;
-    REQUIRE_SUCCEEDED(blockMapReader->GetStream(&stream));
-    REQUIRE_NOT_NULL(stream.Get());
-}
-
-// Validates all files information in the blockmap, IAppxBlockMapReaderUtf8, 
-// IAppxBlockMapFilesEnumerator, IAppxBlockMapFile and IAppxBlockMapBlock
-TEST_CASE("Api_AppxBlockMapReader_Files", "[api]")
-{
-    std::string package = "TestAppxPackage_Win32.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    InitializePackageReader(package, &packageReader);
-    MsixTest::ComPtr<IAppxBlockMapReader> blockMapReader;
-    REQUIRE_SUCCEEDED(packageReader->GetBlockMap(&blockMapReader));
-    REQUIRE_NOT_NULL(blockMapReader.Get());
-
-    auto expectedBlockMapFiles = MsixTest::BlockMap::GetExpectedBlockMapFiles();
-
-    MsixTest::ComPtr<IAppxBlockMapReaderUtf8> blockMapReaderUtf8;
-    REQUIRE_SUCCEEDED(blockMapReader->QueryInterface(UuidOfImpl<IAppxBlockMapReaderUtf8>::iid, reinterpret_cast<void**>(&blockMapReaderUtf8)));
-
-    MsixTest::ComPtr<IAppxBlockMapFilesEnumerator> blockMapFiles;
-    REQUIRE_SUCCEEDED(blockMapReader->GetFiles(&blockMapFiles));
-
-    BOOL hasCurrent = FALSE;
-    REQUIRE_SUCCEEDED(blockMapFiles->GetHasCurrent(&hasCurrent));
-    size_t numOfBlockMapFiles = 0;
-    while(hasCurrent)
-    {
-        MsixTest::ComPtr<IAppxBlockMapFile> blockMapFile;
-        REQUIRE_SUCCEEDED(blockMapFiles->GetCurrent(&blockMapFile));
-
-        auto expectedFile = expectedBlockMapFiles.at(numOfBlockMapFiles);
-
-        auto compareBlock = [](const std::vector<std::uint8_t>& expected, BYTE* buffer) -> bool
-        {
-            for(int i = 0; i < expected.size(); ++i)
-            {
-                if (expected[i] != static_cast<std::uint8_t>(buffer[i]))
-                {
-                    return false;
-                }
-            }
-            return true;
-        };
-
-        MsixTest::Wrappers::Buffer<wchar_t> fileName;
-        REQUIRE_SUCCEEDED(blockMapFile->GetName(&fileName));
-        REQUIRE(expectedFile.name == fileName.ToString());
-
-        MsixTest::ComPtr<IAppxBlockMapFileUtf8> blockMapFileUtf8;
-        REQUIRE_SUCCEEDED(blockMapFile->QueryInterface(UuidOfImpl<IAppxBlockMapFileUtf8>::iid, reinterpret_cast<void**>(&blockMapFileUtf8)));
-        MsixTest::Wrappers::Buffer<char> fileNameUtf8;
-        REQUIRE_SUCCEEDED(blockMapFileUtf8->GetName(&fileNameUtf8));
-        REQUIRE(expectedFile.name == fileNameUtf8.ToString());
-
-        MsixTest::ComPtr<IAppxBlockMapFile> blockMapFile2;
-        REQUIRE_SUCCEEDED(blockMapReader->GetFile(fileName.Get(), &blockMapFile2));
-        REQUIRE_ARE_SAME(blockMapFile.Get(), blockMapFile2.Get());
-
-        MsixTest::ComPtr<IAppxBlockMapFile> blockMapFile3;
-        REQUIRE_SUCCEEDED(blockMapReaderUtf8->GetFile(fileNameUtf8.Get(), &blockMapFile3));
-        REQUIRE_ARE_SAME(blockMapFile.Get(), blockMapFile3.Get());
-
-        UINT32 lfh = 0;
-        REQUIRE_SUCCEEDED(blockMapFile->GetLocalFileHeaderSize(&lfh));
-        REQUIRE(expectedFile.lfh == static_cast<std::uint32_t>(lfh));
-
-        UINT64 size = 0;
-        REQUIRE_SUCCEEDED(blockMapFile->GetUncompressedSize(&size));
-        REQUIRE(expectedFile.size == size);
-
-        // Compare blocks
-        MsixTest::ComPtr<IAppxBlockMapBlocksEnumerator> blockEnum;
-        REQUIRE_SUCCEEDED(blockMapFile->GetBlocks(&blockEnum));
-        BOOL hasCurrentBlock = FALSE;
-        REQUIRE_SUCCEEDED(blockEnum->GetHasCurrent(&hasCurrentBlock));
-        size_t numOfBlocks = 0;
-        while (hasCurrentBlock)
-        {
-            MsixTest::ComPtr<IAppxBlockMapBlock> block;
-            REQUIRE_SUCCEEDED(blockEnum->GetCurrent(&block));
-
-            auto expectedBlock = expectedFile.blocks[numOfBlocks];
-
-            UINT32 bufferSize = 0;
-            MsixTest::Wrappers::Buffer<BYTE> buffer;
-            REQUIRE_SUCCEEDED(block->GetHash(&bufferSize, &buffer));
-            REQUIRE(expectedBlock.hash.size() == bufferSize);
-            REQUIRE(compareBlock(expectedBlock.hash, buffer.Get()));
-
-            UINT32 compSize = 0;
-            REQUIRE_SUCCEEDED(block->GetCompressedSize(&compSize));
-            REQUIRE(expectedBlock.compressedSize == static_cast<std::uint32_t>(compSize));
-
-            REQUIRE_SUCCEEDED(blockEnum->MoveNext(&hasCurrentBlock));
-            numOfBlocks++;
-        }
-        REQUIRE(expectedFile.blocks.size() == numOfBlocks);
-
-        REQUIRE_SUCCEEDED(blockMapFiles->MoveNext(&hasCurrent));
-        numOfBlockMapFiles++;
-    }
-    REQUIRE(expectedBlockMapFiles.size() == numOfBlockMapFiles);
 }

@@ -60,6 +60,11 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
+        std::uint64_t GetSize() override
+        {
+            return static_cast<std::uint64_t>(m_data->size());
+        }
+
     protected:
         ULONG m_offset = 0;
         std::vector<std::uint8_t>* m_data;

@@ -24,16 +24,17 @@ namespace MSIX {
             bool isCompressed,
             std::uint64_t offset,
             std::uint64_t size,
-            const ComPtr<IStream>& stream // this is the actual zip file stream
-        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream), m_name(name)
+            IStream* stream // this is the actual zip file stream
+        ) : m_isCompressed(isCompressed), RangeStream(offset, size, stream), m_name(std::move(name))
         {
         }
 
         // Represents an stream to be added to the zip file (pack)
         ZipFileStream(
-            const std::string& name,
-            bool isCompressed
-        ) : m_isCompressed(isCompressed), m_name(name), RangeStream(isCompressed)
+            std::string name,
+            bool isCompressed,
+            IStream* stream
+        ) : m_isCompressed(isCompressed), m_name(std::move(name)), RangeStream(stream)
         {
             THROW_IF_PACK_NOT_ENABLED
         }
