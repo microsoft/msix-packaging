@@ -75,7 +75,7 @@ TEST_CASE("Pack_AppxManifestWrongLocation", "[pack]")
     RunPackTest(expected, directory);
 }
 
-// Fail if input directory exists
+// Fail if input directory does not exist
 TEST_CASE("Pack_DirectoryNotPresent", "[pack]")
 {
     HRESULT expected      = static_cast<HRESULT>(MSIX::Error::FileOpen);
