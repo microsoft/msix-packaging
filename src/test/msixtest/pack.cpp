@@ -11,7 +11,7 @@
 
 #include <iostream>
 
-constexpr char* outputPackage = "package.msix";
+static std::string outputPackage = "package.msix";
 
 void RunPackTest(HRESULT expected, const std::string& directory)
 {
@@ -27,7 +27,7 @@ void RunPackTest(HRESULT expected, const std::string& directory)
     HRESULT actual = PackPackage(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
                                  MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE,
                                  const_cast<char*>(directoryPath.c_str()),
-                                 outputPackage);
+                                 const_cast<char*>(outputPackage.c_str()));
 
     CHECK(expected == actual);
     MsixTest::Log::PrintMsixLog(expected, actual);
@@ -84,22 +84,6 @@ TEST_CASE("Pack_DirectoryNotPresent", "[pack]")
     RunPackTest(expected, directory);
 }
 
-// Fails if input parameters are null
-TEST_CASE("Pack_InvalidParameters", "[pack]")
-{
-    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidParameter),
-        PackPackage(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
-                    MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE,
-                    nullptr,
-                    "outputpackage.msix"));
-        
-    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidParameter),
-        PackPackage(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
-                    MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE,
-                    "directory",
-                    nullptr));
-}
-
 // Validates output file is deleted when failed.
 TEST_CASE("Pack_DeleteFileOnFailure", "[pack]")
 {
@@ -111,5 +95,21 @@ TEST_CASE("Pack_DeleteFileOnFailure", "[pack]")
     // input_wrong file contains a file with an invalid name, but the output stream
     // was already created. Verify is gone.
     MsixTest::ComPtr<IStream> stream;
-    REQUIRE_FAILED(CreateStreamOnFile(outputPackage, true, &stream));
+    REQUIRE_FAILED(CreateStreamOnFile(const_cast<char*>(outputPackage.c_str()), true, &stream));
+}
+
+// Fails if input parameters are null
+TEST_CASE("Pack_InvalidParameters", "[pack]")
+{
+    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidParameter),
+        PackPackage(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
+                    MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE,
+                    nullptr,
+                    const_cast<char*>(outputPackage.c_str())));
+        
+    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidParameter),
+        PackPackage(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
+                    MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE,
+                    const_cast<char*>(outputPackage.c_str()),
+                    nullptr));
 }

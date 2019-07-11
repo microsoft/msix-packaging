@@ -83,7 +83,7 @@ namespace MsixTest { namespace Pack {
         static const std::map<std::string, std::uint64_t> files = 
         {
             { "AppxBlockMap.xml", 1871 },
-            { "AppxManifest.xml", 3251 },
+            { "AppxManifest.xml", 3203 },
             { "resources.pri", 3760 },
             { "TestAppxPackage.exe", 186368 },
             { "TestAppxPackage.winmd", 3072 },
