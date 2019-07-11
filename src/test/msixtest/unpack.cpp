@@ -17,7 +17,7 @@ void RunUnpackTest(HRESULT expected, const std::string& package, MSIX_VALIDATION
 
     auto testData = MsixTest::TestPath::GetInstance();
 
-    auto packagePath = testData->GetPath(MsixTest::TestPath::Directory::Unpack) + "/" + std::string(package);
+    auto packagePath = testData->GetPath(MsixTest::TestPath::Directory::Unpack) + "/" + package;
     packagePath = MsixTest::Directory::PathAsCurrentPlatform(packagePath);
 
     auto outputDir = testData->GetPath(MsixTest::TestPath::Directory::Output);

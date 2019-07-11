@@ -39,7 +39,9 @@ else()
 endif()
 
 if(MSIX_PACK)
+    add_definitions(-DMSIX_PACK=1)
     list(APPEND MsixTestFiles
+        pack.cpp
         api_packagewriter.cpp
         testData/PackTestData.cpp
         )

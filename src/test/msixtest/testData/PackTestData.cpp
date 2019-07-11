@@ -9,6 +9,7 @@
 
 #include <array>
 #include <algorithm>
+#include <map>
 
 namespace MsixTest { namespace Pack {
 
@@ -70,7 +71,6 @@ namespace MsixTest { namespace Pack {
         REQUIRE_SUCCEEDED(contentStream->Seek(zero, STREAM_SEEK_SET, nullptr));
     }
 
-    
     void MakeManifestStream(IStream** manifestStream)
     {
         auto manifestPath = TestPath::GetInstance()->GetPath(TestPath::Directory::Pack) + "/" + "Manifest_Good.xml";
@@ -78,5 +78,29 @@ namespace MsixTest { namespace Pack {
         *manifestStream = stream.Detach(); 
     }
 
-
+    const std::map<std::string, std::uint64_t>& GetExpectedFiles()
+    {
+        static const std::map<std::string, std::uint64_t> files = 
+        {
+            { "AppxBlockMap.xml", 1871 },
+            // The file size differs from Windows and Unix systems (even before packing)
+            // It is possible that is related to LF and CRLF.
+            #ifdef WIN32
+            { "AppxManifest.xml", 3251 },
+            #else
+            { "AppxManifest.xml", 3203 },
+            #endif
+            { "resources.pri", 3760 },
+            { "TestAppxPackage.exe", 186368 },
+            { "TestAppxPackage.winmd", 3072 },
+            { "Assets/LockScreenLogo.scale-200.png", 1430 },
+            { "Assets/SplashScreen.scale-200.png", 7700 },
+            { "Assets/Square150x150Logo.scale-200.png", 2937 },
+            { "Assets/Square44x44Logo.scale-200.png", 1647 },
+            { "Assets/Square44x44Logo.targetsize-24_altform-unplated.png", 1255 },
+            { "Assets/StoreLogo.png", 1451 },
+            { "Assets/Wide310x150Logo.scale-200.png", 3204 }
+        };
+        return files;
+    }
 } }
