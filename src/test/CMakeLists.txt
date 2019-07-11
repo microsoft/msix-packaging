@@ -13,7 +13,30 @@ file(COPY "${MSIX_TEST_OUTPUT_DIRECTORY}/testData/unpack/flat/"
     DESTINATION "${MSIX_TEST_OUTPUT_DIRECTORY}/testData/unpack/badflat/"
     FILES_MATCHING
         PATTERN "*"
-        PATTERN "assets*" EXCLUDE
-)
+        PATTERN "assets*" EXCLUDE)
+
+if(MSIX_PACK)
+    # Remove AppxManifest.xml
+    file(COPY "${MSIX_TEST_OUTPUT_DIRECTORY}/testData/pack/input/"
+        DESTINATION "${MSIX_TEST_OUTPUT_DIRECTORY}/testData/pack/input_nomanifest/"
+        FILES_MATCHING
+            PATTERN "*"
+            PATTERN "AppxManifest.xml" EXCLUDE)
+    
+    # Remove AppxManifest.xml and add it it another folder
+    file(COPY "${MSIX_TEST_OUTPUT_DIRECTORY}/testData/pack/input/"
+        DESTINATION "${MSIX_TEST_OUTPUT_DIRECTORY}/testData/pack/input_misplace_manifest/"
+        FILES_MATCHING
+            PATTERN "*"
+            PATTERN "AppxManifest.xml" EXCLUDE)
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/testData/pack/input/AppxManifest.xml"
+         DESTINATION "${MSIX_TEST_OUTPUT_DIRECTORY}/testData/pack/input_misplace_manifest/folder/")
+
+    # Add bad file in the input directory
+    file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/testData/pack/input/"
+         DESTINATION "${MSIX_TEST_OUTPUT_DIRECTORY}/testData/pack/input_wrongfile")
+    file(WRITE "${MSIX_TEST_OUTPUT_DIRECTORY}/testData/pack/input_wrongfile/_Rels/.rels"
+        "This is a fake file")
+endif()
 
 add_subdirectory(msixtest)
