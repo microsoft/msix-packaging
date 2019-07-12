@@ -51,7 +51,7 @@ if(MSIX_PACK)
         )
     else()
         list(APPEND MsixTestFiles
-            PAL/Pack/nonWindows/PackValidation.cpp
+            PAL/Pack/NonWindows/PackValidation.cpp
         )
     endif()
 endif()
