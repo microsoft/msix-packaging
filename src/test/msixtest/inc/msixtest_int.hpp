@@ -184,6 +184,7 @@ namespace MsixTest {
         void Initialize(std::string fileName, bool toRead, bool toDelete = false);
         void Initialize(std::wstring fileName, bool toRead, bool toDelete = false);
 
+        inline IStream* operator->() const { return m_stream.Get(); }
         inline IStream* Get() const { return m_stream.Get(); }
         IStream* Detach()
         {
