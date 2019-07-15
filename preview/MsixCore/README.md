@@ -34,10 +34,14 @@ Sample packages can be found at msix-packaging/preview/MsixCore/tests; these can
 certutil -addstore root APPX_TEST_ROOT.cer
 ```
 
-Installation - Using command prompt or PowerShell, navigate to the directory that contains the executables and run the following command to install notepadplus.msix.
+Installation - Using command prompt or PowerShell, navigate to the directory that contains the executables and run the following command to install notepadplus.msix. The -quietUX parameter can also be added at the end ofthe command to switch on the capability.
 
 ```
 msixmgr.exe -AddPackage C:\SomeDirectory\notepadplus.msix
+```
+Querying for Installed MSIX Packages - 
+```
+msixmgr.exe -FindAllPackages
 ```
 
 Uninstallation - 
