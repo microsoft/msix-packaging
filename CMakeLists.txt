@@ -207,12 +207,8 @@ set(CMAKE_MACOSX_RPATH ON)
 #set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-add_subdirectory(lib)
-message(STATUS " ")
-message(STATUS "--------------------------------")
-message(STATUS "MSIX Packaging SDK")
-message(STATUS "--------------------------------")
 include(msix_options) # Validates CMake options.
+add_subdirectory(lib)
 message(STATUS "libs processed")
 add_subdirectory(src)
 message(STATUS "src processed")
