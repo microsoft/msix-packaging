@@ -1490,7 +1490,10 @@ enum MSIX_VALIDATION_OPTION
         MSIX_VALIDATION_OPTION_FULL                        = 0x0,
         MSIX_VALIDATION_OPTION_SKIPSIGNATURE               = 0x1,
         MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN = 0x2,
-        MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST            = 0x4,
+        MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST_DEPRECATED = 0x4, // AppxManifest.xml must be always be valid.
+                                                                  // If the SDK is compiled without USE_VALIDATION_PARSER,
+                                                                  // no schema validation is done, but it needs to be
+                                                                  // valid xml.
     }   MSIX_VALIDATION_OPTION;
 
 typedef /* [v1_enum] */

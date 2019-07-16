@@ -44,7 +44,7 @@ jobs:
         _arguments: -b MinSizeRel -sb
         _artifact: LINUX-nobundle
       release_validation_parser:
-        _arguments: -b MinSizeRel -vp --pack
+        _arguments: -b MinSizeRel -vp
         _artifact: LINUX-ValidationParser
       release_pack:
         _arguments: -b MinSizeRel --pack

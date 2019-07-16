@@ -17,7 +17,7 @@ usage()
     echo $'\t' "-parser-xerces          Use xerces xml parser instead of default apple xml parser."
     echo $'\t' "-asan                   Turn on address sanitizer for memory corruption detection."
     echo $'\t' "--validation-parser|-vp Enable XML schema validation."
-    echo $'\t' "--pack                  Include packaging features. Must be used with -xzlib"
+    echo $'\t' "--pack                  Include packaging features. Uses MSIX SDK Zlib and Xerces with validation parser on."
 }
 
 printsetup()
@@ -25,7 +25,7 @@ printsetup()
     echo "Build Type:" $build
     echo "Data Compression library:" $dataCompressionLib
     echo "Skip bundle support:" $bundle
-    echo "parser:" $xmlparserLib
+    echo "parser:" $xmlparser
     echo "Address Sanitizer:" $addressSanitizerFlag
     echo "Validation parser:" $validationParser
     echo "Pack support:" $pack 
@@ -50,6 +50,10 @@ while [ "$1" != "" ]; do
         -vp )   validationParser=on
                 ;;
         --pack ) pack=on
+                 dataCompressionLib=MSIX_SDK_zlib
+                 zlib="-DUSE_MSIX_SDK_ZLIB=on"
+                 xmlparser=xerces
+                 validationParser=on
                 ;;
         -h )    usage
                 exit

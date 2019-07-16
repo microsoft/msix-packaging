@@ -383,11 +383,6 @@ MSIX_VALIDATION_OPTION GetValidationOption(const Invocation& invocation)
 {
     MSIX_VALIDATION_OPTION validation = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
 
-    if (invocation.IsOptionPresent("-mv"))
-    {
-        validation |= MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST;
-    }
-
     if (invocation.IsOptionPresent("-ac"))
     {
         validation |= MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
@@ -461,7 +456,6 @@ Command CreateUnpackCommand()
             Option{ "-p", "Input package file path.", true, 1, "package" },
             Option{ "-d", "Output directory path.", true, 1, "directory" },
             Option{ "-pfn", "Unpacks all files to a subdirectory under the output path, named after the package full name." },
-            Option{ "-mv", "Skips manifest validation. By default manifest validation is enabled." },
             Option{ "-ac", "Allows any certificate. By default the signature origin must be known." },
             Option{ "-ss", "Skips enforcement of signed packages. By default packages must be signed." },
             // Identical behavior as -pfn. This option was created to create parity with unbundle's -pfn-flat option so that IT pros
@@ -498,7 +492,6 @@ Command CreateUnbundleCommand()
             Option{ "-p", "Input bundle file path.", true, 1, "bundle" },
             Option{ "-d", "Output directory path.", true, 1, "directory" },
             Option{ "-pfn", "Unpacks all files to a subdirectory under the output path, named after the package full name." },
-            Option{ "-mv", "Skips manifest validation. By default manifest validation is enabled." },
             Option{ "-ac", "Allows any certificate. By default the signature origin must be known." },
             Option{ "-ss", "Skips enforcement of signed packages. By default packages must be signed." },
             Option{ "-sl", "Skips matching packages with the language of the system. By default unpacked resources packages will match the system languages." },

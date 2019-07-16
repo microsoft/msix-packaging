@@ -11,7 +11,7 @@ usage()
     echo $'\t' "-b build_type           Default MinSizeRel"
     echo $'\t' "-sb                     Skip bundle support."
     echo $'\t' "--validation-parser|-vp Enable XML schema validation."
-    echo $'\t' "--pack                  Include packaging features."
+    echo $'\t' "--pack                  Include packaging features. Sets validation parser on."
 }
 
 printsetup()
@@ -37,7 +37,8 @@ while [ "$1" != "" ]; do
         -vp )   validationParser=on
                 ;;
         --pack ) pack=on
-                    ;;
+                 validationParser=on
+                 ;;
         * )     usage
                 exit 1
     esac
