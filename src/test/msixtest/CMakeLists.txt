@@ -45,6 +45,15 @@ if(MSIX_PACK)
         api_packagewriter.cpp
         testData/PackTestData.cpp
         )
+    if (WIN32)
+        list(APPEND MsixTestFiles
+            PAL/Pack/Windows/PackValidation.cpp
+        )
+    else()
+        list(APPEND MsixTestFiles
+            PAL/Pack/NonWindows/PackValidation.cpp
+        )
+    endif()
 endif()
 
 if (WIN32)

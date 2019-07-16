@@ -8,6 +8,7 @@
 #include "macros.hpp"
 #include "FileHelpers.hpp"
 #include "PackTestData.hpp"
+#include "PackValidation.hpp"
 
 #include <iostream>
 
@@ -40,21 +41,8 @@ TEST_CASE("Pack_Good", "[pack]")
 
     RunPackTest(expected, directory);
 
-    // verify output package exists
-    auto outputStream = MsixTest::StreamFile(outputPackage, true, true);
-
-    // Verify new package can be unpacked
-    auto outputDir = MsixTest::TestPath::GetInstance()->GetPath(MsixTest::TestPath::Directory::Output);
-    REQUIRE_SUCCEEDED(UnpackPackageFromStream(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
-                                              MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE,
-                                              outputStream.Get(),
-                                              const_cast<char*>(outputDir.c_str())));
-
-    auto files = MsixTest::Pack::GetExpectedFiles();
-    CHECK(MsixTest::Directory::CompareDirectory(outputDir, files));
-
-    // Clean directory
-    CHECK(MsixTest::Directory::CleanDirectory(outputDir));
+    // Verify output package
+    MsixTest::Pack::ValidatePackageStream(outputPackage);
 }
 
 // Fail if there's no AppxManifest.xml
