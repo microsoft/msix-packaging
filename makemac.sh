@@ -3,7 +3,7 @@
 build=MinSizeRel
 dataCompressionLib=libcompression
 bundle=off
-xmlparser=applexml
+xmlparserLib=applexml
 addressSanitizer=off
 validationParser=off
 pack=on
@@ -39,7 +39,8 @@ while [ "$1" != "" ]; do
         -xzlib )dataCompressionLib=MSIX_SDK_zlib
                 zlib="-DUSE_MSIX_SDK_ZLIB=on"
                 ;;
-        -parser-xerces ) xmlparser=xerces
+        -parser-xerces ) xmlparserLib=xerces
+                         xmlparser="-DXML_PARSER=xerces"
                          ;;
         -asan ) addressSanitizer=on
                 ;;
@@ -68,10 +69,10 @@ cd .vs
 find . -name *msix* -d | xargs rm -r
 
 echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DSKIP_BUNDLES="$bundle 
-echo "-DXML_PARSER="$xmlparser "-DASAN="$addressSanitizer "-DUSE_VALIDATION_PARSER="$validationParser 
+echo $xmlparser "-DASAN="$addressSanitizer "-DUSE_VALIDATION_PARSER="$validationParser 
 echo "-DMSIX_PACK="$pack "-DMACOS=on .."
 cmake -DCMAKE_BUILD_TYPE=$build \
-      -DXML_PARSER=$xmlparser \
+      $xmlparser \
       -DSKIP_BUNDLES=$bundle \
       -DASAN=$addressSanitizer \
       -DUSE_VALIDATION_PARSER=$validationParser \

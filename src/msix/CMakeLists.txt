@@ -150,10 +150,6 @@ endif()
 
 # Compression option
 if(((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
-    # We don't support using libcompression APIs for packaging.
-    if(MSIX_PACK)
-        message(FATAL_ERROR "Using libCompression APIs and packaging features is not supported.")
-    endif()
     message(STATUS "PAL: Compression     = libCompression")
     list(APPEND MsixSrc PAL/DataCompression/Apple/CompressionObject.cpp)
 else()
