@@ -31,7 +31,7 @@ option(USE_VALIDATION_PARSER "Turn on to validates using the resouce schemas. De
 option(USE_SHARED_ZLIB "Choose the type of dependency for zlib, Use the -DUSE_SHARED_ZLIB=on to have a shared dependency. Default is 'off' (static)" OFF)
 option(USE_STATIC_MSVC "Windows only. Pass /MT as a compiler flag to use the staic version of the run-time library. Default is 'off' (dynamic)" OFF)
 option(SKIP_BUNDLES "Removes bundle functionality from the MSIX SDK. Default is 'off'" OFF)
-option(MSIX_PACK "Include packaging features for the MSIX SDK. Not supported for mobile. Default is 'on'" ON)
+option(MSIX_PACK "Include packaging features for the MSIX SDK. Not supported for mobile. Default is 'off'" OFF)
 
 set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel.  Use the -DCMAKE_BUILD_TYPE=[option] to specify.")
 set(XML_PARSER "" CACHE STRING "Choose the type of parser, options are: [xerces, msxml6, javaxml].  Use the -DXML_PARSER=[option] to specify.")
