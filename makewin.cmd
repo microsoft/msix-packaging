@@ -84,6 +84,7 @@ if /I "%~2" == "-sb" (
 )
 if /I "%~2" == "--pack" (
     set pack="-DMSIX_PACK=on"
+    set validationParser="-DUSE_VALIDATION_PARSER=on"
 )
 shift /2
 if not "%~2"=="" goto parseArgs
@@ -114,7 +115,7 @@ echo    --shared-zlib, -sz       = Don't statically link zlib.
 echo    --crypto-openssl, -co    = Use OpenSSL crypto [currently for testing]. Default Crypt32.
 echo    -mt                      = Use compiler flag /MT to use static version of the run-time library.
 echo    --skip-bundles, -sb      = Turn off bundle support.
-echo    --pack                   = Include packaging features.
+echo    --pack                   = Include packaging features. Sets validation parser on.
 echo    --help, -h, /?           = Print this usage information and exit.
 :Exit
 EXIT /B 0

@@ -47,10 +47,10 @@ jobs:
         _arguments: x64
         _artifact: WIN32-x64
       release_32_validation_parser:
-        _arguments: x86 --validation-parser --pack
+        _arguments: x86 --validation-parser
         _artifact: WIN32ValidationParser
       release_64_validation_parser:
-        _arguments: x64 --validation-parser --pack
+        _arguments: x64 --validation-parser
         _artifact: WIN32-x64ValidationParser
       release_32_xerces:
         _arguments: x86 --parser-xerces --pack

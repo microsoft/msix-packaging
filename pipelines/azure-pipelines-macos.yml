@@ -43,11 +43,11 @@ jobs:
       release_nobundle:
         _arguments: -b MinSizeRel -sb
         _artifact: MACOS-nobundle
-      relaese_pack:
-        _arguments: -b MinSizeRel --pack -xzlib
+      release_pack:
+        _arguments: -b MinSizeRel --pack
         _artifact: MACOSchk-pack
       debug_pack:
-        _arguments: -b Debug --pack -xzlib
+        _arguments: -b Debug --pack
         _artifact: MACOSchk-pack
   steps:
   - task: Bash@3

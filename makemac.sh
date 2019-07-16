@@ -3,7 +3,7 @@
 build=MinSizeRel
 dataCompressionLib=libcompression
 bundle=off
-xmlparserLib=applexml
+xmlparser=applexml
 addressSanitizer=off
 validationParser=off
 pack=off
@@ -17,7 +17,7 @@ usage()
     echo $'\t' "-parser-xerces          Use xerces xml parser instead of default apple xml parser."
     echo $'\t' "-asan                   Turn on address sanitizer for memory corruption detection."
     echo $'\t' "--validation-parser|-vp Enable XML schema validation."
-    echo $'\t' "--pack                  Include packaging features. Must be used with -xzlib"
+    echo $'\t' "--pack                  Include packaging features. Uses MSIX SDK Zlib and Xerces with validation parser on."
 }
 
 printsetup()
@@ -39,8 +39,7 @@ while [ "$1" != "" ]; do
         -xzlib )dataCompressionLib=MSIX_SDK_zlib
                 zlib="-DUSE_MSIX_SDK_ZLIB=on"
                 ;;
-        -parser-xerces ) xmlparserLib=xerces
-                         xmlparser="-DXML_PARSER=xerces"
+        -parser-xerces ) xmlparser=xerces
                          ;;
         -asan ) addressSanitizer=on
                 ;;
@@ -51,6 +50,10 @@ while [ "$1" != "" ]; do
         -vp )   validationParser=on
                 ;;
         --pack ) pack=on
+                 dataCompressionLib=MSIX_SDK_zlib
+                 zlib="-DUSE_MSIX_SDK_ZLIB=on"
+                 xmlparser=xerces
+                 validationParser=on
                 ;;
         -h )    usage
                 exit
@@ -69,10 +72,10 @@ cd .vs
 find . -name *msix* -d | xargs rm -r
 
 echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DSKIP_BUNDLES="$bundle 
-echo $xmlparser "-DASAN="$addressSanitizer "-DUSE_VALIDATION_PARSER="$validationParser 
+echo "-DXML_PARSER="$xmlparser "-DASAN="$addressSanitizer "-DUSE_VALIDATION_PARSER="$validationParser 
 echo "-DMSIX_PACK="$pack "-DMACOS=on .."
 cmake -DCMAKE_BUILD_TYPE=$build \
-      $xmlparser \
+      -DXML_PARSER=$xmlparser \
       -DSKIP_BUNDLES=$bundle \
       -DASAN=$addressSanitizer \
       -DUSE_VALIDATION_PARSER=$validationParser \
