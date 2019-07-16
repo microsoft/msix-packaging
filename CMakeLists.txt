@@ -20,24 +20,6 @@ if(POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW)
 endif()
 
-# Set build options
-option(WIN32 "Build for Win32"   OFF)
-option(MACOS "Build for MacOS"   OFF)
-option(IOS   "Build for iOS"     OFF)
-option(AOSP  "Build for Android" OFF)
-option(LINUX "Build for Linux"   OFF)
-
-option(USE_VALIDATION_PARSER "Turn on to validates using the resouce schemas. Default (OFF) validates XML files are just valid XML" OFF)
-option(USE_SHARED_ZLIB "Choose the type of dependency for zlib, Use the -DUSE_SHARED_ZLIB=on to have a shared dependency. Default is 'off' (static)" OFF)
-option(USE_STATIC_MSVC "Windows only. Pass /MT as a compiler flag to use the staic version of the run-time library. Default is 'off' (dynamic)" OFF)
-option(SKIP_BUNDLES "Removes bundle functionality from the MSIX SDK. Default is 'off'" OFF)
-option(MSIX_PACK "Include packaging features for the MSIX SDK. Not supported for mobile. Default is 'off'" OFF)
-option(USE_MSIX_SDK_ZLIB "Use zlib implementation under lib/zlib. If off, uses inbox compression library. For Windows and Linux this is no-opt." OFF)
-
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel.  Use the -DCMAKE_BUILD_TYPE=[option] to specify.")
-set(XML_PARSER "" CACHE STRING "Choose the type of parser, options are: [xerces, msxml6, javaxml].  Use the -DXML_PARSER=[option] to specify.")
-set(CRYPTO_LIB "" CACHE STRING "Choose the cryptography library to use, options are: [openssl, crypt32].  Use the -DCRYPTO_LIB=[option] to specify.")
-
 # Default version is 0.0.0
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "0")
@@ -92,25 +74,20 @@ set(MSIX_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 message(STATUS "MSIX Packaging SDK version ${MSIX_VERSION}")
 message(STATUS "MSIX Packaging SDK branch name ${GIT_BRANCH_NAME}")
 add_definitions(-DSDK_VERSION="${MSIX_VERSION}")
+# Validates CMake options.
+include(msix_options)
 
 # Configure Package.nuspec
 if(WIN32)
-    message(STATUS "Building for WIN32")
     set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.Windows")
 elseif(MACOS)
-    message(STATUS "Building for MacOS")
     set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.MacOS")
 elseif(IOS)
-    message(STATUS "Building for iOS")
     set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.iOS")
 elseif(AOSP)
-    message(STATUS "Building for Android")
     set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.AOSP")
-elseif(LINUX)
-    message(STATUS "Building for Linux")
-    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.Linux")
 else()
-    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging") # cmake ..
+    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.Linux")
 endif()
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Package.nuspec.cmakein ${CMAKE_CURRENT_BINARY_DIR}/Package.nuspec CRLF)
@@ -207,7 +184,6 @@ set(CMAKE_MACOSX_RPATH ON)
 #set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-include(msix_options) # Validates CMake options.
 add_subdirectory(lib)
 message(STATUS "libs processed")
 add_subdirectory(src)
