@@ -81,7 +81,7 @@ else()
         )
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/src/msix ${CMAKE_CURRENT_SOURCE_DIR}/inc)
+target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/src/msix ${CMAKE_PROJECT_ROOT}/lib/catch2 ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
 # Output test binaries into a test directory
 set_target_properties(${PROJECT_NAME} PROPERTIES
