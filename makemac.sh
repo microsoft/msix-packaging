@@ -25,7 +25,7 @@ printsetup()
     echo "Build Type:" $build
     echo "Data Compression library:" $dataCompressionLib
     echo "Skip bundle support:" $bundle
-    echo "parser:" $xmlparserLib
+    echo "parser:" $xmlparser
     echo "Address Sanitizer:" $addressSanitizerFlag
     echo "Validation parser:" $validationParser
     echo "Pack support:" $pack 
