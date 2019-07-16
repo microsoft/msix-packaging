@@ -103,13 +103,13 @@ namespace MSIX {
         m_lastLFH = std::make_pair(static_cast<std::uint64_t>(pos.QuadPart), std::move(lfh));
         m_state = ZipObjectWriter::State::ReadyForFile;
 
-        ComPtr<IStream> zipStream = ComPtr<IStream>::Make<ZipFileStream>(name, isCompressed, m_stream.Get());
+        ComPtr<IStream> newZipStream = ComPtr<IStream>::Make<ZipFileStream>(name, isCompressed, zipStream.Get());
         if (isCompressed)
         {
-            zipStream = ComPtr<IStream>::Make<DeflateStream>(zipStream);
+            newZipStream = ComPtr<IStream>::Make<DeflateStream>(newZipStream);
         }
 
-        return std::make_pair(static_cast<std::uint32_t>(m_lastLFH.second.Size()), std::move(zipStream));
+        return std::make_pair(static_cast<std::uint32_t>(m_lastLFH.second.Size()), std::move(newZipStream));
     }
 
     void ZipObjectWriter::EndFile(std::uint32_t crc, std::uint64_t compressedSize, std::uint64_t uncompressedSize, bool forceDataDescriptor)
@@ -129,18 +129,18 @@ namespace MSIX {
         else
         {
             // The sizes can fit in the LFH, rewrite it with the new data
-            Helper::StreamPositionReset resetAfterLFHWrite{ m_stream.Get() };
+            Helper::StreamPositionReset resetAfterLFHWrite{ zipStream.Get() };
 
             LARGE_INTEGER lfhLocation;
             lfhLocation.QuadPart = static_cast<LONGLONG>(m_lastLFH.first);
-            ThrowHrIfFailed(m_stream->Seek(lfhLocation, StreamBase::Reference::START, nullptr));
+            ThrowHrIfFailed(zipStream->Seek(lfhLocation, StreamBase::Reference::START, nullptr));
 
             // We cannot change the size of the LFH, ensure that we don't accidentally
             size_t currentSize = m_lastLFH.second.Size();
             m_lastLFH.second.SetData(crc, compressedSize, uncompressedSize);
             ThrowErrorIf(Error::Unexpected, currentSize != m_lastLFH.second.Size(), "Cannot change the LFH size when updating it");
 
-            m_lastLFH.second.WriteTo(m_stream);
+            m_lastLFH.second.WriteTo(zipStream);
         }
 
         // Create and add cdh to map

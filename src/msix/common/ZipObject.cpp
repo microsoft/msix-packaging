@@ -587,7 +587,7 @@ ComPtr<IStream> ZipObject::GetFile(const std::string& fileName)
             targetCD.GetCompressionMethod() == CompressionType::Deflate,
             targetCD.GetRelativeOffsetOfLocalHeader() + lfh.Size(),
             targetCD.GetCompressedSize(),
-            m_stream
+            m_stream.Get()
             );
 
         if (targetCD.GetCompressionMethod() == CompressionType::Deflate)
@@ -654,7 +654,7 @@ MSIX::ComPtr<IStream> ZipObject::GetEntireZipFileStream(const std::string& fileN
     LocalFileHeader lfh = LocalFileHeader();
     lfh.Read(m_stream.Get(), targetCD);
 
-    return ComPtr<IStream>::Make<RangeStream>(targetCD.GetRelativeOffsetOfLocalHeader(), lfh.Size() + targetCD.GetCompressedSize(), m_stream);
+    return ComPtr<IStream>::Make<RangeStream>(targetCD.GetRelativeOffsetOfLocalHeader(), lfh.Size() + targetCD.GetCompressedSize(), m_stream.Get());
 }
 
 } // namespace MSIX
