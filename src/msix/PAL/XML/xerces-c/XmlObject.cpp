@@ -399,6 +399,7 @@ public:
         auto entityResolver = std::make_unique<MsixEntityResolver>(m_factory, s_xmlNamespaces[static_cast<std::uint8_t>(footPrintType)]);
         m_parser->setErrorHandler(errorHandler.get());
         m_parser->setXMLEntityResolver(entityResolver.get());
+        m_parser->setDoNamespaces(true);
 
         if (!schemas.empty())
         {
@@ -410,7 +411,6 @@ public:
             m_parser->setValidationScheme(XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Always);
             m_parser->cacheGrammarFromParse(true);
             m_parser->setDoSchema(true);
-            m_parser->setDoNamespaces(true);
             m_parser->setValidationSchemaFullChecking(true);
             // Disable DTD and prevent XXE attacks.  See https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#libxerces-c for additional details.
             m_parser->setIgnoreCachedDTD(true);
