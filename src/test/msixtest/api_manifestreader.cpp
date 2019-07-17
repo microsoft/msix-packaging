@@ -192,10 +192,7 @@ TEST_CASE("Api_AppxManifestReader_PackageDependencies", "[api]")
 }
 
 // Validates manifest capabilities IAppxManifestReader::GetCapabilities
-// NOTE: There's currently a bug in non-windows devices were we only return
-// the elements that doesn't the same namespace as the xmlns of the manifest.
-// TODO: fix...
-TEST_CASE("Api_AppxManifestReader_Capabilities", "[api][!hide]")
+TEST_CASE("Api_AppxManifestReader_Capabilities", "[api]")
 {
     std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
     MsixTest::ComPtr<IAppxPackageReader> packageReader;

@@ -208,14 +208,14 @@ namespace MSIX {
                 contextProperties->wasFound = true;
                 return true;
             });
-            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Package_Properties_Framework, visitorBool);
+            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Child_Framework, visitorBool);
             if (!contextPropertiesBool.wasFound)
             {   // False is default value for Framework
                 context->boolValues->insert(std::pair<std::string, bool>(contextPropertiesBool.value, false));
             }
             contextPropertiesBool.value = "ResourcePackage";
             contextPropertiesBool.wasFound = false;
-            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Package_Properties_ResourcePackage, visitorBool);
+            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Child_ResourcePackage, visitorBool);
             if (!contextPropertiesBool.wasFound)
             {   // False is default value for ResourcePackage
                 context->boolValues->insert(std::pair<std::string, bool>(contextPropertiesBool.value, false));
