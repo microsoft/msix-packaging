@@ -2,14 +2,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27703.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MsixCoreInstaller", "MsixCoreInstaller\MsixCoreInstaller.vcxproj", "{AAD31763-5E65-47FD-958A-08E35AB83025}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msixmgr", "msixmgr\msixmgr.vcxproj", "{AAD31763-5E65-47FD-958A-08E35AB83025}"
 	ProjectSection(ProjectDependencies) = postProject
 		{46BE19BD-72E0-4452-9919-33A1F8A5F064} = {46BE19BD-72E0-4452-9919-33A1F8A5F064}
 	EndProjectSection
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "MsixCoreInstallerSetup", "MsixCoreInstallerSetup\MsixCoreInstallerSetup.vdproj", "{C79C79A4-00CE-40C8-BCCE-A5C8F28A4E8D}"
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "msixmgrSetup", "msixmgrSetup\msixmgrSetup.vdproj", "{C79C79A4-00CE-40C8-BCCE-A5C8F28A4E8D}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "MsixCoreInstallerLib", "MsixCoreInstallerLib\MsixCoreInstallerLib.vcxproj", "{46BE19BD-72E0-4452-9919-33A1F8A5F064}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "msixmgrLib", "msixmgrLib\msixmgrLib.vcxproj", "{46BE19BD-72E0-4452-9919-33A1F8A5F064}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B0C6E315-832B-4665-B979-4111A8C2F93B}"
 	ProjectSection(SolutionItems) = preProject

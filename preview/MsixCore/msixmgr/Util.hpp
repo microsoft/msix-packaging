@@ -7,6 +7,6 @@
 /// Helper to get string resource
 ///
 /// @param resourceId - resource ID, these should be listed in resource.h
-/// @return string for the resource, resolved from the stringtable defined in MsixCoreInstaller.rc
+/// @return string for the resource, resolved from the stringtable defined in msixmgr.rc
 std::wstring GetStringResource(UINT resourceId);
 

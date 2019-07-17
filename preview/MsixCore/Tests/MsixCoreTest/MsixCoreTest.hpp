@@ -1,5 +1,5 @@
 #pragma once
-#include "MsixCoreInstallerActions.hpp"
+#include "msixmgrActions.hpp"
 
 /// This class tests the API surface of the Msixcorelib PackageManager interface.
 /// This uses the TAEF (test-authoring and execution framework) available from the WDK.
