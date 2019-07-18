@@ -274,10 +274,15 @@ HRESULT VirtualFileHandler::RemoveVfsFile(std::wstring fileName)
     std::wstring fullPath;
     if (FAILED(ConvertVfsNameToFullPath(fileName, fullPath)))
     {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Could not find VFS mapping",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(fileName.c_str(), "fileName"));
         return S_OK;
     }
 
-    if (!DeleteFile(fullPath.c_str()))
+    bool success = DeleteFile(fullPath.c_str());
+    if (!success)
     {
         TraceLoggingWrite(g_MsixTraceLoggingProvider,
             "Unable to Delete file",
@@ -286,32 +291,53 @@ HRESULT VirtualFileHandler::RemoveVfsFile(std::wstring fileName)
             TraceLoggingValue(GetLastError(), "error"));
     }
 
-    MsixCoreLib_GetPathParent(fullPath);
-
-    // instead of checking if the directory is empty, just try to delete it.
-    // if it's not empty it'll fail with expected error code that we can ignore
-    if (!RemoveDirectory(fullPath.c_str()))
+    while (success)
     {
-        DWORD error = GetLastError();
-        if (error != ERROR_DIR_NOT_EMPTY)
+        MsixCoreLib_GetPathParent(fullPath);
+
+        // instead of checking if the directory is empty, just try to delete it.
+        // if it's not empty it'll fail with expected error code that we can ignore
+        success = RemoveDirectory(fullPath.c_str());
+        if (!success)
         {
-            TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                "Unable to Delete directory",
-                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-                TraceLoggingValue(fullPath.c_str(), "FullPath"),
-                TraceLoggingValue(GetLastError(), "error"));
+            DWORD error = GetLastError();
+            if (error != ERROR_DIR_NOT_EMPTY)
+            {
+                TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                    "Unable to Delete directory",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(fullPath.c_str(), "FullPath"),
+                    TraceLoggingValue(GetLastError(), "error"));
+            }
         }
+        // if we're successfull in deleting the directory, try to delete the containing directory too, in case it's now empty
     }
+    
+    return S_OK;
+}
+
+HRESULT VirtualFileHandler::ConvertVfsNameToFullPath(std::wstring fileName, std::wstring& targetFullPath)
+{
+    //Convert filename "VFS\FirstDir\...\file.ext" to remainingFilePath  to "FirstDir\...\file.ext"
+    std::wstring remainingFilePath = fileName;
+    MsixCoreLib_GetPathChild(remainingFilePath); // remove the VFS directory
+    RETURN_IF_FAILED(ConvertRemainingPathToFullPath(remainingFilePath, targetFullPath));
 
     return S_OK;
 }
 
-HRESULT VirtualFileHandler::ConvertVfsNameToFullPath(std::wstring sourceFullPath, std::wstring& targetFullPath)
+HRESULT VirtualFileHandler::ConvertVfsFullPathToFullPath(std::wstring sourceFullPath, std::wstring& targetFullPath)
 {
-    //Convert sourceFullPath "c:\program files\MsixCoreApps\<package>\VFS\FirstDir\...\file.ext" to remainingFilePath  to "\...\file.ext"
-    std::wstring vfsDirectoryPath = m_msixRequest->GetPackageDirectoryPath() + L"\\VFS";
+    //Convert sourceFullPath "c:\program files\MsixCoreApps\<package>\VFS\FirstDir\...\file.ext" to remainingFilePath  to "FirstDir\...\file.ext"
+    std::wstring vfsDirectoryPath = m_msixRequest->GetPackageDirectoryPath() + L"\\VFS\\";
     std::wstring remainingFilePath = sourceFullPath.substr(vfsDirectoryPath.size(), sourceFullPath.size());
+    RETURN_IF_FAILED(ConvertRemainingPathToFullPath(remainingFilePath, targetFullPath));
 
+    return S_OK;
+}
+
+HRESULT VirtualFileHandler::ConvertRemainingPathToFullPath(std::wstring& remainingFilePath, std::wstring& targetFullPath)
+{
     std::map<std::wstring, std::wstring> map = FilePathMappings::GetInstance().GetMap();
     for (auto& pair : map)
     {
@@ -327,11 +353,6 @@ HRESULT VirtualFileHandler::ConvertVfsNameToFullPath(std::wstring sourceFullPath
         }
     }
 
-    TraceLoggingWrite(g_MsixTraceLoggingProvider,
-        "Could not find VFS mapping",
-        TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-        TraceLoggingValue(sourceFullPath.c_str(), "SourceFullPath"));
-
     return E_NOT_SET;
 }
 
@@ -342,8 +363,12 @@ HRESULT VirtualFileHandler::CopyVfsFileToLocal(std::wstring sourceFullPath)
         TraceLoggingValue(sourceFullPath.c_str(), "FileName"));
     
     std::wstring targetFullPath;
-    if (FAILED(ConvertVfsNameToFullPath(sourceFullPath, targetFullPath)))
+    if (FAILED(ConvertVfsFullPathToFullPath(sourceFullPath, targetFullPath)))
     {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Could not find VFS mapping",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(sourceFullPath.c_str(), "SourceFullPath"));
         return S_OK;
     }
 

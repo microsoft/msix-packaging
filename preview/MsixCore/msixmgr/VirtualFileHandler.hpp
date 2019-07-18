@@ -57,12 +57,27 @@ namespace MsixCoreLib
         /// @param fileName - the VFS file name
         HRESULT RemoveVfsFile(std::wstring fileName);
 
-        /// Resolves the VFS file to the real location
+        /// Resolves the VFS file (relative to the package root) to the real location
         ///
-        /// @param fileName - the VFS file name
-        /// @param fileFullPath - the real location full path
+        /// @param fileName - the VFS file name relative to the package root, i.e. VFS\FirstDir\...\File.ext
+        /// @param targetFullPath - the real location full path
         /// @return E_NOT_SET if the VFS name cannot be found in the mapping.
-        HRESULT ConvertVfsNameToFullPath(std::wstring sourceFullPath, std::wstring &fileFullPath);
+        HRESULT ConvertVfsNameToFullPath(std::wstring sourceFullPath, std::wstring &targetFullPath);
+
+        /// Resolves the full file path of a VFS file to the real location
+        ///
+        /// @param sourceFullPath - the full path of the VFS file, i.e. C:\Program Files\MsixCoreApps\<package>\VFS\FirstDir\...\File.ext
+        /// @param targetFullPath - the real location full path
+        /// @return E_NOT_SET if the VFS name cannot be found in the mapping.
+        HRESULT ConvertVfsFullPathToFullPath(std::wstring sourceFullPath, std::wstring & targetFullPath);
+
+        /// Helper used by both ConvertVfsNameToFullPath and ConvertVfsFullPathToFullPath to convert the normalized remainingFilePath
+        /// into the real location. 
+        ///
+        /// @param remainingFilePath - the remainder of the path inside the VFS directory, i.e. FirstDir\...\File.ext
+        /// @param targetFullPath - the real location full path
+        /// @return E_NOT_SET if the VFS name cannot be found in the mapping.
+        HRESULT ConvertRemainingPathToFullPath(std::wstring& remainingFilePath, std::wstring& targetFullPath);
 
         /// Removes all VFS files in the package
         HRESULT RemoveVfsFiles();
