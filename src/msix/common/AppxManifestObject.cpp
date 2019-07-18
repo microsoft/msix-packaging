@@ -269,20 +269,17 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidParameter, (capabilities == nullptr), "bad pointer.");
 
-        // Parse Capability elements.
         APPX_CAPABILITIES appxCapabilities = static_cast<APPX_CAPABILITIES>(0);
-        XmlVisitor visitorCapabilities(static_cast<void*>(&appxCapabilities), [](void* c, const ComPtr<IXmlElement>& capabilitiesNode)->bool
+        auto capabilitiesNames = GetCapabilities(APPX_CAPABILITY_CLASS_GENERAL);
+        for (const auto& capability : capabilitiesNames)
         {
-            APPX_CAPABILITIES* capabilities = reinterpret_cast<APPX_CAPABILITIES*>(c);
-            auto name = capabilitiesNode->GetAttributeValue(XmlAttributeName::Name);
-            const auto& capabilityEntry = std::find(std::begin(capabilitiesList), std::end(capabilitiesList), name.c_str());
+            const auto& capabilityEntry = std::find(std::begin(capabilitiesList), std::end(capabilitiesList), capability.c_str());
+            // Don't fail if not found as it can be custom capability or from a different namespace.
             if (capabilityEntry != std::end(capabilitiesList))
-            {   // Don't fail if not found as it can be custom capabilities.
-                *capabilities = static_cast<APPX_CAPABILITIES>((*capabilities) | (*capabilityEntry).value);
+            {
+                appxCapabilities = static_cast<APPX_CAPABILITIES>((appxCapabilities) | (*capabilityEntry).value);
             }
-            return true;
-        });
-        m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Capabilities_Capability, visitorCapabilities);
+        }
         *capabilities = appxCapabilities;
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -365,7 +362,12 @@ namespace MSIX {
         APPX_CAPABILITY_CLASS_TYPE capabilityClass,
         IAppxManifestCapabilitiesEnumerator **capabilities) noexcept
     {
-        return static_cast<HRESULT>(Error::NotImplemented);
+        ThrowErrorIf(Error::InvalidParameter, (capabilities == nullptr), "bad pointer.");
+
+        *capabilities = nullptr;
+        auto capabilitiesNames = GetCapabilities(capabilityClass);
+        *capabilities = ComPtr<IAppxManifestCapabilitiesEnumerator>::Make<EnumeratorString<IAppxManifestCapabilitiesEnumerator, IAppxManifestCapabilitiesEnumeratorUtf8>>(m_factory.Get(), capabilitiesNames).Detach();
+        return static_cast<HRESULT>(Error::OK);
     }
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetTargetDeviceFamilies(IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept try
@@ -383,4 +385,88 @@ namespace MSIX {
         *documentElement = m_dom->GetDocument().As<IMsixElement>().Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
+
+    // Helper to get capabilities from the manifest
+    std::vector<std::string> AppxManifestObject::GetCapabilities(APPX_CAPABILITY_CLASS_TYPE capabilityClass)
+    {
+        // Windows code returns E_INVALIDARG for APPX_CAPABILITY_CLASS_DEFAULT.
+        ThrowErrorIf(Error::InvalidParameter, capabilityClass > APPX_CAPABILITY_CLASS_CUSTOM || capabilityClass < APPX_CAPABILITY_CLASS_GENERAL, 
+            "Invalid capability class.");
+
+        std::vector<std::string> capabilitiesNames;
+        struct _context
+        {
+            APPX_CAPABILITY_CLASS_TYPE capabilityClass;
+            std::vector<std::string>* capabilitiesNames;
+        };
+        _context context = { capabilityClass, &capabilitiesNames};
+
+        // Parse Capability elements.
+        if (capabilityClass != APPX_CAPABILITY_CLASS_CUSTOM)
+        {
+            XmlVisitor visitorCapabilities(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& capabilitiesNode)->bool
+            {
+                _context* context = reinterpret_cast<_context*>(c);
+                std::string namespaceAlias = capabilitiesNode->GetPrefix();
+                if (namespaceAlias.empty())
+                {
+                    // If no prefix then default namespace for AppxManifest is win10foundation.
+                    namespaceAlias = "win10foundation";
+                }
+                auto name = capabilitiesNode->GetAttributeValue(XmlAttributeName::Name);
+
+                if (context->capabilityClass & APPX_CAPABILITY_CLASS_GENERAL)
+                {
+                    if (namespaceAlias == "foundation" ||
+                        namespaceAlias == "uap" ||
+                        namespaceAlias == "win10foundation" ||
+                        namespaceAlias == "win10uap" ||
+                        namespaceAlias == "uap2" ||
+                        namespaceAlias == "uap3" ||
+                        namespaceAlias == "uap4" ||
+                        namespaceAlias == "uap6" ||
+                        namespaceAlias == "uap7" ||
+                        namespaceAlias == "win10mobile")
+                    {
+                        context->capabilitiesNames->push_back(name);
+                    }
+                }
+
+                if (context->capabilityClass & APPX_CAPABILITY_CLASS_RESTRICTED)
+                { 
+                    if (namespaceAlias == "rescap" ||
+                        namespaceAlias == "win10rescap")
+                    {
+                        context->capabilitiesNames->push_back(name);
+                    }
+                }
+
+                if (context->capabilityClass & APPX_CAPABILITY_CLASS_WINDOWS)
+                {
+                    if (namespaceAlias == "wincap" ||
+                        namespaceAlias == "win10wincap")
+                    {
+                        context->capabilitiesNames->push_back(name);
+                    }
+                }
+
+                return true;
+            });
+            m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Capabilities_Capability, visitorCapabilities);
+        }
+
+        if (capabilityClass == APPX_CAPABILITY_CLASS_CUSTOM || capabilityClass == APPX_CAPABILITY_CLASS_ALL)
+        {
+            XmlVisitor visitorCustomCapabilities(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& capabilitiesNode)->bool
+            {
+                _context* context = reinterpret_cast<_context*>(c);
+                auto name = capabilitiesNode->GetAttributeValue(XmlAttributeName::Name);
+                context->capabilitiesNames->push_back(name);
+                return true;
+            });
+            m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Capabilities_CustomCapability, visitorCustomCapabilities);
+        }
+
+        return capabilitiesNames;
+    }
 }

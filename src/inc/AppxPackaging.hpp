@@ -1219,6 +1219,7 @@ interface IAppxManifestPackageDependencyUtf8;
 interface IAppxManifestPackageIdUtf8;
 interface IAppxManifestPropertiesUtf8;
 interface IAppxManifestQualifiedResourceUtf8;
+interface IAppxManifestCapabilitiesEnumeratorUtf8;
 interface IAppxManifestResourcesEnumeratorUtf8;
 interface IAppxManifestTargetDeviceFamilyUtf8;
 interface IAppxPackageReaderUtf8;
@@ -1403,6 +1404,19 @@ interface IAppxPackageWriter3Utf8;
             /* [retval][string][out] */  LPSTR *language) noexcept = 0;
     };
 #endif 	/* __IAppxManifestQualifiedResourceUtf8_INTERFACE_DEFINED__ */
+
+#ifndef __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__
+#define __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__
+
+    // {cc422f8e-a4d9-4f2e-bb49-ac3a5ce2a2f0}
+    MSIX_INTERFACE(IAppxManifestCapabilitiesEnumeratorUtf8,0xcc422f8e,0xa4d9,0x4f2e,0xbb,0x49,0xac,0x3a,0x5c,0xe2,0xa2,0xf0);
+    interface IAppxManifestCapabilitiesEnumeratorUtf8 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetCurrent(
+            /* [retval][string][out] */ LPSTR *resource) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestResourcesEnumeratorUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestResourcesEnumeratorUtf8_INTERFACE_DEFINED__

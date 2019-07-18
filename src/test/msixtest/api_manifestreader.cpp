@@ -212,6 +212,52 @@ TEST_CASE("Api_AppxManifestReader_Capabilities", "[api]")
     REQUIRE(expected == capabilities);
 }
 
+// Validates manifest capabilities IAppxManifestReader::GetCapabilitiesByCapabilityClass
+TEST_CASE("Api_AppxManifestReader_GetCapabilitiesByCapabilityClass", "[api]")
+{
+    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
+    MsixTest::ComPtr<IAppxPackageReader> packageReader;
+    MsixTest::InitializePackageReader(package, &packageReader);
+    MsixTest::ComPtr<IAppxManifestReader> manifestReader;
+    REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
+    REQUIRE_NOT_NULL(manifestReader.Get());
+    MsixTest::ComPtr<IAppxManifestReader3> manifestReader3;
+    REQUIRE_SUCCEEDED(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader3>::iid, reinterpret_cast<void**>(&manifestReader3)));
+
+    std::vector<std::string> expectedValues = 
+    {
+        "internetClient",
+        "privateNetworkClientServer",
+        "videosLibrary",
+        "removableStorage",
+        "enterpriseDataPolicy",
+        "previewStore",
+    };
+
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumerator> capabilities;
+    REQUIRE_SUCCEEDED(manifestReader3->GetCapabilitiesByCapabilityClass(APPX_CAPABILITY_CLASS_ALL, &capabilities));
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumeratorUtf8> capabilitiesUtf8;
+    REQUIRE_SUCCEEDED(capabilities->QueryInterface(UuidOfImpl<IAppxManifestCapabilitiesEnumeratorUtf8>::iid, reinterpret_cast<void**>(&capabilitiesUtf8)));
+
+    BOOL hasCurrent = FALSE;
+    REQUIRE_SUCCEEDED(capabilities->GetHasCurrent(&hasCurrent));
+    std::size_t numOfCaps = 0;
+    while (hasCurrent)
+    {
+        MsixTest::Wrappers::Buffer<wchar_t> capability;
+        REQUIRE_SUCCEEDED(capabilities->GetCurrent(&capability));
+        REQUIRE(expectedValues[numOfCaps] == capability.ToString());
+
+        MsixTest::Wrappers::Buffer<char> capabilityUtf8;
+        REQUIRE_SUCCEEDED(capabilitiesUtf8->GetCurrent(&capabilityUtf8));
+        REQUIRE(expectedValues[numOfCaps] == capabilityUtf8.ToString());
+
+        REQUIRE_SUCCEEDED(capabilities->MoveNext(&hasCurrent));
+        numOfCaps++;
+    }
+    REQUIRE(expectedValues.size() == numOfCaps);
+}
+
 // Validates manifest resources. IAppxManifestResourcesEnumerator and IAppxManifestResourcesEnumeratorUtf8
 TEST_CASE("Api_AppxManifestReader_Resources", "[api]")
 {

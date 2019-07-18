@@ -274,7 +274,22 @@ public:
     {
         DOMNode* node = dynamic_cast<DOMNode*>(m_element);
         XercesCharPtr value(XMLString::transcode(node->getTextContent()));
-        return std::string(value.Get());
+        if (value.Get() != nullptr)
+        {
+            return std::string(value.Get());
+        }
+        return {};
+    }
+
+    std::string GetPrefix() override
+    {
+        DOMNode* node = dynamic_cast<DOMNode*>(m_element);
+        XercesCharPtr value(XMLString::transcode(node->getPrefix()));
+        if (value.Get() != nullptr)
+        {
+            return std::string(value.Get());
+        }
+        return {};
     }
 
     // IXercesElement
