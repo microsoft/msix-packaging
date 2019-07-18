@@ -43,6 +43,9 @@ public:
         getTextContentFunc = m_env->GetMethodID(
                 xmlElementClass.get(), "GetTextContent",
                 "()Ljava/lang/String;");
+        getPrefixFunc = m_env->GetMethodID(
+                xmlElementClass.get(), "GetPrefix",
+                "()Ljava/lang/String;");
         getElementsByTagNameFunc = m_env->GetMethodID(
                 xmlElementClass.get(), "GetElementsByTagName",
                 "(Ljava/lang/String;)[Lcom/microsoft/msix/XmlElement;");
@@ -68,6 +71,16 @@ public:
     {
         std::unique_ptr<_jstring, JObjectDeleter> jvalue(reinterpret_cast<jstring>(m_env->CallObjectMethod(m_javaXmlElementObject.get(), getTextContentFunc)));
         return GetStringFromJString(jvalue.get());
+    }
+
+    std::string GetPrefix() override
+    {
+        std::unique_ptr<_jstring, JObjectDeleter> jvalue(reinterpret_cast<jstring>(m_env->CallObjectMethod(m_javaXmlElementObject.get(), getPrefixFunc)));
+        if (jvalue.get() != nullptr)
+        {
+            return GetStringFromJString(jvalue.get());
+        }
+        return {};
     }
 
     // IJavaXmlElement
@@ -130,6 +143,7 @@ private:
     std::unique_ptr<_jobject, JObjectDeleter> m_javaXmlElementObject;
     jmethodID getAttributeValueFunc = nullptr;
     jmethodID getTextContentFunc = nullptr;
+    jmethodID getPrefixFunc = nullptr;
     jmethodID getElementsByTagNameFunc = nullptr;
     jmethodID getElementsFunc = nullptr;
     JNIEnv* m_env = nullptr;

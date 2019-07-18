@@ -24,11 +24,16 @@
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict {
     std::unique_ptr<MSIX::XmlNode> node(new MSIX::XmlNode());
 
-    node->NodeName = std::string([elementName UTF8String]);
-    std::size_t semiColon = node->NodeName.find_first_of(':');
+    std::string nodeName = std::string([elementName UTF8String]);
+    std::size_t semiColon = nodeName.find_first_of(':');
     if (semiColon != std::string::npos)
     {
-        node->NodeName = node->NodeName.substr(semiColon + 1);
+        node->NodeName = nodeName.substr(semiColon + 1);
+        node->Prefix = nodeName.substr(0, semiColon);
+    }
+    else
+    {
+        node->NodeName = nodeName;
     }
     if (qName)
     {
