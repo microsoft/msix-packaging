@@ -187,6 +187,7 @@
     <ClInclude Include="..\msixmgr\ValidateTargetDeviceFamily.hpp" />
     <ClInclude Include="..\msixmgr\FirewallRules.hpp" />
     <ClInclude Include="..\msixmgr\Windows10Redirector.hpp" />
+    <ClInclude Include="..\msixmgr\VirtualFileHandler.hpp" />
     <ClInclude Include="inc\IMsixResponse.hpp" />
     <ClInclude Include="inc\DeploymentOptions.hpp" />
     <ClInclude Include="..\msixmgr\Extractor.hpp" />
@@ -226,6 +227,7 @@
     <ClCompile Include="..\msixmgr\ValidateTargetDeviceFamily.cpp" />
     <ClCompile Include="..\msixmgr\FirewallRules.cpp" />
     <ClCompile Include="..\msixmgr\Windows10Redirector.cpp" />
+    <ClCompile Include="..\msixmgr\VirtualFileHandler.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="..\msixmgr\MsixResponse.cpp" />
     <ClCompile Include="MsixTraceLoggingProvider.cpp" />

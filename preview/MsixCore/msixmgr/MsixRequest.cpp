@@ -35,6 +35,7 @@
 #include "PrepareDevirtualizedRegistry.hpp"
 #include "WriteDevirtualizedRegistry.hpp"
 #include "FirewallRules.hpp"
+#include "VirtualFileHandler.hpp"
 
 #include "Constants.hpp"
 
@@ -70,7 +71,8 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {ValidateTargetDeviceFamily::HandlerName,   {ValidateTargetDeviceFamily::CreateHandler,   ProcessPotentialUpdate::HandlerName,       ReturnError,         nullptr}},
     {ProcessPotentialUpdate::HandlerName,       {ProcessPotentialUpdate::CreateHandler,       Extractor::HandlerName,                    ReturnError,         nullptr}},
     {Extractor::HandlerName,                    {Extractor::CreateHandler,                    PrepareDevirtualizedRegistry::HandlerName, ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, VirtualFileHandler::HandlerName,           ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {VirtualFileHandler::HandlerName,           {VirtualFileHandler::CreateHandler,           WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   StartMenuLink::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartMenuLink::HandlerName,                {StartMenuLink::CreateHandler,                AddRemovePrograms::HandlerName,            ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            Protocol::HandlerName,                     ExecuteErrorHandler, ErrorHandler::HandlerName}},
@@ -96,7 +98,8 @@ std::map<PCWSTR, RemoveHandlerInfo> RemoveHandlers =
     {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                   IgnoreAndProcessNextHandler}},
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,           IgnoreAndProcessNextHandler}},
     {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          FirewallRules::HandlerName,                 IgnoreAndProcessNextHandler}},
-    {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                WriteDevirtualizedRegistry::HandlerName,    IgnoreAndProcessNextHandler}},
+    {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                VirtualFileHandler::HandlerName,            IgnoreAndProcessNextHandler}},
+    {VirtualFileHandler::HandlerName,           {VirtualFileHandler::CreateHandler,           WriteDevirtualizedRegistry::HandlerName,    IgnoreAndProcessNextHandler}},
     {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
     {Extractor::HandlerName,                    {Extractor::CreateHandler,                    nullptr,                                    IgnoreAndProcessNextHandler}},
 };

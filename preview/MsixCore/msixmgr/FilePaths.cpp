@@ -84,6 +84,7 @@ HRESULT FilePathMappings::InitializePaths()
     TextOle<WCHAR> commonAppDataPath;
     TextOle<WCHAR> localAppDataPath;
     TextOle<WCHAR> appDataPath;
+    TextOle<WCHAR> commonProgramsPath;
     
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_SystemX86, 0, NULL, &systemX86Path));
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_System, 0, NULL, &systemPath));
@@ -92,6 +93,7 @@ HRESULT FilePathMappings::InitializePaths()
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_Windows, 0, NULL, &windowsPath));
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_ProgramData, 0, NULL, &commonAppDataPath));
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, NULL, &appDataPath));
+    RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_CommonPrograms, 0, NULL, &commonProgramsPath));
     
     std::wstring appVSystem32CatrootPath = std::wstring(systemPath.Get());
     std::wstring appVSystem32Catroot2Path = std::wstring(systemPath.Get());
@@ -116,6 +118,7 @@ HRESULT FilePathMappings::InitializePaths()
     m_map[L"ProgramFilesCommonX86"] = std::wstring(programFilesCommonX86Path.Get());
     m_map[L"Windows"] = std::wstring(windowsPath.Get());
     m_map[L"Common AppData"] = std::wstring(commonAppDataPath.Get());
+    m_map[L"Common Programs"] = std::wstring(commonProgramsPath.Get());
     m_map[L"AppData"] = std::wstring(appDataPath.Get());
     m_map[L"AppVSystem32Catroot"] = appVSystem32CatrootPath;
     m_map[L"AppVSystem32Catroot2"] = appVSystem32Catroot2Path;
@@ -123,8 +126,6 @@ HRESULT FilePathMappings::InitializePaths()
     m_map[L"AppVSystems32Driverstore"] = appVSystem32DriverstorePath;
     m_map[L"AppVSystems32Logfiles"] = appVSystem32LogfilesPath;
     m_map[L"AppVSystems32Spool"] = appVSystem32SpoolPath;
-    // m_map[L"Common Programs"] is explicitly not supported because files in this directory will show up in the start menu for all users.
-    // StartMenuLink will instead create links for apps declared in the appxmanifest
 
 #ifdef _WIN64
     TextOle<WCHAR> programFilesX64Path;

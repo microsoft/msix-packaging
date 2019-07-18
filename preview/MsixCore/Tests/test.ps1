@@ -68,7 +68,7 @@ ShowTestHeader("Trusted Package succeeds")
 certutil -addstore root APPX_TEST_ROOT.cer > $null
 $output = & $executable -AddPackage notepadplus.msix -quietUx
 $notepadDir = "C:\program files (x86)\notepad++"
-$startLink = "$env:appdata\Microsoft\Windows\Start Menu\Programs\notepad++.lnk"
+$startLink = "$env:allusersprofile\Microsoft\Windows\Start Menu\Programs\notepad++.lnk"
 if ($output -eq $null)
 {
 	$notepadExists = (test-path $notepadDir\notepad++.exe)
