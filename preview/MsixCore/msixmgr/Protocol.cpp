@@ -151,7 +151,7 @@ HRESULT Protocol::ProcessProtocolForAdd(ProtocolData& protocol)
     RegistryKey commandKey;
     RETURN_IF_FAILED(openKey.CreateSubKey(commandKeyName.c_str(), KEY_WRITE, &commandKey));
 
-    std::wstring command = m_msixRequest->GetPackageDirectoryPath() + L"\\" + m_msixRequest->GetPackageInfo()->GetRelativeExecutableFilePath();
+    std::wstring command = m_msixRequest->GetPackageInfo()->GetResolvedExecutableFilePath();
     if (protocol.parameters.c_str() != nullptr)
     {
         command += std::wstring(L" ") + protocol.parameters;
@@ -192,7 +192,7 @@ bool Protocol::IsCurrentlyAssociatedWithPackage(PCWSTR name)
         return false;
     }
 
-    std::wstring executablePath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + m_msixRequest->GetPackageInfo()->GetRelativeExecutableFilePath();
+    std::wstring executablePath = m_msixRequest->GetPackageInfo()->GetResolvedExecutableFilePath();
     std::wstring currentlyAssociatedExe;
     if (SUCCEEDED(protocolExeKey.GetStringValue(L"", currentlyAssociatedExe)))
     {

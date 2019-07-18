@@ -63,6 +63,18 @@ namespace MsixCoreLib
     /// https://docs.microsoft.com/en-us/windows/desktop/SysInfo/targeting-your-application-at-windows-8-1
     BOOL IsWindows10RS3OrLater();
 
+    /// Replaces all oldchars in input with newchar
+    ///
+    /// @param input   - The input string that contains the characters to be changed
+    /// @param oldchar - Old character that are to be replaced
+    /// @param newchar - New character that replaces oldchar
+    void replace(std::wstring& input, const wchar_t oldchar, const wchar_t newchar);
+
+    /// Makes a directory, including all parent directories based on the inputted filepath
+    ///
+    /// @param utf16Path - The filepath to create a directory in utf16
+    int mkdirp(std::wstring& utf16Path);
+
     //
     // Stripped down ComPtr class provided for those platforms that do not already have a ComPtr class.
     //
