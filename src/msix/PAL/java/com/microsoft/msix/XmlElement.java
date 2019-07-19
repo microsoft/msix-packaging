@@ -37,7 +37,7 @@ public class XmlElement {
     }
 
     public String GetPrefix() {
-        return m_element.getPrefix();
+        return m_element.getNodeName(); // getPrefix keep returning null
     }
 
     public XmlElement[] GetElementsByTagName(String name) {

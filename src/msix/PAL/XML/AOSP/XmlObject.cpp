@@ -78,7 +78,12 @@ public:
         std::unique_ptr<_jstring, JObjectDeleter> jvalue(reinterpret_cast<jstring>(m_env->CallObjectMethod(m_javaXmlElementObject.get(), getPrefixFunc)));
         if (jvalue.get() != nullptr)
         {
-            return GetStringFromJString(jvalue.get());
+            std::string nodeName = GetStringFromJString(jvalue.get());
+            std::size_t semiColon = nodeName.find_first_of(':');
+            if (semiColon != std::string::npos)
+            {
+                return nodeName.substr(0, semiColon);
+            }
         }
         return {};
     }
