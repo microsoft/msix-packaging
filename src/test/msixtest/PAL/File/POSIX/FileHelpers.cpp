@@ -125,7 +125,7 @@ namespace MsixTest {
         std::string PathAsAbsolute(const std::string& path)
         {
             char result[PATH_MAX];
-            REQUIRE(realpath(path.c_str(), result));
+            REQUIRE_NOT_NULL(realpath(path.c_str(), result));
             return std::string{ result };
         }
     }
