@@ -88,6 +88,8 @@
 		4C14834E228F69D800EAED24 /* libmsixtest.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 4C14834C228F69C400EAED24 /* libmsixtest.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4C14D5D52204CC2A0034C5CE /* libmsix.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 4C14D5D32204CC2A0034C5CE /* libmsix.dylib */; };
 		4C14D5D72204CC400034C5CE /* libmsix.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 4C14D5D32204CC2A0034C5CE /* libmsix.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
+		4CD2FBB122E2733E0059BF30 /* Sample_AppxManifest.xml in Resources */ = {isa = PBXBuildFile; fileRef = 4CD2FBB022E2733E0059BF30 /* Sample_AppxManifest.xml */; };
+		4CD2FBB322E273680059BF30 /* Sample_AppxManifest.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CD2FBB022E2733E0059BF30 /* Sample_AppxManifest.xml */; };
 		EEE4055020225CDF007B25CE /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4054F20225CDF007B25CE /* AppDelegate.m */; };
 		EEE4055320225CDF007B25CE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4055220225CDF007B25CE /* ViewController.m */; };
 		EEE4055620225CDF007B25CE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEE4055420225CDF007B25CE /* Main.storyboard */; };
@@ -220,6 +222,16 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		4CD2FBB222E273560059BF30 /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = testData/manifest;
+			dstSubfolderSpec = 7;
+			files = (
+				4CD2FBB322E273680059BF30 /* Sample_AppxManifest.xml in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		EEE4056820225E11007B25CE /* Copy Files */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -323,6 +335,7 @@
 		4C14834C228F69C400EAED24 /* libmsixtest.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsixtest.dylib; path = ../../../../.vs/msixtest/libmsixtest.dylib; sourceTree = "<group>"; };
 		4C148353228F881000EAED24 /* msixtest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = msixtest.hpp; path = ../../../msixtest/inc/msixtest.hpp; sourceTree = "<group>"; };
 		4C14D5D32204CC2A0034C5CE /* libmsix.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsix.dylib; path = ../../../../.vs/lib/libmsix.dylib; sourceTree = "<group>"; };
+		4CD2FBB022E2733E0059BF30 /* Sample_AppxManifest.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Sample_AppxManifest.xml; path = ../manifest/Sample_AppxManifest.xml; sourceTree = "<group>"; };
 		EEE4054B20225CDF007B25CE /* iOSBVT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSBVT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EEE4054E20225CDF007B25CE /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		EEE4054F20225CDF007B25CE /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -351,6 +364,7 @@
 		4C14829F228F682100EAED24 /* testData */ = {
 			isa = PBXGroup;
 			children = (
+				4CD2FBAF22E2730D0059BF30 /* manifest */,
 				4C1482A0228F682100EAED24 /* unpack */,
 			);
 			name = testData;
@@ -498,6 +512,15 @@
 			name = Frameworks;
 			sourceTree = "<group>";
 		};
+		4CD2FBAF22E2730D0059BF30 /* manifest */ = {
+			isa = PBXGroup;
+			children = (
+				4CD2FBB022E2733E0059BF30 /* Sample_AppxManifest.xml */,
+			);
+			name = manifest;
+			path = "New Group";
+			sourceTree = "<group>";
+		};
 		EEE4054220225CDE007B25CE = {
 			isa = PBXGroup;
 			children = (
@@ -549,6 +572,7 @@
 				4C148321228F68BC00EAED24 /* CopyFiles */,
 				4C148336228F690D00EAED24 /* CopyFiles */,
 				4C148338228F695A00EAED24 /* CopyFiles */,
+				4CD2FBB222E273560059BF30 /* CopyFiles */,
 			);
 			buildRules = (
 			);
@@ -599,6 +623,7 @@
 			files = (
 				EEE4055820225CDF007B25CE /* Assets.xcassets in Resources */,
 				EEE4055620225CDF007B25CE /* Main.storyboard in Resources */,
+				4CD2FBB122E2733E0059BF30 /* Sample_AppxManifest.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
