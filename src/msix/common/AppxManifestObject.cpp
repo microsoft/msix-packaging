@@ -9,6 +9,8 @@
 #include "Encoding.hpp"
 #include "Enumerators.hpp"
 
+#include <array>
+
 namespace MSIX {
 
     template<typename T>
@@ -238,7 +240,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetPackageDependencies(IAppxManifestPackageDependenciesEnumerator **dependencies) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (dependencies == nullptr || *dependencies != nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (dependencies == nullptr || *dependencies != nullptr), "bad pointer");
         std::vector<ComPtr<IAppxManifestPackageDependency>> packageDependencies;
         struct _context
         {
@@ -267,7 +269,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetCapabilities(APPX_CAPABILITIES *capabilities) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (capabilities == nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (capabilities == nullptr), "bad pointer");
 
         APPX_CAPABILITIES appxCapabilities = static_cast<APPX_CAPABILITIES>(0);
         auto capabilitiesNames = GetCapabilities(APPX_CAPABILITY_CLASS_GENERAL);
@@ -286,7 +288,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetResources(IAppxManifestResourcesEnumerator **resources) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (resources == nullptr || *resources != nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (resources == nullptr || *resources != nullptr), "bad pointer");
         // Parse Resource elements.
         std::vector<std::string> appxResources;
         XmlVisitor visitorResource(static_cast<void*>(&appxResources), [](void* r, const ComPtr<IXmlElement>& resourceNode)->bool
@@ -314,7 +316,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetApplications(IAppxManifestApplicationsEnumerator **applications) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (applications == nullptr || *applications != nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (applications == nullptr || *applications != nullptr), "bad pointer");
 
         std::vector<ComPtr<IAppxManifestApplication>> apps;
         struct _context
@@ -362,7 +364,7 @@ namespace MSIX {
         APPX_CAPABILITY_CLASS_TYPE capabilityClass,
         IAppxManifestCapabilitiesEnumerator **capabilities) noexcept
     {
-        ThrowErrorIf(Error::InvalidParameter, (capabilities == nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (capabilities == nullptr), "bad pointer");
 
         *capabilities = nullptr;
         auto capabilitiesNames = GetCapabilities(capabilityClass);
@@ -372,7 +374,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetTargetDeviceFamilies(IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (targetDeviceFamilies == nullptr || *targetDeviceFamilies != nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (targetDeviceFamilies == nullptr || *targetDeviceFamilies != nullptr), "bad pointer");
         *targetDeviceFamilies = ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator>::
             Make<EnumeratorCom<IAppxManifestTargetDeviceFamiliesEnumerator,IAppxManifestTargetDeviceFamily>>(m_tdf).Detach();
         return static_cast<HRESULT>(Error::OK);
@@ -389,17 +391,16 @@ namespace MSIX {
     // Helper to get capabilities from the manifest
     std::vector<std::string> AppxManifestObject::GetCapabilities(APPX_CAPABILITY_CLASS_TYPE capabilityClass)
     {
-        // Windows code returns E_INVALIDARG for APPX_CAPABILITY_CLASS_DEFAULT.
-        ThrowErrorIf(Error::InvalidParameter, capabilityClass > APPX_CAPABILITY_CLASS_CUSTOM || capabilityClass < APPX_CAPABILITY_CLASS_GENERAL, 
+        ThrowErrorIf(Error::InvalidParameter, capabilityClass > APPX_CAPABILITY_CLASS_CUSTOM || capabilityClass < APPX_CAPABILITY_CLASS_DEFAULT, 
             "Invalid capability class.");
 
         std::vector<std::string> capabilitiesNames;
         struct _context
         {
             APPX_CAPABILITY_CLASS_TYPE capabilityClass;
-            std::vector<std::string>* capabilitiesNames;
+            std::vector<std::string>& capabilitiesNames;
         };
-        _context context = { capabilityClass, &capabilitiesNames};
+        _context context = { capabilityClass, capabilitiesNames};
 
         // Parse Capability elements.
         if (capabilityClass != APPX_CAPABILITY_CLASS_CUSTOM)
@@ -407,46 +408,67 @@ namespace MSIX {
             XmlVisitor visitorCapabilities(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& capabilitiesNode)->bool
             {
                 _context* context = reinterpret_cast<_context*>(c);
-                std::string namespaceAlias = capabilitiesNode->GetPrefix();
-                if (namespaceAlias.empty())
-                {
-                    // If no prefix then default namespace for AppxManifest is win10foundation.
-                    namespaceAlias = "win10foundation";
-                }
+                std::string prefix = capabilitiesNode->GetPrefix();
                 auto name = capabilitiesNode->GetAttributeValue(XmlAttributeName::Name);
 
-                if (context->capabilityClass & APPX_CAPABILITY_CLASS_GENERAL)
+                static std::array<std::string, 11> generalCapabilities = 
                 {
-                    if (namespaceAlias == "foundation" ||
-                        namespaceAlias == "uap" ||
-                        namespaceAlias == "win10foundation" ||
-                        namespaceAlias == "win10uap" ||
-                        namespaceAlias == "uap2" ||
-                        namespaceAlias == "uap3" ||
-                        namespaceAlias == "uap4" ||
-                        namespaceAlias == "uap6" ||
-                        namespaceAlias == "uap7" ||
-                        namespaceAlias == "win10mobile")
+                    "foundation",
+                    "uap",
+                    "win10foundation",
+                    "win10uap",
+                    "uap2",
+                    "uap3",
+                    "uap4",
+                    "uap6",
+                    "uap7",
+                    "win10mobile",
+                    "", // If no prefix then default namespace for AppxManifest is win10foundation.
+                };
+
+                static std::array<std::string, 2> restrictedCapabilities = 
+                {
+                    "rescap",
+                    "win10rescap",
+                };
+
+                static std::array<std::string, 2> windowsCapabilities = 
+                {
+                    "wincap",
+                    "win10wincap",
+                };
+
+                if (context->capabilityClass == APPX_CAPABILITY_CLASS_GENERAL ||
+                    context->capabilityClass == APPX_CAPABILITY_CLASS_DEFAULT ||
+                    context->capabilityClass == APPX_CAPABILITY_CLASS_ALL)
+                {
+                    auto found = std::find(generalCapabilities.begin(), generalCapabilities.end(), prefix);
+                    if (found != generalCapabilities.end())
                     {
-                        context->capabilitiesNames->push_back(name);
+                        context->capabilitiesNames.push_back(name);
+                        return true;
                     }
                 }
 
-                if (context->capabilityClass & APPX_CAPABILITY_CLASS_RESTRICTED)
+                if (context->capabilityClass == APPX_CAPABILITY_CLASS_RESTRICTED ||
+                    context->capabilityClass == APPX_CAPABILITY_CLASS_ALL)
                 { 
-                    if (namespaceAlias == "rescap" ||
-                        namespaceAlias == "win10rescap")
+                    auto found = std::find(restrictedCapabilities.begin(), restrictedCapabilities.end(), prefix);
+                    if (found != restrictedCapabilities.end())
                     {
-                        context->capabilitiesNames->push_back(name);
+                        context->capabilitiesNames.push_back(name);
+                        return true;
                     }
                 }
 
-                if (context->capabilityClass & APPX_CAPABILITY_CLASS_WINDOWS)
+                if (context->capabilityClass == APPX_CAPABILITY_CLASS_WINDOWS ||
+                    context->capabilityClass == APPX_CAPABILITY_CLASS_ALL)
                 {
-                    if (namespaceAlias == "wincap" ||
-                        namespaceAlias == "win10wincap")
+                    auto found = std::find(windowsCapabilities.begin(), windowsCapabilities.end(), prefix);
+                    if (found != windowsCapabilities.end())
                     {
-                        context->capabilitiesNames->push_back(name);
+                        context->capabilitiesNames.push_back(name);
+                        return true;
                     }
                 }
 
@@ -461,7 +483,7 @@ namespace MSIX {
             {
                 _context* context = reinterpret_cast<_context*>(c);
                 auto name = capabilitiesNode->GetAttributeValue(XmlAttributeName::Name);
-                context->capabilitiesNames->push_back(name);
+                context->capabilitiesNames.push_back(name);
                 return true;
             });
             m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Capabilities_CustomCapability, visitorCustomCapabilities);

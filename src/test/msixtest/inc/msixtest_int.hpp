@@ -26,7 +26,8 @@ namespace MsixTest {
             Unbundle,
             Flat,
             BadFlat,
-            Pack
+            Pack,
+            Manifest,
         } Directory;
 
         static TestPath* GetInstance();
@@ -113,6 +114,7 @@ namespace MsixTest {
     void InitializePackageReader(const std::string& package, IAppxPackageReader** packageReader);
     void InitializePackageReader(IStream* stream, IAppxPackageReader** packageReader);
     void InitializeBundleReader(const std::string& package, IAppxBundleReader** bundleReader);
+    void InitializeManifestReader(const std::string& manifest, IAppxManifestReader** manifestReader);
 
     template <class T>
     class ComPtr
