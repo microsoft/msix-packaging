@@ -4,6 +4,7 @@
 // 
 #include "msixtest_int.hpp"
 #include "FileHelpers.hpp"
+#include "catch.hpp"
 
 #include <memory>
 #include <algorithm>
