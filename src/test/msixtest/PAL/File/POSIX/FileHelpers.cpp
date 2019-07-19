@@ -124,8 +124,29 @@ namespace MsixTest {
         // Ensures that the path is an absolute one
         std::string PathAsAbsolute(const std::string& path)
         {
+            if (path.empty())
+            {
+                return path;
+            }
+
+            std::string cwdStr;
+
+            if (path[0] == '/')
+            {
+                cwdStr = path;
+            }
+            else
+            {
+                char cwdArr[PATH_MAX];
+                REQUIRE_NOT_NULL(getcwd(cwdArr, PATH_MAX));
+
+                cwdStr = cwdArr;
+                cwdStr += '/';
+                cwdStr += path;
+            }
+
             char result[PATH_MAX];
-            REQUIRE_NOT_NULL(realpath(path.c_str(), result));
+            REQUIRE_NOT_NULL(realpath(cwdStr.c_str(), result));
             return std::string{ result };
         }
     }
