@@ -16,6 +16,8 @@
 #include <errno.h>
 #include <fts.h>
 #include <dirent.h>
+#include <limits.h>
+#include <stdlib.h>
 
 namespace MsixTest {
 
@@ -116,6 +118,14 @@ namespace MsixTest {
             std::string result(path);
             std::replace(result.begin(), result.end(), '\\', '/');
             return result;
+        }
+
+        // Ensures that the path is an absolute one
+        std::string PathAsAbsolute(const std::string& path)
+        {
+            char result[PATH_MAX];
+            REQUIRE(realpath(path.c_str(), result));
+            return std::string{ result };
         }
     }
 }

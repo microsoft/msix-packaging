@@ -56,9 +56,9 @@ namespace MSIX {
     }
 
     #define DEFAULT_MODE S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
-    void mkdirp(std::string& path, mode_t mode = DEFAULT_MODE)
+    void mkdirp(std::string& path, size_t startPos = 0, mode_t mode = DEFAULT_MODE)
     {
-        char* p = const_cast<char*>(path.c_str());
+        char* p = &path[startPos];
         if (*p == '/') { p++; }
         while (*p != '\0')
         {
@@ -74,12 +74,20 @@ namespace MSIX {
 
     const char* DirectoryObject::GetPathSeparator() { return "/"; }
 
+    DirectoryObject::DirectoryObject(const std::string& root, bool createRootIfNecessary) : m_root(root)
+    {
+        if (createRootIfNecessary)
+        {
+            mkdirp(m_root);
+        }
+    }
+
     ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode)
     {
         std::string name = m_root + GetPathSeparator() + fileName;
         auto lastSlash = name.find_last_of(GetPathSeparator());
         std::string path = name.substr(0, lastSlash);
-        mkdirp(path);
+        mkdirp(path, m_root.size());
         auto result = ComPtr<IStream>::Make<FileStream>(std::move(name), mode);
         return result;
     }
