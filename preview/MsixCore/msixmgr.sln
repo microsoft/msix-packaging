@@ -16,6 +16,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
+Project("{930C7802-8A8C-48F9-8165-68863BCCD9DD}") = "MsixMgrWix", "MsixMgrWix\MsixMgrWix.wixproj", "{CE395DC5-A1D0-4A35-8699-FC57A84CCF48}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -48,6 +50,12 @@ Global
 		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Release|x64.Build.0 = Release|x64
 		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Release|x86.ActiveCfg = Release|Win32
 		{46BE19BD-72E0-4452-9919-33A1F8A5F064}.Release|x86.Build.0 = Release|Win32
+		{CE395DC5-A1D0-4A35-8699-FC57A84CCF48}.Debug|x64.ActiveCfg = Debug|x86
+		{CE395DC5-A1D0-4A35-8699-FC57A84CCF48}.Debug|x86.ActiveCfg = Debug|x86
+		{CE395DC5-A1D0-4A35-8699-FC57A84CCF48}.Debug|x86.Build.0 = Debug|x86
+		{CE395DC5-A1D0-4A35-8699-FC57A84CCF48}.Release|x64.ActiveCfg = Release|x86
+		{CE395DC5-A1D0-4A35-8699-FC57A84CCF48}.Release|x86.ActiveCfg = Release|x86
+		{CE395DC5-A1D0-4A35-8699-FC57A84CCF48}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
