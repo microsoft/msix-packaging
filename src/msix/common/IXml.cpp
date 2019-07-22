@@ -61,6 +61,7 @@ static const MSIX::XmlQueryNameCharType* xPaths[] = {
     /* Package_Properties_Framework                  */L"/*[local-name()='Package']/*[local-name()='Properties']/*[local-name()='Framework']",
     /* Package_Properties_ResourcePackage            */L"/*[local-name()='Package']/*[local-name()='Properties']/*[local-name()='ResourcePackage']",
     /* Package_Properties_SupportedUsers             */L"/*[local-name()='Package']/*[local-name()='Properties']/*[local-name()='SupportedUsers']",
+    /* Package_Capabilities_CustomCapability         */L"/*[local-name()='Package']/*[local-name()='Capabilities']/*[local-name()='CustomCapability']",
 };
 #else
 
@@ -93,6 +94,7 @@ static const MSIX::XmlQueryNameCharType* xPaths[] = {
     /* Package_Properties_Framework                  */"/Package/Properties/Framework",
     /* Package_Properties_ResourcePackage            */"/Package/Properties/ResourcePackage",
     /* Package_Properties_SupportedUsers             */"/Package/Properties/SupportedUsers",
+    /* Package_Capabilities_CustomCapability         */"/Package/Capabilities/CustomCapability",
 };
 #endif
 

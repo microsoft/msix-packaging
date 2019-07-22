@@ -54,6 +54,11 @@ public:
         return m_xmlNode->Text;
     }
 
+    std::string GetPrefix() override
+    {
+        return m_xmlNode->Prefix;
+    }
+
     // IAppleXmlElement
     XmlNode* GetXmlNode() override { return m_xmlNode; }
 

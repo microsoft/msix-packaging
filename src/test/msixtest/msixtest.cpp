@@ -56,6 +56,8 @@ namespace MsixTest {
                 return m_root + "testData/unpack/badFlat";
             case Pack:
                 return m_root + "testData/pack";
+            case Manifest:
+                return m_root + "testData/manifest";
         }
         return {};
     }
@@ -162,6 +164,19 @@ namespace MsixTest {
         REQUIRE_SUCCEEDED(bundleFactory->CreateBundleReader(inputStream.Get(), bundleReader));
         REQUIRE_NOT_NULL(*bundleReader);
         return;
+    }
+
+    void InitializeManifestReader(const std::string& manifest, IAppxManifestReader** manifestReader)
+    {
+        *manifestReader = nullptr;
+
+        auto manifestPath = TestPath::GetInstance()->GetPath(TestPath::Directory::Manifest) + "/" + manifest;
+        auto inputStream = StreamFile(manifestPath, true);
+
+        ComPtr<IAppxFactory> factory;
+        REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(Allocators::Allocate, Allocators::Free, MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &factory));
+        REQUIRE_SUCCEEDED(factory->CreateManifestReader(inputStream.Get(), manifestReader));
+        REQUIRE_NOT_NULL(*manifestReader);
     }
 
     StreamFile::StreamFile(std::string fileName, bool toRead, bool toDelete): m_toDelete(toDelete)

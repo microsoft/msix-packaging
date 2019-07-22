@@ -9,6 +9,8 @@
 #include "Encoding.hpp"
 #include "Enumerators.hpp"
 
+#include <array>
+
 namespace MSIX {
 
     template<typename T>
@@ -208,14 +210,14 @@ namespace MSIX {
                 contextProperties->wasFound = true;
                 return true;
             });
-            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Package_Properties_Framework, visitorBool);
+            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Child_Framework, visitorBool);
             if (!contextPropertiesBool.wasFound)
             {   // False is default value for Framework
                 context->boolValues->insert(std::pair<std::string, bool>(contextPropertiesBool.value, false));
             }
             contextPropertiesBool.value = "ResourcePackage";
             contextPropertiesBool.wasFound = false;
-            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Package_Properties_ResourcePackage, visitorBool);
+            context->self->m_dom->ForEachElementIn(propertiesNode, XmlQueryName::Child_ResourcePackage, visitorBool);
             if (!contextPropertiesBool.wasFound)
             {   // False is default value for ResourcePackage
                 context->boolValues->insert(std::pair<std::string, bool>(contextPropertiesBool.value, false));
@@ -238,7 +240,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetPackageDependencies(IAppxManifestPackageDependenciesEnumerator **dependencies) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (dependencies == nullptr || *dependencies != nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (dependencies == nullptr || *dependencies != nullptr), "bad pointer");
         std::vector<ComPtr<IAppxManifestPackageDependency>> packageDependencies;
         struct _context
         {
@@ -267,29 +269,26 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetCapabilities(APPX_CAPABILITIES *capabilities) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (capabilities == nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (capabilities == nullptr), "bad pointer");
 
-        // Parse Capability elements.
         APPX_CAPABILITIES appxCapabilities = static_cast<APPX_CAPABILITIES>(0);
-        XmlVisitor visitorCapabilities(static_cast<void*>(&appxCapabilities), [](void* c, const ComPtr<IXmlElement>& capabilitiesNode)->bool
+        auto capabilitiesNames = GetCapabilities(APPX_CAPABILITY_CLASS_GENERAL);
+        for (const auto& capability : capabilitiesNames)
         {
-            APPX_CAPABILITIES* capabilities = reinterpret_cast<APPX_CAPABILITIES*>(c);
-            auto name = capabilitiesNode->GetAttributeValue(XmlAttributeName::Name);
-            const auto& capabilityEntry = std::find(std::begin(capabilitiesList), std::end(capabilitiesList), name.c_str());
+            const auto& capabilityEntry = std::find(std::begin(capabilitiesList), std::end(capabilitiesList), capability.c_str());
+            // Don't fail if not found as it can be custom capability or from a different namespace.
             if (capabilityEntry != std::end(capabilitiesList))
-            {   // Don't fail if not found as it can be custom capabilities.
-                *capabilities = static_cast<APPX_CAPABILITIES>((*capabilities) | (*capabilityEntry).value);
+            {
+                appxCapabilities = static_cast<APPX_CAPABILITIES>((appxCapabilities) | (*capabilityEntry).value);
             }
-            return true;
-        });
-        m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Capabilities_Capability, visitorCapabilities);
+        }
         *capabilities = appxCapabilities;
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetResources(IAppxManifestResourcesEnumerator **resources) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (resources == nullptr || *resources != nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (resources == nullptr || *resources != nullptr), "bad pointer");
         // Parse Resource elements.
         std::vector<std::string> appxResources;
         XmlVisitor visitorResource(static_cast<void*>(&appxResources), [](void* r, const ComPtr<IXmlElement>& resourceNode)->bool
@@ -317,7 +316,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetApplications(IAppxManifestApplicationsEnumerator **applications) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (applications == nullptr || *applications != nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (applications == nullptr || *applications != nullptr), "bad pointer");
 
         std::vector<ComPtr<IAppxManifestApplication>> apps;
         struct _context
@@ -365,12 +364,17 @@ namespace MSIX {
         APPX_CAPABILITY_CLASS_TYPE capabilityClass,
         IAppxManifestCapabilitiesEnumerator **capabilities) noexcept
     {
-        return static_cast<HRESULT>(Error::NotImplemented);
+        ThrowErrorIf(Error::InvalidParameter, (capabilities == nullptr), "bad pointer");
+
+        *capabilities = nullptr;
+        auto capabilitiesNames = GetCapabilities(capabilityClass);
+        *capabilities = ComPtr<IAppxManifestCapabilitiesEnumerator>::Make<EnumeratorString<IAppxManifestCapabilitiesEnumerator, IAppxManifestCapabilitiesEnumeratorUtf8>>(m_factory.Get(), capabilitiesNames).Detach();
+        return static_cast<HRESULT>(Error::OK);
     }
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetTargetDeviceFamilies(IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (targetDeviceFamilies == nullptr || *targetDeviceFamilies != nullptr), "bad pointer.");
+        ThrowErrorIf(Error::InvalidParameter, (targetDeviceFamilies == nullptr || *targetDeviceFamilies != nullptr), "bad pointer");
         *targetDeviceFamilies = ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator>::
             Make<EnumeratorCom<IAppxManifestTargetDeviceFamiliesEnumerator,IAppxManifestTargetDeviceFamily>>(m_tdf).Detach();
         return static_cast<HRESULT>(Error::OK);
@@ -383,4 +387,108 @@ namespace MSIX {
         *documentElement = m_dom->GetDocument().As<IMsixElement>().Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
+
+    // Helper to get capabilities from the manifest
+    std::vector<std::string> AppxManifestObject::GetCapabilities(APPX_CAPABILITY_CLASS_TYPE capabilityClass)
+    {
+        ThrowErrorIf(Error::InvalidParameter, capabilityClass > APPX_CAPABILITY_CLASS_CUSTOM || capabilityClass < APPX_CAPABILITY_CLASS_DEFAULT, 
+            "Invalid capability class.");
+
+        std::vector<std::string> capabilitiesNames;
+        struct _context
+        {
+            APPX_CAPABILITY_CLASS_TYPE capabilityClass;
+            std::vector<std::string>& capabilitiesNames;
+        };
+        _context context = { capabilityClass, capabilitiesNames};
+
+        // Parse Capability elements.
+        if (capabilityClass != APPX_CAPABILITY_CLASS_CUSTOM)
+        {
+            XmlVisitor visitorCapabilities(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& capabilitiesNode)->bool
+            {
+                _context* context = reinterpret_cast<_context*>(c);
+                std::string prefix = capabilitiesNode->GetPrefix();
+                auto name = capabilitiesNode->GetAttributeValue(XmlAttributeName::Name);
+
+                static std::array<std::string, 11> generalCapabilities = 
+                {
+                    "foundation",
+                    "uap",
+                    "win10foundation",
+                    "win10uap",
+                    "uap2",
+                    "uap3",
+                    "uap4",
+                    "uap6",
+                    "uap7",
+                    "win10mobile",
+                    "", // If no prefix then default namespace for AppxManifest is win10foundation.
+                };
+
+                static std::array<std::string, 2> restrictedCapabilities = 
+                {
+                    "rescap",
+                    "win10rescap",
+                };
+
+                static std::array<std::string, 2> windowsCapabilities = 
+                {
+                    "wincap",
+                    "win10wincap",
+                };
+
+                if (context->capabilityClass == APPX_CAPABILITY_CLASS_GENERAL ||
+                    context->capabilityClass == APPX_CAPABILITY_CLASS_DEFAULT ||
+                    context->capabilityClass == APPX_CAPABILITY_CLASS_ALL)
+                {
+                    auto found = std::find(generalCapabilities.begin(), generalCapabilities.end(), prefix);
+                    if (found != generalCapabilities.end())
+                    {
+                        context->capabilitiesNames.push_back(name);
+                        return true;
+                    }
+                }
+
+                if (context->capabilityClass == APPX_CAPABILITY_CLASS_RESTRICTED ||
+                    context->capabilityClass == APPX_CAPABILITY_CLASS_ALL)
+                { 
+                    auto found = std::find(restrictedCapabilities.begin(), restrictedCapabilities.end(), prefix);
+                    if (found != restrictedCapabilities.end())
+                    {
+                        context->capabilitiesNames.push_back(name);
+                        return true;
+                    }
+                }
+
+                if (context->capabilityClass == APPX_CAPABILITY_CLASS_WINDOWS ||
+                    context->capabilityClass == APPX_CAPABILITY_CLASS_ALL)
+                {
+                    auto found = std::find(windowsCapabilities.begin(), windowsCapabilities.end(), prefix);
+                    if (found != windowsCapabilities.end())
+                    {
+                        context->capabilitiesNames.push_back(name);
+                        return true;
+                    }
+                }
+
+                return true;
+            });
+            m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Capabilities_Capability, visitorCapabilities);
+        }
+
+        if (capabilityClass == APPX_CAPABILITY_CLASS_CUSTOM || capabilityClass == APPX_CAPABILITY_CLASS_ALL)
+        {
+            XmlVisitor visitorCustomCapabilities(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& capabilitiesNode)->bool
+            {
+                _context* context = reinterpret_cast<_context*>(c);
+                auto name = capabilitiesNode->GetAttributeValue(XmlAttributeName::Name);
+                context->capabilitiesNames.push_back(name);
+                return true;
+            });
+            m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Capabilities_CustomCapability, visitorCustomCapabilities);
+        }
+
+        return capabilitiesNames;
+    }
 }
