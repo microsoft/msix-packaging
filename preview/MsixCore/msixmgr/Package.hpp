@@ -35,6 +35,7 @@ namespace MsixCoreLib
         std::wstring GetVersion();
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
+        std::wstring GetApplicationId() { return m_applicationId; }
 
         std::vector<std::wstring> GetCapabilities()
         {
@@ -85,6 +86,8 @@ namespace MsixCoreLib
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
         std::unique_ptr<IStream> GetLogo();
+        std::wstring GetApplicationId() { return m_applicationId; }
+
         std::vector<std::wstring> GetCapabilities()
         {
             return m_capabilities;
@@ -119,6 +122,8 @@ namespace MsixCoreLib
         std::wstring GetVersion() { return PackageBase::GetVersion(); }
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
+        std::wstring GetIconPath() { return m_packageDirectoryPath + m_relativeLogoPath; }
+        std::wstring GetApplicationId() { return m_applicationId; }
 
         std::unique_ptr<IStream> GetLogo();
 

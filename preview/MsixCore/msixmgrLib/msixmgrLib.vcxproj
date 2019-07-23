@@ -187,6 +187,8 @@
     <ClInclude Include="..\msixmgr\ValidateTargetDeviceFamily.hpp" />
     <ClInclude Include="..\msixmgr\FirewallRules.hpp" />
     <ClInclude Include="..\msixmgr\Windows10Redirector.hpp" />
+    <ClInclude Include="..\msixmgr\AutoPlay.hpp" />
+    <ClInclude Include="..\msixmgr\BcryptLibrary.hpp" />
     <ClInclude Include="inc\IMsixResponse.hpp" />
     <ClInclude Include="inc\DeploymentOptions.hpp" />
     <ClInclude Include="..\msixmgr\Extractor.hpp" />
@@ -226,6 +228,8 @@
     <ClCompile Include="..\msixmgr\ValidateTargetDeviceFamily.cpp" />
     <ClCompile Include="..\msixmgr\FirewallRules.cpp" />
     <ClCompile Include="..\msixmgr\Windows10Redirector.cpp" />
+    <ClCompile Include="..\msixmgr\AutoPlay.cpp" />
+    <ClCompile Include="..\msixmgr\BcryptLibrary.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="..\msixmgr\MsixResponse.cpp" />
     <ClCompile Include="MsixTraceLoggingProvider.cpp" />

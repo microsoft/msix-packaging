@@ -60,6 +60,7 @@ static const std::wstring appendMenuFlagAttribute = L"AppendMenuFlag";
 static const std::wstring oleVerbFlagAttribute = L"OleVerbFlag";
 static const std::wstring resourceIndexAttribute = L"ResourceIndex";
 static const std::wstring taskIdAttribute = L"TaskId";
+static const std::wstring IdAttribute = L"Id";
 
 static const std::wstring extensionQuery = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='Extensions']/*[local-name()='Extension']";
 static const std::wstring ftaQuery = L"*[local-name()='FileTypeAssociation']";
@@ -88,6 +89,7 @@ static const std::wstring defaultIconQuery = L"*[local-name()='DefaultIcon']";
 static const std::wstring toolboxBitmapQuery = L"*[local-name()='ToolboxBitmap32']";
 static const std::wstring comVerbQuery = L"*[local-name()='Verbs']/*[local-name()='Verb']";
 static const std::wstring startupTaskQuery = L"*[local-name()='StartupTask']";
+static const std::wstring launchActionQuery = L"*[local-name()='AutoPlayContent']/*[local-name()='LaunchAction']";
 
 /// Constants for Firewall DEH
 static const std::wstring firewallExtensionQuery = L"/*[local-name()='Package']/*[local-name()='Extensions']/*[local-name()='Extension']/*[local-name()='FirewallRules']/*[local-name()='Rule']";
@@ -100,6 +102,17 @@ static const std::wstring remotePortMinAttribute = L"RemotePortMin";
 static const std::wstring remotePortMaxAttribute = L"RemotePortMax";
 static const std::wstring directionIn = L"in";
 static const std::wstring directionOut = L"out";
+
+/// Constants for AutoPlay DEH
+static const std::wstring autoPlayContentCategoryNameInManifest = L"windows.autoPlayContent";
+static const std::wstring autoPlayDeviceCategoryNameInManifest = L"windows.autoPlayDevice";
+static const std::wstring idAttributeName = L"Verb";
+static const std::wstring actionAttributeName = L"ActionDisplayName";
+static const std::wstring contentEventAttributeName = L"ContentEvent";
+static const std::wstring parentApplicationVisualElementsXPath = L"ancestor::*[local-name()='Application']/*[local-name()='VisualElements']";
+static const std::wstring parentApplicationXPath = L"ancestor::*[local-name()='Application']";
+static const std::wstring handlerRootRegKeyName = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\AutoPlayHandlers\\Handlers";
+static const std::wstring eventHandlerRootRegKeyName = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\AutoPlayHandlers\\EventHandlers";
 
 static const std::wstring clsidKeyName = L"CLSID";
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";
