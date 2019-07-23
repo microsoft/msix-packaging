@@ -1,0 +1,15 @@
+{
+  "name": "msix-sdk",
+  "version": "0.0.0",
+  "description": "MSIX SDK node.js addon",
+  "dependencies": {
+    "bindings": "*",
+    "cmake-js": "*"
+  },
+  "devDependencies": {
+    "node-addon-api": "^1.7.0"
+  },
+  "scripts": {
+    "install:win": "cmake-js compile -G \"NMake Makefiles\" --CDWIN32=on"
+  }
+}

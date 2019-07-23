@@ -207,6 +207,13 @@ if(AOSP)
     )
 endif()
 
+# Node.js NAPI files
+if(CMAKE_JS_VERSION)
+    list(APPEND MsixSrc
+        PAL/NODE/msix_node.cpp
+    )
+endif()
+
 message(STATUS "Source files:")
 message(STATUS "\tmsix.cpp")
 foreach(FILE ${MsixSrc})
@@ -370,11 +377,27 @@ if(OpenSSL_FOUND)
 endif()
 
 # For windows copy the library to the msix and samples directory
-if(WIN32)
+if(WIN32 AND (NOT CMAKE_JS_VERSION))
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy "bin/${PROJECT_NAME}.dll" "msixtest/${PROJECT_NAME}.dll"
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy "bin/${PROJECT_NAME}.dll" "samples/${PROJECT_NAME}.dll"
         WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
+endif()
+
+if(CMAKE_JS_VERSION)
+    # This line will give our library file a .node extension without any "lib" prefix
+    set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "" SUFFIX ".node")
+
+    # Include N-API wrappers
+    execute_process(COMMAND node -p "require('node-addon-api').include"
+            WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+            OUTPUT_VARIABLE NODE_ADDON_API_DIR
+            )
+    string(REPLACE "\n" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
+    string(REPLACE "\"" "" NODE_ADDON_API_DIR ${NODE_ADDON_API_DIR})
+    target_include_directories(${PROJECT_NAME} PRIVATE ${NODE_ADDON_API_DIR} ${CMAKE_JS_INC})
+
+    target_link_libraries(${PROJECT_NAME} PRIVATE ${CMAKE_JS_LIB})
 endif()
