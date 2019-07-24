@@ -102,7 +102,7 @@ See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-inte
 
 ### Enable pack features
 ```
-   By default, pack is *NOT* turn on in the build scripts and is not supported for mobile devices. Use the --pack option on the build scripts to enable it.
+   By default, pack is *NOT* turn on in the build scripts and is not supported for mobile devices. Use the --pack option on the build scripts or pass -DMSIX_PACK=on to the CMake command to enable it.
 ``` 
 
 ### How to compile for Android on Windows:
