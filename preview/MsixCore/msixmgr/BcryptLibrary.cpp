@@ -16,9 +16,9 @@
 ///       in the LoadedModuleTable and returns the same handle after bumping its reference
 ///       count). Thus we don't need any special synchronization to manage this, as worst case
 ///       we'll wind up overwriting the global with the same value on the 2nd load.
-volatile PVOID Common::BcryptLibrary::bcryptModule = nullptr;
-FARPROC Common::BcryptLibrary::functions[Common::BcryptLibrary::FunctionCount];
-PCSTR Common::BcryptLibrary::functionNames[Common::BcryptLibrary::FunctionCount] = {
+volatile PVOID MsixCoreLib::BcryptLibrary::bcryptModule = nullptr;
+FARPROC MsixCoreLib::BcryptLibrary::functions[MsixCoreLib::BcryptLibrary::FunctionCount];
+PCSTR MsixCoreLib::BcryptLibrary::functionNames[MsixCoreLib::BcryptLibrary::FunctionCount] = {
     "BCryptOpenAlgorithmProvider",
     "BCryptCloseAlgorithmProvider",
     "BCryptGetProperty",
@@ -28,8 +28,8 @@ PCSTR Common::BcryptLibrary::functionNames[Common::BcryptLibrary::FunctionCount]
     "BCryptDestroyHash"
 };
 
-///TODO:5204957 Common::BcryptLibrary::Load() (initialization) leaks
-_Check_return_ HRESULT Common::BcryptLibrary::Load()
+///TODO:5204957 MsixCoreLib::BcryptLibrary::Load() (initialization) leaks
+_Check_return_ HRESULT MsixCoreLib::BcryptLibrary::Load()
 {
     if (ReadPointerAcquire(&bcryptModule) == nullptr)
     {

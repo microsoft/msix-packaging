@@ -6,7 +6,7 @@
 ///@note All functions are pretty much passthru to BCRYPT.DLL so prototypes are identical to BCRYPT.H
 ///      and not necessarily compliant with AppX Coding Standards (e.g. Hungarian Notation).
 
-namespace Common
+namespace MsixCoreLib
 {
     class BcryptLibrary
     {
