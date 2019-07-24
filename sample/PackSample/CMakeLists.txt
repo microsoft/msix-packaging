@@ -9,7 +9,7 @@ set(BINARY_NAME PackSample)
 
 if(WIN32)
     set(DESCRIPTION "PackSample manifest")
-    configure_file(${CMAKE_PROJECT_ROOT}/manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest CRLF)
+    configure_file(${MSIX_PROJECT_ROOT}/manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest CRLF)
     set(MANIFEST ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest)
 endif()
 

@@ -4,6 +4,8 @@
 
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
+set(MSIX_TEST_OUTPUT_DIRECTORY "${MSIX_BINARY_ROOT}/msixtest")
+
 # Copy the test packages to the test output directory to don't have to use
 # ..\..\src\test\testData\<path>
 file(COPY "${CMAKE_CURRENT_SOURCE_DIR}/testData" DESTINATION "${MSIX_TEST_OUTPUT_DIRECTORY}")

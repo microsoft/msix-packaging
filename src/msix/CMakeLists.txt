@@ -219,6 +219,9 @@ add_library(${PROJECT_NAME} SHARED
     ${MsixSrc}
 )
 
+# Adding dependency to the third party libs directory
+add_dependencies(${PROJECT_NAME} LIBS)
+
 # Copy out public headers to <binary dir>/src/unpack
 configure_file(../inc/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
 configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
@@ -226,7 +229,7 @@ configure_file(../inc/MsixErrors.hpp ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
 
 # Linker and includes
 # Include MSIX headers
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/inc)
+target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_PROJECT_ROOT}/src/inc)
 
 if(WIN32)
     string(REPLACE "/GR" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -270,7 +273,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 # Compression
 if(((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
     # for macos and ios use the inbox libcompression zlib apis instead of zlib, unless zlib is explicitly requested.
-    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Apple)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_PROJECT_ROOT}/src/msix/PAL/DataCompression/Apple)
     target_link_libraries(${PROJECT_NAME} PRIVATE libcompression.dylib)
 elseif((AOSP) AND (NOT USE_MSIX_SDK_ZLIB))
     # for AOSP, use the libz.so from the android ndk.
@@ -279,8 +282,8 @@ elseif((AOSP) AND (NOT USE_MSIX_SDK_ZLIB))
 else() # WIN32 or USE_MSIX_SDK_ZLIB
     target_include_directories(${PROJECT_NAME} PRIVATE 
             ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
-            ${CMAKE_PROJECT_ROOT}/lib/zlib
-            ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Zlib
+            ${MSIX_PROJECT_ROOT}/lib/zlib
+            ${MSIX_PROJECT_ROOT}/src/msix/PAL/DataCompression/Zlib
         )
     if(USE_SHARED_ZLIB)
         message(STATUS "MSIX takes a dynamic dependency on zlib")
@@ -295,7 +298,7 @@ endif()
 if(XML_PARSER MATCHES xerces)
     target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
-        ${CMAKE_PROJECT_ROOT}/lib/xerces/src
+        ${MSIX_PROJECT_ROOT}/lib/xerces/src
     )
     target_link_libraries(${PROJECT_NAME} PRIVATE xerces-c)
 endif()
@@ -367,14 +370,4 @@ if(OpenSSL_FOUND)
     else()
         target_link_libraries(${PROJECT_NAME} PRIVATE crypto)
     endif()
-endif()
-
-# For windows copy the library to the msix and samples directory
-if(WIN32)
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "bin/${PROJECT_NAME}.dll" "msixtest/${PROJECT_NAME}.dll"
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "bin/${PROJECT_NAME}.dll" "samples/${PROJECT_NAME}.dll"
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 endif()
