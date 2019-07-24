@@ -26,6 +26,19 @@ Open the msix-packaging/preview/MsixCore/msixmgr.sln file in Visual Studio 2017.
 Once the msixmgr project has been built, the msixmgrSetup project can be built.
 The msixmgrSetup Project creates a .msi package to deploy the msix.dll and msixmgr.exe onto a Windows 7 SP1 or higher machine. The MSI Setup Project will register the specific file type association for the .msix and .appx extensions such that the installer is initiated directly from double-clicking a MSIX or APPX package.
 
+## MSIX Package Requirements
+Apps packaged as MSIX must be compatible with the operating system in which they are being deployed.  To ensure the app is intended for the operating system the MSIX package manifest must contain a proper TargetDeviceFamily with the name MSIXCore.Desktop and a MinVersion matching the operating system build number.  Make sure to also include the relevant Windows 10 1709 and later entry as well so the app will deploy properly on operating systems to natively support MSIX.
+
+Example for Windows 7 SP1 as a minimum version:
+
+  <Dependencies>
+    <TargetDeviceFamily Name="MsixCore.Desktop" MinVersion="6.1.7601.0" MaxVersionTested="10.0.10240.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.16299.0" MaxVersionTested="10.0.18362.0" />
+  </Dependencies>
+
+All MSIXCore.Desktop apps will deploy to the server operating systems with the same build number.  If the app is intended only for a server operating sytem then use the TargetDeviceFamily of MSIXCore.Server.
+
+
 ## Using the Command Line
 The executables can also be manually deployed to a Windows 7 SP1 or higher machine without using the MSI setup project. Place the msix.dll and msixmgr.exe in the same location. 
 Sample packages can be found at msix-packaging/preview/MsixCore/tests; these can be copied over to a Windows 7 SP1 or higher machine and installed, although they may require adding the APPX_TEST_ROOT.cer (in the same tests folder) to the trusted store in order to install. Some of these packages are large and are stored using git lfs (Large File Storage).
