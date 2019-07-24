@@ -31,8 +31,12 @@ Apps packaged as MSIX must be compatible with the operating system in which they
 
 Example for Windows 7 SP1 as a minimum version:
 
-TargetDeviceFamily Name="MsixCore.Desktop" MinVersion="6.1.7601.0" MaxVersionTested="10.0.10240.0"
-TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.16299.0" MaxVersionTested="10.0.18362.0" 
+```
+  <Dependencies>
+    <TargetDeviceFamily Name="MsixCore.Desktop" MinVersion="6.1.7601.0" MaxVersionTested="10.0.10240.0" />
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.16299.0" MaxVersionTested="10.0.18362.0" />
+  </Dependencies>
+```
 
 All MSIXCore.Desktop apps will deploy to the server operating systems with the same build number.  If the app is intended only for a server operating sytem then use the TargetDeviceFamily of MSIXCore.Server.
 
