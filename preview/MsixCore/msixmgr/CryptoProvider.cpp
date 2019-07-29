@@ -1,12 +1,9 @@
 #include <Windows.h>
 #include <WinCrypt.h>
-//#include <ntstatus.h>
 
 #include <BcryptLibrary.hpp>
-#include <ByteBuffer.hpp>
-#include <CryptoProvider.hpp>
-
 #include "GeneralUtil.hpp"
+#include <CryptoProvider.hpp>
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
 #include <assert.h>
@@ -69,7 +66,6 @@ namespace MsixCoreLib
         PCWSTR algorithmId = BCRYPT_SHA256_ALGORITHM;
         PCWSTR implementation = NULL;
         ULONG flags = 0;
-        //NTSTATUS status = STATUS_SUCCESS;
 
         BcryptLibrary::BCryptOpenAlgorithmProvider(
             &this->providerHandle,
@@ -126,8 +122,6 @@ namespace MsixCoreLib
     {
         assert(inProgress == this->state);
         assert(NULL != this->hashHandle);
-
-        //NTSTATUS status = STATUS_SUCCESS;
 
         BcryptLibrary::BCryptHashData(
             this->hashHandle,

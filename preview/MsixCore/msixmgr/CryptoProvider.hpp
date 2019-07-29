@@ -1,5 +1,7 @@
 #pragma once
 
+#include <ByteBuffer.hpp>
+
 #define APPXCOMMON_NEW_TAG (std::nothrow)
 
 namespace MsixCoreLib

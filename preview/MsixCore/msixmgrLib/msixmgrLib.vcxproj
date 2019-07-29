@@ -191,6 +191,7 @@
     <ClInclude Include="..\msixmgr\BcryptLibrary.hpp" />
     <ClInclude Include="..\msixmgr\ByteBuffer.hpp" />
     <ClInclude Include="..\msixmgr\CryptoProvider.hpp" />
+    <ClInclude Include="..\msixmgr\Base32Encoding.hpp" />
     <ClInclude Include="inc\IMsixResponse.hpp" />
     <ClInclude Include="inc\DeploymentOptions.hpp" />
     <ClInclude Include="..\msixmgr\Extractor.hpp" />
@@ -216,6 +217,7 @@
     <ClInclude Include="..\msixmgr\StartMenuLink.hpp" />
     <ClInclude Include="..\msixmgr\PrepareDevirtualizedRegistry.hpp" />
     <ClInclude Include="..\msixmgr\WriteDevirtualizedRegistry.hpp" />
+    <ClInclude Include="WideString.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\msixmgr\ComInterface.cpp" />
@@ -234,6 +236,7 @@
     <ClCompile Include="..\msixmgr\BcryptLibrary.cpp" />
     <ClCompile Include="..\msixmgr\ByteBuffer.cpp" />
     <ClCompile Include="..\msixmgr\CryptoProvider.cpp" />
+    <ClCompile Include="..\msixmgr\Base32Encoding.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="..\msixmgr\MsixResponse.cpp" />
     <ClCompile Include="MsixTraceLoggingProvider.cpp" />
@@ -249,6 +252,7 @@
     <ClCompile Include="msixmgrActions.cpp" />
     <ClCompile Include="..\msixmgr\PrepareDevirtualizedRegistry.cpp" />
     <ClCompile Include="..\msixmgr\WriteDevirtualizedRegistry.cpp" />
+    <ClCompile Include="WideString.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

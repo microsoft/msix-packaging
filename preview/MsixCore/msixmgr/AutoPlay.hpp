@@ -46,7 +46,14 @@ namespace MsixCoreLib
 
         HRESULT ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject);
 
-        HRESULT GenerateProgId(_In_ std::wstring categoryName, _In_opt_ std::wstring subCategory, _Out_ std::wstring generatedProgId);
+        HRESULT GenerateProgId(_In_ std::wstring categoryName, _In_opt_ std::wstring subCategory);
+
+        static ULONG GetMinValue(
+            _In_ ULONG d1,
+            _In_ ULONG d2)
+        {
+            return (d1 < d2 ? d1 : d2);
+        }
 
     };
 }

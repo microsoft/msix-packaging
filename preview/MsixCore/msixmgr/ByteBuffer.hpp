@@ -8,7 +8,6 @@
 
 namespace MsixCoreLib
 {
-
     struct COMMON_BYTES
     {
         ULONG length;

@@ -11,6 +11,9 @@
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
 #include "Constants.hpp"
+#include "CryptoProvider.hpp"
+#include "Base32Encoding.hpp"
+#include "WideString.hpp"
 
 using namespace MsixCoreLib;
 
@@ -91,8 +94,8 @@ HRESULT AutoPlay::ParseManifest()
                 //autoPlay.defaultIcon =
 
                 //generate prog id
-                std::wstring progId;
-                GenerateProgId(autoPlayContentCategoryNameInManifest.c_str(), id.Get(), progId);
+                //StringBuffer progId;
+                GenerateProgId(autoPlayContentCategoryNameInManifest.c_str(), id.Get());
 
                 //generate handler name
 
@@ -103,7 +106,20 @@ HRESULT AutoPlay::ParseManifest()
         {
             autoPlay.autoPlayType = UWPDevice;
 
+            //ParseStandardElement
 
+            // device event
+
+            // Generate ProgID
+
+            //GenerateHandlerName
+
+
+        }
+
+        else if (wcscmp(extensionCategory.Get(), desktopAppXExtensionCategory.c_str()) == 0)
+        {
+            // check if content or device element
         }
 
         m_autoPlay.push_back(autoPlay);
@@ -113,34 +129,7 @@ HRESULT AutoPlay::ParseManifest()
     return S_OK;
 }
 
-HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
-{
-    /*RegistryKey handlerRootKey;
-    RETURN_IF_FAILED(handlerRootKey.Open(HKEY_LOCAL_MACHINE, handlerRootRegKeyName.c_str(),  KEY_WRITE));
-
-    RegistryKey handlerKey;
-    RETURN_IF_FAILED(handlerRootKey.CreateSubKey(HandlerName, KEY_WRITE, &handlerKey));
-
-    // Keys associated with all types
-    RETURN_IF_FAILED(handlerKey.SetStringValue(L"Action", action));
-
-    RETURN_IF_FAILED(handlerKey.SetStringValue(L"Provider", provider));
-
-    //Get the logo
-    RETURN_IF_FAILED(handlerKey.SetStringValue(L"DefaultIcon", provider));
-
-    RegistryKey handleEventRootKey;
-    RETURN_IF_FAILED(handleEventRootKey.Open(HKEY_LOCAL_MACHINE, eventHandlerRootRegKeyName.c_str(), KEY_WRITE));
-
-    RegistryKey handleEventKey;
-    RETURN_IF_FAILED(handleEventRootKey.CreateSubKey(contentEvent, KEY_WRITE, &handleEventKey));
-
-    RETURN_IF_FAILED(handleEventKey.SetStringValue(HandlerName, nullptr));*/
-
-    return S_OK;
-}
-
-HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCategory, std::wstring generatedProgId)
+HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCategory)
 {
     std::wstring packageMoniker = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
     std::wstring applicationId = m_msixRequest->GetPackageInfo()->GetApplicationId();
@@ -176,74 +165,110 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
 
     // Build the progIdSeed by appending the incoming strings
     // The package moniker and the application ID are case sensitive
-    //std::wstring tempProgIDBuffer;
+    StringBuffer tempProgIDBuffer;
+
     std::wstring tempProgIDBuilder;
+    //StringBufferBuilder tempProgIDBuilder(&tempProgIDBuffer);
+    //RETURN_IF_FAILED(tempProgIDBuilder.AppendString(packageMoniker));
     tempProgIDBuilder.append(packageMoniker);
-    std::transform(tempProgIDBuilder.begin(), tempProgIDBuilder.end(), tempProgIDBuilder.begin(), ::tolower);
+    String::ToLowerAscii(tempProgIDBuffer.GetChars(), tempProgIDBuffer.GetLength());
 
+    //RETURN_IF_FAILED(tempProgIDBuilder.AppendString(applicationId));
     tempProgIDBuilder.append(applicationId);
-
     // The category name and the subcategory are not case sensitive
     // so we should lower case them
-    std::wstring tempLowerBuffer;
-    tempLowerBuffer.assign(categoryName);
-    std::transform(tempLowerBuffer.begin(), tempLowerBuffer.end(), tempLowerBuffer.begin(), ::tolower);
-    tempProgIDBuilder.append(tempLowerBuffer);
+    StringBuffer tempLowerBuffer;
+    RETURN_IF_FAILED(tempLowerBuffer.SetValueFromString(categoryName.c_str()));
+    String::ToLowerAscii(tempLowerBuffer.GetChars(), tempLowerBuffer.GetLength());
+    //RETURN_IF_FAILED(tempProgIDBuilder.AppendString(tempLowerBuffer.GetString()));
+    tempProgIDBuilder.append(tempLowerBuffer.GetString()->chars);
+
     if (!subCategory.empty())
     {
-        tempLowerBuffer.assign(subCategory);
-        std::transform(tempLowerBuffer.begin(), tempLowerBuffer.end(), tempLowerBuffer.begin(), ::tolower);
-        tempProgIDBuilder.append(tempLowerBuffer);
+        RETURN_IF_FAILED(tempLowerBuffer.SetValueFromString(subCategory.c_str()));
+        String::ToLowerAscii(tempLowerBuffer.GetChars(), tempLowerBuffer.GetLength());
+        //RETURN_IF_FAILED(tempProgIDBuilder.AppendString(tempLowerBuffer.GetString()));
+        tempProgIDBuilder.append(tempLowerBuffer.GetString()->chars);
     }
 
     // Create the crypto provider and start the digest / hash
-    /*AutoPtr<CryptoProvider> cryptoProvider;
-    IfFailedReturn(Common::CryptoProvider::Create(&cryptoProvider));
-    IfFailedReturn(cryptoProvider->StartDigest());
-    Common::COMMON_BYTES data = { 0 };
-    data.length = tempProgIDBuilder.GetLength() * sizeof(WCHAR);
-    data.bytes = (LPBYTE)tempProgIDBuilder.GetChars();
-    IfFailedReturn(cryptoProvider->DigestData(&data));
+    AutoPtr<CryptoProvider> cryptoProvider;
+    RETURN_IF_FAILED(CryptoProvider::Create(&cryptoProvider));
+    RETURN_IF_FAILED(cryptoProvider->StartDigest());
+    COMMON_BYTES data = { 0 };
+    //data.length = tempProgIDBuilder.GetLength() * sizeof(WCHAR);
+    data.length = tempProgIDBuilder.size() * sizeof(WCHAR);
+    //data.bytes = (LPBYTE)tempProgIDBuilder.GetChars();
+    data.bytes = (LPBYTE)tempProgIDBuilder.c_str();
+
+    RETURN_IF_FAILED(cryptoProvider->DigestData(&data));
 
     // Grab the crypto digest
-    Common::COMMON_BYTES digest = { 0 };
-    IfFailedReturn(cryptoProvider->GetDigest(&digest));
+    COMMON_BYTES digest = { 0 };
+    RETURN_IF_FAILED(cryptoProvider->GetDigest(&digest));
 
     // Ensure the string buffer has enough capacity
-    Common::StringBuffer base32EncodedDigest;
-    IfFailedReturn(base32EncodedDigest.SetCapacity(
+    StringBuffer base32EncodedDigest;
+    RETURN_IF_FAILED(base32EncodedDigest.SetCapacity(
         MaxBase32EncodedStringLength));
 
     // Base 32 encode the bytes of the digest and put them into the string buffer
     ULONG base32EncodedDigestCharCount = 0;
-    IfFailedReturn(Common::Base32Encoding::GetChars(
+    RETURN_IF_FAILED(Base32Encoding::GetChars(
         digest.bytes,
-        min(digest.length, MaxByteCountOfDigest),
+        GetMinValue(digest.length, MaxByteCountOfDigest),
         MaxBase32EncodedStringLength,
         base32EncodedDigest.GetChars(),
         &base32EncodedDigestCharCount));
 
     // Set the length of the string buffer to the appropriate value
-    IfFailedReturn(base32EncodedDigest.SetLength(base32EncodedDigestCharCount));
+    RETURN_IF_FAILED(base32EncodedDigest.SetLength(base32EncodedDigestCharCount));
 
     // ProgID name is formed by appending the encoded digest to the "AppX" prefix string
-    IfFailedReturn(tempProgIDBuilder.Delete(0, tempProgIDBuilder.GetLength()));
-    IfFailedReturn(tempProgIDBuilder.AppendString(&AppXPrefix));
-    IfFailedReturn(tempProgIDBuilder.AppendString(base32EncodedDigest.GetString()));
+    //RETURN_IF_FAILED(tempProgIDBuilder.Delete(0, tempProgIDBuilder.GetLength()));
+    tempProgIDBuilder.clear();
 
-    NT_ASSERT(tempProgIDBuilder.GetLength() <= MaxProgIDLength);
+    tempProgIDBuilder.append(AppXPrefix);
+    tempProgIDBuilder.append(base32EncodedDigest.GetString()->chars);
+
+    assert(tempProgIDBuilder.GetLength() <= MaxProgIDLength);
 
     // Sometimes the app's prog id will change on app update (WWA -> XAML for instance), but we don't want to forget the
     // file associations for that app. Convert the progId if we know that this is one that needs to be preserved.
-    Common::StringBuffer preservedProgId;
-    IfFailedReturn(PreserveSpecificProgIds(tempProgIDBuffer, preservedProgId));
+    //Common::StringBuffer preservedProgId;
+    //IfFailedReturn(PreserveSpecificProgIds(tempProgIDBuffer, preservedProgId));
 
     // Set the return value
-    IfFailedReturn(generatedProgId.InitializeFromString(preservedProgId.GetChars()));
-    preservedProgId.Detach();*/
+    //RETURN_IF_FAILED(generatedProgId.InitializeFromString(tempProgIDBuilder.GetChars()));
 
     return S_OK;
+}
 
+HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
+{
+    /*RegistryKey handlerRootKey;
+    RETURN_IF_FAILED(handlerRootKey.Open(HKEY_LOCAL_MACHINE, handlerRootRegKeyName.c_str(),  KEY_WRITE));
+
+    RegistryKey handlerKey;
+    RETURN_IF_FAILED(handlerRootKey.CreateSubKey(HandlerName, KEY_WRITE, &handlerKey));
+
+    // Keys associated with all types
+    RETURN_IF_FAILED(handlerKey.SetStringValue(L"Action", action));
+
+    RETURN_IF_FAILED(handlerKey.SetStringValue(L"Provider", provider));
+
+    //Get the logo
+    RETURN_IF_FAILED(handlerKey.SetStringValue(L"DefaultIcon", provider));
+
+    RegistryKey handleEventRootKey;
+    RETURN_IF_FAILED(handleEventRootKey.Open(HKEY_LOCAL_MACHINE, eventHandlerRootRegKeyName.c_str(), KEY_WRITE));
+
+    RegistryKey handleEventKey;
+    RETURN_IF_FAILED(handleEventRootKey.CreateSubKey(contentEvent, KEY_WRITE, &handleEventKey));
+
+    RETURN_IF_FAILED(handleEventKey.SetStringValue(HandlerName, nullptr));*/
+
+    return S_OK;
 }
 
 HRESULT AutoPlay::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** instance)
