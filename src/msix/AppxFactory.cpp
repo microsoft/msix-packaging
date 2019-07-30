@@ -9,6 +9,7 @@
 #include "AppxPackageObject.hpp"
 #include "MSIXResource.hpp"
 #include "VectorStream.hpp"
+#include "AppxBundleManifest.hpp"
 
 namespace MSIX {
     // IAppxFactory
@@ -95,14 +96,20 @@ namespace MSIX {
         #endif
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept
+    HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleManifestReader(IStream *inputStream, IAppxBundleManifestReader **manifestReader) noexcept try
     {
         #ifdef BUNDLE_SUPPORT
-            return static_cast<HRESULT>(Error::NotImplemented);
+            ThrowErrorIf(Error::InvalidParameter, (manifestReader == nullptr || *manifestReader != nullptr), "Invalid parameter");
+            ComPtr<IMsixFactory> self;
+            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
+            ComPtr<IStream> input(inputStream);
+            auto result = ComPtr<IAppxBundleManifestReader>::Make<AppxBundleManifestObject>(self.Get(), input);
+            *manifestReader = result.Detach();
+            return static_cast<HRESULT>(Error::OK);
         #else
             return static_cast<HRESULT>(MSIX::Error::NotSupported);
         #endif
-    }
+    } CATCH_RETURN();
 
     // IMsixFactory
     HRESULT AppxFactory::MarshalOutString(std::string& internal, LPWSTR *result) noexcept try
