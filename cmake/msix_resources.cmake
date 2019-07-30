@@ -11,7 +11,7 @@ set(RESOURCES_APPXTYPES)
 set(RESOURCES_APPXMANIFEST)
 set(RESOURCES_APPXBUNDLEMANIFEST)
 
-set(RESOURCES_DIR "${CMAKE_PROJECT_ROOT}/resources")
+set(RESOURCES_DIR "${MSIX_PROJECT_ROOT}/resources")
 
 if(CRYPTO_LIB MATCHES openssl) # Only OpenSSL needs to carry the certificates.
     list(APPEND RESOURCES_CERTS
@@ -339,5 +339,5 @@ foreach(FILE ${RESOURCES_CERTS})
     string(APPEND CERTS_HPP result.push_back(std::make_pair(\"${FILE}\", std::move(factory->GetResource(\"${FILE}\")))) ";\n\t\t\t\t")
 endforeach()
 
-configure_file(${CMAKE_PROJECT_ROOT}/src/inc/MSIXResource.hpp.cmakein ${CMAKE_PROJECT_ROOT}/src/inc/MSIXResource.hpp CRLF)
-configure_file(${CMAKE_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp.cmakein ${CMAKE_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp CRLF)
+configure_file(${MSIX_PROJECT_ROOT}/src/inc/MSIXResource.hpp.cmakein ${MSIX_PROJECT_ROOT}/src/inc/MSIXResource.hpp CRLF)
+configure_file(${MSIX_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp.cmakein ${MSIX_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp CRLF)

@@ -26,6 +26,14 @@ set(VERSION_MINOR "0")
 set(VERSION_PATCH "0")
 set(GIT_BRANCH_NAME "master")
 
+# CMake useful variables
+set(MSIX_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+set(MSIX_BINARY_ROOT ${CMAKE_CURRENT_BINARY_DIR})
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
+
 ## Git (and its revision)
 find_package(Git) # QUIET) # if we don't find git or FindGit.cmake is not on the system we ignore it.
 
@@ -166,16 +174,6 @@ elseif(AOSP OR LINUX)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
 
-# CMake useful variables
-set(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
-
-# Create a bin directory for samples and msixtest to be self contained
-set(MSIX_SAMPLE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/samples")
-set(MSIX_TEST_OUTPUT_DIRECTORY   "${CMAKE_CURRENT_BINARY_DIR}/msixtest")
-
 # Mac needed variables
 # [TODO: adapt as needed]
 set(CMAKE_MACOSX_RPATH ON)
@@ -188,8 +186,6 @@ add_subdirectory(lib)
 message(STATUS "libs processed")
 add_subdirectory(src)
 message(STATUS "src processed")
-ADD_DEPENDENCIES(SRC LIBS)
-message(STATUS "dependencies added")
 add_subdirectory(sample)
 message(STATUS "sample processed")
 message(STATUS "DONE!")
