@@ -14,6 +14,7 @@
 #include "CryptoProvider.hpp"
 #include "Base32Encoding.hpp"
 #include "WideString.hpp"
+#include <StrSafe.h>
 
 using namespace MsixCoreLib;
 
@@ -133,7 +134,6 @@ HRESULT AutoPlay::ParseManifest()
 
 HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCategory)
 {
-
     std::wstring packageMoniker = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
     std::wstring applicationId = m_msixRequest->GetPackageInfo()->GetApplicationId();
 
@@ -247,6 +247,79 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
 
 HRESULT AutoPlay::GenerateHandlerName(LPWSTR type, const std::wstring handlerNameSeed, std::wstring generatedHandlerName)
 {
+    // Constants
+    static const ULONG HashedByteCount = 32;      // SHA256 generates 256 hashed bits, which is 32 bytes
+    static const ULONG Base32EncodedLength = 52;  // SHA256 generates 256 hashed bits, which is 52 characters after base 32 encoding (5 bits per character)
+
+    std::wstring packageFamilyMoniker = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
+    std::wstring applicationId = m_msixRequest->GetPackageInfo()->GetApplicationId();
+    //StringBuffer handlerNameBuffer;
+    std::wstring handlerNameBuilder;
+    HCRYPTPROV hProv = NULL;
+    HCRYPTHASH hHash = NULL;
+    DWORD hashLength;
+    BYTE bytes[HashedByteCount];
+    ULONG base32EncodedDigestCharCount;
+    StringBuffer base32EncodedDigest;
+    size_t typeLength;
+
+    // First, convert Package Moniker and App Id to StringBuffers for convenience - lowercase the values so that the comparison
+    // in future versions or other code will be case insensitive
+    handlerNameBuilder.append(packageFamilyMoniker);
+    handlerNameBuilder.append(applicationId);
+    std::transform(handlerNameBuilder.begin(), handlerNameBuilder.end(), handlerNameBuilder.begin(), ::tolower);
+
+    // Next, SHA256 hash the Package Moniker and Application Id
+    if (!CryptAcquireContext(&hProv, nullptr, MS_ENH_RSA_AES_PROV, PROV_RSA_AES, CRYPT_VERIFYCONTEXT))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    if (!CryptCreateHash(hProv, CALG_SHA_256, 0, 0, &hHash))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    if (!CryptHashData(hHash, (BYTE *)handlerNameBuilder.c_str(), (DWORD)handlerNameBuilder.size() * sizeof(wchar_t), 0))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    hashLength = HashedByteCount;
+    if (!CryptGetHashParam(hHash, HP_HASHVAL, bytes, &hashLength, 0))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    // Ensure the string buffer has enough capacity for the string and a null terminator
+    RETURN_IF_FAILED(base32EncodedDigest.SetCapacity(Base32EncodedLength + 1));
+
+    // Base 32 encode the bytes of the digest and put them into the string buffer
+    RETURN_IF_FAILED(Base32Encoding::GetChars(
+        bytes,
+        HashedByteCount,
+        Base32EncodedLength,
+        base32EncodedDigest.GetChars(),
+        &base32EncodedDigestCharCount));
+
+    // Set the length of the string buffer to the appropriate value
+    RETURN_IF_FAILED(base32EncodedDigest.SetLength(base32EncodedDigestCharCount));
+
+    // Find the length of the type string
+    RETURN_IF_FAILED(StringCchLength(type, STRSAFE_MAX_CCH, &typeLength));
+
+    // Finally, construct the string
+    handlerNameBuilder.clear();
+    handlerNameBuilder.append(base32EncodedDigest.GetString()->chars);
+    handlerNameBuilder.append(L"!", 1);
+    handlerNameBuilder.append(type, (ULONG)typeLength);
+    handlerNameBuilder.append(L"!", 1);
+    handlerNameBuilder.append(handlerNameSeed);
+
+    // Set the return value
+    generatedHandlerName.assign(handlerNameBuilder.c_str());
+    std::transform(generatedHandlerName.begin(), generatedHandlerName.end(), generatedHandlerName.begin(), ::tolower);
+
     return S_OK;
 }
 
