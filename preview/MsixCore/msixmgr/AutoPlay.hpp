@@ -48,6 +48,8 @@ namespace MsixCoreLib
 
         HRESULT GenerateProgId(_In_ std::wstring categoryName, _In_opt_ std::wstring subCategory);
 
+        HRESULT GenerateHandlerName(_In_ LPWSTR type, _In_ const std::wstring handlerNameSeed, _Out_ std::wstring generatedHandlerName);
+
         static ULONG GetMinValue(
             _In_ ULONG d1,
             _In_ ULONG d2)

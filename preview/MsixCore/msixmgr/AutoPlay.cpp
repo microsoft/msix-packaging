@@ -98,6 +98,8 @@ HRESULT AutoPlay::ParseManifest()
                 GenerateProgId(autoPlayContentCategoryNameInManifest.c_str(), id.Get());
 
                 //generate handler name
+                std::wstring generatedHandlerName;
+                GenerateHandlerName(L"Content", id.Get(), generatedHandlerName);
 
             }
 
@@ -131,6 +133,7 @@ HRESULT AutoPlay::ParseManifest()
 
 HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCategory)
 {
+
     std::wstring packageMoniker = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
     std::wstring applicationId = m_msixRequest->GetPackageInfo()->GetApplicationId();
 
@@ -142,6 +145,7 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
     // Constants
     std::wstring AppXPrefix = L"AppX";
     static const size_t MaxProgIDLength = 39;
+
     // The maximum number of characters we can have as base32 encoded is 32.
     // We arrive at this due to the interface presented by the GetChars function;
     // it is byte only. Ideally, the MaxBase32EncodedStringLength would be
@@ -153,42 +157,41 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
     // this meets the requirements, it is confusing since a 33 character limit
     // results in a 34 character long encoding. In comparison, a 32 character long
     // encoding divides evenly and always results in a 20 byte digest.
+
     static const size_t MaxBase32EncodedStringLength = 32;
+
     // The maximum number of bytes the digest can be is 20. We arrive at this by:
     // - The maximum count of characters [without prefix] in the encoding (32):
     // - multiplied by 5 (since each character in base 32 encoding is based off of 5 bits)
     // - divided by 8 (to find how many bytes are required)
     // - The  initial plus 7 is to enable integer math (equivalent of writing ceil)
+
     static const ULONG MaxByteCountOfDigest = (MaxBase32EncodedStringLength * 5 + 7) / 8;
 
     HRESULT hr = S_OK;
 
     // Build the progIdSeed by appending the incoming strings
     // The package moniker and the application ID are case sensitive
-    StringBuffer tempProgIDBuffer;
+    //std::wstring tempProgIDBuffer;
 
     std::wstring tempProgIDBuilder;
-    //StringBufferBuilder tempProgIDBuilder(&tempProgIDBuffer);
-    //RETURN_IF_FAILED(tempProgIDBuilder.AppendString(packageMoniker));
     tempProgIDBuilder.append(packageMoniker);
-    String::ToLowerAscii(tempProgIDBuffer.GetChars(), tempProgIDBuffer.GetLength());
-
-    //RETURN_IF_FAILED(tempProgIDBuilder.AppendString(applicationId));
+    std::transform(tempProgIDBuilder.begin(), tempProgIDBuilder.end(), tempProgIDBuilder.begin(), ::tolower);
     tempProgIDBuilder.append(applicationId);
+
     // The category name and the subcategory are not case sensitive
     // so we should lower case them
-    StringBuffer tempLowerBuffer;
-    RETURN_IF_FAILED(tempLowerBuffer.SetValueFromString(categoryName.c_str()));
-    String::ToLowerAscii(tempLowerBuffer.GetChars(), tempLowerBuffer.GetLength());
-    //RETURN_IF_FAILED(tempProgIDBuilder.AppendString(tempLowerBuffer.GetString()));
-    tempProgIDBuilder.append(tempLowerBuffer.GetString()->chars);
+
+    std::wstring tempLowerBuffer;
+    tempLowerBuffer.assign(categoryName);
+    std::transform(tempLowerBuffer.begin(), tempLowerBuffer.end(), tempLowerBuffer.begin(), ::tolower);
+    tempProgIDBuilder.append(tempLowerBuffer);
 
     if (!subCategory.empty())
     {
-        RETURN_IF_FAILED(tempLowerBuffer.SetValueFromString(subCategory.c_str()));
-        String::ToLowerAscii(tempLowerBuffer.GetChars(), tempLowerBuffer.GetLength());
-        //RETURN_IF_FAILED(tempProgIDBuilder.AppendString(tempLowerBuffer.GetString()));
-        tempProgIDBuilder.append(tempLowerBuffer.GetString()->chars);
+        tempLowerBuffer.assign(subCategory);
+        std::transform(tempLowerBuffer.begin(), tempLowerBuffer.end(), tempLowerBuffer.begin(), ::tolower);
+        tempProgIDBuilder.append(tempLowerBuffer);
     }
 
     // Create the crypto provider and start the digest / hash
@@ -196,9 +199,7 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
     RETURN_IF_FAILED(CryptoProvider::Create(&cryptoProvider));
     RETURN_IF_FAILED(cryptoProvider->StartDigest());
     COMMON_BYTES data = { 0 };
-    //data.length = tempProgIDBuilder.GetLength() * sizeof(WCHAR);
-    data.length = tempProgIDBuilder.size() * sizeof(WCHAR);
-    //data.bytes = (LPBYTE)tempProgIDBuilder.GetChars();
+    data.length = (ULONG)tempProgIDBuilder.size() * sizeof(WCHAR);
     data.bytes = (LPBYTE)tempProgIDBuilder.c_str();
 
     RETURN_IF_FAILED(cryptoProvider->DigestData(&data));
@@ -241,6 +242,11 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
     // Set the return value
     //RETURN_IF_FAILED(generatedProgId.InitializeFromString(tempProgIDBuilder.GetChars()));
 
+    return S_OK;
+}
+
+HRESULT AutoPlay::GenerateHandlerName(LPWSTR type, const std::wstring handlerNameSeed, std::wstring generatedHandlerName)
+{
     return S_OK;
 }
 

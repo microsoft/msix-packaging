@@ -60,7 +60,7 @@ namespace MsixCoreLib
         ULONG wcharsIdx = 0;
 
         RETURN_IF_FAILED(GetCharCount(byteCount, &wcharCount));
-        if (wcharCount <= maxWCharCount)
+        if (wcharCount > maxWCharCount)
         {
             return HRESULT_FROM_WIN32(E_INVALIDARG);
         }
@@ -82,7 +82,7 @@ namespace MsixCoreLib
         // for shifting
 
         // Make sure the following math doesn't overflow.
-        if (maxWCharCount < MaxValue / sizeof(*wchars))
+        if (maxWCharCount > MaxValue / sizeof(*wchars))
         {
             return HRESULT_FROM_WIN32(E_INVALIDARG);
         }
