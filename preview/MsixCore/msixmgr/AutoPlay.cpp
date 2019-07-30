@@ -74,16 +74,17 @@ HRESULT AutoPlay::ParseManifest()
                 //verb
                 Text<wchar_t> id;
                 RETURN_IF_FAILED(launchActionElement->GetAttributeValue(idAttributeName.c_str(), &id));
-
-                //check for isvalidid
+                autoPlay.id = id.Get();
 
                 //action
                 Text<wchar_t> action;
                 RETURN_IF_FAILED(launchActionElement->GetAttributeValue(actionAttributeName.c_str(), &action));
+                autoPlay.action = action.Get();
 
                 //content event
                 Text<wchar_t> handleEvent;
                 RETURN_IF_FAILED(launchActionElement->GetAttributeValue(contentEventAttributeName.c_str(), &handleEvent));
+                autoPlay.handleEvent = handleEvent.Get();
 
                 // The "Provider" is the Application DisplayName
                 autoPlay.provider = m_msixRequest->GetPackageInfo()->GetDisplayName();
@@ -95,12 +96,14 @@ HRESULT AutoPlay::ParseManifest()
                 //autoPlay.defaultIcon =
 
                 //generate prog id
-                //StringBuffer progId;
-                GenerateProgId(autoPlayContentCategoryNameInManifest.c_str(), id.Get());
+                std::wstring generatedProgId;
+                GenerateProgId(autoPlayContentCategoryNameInManifest.c_str(), id.Get(), generatedProgId);
+                autoPlay.generatedProgId = generatedProgId;
 
                 //generate handler name
                 std::wstring generatedHandlerName;
                 GenerateHandlerName(L"Content", id.Get(), generatedHandlerName);
+                autoPlay.generatedhandlerName = generatedHandlerName;
 
             }
 
@@ -132,7 +135,7 @@ HRESULT AutoPlay::ParseManifest()
     return S_OK;
 }
 
-HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCategory)
+HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCategory, std::wstring generatedProgId)
 {
     std::wstring packageMoniker = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
     std::wstring applicationId = m_msixRequest->GetPackageInfo()->GetApplicationId();
@@ -226,7 +229,6 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
     RETURN_IF_FAILED(base32EncodedDigest.SetLength(base32EncodedDigestCharCount));
 
     // ProgID name is formed by appending the encoded digest to the "AppX" prefix string
-    //RETURN_IF_FAILED(tempProgIDBuilder.Delete(0, tempProgIDBuilder.GetLength()));
     tempProgIDBuilder.clear();
 
     tempProgIDBuilder.append(AppXPrefix);
@@ -234,13 +236,8 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
 
     assert(tempProgIDBuilder.GetLength() <= MaxProgIDLength);
 
-    // Sometimes the app's prog id will change on app update (WWA -> XAML for instance), but we don't want to forget the
-    // file associations for that app. Convert the progId if we know that this is one that needs to be preserved.
-    //Common::StringBuffer preservedProgId;
-    //IfFailedReturn(PreserveSpecificProgIds(tempProgIDBuffer, preservedProgId));
-
     // Set the return value
-    //RETURN_IF_FAILED(generatedProgId.InitializeFromString(tempProgIDBuilder.GetChars()));
+    generatedProgId.assign(tempProgIDBuilder.c_str());
 
     return S_OK;
 }
@@ -253,7 +250,6 @@ HRESULT AutoPlay::GenerateHandlerName(LPWSTR type, const std::wstring handlerNam
 
     std::wstring packageFamilyMoniker = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
     std::wstring applicationId = m_msixRequest->GetPackageInfo()->GetApplicationId();
-    //StringBuffer handlerNameBuffer;
     std::wstring handlerNameBuilder;
     HCRYPTPROV hProv = NULL;
     HCRYPTHASH hHash = NULL;
@@ -325,27 +321,38 @@ HRESULT AutoPlay::GenerateHandlerName(LPWSTR type, const std::wstring handlerNam
 
 HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
 {
-    /*RegistryKey handlerRootKey;
-    RETURN_IF_FAILED(handlerRootKey.Open(HKEY_LOCAL_MACHINE, handlerRootRegKeyName.c_str(),  KEY_WRITE));
+    RegistryKey explorerKey;
+    RETURN_IF_FAILED(explorerKey.Open(HKEY_LOCAL_MACHINE, explorerRegKeyName.c_str(),  KEY_READ | KEY_WRITE));
 
+    RegistryKey handlerRootKey;
+    RETURN_IF_FAILED(explorerKey.CreateSubKey(handlerKeyName.c_str(), KEY_WRITE, &handlerRootKey));
+
+    //generatedhandlername
     RegistryKey handlerKey;
-    RETURN_IF_FAILED(handlerRootKey.CreateSubKey(HandlerName, KEY_WRITE, &handlerKey));
+    RETURN_IF_FAILED(handlerRootKey.CreateSubKey(autoPlayObject.generatedhandlerName.c_str(), KEY_WRITE, &handlerKey));
 
     // Keys associated with all types
-    RETURN_IF_FAILED(handlerKey.SetStringValue(L"Action", action));
+    RETURN_IF_FAILED(handlerKey.SetStringValue(L"Action", autoPlayObject.action));
 
-    RETURN_IF_FAILED(handlerKey.SetStringValue(L"Provider", provider));
+    RETURN_IF_FAILED(handlerKey.SetStringValue(L"Provider", autoPlayObject.provider));
 
-    //Get the logo
-    RETURN_IF_FAILED(handlerKey.SetStringValue(L"DefaultIcon", provider));
+    //Get the default icon
+    //RETURN_IF_FAILED(handlerKey.SetStringValue(L"DefaultIcon", provider));
 
     RegistryKey handleEventRootKey;
-    RETURN_IF_FAILED(handleEventRootKey.Open(HKEY_LOCAL_MACHINE, eventHandlerRootRegKeyName.c_str(), KEY_WRITE));
+    RETURN_IF_FAILED(explorerKey.CreateSubKey(eventHandlerRootRegKeyName.c_str(), KEY_WRITE, &handleEventRootKey));
 
     RegistryKey handleEventKey;
-    RETURN_IF_FAILED(handleEventRootKey.CreateSubKey(contentEvent, KEY_WRITE, &handleEventKey));
+    RETURN_IF_FAILED(handleEventRootKey.CreateSubKey(autoPlayObject.handleEvent.c_str(), KEY_WRITE, &handleEventKey));
 
-    RETURN_IF_FAILED(handleEventKey.SetStringValue(HandlerName, nullptr));*/
+    RETURN_IF_FAILED(handleEventKey.SetStringValue(autoPlayObject.generatedhandlerName.c_str(), nullptr));
+
+    if (autoPlayObject.autoPlayType == UWPContent)
+    {
+        handlerKey.SetStringValue(L"InvokeProgID", autoPlayObject.generatedProgId);
+
+        handlerKey.SetStringValue(L"InvokeVerb", autoPlayObject.id);
+    }
 
     return S_OK;
 }

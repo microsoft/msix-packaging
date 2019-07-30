@@ -117,8 +117,9 @@ static const std::wstring contentEventAttributeName = L"ContentEvent";
 static const std::wstring deviceEventAttributeName = L"DeviceEvent";
 static const std::wstring parentApplicationVisualElementsXPath = L"ancestor::*[local-name()='Application']/*[local-name()='VisualElements']";
 static const std::wstring parentApplicationXPath = L"ancestor::*[local-name()='Application']";
-static const std::wstring handlerRootRegKeyName = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\AutoPlayHandlers\\Handlers";
-static const std::wstring eventHandlerRootRegKeyName = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\AutoPlayHandlers\\EventHandlers";
+static const std::wstring explorerRegKeyName = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer";
+static const std::wstring handlerKeyName = L"AutoPlayHandlers\\Handlers";
+static const std::wstring eventHandlerRootRegKeyName = L"AutoPlayHandlers\\EventHandlers";
 
 static const std::wstring clsidKeyName = L"CLSID";
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";

@@ -16,13 +16,14 @@ namespace MsixCoreLib
     /// the autoplay structure
     struct AutoPlayObject
     {
-        std::wstring launchActionElement;
         std::wstring id;
         std::wstring action;
+        std::wstring handleEvent;
         std::wstring provider;
         std::wstring defaultIcon;
-        std::wstring handleEvent;
         std::wstring appUserModelId;
+        std::wstring generatedProgId;
+        std::wstring generatedhandlerName;
         AutoPlayType autoPlayType;
     };
 
@@ -46,7 +47,7 @@ namespace MsixCoreLib
 
         HRESULT ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject);
 
-        HRESULT GenerateProgId(_In_ std::wstring categoryName, _In_opt_ std::wstring subCategory);
+        HRESULT GenerateProgId(_In_ std::wstring categoryName, _In_opt_ std::wstring subCategory, _Out_ std::wstring generatedProgId);
 
         HRESULT GenerateHandlerName(_In_ LPWSTR type, _In_ const std::wstring handlerNameSeed, _Out_ std::wstring generatedHandlerName);
 
