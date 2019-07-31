@@ -147,7 +147,19 @@ namespace MsixTest {
             }
 
             char result[PATH_MAX];
-            REQUIRE_NOT_NULL(realpath(cwdStr.c_str(), result));
+            result[0] = '\0';
+            char* returnVal = realpath(cwdStr.c_str(), result);
+            
+            if (returnVal == nullptr && result[0] != '\0' && errno == ENOENT)
+            {
+                // Some systems will treat a missing file as an error,
+                // but still give you the answer.  If they do that, use the path.
+            }
+            else
+            {
+                REQUIRE_NOT_NULL(returnVal);
+            }
+            
             return std::string{ result };
         }
     }
