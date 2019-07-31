@@ -283,7 +283,6 @@ else() # WIN32 or USE_MSIX_SDK_ZLIB
     target_include_directories(${PROJECT_NAME} PRIVATE 
             ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
             ${MSIX_PROJECT_ROOT}/lib/zlib
-            ${MSIX_PROJECT_ROOT}/src/msix/PAL/DataCompression/Zlib
         )
     if(USE_SHARED_ZLIB)
         message(STATUS "MSIX takes a dynamic dependency on zlib")

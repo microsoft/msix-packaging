@@ -2,6 +2,7 @@
 # See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
+project(msix-sdk)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 message(STATUS "--------------------------------")
@@ -98,14 +99,14 @@ else()
     set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.Linux")
 endif()
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Package.nuspec.cmakein ${CMAKE_CURRENT_BINARY_DIR}/Package.nuspec CRLF)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Microsoft.MSIX.Packaging.targets ${CMAKE_BINARY_DIR}/build/native/${MSIX_NUGET_NAME}.targets)
+configure_file(${MSIX_PROJECT_ROOT}/Package.nuspec.cmakein ${MSIX_BINARY_ROOT}/Package.nuspec CRLF)
+configure_file(${MSIX_PROJECT_ROOT}/Microsoft.MSIX.Packaging.targets ${MSIX_BINARY_ROOT}/build/native/${MSIX_NUGET_NAME}.targets)
 message(STATUS "Package.Nuspec created")
 message(STATUS "--------------------------------")
 
 # Configure license txt
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/LICENSE ${CMAKE_BINARY_DIR}/build/LICENSE)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/THIRD\ PARTY\ CODE\ NOTICE ${CMAKE_BINARY_DIR}/build/THIRD\ PARTY\ CODE\ NOTICE)
+configure_file(${MSIX_PROJECT_ROOT}/LICENSE ${MSIX_BINARY_ROOT}/build/LICENSE)
+configure_file(${MSIX_PROJECT_ROOT}/THIRD\ PARTY\ CODE\ NOTICE ${MSIX_BINARY_ROOT}/build/THIRD\ PARTY\ CODE\ NOTICE)
 message(STATUS "LICENSE created")
 message(STATUS "--------------------------------")
 
@@ -120,7 +121,7 @@ list(APPEND CERTS_TO_PUBLISH
     Microsoft_MarketPlace_PCA_2011.cer
 )
 foreach(CERT_TO_PUBLISH ${CERTS_TO_PUBLISH})
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/certs/${CERT_TO_PUBLISH} ${CMAKE_BINARY_DIR}/build/certs/${CERT_TO_PUBLISH})
+    configure_file(${MSIX_PROJECT_ROOT}/resources/certs/${CERT_TO_PUBLISH} ${MSIX_BINARY_ROOT}/build/certs/${CERT_TO_PUBLISH})
 endforeach()
 message(STATUS "Certificates published")
 message(STATUS "--------------------------------")
