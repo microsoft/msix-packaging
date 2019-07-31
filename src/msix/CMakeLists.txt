@@ -147,7 +147,6 @@ if(NOT SKIP_BUNDLES)
 endif()
 
 # Compression option
-
 if(((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
     list(APPEND MsixSrc PAL/DataCompression/Apple/CompressionObject.cpp)
 else()
