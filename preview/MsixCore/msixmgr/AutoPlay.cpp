@@ -93,17 +93,17 @@ HRESULT AutoPlay::ParseManifest()
                 autoPlay.appUserModelId = m_msixRequest->GetPackageInfo()->GetId();
 
                 //get the logo
-                //autoPlay.defaultIcon =
+                autoPlay.defaultIcon = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + m_msixRequest->GetPackageInfo()->GetRelativeLogoPath();
 
                 //generate prog id
                 std::wstring generatedProgId;
-                GenerateProgId(autoPlayContentCategoryNameInManifest.c_str(), id.Get(), generatedProgId);
-                autoPlay.generatedProgId = generatedProgId;
+                RETURN_IF_FAILED(GenerateProgId(autoPlayContentCategoryNameInManifest.c_str(), id.Get(), generatedProgId));
+                autoPlay.generatedProgId = generatedProgId.c_str();
 
                 //generate handler name
                 std::wstring generatedHandlerName;
-                GenerateHandlerName(L"Content", id.Get(), generatedHandlerName);
-                autoPlay.generatedhandlerName = generatedHandlerName;
+                RETURN_IF_FAILED(GenerateHandlerName(L"Content", id.Get(), generatedHandlerName));
+                autoPlay.generatedhandlerName = generatedHandlerName.c_str();
 
             }
 
@@ -135,7 +135,7 @@ HRESULT AutoPlay::ParseManifest()
     return S_OK;
 }
 
-HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCategory, std::wstring generatedProgId)
+HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCategory, std::wstring & generatedProgId)
 {
     std::wstring packageMoniker = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
     std::wstring applicationId = m_msixRequest->GetPackageInfo()->GetApplicationId();
@@ -242,7 +242,7 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
     return S_OK;
 }
 
-HRESULT AutoPlay::GenerateHandlerName(LPWSTR type, const std::wstring handlerNameSeed, std::wstring generatedHandlerName)
+HRESULT AutoPlay::GenerateHandlerName(LPWSTR type, const std::wstring handlerNameSeed, std::wstring & generatedHandlerName)
 {
     // Constants
     static const ULONG HashedByteCount = 32;      // SHA256 generates 256 hashed bits, which is 32 bytes

@@ -217,7 +217,7 @@
     <ClInclude Include="..\msixmgr\StartMenuLink.hpp" />
     <ClInclude Include="..\msixmgr\PrepareDevirtualizedRegistry.hpp" />
     <ClInclude Include="..\msixmgr\WriteDevirtualizedRegistry.hpp" />
-    <ClInclude Include="WideString.hpp" />
+    <ClInclude Include="..\msixmgr\WideString.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\msixmgr\ComInterface.cpp" />
@@ -252,7 +252,7 @@
     <ClCompile Include="msixmgrActions.cpp" />
     <ClCompile Include="..\msixmgr\PrepareDevirtualizedRegistry.cpp" />
     <ClCompile Include="..\msixmgr\WriteDevirtualizedRegistry.cpp" />
-    <ClCompile Include="WideString.cpp" />
+    <ClCompile Include="..\msixmgr\WideString.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
