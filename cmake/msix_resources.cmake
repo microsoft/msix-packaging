@@ -308,12 +308,12 @@ foreach(FILE ${RESOURCES_CERTS})
 endforeach()
 
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar cvf "${CMAKE_BINARY_DIR}/resources.zip" --format=zip -- ${FILES_TO_ZIP}
+    COMMAND ${CMAKE_COMMAND} -E tar cvf "${MSIX_BINARY_ROOT}/resources.zip" --format=zip -- ${FILES_TO_ZIP}
     WORKING_DIRECTORY "${RESOURCES_DIR}"
     OUTPUT_QUIET
 )
 
-file(READ "${CMAKE_BINARY_DIR}/resources.zip" RESOURCE_HEX HEX)
+file(READ "${MSIX_BINARY_ROOT}/resources.zip" RESOURCE_HEX HEX)
 # Create a list by matching every 2 charactes. CMake separates lists with ;
 string(REGEX MATCHALL ".." RESOURCE_HEX_LIST "${RESOURCE_HEX}")
 list(LENGTH RESOURCE_HEX_LIST RESOURCE_LENGTH)
