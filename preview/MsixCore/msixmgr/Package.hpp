@@ -3,6 +3,7 @@
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
 #include "IPackage.hpp"
+#include "FilePaths.hpp"
 #include <vector>
 
 namespace MsixCoreLib
@@ -41,6 +42,7 @@ namespace MsixCoreLib
             return m_relativeLogoPath;
         }
         std::wstring GetPackageDirectoryPath() {
+            m_packageDirectoryPath = FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_packageFullName + L"\\";
             return m_packageDirectoryPath;
         }
 
@@ -150,7 +152,7 @@ namespace MsixCoreLib
         /// the actual .msix package file is no longer accessible.
         static HRESULT MakeFromManifestReader(const std::wstring & directoryPath, IAppxManifestReader* manifestReader, std::shared_ptr<InstalledPackage>* packageInfo);
         InstalledPackage() :PackageBase(), IInstalledPackage() {}
-    //private:
-      //  std::wstring m_packageDirectoryPath;
+    private:
+        std::wstring m_packageDirectoryPath;
     };
 }
