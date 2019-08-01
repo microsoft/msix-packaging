@@ -217,9 +217,7 @@ namespace MsixTest {
         {
             // best effort to delete the file. If someone else has a reference to this stream
             // and this object is deleted, the file WILL NOT be deleted.
-            auto ref = m_stream->Release();
-            m_stream = nullptr;
-            if (ref == 0)
+            if (m_stream.Release())
             {
                 remove(m_fileName.c_str());
             }

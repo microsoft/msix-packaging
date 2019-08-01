@@ -10,7 +10,7 @@
 #include <iostream>
 
 void RunUnpackTest(HRESULT expected, const std::string& package, MSIX_VALIDATION_OPTION validation,
-    MSIX_PACKUNPACK_OPTION packUnpack, bool clean = true)
+    MSIX_PACKUNPACK_OPTION packUnpack, bool clean = true, bool absolutePaths = false)
 {
     std::cout << "Testing: " << std::endl;
     std::cout << "\tPackage:" << package << std::endl; 
@@ -21,6 +21,13 @@ void RunUnpackTest(HRESULT expected, const std::string& package, MSIX_VALIDATION
     packagePath = MsixTest::Directory::PathAsCurrentPlatform(packagePath);
 
     auto outputDir = testData->GetPath(MsixTest::TestPath::Directory::Output);
+    outputDir = MsixTest::Directory::PathAsCurrentPlatform(outputDir);
+
+    if (absolutePaths)
+    {
+        packagePath = MsixTest::Directory::PathAsAbsolute(packagePath);
+        outputDir = MsixTest::Directory::PathAsAbsolute(outputDir);
+    }
 
     HRESULT actual = UnpackPackage(packUnpack,
                                    validation,
@@ -347,4 +354,22 @@ TEST_CASE("Unpack_IntlCharsInPath", "[unpack]")
     MSIX_PACKUNPACK_OPTION packUnpack = MSIX_PACKUNPACK_OPTION_NONE;
 
     RunUnpackTest(expected, package, validation, packUnpack);
+}
+
+TEST_CASE("Unpack_To_Absolute_Path", "[unpack]")
+{
+    HRESULT expected                  = S_OK;
+    std::string package               = "StoreSigned_Desktop_x64_MoviesTV.appx";
+    MSIX_VALIDATION_OPTION validation = MSIX_VALIDATION_OPTION_FULL;
+    MSIX_PACKUNPACK_OPTION packUnpack = MSIX_PACKUNPACK_OPTION_NONE;
+
+    RunUnpackTest(expected, package, validation, packUnpack, false, true);
+
+    // Verify all the files extracted on disk are correct
+    auto files = MsixTest::Unpack::GetExpectedFiles();
+    auto outputDir = MsixTest::TestPath::GetInstance()->GetPath(MsixTest::TestPath::Directory::Output);
+    CHECK(MsixTest::Directory::CompareDirectory(outputDir, files));
+
+    // Clean directory
+    CHECK(MsixTest::Directory::CleanDirectory(outputDir));
 }

@@ -454,7 +454,7 @@ namespace MSIX {
                 ThrowHrIfFailed(manifest->GetPackageId(&packageId));
                 std::string newLocation = to.As<IStorageObject>()->GetFileName() + "/" + 
                     packageId.As<IAppxManifestPackageIdInternal>()->GetPackageFullName();
-                toPackages = MSIX::ComPtr<IDirectoryObject>::Make<DirectoryObject>(newLocation);
+                toPackages = MSIX::ComPtr<IDirectoryObject>::Make<DirectoryObject>(newLocation, true);
             }
             else
             {
