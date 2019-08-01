@@ -100,10 +100,8 @@ namespace MSIX {
     {
         #ifdef BUNDLE_SUPPORT
             ThrowErrorIf(Error::InvalidParameter, (manifestReader == nullptr || *manifestReader != nullptr), "Invalid parameter");
-            ComPtr<IMsixFactory> self;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
             ComPtr<IStream> input(inputStream);
-            auto result = ComPtr<IAppxBundleManifestReader>::Make<AppxBundleManifestObject>(self.Get(), input);
+            auto result = ComPtr<IAppxBundleManifestReader>::Make<AppxBundleManifestObject>(this, input);
             *manifestReader = result.Detach();
             return static_cast<HRESULT>(Error::OK);
         #else
