@@ -26,11 +26,9 @@ namespace MSIX {
         IAppxPackageReader** packageReader) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (packageReader == nullptr || *packageReader != nullptr), "Invalid parameter");
-        ComPtr<IMsixFactory> self;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         ComPtr<IStream> input(inputStream);
-        auto zip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), input);
-        auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(self.Get(), m_validationOptions, m_applicabilityFlags, zip);
+        auto zip = ComPtr<IStorageObject>::Make<ZipObject>(this, input);
+        auto result = ComPtr<IAppxPackageReader>::Make<AppxPackageObject>(this, m_validationOptions, m_applicabilityFlags, zip);
         *packageReader = result.Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -40,10 +38,8 @@ namespace MSIX {
         IAppxManifestReader** manifestReader) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (manifestReader == nullptr || *manifestReader != nullptr), "Invalid parameter");
-        ComPtr<IMsixFactory> self;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         ComPtr<IStream> input(inputStream);
-        auto result = ComPtr<IAppxManifestReader>::Make<AppxManifestObject>(self.Get(), input);
+        auto result = ComPtr<IAppxManifestReader>::Make<AppxManifestObject>(this, input);
         *manifestReader = result.Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -58,10 +54,8 @@ namespace MSIX {
             *blockMapReader != nullptr
         ),"bad pointer.");
 
-        ComPtr<IMsixFactory> self;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         ComPtr<IStream> stream(inputStream);
-        *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), stream).Detach();
+        *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(this, stream).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
@@ -162,12 +156,10 @@ namespace MSIX {
     {
         if(!m_resourcezip) // Initialize it when first needed.
         {
-            ComPtr<IMsixFactory> self;
-            ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
             // Get stream of the resource zip file generated at CMake processing.
             m_resourcesVector = std::vector<std::uint8_t>(Resource::resourceByte, Resource::resourceByte + Resource::resourceLength);
             auto resourceStream = ComPtr<IStream>::Make<VectorStream>(&m_resourcesVector);
-            m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(self.Get(), resourceStream.Get());
+            m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(this, resourceStream.Get());
         }
         auto file = m_resourcezip->GetFile(resource);
         ThrowErrorIfNot(Error::FileNotFound, file, resource.c_str());
@@ -235,13 +227,11 @@ namespace MSIX {
             *blockMapReader != nullptr
         ),"bad pointer.");
 
-        ComPtr<IMsixFactory> self;
-        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         auto stream = ComPtr<IStream>::Make<FileStream>(signatureFileName, FileStream::Mode::READ);
-        auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(self.Get(), self->GetValidationOptions(), stream);
+        auto signature = ComPtr<IVerifierObject>::Make<AppxSignatureObject>(this, this->GetValidationOptions(), stream);
         ComPtr<IStream> input(inputStream);
         auto validatedStream = signature->GetValidationStream("AppxBlockMap.xml", input);
-        *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(self.Get(), validatedStream).Detach();
+        *blockMapReader = ComPtr<IAppxBlockMapReader>::Make<AppxBlockMapObject>(this, validatedStream).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
