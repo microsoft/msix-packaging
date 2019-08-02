@@ -369,11 +369,31 @@ namespace MSIX {
     }
 
     // IAppxManifestReader4
-    HRESULT STDMETHODCALLTYPE AppxManifestObject::GetOptionalPackageInfo(IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept
+    HRESULT STDMETHODCALLTYPE AppxManifestObject::GetOptionalPackageInfo(IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept try
     {
-        // TO-DO: Implement
-        return static_cast<HRESULT>(Error::NotImplemented);
-    }
+        ThrowErrorIf(Error::InvalidParameter, (optionalPackageInfo == nullptr || *optionalPackageInfo != nullptr), "bad pointer.");
+
+        struct _context
+        {
+            std::string mainPackageName;
+        };
+        _context context = {};
+
+        // Parse MainPackageDependency elements
+        XmlVisitor visitorMainPackageDependencies(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& dependencyNode)->bool
+        {
+            _context* context = reinterpret_cast<_context*>(c);
+            if (context->mainPackageName.empty())
+            {
+                auto name = dependencyNode->GetAttributeValue(XmlAttributeName::Name);
+                context->mainPackageName = name;
+            }
+            return true;
+        });
+        m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Dependencies_MainPackageDependency, visitorMainPackageDependencies);
+        *optionalPackageInfo = ComPtr<IAppxManifestOptionalPackageInfo>::Make<AppxManifestOptionalPackageInfo>(this->m_factory.Get(), context.mainPackageName).Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetTargetDeviceFamilies(IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept try
     {

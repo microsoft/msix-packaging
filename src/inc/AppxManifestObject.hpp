@@ -218,7 +218,7 @@ namespace MSIX {
     class AppxManifestOptionalPackageInfo final : public ComClass<AppxManifestOptionalPackageInfo, IAppxManifestOptionalPackageInfo>
     {
     public:
-        AppxManifestOptionalPackageInfo(IMsixFactory* factory, std::string mainPackageName) :
+        AppxManifestOptionalPackageInfo(IMsixFactory* factory, const std::string& mainPackageName) :
             m_mainPackageName(mainPackageName)
         {}
 
