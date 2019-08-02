@@ -383,12 +383,9 @@ namespace MSIX {
         XmlVisitor visitorMainPackageDependencies(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& dependencyNode)->bool
         {
             _context* context = reinterpret_cast<_context*>(c);
-            if (context->mainPackageName.empty())
-            {
-                auto name = dependencyNode->GetAttributeValue(XmlAttributeName::Name);
-                context->mainPackageName = name;
-            }
-            return true;
+            auto name = dependencyNode->GetAttributeValue(XmlAttributeName::Name);
+            context->mainPackageName = name;
+            return false;
         });
         m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Dependencies_MainPackageDependency, visitorMainPackageDependencies);
         *optionalPackageInfo = ComPtr<IAppxManifestOptionalPackageInfo>::Make<AppxManifestOptionalPackageInfo>(this->m_factory.Get(), context.mainPackageName).Detach();
