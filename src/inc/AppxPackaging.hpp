@@ -652,8 +652,8 @@ enum tagLOCKTYPE
 #ifndef __IAppxManifestReader4_INTERFACE_DEFINED__
 #define __IAppxManifestReader4_INTERFACE_DEFINED__
 
-    // {4579BB7C-741D-4161-B5A1-47BD3B78AD9B}
-    MSIX_INTERFACE(IAppxManifestReader4, 0xc43825ab, 0x69b7, 0x400a, 0x97, 0x09, 0xcc, 0x37, 0xf5, 0xa7, 0x2d, 0x24); // what are these numbers for?
+    // {4579bb7c-741d-4161-b5a1-47bd3b78ad9b}
+    MSIX_INTERFACE(IAppxManifestReader4, 0x4579bb7c, 0x741d, 0x4161, 0xb5, 0xa1, 0x47, 0xbd, 0x3b, 0x78, 0xad, 0x9b);
     interface IAppxManifestReader4 : public IAppxManifestReader3
     {
     public:
@@ -1064,8 +1064,8 @@ enum tagLOCKTYPE
 #ifndef __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
 #define __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
 
-    // {2634847D-5B5D-4FE5-A243-002FF95EDC7E}
-    MSIX_INTERFACE(IAppxManifestOptionalPackageInfo, 0x54cd06c1, 0x268f, 0x40bb, 0x8e, 0xd2, 0x75, 0x7a, 0x9e, 0xba, 0xec, 0x8d); // what are these numbers for?
+    // {2634847d-5b5d-4fe5-a243-002ff95edc7e}
+    MSIX_INTERFACE(IAppxManifestOptionalPackageInfo, 0x2634847d, 0x5b5d, 0x4fe5, 0xa2, 0x43, 0x00, 0x2f, 0xf9, 0x5e, 0xdc, 0x7e);
     interface IAppxManifestOptionalPackageInfo : public IUnknown
     {
     public:
@@ -1231,6 +1231,7 @@ interface IAppxManifestQualifiedResourceUtf8;
 interface IAppxManifestResourcesEnumeratorUtf8;
 interface IAppxManifestTargetDeviceFamilyUtf8;
 interface IAppxPackageReaderUtf8;
+interface IAppxManifestOptionalPackageInfoUtf8;
 
 #ifndef __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__
 #define __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__
@@ -1450,6 +1451,19 @@ interface IAppxPackageReaderUtf8;
             /* [retval][out] */  IAppxFile **file) noexcept = 0;
     };
 #endif 	/* __IAppxPackageReaderUtf8_INTERFACE_DEFINED__ */
+
+#ifndef __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__
+#define __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__
+
+    // {1c781d5a-90df-4202-a5f3-132bd0a89233}
+    MSIX_INTERFACE(IAppxManifestOptionalPackageInfoUtf8, 0x1c781d5a, 0x90df, 0x4202, 0xaf, 0xf3, 0x13, 0x2b, 0xd0, 0xa8, 0x92, 0x33);
+    interface IAppxManifestOptionalPackageInfoUtf8 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetMainPackageName(
+            /* [retval][string][out] */  LPSTR *mainPackageName) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__ */
 
 extern "C++" {
 typedef /* [v1_enum] */
