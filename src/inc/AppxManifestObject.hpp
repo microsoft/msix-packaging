@@ -218,7 +218,7 @@ namespace MSIX {
     class AppxManifestOptionalPackageInfo final : public ComClass<AppxManifestOptionalPackageInfo, IAppxManifestOptionalPackageInfo>
     {
     public:
-        AppxManifestOptionalPackageInfo(std::string mainPackageName) :
+        AppxManifestOptionalPackageInfo(IMsixFactory* factory, std::string mainPackageName) :
             m_mainPackageName(mainPackageName)
         {}
 
@@ -232,12 +232,11 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetMainPackageName(LPWSTR* mainPackageName) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (mainPackageName == nullptr || *mainPackageName != nullptr), "bad pointer");
-            std::wstring utf16MainPackageName = utf8_to_wstring(m_mainPackageName);
-            *mainPackageName = &utf16MainPackageName[0];
-            return static_cast<HRESULT>(Error::OK);
+            return m_factory->MarshalOutString(m_mainPackageName, mainPackageName);
         } CATCH_RETURN();
 
     protected:
+        ComPtr<IMsixFactory> m_factory;
         std::string m_mainPackageName;
     };
 
