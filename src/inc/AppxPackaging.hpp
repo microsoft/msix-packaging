@@ -1542,8 +1542,7 @@ enum MSIX_APPLICABILITY_OPTIONS
     }   MSIX_APPLICABILITY_OPTIONS;
 
 #define MSIX_VALIDATION_NONE static_cast<MSIX_VALIDATION_OPTION>(           \
-                                MSIX_VALIDATION_OPTION_SKIPSIGNATURE    |   \
-                                MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST     \
+                                MSIX_VALIDATION_OPTION_SKIPSIGNATURE        \
                              )
 
 

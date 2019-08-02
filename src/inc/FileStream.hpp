@@ -117,6 +117,8 @@ namespace MSIX {
 
             // Return to the previous location
             SeekInternal(resetLocation, StreamBase::Reference::START);
+
+            return static_cast<HRESULT>(Error::OK);
 #else
             ThrowHrIfPOSIXFailed(ftruncate(_fileno(m_file), static_cast<off_t>(size.QuadPart)));
 #endif
