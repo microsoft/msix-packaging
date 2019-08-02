@@ -235,6 +235,7 @@ namespace MSIX {
             return m_factory->MarshalOutString(m_mainPackageName, mainPackageName);
         } CATCH_RETURN();
 
+        // IAppxManifestOptionalPackageInfoUtf8
         HRESULT STDMETHODCALLTYPE GetMainPackageName(LPSTR* mainPackageName) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (mainPackageName == nullptr || *mainPackageName != nullptr), "bad pointer");
