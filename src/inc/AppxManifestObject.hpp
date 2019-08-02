@@ -225,7 +225,6 @@ namespace MSIX {
         // IAppxManifestOptionalPackageInfo
         HRESULT STDMETHODCALLTYPE GetIsOptionalPackage(BOOL* isOptionalPackage) noexcept override try
         {
-            
             *isOptionalPackage = m_mainPackageName.empty() ? FALSE : TRUE;
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
