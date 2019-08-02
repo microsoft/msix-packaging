@@ -368,6 +368,13 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 
+    // IAppxManifestReader4
+    HRESULT STDMETHODCALLTYPE AppxManifestObject::GetOptionalPackageInfo(IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept
+    {
+        // TO-DO: Implement
+        return static_cast<HRESULT>(Error::NotImplemented);
+    }
+
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetTargetDeviceFamilies(IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept try
     {
         ThrowErrorIf(Error::InvalidParameter, (targetDeviceFamilies == nullptr || *targetDeviceFamilies != nullptr), "bad pointer.");

@@ -215,8 +215,34 @@ namespace MSIX {
         std::string m_name;
     };
 
+    class AppxManifestOptionalPackageInfo final : public ComClass<AppxManifestOptionalPackageInfo, IAppxManifestOptionalPackageInfo>
+    {
+    public:
+        AppxManifestOptionalPackageInfo(std::string mainPackageName) :
+            m_mainPackageName(mainPackageName)
+        {}
+
+        // IAppxManifestOptionalPackageInfo
+        HRESULT STDMETHODCALLTYPE GetIsOptionalPackage(BOOL* isOptionalPackage) noexcept override try
+        {
+            *isOptionalPackage = !m_mainPackageName.empty();
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetMainPackageName(LPWSTR* mainPackageName) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (mainPackageName == nullptr || *mainPackageName != nullptr), "bad pointer");
+            std::wstring utf16MainPackageName = utf8_to_wstring(m_mainPackageName);
+            *mainPackageName = &utf16MainPackageName[0];
+            return static_cast<HRESULT>(Error::OK);
+        } CATCH_RETURN();
+
+    protected:
+        std::string m_mainPackageName;
+    };
+
     // Object backed by AppxManifest.xml
-    class AppxManifestObject final : public ComClass<AppxManifestObject, ChainInterfaces<IAppxManifestReader3, IAppxManifestReader2, IAppxManifestReader>,
+    class AppxManifestObject final : public ComClass<AppxManifestObject, ChainInterfaces<IAppxManifestReader4, IAppxManifestReader3, IAppxManifestReader2, IAppxManifestReader>,
                                                      IVerifierObject, IAppxManifestObject, IMsixDocumentElement>
     {
     public:
@@ -241,6 +267,9 @@ namespace MSIX {
             APPX_CAPABILITY_CLASS_TYPE capabilityClass,
             IAppxManifestCapabilitiesEnumerator **capabilities) noexcept override;
         HRESULT STDMETHODCALLTYPE GetTargetDeviceFamilies(IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept override;
+
+        // IAppxManifestReader4
+        HRESULT STDMETHODCALLTYPE GetOptionalPackageInfo(IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept override;
 
         // IVerifierObject
         bool HasStream() override { return !!m_stream; }

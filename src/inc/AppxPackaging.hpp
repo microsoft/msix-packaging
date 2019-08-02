@@ -61,6 +61,7 @@ SpecializeUuidOfImpl(IAppxBlockMapBlocksEnumerator);
 SpecializeUuidOfImpl(IAppxManifestReader);
 SpecializeUuidOfImpl(IAppxManifestReader2);
 SpecializeUuidOfImpl(IAppxManifestReader3);
+SpecializeUuidOfImpl(IAppxManifestReader4);
 SpecializeUuidOfImpl(IAppxManifestPackageId);
 SpecializeUuidOfImpl(IAppxManifestProperties);
 SpecializeUuidOfImpl(IAppxManifestTargetDeviceFamiliesEnumerator);
@@ -80,6 +81,7 @@ SpecializeUuidOfImpl(IAppxBundleReader);
 SpecializeUuidOfImpl(IAppxBundleManifestReader);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoEnumerator);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfo);
+SpecializeUuidOfImpl(IAppxManifestOptionalPackageInfo);
 #endif
 
 #else
@@ -101,6 +103,7 @@ interface IAppxBlockMapBlocksEnumerator;
 interface IAppxManifestReader;
 interface IAppxManifestReader2;
 interface IAppxManifestReader3;
+interface IAppxManifestReader4;
 interface IAppxManifestPackageId;
 interface IAppxManifestProperties;
 interface IAppxManifestTargetDeviceFamiliesEnumerator;
@@ -120,6 +123,7 @@ interface IAppxBundleReader;
 interface IAppxBundleManifestReader;
 interface IAppxBundleManifestPackageInfoEnumerator;
 interface IAppxBundleManifestPackageInfo;
+interface IAppxManifestOptionalPackageInfo;
 
 extern "C"{
 
@@ -645,6 +649,19 @@ enum tagLOCKTYPE
     };
 #endif 	/* __IAppxManifestReader3_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxManifestReader4_INTERFACE_DEFINED__
+#define __IAppxManifestReader4_INTERFACE_DEFINED__
+
+    // {4579BB7C-741D-4161-B5A1-47BD3B78AD9B}
+    MSIX_INTERFACE(IAppxManifestReader4, 0xc43825ab, 0x69b7, 0x400a, 0x97, 0x09, 0xcc, 0x37, 0xf5, 0xa7, 0x2d, 0x24); // what are these numbers for?
+    interface IAppxManifestReader4 : public IAppxManifestReader3
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetOptionalPackageInfo(
+            /* [retval][out] */  IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestReader4_INTERFACE_DEFINED__ */
+
 #ifndef __IAppxManifestPackageId_INTERFACE_DEFINED__
 #define __IAppxManifestPackageId_INTERFACE_DEFINED__
 
@@ -1043,6 +1060,23 @@ enum tagLOCKTYPE
             /* [retval][out] */  IAppxManifestQualifiedResourcesEnumerator **resources) noexcept = 0;
     };
 #endif 	/* __IAppxBundleManifestPackageInfo_INTERFACE_DEFINED__ */
+
+#ifndef __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
+#define __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
+
+    // {2634847D-5B5D-4FE5-A243-002FF95EDC7E}
+    MSIX_INTERFACE(IAppxManifestOptionalPackageInfo, 0x54cd06c1, 0x268f, 0x40bb, 0x8e, 0xd2, 0x75, 0x7a, 0x9e, 0xba, 0xec, 0x8d); // what are these numbers for?
+    interface IAppxManifestOptionalPackageInfo : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetIsOptionalPackage(
+            /* [retval][out] */  BOOL *isOptionalPackage) noexcept = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE GetMainPackageName(
+            /* [retval][string][out] */  LPWSTR *mainPackageName) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__ */
+
 
 } // extern "C"
 #endif // #ifdef WIN32
