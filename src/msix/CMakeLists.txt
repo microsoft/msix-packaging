@@ -114,7 +114,6 @@ list(APPEND MsixSrc
 
 # Pack
 if(MSIX_PACK)
-    message(STATUS "Packaging enabled.")
     add_definitions(-DMSIX_PACK=1)
     list(APPEND MsixSrc
         pack/AppxPackageWriter.cpp
@@ -130,7 +129,6 @@ endif()
 
 # Bundle specific files
 if(NOT SKIP_BUNDLES)
-    message(STATUS "Bundle support enabled.")
     add_definitions(-DBUNDLE_SUPPORT=1)
     list(APPEND MsixSrc
         unpack/AppxBundleManifest.cpp
@@ -151,37 +149,26 @@ endif()
 
 # Compression option
 if(((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
-    # We don't support using libcompression APIs for packaging.
-    if(MSIX_PACK)
-        message(FATAL_ERROR "Using libCompression APIs and packaging features is not supported.")
-    endif()
-    message(STATUS "PAL: Compression     = libCompression")
     list(APPEND MsixSrc PAL/DataCompression/Apple/CompressionObject.cpp)
 else()
-    message(STATUS "PAL: Compression     = zlib")
     list(APPEND MsixSrc PAL/DataCompression/Zlib/CompressionObject.cpp)
 endif()
 
 # Directory object
 if(WIN32)
-    message(STATUS "PAL: DirectoryObject = Windows")
     list(APPEND MsixSrc PAL/FileSystem/Win32/DirectoryObject.cpp)
 else()
-    message(STATUS "PAL: DirectoryObject = POSIX")
     list(APPEND MsixSrc PAL/FileSystem/POSIX/DirectoryObject.cpp)
 endif()
 
 # Xml Parser
 if(XML_PARSER MATCHES xerces)
-    message(STATUS "PAL: XML             = Xerces-C")
     list(APPEND MsixSrc PAL/XML/xerces-c/XmlObject.cpp)
     add_definitions(-DUSING_XERCES=1)
 elseif(XML_PARSER MATCHES javaxml)
-    message(STATUS "PAL: XML             = javaxml")
     list(APPEND MsixSrc PAL/XML/AOSP/XmlObject.cpp)
     add_definitions(-DUSING_JAVAXML=1)
 elseif(XML_PARSER MATCHES applexml)
-    message(STATUS "PAL: XML             = apple xml")
     set(XmlParser)
     list(APPEND MsixSrc
         "PAL/XML/APPLE/XmlObject.cpp"
@@ -191,14 +178,12 @@ elseif(XML_PARSER MATCHES applexml)
     )
     add_definitions(-DUSING_APPLE_XML=1)
 elseif(XML_PARSER MATCHES msxml6)
-    message(STATUS "PAL: XML             = msxml")
     list(APPEND MsixSrc PAL/XML/msxml6/XmlObject.cpp)
     add_definitions(-DUSING_MSXML=1)
 endif()
 
 # Crypto
 if(CRYPTO_LIB MATCHES crypt32)
-    message(STATUS "PAL: Crypto          = crypt32")
     list(APPEND MsixSrc
         PAL/Crypto/Win32/Crypto.cpp
         PAL/Crypto/Win32/SignatureValidator.cpp
@@ -210,7 +195,6 @@ if(CRYPTO_LIB MATCHES crypt32)
     endif()
 elseif(CRYPTO_LIB MATCHES openssl)
     if(OpenSSL_FOUND)
-        message(STATUS "PAL: Crypto          = openssl ${OpenSLL_VERSION}")
         list(APPEND MsixSrc
             PAL/Crypto/OpenSSL/Crypto.cpp
             PAL/Crypto/OpenSSL/SignatureValidator.cpp
@@ -235,11 +219,20 @@ if(AOSP)
     )
 endif()
 
+message(STATUS "Source files:")
+message(STATUS "\tmsix.cpp")
+foreach(FILE ${MsixSrc})
+    message(STATUS "\t${FILE}")
+endforeach()
+
 # Define the library
 add_library(${PROJECT_NAME} SHARED 
     msix.cpp
     ${MsixSrc}
 )
+
+# Adding dependency to the third party libs directory
+add_dependencies(${PROJECT_NAME} LIBS)
 
 # Copy out public headers to <binary dir>/src/unpack
 configure_file(../inc/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
@@ -248,7 +241,7 @@ configure_file(../inc/MsixErrors.hpp ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
 
 # Linker and includes
 # Include MSIX headers
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/inc)
+target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_PROJECT_ROOT}/src/inc)
 
 if(WIN32)
     string(REPLACE "/GR" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
@@ -292,19 +285,16 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 # Compression
 if(((IOS) OR (MACOS)) AND (NOT USE_MSIX_SDK_ZLIB))
     # for macos and ios use the inbox libcompression zlib apis instead of zlib, unless zlib is explicitly requested.
-    message(STATUS "MSIX takes a dependency on inbox libcompression")
-    target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Apple)
+    target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_PROJECT_ROOT}/src/msix/PAL/DataCompression/Apple)
     target_link_libraries(${PROJECT_NAME} PRIVATE libcompression.dylib)
 elseif((AOSP) AND (NOT USE_MSIX_SDK_ZLIB))
     # for AOSP, use the libz.so from the android ndk.
-    message(STATUS "MSIX takes a dependency on inbox zlib")
     find_package(ZLIB REQUIRED)
     target_link_libraries(${PROJECT_NAME} PRIVATE -lz)
 else() # WIN32 or USE_MSIX_SDK_ZLIB
     target_include_directories(${PROJECT_NAME} PRIVATE 
             ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/zlib
-            ${CMAKE_PROJECT_ROOT}/lib/zlib
-            ${CMAKE_PROJECT_ROOT}/src/msix/PAL/DataCompression/Zlib
+            ${MSIX_PROJECT_ROOT}/lib/zlib
         )
     if(USE_SHARED_ZLIB)
         message(STATUS "MSIX takes a dynamic dependency on zlib")
@@ -319,7 +309,7 @@ endif()
 if(XML_PARSER MATCHES xerces)
     target_include_directories(${PROJECT_NAME} PRIVATE
         ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
-        ${CMAKE_PROJECT_ROOT}/lib/xerces/src
+        ${MSIX_PROJECT_ROOT}/lib/xerces/src
     )
     target_link_libraries(${PROJECT_NAME} PRIVATE xerces-c)
 endif()
@@ -391,14 +381,4 @@ if(OpenSSL_FOUND)
     else()
         target_link_libraries(${PROJECT_NAME} PRIVATE crypto)
     endif()
-endif()
-
-# For windows copy the library to the msix and samples directory
-if(WIN32)
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "bin/${PROJECT_NAME}.dll" "msixtest/${PROJECT_NAME}.dll"
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
-    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "bin/${PROJECT_NAME}.dll" "samples/${PROJECT_NAME}.dll"
-        WORKING_DIRECTORY "${CMAKE_BINARY_DIR}")
 endif()

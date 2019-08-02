@@ -6,7 +6,7 @@ project (ExtractContentsSample)
 
 if(WIN32)
     set(DESCRIPTION "ExtractContentsSample manifest")
-    configure_file(${CMAKE_PROJECT_ROOT}/manifest.cmakein ${MSIX_SAMPLE_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe.manifest CRLF)
+    configure_file(${MSIX_PROJECT_ROOT}/manifest.cmakein ${MSIX_SAMPLE_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe.manifest CRLF)
     set(MANIFEST ${MSIX_SAMPLE_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe.manifest)
 endif()
 
@@ -15,7 +15,7 @@ add_executable(${PROJECT_NAME}
     ${MANIFEST}
     )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/src/msix ../inc)
+target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_BINARY_ROOT}/src/msix ../inc)
 
 target_link_libraries(${PROJECT_NAME} msix)
 

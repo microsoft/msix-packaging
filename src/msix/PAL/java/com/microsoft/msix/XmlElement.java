@@ -36,6 +36,10 @@ public class XmlElement {
         return m_element.getTextContent();
     }
 
+    public String GetPrefix() {
+        return m_element.getNodeName(); // getPrefix keep returning null
+    }
+
     public XmlElement[] GetElementsByTagName(String name) {
         List<XmlElement> elements = new ArrayList<>();
         try {

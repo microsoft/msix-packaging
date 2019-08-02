@@ -6,12 +6,16 @@
 #include "AppxPackaging.hpp"
 
 #include <vector>
+#include <map>
 
 namespace MsixTest { namespace Pack {
 
     void WriteContentToStream(std::uint64_t streamSize, IStream* contentStream);
 
     void MakeManifestStream(IStream** manifestStream);
+
+    // Get files unpacked after packing testData/pack/input
+    const std::map<std::string, std::uint64_t>& GetExpectedFiles();
 
     namespace TestConstants {
 

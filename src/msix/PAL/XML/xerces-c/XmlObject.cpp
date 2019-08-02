@@ -7,6 +7,7 @@
 #include <vector>
 #include <map>
 #include <queue>
+#include <list>
 
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
@@ -204,7 +205,7 @@ public:
     XMLCh* Get() const { return m_ptr; }
 protected:
     inline void Swap(XercesXMLChPtr& right ) { std::swap(m_ptr, right.m_ptr); }
-    XMLCh* m_ptr = nullptr;              
+    XMLCh* m_ptr = nullptr;
 };
 
 class XercesXMLBytePtr
@@ -235,8 +236,8 @@ public:
     XMLByte* Get() const { return m_ptr; }
 protected:
     inline void Swap(XercesXMLBytePtr& right ) { std::swap(m_ptr, right.m_ptr); }
-    XMLByte* m_ptr = nullptr;             
-};    
+    XMLByte* m_ptr = nullptr;
+};
 
 class XercesElement final : public ComClass<XercesElement, IXmlElement, IXercesElement, IMsixElement>
 {
@@ -273,7 +274,22 @@ public:
     {
         DOMNode* node = dynamic_cast<DOMNode*>(m_element);
         XercesCharPtr value(XMLString::transcode(node->getTextContent()));
-        return std::string(value.Get());
+        if (value.Get() != nullptr)
+        {
+            return std::string(value.Get());
+        }
+        return {};
+    }
+
+    std::string GetPrefix() override
+    {
+        DOMNode* node = dynamic_cast<DOMNode*>(m_element);
+        XercesCharPtr value(XMLString::transcode(node->getPrefix()));
+        if (value.Get() != nullptr)
+        {
+            return std::string(value.Get());
+        }
+        return {};
     }
 
     // IXercesElement
@@ -398,6 +414,7 @@ public:
         auto entityResolver = std::make_unique<MsixEntityResolver>(m_factory, s_xmlNamespaces[static_cast<std::uint8_t>(footPrintType)]);
         m_parser->setErrorHandler(errorHandler.get());
         m_parser->setXMLEntityResolver(entityResolver.get());
+        m_parser->setDoNamespaces(true);
 
         if (!schemas.empty())
         {
@@ -409,7 +426,6 @@ public:
             m_parser->setValidationScheme(XERCES_CPP_NAMESPACE::AbstractDOMParser::ValSchemes::Val_Always);
             m_parser->cacheGrammarFromParse(true);
             m_parser->setDoSchema(true);
-            m_parser->setDoNamespaces(true);
             m_parser->setValidationSchemaFullChecking(true);
             // Disable DTD and prevent XXE attacks.  See https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#libxerces-c for additional details.
             m_parser->setIgnoreCachedDTD(true);
@@ -426,7 +442,6 @@ public:
         }
 
         m_parser->parse(*source);
-        m_resolver = XercesPtr<DOMXPathNSResolver>(m_parser->getDocument()->createNSResolver(m_parser->getDocument()));
 
         // TODO: Do semantic check for all the elements we modified to maxOcurrs=unbounded and xs:patterns
     }
@@ -439,21 +454,33 @@ public:
 
     bool ForEachElementIn(const ComPtr<IXmlElement>& root, XmlQueryName query, XmlVisitor& visitor) override
     {
-        ComPtr<IXercesElement> element = root.As<IXercesElement>();
+        DOMElement* element = root.As<IXercesElement>()->GetElement();
 
-        XercesXMLChPtr xPath(XMLString::transcode(GetQueryString(query)));
-        XercesPtr<DOMXPathResult> result(m_parser->getDocument()->evaluate(
-            xPath.Get(),
-            element->GetElement(),
-            m_resolver.Get(),
-            DOMXPathResult::ORDERED_NODE_SNAPSHOT_TYPE,
-            nullptr));
-        
-        for (XMLSize_t i = 0; i < result->getSnapshotLength(); i++)
+        std::list<DOMElement*> list;
+        std::string xpath(GetQueryString(query));
+
+        if (xpath.size() >= 2 && xpath[0] == '.' && xpath[1] == '/')
         {
-            result->snapshotItem(i);
-            auto node = static_cast<DOMElement*>(result->getNodeValue());
-            auto item = ComPtr<IXmlElement>::Make<XercesElement>(m_factory, node, m_parser.get());
+            FindChildElements(xpath.substr(2), element, list);
+        }
+        else if (xpath.size() > 1 && xpath[0] == '/')
+        {
+            // Get name of root element
+            std::size_t secondSlash =  xpath.find_first_of('/', 1);
+            XercesXMLChPtr firstElement(XMLString::transcode(xpath.substr(1, secondSlash - 1).c_str()));
+            if (XMLString::compareString(firstElement.Get(), static_cast<DOMNode*>(element)->getLocalName()) == 0)
+            {
+                FindChildElements(xpath.substr(secondSlash + 1), element, list);
+            }
+            else
+            {
+                ThrowErrorAndLog(Error::XmlFatal, "Invalid root element");
+            }
+        }
+
+        for(const auto& element : list)
+        {
+            auto item = ComPtr<IXmlElement>::Make<XercesElement>(m_factory, element, m_parser.get());
             if (!visitor(item))
             {
                 return false;
@@ -580,9 +607,37 @@ protected:
         }
     }
 
+    void FindChildElements(std::string xpath, DOMElement* root, std::list<DOMElement*>& list)
+    {
+        // The special value "*" matches all namespaces
+        XercesXMLChPtr allNS(XMLString::transcode("*"));
+
+        // Find next element to search
+        std::size_t nextSeparator = xpath.find_first_of('/');
+        XercesXMLChPtr nextElement(XMLString::transcode(xpath.substr(0, nextSeparator).c_str()));
+
+        DOMNodeList* childs = root->getElementsByTagNameNS(allNS.Get(), nextElement.Get());
+        XMLSize_t childsSize = childs->getLength();
+        for(XMLSize_t i = 0; i < childsSize; i++)
+        {
+            DOMNode* node = childs->item(i);
+            if (XMLString::compareString(nextElement.Get(), node->getLocalName()) == 0)
+            {
+                if (nextSeparator == std::string::npos)
+                {
+                    // This is the node we are looking for.
+                    list.emplace_back(static_cast<DOMElement*>(node));
+                }
+                else
+                {
+                    FindChildElements(xpath.substr(nextSeparator + 1), static_cast<DOMElement*>(node), list);
+                }
+            }
+        }
+    }
+
     IMsixFactory* m_factory;
     std::unique_ptr<XERCES_CPP_NAMESPACE::XercesDOMParser> m_parser;
-    XercesPtr<DOMXPathNSResolver> m_resolver;
     ComPtr<IStream> m_stream;
 };
 

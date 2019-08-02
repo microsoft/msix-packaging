@@ -11,7 +11,7 @@ set(RESOURCES_APPXTYPES)
 set(RESOURCES_APPXMANIFEST)
 set(RESOURCES_APPXBUNDLEMANIFEST)
 
-set(RESOURCES_DIR "${CMAKE_PROJECT_ROOT}/resources")
+set(RESOURCES_DIR "${MSIX_PROJECT_ROOT}/resources")
 
 if(CRYPTO_LIB MATCHES openssl) # Only OpenSSL needs to carry the certificates.
     list(APPEND RESOURCES_CERTS
@@ -36,7 +36,6 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
     endif()
 
     if(USE_VALIDATION_PARSER)
-        message(STATUS "Using validation parser")
         add_definitions(-DVALIDATING=1)
         # Schemas are defined in triplets in the form of
         # <namespace> <alias> <file location relative to root/resources>
@@ -309,12 +308,12 @@ foreach(FILE ${RESOURCES_CERTS})
 endforeach()
 
 execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar cvf "${CMAKE_BINARY_DIR}/resources.zip" --format=zip -- ${FILES_TO_ZIP}
+    COMMAND ${CMAKE_COMMAND} -E tar cvf "${MSIX_BINARY_ROOT}/resources.zip" --format=zip -- ${FILES_TO_ZIP}
     WORKING_DIRECTORY "${RESOURCES_DIR}"
     OUTPUT_QUIET
 )
 
-file(READ "${CMAKE_BINARY_DIR}/resources.zip" RESOURCE_HEX HEX)
+file(READ "${MSIX_BINARY_ROOT}/resources.zip" RESOURCE_HEX HEX)
 # Create a list by matching every 2 charactes. CMake separates lists with ;
 string(REGEX MATCHALL ".." RESOURCE_HEX_LIST "${RESOURCE_HEX}")
 list(LENGTH RESOURCE_HEX_LIST RESOURCE_LENGTH)
@@ -340,5 +339,5 @@ foreach(FILE ${RESOURCES_CERTS})
     string(APPEND CERTS_HPP result.push_back(std::make_pair(\"${FILE}\", std::move(factory->GetResource(\"${FILE}\")))) ";\n\t\t\t\t")
 endforeach()
 
-configure_file(${CMAKE_PROJECT_ROOT}/src/inc/MSIXResource.hpp.cmakein ${CMAKE_PROJECT_ROOT}/src/inc/MSIXResource.hpp CRLF)
-configure_file(${CMAKE_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp.cmakein ${CMAKE_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp CRLF)
+configure_file(${MSIX_PROJECT_ROOT}/src/inc/MSIXResource.hpp.cmakein ${MSIX_PROJECT_ROOT}/src/inc/MSIXResource.hpp CRLF)
+configure_file(${MSIX_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp.cmakein ${MSIX_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp CRLF)

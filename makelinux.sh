@@ -3,7 +3,7 @@
 build=MinSizeRel
 bundle=off
 validationParser=off
-pack=on
+pack=off
 
 usage()
 {
@@ -11,7 +11,7 @@ usage()
     echo $'\t' "-b build_type           Default MinSizeRel"
     echo $'\t' "-sb                     Skip bundle support."
     echo $'\t' "--validation-parser|-vp Enable XML schema validation."
-    echo $'\t' "--no-pack               Don't include packaging features."
+    echo $'\t' "--pack                  Include packaging features. Sets validation parser on."
 }
 
 printsetup()
@@ -36,8 +36,9 @@ while [ "$1" != "" ]; do
                 ;;
         -vp )   validationParser=on
                 ;;
-        --no-pack ) pack=off
-                    ;;
+        --pack ) pack=on
+                 validationParser=on
+                 ;;
         * )     usage
                 exit 1
     esac

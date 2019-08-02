@@ -34,24 +34,24 @@ jobs:
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:
-      debug:
+      debug_nopack:
         _arguments: -b Debug
         _artifact: LINUXchk
-      release:
+      release_nopack:
         _arguments: -b MinSizeRel
         _artifact: LINUX
       release_nobundle:
-        _arguments: -b MinSizeRel -sb --no-pack
+        _arguments: -b MinSizeRel -sb
         _artifact: LINUX-nobundle
       release_validation_parser:
         _arguments: -b MinSizeRel -vp
         _artifact: LINUX-ValidationParser
-      release_nopack:
-        _arguments: -b MinSizeRel --no-pack
-        _artifact: LINUX-nopack
-      debug_nopack:
-        _arguments: -b Debug --no-pack
-        _artifact: LINUXchk-nopack
+      release_pack:
+        _arguments: -b MinSizeRel --pack
+        _artifact: LINUX-pack
+      debug_pack:
+        _arguments: -b Debug --pack
+        _artifact: LINUXchk-pack
 
   steps:
   - task: Bash@3

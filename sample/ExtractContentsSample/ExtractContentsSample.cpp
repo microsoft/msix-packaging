@@ -38,12 +38,6 @@ struct Option
 // Tracks the state of the current parse operation as well as implements input validation
 struct State
 {
-    bool SkipManifestValidation()
-    {
-        validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST);
-        return true;
-    }
-
     bool SkipSignature()
     {
         validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE);

@@ -2,6 +2,7 @@
 # See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
+project(msix-sdk)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 message(STATUS "--------------------------------")
@@ -20,28 +21,19 @@ if(POLICY CMP0077)
     cmake_policy(SET CMP0077 NEW)
 endif()
 
-# Set build options
-option(WIN32 "Build for Win32"   OFF)
-option(MACOS "Build for MacOS"   OFF)
-option(IOS   "Build for iOS"     OFF)
-option(AOSP  "Build for Android" OFF)
-option(LINUX "Build for Linux"   OFF)
-
-option(USE_VALIDATION_PARSER "Turn on to validates using the resouce schemas. Default (OFF) validates XML files are just valid XML" OFF)
-option(USE_SHARED_ZLIB "Choose the type of dependency for zlib, Use the -DUSE_SHARED_ZLIB=on to have a shared dependency. Default is 'off' (static)" OFF)
-option(USE_STATIC_MSVC "Windows only. Pass /MT as a compiler flag to use the staic version of the run-time library. Default is 'off' (dynamic)" OFF)
-option(SKIP_BUNDLES "Removes bundle functionality from the MSIX SDK. Default is 'off'" OFF)
-option(MSIX_PACK "Include packaging features for the MSIX SDK. Not supported for mobile. Default is 'on'" ON)
-
-set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build, options are: None Debug Release RelWithDebInfo MinSizeRel.  Use the -DCMAKE_BUILD_TYPE=[option] to specify.")
-set(XML_PARSER "" CACHE STRING "Choose the type of parser, options are: [xerces, msxml6, javaxml].  Use the -DXML_PARSER=[option] to specify.")
-set(CRYPTO_LIB "" CACHE STRING "Choose the cryptography library to use, options are: [openssl, crypt32].  Use the -DCRYPTO_LIB=[option] to specify.")
-
 # Default version is 0.0.0
 set(VERSION_MAJOR "0")
 set(VERSION_MINOR "0")
 set(VERSION_PATCH "0")
 set(GIT_BRANCH_NAME "master")
+
+# CMake useful variables
+set(MSIX_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+set(MSIX_BINARY_ROOT ${CMAKE_CURRENT_BINARY_DIR})
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
+set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 
 ## Git (and its revision)
 find_package(Git) # QUIET) # if we don't find git or FindGit.cmake is not on the system we ignore it.
@@ -91,6 +83,8 @@ set(MSIX_VERSION ${VERSION_MAJOR}.${VERSION_MINOR}.${VERSION_PATCH})
 message(STATUS "MSIX Packaging SDK version ${MSIX_VERSION}")
 message(STATUS "MSIX Packaging SDK branch name ${GIT_BRANCH_NAME}")
 add_definitions(-DSDK_VERSION="${MSIX_VERSION}")
+# Validates CMake options.
+include(msix_options)
 
 # Configure Package.nuspec
 if(WIN32)
@@ -101,22 +95,20 @@ elseif(IOS)
     set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.iOS")
 elseif(AOSP)
     set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.AOSP")
-elseif(LINUX)
-    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.Linux")
 else()
-    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging") # cmake ..
+    set(MSIX_NUGET_NAME "Microsoft.MSIX.Packaging.Linux")
 endif()
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Package.nuspec.cmakein ${CMAKE_CURRENT_BINARY_DIR}/Package.nuspec CRLF)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Microsoft.MSIX.Packaging.targets ${CMAKE_BINARY_DIR}/build/native/${MSIX_NUGET_NAME}.targets)
+configure_file(${MSIX_PROJECT_ROOT}/Package.nuspec.cmakein ${MSIX_BINARY_ROOT}/Package.nuspec CRLF)
+configure_file(${MSIX_PROJECT_ROOT}/Microsoft.MSIX.Packaging.targets ${MSIX_BINARY_ROOT}/build/native/${MSIX_NUGET_NAME}.targets)
 message(STATUS "Package.Nuspec created")
 message(STATUS "--------------------------------")
 
 # Configure license txt
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/LICENSE ${CMAKE_BINARY_DIR}/build/LICENSE)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/THIRD\ PARTY\ CODE\ NOTICE ${CMAKE_BINARY_DIR}/build/THIRD\ PARTY\ CODE\ NOTICE)
+configure_file(${MSIX_PROJECT_ROOT}/LICENSE ${MSIX_BINARY_ROOT}/build/LICENSE)
+configure_file(${MSIX_PROJECT_ROOT}/THIRD\ PARTY\ CODE\ NOTICE ${MSIX_BINARY_ROOT}/build/THIRD\ PARTY\ CODE\ NOTICE)
 message(STATUS "LICENSE created")
-message(STATUS "--------------------------------")    
+message(STATUS "--------------------------------")
 
 # Configure certificates
 # list each certificate by name that is to be published in the nuget package
@@ -129,49 +121,10 @@ list(APPEND CERTS_TO_PUBLISH
     Microsoft_MarketPlace_PCA_2011.cer
 )
 foreach(CERT_TO_PUBLISH ${CERTS_TO_PUBLISH})
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/resources/certs/${CERT_TO_PUBLISH} ${CMAKE_BINARY_DIR}/build/certs/${CERT_TO_PUBLISH})
+    configure_file(${MSIX_PROJECT_ROOT}/resources/certs/${CERT_TO_PUBLISH} ${MSIX_BINARY_ROOT}/build/certs/${CERT_TO_PUBLISH})
 endforeach()
 message(STATUS "Certificates published")
-message(STATUS "--------------------------------")    
-
-# Enforce that target platform is specified.
-if((NOT WIN32) AND (NOT MACOS) AND (NOT IOS) AND (NOT AOSP) AND (NOT LINUX))
-    message(STATUS "You must specify one of: [WIN32|MACOS|IOS|AOSP|LINUX]" )
-    message(STATUS "For example, use cmake -DWIN32=on .." )
-    return()
-else()
-    if(WIN32)
-        message(STATUS "Building for WIN32")
-        if(USE_STATIC_MSVC)
-            # By default these flags have /MD set. Modified it to use /MT instead.
-            foreach(buildType RELEASE MINSIZEREL RELWITHDEBINFO)
-                set(cxxFlag "CMAKE_CXX_FLAGS_${buildType}")
-                string(REPLACE "/MD" "/MT" ${cxxFlag} "${${cxxFlag}}")
-            endforeach()
-            set(cxxFlagDebug "CMAKE_CXX_FLAGS_DEBUG")
-            string(REPLACE "/MDd" "/MTd" ${cxxFlagDebug} "${${cxxFlagDebug}}")
-        endif()
-    endif()
-    if(MACOS)
-        message(STATUS "Building for MacOS")
-    endif()
-    if(IOS)
-        message(STATUS "Building for iOS")
-        if(IOS_DEPLOYMENT_TARGET VERSION_LESS 10.0)
-            message(FATAL_ERROR "Unsupported iOS version: ${IOS_DEPLOYMENT_TARGET}, this project requires at least iOS version 10.0")
-        endif()
-        set(PLATFORM_APPLE 1)
-    endif()
-    if(AOSP)
-        message(STATUS "Building for Android")
-        set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-    endif()
-    if(LINUX)
-        message(STATUS "Building for Linux")
-        # Static libraries must be position independent to be linked with a shared object.
-        set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-    endif()
-endif()
+message(STATUS "--------------------------------")
 
 message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 
@@ -210,50 +163,17 @@ if((MACOS) OR (IOS))
         set(CMAKE_CXX_CREATE_SHARED_LIBRARY
             "${CMAKE_CXX_CREATE_SHARED_LIBRARY}"
             "${DSYMUTIL_PROGRAM} <TARGET>")
-        endif ()
+        endif()
     endif()
-endif()
-
-# Packing is not enabled for mobile devices
-if(MSIX_PACK AND (AOSP OR IOS))
-    set(MSIX_PACK OFF)
-    message(STATUS "Packaging is not supported for mobile devices.")
-endif()
-
-# If not defined as a cmake argument do a best effort
-if(NOT XML_PARSER)
-    include(CheckIncludeFileCXX)
-    check_include_file_cxx(msxml6.h HAVE_MSXML6)
-    if(HAVE_MSXML6)
-        set(XML_PARSER msxml6 CACHE STRING "XML Parser not defined. Using msxml6" FORCE)
-    elseif(AOSP)
-        set(XML_PARSER javaxml CACHE STRING "XML Parser not defined. Using javaxml" FORCE)
-    elseif(MAC OR IOS)
-        set(XML_PARSER applexml CACHE STRING "XML Parser not defined. Using applexml" FORCE)
-    else()
-        set(XML_PARSER xerces CACHE STRING "XML Parser not defined. Using xerces" FORCE)
+    if(IOS)
+        if(IOS_DEPLOYMENT_TARGET VERSION_LESS 10.0)
+            message(FATAL_ERROR "Unsupported iOS version: ${IOS_DEPLOYMENT_TARGET}, this project requires at least iOS version 10.0")
+        endif()
     endif()
+elseif(AOSP OR LINUX)
+    # Static libraries must be position independent to be linked with a shared object.
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 endif()
-
-if(NOT CRYPTO_LIB)
-    include(CheckIncludeFileCXX)
-    check_include_file_cxx(wincrypt.h HAVE_CRYPT32)
-    if(HAVE_CRYPT32)
-        set(CRYPTO_LIB crypt32 CACHE STRING "Crypto Lib not defined. Using crypt32" FORCE)
-    else()
-        set(CRYPTO_LIB openssl CACHE STRING "Crypto Lib not defined. Using openssl" FORCE)
-    endif()
-endif()
-
-# CMake useful variables
-set(CMAKE_PROJECT_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
-
-# Create a bin directory for samples and msixtest to be self contained
-set(MSIX_SAMPLE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/samples")
-set(MSIX_TEST_OUTPUT_DIRECTORY   "${CMAKE_CURRENT_BINARY_DIR}/msixtest")
 
 # Mac needed variables
 # [TODO: adapt as needed]
@@ -264,15 +184,9 @@ set(CMAKE_MACOSX_RPATH ON)
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 add_subdirectory(lib)
-message(STATUS " ")
-message(STATUS "--------------------------------")
-message(STATUS "MSIX Packaging SDK")
-message(STATUS "--------------------------------")
 message(STATUS "libs processed")
 add_subdirectory(src)
 message(STATUS "src processed")
-ADD_DEPENDENCIES(SRC LIBS)
-message(STATUS "dependencies added")
 add_subdirectory(sample)
 message(STATUS "sample processed")
 message(STATUS "DONE!")

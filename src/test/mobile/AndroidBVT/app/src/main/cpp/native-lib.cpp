@@ -87,6 +87,7 @@ Java_com_microsoft_androidbvt_MainActivity_RunTests(JNIEnv* env, jobject /* this
     CopyFilesFromAssets(env, assetManager, filePath, "testData/unpack/bundles");
     CopyFilesFromAssets(env, assetManager, filePath, "testData/unpack/flat");
     CopyFilesFromAssets(env, assetManager, filePath, "testData/unpack/महसुस");
+    CopyFilesFromAssets(env, assetManager, filePath, "testData/manifest");
 
     std::string outputFile = filePath + "TEST-MsixSDK-AOSP.xml";
     filePath = filePath.substr(0, filePath.size() - 1);

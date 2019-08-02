@@ -105,7 +105,158 @@ namespace MSIX {
             "FindNextFile");
     }
 
+    static std::string GetFullPath(const std::string& path)
+    {
+        const std::wstring longPathPrefix = LR"(\\?\)";
+
+        auto pathWide = utf8_to_wstring(path);
+
+        std::wstring result = longPathPrefix;
+        size_t prefixChars = longPathPrefix.size();
+        if (pathWide.substr(0, longPathPrefix.size()) == longPathPrefix)
+        {
+            // Already begins with long path prefix, so don't add it
+            result = L"";
+            prefixChars = 0;
+        }
+
+        // We aren't going to go out of our way to support crazy incoming paths.
+        // This means that path here is limited to MAX_PATH, but the resulting path won't be.
+        DWORD length = GetFullPathNameW(pathWide.c_str(), 0, nullptr, nullptr);
+
+        // Any errors result in 0
+        ThrowLastErrorIf(length == 0, "Failed to get necessary char count for GetFullPathNameW");
+
+        // When requesting size, length accounts for null char
+        result.resize(prefixChars + length, L' ');
+
+        DWORD newlength = GetFullPathNameW(pathWide.c_str(), length, &result[prefixChars], nullptr);
+
+        // On success, length does not account for null char
+        ThrowLastErrorIf(length == 0, "Failed to get necessary char count for GetFullPathNameW");
+        ThrowErrorIf(Error::Unexpected, (length - 1) != newlength, "Result length was unexpected");
+        result.resize(prefixChars + newlength);
+
+        return wstring_to_utf8(result);
+    }
+
+    struct DirectoryInfo
+    {
+        std::string Name;
+        bool Create;
+
+        DirectoryInfo(std::string&& name, bool create) : Name(std::move(name)), Create(create) {}
+    };
+
+    static void SplitDirectories(const std::string& path, std::queue<DirectoryInfo>& directories, bool forCreate)
+    {
+        static char const* const Delims = "\\/";
+        const std::string longPathPrefix = R"(\\?\)";
+
+        size_t copyPos = 0;
+        size_t searchPos = 0;
+        size_t lastPos = 0;
+
+        if (path.substr(0, longPathPrefix.size()) == longPathPrefix)
+        {
+            // Absolute path, we need to skip it
+            searchPos = longPathPrefix.size();
+        }
+
+        while (lastPos != std::string::npos)
+        {
+            lastPos = path.find_first_of(Delims, searchPos);
+
+            std::string temp = path.substr(copyPos, lastPos - copyPos);
+            if (!temp.empty())
+            {
+                directories.emplace(std::move(temp), forCreate);
+            }
+
+            copyPos = searchPos = lastPos + 1;
+        }
+    }
+
+    // Destroys directories
+    static void EnsureDirectoryStructureExists(const std::string& root, std::queue<DirectoryInfo>& directories, bool lastIsFile, std::string* resultingPath = nullptr)
+    {
+        ThrowErrorIf(Error::Unexpected, directories.empty(), "Some path must be given");
+
+        auto PopFirst = [&directories]()
+        {
+            auto result = directories.front();
+            directories.pop();
+            return result;
+        };
+
+        std::string path = root;
+        bool isFirst = true;
+
+        while (!directories.empty())
+        {
+            auto dirInfo = PopFirst();
+            if (!path.empty())
+            {
+                path += DirectoryObject::GetPathSeparator();
+            }
+            path += dirInfo.Name;
+
+            bool shouldWeCreateDir = dirInfo.Create;
+
+            // When the last entry is a file, and we are on the last entry, never create
+            if (lastIsFile && directories.empty())
+            {
+                shouldWeCreateDir = false;
+            }
+            // If this is a rooted list of directories, the first one will be a device
+            else if (root.empty() && isFirst)
+            {
+                shouldWeCreateDir = false;
+            }
+
+            if (shouldWeCreateDir)
+            {
+                bool found = false;
+
+                std::wstring utf16Name = utf8_to_wstring(path);
+                DWORD attr = GetFileAttributesW(utf16Name.c_str());
+
+                if (attr == INVALID_FILE_ATTRIBUTES)
+                {
+                    if (!CreateDirectory(utf16Name.c_str(), nullptr))
+                    {
+                        auto lastError = GetLastError();
+                        ThrowWin32ErrorIfNot(lastError, (lastError == ERROR_ALREADY_EXISTS), std::string("Call to CreateDirectory failed creating: " + path).c_str());
+                    }
+                }
+                else
+                {
+                    ThrowWin32ErrorIfNot(ERROR_ALREADY_EXISTS, attr & FILE_ATTRIBUTE_DIRECTORY, ("A file at this path already exists: " + path).c_str());
+                }
+            }
+
+            isFirst = false;
+        }
+
+        if (resultingPath)
+        {
+            *resultingPath = std::move(path);
+        }
+    }
+
     const char* DirectoryObject::GetPathSeparator() { return "\\"; }
+
+    DirectoryObject::DirectoryObject(const std::string& root, bool createRootIfNecessary)
+    {
+        m_root = GetFullPath(root);
+
+        if (createRootIfNecessary)
+        {
+            std::queue<DirectoryInfo> directories;
+            SplitDirectories(m_root, directories, true);
+            EnsureDirectoryStructureExists({}, directories, false);
+        }
+    }
 
     std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
     {
@@ -116,62 +267,16 @@ namespace MSIX {
     // IDirectoryObject
     ComPtr<IStream> DirectoryObject::OpenFile(const std::string& fileName, FileStream::Mode mode)
     {
-        DWORD absPathSize = GetCurrentDirectory(0, NULL);
-        std::wstring absPath;
-        absPath.resize(absPathSize-1);
-        ThrowLastErrorIf(GetCurrentDirectory(absPathSize, const_cast<wchar_t*>(absPath.data())) == 0, "Failed getting full path.");
-        absPath = L"\\\\?\\" + absPath;
+        std::queue<DirectoryInfo> directories;
 
-        std::queue<std::string> directories;
-        auto PopFirst = [&directories]()
-        {
-            auto result = directories.front();
-            directories.pop();
-            return result;
-        };
+        // Enforce that directory structure exists before creating file at specified location;
+        // but only if we are going to write the file.  If reading, the file should already exist.
+        bool modeWillCreateFile = (mode != FileStream::Mode::READ && mode != FileStream::Mode::READ_UPDATE);
+        SplitDirectories(fileName, directories, modeWillCreateFile);
 
-        // Add the root directory and build a list of directory names to ensure exist
-        std::istringstream stream(m_root + "/" + fileName);
-        std::string directory;
-        while (getline(stream, directory, '/'))
-        {
-            directories.push(std::move(directory));
-        }
+        std::string path;
+        EnsureDirectoryStructureExists(m_root, directories, true, &path);
 
-        // Enforce that directory structure exists before creating file at specified location.
-        bool found = false;
-        std::string path = wstring_to_utf8(absPath) + GetPathSeparator() +PopFirst();
-        do
-        {
-            WalkDirectory(path, WalkOptions::Directories, [&](
-                std::string,
-                WalkOptions option,
-                std::string&& name,
-                std::uint64_t)
-            {
-                found = false;
-                if (directories.front() == name)
-                {
-                    found = true;
-                    return false;
-                }
-
-                return true;
-            });
-
-            if(!found)
-            {
-                std::wstring utf16Name = utf8_to_wstring(path);
-                if (!CreateDirectory(utf16Name.c_str(), nullptr))
-                {
-                    auto lastError = GetLastError();
-                    ThrowWin32ErrorIfNot(lastError, (lastError == ERROR_ALREADY_EXISTS), std::string("Call to CreateDirectory failed creating: " + path).c_str());
-                }
-            }
-            path = path + GetPathSeparator() + PopFirst();
-            found = false;
-        }
-        while(directories.size() > 0);
         auto result = ComPtr<IStream>::Make<FileStream>(std::move(utf8_to_wstring(path)), mode);
         return result;
     }
@@ -185,12 +290,12 @@ namespace MSIX {
                 std::string root,
                 WalkOptions option,
                 std::string&& name,
-                std::uint64_t size)
+                std::uint64_t lastWrite)
             {
                 std::string fileName = root + GetPathSeparator() + name;
                 // root contains the top level directory, which we don't need
                 fileName = fileName.substr(rootSize);
-                files.insert(std::make_pair(size, std::move(fileName)));
+                files.insert(std::make_pair(lastWrite, std::move(fileName)));
                 return true;
             });
         return files;

@@ -42,7 +42,7 @@ namespace MSIX {
     class DirectoryObject final : public ComClass<DirectoryObject, IStorageObject, IDirectoryObject>
     {
     public:
-        DirectoryObject(std::string root) : m_root(std::move(root)) {}
+        DirectoryObject(const std::string& root, bool createRootIfNecessary = false);
 
         // IStorageObject methods
         std::vector<std::string> GetFileNames(FileNameOptions options) override;
@@ -58,8 +58,9 @@ namespace MSIX {
         ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         std::multimap<std::uint64_t, std::string> GetFilesByLastModDate() override;
 
+        static const char* GetPathSeparator();
+
     protected:
-        const char* GetPathSeparator();
         std::string m_root;
 
     };//class DirectoryObject

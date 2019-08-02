@@ -163,6 +163,19 @@ public:
         return {};
     }
 
+    std::string GetPrefix() override
+    {
+        ComPtr<IXMLDOMNode> node;
+        ThrowHrIfFailed(m_element->QueryInterface(__uuidof(IXMLDOMNode), reinterpret_cast<void**>(&node)));
+        Bstr value;
+        ThrowHrIfFailed(node->get_prefix(value.AddressOf()));
+        if (value.Get() != nullptr)
+        {
+            return wstring_to_utf8(static_cast<WCHAR*>(value.Get()));
+        }
+        return {};
+    }
+
     // IMSXMLElement
     ComPtr<IXMLDOMNodeList> SelectNodes(XmlQueryName query) override
     {

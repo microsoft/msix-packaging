@@ -11,7 +11,7 @@ endif()
 
 if(WIN32)
     set(DESCRIPTION "makemsix manifest")
-    configure_file(${CMAKE_PROJECT_ROOT}/manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.exe.manifest CRLF)
+    configure_file(${MSIX_PROJECT_ROOT}/manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.exe.manifest CRLF)
     set(MANIFEST ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.exe.manifest)
 endif()
 
@@ -20,7 +20,7 @@ add_executable(${PROJECT_NAME}
     ${MANIFEST}
     )
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/src/msix)
+target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_BINARY_ROOT}/src/msix)
 
 add_dependencies(${PROJECT_NAME} msix)
 target_link_libraries(${PROJECT_NAME} msix)

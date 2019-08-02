@@ -14,12 +14,9 @@
 // Validates IAppxManifestReader::GetStream
 TEST_CASE("Api_AppxManifestReader_Stream", "[api]")
 {
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    MsixTest::InitializePackageReader(package, &packageReader);
+    std::string manifest = "Sample_AppxManifest.xml";
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
-    REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
-    REQUIRE_NOT_NULL(manifestReader.Get());
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
 
     MsixTest::ComPtr<IStream> stream;
     REQUIRE_SUCCEEDED(manifestReader->GetStream(&stream));
@@ -29,12 +26,9 @@ TEST_CASE("Api_AppxManifestReader_Stream", "[api]")
 // Validates application elements in the manifest. IAppxManifestApplicationsEnumerator and IAppxManifestApplication
 TEST_CASE("Api_AppxManifestReader_Applications", "[api]")
 {
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    MsixTest::InitializePackageReader(package, &packageReader);
+    std::string manifest = "Sample_AppxManifest.xml";
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
-    REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
-    REQUIRE_NOT_NULL(manifestReader.Get());
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
 
     MsixTest::ComPtr<IAppxManifestApplicationsEnumerator> enumerator;
     REQUIRE_SUCCEEDED(manifestReader->GetApplications(&enumerator));
@@ -46,7 +40,7 @@ TEST_CASE("Api_AppxManifestReader_Applications", "[api]")
         MsixTest::ComPtr<IAppxManifestApplication> app;
         REQUIRE_SUCCEEDED(enumerator->GetCurrent(&app));
 
-        std::string expectedAumid = "Microsoft.ZuneVideo_8wekyb3d8bbwe!Microsoft.ZuneVideo";
+        std::string expectedAumid = "SampleAppManifest_8wekyb3d8bbwe!Mca.App";
 
         MsixTest::Wrappers::Buffer<wchar_t> aumid;
         REQUIRE_SUCCEEDED(app->GetAppUserModelId(&aumid));
@@ -71,12 +65,9 @@ TEST_CASE("Api_AppxManifestReader_Applications", "[api]")
 // Validates manifest properties. IAppxManifestPropertie and IAppxManifestPropertiesUtf8
 TEST_CASE("Api_AppxManifestReader_Properties", "[api]")
 {
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    MsixTest::InitializePackageReader(package, &packageReader);
+    std::string manifest = "Sample_AppxManifest.xml";
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
-    REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
-    REQUIRE_NOT_NULL(manifestReader.Get());
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
 
     MsixTest::ComPtr<IAppxManifestProperties> properties;
     MsixTest::ComPtr<IAppxManifestPropertiesUtf8> propertiesUtf8;
@@ -104,10 +95,10 @@ TEST_CASE("Api_AppxManifestReader_Properties", "[api]")
 
     std::array<std::pair<std::string, std::string>, 4> testStringValues
     { {
-        { "DisplayName", "ms-resource:IDS_MANIFEST_VIDEO_APP_NAME" },
+        { "DisplayName", "Sample app manifest" },
         { "PublisherDisplayName", "Microsoft Corporation" },
-        { "Description", "ms-resource:IDS_MANIFEST_VIDEO_APP_DESCRIPTION" },
-        { "Logo", "Assets\\Movie-TVStoreLogo.png" }
+        { "Description", "This is a sample app manifest. It is not representative of what the manifest of a typical app would look like." },
+        { "Logo", "logo.jpeg" }
     } };
 
     for (const auto& test : testStringValues)
@@ -141,12 +132,9 @@ TEST_CASE("Api_AppxManifestReader_Properties", "[api]")
 // Validates package dependencies. IAppxManifestPackageDependency and IAppxManifestPackageDependencyUtf8
 TEST_CASE("Api_AppxManifestReader_PackageDependencies", "[api]")
 {
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    MsixTest::InitializePackageReader(package, &packageReader);
+    std::string manifest = "Sample_AppxManifest.xml";
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
-    REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
-    REQUIRE_NOT_NULL(manifestReader.Get());
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
 
     MsixTest::ComPtr<IAppxManifestPackageDependenciesEnumerator> dependencies;
     REQUIRE_SUCCEEDED(manifestReader->GetPackageDependencies(&dependencies));
@@ -192,17 +180,11 @@ TEST_CASE("Api_AppxManifestReader_PackageDependencies", "[api]")
 }
 
 // Validates manifest capabilities IAppxManifestReader::GetCapabilities
-// NOTE: There's currently a bug in non-windows devices were we only return
-// the elements that doesn't the same namespace as the xmlns of the manifest.
-// TODO: fix...
-TEST_CASE("Api_AppxManifestReader_Capabilities", "[api][!hide]")
+TEST_CASE("Api_AppxManifestReader_Capabilities", "[api]")
 {
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    MsixTest::InitializePackageReader(package, &packageReader);
+    std::string manifest = "Sample_AppxManifest.xml";
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
-    REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
-    REQUIRE_NOT_NULL(manifestReader.Get());
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
 
     APPX_CAPABILITIES expected = static_cast<APPX_CAPABILITIES>(
         APPX_CAPABILITY_INTERNET_CLIENT |
@@ -215,21 +197,173 @@ TEST_CASE("Api_AppxManifestReader_Capabilities", "[api][!hide]")
     REQUIRE(expected == capabilities);
 }
 
+// Validates manifest capabilities IAppxManifestReader::GetCapabilitiesByCapabilityClass
+TEST_CASE("Api_AppxManifestReader_GetCapabilitiesByCapabilityClass", "[api]")
+{
+    std::string manifest = "Sample_AppxManifest.xml";
+    MsixTest::ComPtr<IAppxManifestReader> manifestReader;
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
+    MsixTest::ComPtr<IAppxManifestReader3> manifestReader3;
+    REQUIRE_SUCCEEDED(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader3>::iid, reinterpret_cast<void**>(&manifestReader3)));
+
+    std::vector<std::string> expectedValuesDefaultAndGeneral = 
+    {
+        "internetClient",
+        "privateNetworkClientServer",
+        "videosLibrary",
+        "removableStorage",
+    };
+
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumerator> capabilitiesDefault;
+    REQUIRE_SUCCEEDED(manifestReader3->GetCapabilitiesByCapabilityClass(APPX_CAPABILITY_CLASS_GENERAL, &capabilitiesDefault));
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumeratorUtf8> capabilitiesDefaultUtf8;
+    REQUIRE_SUCCEEDED(capabilitiesDefault->QueryInterface(UuidOfImpl<IAppxManifestCapabilitiesEnumeratorUtf8>::iid, reinterpret_cast<void**>(&capabilitiesDefaultUtf8)));
+
+    BOOL hasCurrent = FALSE;
+    REQUIRE_SUCCEEDED(capabilitiesDefault->GetHasCurrent(&hasCurrent));
+    std::size_t numOfCaps = 0;
+    while (hasCurrent)
+    {
+        MsixTest::Wrappers::Buffer<wchar_t> capability;
+        REQUIRE_SUCCEEDED(capabilitiesDefault->GetCurrent(&capability));
+        REQUIRE(expectedValuesDefaultAndGeneral[numOfCaps] == capability.ToString());
+
+        MsixTest::Wrappers::Buffer<char> capabilityUtf8;
+        REQUIRE_SUCCEEDED(capabilitiesDefaultUtf8->GetCurrent(&capabilityUtf8));
+        REQUIRE(expectedValuesDefaultAndGeneral[numOfCaps] == capabilityUtf8.ToString());
+
+        REQUIRE_SUCCEEDED(capabilitiesDefault->MoveNext(&hasCurrent));
+        numOfCaps++;
+    }
+    REQUIRE(expectedValuesDefaultAndGeneral.size() == numOfCaps);
+
+    std::vector<std::string> expectedValuesRestricted = 
+    {
+        "enterpriseDataPolicy",
+        "previewStore",
+    };
+
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumerator> capabilitiesRestricted;
+    REQUIRE_SUCCEEDED(manifestReader3->GetCapabilitiesByCapabilityClass(APPX_CAPABILITY_CLASS_RESTRICTED, &capabilitiesRestricted));
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumeratorUtf8> capabilitiesRestrictedUtf8;
+    REQUIRE_SUCCEEDED(capabilitiesRestricted->QueryInterface(UuidOfImpl<IAppxManifestCapabilitiesEnumeratorUtf8>::iid, reinterpret_cast<void**>(&capabilitiesRestrictedUtf8)));
+
+    hasCurrent = FALSE;
+    REQUIRE_SUCCEEDED(capabilitiesRestricted->GetHasCurrent(&hasCurrent));
+    numOfCaps = 0;
+    while (hasCurrent)
+    {
+        MsixTest::Wrappers::Buffer<wchar_t> capability;
+        REQUIRE_SUCCEEDED(capabilitiesRestricted->GetCurrent(&capability));
+        REQUIRE(expectedValuesRestricted[numOfCaps] == capability.ToString());
+
+        MsixTest::Wrappers::Buffer<char> capabilityUtf8;
+        REQUIRE_SUCCEEDED(capabilitiesRestrictedUtf8->GetCurrent(&capabilityUtf8));
+        REQUIRE(expectedValuesRestricted[numOfCaps] == capabilityUtf8.ToString());
+
+        REQUIRE_SUCCEEDED(capabilitiesRestricted->MoveNext(&hasCurrent));
+        numOfCaps++;
+    }
+    REQUIRE(expectedValuesRestricted.size() == numOfCaps);
+
+    std::vector<std::string> expectedValuesWindows = 
+    {
+        "shellExperience",
+    };
+
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumerator> capabilitiesWindows;
+    REQUIRE_SUCCEEDED(manifestReader3->GetCapabilitiesByCapabilityClass(APPX_CAPABILITY_CLASS_WINDOWS, &capabilitiesWindows));
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumeratorUtf8> capabilitiesWindowsUtf8;
+    REQUIRE_SUCCEEDED(capabilitiesWindows->QueryInterface(UuidOfImpl<IAppxManifestCapabilitiesEnumeratorUtf8>::iid, reinterpret_cast<void**>(&capabilitiesWindowsUtf8)));
+
+    hasCurrent = FALSE;
+    REQUIRE_SUCCEEDED(capabilitiesWindows->GetHasCurrent(&hasCurrent));
+    numOfCaps = 0;
+    while (hasCurrent)
+    {
+        MsixTest::Wrappers::Buffer<wchar_t> capability;
+        REQUIRE_SUCCEEDED(capabilitiesWindows->GetCurrent(&capability));
+        REQUIRE(expectedValuesWindows[numOfCaps] == capability.ToString());
+
+        MsixTest::Wrappers::Buffer<char> capabilityUtf8;
+        REQUIRE_SUCCEEDED(capabilitiesWindowsUtf8->GetCurrent(&capabilityUtf8));
+        REQUIRE(expectedValuesWindows[numOfCaps] == capabilityUtf8.ToString());
+
+        REQUIRE_SUCCEEDED(capabilitiesWindows->MoveNext(&hasCurrent));
+        numOfCaps++;
+    }
+    REQUIRE(expectedValuesWindows.size() == numOfCaps);
+
+    std::vector<std::string> expectedValuesCustom = 
+    {
+        "fabrikam.CustomCap_5w7kyb3d8bbwe",
+    };
+
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumerator> capabilitiesCustom;
+    REQUIRE_SUCCEEDED(manifestReader3->GetCapabilitiesByCapabilityClass(APPX_CAPABILITY_CLASS_CUSTOM, &capabilitiesCustom));
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumeratorUtf8> capabilitiesCustomUtf8;
+    REQUIRE_SUCCEEDED(capabilitiesCustom->QueryInterface(UuidOfImpl<IAppxManifestCapabilitiesEnumeratorUtf8>::iid, reinterpret_cast<void**>(&capabilitiesCustomUtf8)));
+
+    hasCurrent = FALSE;
+    REQUIRE_SUCCEEDED(capabilitiesCustom->GetHasCurrent(&hasCurrent));
+    numOfCaps = 0;
+    while (hasCurrent)
+    {
+        MsixTest::Wrappers::Buffer<wchar_t> capability;
+        REQUIRE_SUCCEEDED(capabilitiesCustom->GetCurrent(&capability));
+        REQUIRE(expectedValuesCustom[numOfCaps] == capability.ToString());
+
+        MsixTest::Wrappers::Buffer<char> capabilityUtf8;
+        REQUIRE_SUCCEEDED(capabilitiesCustomUtf8->GetCurrent(&capabilityUtf8));
+        REQUIRE(expectedValuesCustom[numOfCaps] == capabilityUtf8.ToString());
+
+        REQUIRE_SUCCEEDED(capabilitiesCustom->MoveNext(&hasCurrent));
+        numOfCaps++;
+    }
+    REQUIRE(expectedValuesCustom.size() == numOfCaps);
+
+    std::vector<std::string> expectedAll;
+    expectedAll.insert(expectedAll.end(), expectedValuesDefaultAndGeneral.begin(), expectedValuesDefaultAndGeneral.end());
+    expectedAll.insert(expectedAll.end(), expectedValuesWindows.begin(), expectedValuesWindows.end());
+    expectedAll.insert(expectedAll.end(), expectedValuesRestricted.begin(), expectedValuesRestricted.end());
+    expectedAll.insert(expectedAll.end(), expectedValuesCustom.begin(), expectedValuesCustom.end());
+
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumerator> capabilitiesAll;
+    REQUIRE_SUCCEEDED(manifestReader3->GetCapabilitiesByCapabilityClass(APPX_CAPABILITY_CLASS_ALL, &capabilitiesAll));
+    MsixTest::ComPtr<IAppxManifestCapabilitiesEnumeratorUtf8> capabilitiesAllUtf8;
+    REQUIRE_SUCCEEDED(capabilitiesAll->QueryInterface(UuidOfImpl<IAppxManifestCapabilitiesEnumeratorUtf8>::iid, reinterpret_cast<void**>(&capabilitiesAllUtf8)));
+
+    hasCurrent = FALSE;
+    REQUIRE_SUCCEEDED(capabilitiesAll->GetHasCurrent(&hasCurrent));
+    numOfCaps = 0;
+    while (hasCurrent)
+    {
+        MsixTest::Wrappers::Buffer<wchar_t> capability;
+        REQUIRE_SUCCEEDED(capabilitiesAll->GetCurrent(&capability));
+        REQUIRE(expectedAll[numOfCaps] == capability.ToString());
+
+        MsixTest::Wrappers::Buffer<char> capabilityUtf8;
+        REQUIRE_SUCCEEDED(capabilitiesAllUtf8->GetCurrent(&capabilityUtf8));
+        REQUIRE(expectedAll[numOfCaps] == capabilityUtf8.ToString());
+
+        REQUIRE_SUCCEEDED(capabilitiesAll->MoveNext(&hasCurrent));
+        numOfCaps++;
+    }
+    REQUIRE(expectedAll.size() == numOfCaps);
+
+}
+
 // Validates manifest resources. IAppxManifestResourcesEnumerator and IAppxManifestResourcesEnumeratorUtf8
 TEST_CASE("Api_AppxManifestReader_Resources", "[api]")
 {
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    MsixTest::InitializePackageReader(package, &packageReader);
+    std::string manifest = "Sample_AppxManifest.xml";
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
-    REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
-    REQUIRE_NOT_NULL(manifestReader.Get());
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
 
-    std::array<std::string, 3> expectedResources =
+    std::array<std::string, 2> expectedResources =
     {
-        "en",
-        "en-US",
-        "en-GB"
+        "en-us",
+        "es-mx",
     };
 
     MsixTest::ComPtr<IAppxManifestResourcesEnumerator> resources;
@@ -259,12 +393,9 @@ TEST_CASE("Api_AppxManifestReader_Resources", "[api]")
 // Validates manifest target family devices. IAppxManifestTargetDeviceFamily and IAppxManifestTargetDeviceFamilyUtf8
 TEST_CASE("Api_AppxManifestReader_Tdf", "[api]")
 {
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    MsixTest::InitializePackageReader(package, &packageReader);
+    std::string manifest = "Sample_AppxManifest.xml";
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
-    REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
-    REQUIRE_NOT_NULL(manifestReader.Get());
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
 
     MsixTest::ComPtr<IAppxManifestReader3> manifestReader3;
     REQUIRE_SUCCEEDED(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader3>::iid, reinterpret_cast<void**>(&manifestReader3)));
@@ -308,12 +439,9 @@ TEST_CASE("Api_AppxManifestReader_Tdf", "[api]")
 // "Validates IMsixDocumentElement, IMsixElement and IMsixElementEnumerator"
 TEST_CASE("Api_AppxManifestReader_MsixDocument", "[api]")
 {
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    MsixTest::InitializePackageReader(package, &packageReader);
+    std::string manifest = "Sample_AppxManifest.xml";
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
-    REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
-    REQUIRE_NOT_NULL(manifestReader.Get());
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
 
     MsixTest::ComPtr<IMsixDocumentElement> msixDocument;
     REQUIRE_SUCCEEDED(manifestReader->QueryInterface(UuidOfImpl<IMsixDocumentElement>::iid, reinterpret_cast<void**>(&msixDocument)));
@@ -386,12 +514,9 @@ TEST_CASE("Api_AppxManifestReader_MsixDocument", "[api]")
 
 TEST_CASE("Api_AppxManifestReader_PackageId", "[api]")
 {
-    std::string package = "StoreSigned_Desktop_x64_MoviesTV.appx";
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    MsixTest::InitializePackageReader(package, &packageReader);
+    std::string manifest = "Sample_AppxManifest.xml";
     MsixTest::ComPtr<IAppxManifestReader> manifestReader;
-    REQUIRE_SUCCEEDED(packageReader->GetManifest(&manifestReader));
-    REQUIRE_NOT_NULL(manifestReader.Get());
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
 
     MsixTest::ComPtr<IAppxManifestPackageId> packageId;
     REQUIRE_SUCCEEDED(manifestReader->GetPackageId(&packageId));
@@ -400,7 +525,7 @@ TEST_CASE("Api_AppxManifestReader_PackageId", "[api]")
     MsixTest::ComPtr<IAppxManifestPackageIdUtf8> packageIdUtf8;
     REQUIRE_SUCCEEDED(packageId->QueryInterface(UuidOfImpl<IAppxManifestPackageIdUtf8>::iid, reinterpret_cast<void**>(&packageIdUtf8)));
 
-    std::string expectedName = "Microsoft.ZuneVideo";
+    std::string expectedName = "SampleAppManifest";
     MsixTest::Wrappers::Buffer<wchar_t> name;
     REQUIRE_SUCCEEDED(packageId->GetName(&name));
     REQUIRE(expectedName == name.ToString());
@@ -437,11 +562,12 @@ TEST_CASE("Api_AppxManifestReader_PackageId", "[api]")
     REQUIRE_SUCCEEDED(packageId->GetVersion(&packageVersion));
     REQUIRE(expectedVersion == packageVersion);
 
+    std::string expectedResourceId = "NorthAmerica";
     MsixTest::Wrappers::Buffer<wchar_t> resourceId;
     REQUIRE_SUCCEEDED(packageId->GetResourceId(&resourceId));
-    REQUIRE(resourceId.Get() == nullptr);
+    REQUIRE(expectedResourceId == resourceId.ToString());
 
-    std::string expectedFull = "Microsoft.ZuneVideo_3.6.25071.0_x64__8wekyb3d8bbwe";
+    std::string expectedFull = "SampleAppManifest_3.6.25071.0_x64_NorthAmerica_8wekyb3d8bbwe";
     MsixTest::Wrappers::Buffer<wchar_t> packageFullName;
     REQUIRE_SUCCEEDED(packageId->GetPackageFullName(&packageFullName));
     REQUIRE(expectedFull == packageFullName.ToString());
@@ -450,7 +576,7 @@ TEST_CASE("Api_AppxManifestReader_PackageId", "[api]")
     REQUIRE_SUCCEEDED(packageIdUtf8->GetPackageFullName(&packageFullNameUtf8));
     REQUIRE(expectedFull == packageFullNameUtf8.ToString());
 
-    std::string expectedFamily = "Microsoft.ZuneVideo_8wekyb3d8bbwe";
+    std::string expectedFamily = "SampleAppManifest_8wekyb3d8bbwe";
     MsixTest::Wrappers::Buffer<wchar_t> packageFamilyName;
     REQUIRE_SUCCEEDED(packageId->GetPackageFamilyName(&packageFamilyName));
     REQUIRE(expectedFamily == packageFamilyName.ToString());

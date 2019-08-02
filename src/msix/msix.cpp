@@ -164,7 +164,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
     MSIX::ComPtr<IAppxPackageReader> reader;
     ThrowHrIfFailed(factory->CreatePackageReader(stream, &reader));
 
-    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination);
+    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination, true);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to);
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
@@ -209,7 +209,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     MSIX::ComPtr<IAppxBundleReader> reader;
     ThrowHrIfFailed(factory->CreateBundleReader(stream, &reader));
 
-    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination);
+    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination, true);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to);
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();

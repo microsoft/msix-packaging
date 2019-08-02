@@ -26,7 +26,8 @@ namespace MsixTest {
             Unbundle,
             Flat,
             BadFlat,
-            Pack
+            Pack,
+            Manifest,
         } Directory;
 
         static TestPath* GetInstance();
@@ -113,6 +114,7 @@ namespace MsixTest {
     void InitializePackageReader(const std::string& package, IAppxPackageReader** packageReader);
     void InitializePackageReader(IStream* stream, IAppxPackageReader** packageReader);
     void InitializeBundleReader(const std::string& package, IAppxBundleReader** bundleReader);
+    void InitializeManifestReader(const std::string& manifest, IAppxManifestReader** manifestReader);
 
     template <class T>
     class ComPtr
@@ -120,7 +122,13 @@ namespace MsixTest {
     public:
         // default ctor
         ComPtr() = default;
-        ComPtr(T* ptr) : m_ptr(ptr) { InternalAddRef(); }
+        explicit ComPtr(T* ptr) : m_ptr(ptr) { InternalAddRef(); }
+
+        ComPtr(const ComPtr& other) : m_ptr(other.m_ptr) { InternalAddRef(); }
+        ComPtr& operator=(const ComPtr& other) { InternalRelease(); m_ptr = other.m_ptr; InternalAddRef(); return *this; }
+
+        ComPtr(ComPtr&& other) : m_ptr(other.m_ptr) { other.m_ptr = nullptr; }
+        ComPtr& operator=(ComPtr&& other) { InternalRelease(); m_ptr = other.m_ptr; other.m_ptr = nullptr; return *this; }
 
         ~ComPtr() { InternalRelease(); }
 
@@ -155,17 +163,23 @@ namespace MsixTest {
             return &m_ptr;
         }
 
+        bool Release()
+        {
+            return InternalRelease();
+        }
+
     protected:
         T* m_ptr = nullptr;
 
         inline void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
-        inline void InternalRelease()
+        inline bool InternalRelease()
         {
             T* temp = m_ptr;
             if (temp)
             {   m_ptr = nullptr;
-                temp->Release();
+                return (temp->Release() == 0);
             }
+            return false;
         }
     };
 
@@ -184,6 +198,7 @@ namespace MsixTest {
         void Initialize(std::string fileName, bool toRead, bool toDelete = false);
         void Initialize(std::wstring fileName, bool toRead, bool toDelete = false);
 
+        inline IStream* operator->() const { return m_stream.Get(); }
         inline IStream* Get() const { return m_stream.Get(); }
         IStream* Detach()
         {

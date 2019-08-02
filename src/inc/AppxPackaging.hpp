@@ -1219,6 +1219,7 @@ interface IAppxManifestPackageDependencyUtf8;
 interface IAppxManifestPackageIdUtf8;
 interface IAppxManifestPropertiesUtf8;
 interface IAppxManifestQualifiedResourceUtf8;
+interface IAppxManifestCapabilitiesEnumeratorUtf8;
 interface IAppxManifestResourcesEnumeratorUtf8;
 interface IAppxManifestTargetDeviceFamilyUtf8;
 interface IAppxPackageReaderUtf8;
@@ -1404,6 +1405,19 @@ interface IAppxPackageWriter3Utf8;
     };
 #endif 	/* __IAppxManifestQualifiedResourceUtf8_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__
+#define __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__
+
+    // {cc422f8e-a4d9-4f2e-bb49-ac3a5ce2a2f0}
+    MSIX_INTERFACE(IAppxManifestCapabilitiesEnumeratorUtf8,0xcc422f8e,0xa4d9,0x4f2e,0xbb,0x49,0xac,0x3a,0x5c,0xe2,0xa2,0xf0);
+    interface IAppxManifestCapabilitiesEnumeratorUtf8 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetCurrent(
+            /* [retval][string][out] */ LPSTR *resource) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__ */
+
 #ifndef __IAppxManifestResourcesEnumeratorUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestResourcesEnumeratorUtf8_INTERFACE_DEFINED__
 
@@ -1490,7 +1504,10 @@ enum MSIX_VALIDATION_OPTION
         MSIX_VALIDATION_OPTION_FULL                        = 0x0,
         MSIX_VALIDATION_OPTION_SKIPSIGNATURE               = 0x1,
         MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN = 0x2,
-        MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST            = 0x4,
+        MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST_DEPRECATED = 0x4, // AppxManifest.xml must be always be valid.
+                                                                  // If the SDK is compiled without USE_VALIDATION_PARSER,
+                                                                  // no schema validation is done, but it needs to be
+                                                                  // valid xml.
     }   MSIX_VALIDATION_OPTION;
 
 typedef /* [v1_enum] */

@@ -56,6 +56,8 @@ namespace MsixTest {
                 return m_root + "testData/unpack/badFlat";
             case Pack:
                 return m_root + "testData/pack";
+            case Manifest:
+                return m_root + "testData/manifest";
         }
         return {};
     }
@@ -164,6 +166,19 @@ namespace MsixTest {
         return;
     }
 
+    void InitializeManifestReader(const std::string& manifest, IAppxManifestReader** manifestReader)
+    {
+        *manifestReader = nullptr;
+
+        auto manifestPath = TestPath::GetInstance()->GetPath(TestPath::Directory::Manifest) + "/" + manifest;
+        auto inputStream = StreamFile(manifestPath, true);
+
+        ComPtr<IAppxFactory> factory;
+        REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(Allocators::Allocate, Allocators::Free, MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &factory));
+        REQUIRE_SUCCEEDED(factory->CreateManifestReader(inputStream.Get(), manifestReader));
+        REQUIRE_NOT_NULL(*manifestReader);
+    }
+
     StreamFile::StreamFile(std::string fileName, bool toRead, bool toDelete): m_toDelete(toDelete)
     {
         InitializeStream(fileName, toRead);
@@ -202,9 +217,7 @@ namespace MsixTest {
         {
             // best effort to delete the file. If someone else has a reference to this stream
             // and this object is deleted, the file WILL NOT be deleted.
-            auto ref = m_stream->Release();
-            m_stream = nullptr;
-            if (ref == 0)
+            if (m_stream.Release())
             {
                 remove(m_fileName.c_str());
             }
