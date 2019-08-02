@@ -10,7 +10,9 @@ namespace MsixCoreLib
     {
         InvalidAutoPlayType = 0,
         UWPContent,
-        UWPDevice
+        UWPDevice,
+        DesktopAppxContent,
+        DesktopAppxDevice
     };
 
     /// the autoplay structure
@@ -24,6 +26,10 @@ namespace MsixCoreLib
         std::wstring appUserModelId;
         std::wstring generatedProgId;
         std::wstring generatedhandlerName;
+        std::wstring dropTargetHandler;
+        std::wstring parameters;
+        std::wstring hwEventHandler;
+        std::wstring initCmdLine;
         AutoPlayType autoPlayType;
     };
 

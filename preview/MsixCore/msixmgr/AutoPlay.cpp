@@ -49,14 +49,14 @@ HRESULT AutoPlay::ParseManifest()
 
     while (hasCurrent)
     {
-        AutoPlayObject autoPlay;
+        //AutoPlayObject autoPlay;
 
         ComPtr<IMsixElement> extensionElement;
         RETURN_IF_FAILED(extensionEnum->GetCurrent(&extensionElement));
         Text<wchar_t> extensionCategory;
         RETURN_IF_FAILED(extensionElement->GetAttributeValue(categoryAttribute.c_str(), &extensionCategory));
 
-        if (wcscmp(extensionCategory.Get(), autoPlayContentCategoryNameInManifest.c_str()) == 0)
+        /*if (wcscmp(extensionCategory.Get(), autoPlayContentCategoryNameInManifest.c_str()) == 0)
         {
             autoPlay.autoPlayType = UWPContent;
 
@@ -105,30 +105,164 @@ HRESULT AutoPlay::ParseManifest()
                 RETURN_IF_FAILED(GenerateHandlerName(L"Content", id.Get(), generatedHandlerName));
                 autoPlay.generatedhandlerName = generatedHandlerName.c_str();
 
+                RETURN_IF_FAILED(launchActionEnum->MoveNext(&hc_launchAction));
+
             }
 
-        }
-        else if (wcscmp(extensionCategory.Get(), autoPlayDeviceCategoryNameInManifest.c_str()) == 0)
+        }*/
+
+        if (wcscmp(extensionCategory.Get(), desktopAppXExtensionCategory.c_str()) == 0)
         {
-            autoPlay.autoPlayType = UWPDevice;
+            BOOL hc_invokeAction = FALSE;
+            ComPtr<IMsixElementEnumerator> invokeActionEnum;
+            RETURN_IF_FAILED(extensionElement->GetElements(invokeActionQuery.c_str(), &invokeActionEnum));
+            RETURN_IF_FAILED(invokeActionEnum->GetHasCurrent(&hc_invokeAction));
 
-            //ParseStandardElement
+            while (hc_invokeAction)
+            {
+                ComPtr<IMsixElement> invokeActionElement;
+                RETURN_IF_FAILED(invokeActionEnum->GetCurrent(&invokeActionElement));
 
-            // device event
+                //desktop appx content element
+                BOOL has_DesktopAppxContent = FALSE;
+                ComPtr<IMsixElementEnumerator> desktopAppxContentEnum;
+                RETURN_IF_FAILED(invokeActionElement->GetElements(invokeActionContentQuery.c_str(), &desktopAppxContentEnum));
+                RETURN_IF_FAILED(desktopAppxContentEnum->GetHasCurrent(&has_DesktopAppxContent));
 
-            // Generate ProgID
+                while (has_DesktopAppxContent)
+                {
+                    ComPtr<IMsixElement> desktopAppxContentElement;
+                    RETURN_IF_FAILED(desktopAppxContentEnum->GetCurrent(&desktopAppxContentElement));
 
-            //GenerateHandlerName
+                    AutoPlayObject autoPlay;
 
+                    //autoplay type
+                    autoPlay.autoPlayType = DesktopAppxContent;
 
+                    //action
+                    Text<wchar_t> action;
+                    RETURN_IF_FAILED(invokeActionElement->GetAttributeValue(actionAttributeName.c_str(), &action));
+                    autoPlay.action = action.Get();
+
+                    //provider
+                    Text<wchar_t> provider;
+                    RETURN_IF_FAILED(invokeActionElement->GetAttributeValue(providerAttributeName.c_str(), &provider));
+                    autoPlay.provider = provider.Get();
+
+                    // Get the App's app user model id
+                    autoPlay.appUserModelId = m_msixRequest->GetPackageInfo()->GetId();
+
+                    //get the logo
+                    autoPlay.defaultIcon = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + m_msixRequest->GetPackageInfo()->GetRelativeLogoPath();
+
+                    //verb
+                    Text<wchar_t> id;
+                    RETURN_IF_FAILED(desktopAppxContentElement->GetAttributeValue(idAttributeName.c_str(), &id));
+                    autoPlay.id = id.Get();
+
+                    //content event
+                    Text<wchar_t> handleEvent;
+                    RETURN_IF_FAILED(desktopAppxContentElement->GetAttributeValue(contentEventAttributeName.c_str(), &handleEvent));
+                    autoPlay.handleEvent = handleEvent.Get();
+
+                    //drop target handler
+                    Text<wchar_t> dropTargetHandler;
+                    RETURN_IF_FAILED(desktopAppxContentElement->GetAttributeValue(dropTargetHandlerAttributeName.c_str(), &dropTargetHandler));
+                    autoPlay.dropTargetHandler = dropTargetHandler.Get();
+
+                    //parameters
+                    Text<wchar_t> parameters;
+                    RETURN_IF_FAILED(desktopAppxContentElement->GetAttributeValue(parametersAttributeName.c_str(), &parameters));
+                    autoPlay.parameters = parameters.Get();
+
+                    //GenerateProgId
+                    std::wstring uniqueProgId;
+                    uniqueProgId.append(id.Get());
+                    uniqueProgId.append(handleEvent.Get());
+
+                    std::wstring generatedProgId;
+                    RETURN_IF_FAILED(GenerateProgId(desktopAppXExtensionCategory.c_str(), uniqueProgId.c_str(), generatedProgId));
+                    autoPlay.generatedProgId = generatedProgId.c_str();
+
+                    //GenerateHandlerName
+                    std::wstring uniqueHandlerName;
+                    uniqueHandlerName.append(id.Get());
+                    uniqueHandlerName.append(handleEvent.Get());
+
+                    std::wstring generatedHandlerName;
+                    RETURN_IF_FAILED(GenerateHandlerName(L"DesktopAppXContent", uniqueHandlerName.c_str(), generatedHandlerName));
+                    autoPlay.generatedhandlerName = generatedHandlerName.c_str();
+
+                    m_autoPlay.push_back(autoPlay);
+                    RETURN_IF_FAILED(desktopAppxContentEnum->MoveNext(&has_DesktopAppxContent));
+
+                }
+
+                //desktop appx device element
+                BOOL has_DesktopAppxDevice = FALSE;
+                ComPtr<IMsixElementEnumerator> desktopAppxDeviceEnum;
+                RETURN_IF_FAILED(invokeActionElement->GetElements(invokeActionDeviceQuery.c_str(), &desktopAppxDeviceEnum));
+                RETURN_IF_FAILED(desktopAppxDeviceEnum->GetHasCurrent(&has_DesktopAppxDevice));
+
+                while (has_DesktopAppxDevice)
+                {
+                    ComPtr<IMsixElement> desktopAppxDeviceElement;
+                    RETURN_IF_FAILED(desktopAppxDeviceEnum->GetCurrent(&desktopAppxDeviceElement));
+
+                    AutoPlayObject autoPlay;
+
+                    //autoplay type
+                    autoPlay.autoPlayType = DesktopAppxDevice;
+
+                    //action
+                    Text<wchar_t> action;
+                    RETURN_IF_FAILED(invokeActionElement->GetAttributeValue(actionAttributeName.c_str(), &action));
+                    autoPlay.action = action.Get();
+
+                    //provider
+                    Text<wchar_t> provider;
+                    RETURN_IF_FAILED(invokeActionElement->GetAttributeValue(providerAttributeName.c_str(), &provider));
+                    autoPlay.provider = provider.Get();
+
+                    // Get the App's app user model id
+                    autoPlay.appUserModelId = m_msixRequest->GetPackageInfo()->GetId();
+
+                    //get the logo
+                    autoPlay.defaultIcon = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + m_msixRequest->GetPackageInfo()->GetRelativeLogoPath();
+
+                    //handle event
+                    Text<wchar_t> handleEvent;
+                    RETURN_IF_FAILED(desktopAppxDeviceElement->GetAttributeValue(deviceEventAttributeName.c_str(), &handleEvent));
+                    autoPlay.handleEvent = handleEvent.Get();
+
+                    //hwEventHandler
+                    Text<wchar_t> hwEventHandler;
+                    RETURN_IF_FAILED(desktopAppxDeviceElement->GetAttributeValue(hwEventHandlerAttributeName.c_str(), &hwEventHandler));
+                    autoPlay.hwEventHandler = hwEventHandler.Get();
+
+                    //init cmd line
+                    Text<wchar_t> initCmdLine;
+                    RETURN_IF_FAILED(desktopAppxDeviceElement->GetAttributeValue(InitCmdLineAttributeName.c_str(), &initCmdLine));
+                    autoPlay.initCmdLine = initCmdLine.Get();
+
+                    //GenerateHandlerName
+                    std::wstring uniqueHandlerName;
+                    uniqueHandlerName.append(handleEvent.Get());
+
+                    std::wstring generatedHandlerName;
+                    RETURN_IF_FAILED(GenerateHandlerName(L"DesktopAppXDevice", uniqueHandlerName.c_str(), generatedHandlerName));
+                    autoPlay.generatedhandlerName = generatedHandlerName.c_str();
+
+                    m_autoPlay.push_back(autoPlay);
+                    RETURN_IF_FAILED(desktopAppxDeviceEnum->MoveNext(&has_DesktopAppxDevice));
+
+                }
+
+                RETURN_IF_FAILED(invokeActionEnum->MoveNext(&hc_invokeAction));
+            }
         }
 
-        else if (wcscmp(extensionCategory.Get(), desktopAppXExtensionCategory.c_str()) == 0)
-        {
-            // check if content or device element
-        }
-
-        m_autoPlay.push_back(autoPlay);
+        //m_autoPlay.push_back(autoPlay);
         RETURN_IF_FAILED(extensionEnum->MoveNext(&hasCurrent));
     }
 
@@ -337,7 +471,7 @@ HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
     RETURN_IF_FAILED(handlerKey.SetStringValue(L"Provider", autoPlayObject.provider));
 
     //Get the default icon
-    //RETURN_IF_FAILED(handlerKey.SetStringValue(L"DefaultIcon", provider));
+    RETURN_IF_FAILED(handlerKey.SetStringValue(L"DefaultIcon", autoPlayObject.defaultIcon));
 
     RegistryKey handleEventRootKey;
     RETURN_IF_FAILED(explorerKey.CreateSubKey(eventHandlerRootRegKeyName.c_str(), KEY_WRITE, &handleEventRootKey));
@@ -345,13 +479,19 @@ HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
     RegistryKey handleEventKey;
     RETURN_IF_FAILED(handleEventRootKey.CreateSubKey(autoPlayObject.handleEvent.c_str(), KEY_WRITE, &handleEventKey));
 
-    RETURN_IF_FAILED(handleEventKey.SetStringValue(autoPlayObject.generatedhandlerName.c_str(), nullptr));
+    RETURN_IF_FAILED(handleEventKey.SetStringValue(autoPlayObject.generatedhandlerName.c_str(), NULL));
 
     if (autoPlayObject.autoPlayType == UWPContent)
     {
         handlerKey.SetStringValue(L"InvokeProgID", autoPlayObject.generatedProgId);
 
         handlerKey.SetStringValue(L"InvokeVerb", autoPlayObject.id);
+    }
+
+    if (autoPlayObject.autoPlayType == UWPContent || autoPlayObject.autoPlayType == UWPDevice)
+    {
+
+
     }
 
     return S_OK;
