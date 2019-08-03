@@ -123,6 +123,10 @@ static const std::wstring dropTargetHandlerAttributeName = L"DropTargetHandler";
 static const std::wstring parametersAttributeName = L"Parameters";
 static const std::wstring hwEventHandlerAttributeName = L"HWEventHandler";
 static const std::wstring InitCmdLineAttributeName = L"InitCmdLine";
+static const std::wstring dropTargetRegKeyName = L"DropTarget";
+static const std::wstring commandKeyRegName = L"command";
+static const wchar_t desktopAppXProtocolDelegateExecuteValue[] = L"{BFEC0C93-0B7D-4F2C-B09C-AFFFC4BDAE78}";
+
 static const std::wstring parentApplicationVisualElementsXPath = L"ancestor::*[local-name()='Application']/*[local-name()='VisualElements']";
 static const std::wstring parentApplicationXPath = L"ancestor::*[local-name()='Application']";
 static const std::wstring explorerRegKeyName = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer";

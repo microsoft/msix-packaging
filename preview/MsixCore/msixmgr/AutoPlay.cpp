@@ -479,22 +479,80 @@ HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
     RegistryKey handleEventKey;
     RETURN_IF_FAILED(handleEventRootKey.CreateSubKey(autoPlayObject.handleEvent.c_str(), KEY_WRITE, &handleEventKey));
 
-    RETURN_IF_FAILED(handleEventKey.SetStringValue(autoPlayObject.generatedhandlerName.c_str(), NULL));
+    //null value is not being set
+    RETURN_IF_FAILED(handleEventKey.SetStringValue(autoPlayObject.generatedhandlerName.c_str(), nullptr));
 
-    if (autoPlayObject.autoPlayType == UWPContent)
+    //RETURN_IF_FAILED(handlerKey.SetValue(L"DesktopAppX", 1));
+
+    if (autoPlayObject.autoPlayType == DesktopAppxContent)
     {
-        handlerKey.SetStringValue(L"InvokeProgID", autoPlayObject.generatedProgId);
+        RETURN_IF_FAILED(handlerKey.SetStringValue(L"InvokeProgID", autoPlayObject.generatedProgId));
 
-        handlerKey.SetStringValue(L"InvokeVerb", autoPlayObject.id);
+        RETURN_IF_FAILED(handlerKey.SetStringValue(L"InvokeVerb", autoPlayObject.id));
+
+        RegistryKey verbRootKey;
+        RETURN_IF_FAILED(BuildVerbKey(autoPlayObject.generatedProgId, autoPlayObject.id, verbRootKey));
+
+        if (autoPlayObject.dropTargetHandler.size() > 0)
+        {
+            RegistryKey dropTargetKey;
+            RETURN_IF_FAILED(verbRootKey.CreateSubKey(dropTargetRegKeyName.c_str(), KEY_WRITE, &dropTargetKey));
+
+            std::wstring regDropTargetHandlerBuilder;
+            regDropTargetHandlerBuilder.append(L"{");
+            regDropTargetHandlerBuilder.append(autoPlayObject.dropTargetHandler);
+            regDropTargetHandlerBuilder.append(L"}");
+
+            RETURN_IF_FAILED(dropTargetKey.SetStringValue(L"CLSID", regDropTargetHandlerBuilder.c_str()));
+        }
+        else
+        {
+            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"AppUserModelID", autoPlayObject.appUserModelId.c_str()));
+
+            std::wstring resolvedExecutableFullPath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + m_msixRequest->GetPackageInfo()->GetRelativeExecutableFilePath();
+            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"PackageRelativeExecutable", resolvedExecutableFullPath.c_str()));
+
+            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"Parameters", autoPlayObject.parameters.c_str()));
+
+            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"ContractId", L"Windows.File"));
+
+            //RETURN_IF_FAILED(verbRootKey.SetStringValue(L"DesiredInitialViewState", 0));
+
+            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"PackageId", m_msixRequest->GetPackageFullName()));
+
+            RegistryKey commandKey;
+            RETURN_IF_FAILED(verbRootKey.CreateSubKey(commandKeyRegName.c_str(), KEY_WRITE, &commandKey));
+
+            RETURN_IF_FAILED(commandKey.SetStringValue(L"DelegateExecute", desktopAppXProtocolDelegateExecuteValue));
+        }
     }
-
-    if (autoPlayObject.autoPlayType == UWPContent || autoPlayObject.autoPlayType == UWPDevice)
+    else if (autoPlayObject.autoPlayType == DesktopAppxDevice)
     {
+        std::wstring regHWEventHandlerBuilder;
+        regHWEventHandlerBuilder.append(L"{");
+        regHWEventHandlerBuilder.append(autoPlayObject.hwEventHandler);
+        regHWEventHandlerBuilder.append(L"}");
 
+        RETURN_IF_FAILED(handlerKey.SetStringValue(L"CLSID", regHWEventHandlerBuilder.c_str()));
 
+        RETURN_IF_FAILED(handlerKey.SetStringValue(L"InitCmdLine", autoPlayObject.initCmdLine.c_str()));
     }
 
     return S_OK;
+}
+
+HRESULT BuildVerbKey(std::wstring generatedProgId, std::wstring id, RegistryKey & verbRootKey)
+{
+    RegistryKey classesRootKey;
+    RETURN_IF_FAILED(classesRootKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
+
+    RegistryKey progIdRootKey;
+    RETURN_IF_FAILED(classesRootKey.CreateSubKey(generatedProgId.c_str(), KEY_READ | KEY_WRITE, &progIdRootKey));
+
+    RegistryKey shellRootKey;
+    RETURN_IF_FAILED(progIdRootKey.CreateSubKey(shellKeyName.c_str(), KEY_READ | KEY_WRITE, &shellRootKey));
+
+    RETURN_IF_FAILED(shellRootKey.CreateSubKey(id.c_str(), KEY_READ | KEY_WRITE, &verbRootKey));
 }
 
 HRESULT AutoPlay::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** instance)
