@@ -30,7 +30,7 @@ namespace MSIX {
         static_assert(std::is_base_of<I1, I0>::value, "Interface has to derive from I0");
         static bool Includes(REFIID riid)
         {
-            return riid == UuidOfImpl<I1>::iid;
+            return riid == UuidOfImpl<I0>::iid ||riid == UuidOfImpl<I1>::iid;
         }
     };
 
@@ -57,7 +57,7 @@ namespace MSIX {
     {
         bool Matches(REFIID riid, void** ppvObject)
         {
-            if(riid == UuidOfImpl<I0>::iid || ChainInterfaces<I0, Chain...>::Includes(riid))
+            if(ChainInterfaces<I0, Chain...>::Includes(riid))
             {
                 *ppvObject = reinterpret_cast<I0*>(this);
                 return true;
