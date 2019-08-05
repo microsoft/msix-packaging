@@ -12,7 +12,10 @@
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
 #include "ZipObjectWriter.hpp"
+
+#ifdef BUNDLE_SUPPORT
 #include "AppxBundleManifest.hpp"
+#endif
 
 namespace MSIX {
     // IAppxFactory
@@ -102,9 +105,11 @@ namespace MSIX {
     {
         THROW_IF_BUNDLE_NOT_ENABLED
         ThrowErrorIf(Error::InvalidParameter, (manifestReader == nullptr || *manifestReader != nullptr), "Invalid parameter");
+        #ifdef BUNDLE_SUPPORT
         ComPtr<IStream> input(inputStream);
         auto result = ComPtr<IAppxBundleManifestReader>::Make<AppxBundleManifestObject>(this, input);
         *manifestReader = result.Detach();
+        #endif
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
