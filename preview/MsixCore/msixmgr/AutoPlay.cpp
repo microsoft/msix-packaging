@@ -168,12 +168,18 @@ HRESULT AutoPlay::ParseManifest()
                     //drop target handler
                     Text<wchar_t> dropTargetHandler;
                     RETURN_IF_FAILED(desktopAppxContentElement->GetAttributeValue(dropTargetHandlerAttributeName.c_str(), &dropTargetHandler));
-                    autoPlay.dropTargetHandler = dropTargetHandler.Get();
+                    if (dropTargetHandler.Get() != nullptr)
+                    {
+                        autoPlay.dropTargetHandler = dropTargetHandler.Get();
+                    }
 
                     //parameters
                     Text<wchar_t> parameters;
                     RETURN_IF_FAILED(desktopAppxContentElement->GetAttributeValue(parametersAttributeName.c_str(), &parameters));
-                    autoPlay.parameters = parameters.Get();
+                    if (parameters.Get() != nullptr)
+                    {
+                        autoPlay.parameters = parameters.Get();
+                    }
 
                     //GenerateProgId
                     std::wstring uniqueProgId;
@@ -243,7 +249,10 @@ HRESULT AutoPlay::ParseManifest()
                     //init cmd line
                     Text<wchar_t> initCmdLine;
                     RETURN_IF_FAILED(desktopAppxDeviceElement->GetAttributeValue(InitCmdLineAttributeName.c_str(), &initCmdLine));
-                    autoPlay.initCmdLine = initCmdLine.Get();
+                    if (initCmdLine.Get() != nullptr)
+                    {
+                        autoPlay.initCmdLine = initCmdLine.Get();
+                    }
 
                     //GenerateHandlerName
                     std::wstring uniqueHandlerName;
@@ -541,7 +550,7 @@ HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
     return S_OK;
 }
 
-HRESULT BuildVerbKey(std::wstring generatedProgId, std::wstring id, RegistryKey & verbRootKey)
+HRESULT AutoPlay::BuildVerbKey(std::wstring generatedProgId, std::wstring id, RegistryKey & verbRootKey)
 {
     RegistryKey classesRootKey;
     RETURN_IF_FAILED(classesRootKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC));
@@ -553,6 +562,7 @@ HRESULT BuildVerbKey(std::wstring generatedProgId, std::wstring id, RegistryKey 
     RETURN_IF_FAILED(progIdRootKey.CreateSubKey(shellKeyName.c_str(), KEY_READ | KEY_WRITE, &shellRootKey));
 
     RETURN_IF_FAILED(shellRootKey.CreateSubKey(id.c_str(), KEY_READ | KEY_WRITE, &verbRootKey));
+    return S_OK;
 }
 
 HRESULT AutoPlay::CreateHandler(MsixRequest * msixRequest, IPackageHandler ** instance)

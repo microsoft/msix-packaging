@@ -90,7 +90,7 @@ static const std::wstring toolboxBitmapQuery = L"*[local-name()='ToolboxBitmap32
 static const std::wstring comVerbQuery = L"*[local-name()='Verbs']/*[local-name()='Verb']";
 static const std::wstring startupTaskQuery = L"*[local-name()='StartupTask']";
 static const std::wstring launchActionQuery = L"*[local-name()='AutoPlayContent']/*[local-name()='LaunchAction']";
-static const std::wstring invokeActionQuery = L"*[local-name()='AutoPlayContent']/*[local-name()='InvokeAction']";
+static const std::wstring invokeActionQuery = L"*[local-name()='AutoPlayHandler']/*[local-name()='InvokeAction']";
 static const std::wstring invokeActionContentQuery = L"*[local-name()='Content']";
 static const std::wstring invokeActionDeviceQuery = L"*[local-name()='Device']";
 
@@ -109,7 +109,7 @@ static const std::wstring directionOut = L"out";
 /// Constants for AutoPlay DEH
 static const std::wstring autoPlayContentCategoryNameInManifest = L"windows.autoPlayContent";
 static const std::wstring autoPlayDeviceCategoryNameInManifest = L"windows.autoPlayDevice";
-static const std::wstring desktopAppXExtensionCategory = L"Windows.AutoPlayHandler";
+static const std::wstring desktopAppXExtensionCategory = L"windows.autoPlayHandler";
 
 static const std::wstring desktopAppXContentSubCategory = L"Windows.AutoPlayDesktopAppX.Content";
 static const std::wstring desktopAppXDeviceSubCategory = L"Windows.AutoPlayDesktopAppX.Device";
