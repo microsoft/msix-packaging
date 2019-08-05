@@ -140,11 +140,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
 
     MSIX::ComPtr<IStream> stream;
     ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
-
-    MSIX::ComPtr<IAppxPackageReader> reader;
-    ThrowHrIfFailed(factory->CreatePackageReader(stream.Get(), &reader));
-
-    ThrowHrIfFailed(UnpackPackageFromPackageReader(packUnpackOptions, reader.Get(), utf8Destination));
+    ThrowHrIfFailed(UnpackPackageFromStream(packUnpackOptions, validationOption, stream.Get(), utf8Destination));
 
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
@@ -159,7 +155,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromPackageReader(
         "Invalid parameters"
     );
 
-    auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
+    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination, true);
 
     MSIX::ComPtr<IPackage> package;
     ThrowHrIfFailed(packageReader->QueryInterface(UuidOfImpl<IPackage>::iid, reinterpret_cast<void**>(&package)));
@@ -207,12 +203,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
 
     MSIX::ComPtr<IStream> stream;
     ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
-
-    MSIX::ComPtr<IAppxBundleReader> reader;
-    ThrowHrIfFailed(factory->CreateBundleReader(stream.Get(), &reader));
-
-    ThrowHrIfFailed(UnpackBundleFromBundleReader(packUnpackOptions, reader.Get(), utf8Destination));
-
+    ThrowHrIfFailed(UnpackBundleFromStream(packUnpackOptions, validationOption, applicabilityOptions, stream.Get(), utf8Destination));
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
@@ -230,7 +221,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromBundleReader(
     MSIX::ComPtr<IPackage> package;
     ThrowHrIfFailed(bundleReader->QueryInterface(UuidOfImpl<IPackage>::iid, reinterpret_cast<void**>(&package)));
 
-    auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
+    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination, true);
     package->Unpack(packUnpackOptions, to.Get());
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
