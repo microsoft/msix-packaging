@@ -84,12 +84,8 @@ namespace MsixTest { namespace Pack {
         {
             { "AppxBlockMap.xml", 1871 },
             // The file size differs from Windows and Unix systems (even before packing)
-            // It is possible that is related to LF and CRLF.
-            #ifdef WIN32
+            // It is possible that is related to LF and CRLF. If you see failed with size = 3203, then the file is LF.
             { "AppxManifest.xml", 3251 },
-            #else
-            { "AppxManifest.xml", 3203 },
-            #endif
             { "resources.pri", 3760 },
             { "TestAppxPackage.exe", 186368 },
             { "TestAppxPackage.winmd", 3072 },
