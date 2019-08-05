@@ -85,9 +85,9 @@ See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-inte
 ### On Windows using Visual Studio nmake:
 ```
    makewin.cmd <x86|x64> [options]
-
-   This will start MSVC environment calling vcvarsall.bat <arch>, clean the output directory, call cmake and nmake. The latest Visual Studio version is obtained by calling vswhere.exe 
 ```
+   This will start MSVC environment calling vcvarsall.bat <arch>, clean the output directory, call cmake and nmake. The latest Visual Studio version is obtained by calling vswhere.exe 
+
 
 ### On Mac using make:
 ```
@@ -210,17 +210,15 @@ msixtest uses Catch2 as testing framework. msixtest is either an executable or a
 
 First build the project, then:
 
-For non-mobile platforms:
-  Go to the build directory and run msixtest
+### Testing for non-mobile devices:
+Go to the build directory and run msixtes\msixtest.exe. You can run an specific test by running msixtest [test name]. By default, the test will only output the failling tests, use -s to output successfull tests.
 
-Testing on mobile platforms:
+### Testing on mobile devices:
+#### iOS
+First build the project for iOS, then launch xCode and load src/test/mobile/iOSBVT.xcworkspace, compile the test app, and then launch the iPhone simulator. You can also run "testios.sh -p iOSBVT/iOSBVT.xcodeproj" from src/test/mobile. 
 
-  On iOS :
-  First build the project for iOS, then launch xCode and load src/test/mobile/iOSBVT.xcworkspace, compile the test app,
-  and then launch the iPhone simulator. You can also run "testios.sh -p iOSBVT/iOSBVT.xcodeproj" from src/test/mobile. 
-
-  On Android:
-  From within bash, navigate to src/test/mobile, and run "./testaosponmac.sh".
+#### Android:
+From within bash, navigate to src/test/mobile, and run "./testaosponmac.sh".
 
 ## Releasing
 If you are the current maintainer of this project:
