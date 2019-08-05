@@ -247,8 +247,44 @@ namespace MSIX {
         std::string m_mainPackageName;
     };
 
+    class AppxManifestMainPackageDependency final : public ComClass<AppxManifestMainPackageDependency, IAppxManifestMainPackageDependency>
+    {
+    public:
+        AppxManifestMainPackageDependency(IMsixFactory* factory, const std::string& name, const std::string& publisher, const std::string& packageFamilyName) :
+            m_name(name), m_publisher(publisher), m_packageFamilyName(packageFamilyName)
+        {}
+
+        // IAppxManifestMainPackageDependency
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* name) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (name == nullptr || *name != nullptr), "bad pointer");
+            return m_factory->MarshalOutString(m_name, name);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetPublisher(LPWSTR* publisher) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (publisher == nullptr || *publisher != nullptr), "bad pointer");
+            return m_factory->MarshalOutString(m_publisher, publisher);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetPackageFamilyName(LPWSTR* packageFamilyName) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (packageFamilyName == nullptr || *packageFamilyName != nullptr), "bad pointer");
+            return m_factory->MarshalOutString(m_packageFamilyName, packageFamilyName);
+        } CATCH_RETURN();
+
+        // IAppxManifestMainPackageDependencyUtf8
+        // TO-DO
+
+    protected:
+        ComPtr<IMsixFactory> m_factory;
+        std::string m_name;
+        std::string m_publisher;
+        std::string m_packageFamilyName;
+    };
+
     // Object backed by AppxManifest.xml
-    class AppxManifestObject final : public ComClass<AppxManifestObject, ChainInterfaces<IAppxManifestReader4, IAppxManifestReader3, IAppxManifestReader2, IAppxManifestReader>,
+    class AppxManifestObject final : public ComClass<AppxManifestObject, ChainInterfaces<IAppxManifestReader4, IAppxManifestReader3, IAppxManifestReader2, IAppxManifestReader>, IAppxManifestReader5,
                                                      IVerifierObject, IAppxManifestObject, IMsixDocumentElement>
     {
     public:
@@ -276,6 +312,9 @@ namespace MSIX {
 
         // IAppxManifestReader4
         HRESULT STDMETHODCALLTYPE GetOptionalPackageInfo(IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept override;
+
+        // IAppxManifestReader5
+        HRESULT STDMETHODCALLTYPE GetMainPackageDependencies(IAppxManifestMainPackageDependenciesEnumerator **mainPackageDependencies) noexcept override;
 
         // IVerifierObject
         bool HasStream() override { return !!m_stream; }

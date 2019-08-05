@@ -62,6 +62,7 @@ SpecializeUuidOfImpl(IAppxManifestReader);
 SpecializeUuidOfImpl(IAppxManifestReader2);
 SpecializeUuidOfImpl(IAppxManifestReader3);
 SpecializeUuidOfImpl(IAppxManifestReader4);
+SpecializeUuidOfImpl(IAppxManifestReader5);
 SpecializeUuidOfImpl(IAppxManifestPackageId);
 SpecializeUuidOfImpl(IAppxManifestProperties);
 SpecializeUuidOfImpl(IAppxManifestTargetDeviceFamiliesEnumerator);
@@ -82,6 +83,8 @@ SpecializeUuidOfImpl(IAppxBundleManifestReader);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoEnumerator);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfo);
 SpecializeUuidOfImpl(IAppxManifestOptionalPackageInfo);
+SpecializeUuidOfImpl(IAppxManifestMainPackageDependenciesEnumerator);
+SpecializeUuidOfImpl(IAppxManifestMainPackageDependency);
 #endif
 
 #else
@@ -104,6 +107,7 @@ interface IAppxManifestReader;
 interface IAppxManifestReader2;
 interface IAppxManifestReader3;
 interface IAppxManifestReader4;
+interface IAppxManifestReader5;
 interface IAppxManifestPackageId;
 interface IAppxManifestProperties;
 interface IAppxManifestTargetDeviceFamiliesEnumerator;
@@ -124,6 +128,8 @@ interface IAppxBundleManifestReader;
 interface IAppxBundleManifestPackageInfoEnumerator;
 interface IAppxBundleManifestPackageInfo;
 interface IAppxManifestOptionalPackageInfo;
+interface IAppxManifestMainPackageDependenciesEnumerator;
+interface IAppxManifestMainPackageDependency;
 
 extern "C"{
 
@@ -662,6 +668,19 @@ enum tagLOCKTYPE
     };
 #endif 	/* __IAppxManifestReader4_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxManifestReader5_INTERFACE_DEFINED__
+#define __IAppxManifestReader5_INTERFACE_DEFINED__
+
+    // {8d7ae132-a690-4c00-b75a-6aae1feaac80}
+    MSIX_INTERFACE(IAppxManifestReader5, 8d7ae132, 0xa690, 0x4c00, 0xb7, 0x5a, 0x6a, 0xae, 0x1f, 0xea, 0xac, 0x80);
+    interface IAppxManifestReader5 : public IAppxManifestReader4
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetMainPackageDependencies(
+            /* [retval][out] */  IAppxManifestMainPackageDependenciesEnumerator **mainPackageDependencies) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestReader5_INTERFACE_DEFINED__ */
+
 #ifndef __IAppxManifestPackageId_INTERFACE_DEFINED__
 #define __IAppxManifestPackageId_INTERFACE_DEFINED__
 
@@ -1077,6 +1096,43 @@ enum tagLOCKTYPE
     };
 #endif 	/* __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxManifestMainPackageDependenciesEnumerator_INTERFACE_DEFINED__
+#define __IAppxManifestMainPackageDependenciesEnumerator_INTERFACE_DEFINED__
+
+    // {a99c4f00-51d2-4f0f-ba46-7ed5255ebdff}
+    MSIX_INTERFACE(IAppxManifestMainPackageDependenciesEnumerator, 0xa99c4f00, 0x51d2, 0x4f0f, 0xba, 0x46, 0x7e, 0xd5, 0x25, 0x5e, 0xbd, 0xff);
+    interface IAppxManifestMainPackageDependenciesEnumerator : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetMainPackageName(
+            /* [retval][out] */  IAppxManifestMainPackageDependency **mainPackageDependency) noexcept = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(
+            /* [retval][out] */  BOOL *hasCurrent) noexcept = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE MoveNext(
+            /* [retval][out] */  BOOL *hasNext) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestMainPackageDependenciesEnumerator_INTERFACE_DEFINED__ */
+
+#ifndef __IAppxManifestMainPackageDependency_INTERFACE_DEFINED__
+#define __IAppxManifestMainPackageDependency_INTERFACE_DEFINED__
+
+    // {05d0611c-bc29-46d5-97e2-84b9c79bd8ae}
+    MSIX_INTERFACE(IAppxManifestMainPackageDependency, 0x05d0611c, 0xbc29, 0x46d5, 0x97, 0xe2, 0x84, 0xb9, 0xc7, 0x9b, 0xd8, 0xae);
+    interface IAppxManifestMainPackageDependency : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetName(
+            /* [retval][string][out] */  LPWSTR *name) noexcept = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE GetPublisher(
+            /* [retval][string][out] */  LPWSTR *publisher) noexcept = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE GetPackageFamilyName(
+            /* [retval][string][out] */  LPWSTR *packageFamilyName) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestMainPackageDependency_INTERFACE_DEFINED__ */
 
 } // extern "C"
 #endif // #ifdef WIN32

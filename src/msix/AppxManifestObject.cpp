@@ -8,6 +8,7 @@
 #include "UnicodeConversion.hpp"
 #include "Encoding.hpp"
 #include "Enumerators.hpp"
+#include "AppxPackageInfo.hpp"
 
 namespace MSIX {
 
@@ -368,6 +369,14 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::NotImplemented);
     }
 
+    HRESULT STDMETHODCALLTYPE AppxManifestObject::GetTargetDeviceFamilies(IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (targetDeviceFamilies == nullptr || *targetDeviceFamilies != nullptr), "bad pointer.");
+        *targetDeviceFamilies = ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator>::
+            Make<EnumeratorCom<IAppxManifestTargetDeviceFamiliesEnumerator,IAppxManifestTargetDeviceFamily>>(m_tdf).Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
     // IAppxManifestReader4
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetOptionalPackageInfo(IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept try
     {
@@ -392,13 +401,51 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxManifestObject::GetTargetDeviceFamilies(IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept try
+    // IAppxManifestReader5
+    HRESULT STDMETHODCALLTYPE AppxManifestObject::GetMainPackageDependencies(IAppxManifestMainPackageDependenciesEnumerator **mainPackageDependencies) noexcept try
     {
-        ThrowErrorIf(Error::InvalidParameter, (targetDeviceFamilies == nullptr || *targetDeviceFamilies != nullptr), "bad pointer.");
-        *targetDeviceFamilies = ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator>::
-            Make<EnumeratorCom<IAppxManifestTargetDeviceFamiliesEnumerator,IAppxManifestTargetDeviceFamily>>(m_tdf).Detach();
+        ThrowErrorIf(Error::InvalidParameter, (mainPackageDependencies == nullptr || *mainPackageDependencies != nullptr), "bad pointer.");
+        std::vector<ComPtr<IAppxManifestMainPackageDependency>> packageDependencies;
+
+        struct _context
+        {
+            AppxManifestObject* self;
+            std::vector<ComPtr<IAppxManifestMainPackageDependency>>* packageDependencies;
+        };
+        _context context = { this, &packageDependencies };
+
+        // Parse MainPackageDependency elements
+        XmlVisitor visitorMainPackageDependencies(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& dependencyNode)->bool
+        {
+            _context* context = reinterpret_cast<_context*>(c);
+            auto name = dependencyNode->GetAttributeValue(XmlAttributeName::Name);
+            auto publisher = dependencyNode->GetAttributeValue(XmlAttributeName::Publisher);
+            std::string packageFamilyName;
+
+            // if no publisher for the main package dependency is specified, we default to the publisher of the optional package itself
+            if (publisher.empty())
+            {
+                auto packageIdInternal = context->self->m_packageId.As<IAppxManifestPackageIdInternal>();
+                packageFamilyName = packageIdInternal->GetPackageFamilyName();
+            }
+            else
+            {
+                // Convert publisher to publisher hash so we can build package family name
+                std::string publisherHash = ComputePublisherId(publisher);
+                packageFamilyName = name + "_" + publisherHash;
+            }
+
+            auto dependency = ComPtr<IAppxManifestMainPackageDependency>::Make<AppxManifestMainPackageDependency>(context->self->m_factory.Get(), name, publisher, packageFamilyName);
+            context->packageDependencies->push_back(std::move(dependency));
+            return true;
+        });
+
+        m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Dependencies_MainPackageDependency, visitorMainPackageDependencies);
+        *mainPackageDependencies = ComPtr<IAppxManifestMainPackageDependenciesEnumerator>::
+            Make<EnumeratorCom<IAppxManifestMainPackageDependenciesEnumerator, IAppxManifestMainPackageDependency>>(packageDependencies).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
+
 
     // IMsixDocumentElement
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetDocumentElement(IMsixElement** documentElement) noexcept try
@@ -407,4 +454,5 @@ namespace MSIX {
         *documentElement = m_dom->GetDocument().As<IMsixElement>().Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
+
 }
