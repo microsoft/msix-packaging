@@ -99,11 +99,7 @@ See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-inte
 ```
    ./makelinux [options]
    ./makeaosp [options]
-
-### Enable pack features
 ```
-   By default, pack is *NOT* turn on in the build scripts and is not supported for mobile devices. Use the --pack option on the build scripts or pass -DMSIX_PACK=on to the CMake command to enable it.
-``` 
 
 ### How to compile for Android on Windows:
 
@@ -127,6 +123,10 @@ To compile, run the following command from the android folder:
     ninja
 ```
 
+### Enable pack features
+
+   By default, pack is *NOT* turn on in the build scripts and is not supported for mobile devices. Use the --pack option in the build scripts or pass -DMSIX_PACK=on to the CMake command to enable it.
+  
 ## Build Status
 The following native platforms are in development now:
 
