@@ -1104,7 +1104,7 @@ enum tagLOCKTYPE
     interface IAppxManifestMainPackageDependenciesEnumerator : public IUnknown
     {
     public:
-        virtual HRESULT STDMETHODCALLTYPE GetMainPackageName(
+        virtual HRESULT STDMETHODCALLTYPE GetCurrent(
             /* [retval][out] */  IAppxManifestMainPackageDependency **mainPackageDependency) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetHasCurrent(
