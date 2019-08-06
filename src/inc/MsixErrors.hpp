@@ -24,6 +24,7 @@ namespace MSIX {
         NotSupported                = 0x80070032,
         InvalidParameter            = 0x80070057,
         Stg_E_Invalidpointer        = 0x80030009,
+        InvalidState                = 0x804d0003,
 
         //
         // msix specific error codes
@@ -66,12 +67,18 @@ namespace MSIX {
 
         // Blockmap semantic errors
         BlockMapSemanticError       = ERROR_FACILITY + 0x0051,
+        BlockMapInvalidData         = ERROR_FACILITY + 0x0052,
 
         // AppxManifest semantic errors
         AppxManifestSemanticError   = ERROR_FACILITY + 0x0061,
 
         // Bundle errors
         PackageIsBundle             = ERROR_FACILITY + 0x0071,
+
+        // Deflate errors
+        DeflateInitialize           = ERROR_FACILITY + 0x0081,
+        DeflateWrite                = ERROR_FACILITY + 0x0082,
+        DeflateRead                 = ERROR_FACILITY + 0x0083,
 
         // XML parsing errors
         XmlWarning                  = XML_FACILITY + 0x0001,

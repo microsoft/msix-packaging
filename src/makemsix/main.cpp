@@ -11,277 +11,310 @@
 #include <string>
 #include <initializer_list>
 #include <algorithm>
+#include <functional>
+#include <sstream>
 
-// Describes which command the user specified
-enum class UserSpecified
-{
-    Nothing,
-    Help,
-    Unpack,
-    Unbundle
-};
+#define TOOL_HELP_COMMAND_STRING "-?"
 
-// Tracks the state of the current parse operation as well as implements input validation
-struct State
-{
-    bool Specify(UserSpecified spec)
-    {
-        if (specified != UserSpecified::Nothing || spec == UserSpecified::Help)
-        {
-            specified = UserSpecified::Help; // Because clearly the user needs some
-            return false;
-        }
-        specified = spec;
-        return true;
-    }
+struct Invocation;
 
-    bool CreatePackageSubfolder()
-    {
-        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER);
-        return true;
-    }
-
-    bool UnpackWithFlatStructure()
-    {
-        unpackOptions = static_cast<MSIX_PACKUNPACK_OPTION>(unpackOptions | MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE);
-        return true;
-    }
-
-    bool SkipManifestValidation()
-    {
-        validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST);
-        return true;
-    }
-
-    bool SkipSignature()
-    {
-        validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE);
-        return true;
-    }
-
-    bool AllowSignatureOriginUnknown()
-    {
-        validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN);
-        return true;
-    }
-
-    bool SkipLanguage()
-    {
-        applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE);
-        return true;
-    }
-
-    bool SkipPlatform()
-    {
-        applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_SKIPPLATFORM);
-        return true;
-    }
-
-    bool SkipApplicability()
-    {
-        applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(applicability | MSIX_APPLICABILITY_NONE);
-        return true;
-    }
-
-    bool SetPackageName(const std::string& name)
-    {
-        if (!packageName.empty() || name.empty()) { return false; }
-        packageName = name;
-        return true;
-    }
-
-    bool SetDirectoryName(const std::string& name)
-    {
-        if (!directoryName.empty() || name.empty()) { return false; }
-        directoryName = name;
-        return true;
-    }
-
-    bool Validate()
-    {
-        if (packageName.empty() || directoryName.empty()) {
-            return false;
-        }
-        return true;
-    }
-
-    std::string packageName;
-    std::string certName;
-    std::string directoryName;
-    UserSpecified specified                  = UserSpecified::Nothing;
-    MSIX_VALIDATION_OPTION validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
-    MSIX_PACKUNPACK_OPTION unpackOptions     = MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE;
-    MSIX_APPLICABILITY_OPTIONS applicability = MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL;
-};
-
-// describes an option to a command that the user may specify
+// Describes an option to a command that the user may specify.
 struct Option
 {
-    typedef bool (*CBF)(State& state, const std::string& value);
-
-    Option(const std::string& name, bool param, const std::string& help, CBF callback) : 
-        Name(name), Help(help), Callback(callback), TakesParameter(param)
+    // Constructor for flags; they can't be required and don't take parameters.
+    Option(std::string name, std::string help) : 
+        Name(std::move(name)), Required(false), ParameterCount(0), Help(std::move(help))
     {}
 
-    bool operator==(const std::string& rhs) {
+    Option(std::string name, std::string help, bool required, size_t parameterCount, std::string parameterName) :
+        Name(std::move(name)), Required(required), ParameterCount(parameterCount), Help(std::move(help)), ParameterName(std::move(parameterName))
+    {}
+
+    bool operator==(const std::string& rhs) const {
         return Name == rhs;
     }
 
-    bool        TakesParameter;
     std::string Name;
     std::string Help;
-    CBF         Callback;
+    bool        Required;
+    size_t      ParameterCount;
+    std::string ParameterName;
 };
 
-// describes a command that the user may specify.
+// Describes a command that the user may specify.
 struct Command
 {
-    typedef bool (*CBF)(State& state);
+    using InvocationFunc = std::function<int(const Invocation&)>;
 
-    Command(const std::string& name, const std::string& help, CBF callback, std::vector<Option> options) :
-        Name(name), Help(help), Callback(callback), Options(options)
+    Command(std::string name, std::string help, std::vector<Option> options) :
+        Name(std::move(name)), Help(std::move(help)), Options(std::move(options))
     {}
 
-    bool operator==(const std::string& rhs) {
+    bool operator==(const std::string& rhs) const {
         return Name == rhs;
     }
+
+    // Limit strings to 76 characters
+    void SetDescription(std::vector<std::string>&& description)
+    {
+        Description = std::move(description);
+    }
+
+    void SetInvocationFunc(InvocationFunc func)
+    {
+        Invoke = func;
+    }
+
+    void PrintHelpText(const Invocation& invocation) const;
 
     std::string         Name;
     std::string         Help;
     std::vector<Option> Options;
-    CBF                 Callback;
+    std::vector<std::string>    Description;
+    InvocationFunc      Invoke = nullptr;
 };
 
-// Displays contextual formatted help to the user.
-int Help(char* toolName, std::vector<Command>& commands, State& state)
+// Tracks the state of the current parse operation.
+struct Invocation
+{
+    bool Parse(const std::vector<Command>& commands, int argc, char* argv[]) try
+    {
+        if (argc < 1)
+        {
+            error = "Unexpected; no arguments provided, not even executable name";
+            return false;
+        }
+
+        toolName = argv[0];
+
+        char const* commandString = nullptr;
+        if (argc == 1)
+        {
+            // No arguments implies help
+            commandString = TOOL_HELP_COMMAND_STRING;
+        }
+        else
+        {
+            commandString = argv[1];
+        }
+
+        // Find command, only happens once, at the beginning.
+        auto commandItr = std::find(commands.begin(), commands.end(), commandString);
+
+        if (commandItr == commands.end())
+        {
+            error = "Unrecognized command: ";
+            error += commandString;
+            return false;
+        }
+
+        command = &*commandItr;
+
+        // Parse all parameters, ensuring that parameter count is met
+        for (int index = 2; index < argc; ++index)
+        {
+            char const* optionString = argv[index];
+            auto option = std::find(command->Options.begin(), command->Options.end(), optionString);
+
+            if (option == command->Options.end())
+            {
+                error = "Unrecognized option: ";
+                error += optionString;
+                return false;
+            }
+
+            std::vector<std::string> params;
+            for (size_t i = 0; i < option->ParameterCount; ++i)
+            {
+                if (++index == argc) {
+                    error = "Not enough parameters for option: ";
+                    error += optionString;
+                    return false;
+                }
+                params.emplace_back(argv[index]);
+            }
+
+            options.emplace_back(*option, std::move(params));
+        }
+
+        // Ensure that all required parameters are present, unless help was requested
+        if (!IsOptionPresent(TOOL_HELP_COMMAND_STRING))
+        {
+            for (const Option& option : command->Options)
+            {
+                if (option.Required)
+                {
+                    if (!IsOptionPresent(option.Name))
+                    {
+                        error = "Required option missing: ";
+                        error += option.Name;
+                        return false;
+                    }
+                }
+            }
+        }
+
+        return true;
+    }
+    catch (const std::exception& exc)
+    {
+        error = "Exception thrown during Parse: ";
+        error += exc.what();
+        return false;
+    }
+
+    int Run() const try
+    {
+        if (!command)
+        {
+            error = "Unexpected; command should be set if Parse succeeded";
+            return -1;
+        }
+
+        // Check for help option and have command print it
+        if (IsOptionPresent(TOOL_HELP_COMMAND_STRING))
+        {
+            command->PrintHelpText(*this);
+            return 0;
+        }
+
+        return command->Invoke(*this);
+    }
+    catch (const std::exception& exc)
+    {
+        error = "Exception thrown during Run: ";
+        error += exc.what();
+        return -1;
+    }
+
+    const std::string& GetToolName() const { return toolName; }
+
+    const std::string& GetErrorText() const { return error; }
+
+    const Command* GetParsedCommand() const { return command; }
+
+    bool IsOptionPresent(const std::string& name) const
+    {
+        return (GetInvokedOption(name) != nullptr);
+    }
+
+    const std::string& GetOptionValue(const std::string& name) const
+    {
+        const InvokedOption* opt = GetInvokedOption(name);
+        if (!opt)
+        {
+            throw std::runtime_error("Expected option not present");
+        }
+        if (opt->option.ParameterCount != 1)
+        {
+            throw std::runtime_error("Given option does not take exactly one parameter");
+        }
+        return opt->params[0];
+    }
+
+private:
+    mutable std::string error;
+    std::string         toolName;
+    const Command*      command = nullptr;
+
+    struct InvokedOption
+    {
+        InvokedOption(const Option& o, std::vector<std::string>&& p) : option(o), params(std::move(p)) {}
+
+        bool operator==(const std::string& rhs) const {
+            return option.Name == rhs;
+        }
+
+        const Option& option;
+        std::vector<std::string> params;
+    };
+
+    std::vector<InvokedOption> options;
+
+    const InvokedOption* GetInvokedOption(const std::string& name) const
+    {
+        auto option = std::find(options.begin(), options.end(), name);
+        return (option == options.end() ? nullptr : &*option);
+    }
+};
+
+void Command::PrintHelpText(const Invocation& invocation) const
 {
     std::cout << std::endl;
     std::cout << "Usage:" << std::endl;
-    std::cout << "------" << std::endl;
+    std::cout << "---------------" << std::endl;
 
-    std::vector<Command>::iterator command;
-    switch (state.specified)
+    std::cout << "    " << invocation.GetToolName() << ' ' << Name;
+
+    bool areOptionalOptionsPresent = false;
+    for (const Option& option : Options)
     {
-    case UserSpecified::Nothing:
-    case UserSpecified::Help:
-        std::cout << "    " << toolName << " <command> [options] " << std::endl;
-        std::cout << std::endl;
-        std::cout << "Valid commands:" << std::endl;
-        std::cout << "---------------" << std::endl;
-        for (const auto& c : commands)
+        if (option.Required)
         {
-            std::cout << "    " << std::left << std::setfill(' ') << std::setw(10) <<
-                c.Name << "--  " << c.Help << std::endl;
-        }
+            std::cout << ' ' << option.Name;
 
-        std::cout << std::endl;
-        std::cout << "For help with a specific command, enter " << toolName << " <command> -?" << std::endl;
-        return 0;
-    case UserSpecified::Unpack:
-        command = std::find(commands.begin(), commands.end(), "unpack");
-        std::cout << "    " << toolName << " unpack -p <package> -d <directory> [options] " << std::endl;
-        std::cout << std::endl;
-        std::cout << "Description:" << std::endl;
-        std::cout << "------------" << std::endl;
-        std::cout << "    Extracts all files within an app package at the input <package> name to the" << std::endl;
-        std::cout << "    specified output <directory>. The output has the same directory structure " << std::endl;
-        std::cout << "    as the package. If <package> is a bundle, it extract its contests with full" << std::endl;
-        std::cout << "    applicability validations and its packages will be unpacked in a directory " << std::endl;
-        std::cout << "    named as the package full name." << std::endl;
-        break;
-    case UserSpecified::Unbundle:
-        command = std::find(commands.begin(), commands.end(), "unbundle");
-        std::cout << "    " << toolName << " unbundle -p <bundle> -d <directory> [options] " << std::endl;
-        std::cout << std::endl;
-        std::cout << "Description:" << std::endl;
-        std::cout << "------------" << std::endl;
-        std::cout << "    Extracts all files and packages within the bundle at the input <bundle> name to the" << std::endl;
-        std::cout << "    specified output <directory>. The output has the same directory structure " << std::endl;
-        std::cout << "    as the package. its packages will be unpacked in a directory named as the package full name" << std::endl;
-        break;
+            for (size_t i = 0; i < option.ParameterCount; ++i)
+            {
+                std::cout << " <" << option.ParameterName << '>';
+            }
+        }
+        else
+        {
+            areOptionalOptionsPresent = true;
+        }
+    }
+
+    if (areOptionalOptionsPresent)
+    {
+        std::cout << " [options]";
     }
     std::cout << std::endl;
-    std::cout << "Options:" << std::endl;
-    std::cout << "--------" << std::endl;
 
-    for (const auto& option : command->Options) {
-        std::cout << "    " << std::left << std::setfill(' ') << std::setw(5) <<
-            option.Name << ": " << option.Help << std::endl;
-    }
-    return 0;
-}
-
-// error text if the user provided underspecified input
-void Error(char* toolName)
-{
-    std::cout << toolName << ": error : Missing required options.  Use '-?' for more details." << std::endl;
-}
-
-bool ParseInput(std::vector<Command>& commands, State& state, int argc, char* argv[])
-{
-    int index = 1;
-    std::vector<Command>::iterator command;
-    std::vector<Option>::iterator option;
-    while (index < argc)
+    if (!Description.empty())
     {
-        command = std::find(commands.begin(), commands.end(), argv[index]);
-        if (command == commands.end()) {
-            return false;
-        }
-        if (!command->Callback(state)) {
-            return false;
-        }
-        if (++index == argc) {
-            break;
-        }
-        option = std::find(command->Options.begin(), command->Options.end(), argv[index]);
-        while (option != command->Options.end())
+        std::cout << std::endl;
+        std::cout << "Description:" << std::endl;
+        std::cout << "---------------" << std::endl;
+
+        for (const std::string& line : Description)
         {
-            char const *parameter = "";
-            if (option->TakesParameter) {
-                if (++index == argc) {
-                    break;
-                }
-                parameter = argv[index];
-            }            
-            if (!option->Callback(state, parameter)) {
-                return false;
-            }
-            if (++index == argc) {
-                break;
-            }
-            option = std::find(command->Options.begin(), command->Options.end(), argv[index]);
+            std::cout << "    " << line << std::endl;
         }
     }
-    return state.Validate();
-}
 
-// Parses argc/argv input via commands into state, and calls into the 
-// appropriate function with the correct parameters if warranted.
-int ParseAndRun(std::vector<Command>& commands, int argc, char* argv[])
-{
-    State state;
-    if (!ParseInput(commands, state, argc, argv)) { 
-        return Help(argv[0], commands, state);
-    }
-    switch (state.specified)
+    if (!Options.empty())
     {
-    case UserSpecified::Help:
-    case UserSpecified::Nothing:
-        return Help(argv[0], commands, state);
-    case UserSpecified::Unpack:
-        return UnpackPackage(state.unpackOptions, state.validationOptions,
-            const_cast<char*>(state.packageName.c_str()),
-            const_cast<char*>(state.directoryName.c_str())
-        );
-    case UserSpecified::Unbundle:
-        return UnpackBundle(state.unpackOptions, state.validationOptions,
-            state.applicability,
-            const_cast<char*>(state.packageName.c_str()),
-            const_cast<char*>(state.directoryName.c_str())
-        );
+        std::cout << std::endl;
+        std::cout << "Options:" << std::endl;
+        std::cout << "---------------" << std::endl;
+
+        for (const Option& option : Options)
+        {
+            std::cout << "    " << option.Name;
+
+            if (option.ParameterCount)
+            {
+                std::cout << " <" << option.ParameterName << '>';
+
+                if (option.ParameterCount > 1)
+                {
+                    std::cout << " [x" << option.ParameterCount << ']';
+                }
+            }
+            else
+            {
+                std::cout << " [Flag]";
+            }
+
+            if (option.Required)
+            {
+                std::cout << " {Required}";
+            }
+            std::cout << std::endl;
+
+            std::cout << "        " << option.Help << std::endl;
+        }
     }
-    return -1; // should never end up here.
 }
 
 LPVOID STDMETHODCALLTYPE MyAllocate(SIZE_T cb)  { return std::malloc(cb); }
@@ -297,6 +330,231 @@ public:
     void Cleanup() { if (content) { std::free(content); content = nullptr; } }
 };
 
+template <typename EnumType>
+std::underlying_type_t<EnumType> asut(EnumType e)
+{
+    return static_cast<std::underlying_type_t<EnumType>>(e);
+}
+
+template <typename EnumType>
+std::enable_if_t<std::is_enum<EnumType>::value, EnumType> operator|=(EnumType& a, EnumType b)
+{
+    a = static_cast<EnumType>(asut(a) | asut(b));
+    return a;
+}
+
+MSIX_PACKUNPACK_OPTION GetPackUnpackOptionBase(const Invocation& invocation)
+{
+    MSIX_PACKUNPACK_OPTION packUnpack = MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE;
+
+    if (invocation.IsOptionPresent("-pfn"))
+    {
+        packUnpack |= MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER;
+    }
+
+    return packUnpack;
+}
+
+MSIX_PACKUNPACK_OPTION GetPackUnpackOptionForPackage(const Invocation& invocation)
+{
+    MSIX_PACKUNPACK_OPTION packUnpack = GetPackUnpackOptionBase(invocation);
+
+    if (invocation.IsOptionPresent("-pfn-flat"))
+    {
+        packUnpack |= MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER;
+    }
+
+    return packUnpack;
+}
+
+MSIX_PACKUNPACK_OPTION GetPackUnpackOptionForBundle(const Invocation& invocation)
+{
+    MSIX_PACKUNPACK_OPTION packUnpack = GetPackUnpackOptionBase(invocation);
+
+    if (invocation.IsOptionPresent("-pfn-flat"))
+    {
+        packUnpack |= MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE;
+    }
+
+    return packUnpack;
+}
+
+MSIX_VALIDATION_OPTION GetValidationOption(const Invocation& invocation)
+{
+    MSIX_VALIDATION_OPTION validation = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
+
+    if (invocation.IsOptionPresent("-ac"))
+    {
+        validation |= MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
+    }
+
+    if (invocation.IsOptionPresent("-ss"))
+    {
+        validation |= MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE;
+    }
+
+    return validation;
+}
+
+MSIX_APPLICABILITY_OPTIONS GetApplicabilityOption(const Invocation& invocation)
+{
+    MSIX_APPLICABILITY_OPTIONS applicability = MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL;
+
+    if (invocation.IsOptionPresent("-sl"))
+    {
+        applicability |= MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE;
+    }
+
+    if (invocation.IsOptionPresent("-sp"))
+    {
+        applicability |= MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_SKIPPLATFORM;
+    }
+
+    if (invocation.IsOptionPresent("-extract-all"))
+    {
+        applicability = static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE);
+    }
+
+    return applicability;
+}
+
+#pragma region Commands
+
+Command CreateHelpCommand(const std::vector<Command>& commands)
+{
+    Command result{ TOOL_HELP_COMMAND_STRING, "Displays this help text.", {} };
+
+    result.SetInvocationFunc([&commands](const Invocation& invocation)
+        {
+            std::cout << std::endl;
+            std::cout << "Usage:" << std::endl;
+            std::cout << "---------------" << std::endl;
+            std::cout << "    " << invocation.GetToolName() << " <command> [options] " << std::endl;
+            std::cout << std::endl;
+            std::cout << "Commands:" << std::endl;
+            std::cout << "---------------" << std::endl;
+
+            for (const auto& c : commands)
+            {
+                std::cout << "    " << std::left << std::setfill(' ') << std::setw(10) <<
+                    c.Name << "--  " << c.Help << std::endl;
+            }
+
+            std::cout << std::endl;
+            std::cout << "For help with a specific command, enter " << invocation.GetToolName() << " <command> -?" << std::endl;
+
+            return 0;
+        });
+
+    return result;
+}
+
+Command CreateUnpackCommand()
+{
+    Command result{ "unpack", "Unpack files from a package to disk",
+        {
+            Option{ "-p", "Input package file path.", true, 1, "package" },
+            Option{ "-d", "Output directory path.", true, 1, "directory" },
+            Option{ "-pfn", "Unpacks all files to a subdirectory under the output path, named after the package full name." },
+            Option{ "-ac", "Allows any certificate. By default the signature origin must be known." },
+            Option{ "-ss", "Skips enforcement of signed packages. By default packages must be signed." },
+            // Identical behavior as -pfn. This option was created to create parity with unbundle's -pfn-flat option so that IT pros
+            // creating packages for app attach only need to be aware of a single option.
+            Option{ "-pfn-flat", "Same behavior as -pfn for packages." },
+            Option{ TOOL_HELP_COMMAND_STRING, "Displays this help text." },
+        }
+    };
+
+    result.SetDescription({
+        "Extracts all files within an app package at the input <package> name to the",
+        "specified output <directory>. The output has the same directory structure ",
+        "as the package. If <package> is a bundle, it extract its contests with full",
+        "applicability validations and its packages will be unpacked in a directory ",
+        "named as the package full name.",
+        });
+
+    result.SetInvocationFunc([](const Invocation& invocation)
+        {
+            return UnpackPackage(
+                GetPackUnpackOptionForPackage(invocation),
+                GetValidationOption(invocation),
+                const_cast<char*>(invocation.GetOptionValue("-p").c_str()),
+                const_cast<char*>(invocation.GetOptionValue("-d").c_str()));
+        });
+
+    return result;
+}
+
+Command CreateUnbundleCommand()
+{
+    Command result{ "unbundle", "Unpack files from a bundle to disk",
+        {
+            Option{ "-p", "Input bundle file path.", true, 1, "bundle" },
+            Option{ "-d", "Output directory path.", true, 1, "directory" },
+            Option{ "-pfn", "Unpacks all files to a subdirectory under the output path, named after the package full name." },
+            Option{ "-ac", "Allows any certificate. By default the signature origin must be known." },
+            Option{ "-ss", "Skips enforcement of signed packages. By default packages must be signed." },
+            Option{ "-sl", "Skips matching packages with the language of the system. By default unpacked resources packages will match the system languages." },
+            Option{ "-sp", "Skips matching packages with of the same system. By default unpacked application packages will only match the platform." },
+            Option{ "-extract-all", "Extracts all packages from the bundle." },
+            Option{ "-pfn-flat", "Unpacks bundle's files to a subdirectory under the specified output path, named after the package full name. Unpacks packages to subdirectories also under the specified output path, named after the package full name. By default unpacked packages will be nested inside the bundle folder." },
+            Option{ TOOL_HELP_COMMAND_STRING, "Displays this help text." },
+        }
+    };
+
+    result.SetDescription({
+        "Extracts files and packages within the bundle at the input <bundle> name to",
+        "the specified output <directory>. By default, the bundle files will be in",
+        "<directory>, while the applicable packages will be placed in subdirectories",
+        "named for their package full name. See the available flags to control which",
+        "packages are unpacked, and where they are output.",
+        });
+
+    result.SetInvocationFunc([](const Invocation& invocation)
+        {
+            return UnpackBundle(
+                GetPackUnpackOptionForBundle(invocation),
+                GetValidationOption(invocation),
+                GetApplicabilityOption(invocation),
+                const_cast<char*>(invocation.GetOptionValue("-p").c_str()),
+                const_cast<char*>(invocation.GetOptionValue("-d").c_str()));
+        });
+
+    return result;
+}
+
+#ifdef MSIX_PACK
+Command CreatePackCommand()
+{
+    Command result{ "pack", "Pack files from disk to a package",
+        {
+            Option{ "-d", "Input directory path.", true, 1, "directory" },
+            Option{ "-p", "Output package file path.", true, 1, "package" },
+            Option{ TOOL_HELP_COMMAND_STRING, "Displays this help text." },
+        }
+    };
+
+    result.SetDescription({
+        "Creates an app package at <package> by adding all the files from the",
+        "specified input <directory>. You must include a valid package manifest",
+        "file named AppxManifest.xml in the directory provided.",
+        });
+
+    result.SetInvocationFunc([](const Invocation& invocation)
+        {
+            return PackPackage(
+                MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
+                MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL,
+                const_cast<char*>(invocation.GetOptionValue("-d").c_str()),
+                const_cast<char*>(invocation.GetOptionValue("-p").c_str()));
+        });
+
+    return result;
+}
+#endif
+
+#pragma endregion
+
 // Defines the grammar of commands and each command's associated options,
 int main(int argc, char* argv[])
 {
@@ -304,65 +562,46 @@ int main(int argc, char* argv[])
     std::cout << "Copyright (C) 2017 Microsoft.  All rights reserved." << std::endl;
 
     std::vector<Command> commands = {
-        {   Command("unpack", "Unpack files from a package to disk",
-                [](State& state) { return state.Specify(UserSpecified::Unpack); },
-            {   
-                Option("-p", true, "REQUIRED, specify input package name.",
-                    [](State& state, const std::string& name) { return state.SetPackageName(name); }),
-                Option("-d", true, "REQUIRED, specify output directory name.",
-                    [](State& state, const std::string& name) { return state.SetDirectoryName(name); }),
-                Option("-pfn", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
-                    [](State& state, const std::string&) {return state.CreatePackageSubfolder(); }),
-                Option("-mv", false, "Skips manifest validation.  By default manifest validation is enabled.",
-                    [](State& state, const std::string&) { return state.SkipManifestValidation(); }),
-                Option("-sv", false, "Skips signature validation.  By default signature validation is enabled.",
-                    [](State& state, const std::string&) { return state.AllowSignatureOriginUnknown(); }),
-                Option("-ss", false, "Skips enforcement of signed packages.  By default packages must be signed.",
-                    [](State& state, const std::string&) { return state.SkipSignature(); }),
-                Option("-?", false, "Displays this help text.",
-                    [](State& state, const std::string&) { return false; }),     
-                // Identical behavior as -pfn. This option was created to create parity with unbundle's -pfn-flat option so that IT pros
-                // creating packages for app attach only need to be aware of a single option.
-                Option("-pfn-flat", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name. Same behavior as -pfn",
-                    [](State& state, const std::string&) {return state.CreatePackageSubfolder(); })
-            })
-        },
-        {   Command("unbundle", "Unpack files from a package to disk",
-                [](State& state) { return state.Specify(UserSpecified::Unbundle); },
-            {   
-                Option("-p", true, "REQUIRED, specify input package name.",
-                    [](State& state, const std::string& name) { return state.SetPackageName(name); }),
-                Option("-d", true, "REQUIRED, specify output directory name.",
-                    [](State& state, const std::string& name) { return state.SetDirectoryName(name); }),
-                Option("-pfn", false, "Unpacks all files to a subdirectory under the specified output path, named after the package full name.",
-                    [](State& state, const std::string&) {return state.CreatePackageSubfolder(); }),
-                Option("-mv", false, "Skips manifest validation.  By default manifest validation is enabled.",
-                    [](State& state, const std::string&) { return state.SkipManifestValidation(); }),
-                Option("-sv", false, "Skips signature validation.  By default signature validation is enabled.",
-                    [](State& state, const std::string&) { return state.AllowSignatureOriginUnknown(); }),
-                Option("-ss", false, "Skips enforcement of signed packages.  By default packages must be signed.",
-                    [](State& state, const std::string&) { return state.SkipSignature(); }),
-                Option("-sl", false, "Only for bundles. Skips matching packages with the language of the system. By default unpacked resources packages will match the system languages.",
-                    [](State& state, const std::string&) { return state.SkipLanguage(); }),
-                Option("-sp", false, "Only for bundles. Skips matching packages with of the same system. By default unpacked application packages will only match the platform.",
-                    [](State& state, const std::string&) { return state.SkipPlatform(); }),
-                Option("-extract-all", false, "Only for bundles. Extracts all packages from the bundle.",
-                    [](State& state, const std::string&) { return state.SkipApplicability(); }),
-                Option("-pfn-flat", false, "Unpacks bundle's files to a subdirectory under the specified output path, named after the package full name. Unpacks packages to subdirectories also under the specified output path, named after the package full name. By default unpacked packages will be nested inside the bundle folder",
-                    [](State& state, const std::string&) { return state.UnpackWithFlatStructure(); }),
-                Option("-?", false, "Displays this help text.",
-                    [](State& state, const std::string&) { return false; })                
-            })
-        },
-        {   Command("-?", "Displays this help text.",
-                [](State& state) { return state.Specify(UserSpecified::Help);}, {})
-        },
+        CreateUnpackCommand(),
+        CreateUnbundleCommand(),
+        #ifdef MSIX_PACK
+        CreatePackCommand(),
+        #endif
     };
 
-    auto result = ParseAndRun(commands, argc, argv);
+    // Help command is always last
+    commands.emplace_back(CreateHelpCommand(commands));
+    const Command& mainHelpCommand = commands.back();
+
+    Invocation invocation;
+
+    if (!invocation.Parse(commands, argc, argv))
+    {
+        std::cout << std::endl;
+        std::cout << "Error: " << invocation.GetErrorText() << std::endl;
+
+        if (invocation.GetParsedCommand())
+        {
+            invocation.GetParsedCommand()->PrintHelpText(invocation);
+        }
+        else
+        {
+            mainHelpCommand.Invoke(invocation);
+        }
+
+        return -1;
+    }
+
+    int result = invocation.Run();
+
     if (result != 0)
     {        
-        std::cout << "Error: " << std::hex << result << std::endl;
+        std::cout << "Error: 0x" << std::hex << result << std::endl;
+        if (!invocation.GetErrorText().empty())
+        {
+            std::cout << "Error: " << invocation.GetErrorText() << std::endl;
+        }
+
         Text text;
         auto logResult = GetLogTextUTF8(MyAllocate, &text);
         if (0 == logResult)
@@ -371,7 +610,7 @@ int main(int argc, char* argv[])
         }
         else 
         {
-            std::cout << "UNABLE TO GET LOG WITH HR=" << std::hex << logResult << std::endl;
+            std::cout << "UNABLE TO GET LOG WITH HR=0x" << std::hex << logResult << std::endl;
         }
     }
     return result;

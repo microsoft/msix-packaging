@@ -9,6 +9,7 @@ pr:
     include:
     - master
     - release_v*
+    - packaging
   paths:
     include:
     - cmake/*
@@ -33,15 +34,21 @@ jobs:
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:
-      debug:
+      debug_nopack:
         _arguments: -b Debug
         _artifact: MACOSchk
-      release:
+      release_nopack:
         _arguments: -b MinSizeRel
         _artifact: MACOS
       release_nobundle:
         _arguments: -b MinSizeRel -sb
         _artifact: MACOS-nobundle
+      release_pack:
+        _arguments: -b MinSizeRel --pack
+        _artifact: MACOSchk-pack
+      debug_pack:
+        _arguments: -b Debug --pack
+        _artifact: MACOSchk-pack
   steps:
   - task: Bash@3
     displayName: Build

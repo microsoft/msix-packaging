@@ -7,7 +7,7 @@ project (msixtest)
 
 if(WIN32)
     set(DESCRIPTION "msixtest manifest")
-    configure_file(${CMAKE_PROJECT_ROOT}/manifest.cmakein ${MSIX_TEST_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe.manifest CRLF)
+    configure_file(${MSIX_PROJECT_ROOT}/manifest.cmakein ${MSIX_TEST_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe.manifest CRLF)
     set(MANIFEST ${MSIX_TEST_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe.manifest)
     if(XML_PARSER MATCHES msxml6)
         add_definitions(-DMSIX_MSXML6=1)
@@ -19,7 +19,9 @@ set(MsixTestFiles)
 list(APPEND MsixTestFiles
     msixtest.cpp
     unpack.cpp
-    api_package.cpp
+    api_packagereader.cpp
+    api_manifestreader.cpp
+    api_blockmapreader.cpp
     testData/UnpackTestData.cpp
     testData/BlockMapTestData.cpp
 )
@@ -30,9 +32,28 @@ if(SKIP_BUNDLES)
 else()
     list(APPEND MsixTestFiles
         unbundle.cpp
-        api_bundle.cpp
+        api_bundlereader.cpp
+        api_bundlemanifestreader.cpp
         testData/UnbundleTestData.cpp
     )
+endif()
+
+if(MSIX_PACK)
+    add_definitions(-DMSIX_PACK=1)
+    list(APPEND MsixTestFiles
+        pack.cpp
+        api_packagewriter.cpp
+        testData/PackTestData.cpp
+        )
+    if (WIN32)
+        list(APPEND MsixTestFiles
+            PAL/Pack/Windows/PackValidation.cpp
+        )
+    else()
+        list(APPEND MsixTestFiles
+            PAL/Pack/NonWindows/PackValidation.cpp
+        )
+    endif()
 endif()
 
 if (WIN32)
@@ -60,7 +81,7 @@ else()
         )
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${CMAKE_BINARY_DIR}/src/msix ${CMAKE_CURRENT_SOURCE_DIR}/inc)
+target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_BINARY_ROOT}/src/msix ${MSIX_PROJECT_ROOT}/lib/catch2 ${CMAKE_CURRENT_SOURCE_DIR}/inc)
 
 # Output test binaries into a test directory
 set_target_properties(${PROJECT_NAME} PROPERTIES
@@ -71,3 +92,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 
 add_dependencies(${PROJECT_NAME} msix)
 target_link_libraries(${PROJECT_NAME} msix)
+
+# For windows copy the library
+if(WIN32)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy "bin/msix.dll" "msixtest/msix.dll"
+        WORKING_DIRECTORY "${MSIX_BINARY_ROOT}")
+endif()

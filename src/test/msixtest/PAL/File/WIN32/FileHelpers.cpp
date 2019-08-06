@@ -6,6 +6,7 @@
 #include "FileHelpers.hpp"
 
 #include "Windows.h"
+#include "catch.hpp"
 
 #include <algorithm>
 #include <string>
@@ -146,6 +147,27 @@ namespace MsixTest {
             std::string result(path);
             std::replace(result.begin(), result.end(), '/', '\\');
             return result;
+        }
+
+        // Ensures that the path is an absolute one
+        std::string PathAsAbsolute(const std::string& path)
+        {
+            auto pathUtf16 = String::utf8_to_utf16(path);
+            DWORD length = GetFullPathNameW(pathUtf16.c_str(), 0, nullptr, nullptr);
+
+            // Any errors result in 0
+            REQUIRE(length != 0);
+
+            // When requesting size, length accounts for null char
+            std::wstring result(length, ' ');
+
+            DWORD newlength = GetFullPathNameW(pathUtf16.c_str(), length, &result[0], nullptr);
+
+            // On success, length does not account for null char
+            REQUIRE((length - 1) == newlength);
+            result.resize(newlength);
+
+            return String::utf16_to_utf8(result);
         }
     }
 }

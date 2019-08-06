@@ -24,7 +24,7 @@ endif()
 
 # Xerces
 if(XML_PARSER MATCHES xerces)
-    message(STATUS "XML_PARSER defined.  Configuring XERCES-C parser for inclusion as static library." )
+    message(STATUS "Configuring XERCES-C parser for inclusion as static library." )
     set(BUILD_SHARED_LIBS OFF CACHE BOOL "Only build static lib"                         FORCE)
     set(network           OFF CACHE BOOL "Disable network support"                       FORCE)
     set(XERCES_TESTS      OFF CACHE BOOL "Don't build test or samples"                   FORCE)

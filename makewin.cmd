@@ -34,6 +34,7 @@ set parser="-DXML_PARSER=msxml6"
 set crypto="-DCRYPTO_LIB=crypt32"
 set msvc="-DUSE_STATIC_MSVC=off"
 set bundle="-DSKIP_BUNDLES=off"
+set pack="-DMSIX_PACK=off"
 
 :parseArgs
 if /I "%~2" == "--debug" (
@@ -41,6 +42,12 @@ if /I "%~2" == "--debug" (
 )
 if /I "%~2" == "-d" (
     set build="Debug"
+)
+if /I "%~2" == "--symbols" (
+    set build="RelWithDebInfo"
+)
+if /I "%~2" == "-sym" (
+    set build="RelWithDebInfo"
 )
 if /I "%~2" == "--parser-xerces" (
     set parser="-DXML_PARSER=xerces"
@@ -75,6 +82,10 @@ if /I "%~2" == "--skip-bundles" (
 if /I "%~2" == "-sb" (
     set bundle="-DSKIP_BUNDLES=on"
 )
+if /I "%~2" == "--pack" (
+    set pack="-DMSIX_PACK=on"
+    set validationParser="-DUSE_VALIDATION_PARSER=on"
+)
 shift /2
 if not "%~2"=="" goto parseArgs
 
@@ -83,8 +94,8 @@ cd .vs
 if exist CMakeFiles rd /s /q CMakeFiles
 if exist CMakeCache.txt del CMakeCache.txt
 
-echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% -G"NMake Makefiles" ..
-cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% -G"NMake Makefiles" ..
+echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% %pack% -G"NMake Makefiles" ..
+cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% %pack% -G"NMake Makefiles" ..
 nmake /NOLOGO
 
 goto Exit
@@ -97,12 +108,14 @@ echo Helper to build the MSIX SDK for Windows. Assumes the user has a version of
 echo:
 echo Options
 echo    --debug, -d              = Build chk binary.
-echo    --parser-xerces, -px     = use Xerces-C parser. Default MSXML6.
-echo    --validation-parser, -vp = enable XML schema validation.
-echo    --shared-zlib, -sz       = don't statically link zlib.
-echo    --crypto-openssl, -co    = use OpenSSL crypto [currently for testing]. Default Crypt32.
-echo    -mt                      = use compiler flag /MT to use static version of the run-time library.
-echo    --skip-bundles, -sb      = turn off bundle support.
-echo    --help, -h, /?           = print this usage information and exit.
+echo    --symbols, -sym          = Produce symbols for release binaries.
+echo    --parser-xerces, -px     = Use Xerces-C parser. Default MSXML6.
+echo    --validation-parser, -vp = Enable XML schema validation.
+echo    --shared-zlib, -sz       = Don't statically link zlib.
+echo    --crypto-openssl, -co    = Use OpenSSL crypto [currently for testing]. Default Crypt32.
+echo    -mt                      = Use compiler flag /MT to use static version of the run-time library.
+echo    --skip-bundles, -sb      = Turn off bundle support.
+echo    --pack                   = Include packaging features. Sets validation parser on.
+echo    --help, -h, /?           = Print this usage information and exit.
 :Exit
 EXIT /B 0

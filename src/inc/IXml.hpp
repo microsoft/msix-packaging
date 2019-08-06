@@ -52,6 +52,7 @@ enum class XmlQueryName : std::uint8_t
     Package_Properties_Framework,
     Package_Properties_ResourcePackage,
     Package_Properties_SupportedUsers,
+    Package_Capabilities_CustomCapability,
 };
 
 // defines attribute names for use in IXmlElement:: [GetAttributeValue|GetBase64DecodedAttributeValue]
@@ -92,6 +93,7 @@ public:
     virtual std::string               GetAttributeValue(XmlAttributeName attribute) = 0;
     virtual std::vector<std::uint8_t> GetBase64DecodedAttributeValue(XmlAttributeName attribute) = 0;
     virtual std::string               GetText() = 0;
+    virtual std::string               GetPrefix() = 0;
 };
 MSIX_INTERFACE(IXmlElement, 0xac94449e,0x442d,0x4bed,0x8f,0xca,0x83,0x77,0x0c,0x0f,0x7e,0xe9);
 

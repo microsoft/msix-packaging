@@ -290,6 +290,8 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetDocumentElement(IMsixElement** documentElement) noexcept override;
 
     protected:
+        std::vector<std::string> GetCapabilities(APPX_CAPABILITY_CLASS_TYPE capabilityClass);
+
         ComPtr<IMsixFactory> m_factory;
         ComPtr<IStream> m_stream;
         ComPtr<IAppxManifestPackageId> m_packageId;

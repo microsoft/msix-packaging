@@ -13,5 +13,6 @@ namespace MsixTest {
         bool CompareDirectory(const std::string& directory, const std::map<std::string, std::uint64_t>& files);
 
         std::string PathAsCurrentPlatform(const std::string& path);
+        std::string PathAsAbsolute(const std::string& path);
     }
 }

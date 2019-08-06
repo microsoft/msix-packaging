@@ -4,6 +4,7 @@
 // 
 #include "msixtest_int.hpp"
 #include "FileHelpers.hpp"
+#include "catch.hpp"
 
 #include <memory>
 #include <algorithm>
@@ -16,6 +17,9 @@
 #include <errno.h>
 #include <fts.h>
 #include <dirent.h>
+#include <limits.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 namespace MsixTest {
 
@@ -116,6 +120,47 @@ namespace MsixTest {
             std::string result(path);
             std::replace(result.begin(), result.end(), '\\', '/');
             return result;
+        }
+
+        // Ensures that the path is an absolute one
+        std::string PathAsAbsolute(const std::string& path)
+        {
+            if (path.empty())
+            {
+                return path;
+            }
+
+            std::string cwdStr;
+
+            if (path[0] == '/')
+            {
+                cwdStr = path;
+            }
+            else
+            {
+                char cwdArr[PATH_MAX];
+                REQUIRE_NOT_NULL(getcwd(cwdArr, PATH_MAX));
+
+                cwdStr = cwdArr;
+                cwdStr += '/';
+                cwdStr += path;
+            }
+
+            char result[PATH_MAX];
+            result[0] = '\0';
+            char* returnVal = realpath(cwdStr.c_str(), result);
+            
+            if (returnVal == nullptr && result[0] != '\0' && errno == ENOENT)
+            {
+                // Some systems will treat a missing file as an error,
+                // but still give you the answer.  If they do that, use the path.
+            }
+            else
+            {
+                REQUIRE_NOT_NULL(returnVal);
+            }
+            
+            return std::string{ result };
         }
     }
 }
