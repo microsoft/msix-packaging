@@ -251,7 +251,7 @@ namespace MSIX {
     {
     public:
         AppxManifestMainPackageDependency(IMsixFactory* factory, const std::string& name, const std::string& publisher, const std::string& packageFamilyName) :
-            m_name(name), m_publisher(publisher), m_packageFamilyName(packageFamilyName)
+            m_factory(factory), m_name(name), m_publisher(publisher), m_packageFamilyName(packageFamilyName)
         {}
 
         // IAppxManifestMainPackageDependency
