@@ -49,8 +49,6 @@ HRESULT AutoPlay::ParseManifest()
 
     while (hasCurrent)
     {
-        //AutoPlayObject autoPlay;
-
         ComPtr<IMsixElement> extensionElement;
         RETURN_IF_FAILED(extensionEnum->GetCurrent(&extensionElement));
         Text<wchar_t> extensionCategory;
@@ -271,7 +269,6 @@ HRESULT AutoPlay::ParseManifest()
             }
         }
 
-        //m_autoPlay.push_back(autoPlay);
         RETURN_IF_FAILED(extensionEnum->MoveNext(&hasCurrent));
     }
 
@@ -488,10 +485,9 @@ HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
     RegistryKey handleEventKey;
     RETURN_IF_FAILED(handleEventRootKey.CreateSubKey(autoPlayObject.handleEvent.c_str(), KEY_WRITE, &handleEventKey));
 
-    //null value is not being set
-    RETURN_IF_FAILED(handleEventKey.SetStringValue(autoPlayObject.generatedhandlerName.c_str(), nullptr));
+    RETURN_IF_FAILED(handleEventKey.SetStringValue(autoPlayObject.generatedhandlerName.c_str(), L""));
 
-    //RETURN_IF_FAILED(handlerKey.SetValue(L"DesktopAppX", 1));
+    RETURN_IF_FAILED(handlerKey.SetUInt32Value(L"DesktopAppX", 1));
 
     if (autoPlayObject.autoPlayType == DesktopAppxContent)
     {
@@ -525,7 +521,7 @@ HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
 
             RETURN_IF_FAILED(verbRootKey.SetStringValue(L"ContractId", L"Windows.File"));
 
-            //RETURN_IF_FAILED(verbRootKey.SetStringValue(L"DesiredInitialViewState", 0));
+            RETURN_IF_FAILED(verbRootKey.SetUInt32Value(L"DesiredInitialViewState", 0));
 
             RETURN_IF_FAILED(verbRootKey.SetStringValue(L"PackageId", m_msixRequest->GetPackageFullName()));
 
