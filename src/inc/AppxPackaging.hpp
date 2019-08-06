@@ -1288,6 +1288,7 @@ interface IAppxManifestResourcesEnumeratorUtf8;
 interface IAppxManifestTargetDeviceFamilyUtf8;
 interface IAppxPackageReaderUtf8;
 interface IAppxManifestOptionalPackageInfoUtf8;
+interface IAppxManifestMainPackageDependencyUtf8;
 
 #ifndef __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__
 #define __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__
@@ -1520,6 +1521,25 @@ interface IAppxManifestOptionalPackageInfoUtf8;
             /* [retval][string][out] */  LPSTR *mainPackageName) noexcept = 0;
     };
 #endif 	/* __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__ */
+
+#ifndef __IAppxManifestMainPackageDependencyUtf8_INTERFACE_DEFINED__
+#define __IAppxManifestMainPackageDependencyUtf8_INTERFACE_DEFINED__
+
+    // {080e7850-8e9c-4162-85e2-97983e493c0f}
+    MSIX_INTERFACE(IAppxManifestMainPackageDependencyUtf8, 0x080e7850, 0x8e9c, 0x4162, 0x85, 0xe2, 0x97, 0x98, 0x3e, 0x49, 0x3c, 0x0f);
+    interface IAppxManifestMainPackageDependencyUtf8 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetName(
+            /* [retval][string][out] */  LPSTR *name) noexcept = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE GetPublisher(
+            /* [retval][string][out] */  LPSTR *publisher) noexcept = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE GetPackageFamilyName(
+            /* [retval][string][out] */  LPSTR *packageFamilyName) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestMainPackageDependencyUtf8_INTERFACE_DEFINED__ */
 
 extern "C++" {
 typedef /* [v1_enum] */

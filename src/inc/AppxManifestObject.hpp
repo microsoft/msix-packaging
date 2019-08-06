@@ -247,7 +247,7 @@ namespace MSIX {
         std::string m_mainPackageName;
     };
 
-    class AppxManifestMainPackageDependency final : public ComClass<AppxManifestMainPackageDependency, IAppxManifestMainPackageDependency>
+    class AppxManifestMainPackageDependency final : public ComClass<AppxManifestMainPackageDependency, IAppxManifestMainPackageDependency, IAppxManifestMainPackageDependencyUtf8>
     {
     public:
         AppxManifestMainPackageDependency(IMsixFactory* factory, const std::string& name, const std::string& publisher, const std::string& packageFamilyName) :
@@ -274,7 +274,23 @@ namespace MSIX {
         } CATCH_RETURN();
 
         // IAppxManifestMainPackageDependencyUtf8
-        // TO-DO
+        HRESULT STDMETHODCALLTYPE GetName(LPSTR* name) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (name == nullptr || *name != nullptr), "bad pointer");
+            return m_factory->MarshalOutStringUtf8(m_name, name);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetPublisher(LPSTR* publisher) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (publisher == nullptr || *publisher != nullptr), "bad pointer");
+            return m_factory->MarshalOutStringUtf8(m_publisher, publisher);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetPackageFamilyName(LPSTR* packageFamilyName) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (packageFamilyName == nullptr || *packageFamilyName != nullptr), "bad pointer");
+            return m_factory->MarshalOutStringUtf8(m_packageFamilyName, packageFamilyName);
+        } CATCH_RETURN();
 
     protected:
         ComPtr<IMsixFactory> m_factory;
