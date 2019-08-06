@@ -2,14 +2,14 @@
    Copyright (c) 2019 Microsoft Corp.  All rights reserved.
 
 ## Description
-   The MSIX SDK project is an effort to enable developers on a variety of platforms to unpack and pack
+   The MSIX SDK project is an effort to enable developers on a variety of platforms to pack and unpack
    packages for the purposes of distribution from either the Microsoft Store, or their own content distribution networks.
     
    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
    documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).
 
 ## Overview
-The MSIX SDK project includes cross platform API support for unpacking and packing of .msix/.appx packages
+The MSIX SDK project includes cross platform API support for packing and unpacking of .msix/.appx packages
 
 |                                      |                                 |
 |--------------------------------------|---------------------------------|
@@ -41,8 +41,7 @@ more of the following dependencies may be statically linked into the binary:
 * [OpenSSL Tag OpenSSL_1_0_2q Commit 5707219a6aae8052cb98aa361d115be01b8fd894](https://github.com/openssl/openssl/releases/tag/OpenSSL_1_0_2q)
 * [Android NDK](https://developer.android.com/ndk)
 
-For convinience, Zlib, Xerces-C and OpenSSL are git-subtrees that are mapped in under the lib folder of this project.  Edits on top
-of these subtrees for build related optimizations are tracked within this repository. OpenSSL is only used on non-Windows platforms
+For convinience, Zlib, Xerces-C and OpenSSL are git-subtrees that are mapped in under the lib folder of this project.  Edits on top of these subtrees for build related optimizations are tracked within this repository.
 
 The Android NDK is only required for targeting the Android platform.
 
