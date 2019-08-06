@@ -673,7 +673,7 @@ enum tagLOCKTYPE
 
     // {8d7ae132-a690-4c00-b75a-6aae1feaac80}
     MSIX_INTERFACE(IAppxManifestReader5, 0x8d7ae132, 0xa690, 0x4c00, 0xb7, 0x5a, 0x6a, 0xae, 0x1f, 0xea, 0xac, 0x80);
-    interface IAppxManifestReader5 : public IAppxManifestReader4
+    interface IAppxManifestReader5 : public IUnknown
     {
     public:
         virtual HRESULT STDMETHODCALLTYPE GetMainPackageDependencies(
