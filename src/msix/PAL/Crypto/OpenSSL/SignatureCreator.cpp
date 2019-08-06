@@ -265,7 +265,7 @@ namespace MSIX
         i2d_PKCS7_bio(outBIO.get(), p7.get());
 
         MSIX::ComPtr<IStream> outStream;
-        ThrowHrIfFailed(CreateStreamOnFile(R"(C:\Temp\evernotesup\openssltest.p7s)", false, &outStream));
+        ThrowHrIfFailed(CreateStreamOnFile(R"(D:\Temp\evernotesup\openssltest.p7s)", false, &outStream));
 
         char* out = nullptr;
         long cOut = BIO_get_mem_data(outBIO.get(), &out);
@@ -274,7 +274,7 @@ namespace MSIX
 
         {
             MSIX::ComPtr<IStream> p7xOutStream;
-            ThrowHrIfFailed(CreateStreamOnFile(R"(C:\Temp\evernotesup\openssltest.p7x)", false, &p7xOutStream));
+            ThrowHrIfFailed(CreateStreamOnFile(R"(D:\Temp\evernotesup\openssltest.p7x)", false, &p7xOutStream));
 
             uint32_t prefix = P7X_FILE_ID;
             p7xOutStream->Write(&prefix, sizeof(prefix), nullptr);
@@ -283,7 +283,7 @@ namespace MSIX
 
         // For funsies
         MSIX::ComPtr<IStream> result;
-        ThrowHrIfFailed(CreateStreamOnFile(R"(C:\Temp\evernotesup\openssltest.p7x)", true, &result));
+        ThrowHrIfFailed(CreateStreamOnFile(R"(D:\Temp\evernotesup\openssltest.p7x)", true, &result));
 
         return result;
     }

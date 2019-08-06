@@ -15,6 +15,12 @@
 #include <algorithm>
 #include <string>
 
+// Enable this to output debug data for the package contents hash.
+#define MSIX_DEBUG_PACKAGE_CONTENT_HASH 0
+#if MSIX_DEBUG_PACKAGE_CONTENT_HASH
+#define MSIX_DEBUG_PACKAGE_CONTENT_HASH_OUTPUT_DIR ".\\"
+#endif
+
 namespace MSIX
 {
 
@@ -250,15 +256,41 @@ bool SignatureAccumulator::FileAccumulator::AccumulateRaw(const std::vector<std:
     return wantsRaw;
 }
 
+#if MSIX_DEBUG_PACKAGE_CONTENT_HASH
+
+ComPtr<IStream> MsixDebugPackageContentHashCreateFile(LPCSTR fileName)
+{
+    ComPtr<IStream> result;
+    ThrowHrIfFailed(CreateStreamOnFile(fileName, false, &result));
+    return result;
+}
+
+#endif
+
 bool SignatureAccumulator::FileAccumulator::AccumulateZip(IStream* stream)
 {
     if (wantsZip)
     {
+#if MSIX_DEBUG_PACKAGE_CONTENT_HASH
+        static ComPtr<IStream> contentsOutput = MsixDebugPackageContentHashCreateFile(MSIX_DEBUG_PACKAGE_CONTENT_HASH_OUTPUT_DIR "contents.bin");
+        static ComPtr<IStream> detailsOutput = MsixDebugPackageContentHashCreateFile(MSIX_DEBUG_PACKAGE_CONTENT_HASH_OUTPUT_DIR "contents.csv");
+
+        ComPtr<IStreamInternal> streamInternal = ComPtr<IStreamInternal>::From(stream);
+
+        std::ostringstream strstr;
+        strstr << name << ',' << streamInternal->GetSize() << std::endl;
+        Helper::WriteStringToStream(detailsOutput, strstr.str());
+#endif
+
         auto& hasher = GetZipHasher();
 
         for (const auto& bytes : Helper::StreamProcessor{ stream, 1 << 20 })
         {
             hasher.Add(bytes);
+
+#if MSIX_DEBUG_PACKAGE_CONTENT_HASH
+            ThrowHrIfFailed(contentsOutput->Write(static_cast<const void*>(bytes.data()), static_cast<ULONG>(bytes.size()), nullptr));
+#endif
         }
     }
 
