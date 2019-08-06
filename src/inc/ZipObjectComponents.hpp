@@ -166,7 +166,7 @@ namespace MSIX {
 
         GeneralPurposeBitFlags GetGeneralPurposeBitFlags() const noexcept { return static_cast<GeneralPurposeBitFlags>(Field<3>().get()); }
 
-        bool IsGeneralPurposeBitSet() const noexcept
+        bool IsDataDescriptorBitSet() const noexcept
         {
             return ((GetGeneralPurposeBitFlags() & GeneralPurposeBitFlags::DataDescriptor) == GeneralPurposeBitFlags::DataDescriptor);
         }
@@ -309,6 +309,11 @@ namespace MSIX {
         void Read(const ComPtr<IStream>& stream, CentralDirectoryFileHeader& directoryEntry);
 
         GeneralPurposeBitFlags GetGeneralPurposeBitFlags() const noexcept { return static_cast<GeneralPurposeBitFlags>(Field<2>().get()); }
+        bool IsDataDescriptorBitSet() const noexcept
+        {
+            return ((GetGeneralPurposeBitFlags() & GeneralPurposeBitFlags::DataDescriptor) == GeneralPurposeBitFlags::DataDescriptor);
+        }
+
         std::uint16_t GetCompressionMethod() const noexcept { return Field<3>(); }
         std::uint16_t GetFileNameLength() const noexcept    { return Field<9>();  }
         std::string GetFileName() const
@@ -318,11 +323,6 @@ namespace MSIX {
         }
 
     protected:
-        bool IsGeneralPurposeBitSet() const noexcept
-        {
-            return ((GetGeneralPurposeBitFlags() & GeneralPurposeBitFlags::DataDescriptor) == GeneralPurposeBitFlags::DataDescriptor);
-        }
-
         void SetSignature(std::uint32_t value)              noexcept { Field<0>() = value; }
         void SetVersionNeededToExtract(std::uint16_t value) noexcept { Field<1>() = value; }
         void SetGeneralPurposeBitFlags(std::uint16_t value) noexcept { Field<2>() = value; }
@@ -339,6 +339,29 @@ namespace MSIX {
             SetFileNameLength(static_cast<std::uint16_t>(name.size()));
             Field<11>().get().resize(name.size(), 0);
             std::copy(name.begin(), name.end(), Field<11>().get().begin());
+        }
+    };
+
+    // Data descriptor field the comes after the file stream when DataDescriptor bit is set.
+    class DataDescriptor final : public Meta::StructuredObject<
+        Meta::Field4Bytes, // 0 - data descriptor header signature  4 bytes(0x08074b50)
+        Meta::Field4Bytes, // 1 - crc -32                           4 bytes
+        Meta::Field8Bytes, // 2 - compressed size                   8 bytes(zip64)
+        Meta::Field8Bytes  // 3 - uncompressed size                 8 bytes(zip64)
+    >
+    {
+    public:
+        // Used only to get the Size
+        DataDescriptor()
+        {
+        }
+
+        DataDescriptor(std::uint32_t crc, std::uint64_t compressSize, std::uint64_t uncompressSize)
+        {
+            Field<0>() = static_cast<std::uint32_t>(Signatures::DataDescriptor);
+            Field<1>() = crc;
+            Field<2>() = compressSize;
+            Field<3>() = uncompressSize;
         }
     };
 

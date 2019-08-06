@@ -97,19 +97,19 @@ namespace MSIX {
         // Close content types and add it to package
         m_contentTypeWriter.Close();
         auto contentTypeStream = m_contentTypeWriter.GetStream();
-        AddFileToPackage(CONTENT_TYPES_XML, contentTypeStream.Get(), true, false, nullptr);
+        AddFileToPackage(CONTENT_TYPES_XML, contentTypeStream.Get(), true, false, nullptr, false, false);
 
         if (signing)
         {
             // Add the catalog after the content types to preserve historical ordering
             if (catalogStream)
             {
-                AddFileToPackage(CODEINTEGRITY_CAT, catalogStream.Get(), true, false, nullptr);
+                AddFileToPackage(CODEINTEGRITY_CAT, catalogStream.Get(), true, false, nullptr, false, false);
             }
 
             auto digestData = m_signatureAccumulator->GetSignatureObject(m_zipWriter.Get());
             auto signatureStream = SignatureCreator::Sign(digestData.Get(), signingCertificateFormat, signingCertificate, privateKey);
-            AddFileToPackage(APPXSIGNATURE_P7X, signatureStream.Get(), true, false, nullptr);
+            AddFileToPackage(APPXSIGNATURE_P7X, signatureStream.Get(), true, false, nullptr, false, false);
         }
 
         m_zipWriter->Close();
@@ -225,7 +225,7 @@ namespace MSIX {
     }
 
     void AppxPackageWriter::AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
-        bool addToBlockMap, const char* contentType, bool forceContentTypeOverride)
+        bool addToBlockMap, const char* contentType, bool forceContentTypeOverride, bool forceDataDescriptor)
     {
         // Add content type to [Content Types].xml
         if (contentType != nullptr)
@@ -315,7 +315,7 @@ namespace MSIX {
 
         // This could be the compressed or uncompressed size
         auto streamSize = zipFileStream.As<IStreamInternal>()->GetSize();
-        m_zipWriter->EndFile(crc, streamSize, uncompressedSize, true);
+        m_zipWriter->EndFile(crc, streamSize, uncompressedSize, forceDataDescriptor);
 
         // Send entire zip stream to accumulator
         if (fileAccumulator)

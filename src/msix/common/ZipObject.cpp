@@ -291,7 +291,7 @@ void LocalFileHeader::Read(const ComPtr<IStream> &stream, CentralDirectoryFileHe
 
     StreamBase::Read(stream, &Field<2>());
     ThrowErrorIfNot(Error::ZipLocalFileHeader, ((Field<2>().get() & static_cast<std::uint16_t>(UnsupportedFlagsMask)) == 0), "unsupported flag(s) specified");
-    ThrowErrorIfNot(Error::ZipLocalFileHeader, (IsGeneralPurposeBitSet() == directoryEntry.IsGeneralPurposeBitSet()), "inconsistent general purpose bits specified");
+    ThrowErrorIfNot(Error::ZipLocalFileHeader, (IsDataDescriptorBitSet() == directoryEntry.IsDataDescriptorBitSet()), "inconsistent general purpose bits specified");
 
     StreamBase::Read(stream, &Field<3>());
     Meta::OnlyEitherValueValidation<std::uint16_t>(Field<3>(), static_cast<std::uint16_t>(CompressionType::Deflate),
@@ -300,10 +300,10 @@ void LocalFileHeader::Read(const ComPtr<IStream> &stream, CentralDirectoryFileHe
     StreamBase::Read(stream, &Field<4>());
     StreamBase::Read(stream, &Field<5>());
     StreamBase::Read(stream, &Field<6>());
-    ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (Field<6>().get() == 0)), "Invalid Zip CRC");
+    ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsDataDescriptorBitSet() || (Field<6>().get() == 0)), "Invalid Zip CRC");
 
     StreamBase::Read(stream, &Field<7>());
-    ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (Field<7>().get() == 0)), "Invalid Zip compressed size");
+    ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsDataDescriptorBitSet() || (Field<7>().get() == 0)), "Invalid Zip compressed size");
 
     StreamBase::Read(stream, &Field<8>());
 
@@ -654,7 +654,9 @@ MSIX::ComPtr<IStream> ZipObject::GetEntireZipFileStream(const std::string& fileN
     LocalFileHeader lfh = LocalFileHeader();
     lfh.Read(m_stream.Get(), targetCD);
 
-    return ComPtr<IStream>::Make<RangeStream>(targetCD.GetRelativeOffsetOfLocalHeader(), lfh.Size() + targetCD.GetCompressedSize(), m_stream.Get());
+    uint64_t streamSize = lfh.Size() + targetCD.GetCompressedSize() + (lfh.IsDataDescriptorBitSet() ? DataDescriptor{}.Size() : 0);
+
+    return ComPtr<IStream>::Make<RangeStream>(targetCD.GetRelativeOffsetOfLocalHeader(), streamSize, m_stream.Get());
 }
 
 } // namespace MSIX

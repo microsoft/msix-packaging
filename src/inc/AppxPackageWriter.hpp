@@ -84,7 +84,7 @@ namespace MSIX {
             APPX_COMPRESSION_OPTION compressionOpt, const char* contentType);
 
         void AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
-            bool addToBlockMap, const char* contentType, bool forceContentTypeOverride = false);
+            bool addToBlockMap, const char* contentType, bool forceContentTypeOverride = false, bool forceDataDescriptor = true);
 
         void ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt);
 
