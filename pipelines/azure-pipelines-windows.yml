@@ -9,7 +9,6 @@ pr:
     include:
     - master
     - release_v*
-    - packaging
   paths:
     include:
     - cmake/*
