@@ -10,7 +10,7 @@
 #include "IXml.hpp"
 #include "Encoding.hpp"
 #include "UnicodeConversion.hpp"
-#include "crypto.hpp"
+#include "Crypto.hpp"
 
 #include <string>
 #include <memory>
