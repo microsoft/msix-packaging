@@ -8,6 +8,9 @@
 #include "MSIXFactory.hpp"
 #include "Exceptions.hpp"
 #include "IXml.hpp"
+#include "Encoding.hpp"
+#include "UnicodeConversion.hpp"
+#include "crypto.hpp"
 
 #include <string>
 #include <memory>
@@ -85,6 +88,17 @@ namespace MSIX {
         return result;
     }
 
+    static std::string ComputePublisherId(const std::string& publisher)
+    {
+        auto wpublisher = utf8_to_u16string(publisher);
+        std::vector<std::uint8_t> buffer(wpublisher.size() * sizeof(char16_t));
+        memcpy(buffer.data(), &wpublisher[0], wpublisher.size() * sizeof(char16_t));
+
+        std::vector<std::uint8_t> hash;
+        ThrowErrorIfNot(Error::Unexpected, SHA256::ComputeHash(buffer.data(), static_cast<uint32_t>(buffer.size()), hash), "Failed computing publisherId");
+        return Encoding::Base32Encoding(hash);
+    }
+
     class AppxManifestPackageId final : public ComClass<AppxManifestPackageId, IAppxManifestPackageId, IAppxManifestPackageIdInternal, IAppxManifestPackageIdUtf8>
     {
     public:
@@ -131,7 +145,6 @@ namespace MSIX {
 
     private:
         void ValidatePackageString(const std::string& packageString, XmlAttributeName identityPart);
-        std::string ComputePublisherId(const std::string& publisher);
 
     protected:
         IMsixFactory* m_factory;
