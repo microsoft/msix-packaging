@@ -4,6 +4,7 @@
 // 
 #pragma once
 
+#include <stdint.h>
 #include <type_traits>
 #include <vector>
 
@@ -103,7 +104,7 @@ namespace MSIX
 
         struct Integer : public Item
         {
-            Integer(std::uint32_t val) : m_val(val) {}
+            Integer(uint32_t val) : m_val(val) {}
             void AppendTo(Container::BytesType& bytes) const;
 
         private:
@@ -135,9 +136,9 @@ namespace MSIX
 
         // Only items can be written to containers
         template <typename ContainerType, typename ItemType>
-        inline ContainerType& operator<<(ContainerType& container, const ItemType& item)
+        inline ContainerType& operator<<(ContainerType&& container, const ItemType& item)
         {
-            static_assert(std::is_convertible<ContainerType*, Container*>::value, "Receiving type must be a Container");
+            static_assert(std::is_convertible<std::remove_reference_t<ContainerType>*, Container*>::value, "Receiving type must be a Container");
             static_assert(std::is_convertible<ItemType*, Item*>::value, "Output type must be an Item");
             container.GetBytes() << item;
             return container;
