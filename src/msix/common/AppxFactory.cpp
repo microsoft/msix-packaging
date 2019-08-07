@@ -7,7 +7,7 @@
 #include "Exceptions.hpp"
 #include "AppxPackageObject.hpp"
 #include "MSIXResource.hpp"
-#include "VectorStream.hpp"
+#include "MemoryStream.hpp"
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
 #include "ZipObjectWriter.hpp"
@@ -165,7 +165,7 @@ namespace MSIX {
             ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
             // Get stream of the resource zip file generated at CMake processing.
             m_resourcesVector = std::vector<std::uint8_t>(Resource::resourceByte, Resource::resourceByte + Resource::resourceLength);
-            auto resourceStream = ComPtr<IStream>::Make<VectorStream>(&m_resourcesVector);
+            auto resourceStream = ComPtr<IStream>::Make<MemoryStream>(&m_resourcesVector);
             m_resourcezip = ComPtr<IStorageObject>::Make<ZipObject>(resourceStream.Get());
         }
         auto file = m_resourcezip->GetFile(resource);

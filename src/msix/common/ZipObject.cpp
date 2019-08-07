@@ -7,7 +7,7 @@
 #include "ObjectBase.hpp"
 #include "ComHelper.hpp"
 #include "ZipObject.hpp"
-#include "VectorStream.hpp"
+#include "MemoryStream.hpp"
 #include "MsixFeatureSelector.hpp"
 #include "ZipFileStream.hpp"
 #include "InflateStream.hpp"
@@ -236,7 +236,7 @@ void CentralDirectoryFileHeader::Read(const ComPtr<IStream>& stream, bool isZip6
     {
         LARGE_INTEGER zero = {0};
         ThrowHrIfFailed(stream->Seek(zero, StreamBase::Reference::CURRENT, &pos));
-        auto vectorStream = ComPtr<IStream>::Make<VectorStream>(&Field<18>());
+        auto vectorStream = ComPtr<IStream>::Make<MemoryStream>(&Field<18>());
         m_extendedInfo.Read(vectorStream.Get(), pos, Field<9>(), Field<8>(), Field<16>(), Field<13>());
     }
 

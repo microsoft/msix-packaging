@@ -3,7 +3,7 @@
 //  See LICENSE file in the project root for full license information.
 //
 #include "XmlWriter.hpp"
-#include "StringStream.hpp"
+#include "MemoryStream.hpp"
 #include "ComHelper.hpp"
 #include "Exceptions.hpp"
 #include "MsixErrors.hpp"
@@ -28,7 +28,7 @@ namespace MSIX {
         ThrowErrorIf(Error::InvalidParameter, endElementCandidate != endElementString, "stream did not end with end element");
 
         // Write out everything but the end element
-        m_stream = ComPtr<IStream>::Make<StringStream>();
+        m_stream = ComPtr<IStream>::Make<MemoryStream>();
 
         ULONG toWrite = static_cast<ULONG>(source.length() - endElementString.length());
         ULONG written = 0;

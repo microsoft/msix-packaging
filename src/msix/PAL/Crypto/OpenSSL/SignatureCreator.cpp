@@ -4,10 +4,10 @@
 // 
 #include "AppxSignature.hpp"
 #include "Exceptions.hpp"
-#include "FileStream.hpp"
 #include "SignatureCreator.hpp"
 #include "MSIXResource.hpp"
 #include "StreamHelper.hpp"
+#include "MemoryStream.hpp"
 
 #include "SharedOpenSSL.hpp"
 #include "OpenSSLWriting.hpp"
@@ -35,7 +35,7 @@ namespace MSIX
                     unique_BIO certBIO{ BIO_new_mem_buf(reinterpret_cast<void*>(certBytes.data()), static_cast<int>(certBytes.size())) };
                     unique_PKCS12 cert{ d2i_PKCS12_bio(certBIO.get(), nullptr) };
 
-                    ParsePKCS12(cert.get(), nullptr);
+                    ParsePKCS12(cert.get(), nullptr, "Unable to open PFX file");
                 }
                     break;
 
@@ -44,13 +44,13 @@ namespace MSIX
                 }
             }
 
-            void ParsePKCS12(PKCS12* p12, const char* pass)
+            void ParsePKCS12(PKCS12* p12, const char* pass, const char* failureMessage = nullptr)
             {
                 EVP_PKEY* pkey_ = nullptr;
                 X509* cert_ = nullptr;
                 STACK_OF(X509)* ca_ = chain.get();
 
-                ThrowOpenSSLErrIfFailed(PKCS12_parse(p12, pass, &pkey_, &cert_, &ca_));
+                ThrowOpenSSLErrIfFailedMsg(PKCS12_parse(p12, pass, &pkey_, &cert_, &ca_), failureMessage);
 
                 // If ca existed, the certs will have been added to it and it is the same pointer.
                 // If it is not set, a new stack will have been created and we need to set it out.
@@ -67,94 +67,80 @@ namespace MSIX
             unique_EVP_PKEY privateKey;
         };
 
-        int PKCS7_indirect_data_content_new(PKCS7* p7, const CustomOpenSSLObjects& customObjects)
+        // Create the indirect data object within the given message.
+        // Copied and modified from the internal OpenSSL function that creates the content based on the type of the outer message.
+        // Required to attach our custom type (spcIndirectDataContext) to it.
+        void PKCS7_indirect_data_content_new(PKCS7* p7, const CustomOpenSSLObjects& customObjects)
         {
-            PKCS7* ret = NULL;
+            unique_PKCS7 content{ PKCS7_new() };
+            ThrowOpenSSLErrIfAllocFailed(content);
 
-            if ((ret = PKCS7_new()) == NULL)
-                goto err;
+            content->type = customObjects.Get(CustomOpenSSLObjectName::spcIndirectDataContext).GetObj();
 
-            ret->type = customObjects.Get(CustomOpenSSLObjectName::spcIndirectDataContext).GetObj();
+            content->d.other = ASN1_TYPE_new();
+            ThrowOpenSSLErrIfAllocFailed(content->d.other);
 
-            ret->d.other = ASN1_TYPE_new();
-            if (!ret->d.other)
-                goto err;
+            ThrowOpenSSLErrIfFailed(ASN1_TYPE_set_octetstring(content->d.other, nullptr, 0));
+            ThrowOpenSSLErrIfFailed(PKCS7_set_content(p7, content.get()));
 
-            if (!ASN1_TYPE_set_octetstring(ret->d.other, nullptr, 0))
-                goto err;
-
-            if (!PKCS7_set_content(p7, ret))
-                goto err;
-
-            return (1);
-        err:
-            if (ret != NULL)
-                PKCS7_free(ret);
-            return (0);
+            // The parent PKCS7 now owns this
+            content.release();
         }
 
-        PKCS7* PKCS7_sign_indirect_data(X509* signcert, EVP_PKEY* pkey, STACK_OF(X509)* certs,
+        // Create a signed PKCS7 message from the given data.
+        // Copied and modified from PKCS7_sign.
+        // Required because we need to attach our message contents and various attributes.
+        unique_PKCS7 PKCS7_sign_indirect_data(X509* signcert, EVP_PKEY* pkey, STACK_OF(X509)* certs,
             BIO* data, int flags, const CustomOpenSSLObjects& customObjects)
         {
-            PKCS7* p7;
-            int i;
+            unique_PKCS7 p7{ PKCS7_new() };
+            ThrowOpenSSLErrIfAllocFailed(p7);
 
-            if (!(p7 = PKCS7_new())) {
-                PKCS7err(PKCS7_F_PKCS7_SIGN, ERR_R_MALLOC_FAILURE);
-                return NULL;
-            }
-
-            if (!PKCS7_set_type(p7, NID_pkcs7_signed))
-                goto err;
+            ThrowOpenSSLErrIfFailed(PKCS7_set_type(p7.get(), NID_pkcs7_signed));
 
             // Standard PKCS7_sign only supports NID_pkcs7_data, but we want SPC_INDIRECT_DATA_OBJID
-            if (!PKCS7_indirect_data_content_new(p7, customObjects))
-                goto err;
+            PKCS7_indirect_data_content_new(p7.get(), customObjects);
 
             // Force SHA256 for now
-            PKCS7_SIGNER_INFO* signerInfo = PKCS7_sign_add_signer(p7, signcert, pkey, EVP_sha256(), flags);
-            if (!signerInfo) {
-                PKCS7err(PKCS7_F_PKCS7_SIGN, PKCS7_R_PKCS7_ADD_SIGNER_ERROR);
-                goto err;
-            }
+            PKCS7_SIGNER_INFO* signerInfo = PKCS7_sign_add_signer(p7.get(), signcert, pkey, EVP_sha256(), flags);
+            ThrowOpenSSLErrIfFailed(signerInfo);
 
             // Add our authenticated attributes
-            PKCS7_add_attrib_content_type(signerInfo, customObjects.Get(CustomOpenSSLObjectName::spcIndirectDataContext).GetObj());
+            ThrowOpenSSLErrIfFailed(PKCS7_add_attrib_content_type(signerInfo, customObjects.Get(CustomOpenSSLObjectName::spcIndirectDataContext).GetObj()));
 
-            // TODO: Make a cleaner way to generate this sequence for the statement type.
-            const uint8_t statementType[]{ 0x30, 0x0C, 0x06, 0x0A, 0x2B, 0x06, 0x01, 0x04, 0x01, 0x82, 0x37, 0x02, 0x01, 0x15 };
+            // Add individual code signing statement type to the authenticated attributes.
+            std::vector<uint8_t> statementTypeSequence;
+            statementTypeSequence << ( ASN1::Sequence{} << ASN1::ObjectIdentifier{ customObjects.Get(CustomOpenSSLObjectName::individualCodeSigning).GetObj() } );
 
-            // TODO: smart pointer
-            ASN1_STRING* statementString = ASN1_STRING_type_new(V_ASN1_SEQUENCE);
-            ASN1_STRING_set(statementString, const_cast<uint8_t*>(statementType), sizeof(statementType));
+            unique_ASN1_STRING statementString{ ASN1_STRING_type_new(V_ASN1_SEQUENCE) };
+            ThrowOpenSSLErrIfAllocFailed(statementString);
 
-            PKCS7_add_signed_attribute(signerInfo, customObjects.Get(CustomOpenSSLObjectName::spcStatementType).GetNID(), V_ASN1_SEQUENCE, statementString);
+            // ASN1_STRING_set copies the given data
+            ThrowOpenSSLErrIfFailed(ASN1_STRING_set(statementString.get(), static_cast<void*>(statementTypeSequence.data()), static_cast<int>(statementTypeSequence.size())));
 
-            // TODO: Make a cleaner way to generate this too
-            const uint8_t opusType[]{ 0x30, 0x00 };
+            ThrowOpenSSLErrIfFailed(PKCS7_add_signed_attribute(signerInfo, customObjects.Get(CustomOpenSSLObjectName::spcStatementType).GetNID(), V_ASN1_SEQUENCE, statementString.get()));
+            statementString.release();
 
-            // TODO: smart pointer
-            ASN1_STRING* opusString = ASN1_STRING_type_new(V_ASN1_SEQUENCE);
-            ASN1_STRING_set(opusString, const_cast<uint8_t*>(opusType), sizeof(opusType));
+            // Add empty opusType
+            std::vector<uint8_t> opusTypeSequence;
+            opusTypeSequence << ASN1::Sequence{};
 
-            PKCS7_add_signed_attribute(signerInfo, customObjects.Get(CustomOpenSSLObjectName::spcSpOpusInfo).GetNID(), V_ASN1_SEQUENCE, opusString);
+            unique_ASN1_STRING opusString{ ASN1_STRING_type_new(V_ASN1_SEQUENCE) };
+            ThrowOpenSSLErrIfAllocFailed(opusString);
+
+            ThrowOpenSSLErrIfFailed(ASN1_STRING_set(opusString.get(), static_cast<void*>(opusTypeSequence.data()), static_cast<int>(opusTypeSequence.size())));
+
+            ThrowOpenSSLErrIfFailed(PKCS7_add_signed_attribute(signerInfo, customObjects.Get(CustomOpenSSLObjectName::spcSpOpusInfo).GetNID(), V_ASN1_SEQUENCE, opusString.get()));
+            opusString.release();
 
             // Always include the chain certs
-            for (i = 0; i < sk_X509_num(certs); i++) {
-                if (!PKCS7_add_certificate(p7, sk_X509_value(certs, i)))
-                    goto err;
+            for (int i = 0; i < sk_X509_num(certs); i++) {
+                ThrowOpenSSLErrIfFailed(PKCS7_add_certificate(p7.get(), sk_X509_value(certs, i)));
             }
 
-            if (!PKCS7_final(p7, data, flags))
-            {
-                goto err;
-            }
+            ThrowOpenSSLErrIfFailed(PKCS7_final(p7.get(), data, flags));
 
             return p7;
-
-        err:
-            PKCS7_free(p7);
-            return NULL;
         }
 
         void AppendDigestName(std::vector<uint8_t>& target, DigestName name)
@@ -173,6 +159,7 @@ namespace MSIX
             target.insert(target.end(), digest.begin(), digest.end());
         }
 
+        // Create the custom digest blob that contains the hashes to be signed.
         std::vector<uint8_t> CreateDigestBlob(AppxSignatureObject* digests)
         {
             std::vector<uint8_t> result;
@@ -195,6 +182,8 @@ namespace MSIX
             return result;
         }
 
+        // Encapsulate the digest blob within the ASN1 wrapper.
+        // All of this data is signed.
         std::vector<uint8_t> CreateDataToBeSigned(AppxSignatureObject* digests, const CustomOpenSSLObjects& customObjects)
         {
             std::vector<uint8_t> digestBlob = CreateDigestBlob(digests);
@@ -226,10 +215,7 @@ namespace MSIX
         }
     }
 
-    // [X] 1. Get self signed PKCS7_sign working
-    // [X] 2. Try to hack the OID of the contents to not be 'data'
-    // [ ] 3. If that makes a sufficiently nice looking output, create indirect data blob in ASN
-    // [ ] 4. Else?
+    // Given a set of digest hashes from a package and the signing info, create a p7x signature stream.
     ComPtr<IStream> SignatureCreator::Sign(
         AppxSignatureObject* digests,
         MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
@@ -245,46 +231,38 @@ namespace MSIX
         // Create the blob to be signed
         std::vector<uint8_t> signedData = CreateDataToBeSigned(digests, customObjects);
         unique_BIO dataBIO{ BIO_new_mem_buf(signedData.data(), static_cast<int>(signedData.size())) };
+        ThrowOpenSSLErrIfAllocFailed(dataBIO);
 
         // Sign it
         unique_PKCS7 p7{ PKCS7_sign_indirect_data(signingInfo.certificate.get(), signingInfo.privateKey.get(), signingInfo.chain.get(), dataBIO.get(), PKCS7_BINARY | PKCS7_NOATTR, customObjects) };
-        ThrowOpenSSLErrIfAllocFailed(p7);
 
         // Overwrite the signed contents with the complete one including the additional sequence at the beginning.
         // It is unclear why things work this way, but this is necessary.
         std::vector<uint8_t> completeBlob;
         completeBlob << ASN1::Sequence{ std::move(signedData) };
 
-        // TODO: Smart poitners
-        ASN1_STRING* sequenceString = ASN1_STRING_type_new(V_ASN1_SEQUENCE);
-        ASN1_STRING_set(sequenceString, reinterpret_cast<void*>(completeBlob.data()), static_cast<int>(completeBlob.size()));
+        unique_ASN1_STRING sequenceString{ ASN1_STRING_type_new(V_ASN1_SEQUENCE) };
+        ThrowOpenSSLErrIfAllocFailed(sequenceString);
+        ThrowOpenSSLErrIfFailed(ASN1_STRING_set(sequenceString.get(), static_cast<void*>(completeBlob.data()), static_cast<int>(completeBlob.size())));
 
-        ASN1_TYPE_set(p7->d.sign->contents->d.other, V_ASN1_SEQUENCE, sequenceString);
+        ASN1_TYPE_set(p7->d.sign->contents->d.other, V_ASN1_SEQUENCE, sequenceString.get());
+        sequenceString.release();
 
+        // Serialize the PKCS7
         unique_BIO outBIO{ BIO_new(BIO_s_mem()) };
-        i2d_PKCS7_bio(outBIO.get(), p7.get());
+        ThrowOpenSSLErrIfAllocFailed(outBIO);
+        ThrowOpenSSLErrIfFailed(i2d_PKCS7_bio(outBIO.get(), p7.get()));
 
-        MSIX::ComPtr<IStream> outStream;
-        ThrowHrIfFailed(CreateStreamOnFile(R"(D:\Temp\evernotesup\openssltest.p7s)", false, &outStream));
+        // Write the signature out, including the extra bytes that tag it as a package signature.
+        ComPtr<IStream> p7xOutStream = ComPtr<IStream>::Make<MemoryStream>();
 
         char* out = nullptr;
         long cOut = BIO_get_mem_data(outBIO.get(), &out);
 
-        outStream->Write(out, cOut, nullptr);
+        uint32_t prefix = P7X_FILE_ID;
+        p7xOutStream->Write(&prefix, sizeof(prefix), nullptr);
+        p7xOutStream->Write(out, cOut, nullptr);
 
-        {
-            MSIX::ComPtr<IStream> p7xOutStream;
-            ThrowHrIfFailed(CreateStreamOnFile(R"(D:\Temp\evernotesup\openssltest.p7x)", false, &p7xOutStream));
-
-            uint32_t prefix = P7X_FILE_ID;
-            p7xOutStream->Write(&prefix, sizeof(prefix), nullptr);
-            p7xOutStream->Write(out, cOut, nullptr);
-        }
-
-        // For funsies
-        MSIX::ComPtr<IStream> result;
-        ThrowHrIfFailed(CreateStreamOnFile(R"(D:\Temp\evernotesup\openssltest.p7x)", true, &result));
-
-        return result;
+        return p7xOutStream;
     }
 } // namespace MSIX

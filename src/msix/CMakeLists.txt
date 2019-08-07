@@ -196,6 +196,7 @@ if(CRYPTO_LIB MATCHES crypt32)
 elseif(CRYPTO_LIB MATCHES openssl)
     if(OpenSSL_FOUND)
         list(APPEND MsixSrc
+            PAL/Crypto/OpenSSL/SharedOpenSSL.cpp
             PAL/Crypto/OpenSSL/Crypto.cpp
             PAL/Crypto/OpenSSL/SignatureValidator.cpp
         )

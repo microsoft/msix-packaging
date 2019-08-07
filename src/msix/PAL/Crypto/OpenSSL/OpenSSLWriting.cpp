@@ -40,7 +40,7 @@ namespace MSIX
             int nid = OBJ_create(obj.oid, obj.shortName, obj.longName);
             if (nid == NID_undef)
             {
-                ThrowOpenSSLError();
+                ThrowOpenSSLError("Failed to create custom OpenSSL object");
             }
             objects.emplace_back(obj.name, nid);
         }

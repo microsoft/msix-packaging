@@ -85,7 +85,7 @@ namespace MSIX
         if ((asn1Sequence->encoding & 0x80) == 0)
         {
             spcIndirectDataContent = &asn1Sequence->content;
-            spcIndirectDataContentSize = (asn1Sequence->encoding & 0x7F);          
+            spcIndirectDataContentSize = (asn1Sequence->encoding & 0x7F);
         }
         else
         if ((asn1Sequence->encoding & 0x81) == 0x81) 
@@ -115,7 +115,6 @@ namespace MSIX
         bool found = false;
         while (spcIndirectDataContent < spcIndirectDataContentEnd && !found)
         {
-            // TODO: Endianess concerns abound
             if (*reinterpret_cast<DigestName*>(spcIndirectDataContent) == DigestName::HEAD)
             {
                 found = true;
@@ -133,8 +132,8 @@ namespace MSIX
             (spcIndirectDataContentSize - sizeof(DigestName)) / sizeof(DigestHash),
             (spcIndirectDataContentSize - sizeof(DigestName)) % sizeof(DigestHash)
         );
-	}
-	
+    }
+
     // This callback will be invoked during certificate verification
     int VerifyCallback(int ok, X509_STORE_CTX *ctx)
     {

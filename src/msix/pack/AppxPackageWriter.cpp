@@ -31,8 +31,8 @@ namespace MSIX {
     {
     }
 
-    AppxPackageWriter::AppxPackageWriter(IPackage* packageToSign, std::unique_ptr<SignatureAccumulator>&& accumulator, ContentTypeWriter&& writer) :
-        m_signatureAccumulator(std::move(accumulator)), m_contentTypeWriter(std::move(writer))
+    AppxPackageWriter::AppxPackageWriter(IPackage* packageToSign, std::unique_ptr<SignatureAccumulator>&& accumulator) :
+        m_signatureAccumulator(std::move(accumulator)), m_contentTypeWriter(packageToSign->GetUnderlyingStorageObject()->GetFile(CONTENT_TYPES_XML).Get())
     {
         m_factory = packageToSign->GetFactory();
         m_zipWriter = ComPtr<IZipWriter>::Make<ZipObjectWriter>(packageToSign->GetUnderlyingStorageObject().As<IZipObject>().Get());

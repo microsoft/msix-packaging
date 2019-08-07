@@ -44,7 +44,7 @@ namespace MSIX {
     {
     public:
         AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip);
-        AppxPackageWriter(IPackage* packageToSign, std::unique_ptr<SignatureAccumulator>&& accumulator, ContentTypeWriter&& writer);
+        AppxPackageWriter(IPackage* packageToSign, std::unique_ptr<SignatureAccumulator>&& accumulator);
         ~AppxPackageWriter() {};
 
         // IPackageWriter

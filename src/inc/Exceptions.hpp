@@ -15,6 +15,12 @@
 #include "MSIXWindows.hpp"
 #include "MsixErrors.hpp"
 
+#ifdef WIN32
+#define MSIX_NOINLINE(rt) __declspec(noinline) rt
+#else
+#define MSIX_NOINLINE(rt) rt __attribute__((noinline))
+#endif
+
 namespace MSIX {
 
     // Defines a common exception type to throw in exceptional cases.  DO NOT USE FOR FLOW CONTROL!
@@ -22,16 +28,16 @@ namespace MSIX {
     class Exception : public std::exception
     {
     public:
-        Exception(std::string& message, Error error) :
+        Exception(std::string message, Error error) :
             m_code(static_cast<std::uint32_t>(error)),
-            m_message(message)
+            m_message(std::move(message))
         {
             Global::Log::Append(Message());
         }
 
-        Exception(std::string& message, HRESULT error) :
+        Exception(std::string message, HRESULT error) :
             m_code(error),
-            m_message(message)
+            m_message(std::move(message))
         {
             Global::Log::Append(Message());
         }
@@ -47,18 +53,16 @@ namespace MSIX {
     class Win32Exception final : public Exception
     {
     public:
-        Win32Exception(std::string& message, DWORD error) : Exception(message, 0x80070000 + error)
+        Win32Exception(std::string message, DWORD error) : Exception(std::move(message), 0x80070000 + error)
         {
-            Global::Log::Append(Message());
         }
     };
 
     class POSIXException final : public Exception
     {
     public:
-        POSIXException(std::string& message, int error) : Exception(message, 0xA0070000 + error)
+        POSIXException(std::string message, int error) : Exception(std::move(message), 0xA0070000 + error)
         {
-            Global::Log::Append(Message());
         }
     };
 
@@ -110,14 +114,7 @@ namespace MSIX {
         throw E(message, c);
     }
     
-    #ifdef WIN32
-    __declspec(noinline)
-    #endif
-    void 
-    #ifndef WIN32
-    __attribute__(( noinline)) 
-    #endif
-    RaiseExceptionIfFailed(HRESULT hr, const int line, const char* const file);
+    MSIX_NOINLINE(void) RaiseExceptionIfFailed(HRESULT hr, const int line, const char* const file);
 }
 
 // Helper to make code more terse and more readable at the same time.
