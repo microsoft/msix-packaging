@@ -113,7 +113,8 @@ namespace MSIX
 
         struct OctetString : public Item
         {
-            OctetString(Container::BytesType& bytes) : m_bytes(bytes) {}
+            OctetString(const Container::BytesType& bytes) : m_bytes(bytes) {}
+            OctetString(Container::BytesType&& bytes) : m_bytes(std::move(bytes)) {}
             void AppendTo(Container::BytesType& bytes) const;
 
         private:
