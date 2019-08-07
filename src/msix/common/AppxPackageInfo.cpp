@@ -7,7 +7,6 @@
 #include "AppxManifestValidation.hpp"
 #include "UnicodeConversion.hpp"
 #include "Encoding.hpp"
-#include "Crypto.hpp"
 #include "Enumerators.hpp"
 #include "IXml.hpp"
 
