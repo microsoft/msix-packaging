@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+         xmlns:f2="http://schemas.microsoft.com/appx/manifest/foundation/windows10/2"
+         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+         xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
+         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+         xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
+         xmlns:wincap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities"
+         xmlns:wincap2="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/2"
+         xmlns:wincap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"
+         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
+         xmlns:rescap2="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/2"
+         xmlns:rescap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3"
+         xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
+         xmlns:desktop2="http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"
+         xmlns:mobile="http://schemas.microsoft.com/appx/manifest/mobile/windows10"
+         xmlns:iot="http://schemas.microsoft.com/appx/manifest/iot/windows10"
+         xmlns:holo="http://schemas.microsoft.com/appx/manifest/holographic/windows10"
+         xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
+         IgnorableNamespaces="f f2 uap uap2 uap3 uap4 wincap wincap2 wincap3 rescap rescap2 rescap3 desktop desktop2 mobile iot holo com">
+
+  <Identity Name="SampleAppManifest"
+            ProcessorArchitecture="x64"
+            Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
+            Version="3.6.25071.0"
+            ResourceId="NorthAmerica" />
+  <Properties>
+    <DisplayName>Sample app manifest</DisplayName>
+    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
+    <Description>This is a sample app manifest. It is not representative of what the manifest of a typical app would look like.</Description>
+    <Logo>logo.jpeg</Logo>
+  </Properties>
+
+  <Resources>
+    <Resource Language="en-us"/>
+    <Resource Language="es-mx"/>
+  </Resources>
+
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.10240.0" MaxVersionTested="10.0.14300.0"/>
+    <PackageDependency Name="Microsoft.VCLibs.140.00" MinVersion="14.0.0.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"/>
+	<uap3:MainPackageDependency Name="Demo.MyMainApp"/>
+	<uap3:MainPackageDependency Name="Demo.MyMainApp" Publisher="TestPublisher"/>
+  </Dependencies>
+
+  <Capabilities>
+    <Capability Name="internetClient"/>
+    <Capability Name="privateNetworkClientServer"/>
+    <uap:Capability Name="videosLibrary"/>
+    <uap:Capability Name="removableStorage"/>
+    <wincap:Capability Name="shellExperience"/>
+    <rescap:Capability Name="enterpriseDataPolicy"/>
+    <rescap:Capability Name="previewStore"/>
+    <uap4:CustomCapability Name="fabrikam.CustomCap_5w7kyb3d8bbwe"/>
+  </Capabilities>
+
+  <Applications>
+    <Application Id="Mca.App" Executable="MyMcaApp.exe" EntryPoint="Windows.FullTrustApplication" ResourceGroup="defaultGroup">
+
+      <uap:VisualElements DisplayName="App1" Square150x150Logo="images/150x150.png" Square44x44Logo="images/44x44.png" Description="App1" BackgroundColor="#777777" AppListEntry="default">
+        <uap:SplashScreen BackgroundColor="#777777" Image="images/splash.png"/>
+      </uap:VisualElements>
+    </Application>
+  </Applications>
+
+  <Extensions>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>EntPlat.dll</Path>
+        <ActivatableClass ActivatableClassId="Microsoft.Entertainment.Application.Application" ThreadingModel="both"/>
+        <ActivatableClass ActivatableClassId="Microsoft.Entertainment.Application.ApplicationStatics" ThreadingModel="both"/>
+      </InProcessServer>
+    </Extension>
+    <Extension Category="windows.activatableClass.inProcessServer">
+      <InProcessServer>
+        <Path>EntCommon.dll</Path>
+        <ActivatableClass ActivatableClassId="Microsoft.Entertainment.Common.Infrastructure.NetworkService" ThreadingModel="both"/>
+      </InProcessServer>
+    </Extension>
+    <Extension Category="windows.activatableClass.proxyStub">
+        <ProxyStub ClassId="FB06B882-46B8-4625-B239-AF768C8477E3">
+            <Path>entplat.dll</Path>
+            <Interface Name="Microsoft.Entertainment.Interop.ICallbackInvoker" InterfaceId="A2082232-0E67-42E1-8214-1BE73406F067"/>
+        </ProxyStub>
+    </Extension>
+  </Extensions>
+</Package>
