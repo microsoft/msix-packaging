@@ -6,3 +6,6 @@ lib/openssl/* linguist-vendored
 lib/xerces/* linguist-vendored
 lib/zlib/* linguist-vendored
 lib/catch2/* linguist-vendored
+
+# Test xml should have LF line endings on checkout 
+src/test/testData/pack/input/AppxManifest.xml text eol=lf

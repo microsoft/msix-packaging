@@ -142,6 +142,26 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX::ComPtr<IStream> stream;
     ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
     ThrowHrIfFailed(UnpackPackageFromStream(packUnpackOptions, validationOption, stream.Get(), utf8Destination));
+
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
+MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromPackageReader(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    IAppxPackageReader* packageReader,
+    char* utf8Destination) noexcept try
+{
+    ThrowErrorIfNot(MSIX::Error::InvalidParameter,
+        (packageReader != nullptr && utf8Destination != nullptr),
+        "Invalid parameters"
+    );
+
+    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination, true);
+
+    MSIX::ComPtr<IPackage> package;
+    ThrowHrIfFailed(packageReader->QueryInterface(UuidOfImpl<IPackage>::iid, reinterpret_cast<void**>(&package)));
+
+    package->Unpack(packUnpackOptions, to.Get());
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
@@ -164,8 +184,8 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
     MSIX::ComPtr<IAppxPackageReader> reader;
     ThrowHrIfFailed(factory->CreatePackageReader(stream, &reader));
 
-    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination, true);
-    reader.As<IPackage>()->Unpack(packUnpackOptions, to);
+    ThrowHrIfFailed(UnpackPackageFromPackageReader(packUnpackOptions, reader.Get(), utf8Destination));
+
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
@@ -185,6 +205,25 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
     MSIX::ComPtr<IStream> stream;
     ThrowHrIfFailed(CreateStreamOnFile(utf8SourcePackage, true, &stream));
     ThrowHrIfFailed(UnpackBundleFromStream(packUnpackOptions, validationOption, applicabilityOptions, stream.Get(), utf8Destination));
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
+MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromBundleReader(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    IAppxBundleReader* bundleReader,
+    char* utf8Destination) noexcept try
+{
+    THROW_IF_BUNDLE_NOT_ENABLED
+    ThrowErrorIfNot(MSIX::Error::InvalidParameter,
+        (bundleReader != nullptr && utf8Destination != nullptr),
+        "Invalid parameters"
+    );
+
+    MSIX::ComPtr<IPackage> package;
+    ThrowHrIfFailed(bundleReader->QueryInterface(UuidOfImpl<IPackage>::iid, reinterpret_cast<void**>(&package)));
+
+    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination, true);
+    package->Unpack(packUnpackOptions, to.Get());
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
@@ -209,8 +248,8 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     MSIX::ComPtr<IAppxBundleReader> reader;
     ThrowHrIfFailed(factory->CreateBundleReader(stream, &reader));
 
-    auto to = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(utf8Destination, true);
-    reader.As<IPackage>()->Unpack(packUnpackOptions, to);
+    ThrowHrIfFailed(UnpackBundleFromBundleReader(packUnpackOptions, reader.Get(), utf8Destination));
+
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 

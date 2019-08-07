@@ -7,30 +7,37 @@ cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 project(msix)
 
 # Handle exports and flags we need to set
-if(NOT WIN32)
-    # Visibility variables for non-win32 platforms
-    list(APPEND MSIX_UNPACK_EXPORTS
-        "UnpackPackage"
-        "UnpackPackageFromStream"
-        "UnpackBundle"
-        "UnpackBundleFromStream"
+list(APPEND MSIX_UNPACK_EXPORTS
+    "UnpackPackage"
+    "UnpackPackageFromStream"
+    "UnpackPackageFromPackageReader"
+    "UnpackBundle"
+    "UnpackBundleFromStream"
+    "UnpackBundleFromBundleReader"
+)
+
+if(MSIX_PACK)
+    list(APPEND MSIX_PACK_EXPORTS
+        "PackPackage"
     )
-    if(MSIX_PACK)
-        list(APPEND MSIX_PACK_EXPORTS
-            "PackPackage"
-        )
-    endif()
-    list(APPEND MSIX_EXPORTS
-        "CoCreateAppxFactory"
-        "CoCreateAppxFactoryWithHeap"
-        "CreateStreamOnFile"
-        "CreateStreamOnFileUTF16"
-        "GetLogTextUTF8"
-        "CoCreateAppxBundleFactory"
-        "CoCreateAppxBundleFactoryWithHeap"
-        ${MSIX_UNPACK_EXPORTS}
-        ${MSIX_PACK_EXPORTS}
-    )
+endif()
+
+list(APPEND MSIX_EXPORTS
+    "CoCreateAppxFactory"
+    "CoCreateAppxFactoryWithHeap"
+    "CreateStreamOnFile"
+    "CreateStreamOnFileUTF16"
+    "GetLogTextUTF8"
+    "CoCreateAppxBundleFactory"
+    "CoCreateAppxBundleFactoryWithHeap"
+    ${MSIX_UNPACK_EXPORTS}
+    ${MSIX_PACK_EXPORTS}
+)
+
+if(WIN32)
+    string(REGEX REPLACE ";" "\n    " MSIX_EXPORTS "${MSIX_EXPORTS}")
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/windowsexports.def.cmakein ${CMAKE_CURRENT_BINARY_DIR}/windowsexports.def CRLF)
+else()
     if((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported
         set(CMAKE_VISIBILITY_INLINES_HIDDEN     1)
@@ -266,6 +273,7 @@ if(WIN32)
             "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll")
     string(REPLACE ";" " " DELAYFLAGS "${DELAYFLAGS}")
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "${DELAYFLAGS} /LTCG")
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /DEF:windowsexports.def")
     if(USE_STATIC_MSVC)
         if(CMAKE_BUILD_TYPE MATCHES Debug)
             set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB:MSVCRTD")

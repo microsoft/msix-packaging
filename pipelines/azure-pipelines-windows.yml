@@ -9,7 +9,6 @@ pr:
     include:
     - master
     - release_v*
-    - packaging
   paths:
     include:
     - cmake/*
@@ -59,10 +58,10 @@ jobs:
         _arguments: x64 --parser-xerces --pack
         _artifact: WIN32-x64Xerces
       release_32_nobundle:
-        _arguments: x86 -sb --no-pack
+        _arguments: x86 -sb
         _artifact: WIN32-nobundle
       release_64_nobundle:
-        _arguments: x64 -sb --no-pack
+        _arguments: x64 -sb
         _artifact: WIN32-x64-nobundle
       release_32_pack:
         _arguments: x86 --pack
