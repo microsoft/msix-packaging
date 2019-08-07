@@ -31,6 +31,109 @@ HRESULT AutoPlay::ExecuteForAddRequest()
 
 HRESULT AutoPlay::ExecuteForRemoveRequest()
 {
+    for (auto autoPlay = m_autoPlay.begin(); autoPlay != m_autoPlay.end(); ++autoPlay)
+    {
+        RETURN_IF_FAILED(ProcessAutoPlayForRemove(*autoPlay));
+    }
+    return S_OK;
+}
+
+HRESULT AutoPlay::ProcessAutoPlayForRemove(AutoPlayObject& autoPlayObject)
+{
+    RegistryKey explorerKey;
+    RETURN_IF_FAILED(explorerKey.Open(HKEY_LOCAL_MACHINE, explorerRegKeyName.c_str(), KEY_READ | KEY_WRITE));
+
+    RegistryKey handlerRootKey;
+    HRESULT hrCreateSubKey = explorerKey.CreateSubKey(handlerKeyName.c_str(), KEY_READ | KEY_WRITE, &handlerRootKey);
+    if (SUCCEEDED(hrCreateSubKey))
+    {
+        const HRESULT hrDeleteSubKeyTree = handlerRootKey.DeleteTree(autoPlayObject.generatedhandlerName.c_str());
+        if (FAILED(hrDeleteSubKeyTree) && hrDeleteSubKeyTree != HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to delete autoplay generatedHandlerName",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(hrDeleteSubKeyTree, "HR"),
+                TraceLoggingValue(autoPlayObject.generatedhandlerName.c_str(), "GeneratedHandlerName"),
+                TraceLoggingValue(m_msixRequest->GetPackageFullName(), "PackageFullName "));
+        }
+    }
+    else
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Unable to delete autoplay reg key",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrCreateSubKey, "HR"),
+            TraceLoggingValue(autoPlayObject.generatedhandlerName.c_str(), "GeneratedHandlerName"),
+            TraceLoggingValue(m_msixRequest->GetPackageFullName(), "PackageFullName "));
+    }
+
+    if (autoPlayObject.autoPlayType == DesktopAppxContent)
+    {
+        RegistryKey classesRootKey;
+        HRESULT hrCreateSubKey = classesRootKey.Open(HKEY_LOCAL_MACHINE, classesKeyPath.c_str(), KEY_READ | KEY_WRITE | WRITE_DAC);
+
+        if (SUCCEEDED(hrCreateSubKey))
+        {
+            const HRESULT hrDeleteSubKeyTree = classesRootKey.DeleteTree(autoPlayObject.generatedProgId.c_str());
+            if (FAILED(hrDeleteSubKeyTree) && hrDeleteSubKeyTree != HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+            {
+                TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                    "Unable to delete autoplay progId reg key",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(hrDeleteSubKeyTree, "HR"),
+                    TraceLoggingValue(autoPlayObject.generatedProgId.c_str(), "GeneratedProgId"),
+                    TraceLoggingValue(m_msixRequest->GetPackageFullName(), "PackageFullName "));
+            }
+        }
+
+    }
+
+    RegistryKey handleEventRootKey;
+    hrCreateSubKey = explorerKey.CreateSubKey(eventHandlerRootRegKeyName.c_str(), KEY_READ | KEY_WRITE, &handleEventRootKey);
+
+    if (SUCCEEDED(hrCreateSubKey))
+    {
+        RegistryKey handleEventKey;
+        HRESULT hrCreateHandleSubKey = handleEventRootKey.CreateSubKey(autoPlayObject.handleEvent.c_str(), KEY_READ | KEY_WRITE, &handleEventKey);
+
+        if (SUCCEEDED(hrCreateHandleSubKey))
+        {
+            const HRESULT hrDeleteValue = handleEventKey.DeleteValue(autoPlayObject.generatedhandlerName.c_str());
+            if (FAILED(hrDeleteValue) && hrDeleteValue != HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+            {
+                TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                    "Unable to delete autoplay handleEventKey generatedHandlerName reg key",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(hrDeleteValue, "HR"),
+                    TraceLoggingValue(autoPlayObject.generatedhandlerName.c_str(), "GeneratedHandlerName"),
+                    TraceLoggingValue(m_msixRequest->GetPackageFullName(), "PackageFullName "));
+                return hrDeleteValue;
+            }
+        }
+        else
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to delete autoplay reg key",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(hrCreateHandleSubKey, "HR"),
+                TraceLoggingValue(autoPlayObject.generatedhandlerName.c_str(), "GeneratedHandlerName"),
+                TraceLoggingValue(m_msixRequest->GetPackageFullName(), "PackageFullName "));
+            return hrCreateHandleSubKey;
+        }
+    }
+    else
+    {
+        // Log failure of creating the handleEventRootKey
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Unable to delete autoplay reg key",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrCreateSubKey, "HR"),
+            TraceLoggingValue(autoPlayObject.generatedhandlerName.c_str(), "GeneratedHandlerName"),
+            TraceLoggingValue(m_msixRequest->GetPackageFullName(), "PackageFullName "));
+        return hrCreateSubKey;
+    }
+
     return S_OK;
 }
 
