@@ -36,7 +36,7 @@ namespace MSIX {
         // value will be returned and the object can no longer be used.
         void Get(HashBuffer& hash);
 
-        inline HashBuffer SHA256::Get()
+        inline HashBuffer Get()
         {
             HashBuffer result{};
             Get(result);

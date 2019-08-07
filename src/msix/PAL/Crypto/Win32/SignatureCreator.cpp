@@ -6,7 +6,7 @@
 
 namespace MSIX
 {
-    ComPtr<IStream> Sign(
+    ComPtr<IStream> SignatureCreator::Sign(
         AppxSignatureObject* digests,
         MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
         IStream* signingCertificate,

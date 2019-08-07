@@ -15,7 +15,7 @@
 // internal interface
 // {986355bc-4e9c-413b-8b2b-72c9aa3a594d}
 #ifndef WIN32
-interface IPackageWriter : public IUnknown
+interface IZipObject : public IUnknown
 #else
 #include "Unknwn.h"
 #include "Objidl.h"
