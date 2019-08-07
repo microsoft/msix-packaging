@@ -1634,7 +1634,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromPackageReader(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     IAppxPackageReader* packageReader,
-    char* utf8Destination
+    LPCSTR utf8Destination
 ) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
@@ -1655,7 +1655,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromBundleReader(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     IAppxBundleReader* bundleReader,
-    char* utf8Destination
+    LPCSTR utf8Destination
 ) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
