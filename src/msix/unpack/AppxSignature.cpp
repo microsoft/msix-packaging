@@ -78,19 +78,19 @@ AppxSignatureObject::AppxSignatureObject(IMsixFactory* factory, MSIX_VALIDATION_
     }
 }
 
-ComPtr<IStream>  AppxSignatureObject::GetValidationStream(const std::string& part, const ComPtr<IStream>& stream)
+ComPtr<IStream> AppxSignatureObject::GetValidationStream(const std::string& part, const ComPtr<IStream>& stream)
 {
     if (m_hasDigests)
     {
-        if (part == std::string("AppxBlockMap.xml"))
+        if (part == std::string(APPXBLOCKMAP_XML))
         {   // This stream implementation will throw if the underlying stream does not match the digest
             return ComPtr<IStream>::Make<HashStream>(stream, this->GetAppxBlockMapDigest());
         }
-        else if (part == std::string("[Content_Types].xml"))
-        {   // This stream implementation will throw if the underlying stream does not match the digest'
+        else if (part == std::string(CONTENT_TYPES_XML))
+        {   // This stream implementation will throw if the underlying stream does not match the digest
             return ComPtr<IStream>::Make<HashStream>(stream, this->GetContentTypesDigest());
         }
-        else if (part == std::string("AppxMetadata/CodeIntegrity.cat"))
+        else if (part == std::string(CODEINTEGRITY_CAT))
         {   // This stream implementation will throw if the underlying stream does not match the digest
             return ComPtr<IStream>::Make<HashStream>(stream, this->GetCodeIntegrityDigest());
         }

@@ -5,7 +5,7 @@
 #pragma once
 
 #include "ComHelper.hpp"
-#include "StringStream.hpp"
+#include "MemoryStream.hpp"
 
 #include <stack>
 #include <string>
@@ -36,7 +36,7 @@ namespace MSIX {
 
         XmlWriter(const std::string& root, bool standalone = false) 
         {
-            m_stream = ComPtr<IStream>::Make<StringStream>();
+            m_stream = ComPtr<IStream>::Make<MemoryStream>();
             StartWrite(root, standalone);
         }
 

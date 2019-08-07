@@ -57,31 +57,16 @@ bool DoesCertificateFormatRequirePrivateKey(MSIX_CERTIFICATE_FORMAT format)
 }
 
 // Signs a package in-place with the given certificate.
+// The package writer itself has the ability to sign the package as it is being created,
+// but this is an after the fact signing.  To converge the flows, we create the
+// SignatureAccumulator here, and catch it up with all of the files already present in the
+// package.  Creating the package writer and closing it handles the rest.
 void SignPackage(
     IAppxPackageReader* package,
     MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
     IStream* signingCertificate,
     IStream* privateKey)
 {
-    // TODO: Dissimenate or delete comment
-    // Steps:
-    //  Create digest accumulator (AppxSipCreateIndirectData)
-    //      Hashes are for [in order]:
-    //          Package Content [hash of everything but the central directory, except signature file]
-    //          Central Directory [Containing everything but the signature file]
-    //          Content Types [final file stream, must include signature and catalog types]
-    //          Block Map [full stream]
-    //          CI Catalog [full stream] [optional]
-    //  Extract Content Types for editing
-    //  Remove content types, any existing catalog and signature
-    //  Spin through all files, passing them along to accumulator
-    //  Create catalog if needed (also adds its own digest) (CreateSignedPEFilesCatalog)
-    //  [MERGE WITH CONCURRENT PACKAGE WRITE PATH HERE]
-    //  Collect last few digests (non-file based ones)
-    //  Create signature stream
-    //  Append content types, catalog, and signature
-    //  Write zip central directory back
-
     std::unique_ptr<SignatureAccumulator> signatureAccumulator = std::make_unique<SignatureAccumulator>();
 
     // Get the publisher from the manifest for verifying later
@@ -117,14 +102,10 @@ void SignPackage(
         }
     }
 
-    // Extract content types for editing, then create a new writer that will be ready to append.
-    auto contentTypesStream = underlyingStorage->GetFile(CONTENT_TYPES_XML);
-    ContentTypeWriter contentTypeWriter{ contentTypesStream.Get() };
-
     // Create a package writer from the reader, giving it our objects. With this, the new package writer will
     // be at the same point as it would be if we were doing signing while creating the package. Then we just
     // continue that process with Close.
-    auto packageWriter = ComPtr<IPackageWriter>::Make<AppxPackageWriter>(packageAsIPackage.Get(), std::move(signatureAccumulator), std::move(contentTypeWriter));
+    auto packageWriter = ComPtr<IPackageWriter>::Make<AppxPackageWriter>(packageAsIPackage.Get(), std::move(signatureAccumulator));
 
     packageWriter->Close(signingCertificateFormat, signingCertificate, privateKey);
 }

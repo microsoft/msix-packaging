@@ -24,7 +24,7 @@
 #include "VersionHelpers.hpp"
 #include "MappingFileParser.hpp"
 #include "FileStream.hpp"
-#include "VectorStream.hpp"
+#include "MemoryStream.hpp"
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
@@ -445,7 +445,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
 
     if(manifestOnly)
     {
-        stream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&streamVector);
+        stream = MSIX::ComPtr<IStream>::Make<MSIX::MemoryStream>(&streamVector);
     }
     else
     {
@@ -482,7 +482,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
             std::string outputPath = fileListIterator->first;
 
             std::vector<std::uint8_t> tempPackageVector;
-            auto tempPackageStream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&tempPackageVector);                
+            auto tempPackageStream = MSIX::ComPtr<IStream>::Make<MSIX::MemoryStream>(&tempPackageVector);                
 
             auto manifestStream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(inputPath, MSIX::FileStream::Mode::READ);
 

@@ -6,7 +6,6 @@
 #include "Exceptions.hpp"
 
 #include <memory>
-#include <iostream>
 
 #include <openssl/err.h>
 #include <openssl/bio.h>
@@ -18,12 +17,7 @@
 #include <openssl/pem.h>
 #include <openssl/crypto.h>
 #include <openssl/rsa.h>
-
-#define ThrowOpenSSLError() PrintOpenSSLErr()
-// TODO: More like this
-//#define ThrowOpenSSLErrIfFailed(_x_) MSIX::RaiseOpenSSLExceptionIfFailed(a, __LINE__, __FILE__);
-#define ThrowOpenSSLErrIfFailed(_x_) CheckOpenSSLErr(_x_)
-#define ThrowOpenSSLErrIfAllocFailed(_x_) CheckOpenSSLAlloc(_x_)
+#include <openssl/asn1.h>
 
 namespace MSIX
 {
@@ -63,6 +57,10 @@ namespace MSIX
         void operator()(EVP_PKEY* pkey) const { if (pkey) EVP_PKEY_free(pkey); }
     };
 
+    struct unique_ASN1_STRING_deleter {
+        void operator()(ASN1_STRING* pStr) const { if (pStr) ASN1_STRING_free(pStr); }
+    };
+
     struct shared_BIO_deleter {
         void operator()(BIO* b) const { if (b) BIO_free(b); };
     };
@@ -76,6 +74,7 @@ namespace MSIX
     using unique_OPENSSL_string = std::unique_ptr<char, unique_OPENSSL_string_deleter>;
     using unique_STACK_X509 = std::unique_ptr<STACK_OF(X509), unique_STACK_X509_deleter>;
     using unique_EVP_PKEY = std::unique_ptr<EVP_PKEY, unique_EVP_PKEY_deleter>;
+    using unique_ASN1_STRING = std::unique_ptr<ASN1_STRING, unique_ASN1_STRING_deleter>;
 
     typedef struct Asn1Sequence
     {
@@ -96,51 +95,49 @@ namespace MSIX
         };
     } Asn1Sequence;
 
-    // TODO: Make this output to the text log and throw an exception
-    inline void PrintOpenSSLErr()
+    // A common exception class to be used by all OpenSSL errors.
+    // OpenSSL does not return detailed error codes, so we use a singular HResult.
+    class OpenSSLException final : public Exception
     {
-        ERR_load_crypto_strings();
-
-        std::cout << "OpenSSL Error:" << std::endl;
-
-        unsigned long err = 0;
-        do
+    public:
+        OpenSSLException(std::string& message, DWORD error) : Exception(message, error)
         {
-            const char* file{};
-            int line{};
-            const char* data{};
-            int flags{};
+        }
+    };
+    
+    MSIX_NOINLINE(void) RaiseOpenSSLException(const char* message, const int line, const char* const file, DWORD error = 0x80FA11ED);
 
-            err = ERR_get_error_line_data(&file, &line, &data, &flags);
-
-            if (err)
-            {
-                std::cout << "  at " << file << '[' << line << ']';
-                if (flags & ERR_TXT_STRING)
-                {
-                    std::cout << " : " << data;
-                }
-                std::cout << std::endl;
-
-                std::cout << "    " << ERR_error_string(err, nullptr) << std::endl;
-            }
-        } while (err);
-    }
-
+    // Use only to verify the result of *_new functions from OpenSSL
     template <typename T>
-    inline void CheckOpenSSLAlloc(const T& t)
+    inline void CheckOpenSSLAlloc(const T& t, const int line, const char* const file)
     {
         if (!t)
         {
-            PrintOpenSSLErr();
+            RaiseOpenSSLException("OpenSSL allocation failed", line, file, static_cast<DWORD>(Error::OutOfMemory));
         }
     }
 
-    inline void CheckOpenSSLErr(int err)
+    // Use to check the result of functions that actually do something beyond allocation.
+    // The overloads allow for other return types, such as pointers.
+    inline void CheckOpenSSLErr(int err, const int line, const char* const file, const char* message = nullptr)
     {
         if (err <= 0)
         {
-            PrintOpenSSLErr();
+            RaiseOpenSSLException(message, line, file);
+        }
+    }
+
+    template <typename T>
+    inline void CheckOpenSSLErr(T* returnVal, const int line, const char* const file, const char* message = nullptr)
+    {
+        if (!returnVal)
+        {
+            RaiseOpenSSLException(message, line, file);
         }
     }
 } // namespace MSIX
+
+#define ThrowOpenSSLError(m)                MSIX::RaiseOpenSSLException(m, __LINE__, __FILE__)
+#define ThrowOpenSSLErrIfAllocFailed(x)     MSIX::CheckOpenSSLAlloc(x, __LINE__, __FILE__)
+#define ThrowOpenSSLErrIfFailed(x)          MSIX::CheckOpenSSLErr(x, __LINE__, __FILE__)
+#define ThrowOpenSSLErrIfFailedMsg(x,m)     MSIX::CheckOpenSSLErr(x, __LINE__, __FILE__, m)

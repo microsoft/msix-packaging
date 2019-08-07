@@ -8,20 +8,25 @@
 #include "ComHelper.hpp"
 #include "MsixFeatureSelector.hpp"
 
+#include <memory>
 #include <vector>
 #include <algorithm>
 
 namespace MSIX {
 
-    class VectorStream final : public StreamBase
+    class MemoryStream final : public StreamBase
     {
     public:
-        VectorStream(std::vector<std::uint8_t>* data) : m_data(data) {}
+        // Create a stream that contains its own storage.
+        MemoryStream() : m_storage(std::make_unique<std::vector<std::uint8_t>>()), m_data(m_storage.get()) {}
+
+        // Create a stream backed by external storage.
+        MemoryStream(std::vector<std::uint8_t>* data) : m_data(data) {}
 
         HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
         {
             ULONG amountToRead = std::min(countBytes, static_cast<ULONG>(m_data->size() - m_offset));
-            if (amountToRead > 0) { memcpy(buffer, &(m_data->at(m_offset)), amountToRead); }                
+            if (amountToRead > 0) { memcpy(buffer, &(m_data->at(m_offset)), amountToRead); }
             m_offset += amountToRead;
             if (bytesRead) { *bytesRead = amountToRead; }
             return static_cast<HRESULT>(Error::OK);
@@ -67,6 +72,7 @@ namespace MSIX {
 
     protected:
         ULONG m_offset = 0;
+        std::unique_ptr<std::vector<std::uint8_t>> m_storage;
         std::vector<std::uint8_t>* m_data;
     };
 } // namespace MSIX
