@@ -9,8 +9,6 @@ namespace MsixCoreLib
     enum AutoPlayType
     {
         InvalidAutoPlayType = 0,
-        UWPContent,
-        UWPDevice,
         DesktopAppxContent,
         DesktopAppxDevice
     };
@@ -58,13 +56,6 @@ namespace MsixCoreLib
         HRESULT GenerateHandlerName(_In_ LPWSTR type, _In_ const std::wstring handlerNameSeed, _Out_ std::wstring & generatedHandlerName);
 
         HRESULT BuildVerbKey(_In_ std::wstring generatedProgId, _In_ std::wstring id, _Out_ RegistryKey & verbRootKey);
-
-        static ULONG GetMinValue(
-            _In_ ULONG d1,
-            _In_ ULONG d2)
-        {
-            return (d1 < d2 ? d1 : d2);
-        }
 
     };
 }

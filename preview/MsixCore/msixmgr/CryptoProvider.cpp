@@ -6,7 +6,6 @@
 #include <CryptoProvider.hpp>
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
-#include <assert.h>
 
 namespace MsixCoreLib
 {
@@ -61,8 +60,6 @@ namespace MsixCoreLib
 
     HRESULT CryptoProvider::OpenProvider()
     {
-        assert(NULL == this->providerHandle);
-
         PCWSTR algorithmId = BCRYPT_SHA256_ALGORITHM;
         PCWSTR implementation = NULL;
         ULONG flags = 0;
@@ -81,9 +78,6 @@ namespace MsixCoreLib
         BYTE* hashObject;
         ULONG hashObjectSize;
         ULONG resultSize;
-
-        assert(reset == this->state);
-        assert(NULL == this->hashHandle);
 
         RETURN_IF_FAILED(OpenProvider());
 
@@ -120,9 +114,6 @@ namespace MsixCoreLib
     HRESULT CryptoProvider::DigestData(
         _In_ const COMMON_BYTES* data)
     {
-        assert(inProgress == this->state);
-        assert(NULL != this->hashHandle);
-
         BcryptLibrary::BCryptHashData(
             this->hashHandle,
             data->bytes,
@@ -138,15 +129,11 @@ namespace MsixCoreLib
         BYTE* digestPtr;
         ULONG digestSize;
 
-        assert(NULL != this->hashHandle);
-
         if (0 == this->digest.length)
         {
             NTSTATUS status;
 
             ULONG resultSize;
-
-            assert(inProgress == this->state);
 
             status = BcryptLibrary::BCryptGetProperty(
                 this->providerHandle,
@@ -181,8 +168,6 @@ namespace MsixCoreLib
             this->digest.bytes = digestPtr;
             this->digest.length = digestSize;
         }
-
-        assert(done == this->state);
 
         *digest = this->digest;
 

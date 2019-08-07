@@ -54,61 +54,6 @@ HRESULT AutoPlay::ParseManifest()
         Text<wchar_t> extensionCategory;
         RETURN_IF_FAILED(extensionElement->GetAttributeValue(categoryAttribute.c_str(), &extensionCategory));
 
-        /*if (wcscmp(extensionCategory.Get(), autoPlayContentCategoryNameInManifest.c_str()) == 0)
-        {
-            autoPlay.autoPlayType = UWPContent;
-
-            BOOL hc_launchAction = FALSE;
-            ComPtr<IMsixElementEnumerator> launchActionEnum;
-            RETURN_IF_FAILED(extensionElement->GetElements(launchActionQuery.c_str(), &launchActionEnum));
-            RETURN_IF_FAILED(launchActionEnum->GetHasCurrent(&hc_launchAction));
-
-            while (hc_launchAction)
-            {
-                // for each launch action tag
-                ComPtr<IMsixElement> launchActionElement;
-                RETURN_IF_FAILED(launchActionEnum->GetCurrent(&launchActionElement));
-
-                //verb
-                Text<wchar_t> id;
-                RETURN_IF_FAILED(launchActionElement->GetAttributeValue(idAttributeName.c_str(), &id));
-                autoPlay.id = id.Get();
-
-                //action
-                Text<wchar_t> action;
-                RETURN_IF_FAILED(launchActionElement->GetAttributeValue(actionAttributeName.c_str(), &action));
-                autoPlay.action = action.Get();
-
-                //content event
-                Text<wchar_t> handleEvent;
-                RETURN_IF_FAILED(launchActionElement->GetAttributeValue(contentEventAttributeName.c_str(), &handleEvent));
-                autoPlay.handleEvent = handleEvent.Get();
-
-                // The "Provider" is the Application DisplayName
-                autoPlay.provider = m_msixRequest->GetPackageInfo()->GetDisplayName();
-
-                // Get the App's app user model id
-                autoPlay.appUserModelId = m_msixRequest->GetPackageInfo()->GetId();
-
-                //get the logo
-                autoPlay.defaultIcon = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + m_msixRequest->GetPackageInfo()->GetRelativeLogoPath();
-
-                //generate prog id
-                std::wstring generatedProgId;
-                RETURN_IF_FAILED(GenerateProgId(autoPlayContentCategoryNameInManifest.c_str(), id.Get(), generatedProgId));
-                autoPlay.generatedProgId = generatedProgId.c_str();
-
-                //generate handler name
-                std::wstring generatedHandlerName;
-                RETURN_IF_FAILED(GenerateHandlerName(L"Content", id.Get(), generatedHandlerName));
-                autoPlay.generatedhandlerName = generatedHandlerName.c_str();
-
-                RETURN_IF_FAILED(launchActionEnum->MoveNext(&hc_launchAction));
-
-            }
-
-        }*/
-
         if (wcscmp(extensionCategory.Get(), desktopAppXExtensionCategory.c_str()) == 0)
         {
             BOOL hc_invokeAction = FALSE;
@@ -277,10 +222,10 @@ HRESULT AutoPlay::ParseManifest()
 
 HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCategory, std::wstring & generatedProgId)
 {
-    std::wstring packageMoniker = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
+    std::wstring packageFamilyName = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
     std::wstring applicationId = m_msixRequest->GetPackageInfo()->GetApplicationId();
 
-    if (packageMoniker.empty() || applicationId.empty() || categoryName.empty())
+    if (packageFamilyName.empty() || applicationId.empty() || categoryName.empty())
     {
         return E_INVALIDARG;
     }
@@ -311,14 +256,12 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
 
     static const ULONG MaxByteCountOfDigest = (MaxBase32EncodedStringLength * 5 + 7) / 8;
 
-    HRESULT hr = S_OK;
-
     // Build the progIdSeed by appending the incoming strings
-    // The package moniker and the application ID are case sensitive
+    // The package family name and the application ID are case sensitive
     //std::wstring tempProgIDBuffer;
 
     std::wstring tempProgIDBuilder;
-    tempProgIDBuilder.append(packageMoniker);
+    tempProgIDBuilder.append(packageFamilyName);
     std::transform(tempProgIDBuilder.begin(), tempProgIDBuilder.end(), tempProgIDBuilder.begin(), ::tolower);
     tempProgIDBuilder.append(applicationId);
 
@@ -360,7 +303,7 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
     ULONG base32EncodedDigestCharCount = 0;
     RETURN_IF_FAILED(Base32Encoding::GetChars(
         digest.bytes,
-        GetMinValue(digest.length, MaxByteCountOfDigest),
+        std::min(digest.length, MaxByteCountOfDigest),
         MaxBase32EncodedStringLength,
         base32EncodedDigest.GetChars(),
         &base32EncodedDigestCharCount));
@@ -388,7 +331,7 @@ HRESULT AutoPlay::GenerateHandlerName(LPWSTR type, const std::wstring handlerNam
     static const ULONG HashedByteCount = 32;      // SHA256 generates 256 hashed bits, which is 32 bytes
     static const ULONG Base32EncodedLength = 52;  // SHA256 generates 256 hashed bits, which is 52 characters after base 32 encoding (5 bits per character)
 
-    std::wstring packageFamilyMoniker = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
+    std::wstring packageFamilyName = m_msixRequest->GetPackageInfo()->GetPackageFamilyName();
     std::wstring applicationId = m_msixRequest->GetPackageInfo()->GetApplicationId();
     std::wstring handlerNameBuilder;
     HCRYPTPROV hProv = NULL;
@@ -399,13 +342,13 @@ HRESULT AutoPlay::GenerateHandlerName(LPWSTR type, const std::wstring handlerNam
     StringBuffer base32EncodedDigest;
     size_t typeLength;
 
-    // First, convert Package Moniker and App Id to StringBuffers for convenience - lowercase the values so that the comparison
+    // First, append Package family name and App Id to a std::wstring variable for convenience - lowercase the values so that the comparison
     // in future versions or other code will be case insensitive
-    handlerNameBuilder.append(packageFamilyMoniker);
+    handlerNameBuilder.append(packageFamilyName);
     handlerNameBuilder.append(applicationId);
     std::transform(handlerNameBuilder.begin(), handlerNameBuilder.end(), handlerNameBuilder.begin(), ::tolower);
 
-    // Next, SHA256 hash the Package Moniker and Application Id
+    // Next, SHA256 hash the Package family name and Application Id
     if (!CryptAcquireContext(&hProv, nullptr, MS_ENH_RSA_AES_PROV, PROV_RSA_AES, CRYPT_VERIFYCONTEXT))
     {
         return HRESULT_FROM_WIN32(GetLastError());
@@ -508,16 +451,16 @@ HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
             regDropTargetHandlerBuilder.append(autoPlayObject.dropTargetHandler);
             regDropTargetHandlerBuilder.append(L"}");
 
-            RETURN_IF_FAILED(dropTargetKey.SetStringValue(L"CLSID", regDropTargetHandlerBuilder.c_str()));
+            RETURN_IF_FAILED(dropTargetKey.SetStringValue(L"CLSID", regDropTargetHandlerBuilder));
         }
         else
         {
-            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"AppUserModelID", autoPlayObject.appUserModelId.c_str()));
+            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"AppUserModelID", autoPlayObject.appUserModelId));
 
             std::wstring resolvedExecutableFullPath = m_msixRequest->GetPackageDirectoryPath() + L"\\" + m_msixRequest->GetPackageInfo()->GetRelativeExecutableFilePath();
-            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"PackageRelativeExecutable", resolvedExecutableFullPath.c_str()));
+            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"PackageRelativeExecutable", resolvedExecutableFullPath));
 
-            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"Parameters", autoPlayObject.parameters.c_str()));
+            RETURN_IF_FAILED(verbRootKey.SetStringValue(L"Parameters", autoPlayObject.parameters));
 
             RETURN_IF_FAILED(verbRootKey.SetStringValue(L"ContractId", L"Windows.File"));
 
@@ -538,9 +481,9 @@ HRESULT AutoPlay::ProcessAutoPlayForAdd(AutoPlayObject& autoPlayObject)
         regHWEventHandlerBuilder.append(autoPlayObject.hwEventHandler);
         regHWEventHandlerBuilder.append(L"}");
 
-        RETURN_IF_FAILED(handlerKey.SetStringValue(L"CLSID", regHWEventHandlerBuilder.c_str()));
+        RETURN_IF_FAILED(handlerKey.SetStringValue(L"CLSID", regHWEventHandlerBuilder));
 
-        RETURN_IF_FAILED(handlerKey.SetStringValue(L"InitCmdLine", autoPlayObject.initCmdLine.c_str()));
+        RETURN_IF_FAILED(handlerKey.SetStringValue(L"InitCmdLine", autoPlayObject.initCmdLine));
     }
 
     return S_OK;
