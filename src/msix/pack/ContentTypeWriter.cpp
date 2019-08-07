@@ -53,9 +53,9 @@ namespace MSIX {
         m_xmlWriter.Initialize(sourceXml, typesElement);
     }
 
-// File extension to MIME value map that are added as default elements
-// If the extension is already in the map and its content type is different or
-// if the file doesn't have an extensions AddOverride is called.
+    // File extension to MIME value map that are added as default elements
+    // If the extension is already in the map and its content type is different or
+    // if the file doesn't have an extensions AddOverride is called.
     void ContentTypeWriter::AddContentType(const std::string& name, const std::string& contentType, bool forceOverride)
     {
         // Skip the signature files if they are already present

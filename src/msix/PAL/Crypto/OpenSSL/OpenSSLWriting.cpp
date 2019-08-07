@@ -21,7 +21,7 @@ namespace MSIX
             const char* longName;
         };
 
-#define MSIX_MAKE_CUSTOM_OBJECT_DEF(_name_,_oid_) { CustomOpenSSLObjectName:: ## _name_, _oid_, #_name_, #_name_ }
+#define MSIX_MAKE_CUSTOM_OBJECT_DEF(_name_,_oid_) { CustomOpenSSLObjectName:: _name_, _oid_, #_name_, #_name_ }
 
         CustomObjectDef customObjects[]
         {
