@@ -97,7 +97,7 @@ namespace MSIX {
         EnsureNotFinished();
 
         // Add the data
-        ThrowStatusIfFailed(BCryptHashData(context->hashHandle.get(), buffer, static_cast<ULONG>(cbBuffer), 0), "failed adding SHA256 data");
+        ThrowStatusIfFailed(BCryptHashData(context->hashHandle.get(), const_cast<PUCHAR>(buffer), static_cast<ULONG>(cbBuffer), 0), "failed adding SHA256 data");
     }
 
     void SHA256::Get(HashBuffer& hash)

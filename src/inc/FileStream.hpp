@@ -120,7 +120,7 @@ namespace MSIX {
 
             return static_cast<HRESULT>(Error::OK);
 #else
-            ThrowHrIfPOSIXFailed(ftruncate(_fileno(m_file), static_cast<off_t>(size.QuadPart)));
+            ThrowHrIfPOSIXFailed(ftruncate(_fileno(m_file), static_cast<off_t>(size.QuadPart)), "Failed to set the end of the file");
 #endif
         } CATCH_RETURN();
 
