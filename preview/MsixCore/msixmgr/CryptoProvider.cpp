@@ -52,7 +52,10 @@ namespace MsixCoreLib
         RETURN_IF_FAILED(BcryptLibrary::Load());
 
         std::unique_ptr<CryptoProvider> cp(new APPXCOMMON_NEW_TAG CryptoProvider());
-        //RETURN_IF_NULL_ALLOC(cp);
+        if (cp == nullptr)
+        {
+            return HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
+        }
 
         *provider = cp.release();
         return S_OK;
@@ -143,8 +146,10 @@ namespace MsixCoreLib
                 &resultSize,
                 0);
 
-            _Analysis_assume_(status == STATUS_SUCCESS || FAILED(HRESULT_FROM_NT(status)));
-            //IfFalseReturnError(status == STATUS_SUCCESS, HRESULT_FROM_NT(status));
+            if (FAILED(status))
+            {
+                return HRESULT_FROM_NT(status);
+            }
 
             if (sizeof(this->quickDigestBuffer) >= digestSize)
             {
@@ -162,8 +167,10 @@ namespace MsixCoreLib
                 digestSize,
                 0);
 
-            _Analysis_assume_(status == STATUS_SUCCESS || FAILED(HRESULT_FROM_NT(status)));
-            //IfFalseReturnError(status == STATUS_SUCCESS, HRESULT_FROM_NT(status));
+            if (FAILED(status))
+            {
+                return HRESULT_FROM_NT(status);
+            }
 
             this->digest.bytes = digestPtr;
             this->digest.length = digestSize;
