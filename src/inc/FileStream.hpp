@@ -117,11 +117,10 @@ namespace MSIX {
 
             // Return to the previous location
             SeekInternal(resetLocation, StreamBase::Reference::START);
-
-            return static_cast<HRESULT>(Error::OK);
 #else
             ThrowHrIfPOSIXFailed(ftruncate(fileno(m_file), static_cast<off_t>(size.QuadPart)), "Failed to set the end of the file");
 #endif
+            return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
         // IStreamInternal
