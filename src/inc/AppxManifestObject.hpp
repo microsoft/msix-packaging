@@ -232,6 +232,10 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetMainPackageName(LPWSTR* mainPackageName) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (mainPackageName == nullptr || *mainPackageName != nullptr), "bad pointer");
+            if (m_mainPackageName.empty())
+            {
+                return static_cast<HRESULT>(Error::OK);
+            }
             return m_factory->MarshalOutString(m_mainPackageName, mainPackageName);
         } CATCH_RETURN();
 
@@ -239,6 +243,10 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetMainPackageName(LPSTR* mainPackageName) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (mainPackageName == nullptr || *mainPackageName != nullptr), "bad pointer");
+            if (m_mainPackageName.empty())
+            {
+                return static_cast<HRESULT>(Error::OK);
+            }
             return m_factory->MarshalOutStringUtf8(m_mainPackageName, mainPackageName);
         } CATCH_RETURN();
 
