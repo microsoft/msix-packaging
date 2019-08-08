@@ -40,7 +40,7 @@
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.10240.0" MaxVersionTested="10.0.14300.0"/>
     <PackageDependency Name="Microsoft.VCLibs.140.00" MinVersion="14.0.0.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"/>
-    <uap3:MainPackageDependency Name="Demo.MyMainApp" Publisher="TestPublisher"/>
+    <uap3:MainPackageDependency Name="Demo.MyMainApp"/>
   </Dependencies>
 
   <Capabilities>

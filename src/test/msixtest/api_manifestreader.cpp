@@ -622,18 +622,18 @@ TEST_CASE("Api_AppxManifestReader_OptionalPackage", "[api]")
     MsixTest::ComPtr<IAppxManifestMainPackageDependenciesEnumerator> mainPackageDependencies;
     REQUIRE_SUCCEEDED(manifestReader5->GetMainPackageDependencies(&mainPackageDependencies));
 
-    std::vector<std::string> expectedPublisherValues =
-    {
-        //"", // We expect the value to be NULL. Handle this special case separately  
-        //"TestPublisher",
-        "TestPublisher"
-    };
+    //std::vector<std::string> expectedPublisherValues =
+    //{
+    //    //"", // We expect the value to be NULL. Handle this special case separately  
+    //    //"TestPublisher",
+    //    "TestPublisher"
+    //};
 
     std::vector<std::string> expectedPackageFamilyNameValues =
     {
+        "SampleAppManifest_8wekyb3d8bbwe"
         //"SampleAppManifest_8wekyb3d8bbwe",
         //"Demo.MyMainApp_85z48rrqmdg38",
-        "Demo.MyMainApp_85z48rrqmdg38"
     };
 
     BOOL hasCurrent = FALSE;
@@ -668,13 +668,13 @@ TEST_CASE("Api_AppxManifestReader_OptionalPackage", "[api]")
         //}
         //else
         //{
-        MsixTest::Wrappers::Buffer<wchar_t> publisher;
-        REQUIRE_SUCCEEDED(dependency->GetPublisher(&publisher));
-        REQUIRE(expectedPublisherValues[numDep] == publisher.ToString());
+        //MsixTest::Wrappers::Buffer<wchar_t> publisher;
+        //REQUIRE_SUCCEEDED(dependency->GetPublisher(&publisher));
+        //REQUIRE(expectedPublisherValues[numDep] == publisher.ToString());
 
-        MsixTest::Wrappers::Buffer<char> publisherUtf8;
-        REQUIRE_SUCCEEDED(dependencyUtf8->GetPublisher(&publisherUtf8));
-        REQUIRE(expectedPublisherValues[numDep] == publisherUtf8.ToString());
+        //MsixTest::Wrappers::Buffer<char> publisherUtf8;
+        //REQUIRE_SUCCEEDED(dependencyUtf8->GetPublisher(&publisherUtf8));
+        //REQUIRE(expectedPublisherValues[numDep] == publisherUtf8.ToString());
         //}
 
         MsixTest::Wrappers::Buffer<wchar_t> packageFamilyName;
