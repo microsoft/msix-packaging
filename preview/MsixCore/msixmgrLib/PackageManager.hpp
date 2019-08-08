@@ -21,5 +21,6 @@ namespace MsixCoreLib {
         HRESULT GetMsixPackageInfo(const std::wstring & msixFullPath, std::shared_ptr<IPackage> & package) override;
     private:
         HRESULT GetPackageInfo(const std::wstring & directoryPath, std::shared_ptr<IInstalledPackage> & installedPackage);
+        HRESULT CreateStreamOnPackageUrl(const std::wstring & package, IStream** stream);
     };
 }
