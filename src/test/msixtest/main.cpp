@@ -17,9 +17,11 @@ int main( int argc, char* argv[] )
     #else
     auto find = exePath.find_last_of('/');
     #endif
+    const char* path = nullptr;
     if (find != std::string::npos)
     {
         exePath = exePath.substr(0, find);
+        path = exePath.c_str();
     }
-    return msixtest_main(argc, argv, exePath.c_str());
+    return msixtest_main(argc, argv, path);
 }

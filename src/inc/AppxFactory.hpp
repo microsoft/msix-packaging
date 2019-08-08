@@ -13,8 +13,32 @@
 
 #include <string>
 #include <vector>
+#include <array>
 
 namespace MSIX {
+
+    // names of footprint files.
+    #define APPXBLOCKMAP_XML       "AppxBlockMap.xml"
+    #define APPXMANIFEST_XML       "AppxManifest.xml"
+    #define CODEINTEGRITY_CAT      "AppxMetadata/CodeIntegrity.cat"
+    #define APPXSIGNATURE_P7X      "AppxSignature.p7x"
+    #define CONTENT_TYPES_XML      "[Content_Types].xml"
+    #define APPXBUNDLEMANIFEST_XML "AppxMetadata/AppxBundleManifest.xml"
+
+    static const std::array<const char*, 4> footprintFiles =
+    {   APPXMANIFEST_XML,
+        APPXBLOCKMAP_XML,
+        APPXSIGNATURE_P7X,
+        CODEINTEGRITY_CAT,
+    };
+
+    static const std::array<const char*, 3> bundleFootprintFiles =
+    {
+        APPXBUNDLEMANIFEST_XML,
+        APPXBLOCKMAP_XML,
+        APPXSIGNATURE_P7X,
+    };
+
     class AppxFactory final : public ComClass<AppxFactory, IMsixFactory, IAppxFactory, IXmlFactory, IAppxBundleFactory, IMsixFactoryOverrides, IAppxFactoryUtf8>
     {
     public:

@@ -33,16 +33,16 @@ jobs:
   strategy:
     # TODO: add debug for validation parser and xerces if needed.
     matrix:
-      debug_32:
+      debug_32_nopack:
         _arguments: x86 -d
         _artifact: WIN32chk
-      debug_64:
+      debug_64_nopack:
         _arguments: x64 -d
         _artifact: WIN32-x64chk
-      release_32:
+      release_32_nopack:
         _arguments: x86
         _artifact: WIN32
-      release_64:
+      release_64_nopack:
         _arguments: x64
         _artifact: WIN32-x64
       release_32_validation_parser:
@@ -52,10 +52,10 @@ jobs:
         _arguments: x64 --validation-parser
         _artifact: WIN32-x64ValidationParser
       release_32_xerces:
-        _arguments: x86 --parser-xerces
+        _arguments: x86 --parser-xerces --pack
         _artifact: WIN32Xerces
       release_64_xerces:
-        _arguments: x64 --parser-xerces
+        _arguments: x64 --parser-xerces --pack
         _artifact: WIN32-x64Xerces
       release_32_nobundle:
         _arguments: x86 -sb
@@ -63,6 +63,18 @@ jobs:
       release_64_nobundle:
         _arguments: x64 -sb
         _artifact: WIN32-x64-nobundle
+      release_32_pack:
+        _arguments: x86 --pack
+        _artifact: WIN32-pack
+      release_64_pack:
+        _arguments: x64 --pack
+        _artifact: WIN32-pack
+      debug_32_pack:
+        _arguments: x86 -d --pack
+        _artifact: WIN32chk-pack
+      debug_64_pack:
+        _arguments: x86 -d --pack
+        _artifact: WIN32chk-pack
 
   steps:
   - task: BatchScript@1

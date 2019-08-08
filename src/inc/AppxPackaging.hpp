@@ -61,6 +61,7 @@ SpecializeUuidOfImpl(IAppxBlockMapBlocksEnumerator);
 SpecializeUuidOfImpl(IAppxManifestReader);
 SpecializeUuidOfImpl(IAppxManifestReader2);
 SpecializeUuidOfImpl(IAppxManifestReader3);
+SpecializeUuidOfImpl(IAppxManifestReader4);
 SpecializeUuidOfImpl(IAppxManifestPackageId);
 SpecializeUuidOfImpl(IAppxManifestProperties);
 SpecializeUuidOfImpl(IAppxManifestTargetDeviceFamiliesEnumerator);
@@ -80,6 +81,8 @@ SpecializeUuidOfImpl(IAppxBundleReader);
 SpecializeUuidOfImpl(IAppxBundleManifestReader);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoEnumerator);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfo);
+SpecializeUuidOfImpl(IAppxPackageWriter3);
+SpecializeUuidOfImpl(IAppxManifestOptionalPackageInfo);
 #endif
 
 #else
@@ -101,6 +104,7 @@ interface IAppxBlockMapBlocksEnumerator;
 interface IAppxManifestReader;
 interface IAppxManifestReader2;
 interface IAppxManifestReader3;
+interface IAppxManifestReader4;
 interface IAppxManifestPackageId;
 interface IAppxManifestProperties;
 interface IAppxManifestTargetDeviceFamiliesEnumerator;
@@ -120,6 +124,8 @@ interface IAppxBundleReader;
 interface IAppxBundleManifestReader;
 interface IAppxBundleManifestPackageInfoEnumerator;
 interface IAppxBundleManifestPackageInfo;
+interface IAppxPackageWriter3;
+interface IAppxManifestOptionalPackageInfo;
 
 extern "C"{
 
@@ -645,6 +651,19 @@ enum tagLOCKTYPE
     };
 #endif 	/* __IAppxManifestReader3_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxManifestReader4_INTERFACE_DEFINED__
+#define __IAppxManifestReader4_INTERFACE_DEFINED__
+
+    // {4579bb7c-741d-4161-b5a1-47bd3b78ad9b}
+    MSIX_INTERFACE(IAppxManifestReader4, 0x4579bb7c, 0x741d, 0x4161, 0xb5, 0xa1, 0x47, 0xbd, 0x3b, 0x78, 0xad, 0x9b);
+    interface IAppxManifestReader4 : public IAppxManifestReader3
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetOptionalPackageInfo(
+            /* [retval][out] */  IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestReader4_INTERFACE_DEFINED__ */
+
 #ifndef __IAppxManifestPackageId_INTERFACE_DEFINED__
 #define __IAppxManifestPackageId_INTERFACE_DEFINED__
 
@@ -1044,6 +1063,45 @@ enum tagLOCKTYPE
     };
 #endif 	/* __IAppxBundleManifestPackageInfo_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxPackageWriter3_INTERFACE_DEFINED__
+#define __IAppxPackageWriter3_INTERFACE_DEFINED__
+
+    typedef struct APPX_PACKAGE_WRITER_PAYLOAD_STREAM
+    {
+        IStream* inputStream;
+        LPCWSTR fileName;
+        LPCWSTR contentType;
+        APPX_COMPRESSION_OPTION compressionOption;
+    } 	APPX_PACKAGE_WRITER_PAYLOAD_STREAM;
+
+    // {a83aacd3-41c0-4501-b8a3-74164f50b2fd}
+    MSIX_INTERFACE(IAppxPackageWriter3, 0xa83aacd3,0x41c0,0x4501,0xb8,0xa3,0x74,0x16,0x4f,0x50,0xb2,0xfd);
+    interface IAppxPackageWriter3 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadFiles( 
+            /* [in] */ UINT32 fileCount,
+            /* [size_is][in] */ APPX_PACKAGE_WRITER_PAYLOAD_STREAM* payloadFiles,
+            /* [in] */ UINT64 memoryLimit) = 0;
+    };
+#endif 	/* __IAppxPackageWriter3_INTERFACE_DEFINED__ */
+#ifndef __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
+#define __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
+
+    // {2634847d-5b5d-4fe5-a243-002ff95edc7e}
+    MSIX_INTERFACE(IAppxManifestOptionalPackageInfo, 0x2634847d, 0x5b5d, 0x4fe5, 0xa2, 0x43, 0x00, 0x2f, 0xf9, 0x5e, 0xdc, 0x7e);
+    interface IAppxManifestOptionalPackageInfo : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetIsOptionalPackage(
+            /* [retval][out] */  BOOL *isOptionalPackage) noexcept = 0;
+
+        virtual HRESULT STDMETHODCALLTYPE GetMainPackageName(
+            /* [retval][string][out] */  LPWSTR *mainPackageName) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__ */
+
+
 } // extern "C"
 #endif // #ifdef WIN32
 
@@ -1194,9 +1252,13 @@ interface IAppxManifestPackageDependencyUtf8;
 interface IAppxManifestPackageIdUtf8;
 interface IAppxManifestPropertiesUtf8;
 interface IAppxManifestQualifiedResourceUtf8;
+interface IAppxManifestCapabilitiesEnumeratorUtf8;
 interface IAppxManifestResourcesEnumeratorUtf8;
 interface IAppxManifestTargetDeviceFamilyUtf8;
 interface IAppxPackageReaderUtf8;
+interface IAppxPackageWriterUtf8;
+interface IAppxPackageWriter3Utf8;
+interface IAppxManifestOptionalPackageInfoUtf8;
 
 #ifndef __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__
 #define __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__
@@ -1377,6 +1439,19 @@ interface IAppxPackageReaderUtf8;
     };
 #endif 	/* __IAppxManifestQualifiedResourceUtf8_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__
+#define __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__
+
+    // {cc422f8e-a4d9-4f2e-bb49-ac3a5ce2a2f0}
+    MSIX_INTERFACE(IAppxManifestCapabilitiesEnumeratorUtf8,0xcc422f8e,0xa4d9,0x4f2e,0xbb,0x49,0xac,0x3a,0x5c,0xe2,0xa2,0xf0);
+    interface IAppxManifestCapabilitiesEnumeratorUtf8 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetCurrent(
+            /* [retval][string][out] */ LPSTR *resource) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__ */
+
 #ifndef __IAppxManifestResourcesEnumeratorUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestResourcesEnumeratorUtf8_INTERFACE_DEFINED__
 
@@ -1417,6 +1492,57 @@ interface IAppxPackageReaderUtf8;
     };
 #endif 	/* __IAppxPackageReaderUtf8_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxPackageWriterUtf8_INTERFACE_DEFINED__
+#define __IAppxPackageWriterUtf8_INTERFACE_DEFINED__
+
+    // {578ee26e-642a-4b03-aeda-8a374ff71b5b}
+    MSIX_INTERFACE(IAppxPackageWriterUtf8, 0x578ee26e,0x642a,0x4b03,0xae,0xda,0x8a,0x37,0x4f,0xf7,0x1b,0x5b);
+    interface IAppxPackageWriterUtf8 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadFile( 
+            /* [string][in] */ LPCSTR fileName,
+            /* [string][in] */ LPCSTR contentType,
+            /* [in] */ APPX_COMPRESSION_OPTION compressionOption,
+            /* [in] */ IStream* inputStream) noexcept = 0;
+    };
+#endif 	/* __IAppxPackageWriterUtf8_INTERFACE_DEFINED__ */
+
+#ifndef __IAppxPackageWriter3Utf8_INTERFACE_DEFINED__
+#define __IAppxPackageWriter3Utf8_INTERFACE_DEFINED__
+
+    typedef struct APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8
+    {
+        IStream* inputStream;
+        LPCSTR fileName;
+        LPCSTR contentType;
+        APPX_COMPRESSION_OPTION compressionOption;
+    } 	APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8;
+
+    // {fc8f7fd6-3a35-49cc-b62f-ea0ee839e25e}
+    MSIX_INTERFACE(IAppxPackageWriter3Utf8, 0xfc8f7fd6,0x3a35,0x49cc,0xb6,0x2f,0xea,0x0e,0xe8,0x39,0xe2,0x5e);
+    interface IAppxPackageWriter3Utf8 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadFiles( 
+            /* [in] */ UINT32 fileCount,
+            /* [size_is][in] */ APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8* payloadFiles,
+            /* [in] */ UINT64 memoryLimit) = 0;
+    };
+#endif 	/* __IAppxPackageWriter3Utf8_INTERFACE_DEFINED__ */
+#ifndef __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__
+#define __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__
+
+    // {1c781d5a-90df-4202-a5f3-132bd0a89233}
+    MSIX_INTERFACE(IAppxManifestOptionalPackageInfoUtf8, 0x1c781d5a, 0x90df, 0x4202, 0xaf, 0xf3, 0x13, 0x2b, 0xd0, 0xa8, 0x92, 0x33);
+    interface IAppxManifestOptionalPackageInfoUtf8 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetMainPackageName(
+            /* [retval][string][out] */  LPSTR *mainPackageName) noexcept = 0;
+    };
+#endif 	/* __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__ */
+
 extern "C++" {
 typedef /* [v1_enum] */
 enum MSIX_VALIDATION_OPTION
@@ -1424,7 +1550,10 @@ enum MSIX_VALIDATION_OPTION
         MSIX_VALIDATION_OPTION_FULL                        = 0x0,
         MSIX_VALIDATION_OPTION_SKIPSIGNATURE               = 0x1,
         MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN = 0x2,
-        MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST            = 0x4,
+        MSIX_VALIDATION_OPTION_SKIPAPPXMANIFEST_DEPRECATED = 0x4, // AppxManifest.xml must be always be valid.
+                                                                  // If the SDK is compiled without USE_VALIDATION_PARSER,
+                                                                  // no schema validation is done, but it needs to be
+                                                                  // valid xml.
     }   MSIX_VALIDATION_OPTION;
 
 typedef /* [v1_enum] */
@@ -1472,6 +1601,7 @@ enum MSIX_APPLICABILITY_OPTIONS
 #define MSIX_APPLICABILITY_NONE MSIX_APPLICABILITY_OPTION_SKIPPLATFORM         | \
                                 MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE           \
 
+// Unpack
 MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
@@ -1513,6 +1643,17 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     IStream* stream,
     char* utf8Destination
 ) noexcept;
+
+#ifdef MSIX_PACK
+
+MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    MSIX_VALIDATION_OPTION validationOption,
+    char* directoryPath,
+    char* outputPackage
+) noexcept;
+
+#endif // MSIX_PACK
 
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.

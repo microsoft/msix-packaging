@@ -3,12 +3,24 @@
 
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 
+# For windows copy the library to the msix and samples directory
+if(WIN32)
+    add_custom_target(samples ALL
+        COMMAND ${CMAKE_COMMAND} -E copy "bin/msix.dll" "samples/msix.dll"
+        WORKING_DIRECTORY "${MSIX_BINARY_ROOT}"
+        DEPENDS msix)
+else()
+    add_custom_target(samples ALL DEPENDS msix)
+endif()
+
+set(MSIX_SAMPLE_OUTPUT_DIRECTORY "${MSIX_BINARY_ROOT}/samples")
+
 add_subdirectory(ExtractContentsSample)
 add_subdirectory(BundleSample)
 add_subdirectory(OverrideStreamSample)
 add_subdirectory(OverrideLanguageSample)
 
-add_dependencies(ExtractContentsSample msix)
-add_dependencies(BundleSample msix)
-add_dependencies(OverrideStreamSample msix)
-add_dependencies(OverrideLanguageSample msix)
+if (MSIX_PACK)
+    add_subdirectory(PackSample)
+    add_dependencies(PackSample msix)
+endif()

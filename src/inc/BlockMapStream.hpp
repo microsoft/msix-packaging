@@ -10,7 +10,7 @@
 #include "RangeStream.hpp"
 #include "HashStream.hpp"
 #include "ComHelper.hpp"
-#include "SHA256.hpp"
+#include "Crypto.hpp"
 #include "AppxFactory.hpp"
 
 #include <string>
@@ -61,7 +61,7 @@ namespace MSIX {
             std::uint64_t sizeRemaining = m_streamSize;
             for (auto block = blocks.begin(); ((sizeRemaining != 0) && (block != blocks.end())); block++)
             {
-                auto rangeStream = ComPtr<IStream>::Make<RangeStream>(offset, std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE), stream);                
+                auto rangeStream = ComPtr<IStream>::Make<RangeStream>(offset, std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE), stream.Get());                
                 auto hashStream = ComPtr<IStream>::Make<HashStream>(rangeStream, block->hash);
                 std::uint64_t blockSize = std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE);
 
@@ -143,9 +143,9 @@ namespace MSIX {
         } CATCH_RETURN();
 
         // IStreamInternal
-        std::uint64_t GetSizeOnZip() override
+        std::uint64_t GetSize() override
         {   // The underlying ZipFileStream/InflateStream object knows, so go ask it.
-            return m_stream.As<IStreamInternal>()->GetSizeOnZip();
+            return m_stream.As<IStreamInternal>()->GetSize();
         }
 
         bool IsCompressed() override

@@ -31,6 +31,7 @@ namespace MsixCoreLib
         std::wstring GetPackageFullName() { return m_packageFullName; }
         std::wstring GetPackageFamilyName() { return m_packageFamilyName; }
         std::wstring GetRelativeExecutableFilePath() { return m_relativeExecutableFilePath; }
+        std::wstring GetResolvedExecutableFilePath();
         std::wstring GetDisplayName() { return m_displayName; }
         std::wstring GetId() { return m_appUserModelId; }
         unsigned long long GetVersionNumber() { return m_version; }
@@ -88,6 +89,7 @@ namespace MsixCoreLib
         std::wstring GetPackageFullName() { return m_packageFullName; }
         std::wstring GetPackageFamilyName() { return m_packageFamilyName; }
         std::wstring GetRelativeExecutableFilePath() { return m_relativeExecutableFilePath; }
+        std::wstring GetResolvedExecutableFilePath();
         std::wstring GetDisplayName() { return m_displayName; }
         std::wstring GetId() { return m_appUserModelId; }
         unsigned long long GetVersionNumber() { return m_version; }

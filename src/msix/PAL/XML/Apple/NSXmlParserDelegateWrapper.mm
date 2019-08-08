@@ -23,8 +23,18 @@
 
 - (void)parser:(NSXMLParser *)parser didStartElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName attributes:(NSDictionary *)attributeDict {
     std::unique_ptr<MSIX::XmlNode> node(new MSIX::XmlNode());
-    
-    node->NodeName = std::string([elementName UTF8String]);
+
+    std::string nodeName = std::string([elementName UTF8String]);
+    std::size_t semiColon = nodeName.find_first_of(':');
+    if (semiColon != std::string::npos)
+    {
+        node->NodeName = nodeName.substr(semiColon + 1);
+        node->Prefix = nodeName.substr(0, semiColon);
+    }
+    else
+    {
+        node->NodeName = nodeName;
+    }
     if (qName)
     {
         node->QualifiedNodeName = std::string([qName UTF8String]);
@@ -41,7 +51,13 @@
 }
 
 - (void)parser:(NSXMLParser *)parser didEndElement:(NSString *)elementName namespaceURI:(NSString *)namespaceURI qualifiedName:(NSString *)qName {
-     m_xmlDocumentReader->ProcessNodeEnd(std::string([elementName UTF8String]));
+    std::string name = std::string([elementName UTF8String]);
+    std::size_t semiColon = name.find_first_of(':');
+    if (semiColon != std::string::npos)
+    {
+        name = name.substr(semiColon + 1);
+    }
+     m_xmlDocumentReader->ProcessNodeEnd(name);
 }
 
 - (void) parserDidEndDocument:(NSXMLParser *)parser {

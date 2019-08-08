@@ -1,6 +1,7 @@
 #include <windows.h>
 
 #include "Package.hpp"
+#include "FilePaths.hpp"
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
@@ -39,6 +40,11 @@ HRESULT GetStreamFromFile(IAppxPackageReader* package, LPCWCHAR name, IStream** 
         RETURN_IF_FAILED(files->MoveNext(&hasCurrent));
     }
     return S_OK;
+}
+
+std::wstring MsixCoreLib::PackageBase::GetResolvedExecutableFilePath()
+{
+    return FilePathMappings::GetInstance().GetExecutablePath(m_relativeExecutableFilePath, m_packageFullName.c_str());
 }
 
 std::wstring PackageBase::GetVersion()
@@ -195,6 +201,11 @@ HRESULT PackageBase::SetManifestReader(IAppxManifestReader * manifestReader)
         m_appUserModelId = std::wstring(packageFamilyName.Get()) + L"!" + m_applicationId;
     }
     return S_OK;
+}
+
+std::wstring MsixCoreLib::Package::GetResolvedExecutableFilePath()
+{
+    return FilePathMappings::GetInstance().GetExecutablePath(m_relativeExecutableFilePath, m_packageFullName.c_str());
 }
 
 std::unique_ptr<IStream> Package::GetLogo()

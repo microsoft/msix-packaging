@@ -23,6 +23,7 @@
 #include "AppxFactory.hpp"
 #include "AppxPackageInfo.hpp"
 #include "AppxManifestObject.hpp"
+#include "DirectoryObject.hpp"
 
 // internal interface
 // {51b2c456-aaa9-46d6-8ec9-298220559189}
@@ -35,7 +36,7 @@ class IPackage : public IUnknown
 #endif
 {
 public:
-    virtual void Unpack(MSIX_PACKUNPACK_OPTION options, const MSIX::ComPtr<IStorageObject>& to) = 0;
+    virtual void Unpack(MSIX_PACKUNPACK_OPTION options, const MSIX::ComPtr<IDirectoryObject>& to) = 0;
     virtual std::vector<std::string>& GetFootprintFiles() = 0;
 };
 MSIX_INTERFACE(IPackage, 0x51b2c456,0xaaa9,0x46d6,0x8e,0xc9,0x29,0x82,0x20,0x55,0x91,0x89);
@@ -105,7 +106,7 @@ namespace MSIX {
         }
 
         // internal IPackage methods
-        void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IStorageObject>& to) override;
+        void Unpack(MSIX_PACKUNPACK_OPTION options, const ComPtr<IDirectoryObject>& to) override;
         std::vector<std::string>& GetFootprintFiles() override { return m_footprintFiles; }
 
         // IAppxPackageReader
@@ -124,10 +125,8 @@ namespace MSIX {
         // HRESULT STDMETHODCALLTYPE GetBlockMap(IAppxBlockMapReader** blockMapReader) noexcept override; 
 
         // IStorageObject methods
-        const char* GetPathSeparator() override;
         std::vector<std::string> GetFileNames(FileNameOptions options) override;
         ComPtr<IStream> GetFile(const std::string& fileName) override;
-        ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         std::string GetFileName() override;
 
         // IAppxPackageReaderUtf8
