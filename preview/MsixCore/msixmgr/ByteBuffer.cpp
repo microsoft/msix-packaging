@@ -33,7 +33,10 @@ namespace MsixCoreLib
             if (capacity != 0)
             {
                 std::unique_ptr<BYTE[]> newBytes(new APPXCOMMON_NEW_TAG BYTE[capacity]);
-                //RETURN_IF_NULL_ALLOC(newBytes);
+                if (newBytes == nullptr)
+                {
+                    return HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY);
+                }
                 memcpy_s(newBytes.get(), capacity, this->value.bytes, this->value.length);
                 delete[] this->value.bytes;
                 this->value.bytes = newBytes.release();

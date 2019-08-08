@@ -146,7 +146,7 @@ namespace MsixCoreLib
                 &resultSize,
                 0);
 
-            if (FAILED(status))
+            if (FAILED(HRESULT_FROM_NT(status)))
             {
                 return HRESULT_FROM_NT(status);
             }
@@ -167,7 +167,7 @@ namespace MsixCoreLib
                 digestSize,
                 0);
 
-            if (FAILED(status))
+            if (FAILED(HRESULT_FROM_NT(status)))
             {
                 return HRESULT_FROM_NT(status);
             }
