@@ -612,8 +612,8 @@ TEST_CASE("Api_AppxManifestReader_OptionalPackage", "[api]")
     //REQUIRE(mainPackageName.Get() == NULL);
 
     ////Validate optional package
-    //std::string manifestForOptionalPackage = "Sample_AppxManifest_WithMainPackageDependencies.xml";
-    std::string manifestForOptionalPackage = "Sample_AppxManifest.xml";
+    std::string manifestForOptionalPackage = "Sample_AppxManifest_WithMainPackageDependencies.xml";
+    //std::string manifestForOptionalPackage = "Sample_AppxManifest.xml";
     MsixTest::ComPtr<IAppxManifestReader> manifestReaderForOptionalPackage;
     MsixTest::InitializeManifestReader(manifestForOptionalPackage, &manifestReaderForOptionalPackage);
     //MsixTest::ComPtr<IAppxManifestReader5> manifestReader5;
