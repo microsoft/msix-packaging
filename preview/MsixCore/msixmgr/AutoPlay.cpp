@@ -13,7 +13,6 @@
 #include "Constants.hpp"
 #include "CryptoProvider.hpp"
 #include "Base32Encoding.hpp"
-#include "WideString.hpp"
 #include <StrSafe.h>
 
 using namespace MsixCoreLib;
@@ -361,8 +360,6 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
 
     // Build the progIdSeed by appending the incoming strings
     // The package family name and the application ID are case sensitive
-    //std::wstring tempProgIDBuffer;
-
     std::wstring tempProgIDBuilder;
     tempProgIDBuilder.append(packageFamilyName);
     std::transform(tempProgIDBuilder.begin(), tempProgIDBuilder.end(), tempProgIDBuilder.begin(), ::tolower);
@@ -398,9 +395,8 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
     RETURN_IF_FAILED(cryptoProvider->GetDigest(&digest));
 
     // Ensure the string buffer has enough capacity
-    StringBuffer base32EncodedDigest;
-    RETURN_IF_FAILED(base32EncodedDigest.SetCapacity(
-        MaxBase32EncodedStringLength));
+    std::wstring base32EncodedDigest;
+    base32EncodedDigest.resize(MaxBase32EncodedStringLength);
 
     // Base 32 encode the bytes of the digest and put them into the string buffer
     ULONG base32EncodedDigestCharCount = 0;
@@ -408,17 +404,17 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
         digest.bytes,
         std::min(digest.length, MaxByteCountOfDigest),
         MaxBase32EncodedStringLength,
-        base32EncodedDigest.GetChars(),
+        base32EncodedDigest.data(),
         &base32EncodedDigestCharCount));
 
     // Set the length of the string buffer to the appropriate value
-    RETURN_IF_FAILED(base32EncodedDigest.SetLength(base32EncodedDigestCharCount));
+    base32EncodedDigest.resize(base32EncodedDigestCharCount);
 
     // ProgID name is formed by appending the encoded digest to the "AppX" prefix string
     tempProgIDBuilder.clear();
 
     tempProgIDBuilder.append(AppXPrefix);
-    tempProgIDBuilder.append(base32EncodedDigest.GetString()->chars);
+    tempProgIDBuilder.append(base32EncodedDigest.c_str());
 
     assert(tempProgIDBuilder.GetLength() <= MaxProgIDLength);
 
@@ -442,7 +438,7 @@ HRESULT AutoPlay::GenerateHandlerName(LPWSTR type, const std::wstring handlerNam
     DWORD hashLength;
     BYTE bytes[HashedByteCount];
     ULONG base32EncodedDigestCharCount;
-    StringBuffer base32EncodedDigest;
+    std::wstring base32EncodedDigest;
     size_t typeLength;
 
     // First, append Package family name and App Id to a std::wstring variable for convenience - lowercase the values so that the comparison
@@ -473,26 +469,26 @@ HRESULT AutoPlay::GenerateHandlerName(LPWSTR type, const std::wstring handlerNam
         return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    // Ensure the string buffer has enough capacity for the string and a null terminator
-    RETURN_IF_FAILED(base32EncodedDigest.SetCapacity(Base32EncodedLength + 1));
+    // Ensure the string has enough capacity for the string and a null terminator
+    base32EncodedDigest.resize(Base32EncodedLength + 1);
 
     // Base 32 encode the bytes of the digest and put them into the string buffer
     RETURN_IF_FAILED(Base32Encoding::GetChars(
         bytes,
         HashedByteCount,
         Base32EncodedLength,
-        base32EncodedDigest.GetChars(),
+        base32EncodedDigest.data(),
         &base32EncodedDigestCharCount));
 
-    // Set the length of the string buffer to the appropriate value
-    RETURN_IF_FAILED(base32EncodedDigest.SetLength(base32EncodedDigestCharCount));
+    // Set the length of the string to the appropriate value
+    base32EncodedDigest.resize(base32EncodedDigestCharCount);
 
     // Find the length of the type string
     RETURN_IF_FAILED(StringCchLength(type, STRSAFE_MAX_CCH, &typeLength));
 
     // Finally, construct the string
     handlerNameBuilder.clear();
-    handlerNameBuilder.append(base32EncodedDigest.GetString()->chars);
+    handlerNameBuilder.append(base32EncodedDigest.c_str());
     handlerNameBuilder.append(L"!", 1);
     handlerNameBuilder.append(type, (ULONG)typeLength);
     handlerNameBuilder.append(L"!", 1);

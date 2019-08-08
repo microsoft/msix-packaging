@@ -6,7 +6,6 @@
 
 namespace MsixCoreLib
 {
-
     //
     // Converts a wstring from utf16 to utf8
     //

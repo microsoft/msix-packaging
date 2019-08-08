@@ -107,8 +107,6 @@ static const std::wstring directionIn = L"in";
 static const std::wstring directionOut = L"out";
 
 /// Constants for AutoPlay DEH
-static const std::wstring autoPlayContentCategoryNameInManifest = L"windows.autoPlayContent";
-static const std::wstring autoPlayDeviceCategoryNameInManifest = L"windows.autoPlayDevice";
 static const std::wstring desktopAppXExtensionCategory = L"windows.autoPlayHandler";
 
 static const std::wstring desktopAppXContentSubCategory = L"Windows.AutoPlayDesktopAppX.Content";
@@ -127,8 +125,6 @@ static const std::wstring dropTargetRegKeyName = L"DropTarget";
 static const std::wstring commandKeyRegName = L"command";
 static const wchar_t desktopAppXProtocolDelegateExecuteValue[] = L"{BFEC0C93-0B7D-4F2C-B09C-AFFFC4BDAE78}";
 
-static const std::wstring parentApplicationVisualElementsXPath = L"ancestor::*[local-name()='Application']/*[local-name()='VisualElements']";
-static const std::wstring parentApplicationXPath = L"ancestor::*[local-name()='Application']";
 static const std::wstring explorerRegKeyName = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer";
 static const std::wstring handlerKeyName = L"AutoPlayHandlers\\Handlers";
 static const std::wstring eventHandlerRootRegKeyName = L"AutoPlayHandlers\\EventHandlers";
