@@ -118,7 +118,7 @@ namespace MSIX
             void AppendTo(Container::BytesType& bytes) const;
 
         private:
-            Container::BytesType& m_bytes;
+            Container::BytesType m_bytes;
         };
 
         struct Null : public Item
