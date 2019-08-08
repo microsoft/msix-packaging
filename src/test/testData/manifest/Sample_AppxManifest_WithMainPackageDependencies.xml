@@ -1,35 +1,21 @@
-<?xml version="1.0" encoding="utf-8"?>
-<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-         xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-         xmlns:f2="http://schemas.microsoft.com/appx/manifest/foundation/windows10/2"
-         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
-         xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
-         xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
-         xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
-         xmlns:wincap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities"
-         xmlns:wincap2="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/2"
-         xmlns:wincap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"
-         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
-         xmlns:rescap2="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/2"
-         xmlns:rescap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/3"
-         xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-         xmlns:desktop2="http://schemas.microsoft.com/appx/manifest/desktop/windows10/2"
-         xmlns:mobile="http://schemas.microsoft.com/appx/manifest/mobile/windows10"
-         xmlns:iot="http://schemas.microsoft.com/appx/manifest/iot/windows10"
-         xmlns:holo="http://schemas.microsoft.com/appx/manifest/holographic/windows10"
-         xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
-         IgnorableNamespaces="f f2 uap uap2 uap3 uap4 wincap wincap2 wincap3 rescap rescap2 rescap3 desktop desktop2 mobile iot holo com">
-
-  <Identity Name="SampleAppManifest"
-            ProcessorArchitecture="x64"
-            Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"
-            Version="3.6.25071.0"
-            ResourceId="NorthAmerica" />
+<?xml version="1.0"?>
+<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10" xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10">
+  <Identity Name="main.cpp" Publisher="CN=TestPublisher" Version="1.0.0.0" ProcessorArchitecture="x86" />
+  <Dependencies>
+    <TargetDeviceFamily Name="Windows.Universal" MinVersion="10.0.0.0" MaxVersionTested="10.65535.65535.65535" />
+    <PackageDependency Name="Microsoft.VCLibs.140.00" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US" MinVersion="14.0.24123.0" />
+  </Dependencies>
   <Properties>
-    <DisplayName>Sample app manifest</DisplayName>
-    <PublisherDisplayName>Microsoft Corporation</PublisherDisplayName>
-    <Description>This is a sample app manifest. It is not representative of what the manifest of a typical app would look like.</Description>
-    <Logo>logo.jpeg</Logo>
+    <DisplayName>Test package</DisplayName>
+    <PublisherDisplayName>Test</PublisherDisplayName>
+    <Logo>logo.png</Logo>
   </Properties>
-
+  <Resources>
+    <Resource Language="en-us" />
+  </Resources>
+  <Applications>
+    <Application Id="app" Executable="cpp_noloc.exe" EntryPoint="cpp_noloc.App">
+      <uap:VisualElements DisplayName="Test app" Description="Test app" BackgroundColor="#FFFFFF" Square150x150Logo="logo.png" Square44x44Logo="logo.png" />
+    </Application>
+  </Applications>
 </Package>
