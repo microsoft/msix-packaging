@@ -44,17 +44,6 @@
     <uap3:MainPackageDependency Name="Demo.MyMainApp" Publisher="TestPublisher"/>
   </Dependencies>
 
-  <Capabilities>
-    <Capability Name="internetClient"/>
-    <Capability Name="privateNetworkClientServer"/>
-    <uap:Capability Name="videosLibrary"/>
-    <uap:Capability Name="removableStorage"/>
-    <wincap:Capability Name="shellExperience"/>
-    <rescap:Capability Name="enterpriseDataPolicy"/>
-    <rescap:Capability Name="previewStore"/>
-    <uap4:CustomCapability Name="fabrikam.CustomCap_5w7kyb3d8bbwe"/>
-  </Capabilities>
-
   <Applications>
     <Application Id="Mca.App" Executable="MyMcaApp.exe" EntryPoint="Windows.FullTrustApplication" ResourceGroup="defaultGroup">
 
