@@ -429,7 +429,6 @@ if(MSIX_PACK)
     ${CRYPTO}/evp/e_des.c
     ${CRYPTO}/evp/e_des3.c
     ${CRYPTO}/evp/e_xcbc_d.c
-    ${CRYPTO}/des/ncbc_enc.c
     ${CRYPTO}/des/cfb_enc.c
     ${CRYPTO}/des/ecb_enc.c
     ${CRYPTO}/des/cfb64enc.c

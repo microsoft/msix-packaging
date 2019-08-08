@@ -19,6 +19,7 @@ list(APPEND MSIX_UNPACK_EXPORTS
 if(MSIX_PACK)
     list(APPEND MSIX_PACK_EXPORTS
         "PackPackage"
+        "SignPackage"
     )
 endif()
 
