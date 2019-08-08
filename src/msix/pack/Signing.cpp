@@ -51,6 +51,8 @@ bool DoesCertificateFormatRequirePrivateKey(MSIX_CERTIFICATE_FORMAT format)
     {
     case MSIX_CERTIFICATE_FORMAT::MSIX_CERTIFICATE_FORMAT_PFX:
         return false;
+    case MSIX_CERTIFICATE_FORMAT::MSIX_CERTIFICATE_FORMAT_UNKNOWN:
+        ThrowErrorAndLog(Error::InvalidState, "Internal error; format should be known by now");
     }
 
     UNEXPECTED

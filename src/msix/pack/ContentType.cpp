@@ -130,9 +130,10 @@ namespace MSIX {
             return "application/vnd.ms-appx.signature";
         case APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY:
             return "application/vnd.ms-pkiseccat";
+        case APPX_FOOTPRINT_FILE_TYPE_CONTENTGROUPMAP:
+            return "application/vnd.ms-appx.streammap+xml";
         }
 
-        // TODO: add other ones if needed, otherwise throw
         ThrowErrorAndLog(Error::NotSupported, "Payload file content type not found");
     }
 
