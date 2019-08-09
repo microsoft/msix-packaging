@@ -101,7 +101,7 @@ std::map<PCWSTR, RemoveHandlerInfo> RemoveHandlers =
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,           IgnoreAndProcessNextHandler}},
     {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          FirewallRules::HandlerName,                 IgnoreAndProcessNextHandler}},
     {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                AutoPlay::HandlerName,                      IgnoreAndProcessNextHandler}},
-    {AutoPlay::HandlerName,                     {AutoPlay::CreateHandler,                     VirtualFileHandler::HandlerName,    IgnoreAndProcessNextHandler}},
+    {AutoPlay::HandlerName,                     {AutoPlay::CreateHandler,                     VirtualFileHandler::HandlerName,            IgnoreAndProcessNextHandler}},
     {VirtualFileHandler::HandlerName,           {VirtualFileHandler::CreateHandler,           WriteDevirtualizedRegistry::HandlerName,    IgnoreAndProcessNextHandler}},
     {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
     {Extractor::HandlerName,                    {Extractor::CreateHandler,                    nullptr,                                    IgnoreAndProcessNextHandler}},
