@@ -26,7 +26,6 @@ PCSTR MsixCoreLib::BcryptLibrary::functionNames[MsixCoreLib::BcryptLibrary::Func
     "BCryptDestroyHash"
 };
 
-///TODO:5204957 MsixCoreLib::BcryptLibrary::Load() (initialization) leaks
 _Check_return_ HRESULT MsixCoreLib::BcryptLibrary::Load()
 {
     if (ReadPointerAcquire(&bcryptModule) == nullptr)
