@@ -5,7 +5,6 @@
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
-#include "ByteBuffer.hpp"
 #include <assert.h>
 
 namespace MsixCoreLib

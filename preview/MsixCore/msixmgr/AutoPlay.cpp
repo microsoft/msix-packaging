@@ -416,8 +416,6 @@ HRESULT AutoPlay::GenerateProgId(std::wstring categoryName, std::wstring subCate
     tempProgIDBuilder.append(AppXPrefix);
     tempProgIDBuilder.append(base32EncodedDigest.c_str());
 
-    assert(tempProgIDBuilder.GetLength() <= MaxProgIDLength);
-
     // Set the return value
     generatedProgId.assign(tempProgIDBuilder.c_str());
 

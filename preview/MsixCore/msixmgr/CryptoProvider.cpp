@@ -98,8 +98,7 @@ namespace MsixCoreLib
         }
         else
         {
-            RETURN_IF_FAILED(this->hashObjectBuffer.SetLength(hashObjectSize));
-            hashObject = this->hashObjectBuffer.GetBufferPtr();
+            hashObject = hashObjectBuffer.data();
         }
 
         BcryptLibrary::BCryptCreateHash(
@@ -157,8 +156,7 @@ namespace MsixCoreLib
             }
             else
             {
-                RETURN_IF_FAILED(this->digestBuffer.SetLength(digestSize));
-                digestPtr = this->digestBuffer.GetBufferPtr();
+                digestPtr = this->digestBuffer.data();
             }
 
             status = BcryptLibrary::BCryptFinishHash(

@@ -189,7 +189,6 @@
     <ClInclude Include="..\msixmgr\Windows10Redirector.hpp" />
     <ClInclude Include="..\msixmgr\AutoPlay.hpp" />
     <ClInclude Include="..\msixmgr\BcryptLibrary.hpp" />
-    <ClInclude Include="..\msixmgr\ByteBuffer.hpp" />
     <ClInclude Include="..\msixmgr\CryptoProvider.hpp" />
     <ClInclude Include="..\msixmgr\Base32Encoding.hpp" />
     <ClInclude Include="..\msixmgr\VirtualFileHandler.hpp" />
@@ -234,7 +233,6 @@
     <ClCompile Include="..\msixmgr\Windows10Redirector.cpp" />
     <ClCompile Include="..\msixmgr\AutoPlay.cpp" />
     <ClCompile Include="..\msixmgr\BcryptLibrary.cpp" />
-    <ClCompile Include="..\msixmgr\ByteBuffer.cpp" />
     <ClCompile Include="..\msixmgr\CryptoProvider.cpp" />
     <ClCompile Include="..\msixmgr\Base32Encoding.cpp" />
     <ClCompile Include="..\msixmgr\VirtualFileHandler.cpp" />

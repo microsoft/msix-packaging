@@ -1,11 +1,17 @@
 #pragma once
 
-#include <ByteBuffer.hpp>
+#include <vector>
 
 #define APPXCOMMON_NEW_TAG (std::nothrow)
 
 namespace MsixCoreLib
 {
+    struct COMMON_BYTES
+    {
+        ULONG length;
+        __field_ecount(length) BYTE* bytes;
+    };
+
     // CryptoProvider objects are not thread-safe, hence should not be called from multiple threads simultaneously.
     // Usage:
     //   (StartDigest DigestData* GetDigest* Reset)*
@@ -15,8 +21,8 @@ namespace MsixCoreLib
 
         BCRYPT_ALG_HANDLE providerHandle;
         BCRYPT_HASH_HANDLE hashHandle;
-        ByteBuffer hashObjectBuffer;
-        ByteBuffer digestBuffer;
+        std::vector<BYTE> hashObjectBuffer;
+        std::vector<BYTE> digestBuffer;
         BYTE quickHashObjectBuffer[700];  // Tests shows that HMAC with 256-bit or 512-bit keys requires 600+ bytes of hash object space.
         BYTE quickDigestBuffer[64];   // accommodates up to 64-byte hashes
         COMMON_BYTES digest;
