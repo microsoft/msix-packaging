@@ -60,6 +60,7 @@ static const std::wstring appendMenuFlagAttribute = L"AppendMenuFlag";
 static const std::wstring oleVerbFlagAttribute = L"OleVerbFlag";
 static const std::wstring resourceIndexAttribute = L"ResourceIndex";
 static const std::wstring taskIdAttribute = L"TaskId";
+static const std::wstring IdAttribute = L"Id";
 
 static const std::wstring extensionQuery = L"/*[local-name()='Package']/*[local-name()='Applications']/*[local-name()='Application']/*[local-name()='Extensions']/*[local-name()='Extension']";
 static const std::wstring ftaQuery = L"*[local-name()='FileTypeAssociation']";
@@ -88,6 +89,10 @@ static const std::wstring defaultIconQuery = L"*[local-name()='DefaultIcon']";
 static const std::wstring toolboxBitmapQuery = L"*[local-name()='ToolboxBitmap32']";
 static const std::wstring comVerbQuery = L"*[local-name()='Verbs']/*[local-name()='Verb']";
 static const std::wstring startupTaskQuery = L"*[local-name()='StartupTask']";
+static const std::wstring launchActionQuery = L"*[local-name()='AutoPlayContent']/*[local-name()='LaunchAction']";
+static const std::wstring invokeActionQuery = L"*[local-name()='AutoPlayHandler']/*[local-name()='InvokeAction']";
+static const std::wstring invokeActionContentQuery = L"*[local-name()='Content']";
+static const std::wstring invokeActionDeviceQuery = L"*[local-name()='Device']";
 
 /// Constants for Firewall DEH
 static const std::wstring firewallExtensionQuery = L"/*[local-name()='Package']/*[local-name()='Extensions']/*[local-name()='Extension']/*[local-name()='FirewallRules']/*[local-name()='Rule']";
@@ -100,6 +105,29 @@ static const std::wstring remotePortMinAttribute = L"RemotePortMin";
 static const std::wstring remotePortMaxAttribute = L"RemotePortMax";
 static const std::wstring directionIn = L"in";
 static const std::wstring directionOut = L"out";
+
+/// Constants for AutoPlay DEH
+static const std::wstring desktopAppXExtensionCategory = L"windows.autoPlayHandler";
+
+static const std::wstring desktopAppXContentSubCategory = L"Windows.AutoPlayDesktopAppX.Content";
+static const std::wstring desktopAppXDeviceSubCategory = L"Windows.AutoPlayDesktopAppX.Device";
+
+static const std::wstring idAttributeName = L"Verb";
+static const std::wstring actionAttributeName = L"ActionDisplayName";
+static const std::wstring providerAttributeName = L"ProviderDisplayName";
+static const std::wstring contentEventAttributeName = L"ContentEvent";
+static const std::wstring deviceEventAttributeName = L"DeviceEvent";
+static const std::wstring dropTargetHandlerAttributeName = L"DropTargetHandler";
+static const std::wstring parametersAttributeName = L"Parameters";
+static const std::wstring hwEventHandlerAttributeName = L"HWEventHandler";
+static const std::wstring InitCmdLineAttributeName = L"InitCmdLine";
+static const std::wstring dropTargetRegKeyName = L"DropTarget";
+static const std::wstring commandKeyRegName = L"command";
+static const wchar_t desktopAppXProtocolDelegateExecuteValue[] = L"{BFEC0C93-0B7D-4F2C-B09C-AFFFC4BDAE78}";
+
+static const std::wstring explorerRegKeyName = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer";
+static const std::wstring handlerKeyName = L"AutoPlayHandlers\\Handlers";
+static const std::wstring eventHandlerRootRegKeyName = L"AutoPlayHandlers\\EventHandlers";
 
 static const std::wstring clsidKeyName = L"CLSID";
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";
