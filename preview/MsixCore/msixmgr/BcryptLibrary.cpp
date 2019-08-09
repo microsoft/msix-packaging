@@ -1,5 +1,3 @@
-// Copyright (C) Microsoft. All rights reserved.
-
 #include <Windows.h>
 #include <WinCrypt.h>
 #include <BcryptLibrary.hpp>

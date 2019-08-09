@@ -1,6 +1,5 @@
 #include <Windows.h>
 #include <WinCrypt.h>
-
 #include <BcryptLibrary.hpp>
 #include "GeneralUtil.hpp"
 #include <CryptoProvider.hpp>

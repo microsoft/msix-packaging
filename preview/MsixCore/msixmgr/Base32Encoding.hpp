@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GeneralUtil.hpp"
+
 #define DebugFillMemory(pv, cb)
 
 namespace MsixCoreLib

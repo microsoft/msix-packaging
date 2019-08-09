@@ -1,4 +1,3 @@
-
 #include <Windows.h>
 #include <Base32Encoding.hpp>
 
