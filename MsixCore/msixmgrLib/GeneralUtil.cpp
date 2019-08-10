@@ -285,13 +285,9 @@ namespace MsixCoreLib
         {
             startIndex = 3; // 3 skips past c:
         }
-        for (std::size_t i = startIndex; i < utf16Path.size(); i++)
+        for (std::size_t i = startIndex; i < utf16Path.size() && utf16Path[i] != L'\0'; i++)
         {
-            if (utf16Path[i] == L'\0')
-            {
-                break;
-            }
-            else if (utf16Path[i] == L'\\')
+            if (utf16Path[i] == L'\\')
             {
                 // Temporarily set string to terminate at the '\' character
                 // to obtain name of the subdirectory to create

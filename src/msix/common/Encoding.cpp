@@ -241,7 +241,7 @@ namespace MSIX { namespace Encoding {
                     bool done = false;
 
                     // Ok, here we go...
-                    while (index < fileNameW.length() && !done)
+                    while (index < fileNameW.length())
                     {
                         if (fileNameW[index] == '%')
                         {
@@ -301,11 +301,14 @@ namespace MSIX { namespace Encoding {
                                 else { ThrowErrorAndLog(Error::UnknownFileNameEncoding, "Unexpected next sequence value"); }
                             }
 
-                            if (!done)
-                            {   // We are not done! Point to the next % encoded UTF-8 seq
-                                sequenceIndex++;
-                                index++;
+                            if (done)
+                            {   
+                                break;
                             }
+
+                            // We are not done! Point to the next % encoded UTF-8 seq
+                            sequenceIndex++;
+                            index++;
                         }
                         else
                         {   // We are looking for a % and we are not done. Abort!

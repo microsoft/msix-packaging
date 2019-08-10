@@ -60,7 +60,7 @@ namespace MSIX {
     {
         char* p = &path[startPos];
         if (*p == '/') { p++; }
-        while (*p != '\0')
+        for (; *p != '\0'; p++)
         {
             while (*p != '\0' && *p != '/') { p++; }
 
@@ -68,7 +68,6 @@ namespace MSIX {
             *p = '\0';
             ThrowErrorIfNot(Error::FileCreateDirectory,(mkdir(path.c_str(), mode) != -1 || errno == EEXIST), path.c_str());
             *p = v;
-            if (*p != '\0') {p++;}
         }
     }
 
