@@ -11,9 +11,20 @@
 #include <functional>
 #include <sstream>
 
-#include "Log.hpp"
 #include "MSIXWindows.hpp"
 #include "MsixErrors.hpp"
+
+#ifndef MSIX_TEST
+#include "Log.hpp"
+#else
+namespace MSIX {
+    namespace Global {
+        namespace Log {
+            void Append(const std::string&) {}
+        }
+    }
+}
+#endif
 
 namespace MSIX {
 
@@ -122,7 +133,11 @@ namespace MSIX {
 #define ThrowErrorIf(c, a, m) ThrowErrorIfNot(c,!(a), m)
 #define ThrowErrorAndLog(c, m) { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, m, c); }
 
+#ifndef MSIX_TEST
 #define ThrowHrIfFailed(a) MSIX::RaiseExceptionIfFailed(a, __LINE__, __FILE__);
+#else
+#define ThrowHrIfFailed(a) { HRESULT __excMacroHR = (a); ThrowErrorIf(__excMacroHR, FAILED(__excMacroHR), nullptr) }
+#endif
 
 #ifdef WIN32
     #define ThrowHrIfFalse(a, m)                                                                               \

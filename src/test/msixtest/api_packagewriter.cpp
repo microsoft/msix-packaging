@@ -8,6 +8,7 @@
 #include "FileHelpers.hpp"
 #include "PackTestData.hpp"
 #include "macros.hpp"
+#include "StreamBase.hpp"
 
 #include <iostream>
 
@@ -349,4 +350,34 @@ TEST_CASE("Api_AppxPackageWriter_closed", "[api]")
             TestConstants::ContentType.c_str(),
             APPX_COMPRESSION_OPTION_NORMAL,
             fileStream.Get()));
+}
+
+// Test creating a valid msix package with a contained file that is larger than 4GB
+// The package itself will be much smaller; do not unpack the package from this test
+TEST_CASE("Api_AppxPackageWriter_file_over_4GB", "[api]")
+{
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
+
+    MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
+    InitializePackageWriter(outputStream.Get(), &packageWriter);
+
+    // Create stream to generate our very compressable data
+    //auto fileStream = nullptr;
+    //REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
+    //    fileName.second.c_str(),
+    //    TestConstants::ContentType.c_str(),
+    //    APPX_COMPRESSION_OPTION_NORMAL,
+    //    fileStream.Get()));
+
+    // Finalize package, create manifest stream
+    MsixTest::ComPtr<IStream> manifestStream;
+    MakeManifestStream(&manifestStream);
+    REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
+
+    // Reopen the package, validates that the written package is readable
+    // return to the beginning
+    LARGE_INTEGER zero = { 0 };
+    REQUIRE_SUCCEEDED(outputStream.Get()->Seek(zero, STREAM_SEEK_SET, nullptr));
+    MsixTest::ComPtr<IAppxPackageReader> packageReader;
+    MsixTest::InitializePackageReader(outputStream.Get(), &packageReader);
 }
