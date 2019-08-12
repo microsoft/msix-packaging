@@ -586,6 +586,7 @@ TEST_CASE("Api_AppxManifestReader_PackageId", "[api]")
     REQUIRE(expectedFamily == packageFamilyNameUtf8.ToString());
 }
 
+#ifndef WINDOWS
 // Validates optional packages. 
 // IAppxManifestReader4, IAppxManifestOptionalPackageInfo, IAppxManifestOptionalPackageInfoUtf8, 
 // IAppxManifestReader5, IAppxManifestMainPackageDependency, IAppxManifestMainPackageDependencyUtf8
@@ -687,3 +688,4 @@ TEST_CASE("Api_AppxManifestReader_OptionalPackage", "[api]")
     }
     REQUIRE(2 == numDep);
 }
+#endif
