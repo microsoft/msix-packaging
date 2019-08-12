@@ -40,18 +40,9 @@
   <Dependencies>
     <TargetDeviceFamily Name="Windows.Desktop" MinVersion="10.0.10240.0" MaxVersionTested="10.0.14300.0"/>
     <PackageDependency Name="Microsoft.VCLibs.140.00" MinVersion="14.0.0.0" Publisher="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US"/>
+	<uap3:MainPackageDependency Name="Demo.MyMainApp"/>
+	<uap3:MainPackageDependency Name="Demo.MyMainApp" Publisher="TestPublisher"/>
   </Dependencies>
-
-  <Capabilities>
-    <Capability Name="internetClient"/>
-    <Capability Name="privateNetworkClientServer"/>
-    <uap:Capability Name="videosLibrary"/>
-    <uap:Capability Name="removableStorage"/>
-    <wincap:Capability Name="shellExperience"/>
-    <rescap:Capability Name="enterpriseDataPolicy"/>
-    <rescap:Capability Name="previewStore"/>
-    <uap4:CustomCapability Name="fabrikam.CustomCap_5w7kyb3d8bbwe"/>
-  </Capabilities>
 
   <Applications>
     <Application Id="Mca.App" Executable="MyMcaApp.exe" EntryPoint="Windows.FullTrustApplication" ResourceGroup="defaultGroup">
@@ -77,10 +68,10 @@
       </InProcessServer>
     </Extension>
     <Extension Category="windows.activatableClass.proxyStub">
-      <ProxyStub ClassId="FB06B882-46B8-4625-B239-AF768C8477E3">
-        <Path>entplat.dll</Path>
-        <Interface Name="Microsoft.Entertainment.Interop.ICallbackInvoker" InterfaceId="A2082232-0E67-42E1-8214-1BE73406F067"/>
-      </ProxyStub>
+        <ProxyStub ClassId="FB06B882-46B8-4625-B239-AF768C8477E3">
+            <Path>entplat.dll</Path>
+            <Interface Name="Microsoft.Entertainment.Interop.ICallbackInvoker" InterfaceId="A2082232-0E67-42E1-8214-1BE73406F067"/>
+        </ProxyStub>
     </Extension>
   </Extensions>
 </Package>
