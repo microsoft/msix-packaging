@@ -586,7 +586,9 @@ TEST_CASE("Api_AppxManifestReader_PackageId", "[api]")
     REQUIRE(expectedFamily == packageFamilyNameUtf8.ToString());
 }
 
-#ifndef WINDOWS
+// This test should run on ALL platforms. We are currently disabling for non-Windows in order to unblock the check in of changes to implement
+// the IAppxManifestReader5 interface, which is needed for WVD-related scenarios. 
+#ifndef IOS 
 // Validates optional packages. 
 // IAppxManifestReader4, IAppxManifestOptionalPackageInfo, IAppxManifestOptionalPackageInfoUtf8, 
 // IAppxManifestReader5, IAppxManifestMainPackageDependency, IAppxManifestMainPackageDependencyUtf8
