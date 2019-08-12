@@ -33,15 +33,6 @@ public:
 };
 MSIX_INTERFACE(IMSXMLElement, 0x2730f595,0x0c80,0x4f3e,0x88,0x91,0x75,0x3b,0x2e,0x8c,0x30,0x5d);
 
-// {b6bca5f0-c6c1-4409-85be-e476aabec19a}
-class IMSXMLDom : public IUnknown
-// An internal interface for XML document object model
-{
-public:
-    virtual MSIX::ComPtr<IXMLDOMDocument> GetDomDocument() = 0;
-};
-MSIX_INTERFACE(IMSXMLDom, 0xb6bca5f0,0xc6c1,0x4409,0x85,0xbe,0xe4,0x76,0xaa,0xbe,0xc1,0x9a);
-
 namespace MSIX {
 
 // --------------------------------------------------------

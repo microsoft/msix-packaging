@@ -66,6 +66,16 @@ else()
     )
 endif()
 
+if(XML_PARSER MATCHES msxml6)
+    list(APPEND MsixTestFiles
+        PAL/XML/msxml6/IMsixMSXMLDocument.cpp
+    )
+else()
+    list(APPEND MsixTestFiles
+        PAL/XML/nonmsxml6/IMsixMSXMLDocument.cpp
+    )
+endif()
+
 # For mobile, we create a shared library that will be added to the apps to be
 # tested. For non-mobile we create a msixtest executable and we provide our own main
 if (AOSP OR IOS)

@@ -1114,6 +1114,8 @@ interface IMsixElementEnumerator;
 interface IMsixFactoryOverrides;
 interface IMsixStreamFactory;
 interface IMsixApplicabilityLanguagesEnumerator;
+interface IMsixMSXMLDocument;
+interface IXMLDOMDocument;
 
 #ifndef __IMsixDocumentElement_INTERFACE_DEFINED__
 #define __IMsixDocumentElement_INTERFACE_DEFINED__
@@ -1178,6 +1180,19 @@ interface IMsixApplicabilityLanguagesEnumerator;
             /* [retval][out] */ BOOL* hasNext) noexcept = 0;
     };
 #endif  /* __IMsixElementEnumerator_INTERFACE_DEFINED__ */
+
+#ifndef __IMsixMSXMLDocument_INTERFACE_DEFINED__
+#define __IMsixMSXMLDocument_INTERFACE_DEFINED__
+
+    // {7260894b-36a2-4f12-b1d3-44c6c5250788}
+    MSIX_INTERFACE(IMsixMSXMLDocument,0x7260894b,0x36a2,0x4f12,0xb1,0xd3,0x44,0xc6,0xc5,0x25,0x07,0x88);
+    interface IMsixMSXMLDocument : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE GetDocument(
+            /* [retval][out] */ IXMLDOMDocument** document) noexcept = 0;
+    };
+#endif  /* __IMsixMSXMLDocument_INTERFACE_DEFINED__ */
 
 #ifndef __IMsixFactoryOverrides_INTERFACE_DEFINED__
 #define __IMsixFactoryOverrides_INTERFACE_DEFINED__

@@ -7,6 +7,7 @@
 #include "msixtest_int.hpp"
 #include "FileHelpers.hpp"
 #include "macros.hpp"
+#include "IMsixMSXMLDocument.hpp"
 
 #include <iostream>
 #include <array>
@@ -584,4 +585,14 @@ TEST_CASE("Api_AppxManifestReader_PackageId", "[api]")
     MsixTest::Wrappers::Buffer<char> packageFamilyNameUtf8;
     REQUIRE_SUCCEEDED(packageIdUtf8->GetPackageFamilyName(&packageFamilyNameUtf8));
     REQUIRE(expectedFamily == packageFamilyNameUtf8.ToString());
+}
+
+// Validates IAppxManifestReader's IMsixMSXMLDocument interface
+TEST_CASE("Api_AppxManifestReader_IMsixMSXMLDocument", "[api]")
+{
+    std::string manifest = "Sample_AppxManifest.xml";
+    MsixTest::ComPtr<IAppxManifestReader> manifestReader;
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
+
+    MsixTest::XML::ValidateIMsixMSXMLDocument(manifestReader);
 }

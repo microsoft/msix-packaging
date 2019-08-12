@@ -249,7 +249,7 @@ namespace MSIX {
 
     // Object backed by AppxManifest.xml
     class AppxManifestObject final : public ComClass<AppxManifestObject, ChainInterfaces<IAppxManifestReader4, IAppxManifestReader3, IAppxManifestReader2, IAppxManifestReader>,
-                                                     IVerifierObject, IAppxManifestObject, IMsixDocumentElement>
+                                                     IVerifierObject, IAppxManifestObject, IMsixDocumentElement, IMsixMSXMLDocument>
     {
     public:
         AppxManifestObject(IMsixFactory* factory, const ComPtr<IStream>& stream);
@@ -288,6 +288,9 @@ namespace MSIX {
 
         // IMsixDocumentElement
         HRESULT STDMETHODCALLTYPE GetDocumentElement(IMsixElement** documentElement) noexcept override;
+
+        // IMsixMSXMLDocument
+        HRESULT STDMETHODCALLTYPE GetDocument(IXMLDOMDocument** document) noexcept override;
 
     protected:
         std::vector<std::string> GetCapabilities(APPX_CAPABILITY_CLASS_TYPE capabilityClass);

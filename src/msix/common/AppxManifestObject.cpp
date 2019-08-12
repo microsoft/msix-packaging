@@ -412,6 +412,15 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
+    // IMsixMSXMLDocument
+    HRESULT STDMETHODCALLTYPE AppxManifestObject::GetDocument(IXMLDOMDocument** document) noexcept try
+    {
+        ThrowErrorIf(Error::InvalidParameter, (document == nullptr || *document != nullptr), "bad pointer");
+        // Will throw Error::NoInterface if not using MSXML
+        *document = m_dom.As<IMSXMLDom>()->GetDomDocument().Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
     // Helper to get capabilities from the manifest
     std::vector<std::string> AppxManifestObject::GetCapabilities(APPX_CAPABILITY_CLASS_TYPE capabilityClass)
     {

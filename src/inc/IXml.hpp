@@ -191,6 +191,19 @@ public:
 };
 MSIX_INTERFACE(IXmlFactory, 0xf82a60ec,0xfbfc,0x4cb9,0xbc,0x04,0x1a,0x0f,0xe2,0xb4,0xd5,0xbe);
 
+// {b6bca5f0-c6c1-4409-85be-e476aabec19a}
+#ifndef WIN32
+interface IMSXMLDom : public IUnknown
+#else
+class IMSXMLDom : public IUnknown
+#endif
+// An internal interface for XML document object model; only implemented on Windows
+{
+public:
+    virtual MSIX::ComPtr<IXMLDOMDocument> GetDomDocument() = 0;
+};
+MSIX_INTERFACE(IMSXMLDom, 0xb6bca5f0,0xc6c1,0x4409,0x85,0xbe,0xe4,0x76,0xaa,0xbe,0xc1,0x9a);
+
 namespace MSIX {
     MSIX::ComPtr<IXmlFactory> CreateXmlFactory(IMsixFactory* factory);
 
