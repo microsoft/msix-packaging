@@ -627,13 +627,13 @@ TEST_CASE("Api_AppxManifestReader_OptionalPackage", "[api]")
     std::vector<std::string> expectedPublisherValues =
     {
         "", // We expect the value to be NULL. Handle this special case separately  
-        "TestPublisher",
+        "CN=Microsoft Corporation2, O=Microsoft Corporation2, L=Redmond2, S=Washington, C=US2",
     };
 
     std::vector<std::string> expectedPackageFamilyNameValues =
     {
         "SampleAppManifest_8wekyb3d8bbwe",
-        "Demo.MyMainApp_85z48rrqmdg38",
+        "Demo.MyMainApp_4395hyxtvknyy",
     };
 
     BOOL hasCurrent = FALSE;
