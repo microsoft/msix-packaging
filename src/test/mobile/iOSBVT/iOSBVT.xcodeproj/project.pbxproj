@@ -90,6 +90,8 @@
 		4C14D5D72204CC400034C5CE /* libmsix.dylib in Copy Files */ = {isa = PBXBuildFile; fileRef = 4C14D5D32204CC2A0034C5CE /* libmsix.dylib */; settings = {ATTRIBUTES = (CodeSignOnCopy, ); }; };
 		4CD2FBB122E2733E0059BF30 /* Sample_AppxManifest.xml in Resources */ = {isa = PBXBuildFile; fileRef = 4CD2FBB022E2733E0059BF30 /* Sample_AppxManifest.xml */; };
 		4CD2FBB322E273680059BF30 /* Sample_AppxManifest.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4CD2FBB022E2733E0059BF30 /* Sample_AppxManifest.xml */; };
+		A9ED8A81230334ED00C2CD29 /* Sample_AppxManifest_WithMainPackageDependencies.xml in Resources */ = {isa = PBXBuildFile; fileRef = A9ED8A80230334ED00C2CD29 /* Sample_AppxManifest_WithMainPackageDependencies.xml */; };
+		A9ED8A82230343AB00C2CD29 /* Sample_AppxManifest_WithMainPackageDependencies.xml in CopyFiles */ = {isa = PBXBuildFile; fileRef = A9ED8A80230334ED00C2CD29 /* Sample_AppxManifest_WithMainPackageDependencies.xml */; };
 		EEE4055020225CDF007B25CE /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4054F20225CDF007B25CE /* AppDelegate.m */; };
 		EEE4055320225CDF007B25CE /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = EEE4055220225CDF007B25CE /* ViewController.m */; };
 		EEE4055620225CDF007B25CE /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EEE4055420225CDF007B25CE /* Main.storyboard */; };
@@ -228,6 +230,7 @@
 			dstPath = testData/manifest;
 			dstSubfolderSpec = 7;
 			files = (
+				A9ED8A82230343AB00C2CD29 /* Sample_AppxManifest_WithMainPackageDependencies.xml in CopyFiles */,
 				4CD2FBB322E273680059BF30 /* Sample_AppxManifest.xml in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -336,6 +339,7 @@
 		4C148353228F881000EAED24 /* msixtest.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; name = msixtest.hpp; path = ../../../msixtest/inc/msixtest.hpp; sourceTree = "<group>"; };
 		4C14D5D32204CC2A0034C5CE /* libmsix.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libmsix.dylib; path = ../../../../.vs/lib/libmsix.dylib; sourceTree = "<group>"; };
 		4CD2FBB022E2733E0059BF30 /* Sample_AppxManifest.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Sample_AppxManifest.xml; path = ../manifest/Sample_AppxManifest.xml; sourceTree = "<group>"; };
+		A9ED8A80230334ED00C2CD29 /* Sample_AppxManifest_WithMainPackageDependencies.xml */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xml; name = Sample_AppxManifest_WithMainPackageDependencies.xml; path = ../manifest/Sample_AppxManifest_WithMainPackageDependencies.xml; sourceTree = "<group>"; };
 		EEE4054B20225CDF007B25CE /* iOSBVT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = iOSBVT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EEE4054E20225CDF007B25CE /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		EEE4054F20225CDF007B25CE /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
@@ -515,6 +519,7 @@
 		4CD2FBAF22E2730D0059BF30 /* manifest */ = {
 			isa = PBXGroup;
 			children = (
+				A9ED8A80230334ED00C2CD29 /* Sample_AppxManifest_WithMainPackageDependencies.xml */,
 				4CD2FBB022E2733E0059BF30 /* Sample_AppxManifest.xml */,
 			);
 			name = manifest;
@@ -623,6 +628,7 @@
 			files = (
 				EEE4055820225CDF007B25CE /* Assets.xcassets in Resources */,
 				EEE4055620225CDF007B25CE /* Main.storyboard in Resources */,
+				A9ED8A81230334ED00C2CD29 /* Sample_AppxManifest_WithMainPackageDependencies.xml in Resources */,
 				4CD2FBB122E2733E0059BF30 /* Sample_AppxManifest.xml in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
