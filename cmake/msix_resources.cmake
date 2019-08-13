@@ -309,7 +309,8 @@ endforeach()
 
 # Starting in cmake 3.15, the tar command will error if it receives no files.
 # So we catch that case and make the resulting resource blob even smaller.
-if(FILES_TO_ZIP STREQUAL "")
+list(LENGTH FILES_TO_ZIP FILES_TO_ZIP_LENGTH)
+if(FILES_TO_ZIP_LENGTH GREATER 0)
     execute_process(
         COMMAND ${CMAKE_COMMAND} -E tar cvf "${MSIX_BINARY_ROOT}/resources.zip" --format=zip -- ${FILES_TO_ZIP}
         WORKING_DIRECTORY "${RESOURCES_DIR}"
