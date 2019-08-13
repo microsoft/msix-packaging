@@ -4,16 +4,19 @@ using System.Text;
 using Microsoft.Deployment.WindowsInstaller;
 using Microsoft.Win32;
 
-namespace CustomAction1
+namespace GetMsixmgrProducts
 {
     public class CustomActions
     {
         [CustomAction]
-        public static ActionResult CustomAction1(Session session)
+        public static ActionResult GetMsixmgrProducts(Session session)
         {
-            session.Log("Begin CustomAction1");
+            session.Log("Begin GetMsixmgrProducts");
             
-            // Determine all the MSIX packages installed by msixmgr. 
+            // Determine all the MSIX packages installed by the msixmgr installed to this location.
+            // It could be possible other MSIX packages are installed using msixmgrLib or clickonce msixmgr.
+            // So, we check the Uninstall key specifically for the install location this uninstall would uninstall
+            // instead of using msixmgr to enumerate products
             String msixmgrInstalledProducts = "";
             session.Log(session["INSTALLFOLDER"]);
 
@@ -37,7 +40,7 @@ namespace CustomAction1
                                         session.Log("UninstallString " + uninstallString);
                                         if (uninstallString.Contains(session["INSTALLFOLDER"]))
                                         {
-                                            // found a product, add the displayName to our string
+                                            // found a product, add the displayName to our string to return
                                             String displayName = (String)productKey.GetValue("DisplayName", uninstallKeyName);
 
                                             if (msixmgrInstalledProducts.Length > 0)
@@ -54,8 +57,16 @@ namespace CustomAction1
                 }
             }
             
-            session.Log("After " + msixmgrInstalledProducts);
-            session["MSIXMGR_PRODUCTS"] = msixmgrInstalledProducts;
+            session.Log("Products found: " + msixmgrInstalledProducts);
+            if (msixmgrInstalledProducts.Length > 0)
+            {
+                session["MSIXMGR_PRODUCTS"] = msixmgrInstalledProducts;
+            }
+            else
+            {
+                session["WixUI_InstallMode"] = "Remove";
+            }
+            
             return ActionResult.Success;
         }
     }

@@ -8,8 +8,8 @@
     <ProjectGuid>{048748AB-B84C-4CEC-A468-3F6914953A3D}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CustomAction1</RootNamespace>
-    <AssemblyName>CustomAction1</AssemblyName>
+    <RootNamespace>GetMsixmgrProducts</RootNamespace>
+    <AssemblyName>GetMsixmgrProducts</AssemblyName>
     <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>
@@ -41,7 +41,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="CustomAction.cs" />
+    <Compile Include="GetMsixmgrProducts.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Content Include="CustomAction.config" />
   </ItemGroup>
