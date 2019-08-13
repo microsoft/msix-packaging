@@ -198,7 +198,11 @@ HRESULT AutoPlay::ParseManifest()
                     autoPlay.appUserModelId = m_msixRequest->GetPackageInfo()->GetId();
 
                     //get the logo
-                    autoPlay.defaultIcon = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + m_msixRequest->GetPackageInfo()->GetRelativeLogoPath();
+                    std::wstring logoPath = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + m_msixRequest->GetPackageInfo()->GetRelativeLogoPath();
+                    std::wstring iconPath;
+
+                    RETURN_IF_FAILED(ConvertLogoToIcon(logoPath, iconPath));
+                    autoPlay.defaultIcon = iconPath.c_str();
 
                     //verb
                     Text<wchar_t> id;
@@ -279,7 +283,11 @@ HRESULT AutoPlay::ParseManifest()
                     autoPlay.appUserModelId = m_msixRequest->GetPackageInfo()->GetId();
 
                     //get the logo
-                    autoPlay.defaultIcon = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + m_msixRequest->GetPackageInfo()->GetRelativeLogoPath();
+                    std::wstring logoPath = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + m_msixRequest->GetPackageInfo()->GetRelativeLogoPath();
+                    std::wstring iconPath;
+
+                    RETURN_IF_FAILED(ConvertLogoToIcon(logoPath, iconPath));
+                    autoPlay.defaultIcon = iconPath.c_str();
 
                     //handle event
                     Text<wchar_t> handleEvent;
