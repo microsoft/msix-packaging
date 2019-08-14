@@ -1,5 +1,4 @@
 #include <windows.h>
-#include <pathcch.h>
 #include "GeneralUtil.hpp"
 #include "RegistryKey.hpp"
 #include <TraceLoggingProvider.h>
@@ -61,15 +60,12 @@ HRESULT MsixCoreLib::AppExecutionAlias::ParseManifest()
                 Text<wchar_t> alias;
                 RETURN_IF_FAILED(executionAliasElement->GetAttributeValue(executionAliasName.c_str(), &alias));
                 m_appExecutionAliases.push_back(alias.Get());
-                //appExecutionAlias.key = alias.Get();
 
-                //package family name
-
-                //aumid
-
-                //app full executable path
+                RETURN_IF_FAILED(executionAliasEnum->MoveNext(&hc_executionAlias));
             }
         }
+
+        RETURN_IF_FAILED(extensionEnum->MoveNext(&hasCurrent));
     }
     return S_OK;
 }
@@ -86,9 +82,13 @@ HRESULT AppExecutionAlias::ProcessAliasForAdd(std::wstring & aliasName)
 
     RETURN_IF_FAILED(aliasKey.SetStringValue(L"", m_msixRequest->GetPackageInfo()->GetResolvedExecutableFilePath()));
 
-    std::wstring executableDirectoryPath = m_msixRequest->GetPackageInfo()->GetResolvedExecutableFilePath();
-    UINT32 executableDirectoryPathLength = executableDirectoryPath.size();
-    RETURN_IF_FAILED(PathCchRemoveFileSpec((PWSTR)executableDirectoryPath.c_str(), executableDirectoryPathLength));
+    std::wstring executableDirectoryPath;
+    std::wstring executableFilePath = m_msixRequest->GetPackageInfo()->GetResolvedExecutableFilePath();
+    size_t lastSlashPostion = executableFilePath.rfind('\\');
+    if (std::wstring::npos != lastSlashPostion)
+    {
+        executableDirectoryPath = executableFilePath.substr(0, lastSlashPostion);
+    }
 
     RETURN_IF_FAILED(aliasKey.SetStringValue(L"Path", executableDirectoryPath));
 
@@ -102,6 +102,9 @@ HRESULT AppExecutionAlias::CreateHandler(MsixRequest * msixRequest, IPackageHand
     {
         return E_OUTOFMEMORY;
     }
+
+    RETURN_IF_FAILED(localInstance->ParseManifest());
+
     *instance = localInstance.release();
 
     return S_OK;
