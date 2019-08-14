@@ -34,7 +34,7 @@ namespace MsixCoreLib
 
         HRESULT ParseManifest();
 
-        HRESULT ProcessAliasForAdd(std::wstring aliasName);
+        HRESULT ProcessAliasForAdd(std::wstring & aliasName);
 
     };
 }

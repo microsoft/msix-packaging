@@ -131,6 +131,7 @@ static const std::wstring eventHandlerRootRegKeyName = L"AutoPlayHandlers\\Event
 static const std::wstring appExecutionAliasCategory = L"windows.appExecutionAlias";
 static const std::wstring executionAliasQuery = L"*[local-name()='AppExecutionAlias']/*[local-name()='ExecutionAlias']";
 static const std::wstring executionAliasName = L"Alias";
+static const std::wstring appPathsRegKeyName = L"Software\\Microsoft\\Windows\\CurrentVersion\\App Paths";
 
 static const std::wstring clsidKeyName = L"CLSID";
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";

@@ -1,5 +1,7 @@
 #include <windows.h>
+#include <pathcch.h>
 #include "GeneralUtil.hpp"
+#include "RegistryKey.hpp"
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
 #include "Constants.hpp"
@@ -55,8 +57,6 @@ HRESULT MsixCoreLib::AppExecutionAlias::ParseManifest()
                 ComPtr<IMsixElement> executionAliasElement;
                 RETURN_IF_FAILED(executionAliasEnum->GetCurrent(&executionAliasElement));
 
-                //AppExecutionAliasObject appExecutionAlias;
-
                 //alias
                 Text<wchar_t> alias;
                 RETURN_IF_FAILED(executionAliasElement->GetAttributeValue(executionAliasName.c_str(), &alias));
@@ -74,8 +74,24 @@ HRESULT MsixCoreLib::AppExecutionAlias::ParseManifest()
     return S_OK;
 }
 
-HRESULT AppExecutionAlias::ProcessAliasForAdd(std::wstring aliasName)
+HRESULT AppExecutionAlias::ProcessAliasForAdd(std::wstring & aliasName)
 {
+    RegistryKey appPathsKey;
+    RETURN_IF_FAILED(appPathsKey.Open(HKEY_LOCAL_MACHINE, appPathsRegKeyName.c_str(), KEY_READ | KEY_WRITE));
+
+    RegistryKey aliasKey;
+    RETURN_IF_FAILED(appPathsKey.CreateSubKey(aliasName.c_str(), KEY_READ | KEY_WRITE, &aliasKey));
+
+    //delete aliasKey if exists
+
+    RETURN_IF_FAILED(aliasKey.SetStringValue(L"", m_msixRequest->GetPackageInfo()->GetResolvedExecutableFilePath()));
+
+    std::wstring executableDirectoryPath = m_msixRequest->GetPackageInfo()->GetResolvedExecutableFilePath();
+    UINT32 executableDirectoryPathLength = executableDirectoryPath.size();
+    RETURN_IF_FAILED(PathCchRemoveFileSpec((PWSTR)executableDirectoryPath.c_str(), executableDirectoryPathLength));
+
+    RETURN_IF_FAILED(aliasKey.SetStringValue(L"Path", executableDirectoryPath));
+
     return S_OK;
 }
 
