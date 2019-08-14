@@ -140,8 +140,8 @@
 
 	<Fragment>
 		<!--This custom action populates MSIXMGR_PRODUCTS with the list of msixmgr-installed packages still installed-->
-		<CustomAction Id='GetMsixmgrProductsCA' BinaryKey='GetMsixmgrProductsCA' DllEntry='GetMsixmgrProducts' Execute='immediate' Return='check'/>
-		<Binary Id='GetMsixmgrProductsCA' SourceFile='$(var.SolutionDir)\GetMsixmgrProductsCA\bin\Release\GetMsixmgrProducts.CA.dll'/>
+		<CustomAction Id='GetMsixmgrProductsCA' BinaryKey='GetMsixmgrProducts' DllEntry='GetMsixmgrProducts' Execute='immediate' Return='check'/>
+		<Binary Id='GetMsixmgrProducts' SourceFile='$(var.SolutionDir)\GetMsixmgrProductsCA\bin\Release\GetMsixmgrProducts.CA.dll'/>
 	</Fragment>
 
 </Wix>
