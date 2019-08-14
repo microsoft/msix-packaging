@@ -11,8 +11,8 @@ The main folder of interest is the MSIXCoreApps directory created in Program Fil
 (NOTE: Uninstalling the application from Add/Remove Programs in the MSIXCore preview requires the msixmgr application to be installed using the default settings of the MSI project detailed below.)
 
 # Prerequisites
-In order to create the MSI project in Visual Studio, the MSI Installer Projects for Visual Studio must be installed - 
-(https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.MicrosoftVisualStudio2017InstallerProjects)
+In order to create the MSI project in Visual Studio, the WiX Toolset and WiX Visual Studio Extensions must be installed - 
+(https://wixtoolset.org/releases/)
 
 # Build
 Clone the msix-packaging repository to a local workspace and build it x64 (see https://github.com/Microsoft/msix-packaging for prerequisites) using the -mt flag, which is necessary to avoid vclibs dependency; this should output the msix.dll, which is consumed by MSIXCore project.
@@ -23,7 +23,7 @@ Makewin.cmd x64 -mt
 Open the msix-packaging/preview/MsixCore/msixmgr.sln file in Visual Studio 2017. Build the msixmgr project in release/x64 to create the msixmgr.exe
 
 ## Using a MSI Setup Project
-Once the msixmgr project has been built, the msixmgrSetup project can be built.
+Once the msixmgr project has been built, the MsixMgrWix project can be built. The MsixMgrWix project has an additional dependency on the GetMsixmgrProducts project, which builds a custom action for the MSI package.
 The msixmgrSetup Project creates a .msi package to deploy the msix.dll and msixmgr.exe onto a Windows 7 SP1 or higher machine. The MSI Setup Project will register the specific file type association for the .msix and .appx extensions such that the installer is initiated directly from double-clicking a MSIX or APPX package.
 
 ## MSIX Package Requirements
