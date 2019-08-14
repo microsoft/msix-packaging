@@ -110,10 +110,6 @@ static const std::wstring directionOut = L"out";
 
 /// Constants for AutoPlay DEH
 static const std::wstring desktopAppXExtensionCategory = L"windows.autoPlayHandler";
-
-static const std::wstring desktopAppXContentSubCategory = L"Windows.AutoPlayDesktopAppX.Content";
-static const std::wstring desktopAppXDeviceSubCategory = L"Windows.AutoPlayDesktopAppX.Device";
-
 static const std::wstring idAttributeName = L"Verb";
 static const std::wstring actionAttributeName = L"ActionDisplayName";
 static const std::wstring providerAttributeName = L"ProviderDisplayName";
@@ -130,6 +126,11 @@ static const wchar_t desktopAppXProtocolDelegateExecuteValue[] = L"{BFEC0C93-0B7
 static const std::wstring explorerRegKeyName = L"Software\\Microsoft\\Windows\\CurrentVersion\\Explorer";
 static const std::wstring handlerKeyName = L"AutoPlayHandlers\\Handlers";
 static const std::wstring eventHandlerRootRegKeyName = L"AutoPlayHandlers\\EventHandlers";
+
+/// Constants for AppExecutionAlias DEH
+static const std::wstring appExecutionAliasCategory = L"windows.appExecutionAlias";
+static const std::wstring executionAliasQuery = L"*[local-name()='AppExecutionAlias']/*[local-name()='ExecutionAlias']";
+static const std::wstring executionAliasName = L"Alias";
 
 static const std::wstring clsidKeyName = L"CLSID";
 static const std::wstring inprocHandlerKeyName = L"InprocHandler32";
