@@ -10,15 +10,7 @@
 #include <TraceLoggingProvider.h>
 #include "RegistryKey.hpp"
 #include "MsixTraceLoggingProvider.hpp"
-#include <filesystem>
-#include <fstream>
 
-// MSIXWindows.hpp defines NOMINMAX and undefines min and max because we want to use std::min/std::max from <algorithm>
-// GdiPlus.h requires a definiton for min and max. We can't use namespace std because c++17 defines std::byte, which conflicts with ::byte
-#define max std::max
-#define min std::min
-#include <GdiPlus.h>
-using namespace std;
 using namespace MsixCoreLib;
 
 const PCWSTR FileTypeAssociation::HandlerName = L"FileTypeAssociation";
@@ -160,54 +152,6 @@ HRESULT FileTypeAssociation::ExecuteForAddRequest()
         RETURN_IF_FAILED(ProcessFtaForAdd(*fta));
     }
 
-    return S_OK;
-}
-
-/// Creates an .ico file next to the logo path which is .png by simply prepending the ICO header.
-HRESULT ConvertLogoToIcon(std::wstring logoPath, std::wstring & iconPath)
-{
-    experimental::filesystem::path path(logoPath);
-    iconPath = path.replace_extension(L".ico");
-
-    bool fileExists = false;
-    RETURN_IF_FAILED(FileExists(iconPath, fileExists));
-    if (fileExists)
-    {
-        return S_OK;
-    }
-
-    uintmax_t size = experimental::filesystem::file_size(logoPath);
-    ifstream input(logoPath, std::ios::binary);
-    ofstream output(iconPath, std::ios::binary);
-
-    Gdiplus::Image image(logoPath.c_str());
-
-    //See https://en.wikipedia.org/wiki/ICO_(file_format)
-    BYTE iconHeader[] = {
-        0,0,                                    // reserved
-        1,0,                                    // 1 for .ico icon
-        1,0,                                    // 1 image in file
-        static_cast<BYTE>(image.GetWidth()),    // width
-        static_cast<BYTE>(image.GetHeight()),   // height
-        0,                                      // colors in color palette
-        0,                                      // reserved
-        1,0,                                    // color planes
-        32,0,                                   // bits per pixel
-        0,0,0,0,                                // size of image in bytes
-        0,0,0,0 };                              // offset from start of file of actual image
-
-    // fill in size
-    iconHeader[14] = static_cast<BYTE>(size % 256);
-    iconHeader[15] = static_cast<BYTE>(size / 256);
-
-    // fill in offset from start of file, which is the size of this header
-    iconHeader[18] = static_cast<BYTE>(ARRAYSIZE(iconHeader));
-
-    for (int i = 0; i < ARRAYSIZE(iconHeader); i++)
-    {
-        output << iconHeader[i];
-    }
-    output << input.rdbuf();
     return S_OK;
 }
 

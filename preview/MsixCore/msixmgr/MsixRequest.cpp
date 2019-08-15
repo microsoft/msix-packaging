@@ -35,6 +35,7 @@
 #include "PrepareDevirtualizedRegistry.hpp"
 #include "WriteDevirtualizedRegistry.hpp"
 #include "FirewallRules.hpp"
+#include "AutoPlay.hpp"
 #include "VirtualFileHandler.hpp"
 
 #include "Constants.hpp"
@@ -81,7 +82,8 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                  ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,          ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          FirewallRules::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                AutoPlay::HandlerName,                     ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {AutoPlay::HandlerName,                     {AutoPlay::CreateHandler,                     InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {InstallComplete::HandlerName,              {InstallComplete::CreateHandler,              nullptr,                                   ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ErrorHandler::HandlerName,                 {ErrorHandler::CreateHandler,                 nullptr,                                   ReturnError,         nullptr}},
 };
@@ -98,7 +100,8 @@ std::map<PCWSTR, RemoveHandlerInfo> RemoveHandlers =
     {ComServer::HandlerName,                    {ComServer::CreateHandler,                    StartupTask::HandlerName,                   IgnoreAndProcessNextHandler}},
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,           IgnoreAndProcessNextHandler}},
     {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          FirewallRules::HandlerName,                 IgnoreAndProcessNextHandler}},
-    {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                VirtualFileHandler::HandlerName,            IgnoreAndProcessNextHandler}},
+    {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                AutoPlay::HandlerName,                      IgnoreAndProcessNextHandler}},
+    {AutoPlay::HandlerName,                     {AutoPlay::CreateHandler,                     VirtualFileHandler::HandlerName,            IgnoreAndProcessNextHandler}},
     {VirtualFileHandler::HandlerName,           {VirtualFileHandler::CreateHandler,           WriteDevirtualizedRegistry::HandlerName,    IgnoreAndProcessNextHandler}},
     {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
     {Extractor::HandlerName,                    {Extractor::CreateHandler,                    nullptr,                                    IgnoreAndProcessNextHandler}},

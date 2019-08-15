@@ -160,6 +160,12 @@ namespace MSIX {
 
     ComPtr<IStream> AppxFactory::GetResource(const std::string& resource)
     {
+        // Short-circuit the case where there were no resources and throw not found immediately.
+        if (Resource::resourceLength <= 1)
+        {
+            ThrowErrorAndLog(Error::FileNotFound, resource.c_str());
+        }
+
         if(!m_resourcezip) // Initialize it when first needed.
         {
             // Get stream of the resource zip file generated at CMake processing.

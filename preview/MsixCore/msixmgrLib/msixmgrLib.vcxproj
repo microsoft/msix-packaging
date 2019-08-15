@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -187,6 +187,10 @@
     <ClInclude Include="..\msixmgr\ValidateTargetDeviceFamily.hpp" />
     <ClInclude Include="..\msixmgr\FirewallRules.hpp" />
     <ClInclude Include="..\msixmgr\Windows10Redirector.hpp" />
+    <ClInclude Include="..\msixmgr\AutoPlay.hpp" />
+    <ClInclude Include="..\msixmgr\BcryptLibrary.hpp" />
+    <ClInclude Include="..\msixmgr\CryptoProvider.hpp" />
+    <ClInclude Include="..\msixmgr\Base32Encoding.hpp" />
     <ClInclude Include="..\msixmgr\VirtualFileHandler.hpp" />
     <ClInclude Include="inc\IMsixResponse.hpp" />
     <ClInclude Include="inc\DeploymentOptions.hpp" />
@@ -227,6 +231,10 @@
     <ClCompile Include="..\msixmgr\ValidateTargetDeviceFamily.cpp" />
     <ClCompile Include="..\msixmgr\FirewallRules.cpp" />
     <ClCompile Include="..\msixmgr\Windows10Redirector.cpp" />
+    <ClCompile Include="..\msixmgr\AutoPlay.cpp" />
+    <ClCompile Include="..\msixmgr\BcryptLibrary.cpp" />
+    <ClCompile Include="..\msixmgr\CryptoProvider.cpp" />
+    <ClCompile Include="..\msixmgr\Base32Encoding.cpp" />
     <ClCompile Include="..\msixmgr\VirtualFileHandler.cpp" />
     <ClCompile Include="GeneralUtil.cpp" />
     <ClCompile Include="..\msixmgr\MsixResponse.cpp" />

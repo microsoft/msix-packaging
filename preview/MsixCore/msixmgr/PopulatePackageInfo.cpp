@@ -83,7 +83,7 @@ HRESULT PopulatePackageInfo::ExecuteForRemoveRequest()
 
     std::shared_ptr<InstalledPackage> package;
     RETURN_IF_FAILED(GetPackageInfoFromManifest(packageDirectoryPath, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN, &package));
-
+    
     if (package == nullptr)
     {
         return E_FAIL;

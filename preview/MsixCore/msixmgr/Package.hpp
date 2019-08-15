@@ -3,6 +3,7 @@
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
 #include "IPackage.hpp"
+#include "FilePaths.hpp"
 #include <vector>
 
 namespace MsixCoreLib
@@ -21,6 +22,7 @@ namespace MsixCoreLib
         std::wstring m_publisher;
         std::wstring m_publisherName;
         std::wstring m_relativeLogoPath;
+        std::wstring m_packageDirectoryPath;
         std::vector<std::wstring> m_capabilities;
 
         ComPtr<IAppxManifestReader> m_manifestReader;
@@ -36,6 +38,14 @@ namespace MsixCoreLib
         std::wstring GetVersion();
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
+        std::wstring GetApplicationId() { return m_applicationId; }
+        std::wstring GetRelativeLogoPath() {
+            return m_relativeLogoPath;
+        }
+        std::wstring GetPackageDirectoryPath() {
+            m_packageDirectoryPath = FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_packageFullName + L"\\";
+            return m_packageDirectoryPath;
+        }
 
         std::vector<std::wstring> GetCapabilities()
         {
@@ -87,6 +97,8 @@ namespace MsixCoreLib
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
         std::unique_ptr<IStream> GetLogo();
+        std::wstring GetApplicationId() { return m_applicationId; }
+
         std::vector<std::wstring> GetCapabilities()
         {
             return m_capabilities;
@@ -121,6 +133,7 @@ namespace MsixCoreLib
         std::wstring GetVersion() { return PackageBase::GetVersion(); }
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
+        std::wstring GetApplicationId() { return m_applicationId; }
 
         std::unique_ptr<IStream> GetLogo();
 
