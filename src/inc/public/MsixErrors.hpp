@@ -86,6 +86,7 @@ namespace MSIX {
         XmlWarning                  = XML_FACILITY + 0x0001,
         XmlError                    = XML_FACILITY + 0x0002,
         XmlFatal                    = XML_FACILITY + 0x0003,
+        XmlInvalidData              = XML_FACILITY + 0x0004,
     };
 }
 

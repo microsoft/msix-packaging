@@ -20,7 +20,7 @@
 namespace MSIX {
     namespace Global {
         namespace Log {
-            void Append(const std::string&) {}
+            inline void Append(const std::string&) {}
         }
     }
 }

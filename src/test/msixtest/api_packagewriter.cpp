@@ -352,22 +352,86 @@ TEST_CASE("Api_AppxPackageWriter_closed", "[api]")
             fileStream.Get()));
 }
 
+class GeneratedEasilyCompressedFileStream final : public MSIX::StreamBase
+{
+public:
+    GeneratedEasilyCompressedFileStream(uint64_t size) : m_size(size) {}
+
+    // IStream
+    HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER* newPosition) noexcept override try
+    {
+        // Determine new range relative position
+        LARGE_INTEGER newPos = { 0 };
+        switch (origin)
+        {
+        case Reference::CURRENT:
+            newPos.QuadPart = m_offset + move.QuadPart;
+            break;
+        case Reference::START:
+            newPos.QuadPart = move.QuadPart;
+            break;
+        case Reference::END:
+            newPos.QuadPart = m_size + move.QuadPart;
+            break;
+        }
+
+        // Constrain newPos to range relative values
+        if (newPos.QuadPart < 0)
+        {
+            m_offset = 0;
+        }
+        else
+        {
+            m_offset = std::min(static_cast<uint64_t>(newPos.QuadPart), m_size);
+        }
+
+        if (newPosition) { newPosition->QuadPart = m_offset; }
+        return static_cast<HRESULT>(MSIX::Error::OK);
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
+    {
+        uint64_t bytesToRead = std::min(m_size - m_offset, static_cast<uint64_t>(countBytes));
+        // We can't really fail so just put the value in directly.
+        if (bytesRead) { *bytesRead = static_cast<ULONG>(bytesToRead); }
+
+        while (bytesToRead)
+        {
+            size_t block = m_offset / DefaultBlockSize;
+            size_t endOfBlock = (block + 1) * DefaultBlockSize;
+            size_t bytesToWrite = std::min(endOfBlock, m_size) - m_offset;
+            bytesToWrite = std::min(bytesToWrite, bytesToRead);
+            memset(buffer, block % 256, bytesToWrite);
+
+            buffer = static_cast<void*>(static_cast<int8_t*>(buffer) + bytesToWrite);
+            m_offset += bytesToWrite;
+            bytesToRead -= bytesToWrite;
+        }
+
+        return static_cast<HRESULT>(MSIX::Error::OK);
+    } CATCH_RETURN();
+
+protected:
+    uint64_t m_size = 0;
+    uint64_t m_offset = 0;
+};
+
 // Test creating a valid msix package with a contained file that is larger than 4GB
 // The package itself will be much smaller; do not unpack the package from this test
-TEST_CASE("Api_AppxPackageWriter_file_over_4GB", "[api]")
+TEST_CASE("Api_AppxPackageWriter_file_over_4GB", "[api][.slow]")
 {
     auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
 
     MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
     InitializePackageWriter(outputStream.Get(), &packageWriter);
 
-    // Create stream to generate our very compressable data
-    //auto fileStream = nullptr;
-    //REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
-    //    fileName.second.c_str(),
-    //    TestConstants::ContentType.c_str(),
-    //    APPX_COMPRESSION_OPTION_NORMAL,
-    //    fileStream.Get()));
+    // Create stream to generate our very compressable data with more than 4GB of data
+    auto fileStream = MsixTest::ComPtr<IStream>::Make<GeneratedEasilyCompressedFileStream>(0x100000100);
+    REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
+        L"largefile.bin",
+        TestConstants::ContentType.c_str(),
+        APPX_COMPRESSION_OPTION_NORMAL,
+        fileStream.Get()));
 
     // Finalize package, create manifest stream
     MsixTest::ComPtr<IStream> manifestStream;
