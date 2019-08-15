@@ -281,8 +281,20 @@ int main(int argc, char * argv[])
 
             if (cli.IsApplyACLs())
             {
-                std::unique_ptr<HMODULE> applyACLsDll;
-                *applyACLsDll = (LoadLibrary(L"applyacls.dll"));
+                auto autoFreeLibrary = [](HMODULE* module)
+                {
+                    if (module != nullptr)
+                    {
+                        FreeLibrary(*module);
+                    }
+                };
+
+                std::unique_ptr<HMODULE, decltype(autoFreeLibrary)>
+                    applyACLsDll(nullptr, autoFreeLibrary);
+
+                HMODULE applyACLsLocal = LoadLibrary(L"applyacls.dll");
+                applyACLsDll.reset(&applyACLsLocal);
+
                 if (applyACLsDll == nullptr)
                 {
                     std::wcout << "Failed to load applyacls.dll. Please confirm the dll is next to this exe" << std::endl;
