@@ -204,7 +204,7 @@ namespace MSIX {
     };
 
     template <>
-    struct StringToNumber<uint32_t>
+    struct StringToNumber<std::uint32_t>
     {
         static uint32_t Get(const std::string& str)
         {
@@ -213,7 +213,7 @@ namespace MSIX {
     };
 
     template <>
-    struct StringToNumber<uint64_t>
+    struct StringToNumber<std::uint64_t>
     {
         static uint64_t Get(const std::string& str)
         {

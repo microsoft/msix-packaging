@@ -397,11 +397,11 @@ public:
 
         while (bytesToRead)
         {
-            size_t block = m_offset / DefaultBlockSize;
-            size_t endOfBlock = (block + 1) * DefaultBlockSize;
-            size_t bytesToWrite = std::min(endOfBlock, m_size) - m_offset;
+            uint64_t block = m_offset / DefaultBlockSize;
+            uint64_t endOfBlock = (block + 1) * DefaultBlockSize;
+            uint64_t bytesToWrite = std::min(endOfBlock, m_size) - m_offset;
             bytesToWrite = std::min(bytesToWrite, bytesToRead);
-            memset(buffer, block % 256, bytesToWrite);
+            memset(buffer, static_cast<int>(block % 256), static_cast<size_t>(bytesToWrite));
 
             buffer = static_cast<void*>(static_cast<int8_t*>(buffer) + bytesToWrite);
             m_offset += bytesToWrite;
