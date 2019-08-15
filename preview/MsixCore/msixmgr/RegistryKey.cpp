@@ -148,3 +148,10 @@ HRESULT RegistryKey::KeyExists(PCWSTR subkey, bool& exists)
     }
     return HRESULT_FROM_WIN32(rc);
 }
+
+HRESULT RegistryKey::SetUInt32Value(
+    _In_opt_ PCWSTR name,
+    _In_ UINT32 value)
+{
+    return SetValue(name, &value, static_cast<DWORD>(sizeof(value)), REG_DWORD);
+}

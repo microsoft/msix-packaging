@@ -307,13 +307,22 @@ foreach(FILE ${RESOURCES_CERTS})
     list(APPEND FILES_TO_ZIP "${FILE}")
 endforeach()
 
-execute_process(
-    COMMAND ${CMAKE_COMMAND} -E tar cvf "${MSIX_BINARY_ROOT}/resources.zip" --format=zip -- ${FILES_TO_ZIP}
-    WORKING_DIRECTORY "${RESOURCES_DIR}"
-    OUTPUT_QUIET
-)
+# Starting in cmake 3.15, the tar command will error if it receives no files.
+# So we catch that case and make the resulting resource blob even smaller.
+list(LENGTH FILES_TO_ZIP FILES_TO_ZIP_LENGTH)
+if(FILES_TO_ZIP_LENGTH GREATER 0)
+    execute_process(
+        COMMAND ${CMAKE_COMMAND} -E tar cvf "${MSIX_BINARY_ROOT}/resources.zip" --format=zip -- ${FILES_TO_ZIP}
+        WORKING_DIRECTORY "${RESOURCES_DIR}"
+        OUTPUT_QUIET
+    )
+    file(READ "${MSIX_BINARY_ROOT}/resources.zip" RESOURCE_HEX HEX)
+else()
+    # If no files to zip, we will just create the smallest blob we can without angering C++ syntax
+    message(STATUS "\t<no resource files>")
+    set(RESOURCE_HEX "00")
+endif()
 
-file(READ "${MSIX_BINARY_ROOT}/resources.zip" RESOURCE_HEX HEX)
 # Create a list by matching every 2 charactes. CMake separates lists with ;
 string(REGEX MATCHALL ".." RESOURCE_HEX_LIST "${RESOURCE_HEX}")
 list(LENGTH RESOURCE_HEX_LIST RESOURCE_LENGTH)

@@ -7,7 +7,6 @@
 #include "AppxManifestValidation.hpp"
 #include "UnicodeConversion.hpp"
 #include "Encoding.hpp"
-#include "Crypto.hpp"
 #include "Enumerators.hpp"
 #include "IXml.hpp"
 
@@ -27,7 +26,7 @@ namespace MSIX {
          m_factory(factory), m_name(name), m_version(version), m_resourceId(resourceId), m_architecture(architecture), m_publisher(publisher)
     {
         // Only name, publisherId and version are required.
-        ThrowErrorIf(Error::AppxManifestSemanticError, (m_name.empty() || m_version.empty() || m_version.empty()), "Invalid Identity element");
+        ThrowErrorIf(Error::AppxManifestSemanticError, (m_name.empty() || m_version.empty() || m_publisher.empty()), "Invalid Identity element");
         m_publisherId = ComputePublisherId(m_publisher);
         ValidatePackageString(m_name, XmlAttributeName::Name);
         // If ResourceId == "~" this is the identity of a bundle.
@@ -114,17 +113,6 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::AppxManifestSemanticError, !AppxManifestValidation::IsIdentifierValid(packageString),
             (std::string("Invalid Package Identifier ") + GetAttributeNameStringUtf8(identityPart) + ": " + packageString).c_str());
-    }
-
-    std::string AppxManifestPackageId::ComputePublisherId(const std::string& publisher)
-    {
-        auto wpublisher = utf8_to_u16string(publisher);
-        std::vector<std::uint8_t> buffer(wpublisher.size() * sizeof(char16_t));
-        memcpy(buffer.data(), &wpublisher[0], wpublisher.size() * sizeof(char16_t));
-
-        std::vector<std::uint8_t> hash;
-        ThrowErrorIfNot(Error::Unexpected, SHA256::ComputeHash(buffer.data(), static_cast<uint32_t>(buffer.size()), hash),  "Failed computing publisherId");
-        return Encoding::Base32Encoding(hash);
     }
 
     // IAppxManifestPackageIdUtf8

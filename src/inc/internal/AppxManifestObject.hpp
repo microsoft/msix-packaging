@@ -219,7 +219,7 @@ namespace MSIX {
     {
     public:
         AppxManifestOptionalPackageInfo(IMsixFactory* factory, const std::string& mainPackageName) :
-            m_mainPackageName(mainPackageName)
+            m_factory(factory), m_mainPackageName(mainPackageName)
         {}
 
         // IAppxManifestOptionalPackageInfo
@@ -247,9 +247,61 @@ namespace MSIX {
         std::string m_mainPackageName;
     };
 
+    class AppxManifestMainPackageDependency final : public ComClass<AppxManifestMainPackageDependency, IAppxManifestMainPackageDependency, IAppxManifestMainPackageDependencyUtf8>
+    {
+    public:
+        AppxManifestMainPackageDependency(IMsixFactory* factory, const std::string& name, const std::string& publisher, const std::string& packageFamilyName) :
+            m_factory(factory), m_name(name), m_publisher(publisher), m_packageFamilyName(packageFamilyName)
+        {}
+
+        // IAppxManifestMainPackageDependency
+        HRESULT STDMETHODCALLTYPE GetName(LPWSTR* name) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (name == nullptr || *name != nullptr), "bad pointer");
+            return m_factory->MarshalOutString(m_name, name);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetPublisher(LPWSTR* publisher) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (publisher == nullptr || *publisher != nullptr), "bad pointer");
+            return m_factory->MarshalOutString(m_publisher, publisher);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetPackageFamilyName(LPWSTR* packageFamilyName) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (packageFamilyName == nullptr || *packageFamilyName != nullptr), "bad pointer");
+            return m_factory->MarshalOutString(m_packageFamilyName, packageFamilyName);
+        } CATCH_RETURN();
+
+        // IAppxManifestMainPackageDependencyUtf8
+        HRESULT STDMETHODCALLTYPE GetName(LPSTR* name) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (name == nullptr || *name != nullptr), "bad pointer");
+            return m_factory->MarshalOutStringUtf8(m_name, name);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetPublisher(LPSTR* publisher) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (publisher == nullptr || *publisher != nullptr), "bad pointer");
+            return m_factory->MarshalOutStringUtf8(m_publisher, publisher);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetPackageFamilyName(LPSTR* packageFamilyName) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (packageFamilyName == nullptr || *packageFamilyName != nullptr), "bad pointer");
+            return m_factory->MarshalOutStringUtf8(m_packageFamilyName, packageFamilyName);
+        } CATCH_RETURN();
+
+    protected:
+        ComPtr<IMsixFactory> m_factory;
+        std::string m_name;
+        std::string m_publisher;
+        std::string m_packageFamilyName;
+    };
+
     // Object backed by AppxManifest.xml
     class AppxManifestObject final : public ComClass<AppxManifestObject, ChainInterfaces<IAppxManifestReader4, IAppxManifestReader3, IAppxManifestReader2, IAppxManifestReader>,
-                                                     IVerifierObject, IAppxManifestObject, IMsixDocumentElement>
+                                                    IAppxManifestReader5, IVerifierObject, IAppxManifestObject, IMsixDocumentElement>
     {
     public:
         AppxManifestObject(IMsixFactory* factory, const ComPtr<IStream>& stream);
@@ -276,6 +328,9 @@ namespace MSIX {
 
         // IAppxManifestReader4
         HRESULT STDMETHODCALLTYPE GetOptionalPackageInfo(IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept override;
+
+        // IAppxManifestReader5
+        HRESULT STDMETHODCALLTYPE GetMainPackageDependencies(IAppxManifestMainPackageDependenciesEnumerator **mainPackageDependencies) noexcept override;
 
         // IVerifierObject
         bool HasStream() override { return !!m_stream; }
