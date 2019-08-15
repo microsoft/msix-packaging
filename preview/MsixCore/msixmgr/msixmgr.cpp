@@ -272,7 +272,10 @@ int main(int argc, char * argv[])
             }
             else
             {
-                std::wcout << "Invalid package path " << packageFilePath << " specified. Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
+                std::wcout << std::endl;
+                std::wcout << "Invalid package path: " << packageFilePath << std::endl;
+                std::wcout << "Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
+                std::wcout << std::endl;
                 return E_INVALIDARG;
             }
 
