@@ -31,8 +31,7 @@ public:
     TEST_METHOD_PROPERTY(L"RunAs", L"ElevatedUser")
     END_TEST_METHOD()
 
-
-    BEGIN_TEST_METHOD(InstallFromStreamTest)
+    BEGIN_TEST_METHOD(InstallFromEmbeddedStreamTest)
     TEST_METHOD_PROPERTY(L"RunAs", L"ElevatedUser")
     END_TEST_METHOD()
 private:
