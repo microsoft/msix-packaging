@@ -272,30 +272,38 @@ int main(int argc, char * argv[])
             }
             else
             {
+                std::wcout << "Invalid package path " << packageFilePath << " specified. Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
                 return E_INVALIDARG;
             }
 
-            HMODULE applyACLsDll;
-            applyACLsDll = (LoadLibrary(L"applyacls.dll"));
-            if (applyACLsDll == nullptr)
+            if (cli.IsApplyACLs())
             {
-                std::wcout << "Failed to load applyacls.dll. Please confirm the dll is next to this exe" << std::endl;
+                std::unique_ptr<HMODULE> applyACLsDll;
+                *applyACLsDll = (LoadLibrary(L"applyacls.dll"));
+                if (applyACLsDll == nullptr)
+                {
+                    std::wcout << "Failed to load applyacls.dll. Please confirm the dll is next to this exe" << std::endl;
+                }
+
+                typedef HRESULT(STDMETHODCALLTYPE *APPLYACLSTOPACKAGEFOLDER)(PCWSTR folderPath);
+
+                APPLYACLSTOPACKAGEFOLDER ApplyACLsToPackageFolder =
+                    reinterpret_cast<APPLYACLSTOPACKAGEFOLDER>
+                    (GetProcAddress(*applyACLsDll, "ApplyACLsToPackageFolder"));
+
+                for (auto folder : packageFolders)
+                {
+                    std::wcout << folder << std::endl;
+                    RETURN_IF_FAILED(ApplyACLsToPackageFolder(folder.c_str()));
+                }
+
+                return S_OK;
             }
 
-            typedef HRESULT(STDMETHODCALLTYPE *APPLYACLSTOPACKAGEFOLDER)(PCWSTR folderPath);
-
-            APPLYACLSTOPACKAGEFOLDER ApplyACLsToPackageFolder =
-                reinterpret_cast<APPLYACLSTOPACKAGEFOLDER>
-                (GetProcAddress(applyACLsDll, "ApplyACLsToPackageFolder"));
-
-            // Update this to pass folder names to API that apply ACLs to those folders
-            for (auto folder : packageFolders)
-            {
-                std::wcout << folder << std::endl;
-                RETURN_IF_FAILED(ApplyACLsToPackageFolder(folder.c_str()));
-            }
-
-            FreeLibrary(applyACLsDll);
+        }
+        case OperationType::ApplyACLs:
+        {
+            // Call helper function to apply ACLs
             return S_OK;
         }
         default:

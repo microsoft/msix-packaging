@@ -99,7 +99,8 @@ BEGIN
     IDS_STRING_HELP_OPTION_UNPACK "Unpack package - Extract package contents to folder"
     IDS_STRING_HELP_OPTION_UNPACK_PATH "Path to package to unpack"
     IDS_STRING_HELP_OPTION_UNPACK_DESTINATION "Path to location where package should be unpacked to"
-    IDS_STRING_HELP_OPTION_UNPACK_APPLYACLS "Apply ACLs - apply ACLs to the folder created by unpack"
+    IDS_STRING_HELP_OPTION_UNPACK_APPLYACLS "Applies ACLs to the folder created by unpack"
+	IDS_STRING_HELP_OPTION_APPLYACLS "Applies ACLs to a package folder (an unpacked package)"
 END
 
 #endif    // English (United States) resources

@@ -131,6 +131,20 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
         })
     },
     {
+        L"-ApplyACLs",
+        Options(true, IDS_STRING_HELP_OPTION_APPLYACLS,
+        [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Undefined)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_packageFilePath = utf8_to_utf16(packagePath);
+                    commandLineInterface->m_operationType = OperationType::ApplyACLs;
+                    return S_OK;
+                })
+    },
+    {
         L"-?",
         Options(false, IDS_STRING_HELP_OPTION_HELP,
             [&](CommandLineInterface*, const std::string&)
