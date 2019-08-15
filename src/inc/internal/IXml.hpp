@@ -199,7 +199,9 @@ namespace MSIX {
     {
         static uint32_t Get(const std::string&)
         {
-            static_assert(false, "An appropriate specialization must be specified");
+            template <typename Q>
+            using False = std::false_type;
+            static_assert(False<T>::value, "An appropriate specialization must be specified");
         }
     };
 
