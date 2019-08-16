@@ -214,10 +214,10 @@ public:
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMsixElementEnumerator** elements) noexcept override try
+    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR xpath, IMsixElementEnumerator** elements) noexcept override try
     {
         ComPtr<IXMLDOMNodeList> list;
-        Bstr xPath(name);
+        Bstr xPath(xpath);
         ThrowHrIfFailed(m_element->selectNodes(xPath, &list));
 
         long count = 0;
@@ -266,9 +266,9 @@ public:
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE GetElementsUtf8(LPCSTR name, IMsixElementEnumerator** elements) noexcept override try
+    HRESULT STDMETHODCALLTYPE GetElementsUtf8(LPCSTR xpath, IMsixElementEnumerator** elements) noexcept override try
     {
-        return GetElements(utf8_to_wstring(name).c_str(), elements);
+        return GetElements(utf8_to_wstring(xpath).c_str(), elements);
     } CATCH_RETURN();
 
 protected:
@@ -280,10 +280,10 @@ protected:
         return (variant->vt == VT_BSTR);
     }
 
-    ComPtr<IMsixElementEnumerator> GetElementsHelper(std::wstring& name)
+    ComPtr<IMsixElementEnumerator> GetElementsHelper(std::wstring& xpath)
     {
         ComPtr<IXMLDOMNodeList> list;
-        Bstr xPath(name);
+        Bstr xPath(xpath);
         ThrowHrIfFailed(m_element->selectNodes(xPath, &list));
 
         long count = 0;

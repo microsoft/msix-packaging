@@ -107,9 +107,9 @@ public:
         return m_factory->MarshalOutString(text, value);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMsixElementEnumerator** elements) noexcept override try
+    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR xpath, IMsixElementEnumerator** elements) noexcept override try
     {
-        return GetElementsUtf8(wstring_to_utf8(name).c_str(), elements);
+        return GetElementsUtf8(wstring_to_utf8(xpath).c_str(), elements);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE GetAttributeValueUtf8(LPCSTR name, LPSTR* value) noexcept override try
@@ -127,10 +127,10 @@ public:
         return m_factory->MarshalOutStringUtf8(text, value);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE GetElementsUtf8(LPCSTR name, IMsixElementEnumerator** elements) noexcept override try
+    HRESULT STDMETHODCALLTYPE GetElementsUtf8(LPCSTR xpath, IMsixElementEnumerator** elements) noexcept override try
     {
         ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
-        std::unique_ptr<_jstring, JObjectDeleter> jname(m_env->NewStringUTF(name));
+        std::unique_ptr<_jstring, JObjectDeleter> jname(m_env->NewStringUTF(xpath));
         std::unique_ptr<_jobjectArray, JObjectDeleter> javaElements(reinterpret_cast<jobjectArray>(m_env->CallObjectMethod(m_javaXmlElementObject.get(), getElementsFunc, jname.get())));
         std::vector<ComPtr<IMsixElement>> elementsEnum;
         // Note: if the number of elements are large, JNI might barf due to too many local refs alive. This should only be used for small lists.
