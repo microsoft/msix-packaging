@@ -1,6 +1,9 @@
 #include "Windows10Redirector.hpp"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
+#include "MsixTraceLoggingProvider.hpp"
+#include <sddl.h>
+#include <AclAPI.h>
 
 HRESULT MsixCoreLib::Windows10Redirector::AddPackageWithProgress(const std::wstring & packageFilePath, std::shared_ptr<MsixResponse>& msixResponse)
 {
@@ -61,6 +64,39 @@ HRESULT MsixCoreLib::Windows10Redirector::RemovePackage(const std::wstring & pac
     return S_OK;
 }
 
+HRESULT SetAclOnFile(HANDLE file)
+{
+    struct LocalAlloc_delete
+    {
+        LocalAlloc_delete() { }
+        void operator()(SECURITY_DESCRIPTOR* p) throw() { LocalFree(p); }
+    };
+
+    // Defend against lower privileged users-- allow users read execute, but disallow write
+    PSECURITY_DESCRIPTOR psd;
+    if (!ConvertStringSecurityDescriptorToSecurityDescriptor(L"O:BAD:PAI(A;ID;FA;;;SY)(A;ID;FA;;;BA)(A;ID;FRFX;;;BU)", SDDL_REVISION_1, &psd, nullptr))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+    std::unique_ptr<SECURITY_DESCRIPTOR, LocalAlloc_delete> securityDescriptor(reinterpret_cast<SECURITY_DESCRIPTOR*>(psd));
+
+    PACL dacl;
+    BOOL daclPresent = FALSE;
+    BOOL daclDefaulted = FALSE;
+    if (!GetSecurityDescriptorDacl(psd, &daclPresent, &dacl, &daclDefaulted))
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    DWORD error = SetSecurityInfo(file, SE_FILE_OBJECT, DACL_SECURITY_INFORMATION | PROTECTED_DACL_SECURITY_INFORMATION, nullptr, nullptr, dacl, nullptr);
+    if (error != ERROR_SUCCESS)
+    {
+        return HRESULT_FROM_WIN32(error);
+    }
+
+    return S_OK;
+}
+
 HRESULT MsixCoreLib::Windows10Redirector::ConvertIStreamToPackagePath(IStream * packageStream, TCHAR tempPackagePath[])
 {
     TCHAR tempPathBuffer[MAX_PATH];
@@ -76,11 +112,17 @@ HRESULT MsixCoreLib::Windows10Redirector::ConvertIStreamToPackagePath(IStream * 
     }
 
     HANDLE tempFileHandle = INVALID_HANDLE_VALUE;
-    tempFileHandle = CreateFile((LPTSTR)tempPackagePath, GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    tempFileHandle = CreateFile((LPTSTR)tempPackagePath, GENERIC_READ | GENERIC_WRITE | WRITE_DAC, FILE_SHARE_READ, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (tempFileHandle == INVALID_HANDLE_VALUE)
     {
         return HRESULT_FROM_WIN32(GetLastError());
     }
+
+    RETURN_IF_FAILED(SetAclOnFile(tempFileHandle));
+
+    LARGE_INTEGER start = { 0 };
+    ULARGE_INTEGER pos = { 0 };
+    RETURN_IF_FAILED(packageStream->Seek(start, STREAM_SEEK_SET, &pos));
 
     ULONG dwBytesRead = 0;
     DWORD dwBytesWritten = 0;
