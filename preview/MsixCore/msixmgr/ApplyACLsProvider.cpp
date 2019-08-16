@@ -13,7 +13,7 @@ using namespace std;
 
 namespace MsixCoreLib
 {
-    HRESULT ApplyACLsProvider::ApplyACLs(
+    HRESULT ApplyACLs(
         _In_ std::vector<std::wstring> packageFolders)
     {
         auto autoFreeLibrary = [](HMODULE* module)

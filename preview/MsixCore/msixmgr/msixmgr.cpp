@@ -146,11 +146,11 @@ int main(int argc, char * argv[])
 
             if (IsPackageFile(packageFilePath))
             {
-                RETURN_IF_FAILED(UnpackProvider::UnpackPackage(packageFilePath, unpackDestination, cli.IsApplyACLs()));
+                RETURN_IF_FAILED(MsixCoreLib::UnpackPackage(packageFilePath, unpackDestination, cli.IsApplyACLs()));
             }
             else if (IsBundleFile(packageFilePath))
             {
-                RETURN_IF_FAILED(UnpackProvider::UnpackBundle(packageFilePath, unpackDestination, cli.IsApplyACLs()));
+                RETURN_IF_FAILED(MsixCoreLib::UnpackBundle(packageFilePath, unpackDestination, cli.IsApplyACLs()));
             }
             else
             {
@@ -166,7 +166,7 @@ int main(int argc, char * argv[])
         {
             std::vector<std::wstring> packageFolders;
             packageFolders.push_back(cli.GetPackageFilePathToInstall()); // we're not actually installing anything. The API just returns the file path name we need.
-            RETURN_IF_FAILED(ApplyACLsProvider::ApplyACLs(packageFolders));
+            RETURN_IF_FAILED(MsixCoreLib::ApplyACLs(packageFolders));
             return S_OK;
         }
         default:

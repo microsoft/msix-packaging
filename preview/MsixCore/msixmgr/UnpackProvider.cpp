@@ -16,7 +16,7 @@ using namespace std;
 namespace MsixCoreLib
 {
 
-    HRESULT UnpackProvider::UnpackPackage(
+    HRESULT UnpackPackage(
         _In_ std::wstring packageFilePath,
         _In_ std::wstring destination,
         _In_ bool isApplyACLs)
@@ -58,13 +58,13 @@ namespace MsixCoreLib
             std::wstring packageFolderName = destination + L"\\" + packageFullName;
             packageFolders.push_back(packageFolderName);
 
-            RETURN_IF_FAILED(ApplyACLsProvider::ApplyACLs(packageFolders));
+            RETURN_IF_FAILED(ApplyACLs(packageFolders));
         }
 
         return S_OK;
     }
 
-    HRESULT UnpackProvider::UnpackBundle(
+    HRESULT UnpackBundle(
         _In_ std::wstring packageFilePath,
         _In_ std::wstring destination,
         _In_ bool isApplyACLs)
@@ -160,10 +160,9 @@ namespace MsixCoreLib
 
                 RETURN_IF_FAILED(packageFilesEnumerator->MoveNext(&hasCurrent));
             }
+
+            RETURN_IF_FAILED(ApplyACLs(packageFolders));
         }
-
-        RETURN_IF_FAILED(ApplyACLsProvider::ApplyACLs(packageFolders));
-
         return S_OK;
     }
 
