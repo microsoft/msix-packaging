@@ -45,7 +45,7 @@ namespace MsixCoreLib
         {
             std::vector<std::wstring> packageFolders;
 
-            PWSTR packageFullName = nullptr;
+            Text<WCHAR> packageFullName;
 
             ComPtr<IAppxManifestReader> manifestReader;
             RETURN_IF_FAILED(reader->GetManifest(&manifestReader));
@@ -55,7 +55,7 @@ namespace MsixCoreLib
 
             RETURN_IF_FAILED(packageId->GetPackageFullName(&packageFullName));
 
-            std::wstring packageFolderName = destination + L"\\" + packageFullName;
+            std::wstring packageFolderName = destination + L"\\" + packageFullName.Get();
             packageFolders.push_back(packageFolderName);
 
             RETURN_IF_FAILED(ApplyACLs(packageFolders));
@@ -98,12 +98,12 @@ namespace MsixCoreLib
             RETURN_IF_FAILED(reader->GetManifest(&bundleManifestReader));
 
             // Determine the name of the folder created for the unpacked bundle, and add this name to our list of package folders
-            PWSTR bundleFullName = nullptr;
+            Text<WCHAR> bundleFullName;
             ComPtr<IAppxManifestPackageId> bundleId;
             RETURN_IF_FAILED(bundleManifestReader->GetPackageId(&bundleId));
             RETURN_IF_FAILED(bundleId->GetPackageFullName(&bundleFullName));
 
-            std::wstring bundleFolderName = destination + L"\\" + bundleFullName;
+            std::wstring bundleFolderName = destination + L"\\" + bundleFullName.Get();
             packageFolders.push_back(bundleFolderName);
 
             // Now we must determine the names of the folders created for each package in the bundle
@@ -127,14 +127,14 @@ namespace MsixCoreLib
                 ComPtr<IAppxManifestPackageId> manifestPackageID;
                 RETURN_IF_FAILED(currentPackage->GetPackageId(&manifestPackageID));
 
-                PWSTR packageFullName = nullptr;
+                Text<WCHAR> packageFullName;
                 RETURN_IF_FAILED(manifestPackageID->GetPackageFullName(&packageFullName));
 
-                PWSTR packageFileName = nullptr;
+                Text<WCHAR> packageFileName;
                 RETURN_IF_FAILED(currentPackage->GetFileName(&packageFileName));
 
-                std::wstring stdPackageFileName = packageFileName;
-                std::wstring stdPackageFullName = packageFullName;
+                std::wstring stdPackageFileName = packageFileName.Get();
+                std::wstring stdPackageFullName = packageFullName.Get();
 
                 packagesMap[stdPackageFileName] = stdPackageFullName;
             }
@@ -150,11 +150,11 @@ namespace MsixCoreLib
                 ComPtr<IAppxFile> file;
                 RETURN_IF_FAILED(packageFilesEnumerator->GetCurrent(&file));
 
-                PWSTR packageFileName = nullptr;
+                Text<WCHAR> packageFileName;
                 RETURN_IF_FAILED(file->GetName(&packageFileName));
 
-                std::wstring stdPackageFileName = packageFileName;
-                auto packageFullName = packagesMap[packageFileName];
+                std::wstring stdPackageFileName = packageFileName.Get();
+                auto packageFullName = packagesMap[packageFileName.Get()];
                 std::wstring packageFolderName = destination + L"\\" + packageFullName;
                 packageFolders.push_back(packageFolderName);
 

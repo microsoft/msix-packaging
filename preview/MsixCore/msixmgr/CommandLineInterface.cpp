@@ -78,7 +78,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     {
         L"-Unpack",
         Options(false, IDS_STRING_HELP_OPTION_UNPACK,
-            [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
+            [&](CommandLineInterface* commandLineInterface, const std::string&)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
             {
@@ -132,17 +132,31 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     },
     {
         L"-ApplyACLs",
-        Options(true, IDS_STRING_HELP_OPTION_APPLYACLS,
-        [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
+        Options(false, IDS_STRING_HELP_OPTION_APPLYACLS,
+        [&](CommandLineInterface* commandLineInterface, const std::string&)
+        {
+            if (commandLineInterface->m_operationType != OperationType::Undefined)
+            {
+                return E_INVALIDARG;
+            }
+            commandLineInterface->m_operationType = OperationType::ApplyACLs;
+            return S_OK;
+        },
+        {
+            {
+                L"-packagePath",
+                Option(true, IDS_STRING_HELP_OPTION_APPLYACLS_PATH,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::Undefined)
+                    if (commandLineInterface->m_operationType != OperationType::ApplyACLs)
                     {
                         return E_INVALIDARG;
                     }
                     commandLineInterface->m_packageFilePath = utf8_to_utf16(packagePath);
-                    commandLineInterface->m_operationType = OperationType::ApplyACLs;
                     return S_OK;
-                })
+                }),
+            }
+        })
     },
     {
         L"-?",
