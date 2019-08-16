@@ -6,6 +6,7 @@
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
 #include "MsixErrors.hpp"
+#include "ComHelper.hpp"
 
 #include "msixtest.hpp"
 #include "macros.hpp"
@@ -116,72 +117,8 @@ namespace MsixTest {
     void InitializeBundleReader(const std::string& package, IAppxBundleReader** bundleReader);
     void InitializeManifestReader(const std::string& manifest, IAppxManifestReader** manifestReader);
 
-    template <class T>
-    class ComPtr
-    {
-    public:
-        // default ctor
-        ComPtr() = default;
-        explicit ComPtr(T* ptr) : m_ptr(ptr) { InternalAddRef(); }
-
-        ComPtr(const ComPtr& other) : m_ptr(other.m_ptr) { InternalAddRef(); }
-        ComPtr& operator=(const ComPtr& other) { InternalRelease(); m_ptr = other.m_ptr; InternalAddRef(); return *this; }
-
-        ComPtr(ComPtr&& other) : m_ptr(other.m_ptr) { other.m_ptr = nullptr; }
-        ComPtr& operator=(ComPtr&& other) { InternalRelease(); m_ptr = other.m_ptr; other.m_ptr = nullptr; return *this; }
-
-        ~ComPtr() { InternalRelease(); }
-
-        // For use instead of ComPtr<T> t(new Foo(...));
-        template<class U, class... Args>
-        static ComPtr<T> Make(Args&&... args)
-        {
-            ComPtr<T> result;
-            result.m_ptr = new U(std::forward<Args>(args)...);
-            return result;
-        }
-        
-        inline T* operator->() const { return m_ptr; }
-        inline T* Get() const { return m_ptr; }
-        T* Detach() 
-        {
-            T* temp = m_ptr;
-            m_ptr = nullptr;
-            return temp;
-        }
-
-        template <class U>
-        ComPtr<U> As() const
-        {
-            ComPtr<U> out;
-            REQUIRE_SUCCEEDED(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(&out)));
-            return out;
-        }
-
-        inline T** operator&()
-        {   InternalRelease();
-            return &m_ptr;
-        }
-
-        bool Release()
-        {
-            return InternalRelease();
-        }
-
-    protected:
-        T* m_ptr = nullptr;
-
-        inline void InternalAddRef() { if (m_ptr) { m_ptr->AddRef(); } }
-        inline bool InternalRelease()
-        {
-            T* temp = m_ptr;
-            if (temp)
-            {   m_ptr = nullptr;
-                return (temp->Release() == 0);
-            }
-            return false;
-        }
-    };
+    // Use the product ComPtr; enables sharing without updating every qualified use.
+    using MSIX::ComPtr;
 
     // Helper class that creates a stream from a given file name.
     // toRead - true if the file already exists, false to create it

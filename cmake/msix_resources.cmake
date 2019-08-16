@@ -348,5 +348,5 @@ foreach(FILE ${RESOURCES_CERTS})
     string(APPEND CERTS_HPP result.push_back(std::make_pair(\"${FILE}\", std::move(factory->GetResource(\"${FILE}\")))) ";\n\t\t\t\t")
 endforeach()
 
-configure_file(${MSIX_PROJECT_ROOT}/src/inc/MSIXResource.hpp.cmakein ${MSIX_PROJECT_ROOT}/src/inc/MSIXResource.hpp CRLF)
+configure_file(${MSIX_PROJECT_ROOT}/src/inc/internal/MSIXResource.hpp.cmakein ${MSIX_PROJECT_ROOT}/src/inc/internal/MSIXResource.hpp CRLF)
 configure_file(${MSIX_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp.cmakein ${MSIX_PROJECT_ROOT}/src/msix/common/MSIXResource.cpp CRLF)

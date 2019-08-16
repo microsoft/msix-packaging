@@ -14,6 +14,10 @@ if(WIN32)
     endif()
 endif()
 
+# Enable differentiation of based on being used in the tests. 
+# Keep usage of this to a minimum; it is primarily intended for Exceptions.hpp
+add_definitions(-DMSIX_TEST=1)
+
 set(MsixTestFiles)
 
 list(APPEND MsixTestFiles
@@ -81,7 +85,7 @@ else()
         )
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_BINARY_ROOT}/src/msix ${MSIX_PROJECT_ROOT}/lib/catch2 ${CMAKE_CURRENT_SOURCE_DIR}/inc)
+target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_PROJECT_ROOT}/src/inc/public ${MSIX_PROJECT_ROOT}/lib/catch2 ${CMAKE_CURRENT_SOURCE_DIR}/inc ${MSIX_PROJECT_ROOT}/src/inc/shared)
 
 # Output test binaries into a test directory
 set_target_properties(${PROJECT_NAME} PROPERTIES

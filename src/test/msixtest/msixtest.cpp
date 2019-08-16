@@ -215,12 +215,10 @@ namespace MsixTest {
     {
         if (m_toDelete && (m_stream.Get() != nullptr))
         {
+            m_stream = nullptr;
             // best effort to delete the file. If someone else has a reference to this stream
             // and this object is deleted, the file WILL NOT be deleted.
-            if (m_stream.Release())
-            {
-                remove(m_fileName.c_str());
-            }
+            remove(m_fileName.c_str());
         }
     }
 }
