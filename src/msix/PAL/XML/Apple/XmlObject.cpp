@@ -78,9 +78,9 @@ public:
         return m_factory->MarshalOutString(text, value);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR name, IMsixElementEnumerator** elements) noexcept override try
+    HRESULT STDMETHODCALLTYPE GetElements(LPCWSTR xpath, IMsixElementEnumerator** elements) noexcept override try
     {
-        return GetElementsUtf8(wstring_to_utf8(name).c_str(), elements);
+        return GetElementsUtf8(wstring_to_utf8(xpath).c_str(), elements);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE GetAttributeValueUtf8(LPCSTR name, LPSTR* value) noexcept override try
@@ -98,10 +98,10 @@ public:
         return m_factory->MarshalOutStringUtf8(text, value);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE GetElementsUtf8(LPCSTR name, IMsixElementEnumerator** elements) noexcept override try
+    HRESULT STDMETHODCALLTYPE GetElementsUtf8(LPCSTR xpath, IMsixElementEnumerator** elements) noexcept override try
     {
         ThrowErrorIf(Error::InvalidParameter, (elements == nullptr || *elements != nullptr), "bad pointer.");
-        auto attribute = std::string(name);
+        auto attribute = std::string(xpath);
         auto elementsFound = m_xmlNode->FindElements(attribute);
         std::vector<ComPtr<IMsixElement>> elementsEnum;
         for(auto element : elementsFound)
