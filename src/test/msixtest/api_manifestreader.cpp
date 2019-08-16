@@ -596,3 +596,105 @@ TEST_CASE("Api_AppxManifestReader_IMsixMSXMLDocument", "[api]")
 
     MsixTest::XML::ValidateIMsixMSXMLDocument(manifestReader);
 }
+
+// Validates optional packages. 
+// IAppxManifestReader4, IAppxManifestOptionalPackageInfo, IAppxManifestOptionalPackageInfoUtf8, 
+// IAppxManifestReader5, IAppxManifestMainPackageDependency, IAppxManifestMainPackageDependencyUtf8
+TEST_CASE("Api_AppxManifestReader_OptionalPackage", "[api]")
+{
+    // Validate non-optional package
+    std::string manifest = "Sample_AppxManifest.xml";
+    MsixTest::ComPtr<IAppxManifestReader> manifestReader;
+    MsixTest::InitializeManifestReader(manifest, &manifestReader);
+    MsixTest::ComPtr<IAppxManifestReader4> manifestReader4;
+    REQUIRE_SUCCEEDED(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader4>::iid, reinterpret_cast<void**>(&manifestReader4)));
+
+    MsixTest::ComPtr<IAppxManifestOptionalPackageInfo> optionalPackageInfo;
+    REQUIRE_SUCCEEDED(manifestReader4->GetOptionalPackageInfo(&optionalPackageInfo));
+
+    BOOL isOptionalPackage;
+    REQUIRE_SUCCEEDED(optionalPackageInfo->GetIsOptionalPackage(&isOptionalPackage));
+    REQUIRE(isOptionalPackage == FALSE);
+
+    // A non-optional package does not have as associated main package name, so we expect
+    // the main package name to be NULL
+    MsixTest::Wrappers::Buffer<wchar_t> mainPackageName;
+    REQUIRE_SUCCEEDED(optionalPackageInfo->GetMainPackageName(&mainPackageName));
+    REQUIRE(mainPackageName.Get() == NULL);
+
+    //Validate optional package
+    std::string manifestForOptionalPackage = "Sample_AppxManifest_WithMainPackageDependencies.xml";
+    MsixTest::ComPtr<IAppxManifestReader> manifestReaderForOptionalPackage;
+    MsixTest::InitializeManifestReader(manifestForOptionalPackage, &manifestReaderForOptionalPackage);
+    MsixTest::ComPtr<IAppxManifestReader5> manifestReader5;
+    REQUIRE_SUCCEEDED(manifestReaderForOptionalPackage->QueryInterface(UuidOfImpl<IAppxManifestReader5>::iid, reinterpret_cast<void**>(&manifestReader5)));
+
+    MsixTest::ComPtr<IAppxManifestMainPackageDependenciesEnumerator> mainPackageDependencies;
+    REQUIRE_SUCCEEDED(manifestReader5->GetMainPackageDependencies(&mainPackageDependencies));
+
+    std::vector<std::string> expectedPublisherValues =
+    {
+        "", // We expect the value to be NULL. Handle this special case separately  
+        "CN=Microsoft Corporation2, O=Microsoft Corporation2, L=Redmond2, S=Washington, C=US2",
+    };
+
+    std::vector<std::string> expectedPackageFamilyNameValues =
+    {
+        "SampleAppManifest_8wekyb3d8bbwe",
+        "Demo.MyMainApp_4395hyxtvknyy",
+    };
+
+    BOOL hasCurrent = FALSE;
+    REQUIRE_SUCCEEDED(mainPackageDependencies->GetHasCurrent(&hasCurrent));
+    int numDep = 0;
+    while (hasCurrent)
+    {
+        MsixTest::ComPtr<IAppxManifestMainPackageDependency> dependency;
+        REQUIRE_SUCCEEDED(mainPackageDependencies->GetCurrent(&dependency));
+
+        MsixTest::ComPtr<IAppxManifestMainPackageDependencyUtf8> dependencyUtf8;
+        REQUIRE_SUCCEEDED(dependency->QueryInterface(UuidOfImpl<IAppxManifestMainPackageDependencyUtf8>::iid, reinterpret_cast<void**>(&dependencyUtf8)));
+
+        std::string expectedName = "Demo.MyMainApp";
+        MsixTest::Wrappers::Buffer<wchar_t> name;
+        REQUIRE_SUCCEEDED(dependency->GetName(&name));
+        REQUIRE(expectedName == name.ToString());
+
+        MsixTest::Wrappers::Buffer<char> nameUtf8;
+        REQUIRE_SUCCEEDED(dependencyUtf8->GetName(&nameUtf8));
+        REQUIRE(expectedName == nameUtf8.ToString());
+
+        if (numDep == 0)
+        {
+            MsixTest::Wrappers::Buffer<wchar_t> publisher;
+            REQUIRE_SUCCEEDED(dependency->GetPublisher(&publisher));
+            REQUIRE(publisher.Get() == NULL);
+
+            MsixTest::Wrappers::Buffer<char> publisherUtf8;
+            REQUIRE_SUCCEEDED(dependencyUtf8->GetPublisher(&publisherUtf8));
+            REQUIRE(publisherUtf8.Get() == NULL);
+        }
+        else
+        {
+            MsixTest::Wrappers::Buffer<wchar_t> publisher;
+            REQUIRE_SUCCEEDED(dependency->GetPublisher(&publisher));
+            REQUIRE(expectedPublisherValues[numDep] == publisher.ToString());
+
+            MsixTest::Wrappers::Buffer<char> publisherUtf8;
+            REQUIRE_SUCCEEDED(dependencyUtf8->GetPublisher(&publisherUtf8));
+            REQUIRE(expectedPublisherValues[numDep] == publisherUtf8.ToString());
+        }
+
+        MsixTest::Wrappers::Buffer<wchar_t> packageFamilyName;
+        REQUIRE_SUCCEEDED(dependency->GetPackageFamilyName(&packageFamilyName));
+        REQUIRE(expectedPackageFamilyNameValues[numDep] == packageFamilyName.ToString());
+
+        MsixTest::Wrappers::Buffer<char> packageFamilyNameUtf8;
+        REQUIRE_SUCCEEDED(dependencyUtf8->GetPackageFamilyName(&packageFamilyNameUtf8));
+        REQUIRE(expectedPackageFamilyNameValues[numDep] == packageFamilyNameUtf8.ToString());
+
+        REQUIRE_SUCCEEDED(mainPackageDependencies->MoveNext(&hasCurrent));
+        numDep++;
+    }
+    REQUIRE(2 == numDep);
+}

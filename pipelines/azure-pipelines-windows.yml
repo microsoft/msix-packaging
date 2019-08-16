@@ -73,8 +73,8 @@ jobs:
         _arguments: x86 -d --pack
         _artifact: WIN32chk-pack
       debug_64_pack:
-        _arguments: x86 -d --pack
-        _artifact: WIN32chk-pack
+        _arguments: x64 -d --pack
+        _artifact: WIN32-x64chk-pack
 
   steps:
   - task: BatchScript@1

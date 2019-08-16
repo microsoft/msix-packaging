@@ -175,7 +175,7 @@ namespace MSIX {
         ULARGE_INTEGER end = { 0 };
         ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::END, &end));
         ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
-        std::uint64_t uncompressedSize = static_cast<std::uint64_t>(end.u.LowPart);
+        std::uint64_t uncompressedSize = static_cast<std::uint64_t>(end.QuadPart);
 
         std::string opcFileName;
         // Don't encode [Content Type].xml

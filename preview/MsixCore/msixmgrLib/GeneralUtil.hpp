@@ -247,6 +247,8 @@ namespace MsixCoreLib
 
     HRESULT FileExists(std::wstring file, _Out_ bool &exists);
 
+    HRESULT ConvertLogoToIcon(std::wstring logoPath, std::wstring & iconPath);
+
     class AutoCoInitialize
     {
     public:

@@ -207,13 +207,58 @@ MSIX_INTERFACE(IMSXMLDom, 0xb6bca5f0,0xc6c1,0x4409,0x85,0xbe,0xe4,0x76,0xaa,0xbe
 namespace MSIX {
     MSIX::ComPtr<IXmlFactory> CreateXmlFactory(IMsixFactory* factory);
 
+    template <typename T>
+    struct StringToNumber
+    {
+        static uint32_t Get(const std::string&)
+        {
+            static_assert(False<T>::value, "An appropriate specialization must be specified");
+        }
+    };
+
+    template <>
+    struct StringToNumber<std::uint32_t>
+    {
+        static uint32_t Get(const std::string& str)
+        {
+            return static_cast<uint32_t>(std::stoul(str));
+        }
+    };
+
+    template <>
+    struct StringToNumber<std::uint64_t>
+    {
+        static uint64_t Get(const std::string& str)
+        {
+            return static_cast<uint64_t>(std::stoull(str));
+        }
+    };
+
     template <class T>
     static T GetNumber(const ComPtr<IXmlElement>& element, XmlAttributeName attribute, T defaultValue)
     {
         const auto& attributeValue = element->GetAttributeValue(attribute);
         bool hasValue = !attributeValue.empty();
         T value = defaultValue;
-        if (hasValue) { value = static_cast<T>(std::stoul(attributeValue)); }
+        if (hasValue)
+        {
+            try
+            {
+                value = StringToNumber<T>::Get(attributeValue);
+            }
+            catch (std::invalid_argument& ia)
+            {
+                ThrowErrorAndLog(Error::XmlInvalidData, ia.what());
+            }
+            catch (std::out_of_range& oor)
+            {
+                ThrowErrorAndLog(Error::XmlInvalidData, oor.what());
+            }
+            catch (...)
+            {
+                ThrowErrorAndLog(Error::XmlInvalidData, "Unexpected exception converting string to number");
+            }
+        }
         return value;
     }
 
