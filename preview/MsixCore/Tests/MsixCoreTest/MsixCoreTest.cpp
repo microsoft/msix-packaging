@@ -5,6 +5,7 @@
 #include "MsixCoreTest.hpp"
 #include "GeneralUtil.hpp"
 #include <experimental/filesystem>
+#include "resource.h"
 
 const std::wstring scribbleFileName = L"scribble.appx";
 const std::wstring scribblePackageFullName = L"ScribbleOleDocumentSample_1.1.0.0_x86__8wekyb3d8bbwe";
@@ -43,24 +44,20 @@ bool MsixCoreTest::CleanupMethod()
     return true;
 }
 
-void MsixCoreTest::InstallQueryAndRemoveWithLibTest()
+void MsixCoreTest::VerifyPackageInstalled(std::wstring & packageFullName)
 {
-    std::wstring packagePath = std::wstring(m_testDeploymentDir) + L"\\" + scribbleFileName;
-    std::wstring expectedPackageFullName = scribblePackageFullName;
-    VERIFY_SUCCEEDED(m_packageManager->AddPackage(packagePath, DeploymentOptions::None));
-
     std::unique_ptr<std::vector<std::shared_ptr<MsixCoreLib::IInstalledPackage>>> packages;
     VERIFY_SUCCEEDED(m_packageManager->FindPackages(packages));
 
     bool found = false;
     for (auto& package : *packages)
     {
-        if (expectedPackageFullName == package->GetPackageFullName())
+        if (packageFullName == package->GetPackageFullName())
         {
             found = true;
         }
     }
-    
+
     if (!MsixCoreLib::IsWindows10RS3OrLater())
     {
         VERIFY_IS_TRUE(found);
@@ -69,10 +66,19 @@ void MsixCoreTest::InstallQueryAndRemoveWithLibTest()
     {
         // FindPackages is NOT redirected on windows10, so we should not be able to find it using MsixCore because we MsixCore not actually install it.
         VERIFY_IS_FALSE(found);
-        
-        std::wstring windows10Location = windows10PackageRoot + L"\\" + expectedPackageFullName;
+
+        std::wstring windows10Location = windows10PackageRoot + L"\\" + packageFullName;
         VERIFY_IS_TRUE(std::experimental::filesystem::exists(windows10Location));
     }
+}
+
+void MsixCoreTest::InstallQueryAndRemoveWithLibTest()
+{
+    std::wstring packagePath = std::wstring(m_testDeploymentDir) + L"\\" + scribbleFileName;
+    std::wstring expectedPackageFullName = scribblePackageFullName;
+    VERIFY_SUCCEEDED(m_packageManager->AddPackage(packagePath, DeploymentOptions::None));
+
+    VerifyPackageInstalled(expectedPackageFullName);
 
     VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
 }
@@ -98,6 +104,8 @@ void MsixCoreTest::InstallWithLibAndGetProgressTest()
     DWORD waitReturn = WaitForSingleObject(completion, 10000);
     VERIFY_IS_TRUE(receivedCallbacks > 1);
     VERIFY_ARE_EQUAL(waitReturn, WAIT_OBJECT_0);
+
+    VerifyPackageInstalled(expectedPackageFullName);
 
     VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
 }
@@ -167,6 +175,42 @@ void MsixCoreTest::InstallIStreamAndGetProgressTest()
     DWORD waitReturn = WaitForSingleObject(completion, 10000);
     VERIFY_IS_TRUE(receivedCallbacks > 1);
     VERIFY_ARE_EQUAL(waitReturn, WAIT_OBJECT_0);
+
+    VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
+}
+
+HMODULE GetCurrentModule()
+{
+    HMODULE hModule = NULL;
+    GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+        (LPCTSTR)GetCurrentModule, &hModule);
+    return hModule;
+}
+
+void MsixCoreTest::InstallFromEmbeddedStreamTest()
+{
+    HMODULE hmodule = GetCurrentModule();
+    HRSRC hrsrc = FindResource(hmodule, MAKEINTRESOURCE(IDR_SCRIBBLE), L"FILE");
+    VERIFY_IS_NOT_NULL(hrsrc);
+
+    HGLOBAL hglobal = LoadResource(hmodule, hrsrc);
+    VERIFY_IS_NOT_NULL(hglobal);
+
+    void* bytes = LockResource(hglobal);
+    ULONG size = SizeofResource(hmodule, hrsrc);
+    WEX::Logging::Log::Comment(WEX::Common::String().Format(L"Received progress callback: %d", size));
+
+    IStream* stream;
+    VERIFY_SUCCEEDED(CreateStreamOnHGlobal(NULL, TRUE, &stream));
+
+    ULONG written = 0;
+    VERIFY_SUCCEEDED((stream)->Write(bytes, size, &written));
+
+    VERIFY_SUCCEEDED(m_packageManager->AddPackage(stream, DeploymentOptions::None));
+
+    std::wstring expectedPackageFullName = scribblePackageFullName;
+
+    VerifyPackageInstalled(expectedPackageFullName);
 
     VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
 }

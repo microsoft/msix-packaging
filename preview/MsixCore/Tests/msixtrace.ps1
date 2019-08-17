@@ -21,6 +21,7 @@ function DoStart
 	{
 		logman create trace MsixTrace -p "{033321d3-d599-48e0-868d-c59f15901637}" -o c:\msixtrace.etl
 	}
+	logman update MsixTrace -p "{db5b779e-2dcf-41bc-ab0e-40a6e02f1438}"
 
 	logman start MsixTrace > $null
 }

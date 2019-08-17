@@ -95,6 +95,8 @@
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\msixmgrLib\inc;..\..\..\..\.vs\src\msix;..\..\msixmgrLib</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnforceTypeConversionRules>
+      </EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -117,6 +119,8 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\msixmgrLib\inc;..\..\..\..\.vs\src\msix;..\..\msixmgrLib</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnforceTypeConversionRules>
+      </EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -136,11 +140,13 @@
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\msixmgrLib\inc;..\..\..\..\.vs\src\msix;..\..\msixmgrLib</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnforceTypeConversionRules>
+      </EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\lib\x64</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\..\x64\Release;..\..\..\..\.vs\lib;C:\Program Files (x86)\Windows Kits\10\Testing\Development\lib\x64</AdditionalLibraryDirectories>
       <AdditionalDependencies>msixmgrlib.lib;msix.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -157,6 +163,8 @@
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Windows Kits\10\Testing\Development\inc;..\..\msixmgrLib\inc;..\..\..\..\.vs\src\msix;..\..\msixmgrLib</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <EnforceTypeConversionRules>
+      </EnforceTypeConversionRules>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -170,6 +178,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="MsixCoreTest.hpp" />
+    <ClInclude Include="resource.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
   </ItemGroup>
@@ -182,6 +191,18 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\scribble.appx">
+      <FileType>Document</FileType>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </ExcludedFromBuild>
+      <DeploymentContent Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+      </DeploymentContent>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="MsixCoreTest.rc" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
