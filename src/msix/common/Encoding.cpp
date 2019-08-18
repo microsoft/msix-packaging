@@ -238,7 +238,6 @@ namespace MSIX { namespace Encoding {
                     std::uint32_t sequenceIndex = 0;
                     std::uint8_t minNextSequenceValue = 0;
                     std::uint8_t maxNextSequenceValue = 0;
-                    bool done = false;
 
                     // Ok, here we go...
                     while (index < fileNameW.length())
@@ -255,7 +254,7 @@ namespace MSIX { namespace Encoding {
                                 if (decoded <= 0x7F)
                                 {   // Actually, because of EncodingToChar, 0x7F is the only case here. <= just in case...
                                     codepoint = decoded;
-                                    done = true;
+                                    break; // We are done!
                                 }
                                 else if (decoded >= 0xC2 && decoded <= 0xF4)
                                 {   // decode and reset values for UTF-8 sequence
@@ -284,27 +283,21 @@ namespace MSIX { namespace Encoding {
                                 }
                                 else { ThrowError(Error::UnknownFileNameEncoding); }
                             }
-                            else
-                            {   // continue UTF-8 sequence
-                                if (decoded >= minNextSequenceValue && decoded <= maxNextSequenceValue)
-                                {   // Adjust codepoint with new bits. Trailing bytes can only contain 6 bits of information
-                                    std::uint32_t shiftDistance = ((sequenceSize - sequenceIndex) - 1) * 6;
-                                    codepoint |= (decoded & 0x3F) << shiftDistance;
-
-                                    // Set values for next byte in sequence
-                                    minNextSequenceValue = 0x80;
-                                    maxNextSequenceValue = 0xBF;
-
-                                    // If full sequence then we're done!
-                                    if (sequenceSize == sequenceIndex + 1) { done = true; }
-                                }
-                                else { ThrowErrorAndLog(Error::UnknownFileNameEncoding, "Unexpected next sequence value"); }
-                            }
-
-                            if (done)
+                            else if (decoded >= minNextSequenceValue && decoded <= maxNextSequenceValue)
                             {   
-                                break;
+                                // continue UTF-8 sequence
+                                // Adjust codepoint with new bits. Trailing bytes can only contain 6 bits of information
+                                std::uint32_t shiftDistance = ((sequenceSize - sequenceIndex) - 1) * 6;
+                                codepoint |= (decoded & 0x3F) << shiftDistance;
+
+                                // Set values for next byte in sequence
+                                minNextSequenceValue = 0x80;
+                                maxNextSequenceValue = 0xBF;
+
+                                // If full sequence then we're done!
+                                if (sequenceSize == sequenceIndex + 1) { break; }
                             }
+                            else { ThrowErrorAndLog(Error::UnknownFileNameEncoding, "Unexpected next sequence value"); }
 
                             // We are not done! Point to the next % encoded UTF-8 seq
                             sequenceIndex++;
