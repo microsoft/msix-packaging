@@ -92,6 +92,26 @@ HRESULT AppExecutionAlias::ProcessAliasForAdd(std::wstring & aliasName)
 
     RETURN_IF_FAILED(aliasKey.SetStringValue(L"Path", executableDirectoryPath));
 
+    std::wstring aliasDirectory = FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_msixRequest->GetPackageInfo()->GetPackageFullName();
+    std::wstring aliasFile = aliasDirectory + L"\\" + aliasName;
+
+    HANDLE aliasFileHandle = INVALID_HANDLE_VALUE;
+    aliasFileHandle = CreateFile(aliasFile.c_str(), GENERIC_READ, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+
+    if (aliasFileHandle == INVALID_HANDLE_VALUE)
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    BOOL result = CreateHardLink(executableFilePath.c_str(), aliasFile.c_str(), 0);
+    if (!result)
+    {
+        return HRESULT_FROM_WIN32(GetLastError());
+    }
+
+    //can do this only once to add to the registry
+    //SetEnvironmentVariable(L"Path", aliasDirectory.c_str());
+
     return S_OK;
 }
 
