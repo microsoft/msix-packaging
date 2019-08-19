@@ -43,7 +43,6 @@ namespace MsixCoreLib
 
         for (auto folder : packageFolders)
         {
-            std::wcout << folder << std::endl;
             RETURN_IF_FAILED(ApplyACLsToPackageFolder(folder.c_str()));
         }
 
