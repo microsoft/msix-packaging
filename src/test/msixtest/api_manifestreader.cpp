@@ -623,7 +623,7 @@ TEST_CASE("Api_AppxManifestReader_OptionalPackage", "[api]")
 
     std::vector<std::string> expectedPublisherValues =
     {
-        "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond",  
+        "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",  
         "CN=Microsoft Corporation2, O=Microsoft Corporation2, L=Redmond2, S=Washington, C=US2",
     };
 
