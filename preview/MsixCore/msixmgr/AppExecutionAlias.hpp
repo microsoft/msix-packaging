@@ -6,15 +6,6 @@
 
 namespace MsixCoreLib
 {
-    /// the AppExecutionAlias structure
-    /*struct AppExecutionAliasObject
-    {
-        std::wstring key;
-        std::wstring executableFullPath;
-
-
-    };*/
-
     class AppExecutionAlias : IPackageHandler
     {
     public:
