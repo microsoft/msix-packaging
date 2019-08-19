@@ -425,19 +425,17 @@ namespace MSIX {
             auto name = dependencyNode->GetAttributeValue(XmlAttributeName::Name);
             auto publisher = dependencyNode->GetAttributeValue(XmlAttributeName::Publisher);
             std::string packageFamilyName;
+            std::string publisherHash;
 
             // if no publisher for the main package dependency is specified, we default to the publisher of the optional package itself
             if (publisher.empty())
             {
                 auto packageIdInternal = context->self->m_packageId.As<IAppxManifestPackageIdInternal>();
-                packageFamilyName = packageIdInternal->GetPackageFamilyName();
+                publisher = packageIdInternal->GetPublisher();
             }
-            else
-            {
-                // Convert publisher to publisher hash so we can build package family name
-                std::string publisherHash = ComputePublisherId(publisher);
-                packageFamilyName = name + "_" + publisherHash;
-            }
+
+            publisherHash = ComputePublisherId(publisher);
+            packageFamilyName = name + "_" + publisherHash;
 
             auto dependency = ComPtr<IAppxManifestMainPackageDependency>::Make<AppxManifestMainPackageDependency>(context->self->m_factory.Get(), name, publisher, packageFamilyName);
             context->packageDependencies->push_back(std::move(dependency));
