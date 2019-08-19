@@ -9,6 +9,8 @@
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
 #include <VersionHelpers.h>
+#include "Constants.hpp"
+
 using namespace MsixCoreLib;
 
 const PCWSTR ValidateTargetDeviceFamily::HandlerName = L"ValidateTargetDeviceFamily";
@@ -105,14 +107,14 @@ bool ValidateTargetDeviceFamily::IsTargetDeviceFamilyNameCompatibleWithOS()
 {
     if (IsWindowsProductTypeServer()) /// Server OS
     {
-        if (m_targetDeviceFamilyName == L"MsixCore.Server" || m_targetDeviceFamilyName == L"MsixCore.Desktop")
+        if(CaseInsensitiveEquals(m_targetDeviceFamilyName, serverTargetDeviceFamilyName) || CaseInsensitiveEquals(m_targetDeviceFamilyName, desktopTargetDeviceFamilyName))
         {
             return true;
         }
     }
     else if (IsWindowsProductTypeDesktop()) /// Desktop OS
     {
-        if (m_targetDeviceFamilyName == L"MsixCore.Desktop")
+        if (CaseInsensitiveEquals(m_targetDeviceFamilyName, desktopTargetDeviceFamilyName))
         {
             return true;
         }
