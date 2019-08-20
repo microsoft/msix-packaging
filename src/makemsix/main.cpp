@@ -608,11 +608,18 @@ Command CreateSignCommand()
         "signature. The <cert> file contains the signing certificate.",
         "The following certificate formats are supported, and the format will be",
         "inferred from the file name if not provided:",
-        "    pfx: [*.pfx] A PKCS12 containing both public and private keys"
+        "    pfx: [*.pfx] A PKCS12 containing both public and private keys",
+        "",
+        "WARNING: This feature is not yet complete. It has only had manual testing",
+        "         and does not yet allow for verification of custom certificates",
+        "         used during signing."
         });
 
     result.SetInvocationFunc([](const Invocation& invocation)
         {
+            std::cout << "WARNING: The signing feature is not complete, see the help for this command for more information." << std::endl;
+            std::cout << std::endl;
+
             return SignPackage(
                 MSIX_SIGNING_OPTIONS::MSIX_SIGNING_OPTIONS_NONE,
                 const_cast<char*>(invocation.GetOptionValue("-p").c_str()),
