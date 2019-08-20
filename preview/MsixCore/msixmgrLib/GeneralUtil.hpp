@@ -55,13 +55,30 @@ namespace MsixCoreLib
 
     /// Returns the current user sid as a string.
     ///
-    /// @param userSidString - current user sid stirng
+    /// @param userSidString - current user sid string
     HRESULT GetCurrentUserSidString(std::wstring & userSidString);
 
     /// Determines if the currently running OS is Windows 10 RS3 or later.
     /// For this to work correctly, the calling exe needs to have compatibility manifest to allow it to detect windows 10 versions
     /// https://docs.microsoft.com/en-us/windows/desktop/SysInfo/targeting-your-application-at-windows-8-1
     BOOL IsWindows10RS3OrLater();
+
+    /// Determines whether a string ends with a given substring
+    ///
+    /// @return true if "fullString" ends with the specified "ending"; otherwise false
+    bool EndsWith(std::wstring const &fullString, std::wstring const &ending);
+
+    /// Determines whether a given file path corresponds to a package file (.appx, .msix)
+    ///
+    /// @path -path for some file
+    /// @return true if "path" is a package file path ending with ".appx" or "msix"; otherwise false
+    bool IsPackageFile(std::wstring const& path);
+
+    /// Determines whether a given file path corresponds to a bundle file (.appxbundle, .msixbundle)
+    ///
+    /// @path -path for some file
+    /// @return true if "path" is a bundle file path ending with ".appxbundle" or "msixbundle"; otherwise false
+    bool IsBundleFile(std::wstring const& path);
 
     /// Replaces all oldchars in input with newchar
     ///

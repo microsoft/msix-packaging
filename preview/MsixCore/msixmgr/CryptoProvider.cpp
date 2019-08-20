@@ -5,6 +5,7 @@
 #include <CryptoProvider.hpp>
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
+#include <memory>
 
 namespace MsixCoreLib
 {

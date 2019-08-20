@@ -30,24 +30,6 @@ struct Option
     CallbackFunction Callback;
 };
 
-struct Options
-{
-    using CallbackFunction = std::function<HRESULT(CommandLineInterface* commandLineInterface, const std::string& value)>;
-
-    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), HasSuboptions(false) {}
-    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback, std::map<std::wstring, Option> suboptions) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), Suboptions(suboptions)
-    {
-        HasSuboptions = !Suboptions.empty();
-    }
-
-    bool HasSuboptions;
-    bool TakesParameter;
-    std::wstring Name;
-    UINT Help;
-    CallbackFunction DefaultCallback;
-    std::map<std::wstring, Option> Suboptions;
-};
-
 struct CaseInsensitiveLess
 {
     struct CaseInsensitiveCompare
@@ -66,6 +48,24 @@ struct CaseInsensitiveLess
     }
 };
 
+struct Options
+{
+    using CallbackFunction = std::function<HRESULT(CommandLineInterface* commandLineInterface, const std::string& value)>;
+
+    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), HasSuboptions(false) {}
+    Options(bool takesParam, const UINT help, CallbackFunction defaultCallback, std::map<std::wstring, Option, CaseInsensitiveLess> suboptions) : Help(help), DefaultCallback(defaultCallback), TakesParameter(takesParam), Suboptions(suboptions)
+    {
+        HasSuboptions = !Suboptions.empty();
+    }
+
+    bool HasSuboptions;
+    bool TakesParameter;
+    std::wstring Name;
+    UINT Help;
+    CallbackFunction DefaultCallback;
+    std::map<std::wstring, Option, CaseInsensitiveLess> Suboptions;
+};
+
 /// Parses the command line specified and creates a request.
 class CommandLineInterface
 {
@@ -81,8 +81,10 @@ public:
     void DisplayHelp();
     HRESULT Init();
     bool IsQuietMode() { return m_quietMode; }
+    bool IsApplyACLs() { return m_applyACLs; }
     std::wstring GetPackageFilePathToInstall() { return m_packageFilePath; }
     std::wstring GetPackageFullName() { return m_packageFullName; }
+    std::wstring GetUnpackDestination() { return m_unpackDestination; }
     OperationType GetOperationType() { return m_operationType; }
 private:
     int m_argc = 0;
