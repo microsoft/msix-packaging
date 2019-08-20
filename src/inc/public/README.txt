@@ -1,0 +1,1 @@
+Contains headers for public consumption; can only reference each other and external dependencies.

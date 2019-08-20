@@ -3,6 +3,8 @@
 //  See LICENSE file in the project root for full license information.
 // 
 #pragma once
+#ifndef MSIX_MSIX_ERRORS__H
+#define MSIX_MSIX_ERRORS__H
 
 namespace MSIX {
 
@@ -84,5 +86,8 @@ namespace MSIX {
         XmlWarning                  = XML_FACILITY + 0x0001,
         XmlError                    = XML_FACILITY + 0x0002,
         XmlFatal                    = XML_FACILITY + 0x0003,
+        XmlInvalidData              = XML_FACILITY + 0x0004,
     };
 }
+
+#endif

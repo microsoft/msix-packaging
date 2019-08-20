@@ -88,9 +88,9 @@ endif()
 include(msix_resources) # Handles all the certificates and schemas we are going to use.
 
 set(LIB_PUBLIC_HEADERS
-    ../inc/AppxPackaging.hpp
-    ../inc/MSIXWindows.hpp
-    ../inc/MsixErrors.hpp
+    ../inc/public/AppxPackaging.hpp
+    ../inc/public/MSIXWindows.hpp
+    ../inc/public/MsixErrors.hpp
 )
 
 set(MsixSrc) # list with all the files we are going to use
@@ -244,13 +244,13 @@ add_library(${PROJECT_NAME} SHARED
 add_dependencies(${PROJECT_NAME} LIBS)
 
 # Copy out public headers to <binary dir>/src/unpack
-configure_file(../inc/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
-configure_file(../inc/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
-configure_file(../inc/MsixErrors.hpp ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
+configure_file(../inc/public/MSIXWindows.hpp   ${CMAKE_CURRENT_BINARY_DIR}/MSIXWindows.hpp  )
+configure_file(../inc/public/AppxPackaging.hpp ${CMAKE_CURRENT_BINARY_DIR}/AppxPackaging.hpp)
+configure_file(../inc/public/MsixErrors.hpp    ${CMAKE_CURRENT_BINARY_DIR}/MsixErrors.hpp)
 
 # Linker and includes
 # Include MSIX headers
-target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_PROJECT_ROOT}/src/inc)
+target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_PROJECT_ROOT}/src/inc/public ${MSIX_PROJECT_ROOT}/src/inc/shared ${MSIX_PROJECT_ROOT}/src/inc/internal)
 
 if(WIN32)
     string(REPLACE "/GR" " " CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")

@@ -7,6 +7,8 @@ static const std::wstring registryDatFile = L"\\registry.dat";
 static const std::wstring blockMapFile = L"\\AppxBlockMap.xml";
 static const std::wstring manifestFile = L"\\AppxManifest.xml";
 static const std::wstring classesKeyPath = L"SOFTWARE\\Classes";
+static const std::wstring desktopTargetDeviceFamilyName = L"MSIXCore.Desktop";
+static const std::wstring serverTargetDeviceFamilyName = L"MSIXCore.Server";
 
 static const std::wstring msixCoreProgIDPrefix = L"MsixCore";
 static const std::wstring openWithProgIdsKeyName = L"OpenWithProgids";

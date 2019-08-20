@@ -1202,7 +1202,7 @@ interface IMsixApplicabilityLanguagesEnumerator;
             /* [retval][string][out] */ LPWSTR* value) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetElements(
-            /* [in] */ LPCWSTR name,
+            /* [in] */ LPCWSTR xpath,
             /* [retval][out] */ IMsixElementEnumerator** elements) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetAttributeValueUtf8(
@@ -1213,7 +1213,7 @@ interface IMsixApplicabilityLanguagesEnumerator;
             /* [retval][string][out] */ LPSTR* value) noexcept = 0;
 
         virtual HRESULT STDMETHODCALLTYPE GetElementsUtf8(
-            /* [in] */ LPCSTR name,
+            /* [in] */ LPCSTR xpath,
             /* [retval][out] */ IMsixElementEnumerator** elements) noexcept= 0;
     };
 #endif  /* __IMsixElement_INTERFACE_DEFINED__ */
