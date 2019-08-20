@@ -43,13 +43,7 @@ namespace MsixCoreLib
 
         for (auto folder : packageFolders)
         {
-            HRESULT hrApplyACLs = ApplyACLsToPackageFolder(folder.c_str());
-            if (FAILED(hrApplyACLs))
-            {
-                std::wcout << std::endl;
-                std::wcout << L"Failed with HRESULT " << hrApplyACLs << L" when trying to apply acls to the folder " << folder << std::endl;
-                std::wcout << std::endl;
-            }
+            RETURN_IF_FAILED(ApplyACLsToPackageFolder(folder.c_str()));
         }
 
         return S_OK;

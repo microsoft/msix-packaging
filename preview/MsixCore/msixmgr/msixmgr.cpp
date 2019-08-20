@@ -18,6 +18,7 @@
 #include <VersionHelpers.h>
 #include "UnpackProvider.hpp"
 #include "ApplyACLsProvider.hpp"
+#include "MsixErrors.hpp"
 
 #include <msixmgrActions.hpp>
 using namespace std;
@@ -165,7 +166,11 @@ int main(int argc, char * argv[])
             if (FAILED(hr))
             {
                 std::wcout << std::endl;
-                std::wcout << L"Failed with HRESULT " << hr << L" when trying to unpack " << packageFilePath << std::endl;
+                std::wcout << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << packageFilePath << std::endl;
+                if (hr == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
+                {
+                    std::wcout << L"Please confirm that the certificate has been installed for this package" << std::endl;
+                }
                 std::wcout << std::endl;
             }
 
