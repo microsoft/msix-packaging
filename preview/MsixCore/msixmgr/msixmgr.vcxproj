@@ -200,19 +200,15 @@
     </Manifest>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="ApplyACLsProvider.hpp" />
     <ClInclude Include="CommandLineInterface.hpp" />
     <ClInclude Include="InstallUI.hpp" />
     <ClInclude Include="resource.h" />
-    <ClInclude Include="UnpackProvider.hpp" />
     <ClInclude Include="Util.hpp" />
     <ClInclude Include="msixmgrLogger.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="ApplyACLsProvider.cpp" />
     <ClCompile Include="InstallUI.cpp" />
     <ClCompile Include="CommandLineInterface.cpp" />
-    <ClCompile Include="UnpackProvider.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="msixmgr.cpp" />
     <ClCompile Include="msixmgrLogger.cpp" />
