@@ -9,6 +9,7 @@
 #include <shlobj_core.h>
 #include <CommCtrl.h>
 #include <map>
+#include <iostream>
 
 using namespace MsixCoreLib;
 using namespace std;
@@ -34,7 +35,14 @@ namespace MsixCoreLib
         RETURN_IF_FAILED(CreateStreamOnFileUTF16(packageFilePath.c_str(), true, &stream));
 
         ComPtr<IAppxPackageReader> reader;
-        RETURN_IF_FAILED(factory->CreatePackageReader(stream.Get(), &reader));
+        HRESULT hrCreatePackageReader = factory->CreatePackageReader(stream.Get(), &reader);
+
+        if (FAILED(hrCreatePackageReader))
+        {
+            std::wcout << std::endl;
+            std::wcout << L"Failed with HRESULT " << hrCreatePackageReader << L" when trying to create package reader for " << packageFilePath << L". Please confirm that the certificate for the package has been installed." << std::endl;
+            return hrCreatePackageReader;
+        }
 
         RETURN_IF_FAILED(UnpackPackageFromPackageReader(
             unpackOption,
@@ -83,7 +91,14 @@ namespace MsixCoreLib
         RETURN_IF_FAILED(CreateStreamOnFileUTF16(packageFilePath.c_str(), true, &stream));
 
         ComPtr<IAppxBundleReader> reader;
-        RETURN_IF_FAILED(factory->CreateBundleReader(stream.Get(), &reader));
+        HRESULT hrCreateBundleReader = factory->CreateBundleReader(stream.Get(), &reader);
+
+        if (FAILED(hrCreateBundleReader))
+        {
+            std::wcout << std::endl;
+            std::wcout << L"Failed with HRESULT " << hrCreateBundleReader << L" when trying to create bundle reader for " << packageFilePath << L". Please confirm that the certificate for the package has been installed." << std::endl;
+            return hrCreateBundleReader;
+        }
 
         RETURN_IF_FAILED(UnpackBundleFromBundleReader(
             unpackOption,

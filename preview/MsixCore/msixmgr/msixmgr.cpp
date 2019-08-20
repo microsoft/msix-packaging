@@ -141,16 +141,18 @@ int main(int argc, char * argv[])
         }
         case OperationType::Unpack:
         {
+            HRESULT hr = S_OK;
+
             auto packageFilePath = cli.GetPackageFilePathToInstall();
             auto unpackDestination = cli.GetUnpackDestination();
 
             if (IsPackageFile(packageFilePath))
             {
-                RETURN_IF_FAILED(MsixCoreLib::UnpackPackage(packageFilePath, unpackDestination, cli.IsApplyACLs()));
+                hr = MsixCoreLib::UnpackPackage(packageFilePath, unpackDestination, cli.IsApplyACLs());
             }
             else if (IsBundleFile(packageFilePath))
             {
-                RETURN_IF_FAILED(MsixCoreLib::UnpackBundle(packageFilePath, unpackDestination, cli.IsApplyACLs()));
+                hr = MsixCoreLib::UnpackBundle(packageFilePath, unpackDestination, cli.IsApplyACLs());
             }
             else
             {
@@ -160,7 +162,14 @@ int main(int argc, char * argv[])
                 std::wcout << std::endl;
                 return E_INVALIDARG;
             }
-            return S_OK;
+            if (FAILED(hr))
+            {
+                std::wcout << std::endl;
+                std::wcout << L"Failed with HRESULT " << hr << L" when trying to unpack " << packageFilePath << std::endl;
+                std::wcout << std::endl;
+            }
+
+            return hr;
         }
         case OperationType::ApplyACLs:
         {

@@ -91,7 +91,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
         {
             {
                 L"-packagePath",
-                Option(true, IDS_STRING_HELP_OPTION_UNPACK_PATH,
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_PACKAGEPATH,
                     [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
                 {
                 if (commandLineInterface->m_operationType != OperationType::Unpack)
@@ -145,7 +145,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
         {
             {
                 L"-packagePath",
-                Option(true, IDS_STRING_HELP_OPTION_APPLYACLS_PATH,
+                Option(true, IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH,
                     [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
                 {
                     if (commandLineInterface->m_operationType != OperationType::ApplyACLs)
@@ -176,12 +176,23 @@ std::map<std::wstring, std::wstring> CommandLineInterface::s_optionAliases =
 
 void CommandLineInterface::DisplayHelp()
 {
-    std::wcout << GetStringResource(IDS_STRING_HELPTEXT) << std::endl;
+    std::wcout << GetStringResource(IDS_STRING_HELPTEXT_USAGE) << std::endl;
+    std::wcout << GetStringResource(IDS_STRING_HELPTEXT_DESCRIPTION) << std::endl;
+    std::wcout << GetStringResource(IDS_STRING_HELPTEXT_OPTIONS) << std::endl;
 
     for (const auto& option : CommandLineInterface::s_options)
     {
         std::wcout << L"\t" << std::left << std::setfill(L' ') << std::setw(5) <<
             option.first << L": " << GetStringResource(option.second.Help) << std::endl;
+
+        if (option.second.HasSuboptions)
+        {
+            for (const auto& suboption : option.second.Suboptions)
+            {
+                std::wcout << L"\t\t" << std::left << std::setfill(L' ') << std::setw(5) <<
+                    suboption.first << L": " << GetStringResource(suboption.second.Help) << std::endl;
+            }
+        }
     }
 }
 
