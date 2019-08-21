@@ -653,7 +653,7 @@ Command CreateSignCommand()
         "",
         "WARNING: This feature is not yet complete. It has only had manual testing",
         "         and does not yet allow for verification of custom certificates",
-        "         used during signing."
+        "         used during signing. It also required building with openssl."
         });
 
     result.SetInvocationFunc([](const Invocation& invocation)

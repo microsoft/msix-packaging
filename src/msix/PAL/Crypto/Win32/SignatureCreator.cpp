@@ -12,6 +12,6 @@ namespace MSIX
         IStream* signingCertificate,
         IStream* privateKey)
     {
-        NOTIMPLEMENTED
+        ThrowErrorAndLog(Error::SupportExcludedByBuild, "Signing requires building with openssl");
     }
 } // namespace MSIX
