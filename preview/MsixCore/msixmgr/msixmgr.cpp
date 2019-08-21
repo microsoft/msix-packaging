@@ -16,6 +16,9 @@
 #include "..\msixmgrLib\GeneralUtil.hpp"
 #include "resource.h"
 #include <VersionHelpers.h>
+#include "UnpackProvider.hpp"
+#include "ApplyACLsProvider.hpp"
+#include "MsixErrors.hpp"
 
 #include <msixmgrActions.hpp>
 using namespace std;
@@ -135,6 +138,49 @@ int main(int argc, char * argv[])
             }
 
             std::cout << numPackages << " Package(s) found" << std::endl;
+            return S_OK;
+        }
+        case OperationType::Unpack:
+        {
+            HRESULT hr = S_OK;
+
+            auto packageFilePath = cli.GetPackageFilePathToInstall();
+            auto unpackDestination = cli.GetUnpackDestination();
+
+            if (IsPackageFile(packageFilePath))
+            {
+                hr = MsixCoreLib::UnpackPackage(packageFilePath, unpackDestination, cli.IsApplyACLs());
+            }
+            else if (IsBundleFile(packageFilePath))
+            {
+                hr = MsixCoreLib::UnpackBundle(packageFilePath, unpackDestination, cli.IsApplyACLs());
+            }
+            else
+            {
+                std::wcout << std::endl;
+                std::wcout << "Invalid package path: " << packageFilePath << std::endl;
+                std::wcout << "Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
+                std::wcout << std::endl;
+                return E_INVALIDARG;
+            }
+            if (FAILED(hr))
+            {
+                std::wcout << std::endl;
+                std::wcout << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << packageFilePath << std::endl;
+                if (hr == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
+                {
+                    std::wcout << L"Please confirm that the certificate has been installed for this package" << std::endl;
+                }
+                std::wcout << std::endl;
+            }
+
+            return hr;
+        }
+        case OperationType::ApplyACLs:
+        {
+            std::vector<std::wstring> packageFolders;
+            packageFolders.push_back(cli.GetPackageFilePathToInstall()); // we're not actually installing anything. The API just returns the file path name we need.
+            RETURN_IF_FAILED(MsixCoreLib::ApplyACLs(packageFolders));
             return S_OK;
         }
         default:

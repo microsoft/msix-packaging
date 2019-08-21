@@ -78,7 +78,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     {
         L"-Unpack",
         Options(false, IDS_STRING_HELP_OPTION_UNPACK,
-            [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
+            [&](CommandLineInterface* commandLineInterface, const std::string&)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
             {
@@ -91,7 +91,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
         {
             {
                 L"-packagePath",
-                Option(true, IDS_STRING_HELP_OPTION_UNPACK_PATH,
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_PACKAGEPATH,
                     [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
                 {
                 if (commandLineInterface->m_operationType != OperationType::Unpack)
@@ -131,6 +131,34 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
         })
     },
     {
+        L"-ApplyACLs",
+        Options(false, IDS_STRING_HELP_OPTION_APPLYACLS,
+        [&](CommandLineInterface* commandLineInterface, const std::string&)
+        {
+            if (commandLineInterface->m_operationType != OperationType::Undefined)
+            {
+                return E_INVALIDARG;
+            }
+            commandLineInterface->m_operationType = OperationType::ApplyACLs;
+            return S_OK;
+        },
+        {
+            {
+                L"-packagePath",
+                Option(true, IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& packagePath)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::ApplyACLs)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_packageFilePath = utf8_to_utf16(packagePath);
+                    return S_OK;
+                }),
+            }
+        })
+    },
+    {
         L"-?",
         Options(false, IDS_STRING_HELP_OPTION_HELP,
             [&](CommandLineInterface*, const std::string&)
@@ -148,12 +176,23 @@ std::map<std::wstring, std::wstring> CommandLineInterface::s_optionAliases =
 
 void CommandLineInterface::DisplayHelp()
 {
-    std::wcout << GetStringResource(IDS_STRING_HELPTEXT) << std::endl;
+    std::wcout << GetStringResource(IDS_STRING_HELPTEXT_USAGE) << std::endl;
+    std::wcout << GetStringResource(IDS_STRING_HELPTEXT_DESCRIPTION) << std::endl;
+    std::wcout << GetStringResource(IDS_STRING_HELPTEXT_OPTIONS) << std::endl;
 
     for (const auto& option : CommandLineInterface::s_options)
     {
         std::wcout << L"\t" << std::left << std::setfill(L' ') << std::setw(5) <<
             option.first << L": " << GetStringResource(option.second.Help) << std::endl;
+
+        if (option.second.HasSuboptions)
+        {
+            for (const auto& suboption : option.second.Suboptions)
+            {
+                std::wcout << L"\t\t" << std::left << std::setfill(L' ') << std::setw(5) <<
+                    suboption.first << L": " << GetStringResource(suboption.second.Help) << std::endl;
+            }
+        }
     }
 }
 
@@ -209,8 +248,8 @@ HRESULT CommandLineInterface::Init()
             auto suboptions = option->second.Suboptions;
             while (index < m_argc)
             {
-                std::wstring optionString = utf8_to_utf16(m_argv[index]);
-                auto suboption = suboptions.find(optionString);
+                std::wstring suboptionString = utf8_to_utf16(m_argv[index]);
+                auto suboption = suboptions.find(suboptionString);
                 if (suboption == suboptions.end())
                 {
                     TraceLoggingWrite(g_MsixUITraceLoggingProvider,
@@ -226,9 +265,9 @@ HRESULT CommandLineInterface::Init()
                     {
                         return E_INVALIDARG;
                     }
-                    parameter = m_argv[index];
+                    suboptionParameter = m_argv[index];
                 }
-                RETURN_IF_FAILED(option->second.DefaultCallback(this, parameter));
+                RETURN_IF_FAILED(suboption->second.Callback(this, suboptionParameter));
 
                 ++index;
             }

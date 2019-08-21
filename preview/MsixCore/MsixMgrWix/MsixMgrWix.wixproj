@@ -6,7 +6,7 @@
     <ProductVersion>3.10</ProductVersion>
     <ProjectGuid>ce395dc5-a1d0-4a35-8699-fc57a84ccf48</ProjectGuid>
     <SchemaVersion>2.0</SchemaVersion>
-    <OutputName>MsixMgrSetup</OutputName>
+    <OutputName>msixmgrSetup</OutputName>
     <OutputType>Package</OutputType>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
