@@ -133,6 +133,7 @@ namespace MSIX {
 #define UNEXPECTED     { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::Unexpected); }
 #define NOTSUPPORTED   { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::NotSupported); }
 #define NOTIMPLEMENTED { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::NotImplemented); }
+#define BUILDEXCLUDED  { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, nullptr, Error::SupportExcludedByBuild); }
 
 #define ThrowErrorIfNot(c, a, m)      if (!(a)) { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, m, c); }
 #define ThrowWin32ErrorIfNot(c, a, m) if (!(a)) { MSIX::RaiseException<MSIX::Win32Exception>(__LINE__, __FILE__, m, c); }
