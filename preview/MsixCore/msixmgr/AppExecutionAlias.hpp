@@ -27,5 +27,7 @@ namespace MsixCoreLib
 
         HRESULT ProcessAliasForAdd(std::wstring & aliasName);
 
+        HRESULT ProcessAliasForRemove(std::wstring & aliasName);
+
     };
 }

@@ -21,6 +21,10 @@ HRESULT AppExecutionAlias::ExecuteForAddRequest()
 
 HRESULT AppExecutionAlias::ExecuteForRemoveRequest()
 {
+    for (auto executionAlias = m_appExecutionAliases.begin(); executionAlias != m_appExecutionAliases.end(); ++executionAlias)
+    {
+        RETURN_IF_FAILED(ProcessAliasForRemove(*executionAlias));
+    }
     return S_OK;
 }
 
@@ -78,8 +82,6 @@ HRESULT AppExecutionAlias::ProcessAliasForAdd(std::wstring & aliasName)
     RegistryKey aliasKey;
     RETURN_IF_FAILED(appPathsKey.CreateSubKey(aliasName.c_str(), KEY_READ | KEY_WRITE, &aliasKey));
 
-    //delete aliasKey if exists
-
     RETURN_IF_FAILED(aliasKey.SetStringValue(L"", m_msixRequest->GetPackageInfo()->GetResolvedExecutableFilePath()));
 
     std::wstring executableDirectoryPath;
@@ -92,26 +94,36 @@ HRESULT AppExecutionAlias::ProcessAliasForAdd(std::wstring & aliasName)
 
     RETURN_IF_FAILED(aliasKey.SetStringValue(L"Path", executableDirectoryPath));
 
-    std::wstring aliasDirectory = FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_msixRequest->GetPackageInfo()->GetPackageFullName();
-    std::wstring aliasFile = aliasDirectory + L"\\" + aliasName;
+    return S_OK;
+}
 
-    HANDLE aliasFileHandle = INVALID_HANDLE_VALUE;
-    aliasFileHandle = CreateFile(aliasFile.c_str(), GENERIC_READ, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+HRESULT AppExecutionAlias::ProcessAliasForRemove(std::wstring & aliasName)
+{
+    RegistryKey appPathsKey;
+    RETURN_IF_FAILED(appPathsKey.Open(HKEY_LOCAL_MACHINE, appPathsRegKeyName.c_str(), KEY_READ | KEY_WRITE));
 
-    if (aliasFileHandle == INVALID_HANDLE_VALUE)
+    RegistryKey aliasKey;
+    HRESULT hrCreateSubKey = appPathsKey.CreateSubKey(aliasName.c_str(), KEY_READ | KEY_WRITE, &aliasKey);
+    if (SUCCEEDED(hrCreateSubKey))
     {
-        return HRESULT_FROM_WIN32(GetLastError());
+        std::wstring aliasExecutablePath;
+        if (SUCCEEDED(aliasKey.GetStringValue(L"", aliasExecutablePath)))
+        {
+            if (CaseInsensitiveEquals(aliasExecutablePath, m_msixRequest->GetPackageInfo()->GetResolvedExecutableFilePath()))
+            {
+                HRESULT hrDeleteKey = appPathsKey.DeleteTree(aliasName.c_str());
+                if (FAILED(hrDeleteKey))
+                {
+                    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                        "Unable to delete app execution aliasname key",
+                        TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                        TraceLoggingValue(hrDeleteKey, "HR"),
+                        TraceLoggingValue(aliasName.c_str(), "aliasName"));
+                }
+
+            }
+        }
     }
-
-    BOOL result = CreateHardLink(executableFilePath.c_str(), aliasFile.c_str(), 0);
-    if (!result)
-    {
-        return HRESULT_FROM_WIN32(GetLastError());
-    }
-
-    //can do this only once to add to the registry
-    //SetEnvironmentVariable(L"Path", aliasDirectory.c_str());
-
     return S_OK;
 }
 
