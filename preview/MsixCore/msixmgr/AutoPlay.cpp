@@ -1,7 +1,4 @@
 #include <windows.h>
-
-#include <shlobj_core.h>
-#include <CommCtrl.h>
 #include <iostream>
 #include <algorithm>
 

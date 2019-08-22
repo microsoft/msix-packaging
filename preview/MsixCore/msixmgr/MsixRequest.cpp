@@ -37,6 +37,7 @@
 #include "FirewallRules.hpp"
 #include "AutoPlay.hpp"
 #include "VirtualFileHandler.hpp"
+#include "AppExecutionAlias.hpp"
 
 #include "Constants.hpp"
 
@@ -83,7 +84,8 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,          ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          FirewallRules::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                AutoPlay::HandlerName,                     ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {AutoPlay::HandlerName,                     {AutoPlay::CreateHandler,                     InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {AutoPlay::HandlerName,                     {AutoPlay::CreateHandler,                     AppExecutionAlias::HandlerName,            ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {AppExecutionAlias::HandlerName,            {AppExecutionAlias::CreateHandler,            InstallComplete::HandlerName,              ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {InstallComplete::HandlerName,              {InstallComplete::CreateHandler,              nullptr,                                   ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {ErrorHandler::HandlerName,                 {ErrorHandler::CreateHandler,                 nullptr,                                   ReturnError,         nullptr}},
 };
@@ -101,7 +103,8 @@ std::map<PCWSTR, RemoveHandlerInfo> RemoveHandlers =
     {StartupTask::HandlerName,                  {StartupTask::CreateHandler,                  FileTypeAssociation::HandlerName,           IgnoreAndProcessNextHandler}},
     {FileTypeAssociation::HandlerName,          {FileTypeAssociation::CreateHandler,          FirewallRules::HandlerName,                 IgnoreAndProcessNextHandler}},
     {FirewallRules::HandlerName,                {FirewallRules::CreateHandler,                AutoPlay::HandlerName,                      IgnoreAndProcessNextHandler}},
-    {AutoPlay::HandlerName,                     {AutoPlay::CreateHandler,                     VirtualFileHandler::HandlerName,            IgnoreAndProcessNextHandler}},
+    {AutoPlay::HandlerName,                     {AutoPlay::CreateHandler,                     AppExecutionAlias::HandlerName,             IgnoreAndProcessNextHandler}},
+    {AppExecutionAlias::HandlerName,            {AppExecutionAlias::CreateHandler,            VirtualFileHandler::HandlerName,            IgnoreAndProcessNextHandler}},
     {VirtualFileHandler::HandlerName,           {VirtualFileHandler::CreateHandler,           WriteDevirtualizedRegistry::HandlerName,    IgnoreAndProcessNextHandler}},
     {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   Extractor::HandlerName,                     IgnoreAndProcessNextHandler}},
     {Extractor::HandlerName,                    {Extractor::CreateHandler,                    nullptr,                                    IgnoreAndProcessNextHandler}},
