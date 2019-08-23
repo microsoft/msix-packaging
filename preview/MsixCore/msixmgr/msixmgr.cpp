@@ -107,11 +107,17 @@ int main(int argc, char * argv[])
             HRESULT hr = packageManager->FindPackage(cli.GetPackageFullName(), packageInfo);
             if (packageInfo == NULL || FAILED(hr))
             {
-                std::wcout << std::endl;
-                std::wcout << L"No packages found " << hr << std::endl;
-                std::wcout << std::endl;
+                hr = packageManager->FindPackageByFamilyName(cli.GetPackageFullName(), packageInfo);
+                if (packageInfo == NULL || FAILED(hr))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << L"No packages found " << hr << std::endl;
+                    std::wcout << std::endl;
+                    return hr;
+                }
             }
-            else
+
+            if (packageInfo != nullptr)
             {
                 std::wcout << std::endl;
                 std::wcout << L"PackageFullName: " << packageInfo->GetPackageFullName().c_str() << std::endl;
@@ -119,8 +125,9 @@ int main(int argc, char * argv[])
 
                 std::wcout << L"DirectoryPath: " << packageInfo->GetInstalledLocation().c_str() << std::endl;
                 std::wcout << std::endl;
+
+                return S_OK;
             }
-            return S_OK;
         }
         case OperationType::FindAllPackages:
         {
