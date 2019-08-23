@@ -105,15 +105,20 @@ int main(int argc, char * argv[])
 
             shared_ptr<IInstalledPackage> packageInfo;
             HRESULT hr = packageManager->FindPackage(cli.GetPackageFullName(), packageInfo);
-            if (packageInfo == NULL || FAILED(hr))
+
+            if (packageInfo == NULL)
             {
                 hr = packageManager->FindPackageByFamilyName(cli.GetPackageFullName(), packageInfo);
-                if (packageInfo == NULL || FAILED(hr))
+                if (FAILED(hr))
+                {
+                    std::wcout << L"Failed to determine findpackage results" << hr << std::endl;
+                }
+
+                if (packageInfo == NULL)
                 {
                     std::wcout << std::endl;
                     std::wcout << L"No packages found " << hr << std::endl;
                     std::wcout << std::endl;
-                    return hr;
                 }
             }
 
@@ -126,8 +131,9 @@ int main(int argc, char * argv[])
                 std::wcout << L"DirectoryPath: " << packageInfo->GetInstalledLocation().c_str() << std::endl;
                 std::wcout << std::endl;
 
-                return S_OK;
             }
+
+            return S_OK;
         }
         case OperationType::FindAllPackages:
         {
