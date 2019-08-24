@@ -113,8 +113,7 @@ int main(int argc, char * argv[])
                 {
                     std::wcout << L"Failed to determine findpackage results" << hr << std::endl;
                 }
-
-                if (packageInfo == NULL)
+                else if (packageInfo == NULL)
                 {
                     std::wcout << std::endl;
                     std::wcout << L"No packages found " << hr << std::endl;
