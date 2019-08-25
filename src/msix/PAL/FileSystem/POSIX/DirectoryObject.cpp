@@ -59,9 +59,10 @@ namespace MSIX {
     void mkdirp(std::string& path, size_t startPos = 0, mode_t mode = DEFAULT_MODE)
     {
         char* p = &path[startPos];
-        if (*p == '/') { p++; }
-        for (; *p != '\0'; p++)
+        if (*p != '/') { p--; }
+        while ( *p != '\0')
         {
+            p++;
             while (*p != '\0' && *p != '/') { p++; }
 
             char v = *p;
