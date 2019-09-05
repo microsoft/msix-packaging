@@ -176,12 +176,12 @@ HRESULT PackageManager::FindPackage(const wstring & packageFullName, shared_ptr<
     packageFullNameCopy = std::regex_replace(packageFullNameCopy, std::wregex(L"\\*"), L".*");
     packageFullNameCopy = std::regex_replace(packageFullNameCopy, std::wregex(L"\\?"), L".");
 
-    std::string exp(packageFullNameCopy.begin(), packageFullNameCopy.end());
-    std::regex regExp(exp);
+    std::string packageFullNameString(packageFullNameCopy.begin(), packageFullNameCopy.end());
+    std::regex packageFullNameRegExp(packageFullNameString);
 
     for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
     {
-        if (std::regex_match(p.path().filename().string(), regExp))
+        if (std::regex_match(p.path().filename().string(), packageFullNameRegExp))
         {
             wstring packageDirectoryPath = msixCoreDirectory + p.path().filename().c_str();
             RETURN_IF_FAILED(GetPackageInfo(packageDirectoryPath, installedPackage));
@@ -198,12 +198,22 @@ HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyNam
     RETURN_IF_FAILED(filemapping.GetInitializationResult());
     auto msixCoreDirectory = filemapping.GetMsixCoreDirectory();
 
+    wstring packageFamilyNameCopy = packageFamilyName;
+
+    packageFamilyNameCopy = std::regex_replace(packageFamilyNameCopy, std::wregex(L"\\*"), L".*");
+    packageFamilyNameCopy = std::regex_replace(packageFamilyNameCopy, std::wregex(L"\\?"), L".");
+
+    std::string packageFamilyNameString(packageFamilyNameCopy.begin(), packageFamilyNameCopy.end());
+    std::regex packageFamilyNameRegExp(packageFamilyNameString);
+
     for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
     {
         if (experimental::filesystem::is_directory(p.path()))
         {
-            auto installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
-            if (CaseInsensitiveEquals(installedAppFamilyName, packageFamilyName))
+            wstring installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
+            std::string installedAppFamilyNameString(installedAppFamilyName.begin(), installedAppFamilyName.end());
+
+            if (std::regex_match(installedAppFamilyNameString, packageFamilyNameRegExp))
             {
                 wstring packageDirectoryPath = msixCoreDirectory + std::wstring(p.path().filename());
                 RETURN_IF_FAILED(GetPackageInfo(packageDirectoryPath, installedPackage));
