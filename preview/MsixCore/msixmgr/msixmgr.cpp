@@ -113,10 +113,10 @@ int main(int argc, char * argv[])
                 {
                     std::wcout << L"Failed to determine findpackage results" << hr << std::endl;
                 }
-                else if (packageInfo == NULL)
+                else if (packageInfo == NULL || hr == ERROR_NOT_FOUND)
                 {
                     std::wcout << std::endl;
-                    std::wcout << L"No packages found " << hr << std::endl;
+                    std::wcout << L"No packages found " << HRESULT_FROM_WIN32(hr) << std::endl;
                     std::wcout << std::endl;
                 }
             }

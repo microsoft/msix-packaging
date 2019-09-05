@@ -221,7 +221,7 @@ HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyNam
             }
         }
     }
-    return S_OK;
+    return ERROR_NOT_FOUND;
 }
 
 HRESULT PackageManager::FindPackages(unique_ptr<vector<shared_ptr<IInstalledPackage>>> & installedPackages)
