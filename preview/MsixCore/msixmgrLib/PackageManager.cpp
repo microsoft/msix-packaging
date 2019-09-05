@@ -5,7 +5,9 @@
 #include "MsixTraceLoggingProvider.hpp"
 #include <experimental/filesystem>
 #include <thread>
+#include <regex>
 #include "Windows10Redirector.hpp"
+#include <string>
 
 using namespace std;
 using namespace MsixCoreLib;
@@ -169,9 +171,25 @@ HRESULT PackageManager::FindPackage(const wstring & packageFullName, shared_ptr<
     RETURN_IF_FAILED(filemapping.GetInitializationResult());
     
     wstring msixCoreDirectory = filemapping.GetMsixCoreDirectory();
-    wstring packageDirectoryPath = msixCoreDirectory + packageFullName;
-    RETURN_IF_FAILED(GetPackageInfo(packageDirectoryPath, installedPackage));
-    return S_OK;
+    wstring packageFullNameCopy = packageFullName;
+
+    packageFullNameCopy = std::regex_replace(packageFullNameCopy, std::wregex(L"\\*"), L".*");
+    packageFullNameCopy = std::regex_replace(packageFullNameCopy, std::wregex(L"\\?"), L".");
+
+    std::string exp(packageFullNameCopy.begin(), packageFullNameCopy.end());
+    std::regex regExp(exp);
+
+    for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
+    {
+        if (std::regex_match(p.path().filename().string(), regExp))
+        {
+            wstring packageDirectoryPath = msixCoreDirectory + p.path().filename().c_str();
+            RETURN_IF_FAILED(GetPackageInfo(packageDirectoryPath, installedPackage));
+            return S_OK;
+        }
+    }
+
+    return ERROR_NOT_FOUND;
 }
 
 HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyName, shared_ptr<IInstalledPackage>& installedPackage)

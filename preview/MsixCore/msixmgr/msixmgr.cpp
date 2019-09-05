@@ -106,7 +106,7 @@ int main(int argc, char * argv[])
             shared_ptr<IInstalledPackage> packageInfo;
             HRESULT hr = packageManager->FindPackage(cli.GetPackageFullName(), packageInfo);
 
-            if (packageInfo == NULL)
+            if (packageInfo == NULL || hr == ERROR_NOT_FOUND)
             {
                 hr = packageManager->FindPackageByFamilyName(cli.GetPackageFullName(), packageInfo);
                 if (FAILED(hr))
