@@ -100,9 +100,53 @@ else
 	writeFail
 }
 
-ShowTestHeader("FindPackage succeeds")
+ShowTestHeader("FindPackageByFullName succeeds")
 $output = & $executable  -FindPackage notepadplus_0.0.0.0_x64__8wekyb3d8bbwe
 if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+{
+	writeSuccess
+}
+else
+{
+	writeFail
+}
+
+ShowTestHeader("FindPackageByFamilyName succeeds")
+$output = & $executable  -FindPackage notepadplus_8wekyb3d8bbwe
+if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+{
+	writeSuccess
+}
+else
+{
+	writeFail
+}
+
+ShowTestHeader("FindPackageByFullName with wildcards")
+$output = & $executable  -FindPackage *padplus_0.0.*
+if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+{
+	writeSuccess
+}
+else
+{
+	writeFail
+}
+
+ShowTestHeader("FindPackageByFamilyName with wildcards")
+$output = & $executable  -FindPackage *adplus_8wekyb3d8bbw?
+if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+{
+	writeSuccess
+}
+else
+{
+	writeFail
+}
+
+ShowTestHeader("FindPackage returns No Packages found")
+$output = & $executable  -FindPackage test
+if (($output -match "No packages found").count -gt 0)
 {
 	writeSuccess
 }
