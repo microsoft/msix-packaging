@@ -109,7 +109,7 @@ int main(int argc, char * argv[])
             if (packageInfo == NULL)
             {
                 hr = packageManager->FindPackageByFamilyName(cli.GetPackageFullName(), packageInfo);
-                if (packageInfo == NULL)
+                if (hr == HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
                 {
                     std::wcout << std::endl;
                     std::wcout << L"No packages found " << std::endl;
