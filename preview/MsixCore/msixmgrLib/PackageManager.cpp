@@ -189,7 +189,7 @@ HRESULT PackageManager::FindPackage(const wstring & packageFullName, shared_ptr<
         }
     }
 
-    return ERROR_NOT_FOUND;
+    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
 }
 
 HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyName, shared_ptr<IInstalledPackage>& installedPackage)
@@ -221,7 +221,7 @@ HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyNam
             }
         }
     }
-    return ERROR_NOT_FOUND;
+    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
 }
 
 HRESULT PackageManager::FindPackages(unique_ptr<vector<shared_ptr<IInstalledPackage>>> & installedPackages)
