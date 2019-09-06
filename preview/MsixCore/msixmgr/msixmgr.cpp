@@ -109,15 +109,15 @@ int main(int argc, char * argv[])
             if (packageInfo == NULL)
             {
                 hr = packageManager->FindPackageByFamilyName(cli.GetPackageFullName(), packageInfo);
-                if (FAILED(hr))
-                {
-                    std::wcout << L"Failed to determine findpackage results" << hr << std::endl;
-                }
-                else if (packageInfo == NULL)
+                if (packageInfo == NULL)
                 {
                     std::wcout << std::endl;
                     std::wcout << L"No packages found " << std::endl;
                     std::wcout << std::endl;
+                }
+                else if (FAILED(hr))
+                {
+                    std::wcout << L"Failed to determine findpackage results" << hr << std::endl;
                 }
             }
 
