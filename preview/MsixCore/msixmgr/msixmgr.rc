@@ -132,9 +132,9 @@ VS_VERSION_INFO VERSIONINFO
 BEGIN
     BLOCK "StringFileInfo"
     BEGIN
-		BLOCK "040904b0"
-		BEGIN
-		    VALUE "FileVersion", "1, 0, 0\0"
-		END
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileVersion", "1, 0, 0\0"
+        END
     END
 END
