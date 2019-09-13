@@ -49,19 +49,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
         })
     },
     {
-        L"-FindAllPackages",
-        Options(false, IDS_STRING_HELP_OPTION_FINDALLPACKAGES,
-            [&](CommandLineInterface* commandLineInterface, const std::string&)
-        {
-            if (commandLineInterface->m_operationType != OperationType::Undefined)
-            {
-                return E_INVALIDARG;
-            }
-            commandLineInterface->m_operationType = OperationType::FindAllPackages;
-            return S_OK;
-        })
-    },
-    {
         L"-FindPackage",
         Options(true, IDS_STRING_HELP_OPTION_FINDPACKAGE,
             [&](CommandLineInterface* commandLineInterface, const std::string& packageFullName)

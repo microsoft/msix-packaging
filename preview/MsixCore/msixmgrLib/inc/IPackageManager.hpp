@@ -18,7 +18,6 @@ namespace MsixCoreLib {
         virtual HRESULT RemovePackage(const std::wstring & packageFullName) = 0;
         virtual HRESULT FindPackage(const std::wstring & packageFullName, std::shared_ptr<IInstalledPackage> &package) = 0;
         virtual HRESULT FindPackageByFamilyName(const std::wstring & packageFamilyName, std::shared_ptr<IInstalledPackage> & installedPackage) = 0;
-        virtual HRESULT FindPackages(std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> & installedPackages) = 0;
         virtual HRESULT GetMsixPackageInfo(const std::wstring & msixFullPath, std::shared_ptr<IPackage> & package) = 0;
     };
 }

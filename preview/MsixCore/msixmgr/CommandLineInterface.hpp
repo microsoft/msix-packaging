@@ -10,7 +10,6 @@ enum OperationType
     Add = 1,
     Remove = 2,
     FindPackage = 3,
-    FindAllPackages = 4,
     Unpack = 5,
     ApplyACLs = 6
 };
