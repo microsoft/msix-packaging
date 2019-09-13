@@ -103,6 +103,25 @@ int main(int argc, char * argv[])
             AutoPtr<IPackageManager> packageManager;
             RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
+            if (CaseInsensitiveEquals(cli.GetPackageFullName(), L"*"))
+            {
+                AutoPtr<IPackageManager> packageManager;
+                RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
+
+                std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> packages;
+                RETURN_IF_FAILED(packageManager->FindPackages(packages));
+
+                unsigned int numPackages = 0;
+                for (auto& package : *packages)
+                {
+                    std::wcout << package->GetPackageFullName() << std::endl;
+                    numPackages++;
+                }
+
+                std::cout << numPackages << " Package(s) found" << std::endl;
+                return S_OK;
+            }
+
             shared_ptr<IInstalledPackage> packageInfo;
             HRESULT hr = packageManager->FindPackage(cli.GetPackageFullName(), packageInfo);
 
