@@ -17,6 +17,7 @@ namespace MsixCoreLib {
         HRESULT RemovePackage(const std::wstring & packageFullName) override;
         HRESULT FindPackage(const std::wstring & packageFullName, std::shared_ptr<IInstalledPackage> & installedPackage) override;
         HRESULT FindPackageByFamilyName(const std::wstring & packageFamilyName, std::shared_ptr<IInstalledPackage> & installedPackage) override;
+        HRESULT FindPackages(const std::wstring & searchParameter, std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> & installedPackages) override;
         HRESULT GetMsixPackageInfo(const std::wstring & msixFullPath, std::shared_ptr<IPackage> & package) override;
     private:
         HRESULT GetPackageInfo(const std::wstring & directoryPath, std::shared_ptr<IInstalledPackage> & installedPackage);

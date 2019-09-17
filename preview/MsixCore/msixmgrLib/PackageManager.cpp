@@ -224,6 +224,56 @@ HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyNam
     return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
 }
 
+HRESULT PackageManager::FindPackages(const std::wstring & searchParameter, unique_ptr<vector<shared_ptr<IInstalledPackage>>> & installedPackages)
+{
+    auto packages = std::make_unique<std::vector<shared_ptr<IInstalledPackage>>>();
+
+    auto filemapping = FilePathMappings::GetInstance();
+    RETURN_IF_FAILED(filemapping.GetInitializationResult());
+    wstring msixCoreDirectory = filemapping.GetMsixCoreDirectory();
+
+    wstring searchParameterCopy = searchParameter;
+
+    searchParameterCopy = std::regex_replace(searchParameterCopy, std::wregex(L"\\*"), L".*");
+    searchParameterCopy = std::regex_replace(searchParameterCopy, std::wregex(L"\\?"), L".");
+
+    std::string searchParameterString(searchParameterCopy.begin(), searchParameterCopy.end());
+    std::regex searchParameterRegExp(searchParameterString);
+
+    std::vector<std::wstring> packageFullNames;
+    for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
+    {
+        if (experimental::filesystem::is_directory(p.path()))
+        {
+            wstring installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
+            std::string installedAppFamilyNameString(installedAppFamilyName.begin(), installedAppFamilyName.end());
+
+            if ((std::regex_match(p.path().filename().string(), searchParameterRegExp)
+                || std::regex_match(installedAppFamilyNameString, searchParameterRegExp)
+                || CaseInsensitiveEquals(searchParameter, L"*")))
+            {
+                wstring packageDirectoryPath = msixCoreDirectory + std::wstring(p.path().filename());
+                shared_ptr<IInstalledPackage> packageInfo;
+                const HRESULT hrGetPackageInfo = GetPackageInfo(packageDirectoryPath, packageInfo);
+                if (FAILED(hrGetPackageInfo))
+                {
+                    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                        "Error getting package info from directory",
+                        TraceLoggingValue(packageDirectoryPath.c_str(), "Directory"),
+                        TraceLoggingValue(hrGetPackageInfo, "HR"));
+                }
+                else
+                {
+                    packages->push_back(packageInfo);
+                }
+            }
+        }
+    }
+
+    installedPackages.swap(packages);
+    return S_OK;
+}
+
 HRESULT PackageManager::GetMsixPackageInfo(const wstring & msixFullPath, shared_ptr<IPackage> & package)
 {
     auto filemapping = FilePathMappings::GetInstance();
