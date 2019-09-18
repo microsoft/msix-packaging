@@ -5,7 +5,6 @@
 #include <TraceLoggingProvider.h>
 #include "msixmgrLogger.hpp"
 #include "..\msixmgrLib\GeneralUtil.hpp"
-#include "MSIXWindows.hpp"
 #include <shlobj_core.h>
 #include <CommCtrl.h>
 #include <map>
@@ -42,19 +41,20 @@ namespace MsixCoreLib
             reader.Get(),
             &unpackDestination[0]));
 
+        ComPtr<IAppxManifestReader> manifestReader;
+        RETURN_IF_FAILED(reader->GetManifest(&manifestReader));
+
+        ComPtr<IAppxManifestPackageId> packageId;
+        RETURN_IF_FAILED(manifestReader->GetPackageId(&packageId));
+
+        Text<WCHAR> packageFullName;
+        RETURN_IF_FAILED(packageId->GetPackageFullName(&packageFullName));
+        
+        RETURN_IF_FAILED(OutputPackageDependencies(manifestReader.Get(), packageFullName.content));
+
         if (isApplyACLs)
         {
             std::vector<std::wstring> packageFolders;
-
-            Text<WCHAR> packageFullName;
-
-            ComPtr<IAppxManifestReader> manifestReader;
-            RETURN_IF_FAILED(reader->GetManifest(&manifestReader));
-
-            ComPtr<IAppxManifestPackageId> packageId;
-            RETURN_IF_FAILED(manifestReader->GetPackageId(&packageId));
-
-            RETURN_IF_FAILED(packageId->GetPackageFullName(&packageFullName));
 
             std::wstring packageFolderName = destination + L"\\" + packageFullName.Get();
             packageFolders.push_back(packageFolderName);
@@ -91,12 +91,57 @@ namespace MsixCoreLib
             reader.Get(),
             &unpackDestination[0]));
 
-        std::vector<std::wstring> packageFolders;
+        ComPtr<IAppxBundleManifestReader> bundleManifestReader;
+        RETURN_IF_FAILED(reader->GetManifest(&bundleManifestReader));
+
+        // Determine whether the bundle's main package has any package dependencies and if so,
+        // output those dependencies to the user
+        ComPtr<IAppxBundleManifestPackageInfoEnumerator> packageEnumerator;
+        ComPtr<IAppxBundleManifestPackageInfo> bundlePackageInfo;
+        RETURN_IF_FAILED(bundleManifestReader->GetPackageInfoItems(&packageEnumerator));
+        BOOL hasCurrent = FALSE;
+        for (packageEnumerator->GetHasCurrent(&hasCurrent); hasCurrent; packageEnumerator->MoveNext(&hasCurrent))
+        {
+            RETURN_IF_FAILED(packageEnumerator->GetCurrent(&bundlePackageInfo));
+
+            APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType;
+            RETURN_IF_FAILED(bundlePackageInfo->GetPackageType(&packageType));
+
+            if (packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
+            {
+                Text<WCHAR> packageFileName;
+                RETURN_IF_FAILED(bundlePackageInfo->GetFileName(&packageFileName));
+
+                ComPtr<IAppxFile> applicationPackageFile;
+                RETURN_IF_FAILED(reader->GetPayloadPackage(packageFileName.content, &applicationPackageFile));
+
+                ComPtr<IStream> applicationPackageStream;
+                RETURN_IF_FAILED(applicationPackageFile->GetStream(&applicationPackageStream));
+
+                ComPtr<IAppxFactory> factory;
+                RETURN_IF_FAILED(CoCreateAppxFactoryWithHeap(MyAllocate, MyFree, validationOption, &factory));
+
+                ComPtr<IAppxPackageReader> packageReader;
+                RETURN_IF_FAILED(factory->CreatePackageReader(applicationPackageStream.Get(), &packageReader));
+
+                ComPtr<IAppxManifestReader> manifestReader;
+                RETURN_IF_FAILED(packageReader->GetManifest(&manifestReader));
+
+                ComPtr<IAppxManifestPackageId> packageId;
+                RETURN_IF_FAILED(manifestReader->GetPackageId(&packageId));
+
+                Text<WCHAR> packageFullName;
+                RETURN_IF_FAILED(packageId->GetPackageFullName(&packageFullName));
+
+                RETURN_IF_FAILED(OutputPackageDependencies(manifestReader.Get(), packageFullName.content));
+
+                break;
+            }
+        }
 
         if (isApplyACLs)
         {
-            ComPtr<IAppxBundleManifestReader> bundleManifestReader;
-            RETURN_IF_FAILED(reader->GetManifest(&bundleManifestReader));
+            std::vector<std::wstring> packageFolders;
 
             // Determine the name of the folder created for the unpacked bundle, and add this name to our list of package folders
             Text<WCHAR> bundleFullName;
@@ -116,11 +161,11 @@ namespace MsixCoreLib
             // returned by GetPayloadPackages. Append the package full name to the destination to get the folder name for the unpacked package, then
             // add this folder name to our list of package folder names.
             std::map <std::wstring, std::wstring>  packagesMap;
-
+            
             ComPtr<IAppxBundleManifestPackageInfoEnumerator> packages;
             ComPtr<IAppxBundleManifestPackageInfo> currentPackage;
             RETURN_IF_FAILED(bundleManifestReader->GetPackageInfoItems(&packages));
-            BOOL hasCurrent = FALSE;
+            hasCurrent = FALSE;
             // Populate the packagesMap with package file name, package full name pairs
             for (packages->GetHasCurrent(&hasCurrent); hasCurrent; packages->MoveNext(&hasCurrent))
             {
@@ -136,7 +181,6 @@ namespace MsixCoreLib
 
                 std::wstring stdPackageFileName = packageFileName.Get();
                 std::wstring stdPackageFullName = packageFullName.Get();
-
                 packagesMap[stdPackageFileName] = stdPackageFullName;
             }
 
@@ -164,6 +208,39 @@ namespace MsixCoreLib
 
             RETURN_IF_FAILED(ApplyACLs(packageFolders));
         }
+        return S_OK;
+    }
+
+    HRESULT OutputPackageDependencies(
+        _In_ IAppxManifestReader* manifestReader,
+        _In_ LPWSTR packageFullName)
+    {
+        ComPtr<IAppxManifestPackageDependenciesEnumerator> dependencyEnumerator;
+        ComPtr<IAppxManifestPackageDependency> dependency;
+        BOOL hasCurrent = FALSE;
+        BOOL hasPackageDependencies = FALSE;
+
+        RETURN_IF_FAILED(manifestReader->GetPackageDependencies(&dependencyEnumerator));
+
+        for (dependencyEnumerator->GetHasCurrent(&hasCurrent); hasCurrent == TRUE; dependencyEnumerator->MoveNext(&hasCurrent))
+        {
+            if (!hasPackageDependencies)
+            {
+                hasPackageDependencies = TRUE;
+
+                std::wcout << std::endl;
+                std::wcout << "[Warning] The app " << packageFullName << " depends on the following packages to run correctly. Please ensure these package dependencies are installed on the target machine or included beside the app package:" << std::endl;
+                std::wcout << std::endl;
+            }
+
+            RETURN_IF_FAILED(dependencyEnumerator->GetCurrent(&dependency));
+
+            Text<WCHAR> packageDependencyName;
+            RETURN_IF_FAILED(dependency->GetName(&packageDependencyName));
+
+            std::wcout << packageDependencyName.content << std::endl;
+        }
+
         return S_OK;
     }
 
