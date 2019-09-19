@@ -212,7 +212,7 @@ HRESULT PackageManager::FindPackages(const std::wstring & searchParameter, uniqu
     searchParameterCopy = std::regex_replace(searchParameterCopy, std::wregex(L"\\?"), L".");
 
     std::string searchParameterString(searchParameterCopy.begin(), searchParameterCopy.end());
-    std::regex searchParameterRegExp(searchParameterString);
+    std::regex searchParameterRegExp(searchParameterString, std::regex_constants::icase);
 
     std::vector<std::wstring> packageFullNames;
     for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
