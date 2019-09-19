@@ -121,13 +121,7 @@ int main(int argc, char * argv[])
                 }
 
                 std::cout << numPackages << " Package(s) found" << std::endl;
-            }
-            else
-            {
-                std::wcout << std::endl;
-                std::wcout << L"No packages found " << std::endl;
-                std::wcout << std::endl;
-            }       
+            }      
 
             return S_OK;
         }
