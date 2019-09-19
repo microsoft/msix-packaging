@@ -53,10 +53,6 @@ Installation - Using command prompt or PowerShell, navigate to the directory tha
 ```
 msixmgr.exe -AddPackage C:\SomeDirectory\notepadplus.msix
 ```
-Querying for Installed MSIX Packages - 
-```
-msixmgr.exe -FindAllPackages
-```
 Querying for a specific MSIX Package. Searching for a specific package is possible by packageFullName, packageFamilyName and/or using wildcards as well. Supported wilcards are *(match any character) and ?(match single character). -
 ```
 msixmgr.exe -FindPackage notepadplus_0.0.0.1_x64__8wekyb3d8bbwe
