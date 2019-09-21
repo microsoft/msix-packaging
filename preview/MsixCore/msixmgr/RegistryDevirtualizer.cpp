@@ -112,6 +112,7 @@ bool RegistryDevirtualizer::IsExcludeKey(RegistryKey* realKey)
     const std::wstring excludeKeys[] = 
     {
         uninstallKeySubPath,   // uninstall key will be written by MsixInstaller itself, no need to copy from package
+        sharedDllsKeyPath,     // virtual file handler will handle writing changes to this path
     };
 
     for (auto excludeKey : excludeKeys)

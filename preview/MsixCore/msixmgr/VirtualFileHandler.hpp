@@ -23,6 +23,7 @@ namespace MsixCoreLib
         ~VirtualFileHandler() {}
     private:
         MsixRequest* m_msixRequest = nullptr;
+        RegistryKey m_sharedDllsKey;
 
         VirtualFileHandler() {}
         VirtualFileHandler(_In_ MsixRequest* msixRequest) : m_msixRequest(msixRequest) {}
