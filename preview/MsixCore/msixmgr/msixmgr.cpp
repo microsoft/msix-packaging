@@ -156,6 +156,17 @@ int main(int argc, char * argv[])
                 {
                     std::wcout << L"Please confirm that the certificate has been installed for this package" << std::endl;
                 }
+                else if (hr == static_cast<HRESULT>(MSIX::Error::FileWrite))
+                {
+                    std::wcout << L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space." << std::endl;
+                }
+                std::wcout << std::endl;
+            }
+            else
+            {
+                std::wcout << std::endl;
+                std::wcout << "Successfully unpacked and applied ACLs for package: " << packageFilePath << std::endl;
+                std::wcout << "If your package is a store-signed package, please note that store-signed apps require a license file to be included, which can be downloaded from the Microsoft Store for Business"  << std::endl;
                 std::wcout << std::endl;
             }
 
