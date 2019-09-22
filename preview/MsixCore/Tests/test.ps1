@@ -157,6 +157,7 @@ else
 {
 	writeFail
 }
+$output = & $executable -RemovePackage AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe
 
 ShowTestHeader("Re-installing package succeeds, and overwrites files it should")
 if (test-path $notepadDir)
