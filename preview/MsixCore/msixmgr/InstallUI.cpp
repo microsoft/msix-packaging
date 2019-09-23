@@ -691,7 +691,7 @@ void UI::SendInstallCompleteMsg()
 void UI::UpdateDisplayPercent(float displayPercent)
 {
     std::wstringstream ss;
-    ss << displayPercent << "%...";
+    ss << (int)displayPercent << "%...";
     SetWindowText(g_staticPercentText, ss.str().c_str());
     ShowWindow(g_staticPercentText, SW_HIDE);
     ShowWindow(g_staticPercentText, SW_SHOW);
