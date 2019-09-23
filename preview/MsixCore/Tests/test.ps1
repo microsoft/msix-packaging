@@ -89,17 +89,6 @@ else
 	writeFail
 }
 
-ShowTestHeader("FindAllPackages")
-$output = & $executable  -FindAllPackages 
-if ($output -contains "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe" -and -not ($output -contains "fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe"))
-{
-	writeSuccess
-}
-else
-{
-	writeFail
-}
-
 ShowTestHeader("FindPackageByFullName succeeds")
 $output = & $executable  -FindPackage notepadplus_0.0.0.0_x64__8wekyb3d8bbwe
 if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
@@ -144,17 +133,6 @@ else
 	writeFail
 }
 
-ShowTestHeader("FindPackage returns No Packages found")
-$output = & $executable  -FindPackage test
-if (($output -match "No packages found").count -gt 0)
-{
-	writeSuccess
-}
-else
-{
-	writeFail
-}
-
 ShowTestHeader("FindPackage fails to find non-existent package")
 $output = & $executable  -FindPackage fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe
 if (($output -match "fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe").count -gt 0)
@@ -165,6 +143,21 @@ else
 {
 	writeSuccess
 }
+
+ShowTestHeader("FindPackage A* should return two packages")
+$outputAddPackage = & $executable -AddPackage acdual.msix -quietUx
+$outputAddPackageSecond = & $executable -AddPackage AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe.msix -quietUx
+$outputFindPackage = & $executable  -FindPackage a*
+if (($outputFindPackage -match "AutoClickComServerSample_1.1.0.0_x86__8wekyb3d8bbwe").count -gt 0 -and
+      ($outputFindPackage -match "AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe").count -gt 0)
+{
+	writeSuccess
+}
+else
+{
+	writeFail
+}
+$output = & $executable -RemovePackage AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe
 
 ShowTestHeader("Re-installing package succeeds, and overwrites files it should")
 if (test-path $notepadDir)

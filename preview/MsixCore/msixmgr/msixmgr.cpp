@@ -103,53 +103,26 @@ int main(int argc, char * argv[])
             AutoPtr<IPackageManager> packageManager;
             RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
-            shared_ptr<IInstalledPackage> packageInfo;
-            HRESULT hr = packageManager->FindPackage(cli.GetPackageFullName(), packageInfo);
-
-            if (packageInfo == NULL)
-            {
-                hr = packageManager->FindPackageByFamilyName(cli.GetPackageFullName(), packageInfo);
-                if (hr == HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
-                {
-                    std::wcout << std::endl;
-                    std::wcout << L"No packages found " << std::endl;
-                    std::wcout << std::endl;
-                }
-                else if (FAILED(hr))
-                {
-                    std::wcout << L"Failed to determine findpackage results" << hr << std::endl;
-                }
-            }
-
-            if (packageInfo != nullptr)
-            {
-                std::wcout << std::endl;
-                std::wcout << L"PackageFullName: " << packageInfo->GetPackageFullName().c_str() << std::endl;
-                std::wcout << L"DisplayName: " << packageInfo->GetDisplayName().c_str() << std::endl;
-
-                std::wcout << L"DirectoryPath: " << packageInfo->GetInstalledLocation().c_str() << std::endl;
-                std::wcout << std::endl;
-
-            }
-
-            return S_OK;
-        }
-        case OperationType::FindAllPackages:
-        {
-            AutoPtr<IPackageManager> packageManager;
-            RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
-
             std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> packages;
-            RETURN_IF_FAILED(packageManager->FindPackages(packages));
+            RETURN_IF_FAILED(packageManager->FindPackages(cli.GetPackageFullName(), packages));
 
-            unsigned int numPackages = 0;
-            for (auto& package : *packages)
+            if (packages != nullptr)
             {
-                std::wcout << package->GetPackageFullName() << std::endl;
-                numPackages++;
-            }
+                unsigned int numPackages = 0;
+                for (auto& package : *packages)
+                {
+                    std::wcout << std::endl;
+                    std::wcout << L"PackageFullName: " << package->GetPackageFullName().c_str() << std::endl;
+                    std::wcout << L"DisplayName: " << package->GetDisplayName().c_str() << std::endl;
 
-            std::cout << numPackages << " Package(s) found" << std::endl;
+                    std::wcout << L"DirectoryPath: " << package->GetInstalledLocation().c_str() << std::endl;
+                    std::wcout << std::endl;
+                    numPackages++;
+                }
+
+                std::cout << numPackages << " Package(s) found" << std::endl;
+            }      
+
             return S_OK;
         }
         case OperationType::Unpack:

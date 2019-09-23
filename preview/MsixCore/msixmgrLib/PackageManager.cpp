@@ -171,25 +171,9 @@ HRESULT PackageManager::FindPackage(const wstring & packageFullName, shared_ptr<
     RETURN_IF_FAILED(filemapping.GetInitializationResult());
     
     wstring msixCoreDirectory = filemapping.GetMsixCoreDirectory();
-    wstring packageFullNameCopy = packageFullName;
-
-    packageFullNameCopy = std::regex_replace(packageFullNameCopy, std::wregex(L"\\*"), L".*");
-    packageFullNameCopy = std::regex_replace(packageFullNameCopy, std::wregex(L"\\?"), L".");
-
-    std::string packageFullNameString(packageFullNameCopy.begin(), packageFullNameCopy.end());
-    std::regex packageFullNameRegExp(packageFullNameString);
-
-    for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
-    {
-        if (std::regex_match(p.path().filename().string(), packageFullNameRegExp))
-        {
-            wstring packageDirectoryPath = msixCoreDirectory + p.path().filename().c_str();
-            RETURN_IF_FAILED(GetPackageInfo(packageDirectoryPath, installedPackage));
-            return S_OK;
-        }
-    }
-
-    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+    wstring packageDirectoryPath = msixCoreDirectory + packageFullName;
+    RETURN_IF_FAILED(GetPackageInfo(packageDirectoryPath, installedPackage));
+    return S_OK;
 }
 
 HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyName, shared_ptr<IInstalledPackage>& installedPackage)
@@ -198,22 +182,12 @@ HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyNam
     RETURN_IF_FAILED(filemapping.GetInitializationResult());
     auto msixCoreDirectory = filemapping.GetMsixCoreDirectory();
 
-    wstring packageFamilyNameCopy = packageFamilyName;
-
-    packageFamilyNameCopy = std::regex_replace(packageFamilyNameCopy, std::wregex(L"\\*"), L".*");
-    packageFamilyNameCopy = std::regex_replace(packageFamilyNameCopy, std::wregex(L"\\?"), L".");
-
-    std::string packageFamilyNameString(packageFamilyNameCopy.begin(), packageFamilyNameCopy.end());
-    std::regex packageFamilyNameRegExp(packageFamilyNameString);
-
     for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
     {
         if (experimental::filesystem::is_directory(p.path()))
         {
-            wstring installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
-            std::string installedAppFamilyNameString(installedAppFamilyName.begin(), installedAppFamilyName.end());
-
-            if (std::regex_match(installedAppFamilyNameString, packageFamilyNameRegExp))
+            auto installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
+            if (CaseInsensitiveEquals(installedAppFamilyName, packageFamilyName))
             {
                 wstring packageDirectoryPath = msixCoreDirectory + std::wstring(p.path().filename());
                 RETURN_IF_FAILED(GetPackageInfo(packageDirectoryPath, installedPackage));
@@ -221,10 +195,10 @@ HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyNam
             }
         }
     }
-    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
+    return S_OK;
 }
 
-HRESULT PackageManager::FindPackages(unique_ptr<vector<shared_ptr<IInstalledPackage>>> & installedPackages)
+HRESULT PackageManager::FindPackages(const std::wstring & searchParameter, unique_ptr<vector<shared_ptr<IInstalledPackage>>> & installedPackages)
 {
     auto packages = std::make_unique<std::vector<shared_ptr<IInstalledPackage>>>();
 
@@ -232,28 +206,44 @@ HRESULT PackageManager::FindPackages(unique_ptr<vector<shared_ptr<IInstalledPack
     RETURN_IF_FAILED(filemapping.GetInitializationResult());
     wstring msixCoreDirectory = filemapping.GetMsixCoreDirectory();
 
+    wstring searchParameterCopy = searchParameter;
+
+    searchParameterCopy = std::regex_replace(searchParameterCopy, std::wregex(L"\\*"), L".*");
+    searchParameterCopy = std::regex_replace(searchParameterCopy, std::wregex(L"\\?"), L".");
+
+    std::string searchParameterString(searchParameterCopy.begin(), searchParameterCopy.end());
+    std::regex searchParameterRegExp(searchParameterString, std::regex_constants::icase);
+
     std::vector<std::wstring> packageFullNames;
     for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
     {
         if (experimental::filesystem::is_directory(p.path()))
         {
-            wstring packageDirectoryPath = msixCoreDirectory + std::wstring(p.path().filename());
-            shared_ptr<IInstalledPackage> packageInfo;
-            const HRESULT hrGetPackageInfo = GetPackageInfo(packageDirectoryPath, packageInfo);
-            if (FAILED(hrGetPackageInfo))
+            wstring installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
+            std::string installedAppFamilyNameString(installedAppFamilyName.begin(), installedAppFamilyName.end());
+
+            if ((std::regex_match(p.path().filename().string(), searchParameterRegExp)
+                || std::regex_match(installedAppFamilyNameString, searchParameterRegExp)
+                || CaseInsensitiveEquals(searchParameter, L"*")))
             {
-                TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                    "Error getting package info from directory",
-                    TraceLoggingValue(packageDirectoryPath.c_str(), "Directory"),
-                    TraceLoggingValue(hrGetPackageInfo, "HR"));
-            }
-            else
-            {
-                packages->push_back(packageInfo);
+                wstring packageDirectoryPath = msixCoreDirectory + std::wstring(p.path().filename());
+                shared_ptr<IInstalledPackage> packageInfo;
+                const HRESULT hrGetPackageInfo = GetPackageInfo(packageDirectoryPath, packageInfo);
+                if (FAILED(hrGetPackageInfo))
+                {
+                    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                        "Error getting package info from directory",
+                        TraceLoggingValue(packageDirectoryPath.c_str(), "Directory"),
+                        TraceLoggingValue(hrGetPackageInfo, "HR"));
+                }
+                else
+                {
+                    packages->push_back(packageInfo);
+                }
             }
         }
     }
-    
+
     installedPackages.swap(packages);
     return S_OK;
 }
