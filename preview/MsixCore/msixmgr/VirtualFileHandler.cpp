@@ -17,8 +17,6 @@ using namespace MsixCoreLib;
 
 const PCWSTR VirtualFileHandler::HandlerName = L"VirtualFileHandler";
 
-std::map < std::wstring, DWORD > m_sharedDllMap;
-
 HRESULT VirtualFileHandler::ExecuteForAddRequest()
 {
     auto vfsDirectoryPath = m_msixRequest->GetPackageDirectoryPath() + L"\\VFS";
@@ -31,17 +29,6 @@ HRESULT VirtualFileHandler::ExecuteForAddRequest()
         }
     }
 
-    // Cases for incrementing. For simplicity, we ignore the count in registry.dat as we treat the .msix package as having one reference to the file
-    // 
-    // File exists, Not in SharedDLLs in registry.dat, already exists in current system SharedDLLs => increment current SharedDLLs + 1
-    // File exists, Not in SharedDLLs in registry.dat, not in current system SharedDLLs => create new SharedDLLs
-    // File exists, exists in SharedDLLs in registry.dat, already exists in current system SharedDLLs => increment current SharedDLLs + 1
-    // File exists, exists in SharedDLLs in registry.dat, not in current system SharedDLLs => create new SharedDLLs(count=1)
-    // File does not exist, does not exist in SharedDLLs in registry.dat, => no SharedDLLs
-    // File does not exist, exists in SharedDLLs in registry.dat => create new SharedDLLs(count=1)
-
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->GetSharedDlls(false));
-    
     return S_OK;
 }
 
@@ -190,6 +177,29 @@ HRESULT VirtualFileHandler::NeedToCopyFile(std::wstring sourceFullPath, std::wst
             "Need to copy file because target doesn't exist",
             TraceLoggingValue(targetFullPath.c_str(), "TargetFullPath"));
         return S_OK;
+    }
+
+    if (!m_msixRequest->IsReinstall())
+    {
+        // The file already exists, so we need to refcount it regardless of whether we need to overwrite the existing file or not
+        // Cases for incrementing SharedDLLs. For simplicity, we ignore the count in registry.dat as we treat the .msix package as having one reference to the file
+        // 
+        // File exists, already exists in current system SharedDLLs => increment current SharedDLLs + 1
+        // File exists, not in current system SharedDLLs => create new SharedDLLs = 2 (the one existing + this package)
+        UINT32 count = 0;
+        bool sharedDllValueExists = false;
+        bool shouldDelete = true;
+        RETURN_IF_FAILED(m_sharedDllsKey.GetUInt32ValueIfExists(targetFullPath.c_str(), count, sharedDllValueExists));
+        if (sharedDllValueExists)
+        {
+            count++;
+        }
+        else
+        {
+            count = 2; // implicitly 1 for the file already existing, +1 for the package we're currently installing
+        }
+
+        RETURN_IF_FAILED(m_sharedDllsKey.SetUInt32Value(targetFullPath.c_str(), count));
     }
 
     // Whether we overwrite existing files or keep the existing file as-is follows MSI file versioning rules

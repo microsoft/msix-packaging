@@ -162,7 +162,7 @@ HRESULT RegistryKey::GetUInt32ValueIfExists(
     _Out_ bool & exists)
 {
     DWORD size = sizeof(value);
-    LONG rc = RegQueryValueExW(m_hkey, name, nullptr, nullptr, reinterpret_cast<BYTE *>(value), &size);
+    LONG rc = RegQueryValueExW(m_hkey, name, nullptr, nullptr, reinterpret_cast<BYTE *>(&value), &size);
     if (rc == ERROR_SUCCESS)
     {
         exists = true;

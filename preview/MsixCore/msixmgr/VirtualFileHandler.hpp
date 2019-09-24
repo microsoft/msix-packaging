@@ -3,6 +3,7 @@
 #include "GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 #include "MsixRequest.hpp"
+#include "RegistryKey.hpp"
 
 namespace MsixCoreLib
 {

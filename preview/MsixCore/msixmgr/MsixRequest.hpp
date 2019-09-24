@@ -26,6 +26,9 @@ private:
     /// Filled by PopulatePackageInfo
     std::shared_ptr<PackageBase> m_packageInfo;
 
+    /// Filled by ProcessPotentialUpdate
+    bool m_isReinstall = false;
+
     /// MsixResponse object populated by handlers
     std::shared_ptr<MsixResponse> m_msixResponse;
 
@@ -64,6 +67,9 @@ public:
     /// Called by PopulatePackageInfo
     void SetPackageInfo(std::shared_ptr<PackageBase> packageInfo);
     std::wstring GetPackageDirectoryPath();
+
+    void SetIsReinstall();
+    bool IsReinstall() { return m_isReinstall;  }
 
     /// @return can return null if called before PopulatePackageInfo.
     std::shared_ptr<PackageBase> GetPackageInfo() { return m_packageInfo; }
