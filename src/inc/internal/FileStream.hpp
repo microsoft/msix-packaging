@@ -17,7 +17,7 @@ namespace MSIX {
     {
     public:
         enum Mode { READ = 0, WRITE, APPEND, READ_UPDATE, WRITE_UPDATE, APPEND_UPDATE };
-
+        
         FileStream(const std::string& name, Mode mode) : m_name(name)
         {
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
@@ -43,7 +43,7 @@ namespace MSIX {
             #ifdef WIN32
             static const wchar_t* modes[] = { L"rb", L"wb", L"ab", L"r+b", L"w+b", L"a+b" };
             errno_t err = _wfopen_s(&m_file, name.c_str(), modes[mode]);
-            ThrowErrorIfNot(Error::FileOpen, (err==0),  std::string("file: " + m_name + " does not exist.").c_str());
+            ThrowErrorIfNot(Error::FileOpen, (err==0), std::string("file: " + m_name + " does not exist.").c_str());
             #else
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
             m_file = std::fopen(m_name.c_str(), modes[mode]);
@@ -74,7 +74,11 @@ namespace MSIX {
         // IStream
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER* newPosition) noexcept override try
         {
+            #ifdef WIN32
+            int rc = _fseeki64(m_file, move.QuadPart, origin);
+            #else       
             int rc = std::fseek(m_file, static_cast<long>(move.QuadPart), origin);
+            #endif
             ThrowErrorIfNot(Error::FileSeek, (rc == 0), "seek failed");
             m_offset = Ftell();
             if (newPosition) { newPosition->QuadPart = m_offset; }
@@ -111,7 +115,11 @@ namespace MSIX {
 
         inline std::uint64_t Ftell()
         {
+            #ifdef WIN32
+            auto result = _ftelli64(m_file);
+            #else       
             auto result = std::ftell(m_file);
+            #endif  
             return static_cast<std::uint64_t>(result);
         }
 
