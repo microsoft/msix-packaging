@@ -137,8 +137,8 @@ namespace MSIX { namespace Encoding {
     {   EncodingChar(L"20", ' '), EncodingChar(L"21", '!'), EncodingChar(L"23", '#'),  EncodingChar(L"24", '$'),
         EncodingChar(L"25", '%'), EncodingChar(L"26", '&'), EncodingChar(L"27", '\''), EncodingChar(L"28", '('),
         EncodingChar(L"29", ')'), EncodingChar(L"2B", '+'), EncodingChar(L"2C", ','),  EncodingChar(L"3B", ';'),
-        EncodingChar(L"3D", '='), EncodingChar(L"40", '@'),  EncodingChar(L"5B", '['), EncodingChar(L"5D", ']'),
-        EncodingChar(L"5E", '^'), EncodingChar(L"60", '`'), EncodingChar(L"7B", '{'), EncodingChar(L"7D", '}')
+        EncodingChar(L"3D", '='), EncodingChar(L"40", '@'), EncodingChar(L"5B", '['),  EncodingChar(L"5D", ']'),
+        EncodingChar(L"5E", '^'), EncodingChar(L"60", '`'), EncodingChar(L"7B", '{'),  EncodingChar(L"7D", '}')
     };
 
     // Convert a single hex digit to its corresponding value
