@@ -47,7 +47,7 @@ bool MsixCoreTest::CleanupMethod()
 void MsixCoreTest::VerifyPackageInstalled(std::wstring & packageFullName)
 {
     std::unique_ptr<std::vector<std::shared_ptr<MsixCoreLib::IInstalledPackage>>> packages;
-    VERIFY_SUCCEEDED(m_packageManager->FindPackages(packages));
+    VERIFY_SUCCEEDED(m_packageManager->FindPackages(L"*", packages));
 
     bool found = false;
     for (auto& package : *packages)
@@ -122,7 +122,7 @@ void MsixCoreTest::InstallIStreamPackageTest()
     VERIFY_SUCCEEDED(m_packageManager->AddPackage(packageStream, DeploymentOptions::None));
 
     std::unique_ptr<std::vector<std::shared_ptr<MsixCoreLib::IInstalledPackage>>> packages;
-    VERIFY_SUCCEEDED(m_packageManager->FindPackages(packages));
+    VERIFY_SUCCEEDED(m_packageManager->FindPackages(L"*", packages));
 
     bool found = false;
     for (auto& package : *packages)
