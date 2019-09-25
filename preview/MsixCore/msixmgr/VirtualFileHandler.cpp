@@ -91,7 +91,7 @@ HRESULT VirtualFileHandler::CreateHandler(MsixRequest * msixRequest, IPackageHan
     {
         return E_OUTOFMEMORY;
     }
-    RETURN_IF_FAILED(localInstance->m_sharedDllsKey.Open(HKEY_LOCAL_MACHINE, uninstallKeyPath.c_str(), KEY_WRITE));
+    RETURN_IF_FAILED(localInstance->m_sharedDllsKey.Open(HKEY_LOCAL_MACHINE, sharedDllsKeyPath.c_str(), KEY_READ | KEY_WRITE));
 
     *instance = localInstance.release();
 
@@ -410,18 +410,18 @@ HRESULT VirtualFileHandler::ConvertVfsFullPathToFullPath(std::wstring sourceFull
 HRESULT VirtualFileHandler::ConvertRemainingPathToFullPath(std::wstring& remainingFilePath, std::wstring& targetFullPath)
 {
     std::map<std::wstring, std::wstring> map = FilePathMappings::GetInstance().GetMap();
-    for (auto& pair : map)
+
+    std::wstring virtualDirectory = remainingFilePath.substr(0, remainingFilePath.find_first_of(L'\\'));
+    auto it = map.find(virtualDirectory);
+    if (it != map.end())
     {
-        if (remainingFilePath.find(pair.first) != std::wstring::npos)
-        {
-            MsixCoreLib_GetPathChild(remainingFilePath); // remove the FirstDir directory.
+        MsixCoreLib_GetPathChild(remainingFilePath); // remove the FirstDir directory.
 
-            // Pre-pend the VFS target directory to obtain the full path for the target location
-            targetFullPath = pair.second + std::wstring(L"\\") + remainingFilePath;
+        // Pre-pend the VFS target directory to obtain the full path for the target location
+        targetFullPath = it->second + std::wstring(L"\\") + remainingFilePath;
 
-            //Stop looping through the list
-            return S_OK;
-        }
+        //Stop looping through the list
+        return S_OK;
     }
 
     return E_NOT_SET;

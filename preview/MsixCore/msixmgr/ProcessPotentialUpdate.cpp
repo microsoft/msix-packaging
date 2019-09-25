@@ -22,7 +22,7 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
             {
                 if (CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
                 {
-                    m_msixRequest->SetIsReinstall();
+                    m_msixRequest->SetIsReinstall(true);
                     TraceLoggingWrite(g_MsixTraceLoggingProvider, "Reinstalling package.");
                     return S_OK;
                 }

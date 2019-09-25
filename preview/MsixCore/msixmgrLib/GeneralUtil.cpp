@@ -53,6 +53,16 @@ namespace MsixCoreLib
         return (_wcsicmp(left.c_str(), right.c_str()) == 0);
     }
 
+    bool CaseInsensitiveIsSubString(const std::wstring & string, const std::wstring & substring)
+    {
+        auto it = std::search(
+            string.begin(), string.end(),
+            substring.begin(), substring.end(),
+            [](wchar_t ch1, wchar_t ch2) { return std::toupper(ch1, std::locale()) == std::toupper(ch2, std::locale()); }
+        );
+        return (it != substring.end());
+    }
+
     HRESULT GetAttributeValueFromElement(IMsixElement * element, const std::wstring attributeName, std::wstring & attributeValue)
     {
         Text<wchar_t> textValue;

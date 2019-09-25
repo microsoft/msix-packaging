@@ -68,7 +68,7 @@ public:
     void SetPackageInfo(std::shared_ptr<PackageBase> packageInfo);
     std::wstring GetPackageDirectoryPath();
 
-    void SetIsReinstall();
+    void SetIsReinstall(bool isReinstall) { m_isReinstall = isReinstall; }
     bool IsReinstall() { return m_isReinstall;  }
 
     /// @return can return null if called before PopulatePackageInfo.

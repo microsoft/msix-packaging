@@ -53,6 +53,13 @@ namespace MsixCoreLib
     /// @return true if the strings equal, false otherwise
     bool CaseInsensitiveEquals(const std::wstring& left, const std::wstring& right);
 
+    /// Determines if a string contains a substring, insensitive to case
+    ///
+    /// @param string
+    /// @param substring
+    /// @return true if string contains substring, false otherwise
+    bool CaseInsensitiveIsSubString(const std::wstring& string, const std::wstring& substring);
+
     /// Returns the current user sid as a string.
     ///
     /// @param userSidString - current user sid string
