@@ -17,7 +17,7 @@ namespace MSIX {
     {
     public:
         enum Mode { READ = 0, WRITE, APPEND, READ_UPDATE, WRITE_UPDATE, APPEND_UPDATE };
-        
+
         FileStream(const std::string& name, Mode mode) : m_name(name)
         {
             static const char* modes[] = { "rb", "wb", "ab", "r+b", "w+b", "a+b" };
