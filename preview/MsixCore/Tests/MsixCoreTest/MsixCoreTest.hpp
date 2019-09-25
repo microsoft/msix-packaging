@@ -34,6 +34,10 @@ public:
     BEGIN_TEST_METHOD(InstallFromEmbeddedStreamTest)
     TEST_METHOD_PROPERTY(L"RunAs", L"ElevatedUser")
     END_TEST_METHOD()
+
+    BEGIN_TEST_METHOD(TestSharedBinaries)
+    TEST_METHOD_PROPERTY(L"RunAs", L"ElevatedUser")
+    END_TEST_METHOD()
 private:
     MsixCoreLib::IPackageManager * m_packageManager;
     WEX::Common::String m_testDeploymentDir;

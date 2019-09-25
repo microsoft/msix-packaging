@@ -10,6 +10,10 @@
 const std::wstring scribbleFileName = L"scribble.appx";
 const std::wstring scribblePackageFullName = L"ScribbleOleDocumentSample_1.1.0.0_x86__8wekyb3d8bbwe";
 const std::wstring windows10PackageRoot = L"C:\\Program Files\\Windowsapps";
+const std::wstring notepadplusFileName = L"notepadplus.msix";
+const std::wstring notepadplusFullName = L"notepadplus_0.0.0.0_x64__8wekyb3d8bbwe";
+const std::wstring notepadplusCopyFileName = L"notepadplusCopy.msix";
+const std::wstring notepadplusCopyFullName = L"notepadplusCopy_0.0.0.0_x64__8wekyb3d8bbwe";
 
 MsixCoreTest::~MsixCoreTest()
 {
@@ -213,4 +217,32 @@ void MsixCoreTest::InstallFromEmbeddedStreamTest()
     VerifyPackageInstalled(expectedPackageFullName);
 
     VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
+}
+
+void MsixCoreTest::TestSharedBinaries()
+{
+    //Install first package
+    std::wstring packagePath = std::wstring(m_testDeploymentDir) + L"\\" + notepadplusFileName;
+    std::wstring expectedPackageFullName = notepadplusFullName;
+    VERIFY_SUCCEEDED(m_packageManager->AddPackage(packagePath, DeploymentOptions::None));
+    VerifyPackageInstalled(expectedPackageFullName);
+
+    //Install second package with same binary
+    std::wstring packagePathSecond = std::wstring(m_testDeploymentDir) + L"\\" + notepadplusCopyFileName;
+    std::wstring expectedPackageFullNameSecond = notepadplusCopyFullName;
+    VERIFY_SUCCEEDED(m_packageManager->AddPackage(packagePathSecond, DeploymentOptions::None));
+    VerifyPackageInstalled(expectedPackageFullNameSecond);
+
+    //Remove first package
+    VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullName));
+
+    //the exe file in the actual location should still exist
+    std::wstring notepadExeName = L"C:\\Program Files (x86)\\Notepad++\\notepad++.exe";
+    VERIFY_IS_TRUE(std::experimental::filesystem::exists(notepadExeName));
+
+    //Remove second package
+    VERIFY_SUCCEEDED(m_packageManager->RemovePackage(expectedPackageFullNameSecond));
+
+    //After removing second package with shared binary, the exe should now not exist
+    VERIFY_IS_TRUE(!std::experimental::filesystem::exists(notepadExeName));
 }
