@@ -155,3 +155,24 @@ HRESULT RegistryKey::SetUInt32Value(
 {
     return SetValue(name, &value, static_cast<DWORD>(sizeof(value)), REG_DWORD);
 }
+
+HRESULT RegistryKey::GetUInt32ValueIfExists(
+    _In_ PCWSTR name,
+    _Out_ UINT32 & value,
+    _Out_ bool & exists)
+{
+    DWORD size = sizeof(value);
+    LONG rc = RegQueryValueExW(m_hkey, name, nullptr, nullptr, reinterpret_cast<BYTE *>(&value), &size);
+    if (rc == ERROR_SUCCESS)
+    {
+        exists = true;
+        return S_OK;
+    }
+    else if ((rc == ERROR_FILE_NOT_FOUND) || (rc == ERROR_PATH_NOT_FOUND))
+    {
+        value = 0;
+        exists = false;
+        return S_OK;
+    }
+    return HRESULT_FROM_WIN32(rc);
+}

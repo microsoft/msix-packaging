@@ -28,8 +28,7 @@ HRESULT VirtualFileHandler::ExecuteForAddRequest()
             RETURN_IF_FAILED(CopyVfsFileToLocal(p.path()));
         }
     }
-    
-    
+
     return S_OK;
 }
 
@@ -92,6 +91,8 @@ HRESULT VirtualFileHandler::CreateHandler(MsixRequest * msixRequest, IPackageHan
     {
         return E_OUTOFMEMORY;
     }
+    RETURN_IF_FAILED(localInstance->m_sharedDllsKey.Open(HKEY_LOCAL_MACHINE, sharedDllsKeyPath.c_str(), KEY_READ | KEY_WRITE));
+
     *instance = localInstance.release();
 
     return S_OK;
@@ -176,6 +177,29 @@ HRESULT VirtualFileHandler::NeedToCopyFile(std::wstring sourceFullPath, std::wst
             "Need to copy file because target doesn't exist",
             TraceLoggingValue(targetFullPath.c_str(), "TargetFullPath"));
         return S_OK;
+    }
+
+    if (!m_msixRequest->IsReinstall())
+    {
+        // The file already exists, so we need to refcount it regardless of whether we need to overwrite the existing file or not
+        // Cases for incrementing SharedDLLs. For simplicity, we ignore the count in registry.dat as we treat the .msix package as having one reference to the file
+        // 
+        // File exists, already exists in current system SharedDLLs => increment current SharedDLLs + 1
+        // File exists, not in current system SharedDLLs => create new SharedDLLs = 2 (the one existing + this package)
+        UINT32 count = 0;
+        bool sharedDllValueExists = false;
+        bool shouldDelete = true;
+        RETURN_IF_FAILED(m_sharedDllsKey.GetUInt32ValueIfExists(targetFullPath.c_str(), count, sharedDllValueExists));
+        if (sharedDllValueExists)
+        {
+            count++;
+        }
+        else
+        {
+            count = 2; // implicitly 1 for the file already existing, +1 for the package we're currently installing
+        }
+
+        RETURN_IF_FAILED(m_sharedDllsKey.SetUInt32Value(targetFullPath.c_str(), count));
     }
 
     // Whether we overwrite existing files or keep the existing file as-is follows MSI file versioning rules
@@ -281,38 +305,85 @@ HRESULT VirtualFileHandler::RemoveVfsFile(std::wstring fileName)
         return S_OK;
     }
 
-    bool success = DeleteFile(fullPath.c_str());
-    if (!success)
+    // Check if file is referenced in SharedDLLs key.
+    // If it is, then just decrement instead of delete; or delete the reg value if it's 0 after decrement
+    UINT32 count = 0;
+    bool sharedDllValueExists = false;
+    bool shouldDelete = true;
+    HRESULT hrGetUInt32Value = m_sharedDllsKey.GetUInt32ValueIfExists(fullPath.c_str(), count, sharedDllValueExists);
+    if (FAILED(hrGetUInt32Value))
     {
         TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Unable to Delete file",
+            "Unable to determine if file is shared -- not deleting file",
             TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
             TraceLoggingValue(fullPath.c_str(), "FullPath"),
-            TraceLoggingValue(GetLastError(), "error"));
+            TraceLoggingValue(hrGetUInt32Value, "hr"));
+        shouldDelete = false;
     }
-
-    while (success)
+    else if (sharedDllValueExists)
     {
-        MsixCoreLib_GetPathParent(fullPath);
-
-        // instead of checking if the directory is empty, just try to delete it.
-        // if it's not empty it'll fail with expected error code that we can ignore
-        success = RemoveDirectory(fullPath.c_str());
-        if (!success)
+        if (count > 1)
         {
-            DWORD error = GetLastError();
-            if (error != ERROR_DIR_NOT_EMPTY)
+            shouldDelete = false;
+            HRESULT hrSetUInt32Value = m_sharedDllsKey.SetUInt32Value(fullPath.c_str(), count - 1);
+            if (FAILED(hrSetUInt32Value))
             {
                 TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                    "Unable to Delete directory",
+                    "Unable to decrement sharedDLL key",
                     TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
                     TraceLoggingValue(fullPath.c_str(), "FullPath"),
-                    TraceLoggingValue(GetLastError(), "error"));
+                    TraceLoggingValue(hrSetUInt32Value, "hr"));
             }
         }
-        // if we're successfull in deleting the directory, try to delete the containing directory too, in case it's now empty
+        else
+        {
+            HRESULT hrDeleteValue = m_sharedDllsKey.DeleteValue(fullPath.c_str());
+            if (FAILED(hrDeleteValue))
+            {
+                TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                    "Unable to delete sharedDLL key",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(fullPath.c_str(), "FullPath"),
+                    TraceLoggingValue(hrDeleteValue, "hr"));
+                shouldDelete = false;
+            }
+        }
     }
-    
+
+    if (shouldDelete)
+    {
+        bool success = DeleteFile(fullPath.c_str());
+        if (!success)
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to Delete file",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(fullPath.c_str(), "FullPath"),
+                TraceLoggingValue(GetLastError(), "error"));
+        }
+
+        while (success)
+        {
+            MsixCoreLib_GetPathParent(fullPath);
+
+            // instead of checking if the directory is empty, just try to delete it.
+            // if it's not empty it'll fail with expected error code that we can ignore
+            success = RemoveDirectory(fullPath.c_str());
+            if (!success)
+            {
+                DWORD error = GetLastError();
+                if (error != ERROR_DIR_NOT_EMPTY)
+                {
+                    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                        "Unable to Delete directory",
+                        TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                        TraceLoggingValue(fullPath.c_str(), "FullPath"),
+                        TraceLoggingValue(GetLastError(), "error"));
+                }
+            }
+            // if we're successfull in deleting the directory, try to delete the containing directory too, in case it's now empty
+        }
+    }
     return S_OK;
 }
 
@@ -339,18 +410,18 @@ HRESULT VirtualFileHandler::ConvertVfsFullPathToFullPath(std::wstring sourceFull
 HRESULT VirtualFileHandler::ConvertRemainingPathToFullPath(std::wstring& remainingFilePath, std::wstring& targetFullPath)
 {
     std::map<std::wstring, std::wstring> map = FilePathMappings::GetInstance().GetMap();
-    for (auto& pair : map)
+
+    std::wstring virtualDirectory = remainingFilePath.substr(0, remainingFilePath.find_first_of(L'\\'));
+    auto it = map.find(virtualDirectory);
+    if (it != map.end())
     {
-        if (remainingFilePath.find(pair.first) != std::wstring::npos)
-        {
-            MsixCoreLib_GetPathChild(remainingFilePath); // remove the FirstDir directory.
+        MsixCoreLib_GetPathChild(remainingFilePath); // remove the FirstDir directory.
 
-            // Pre-pend the VFS target directory to obtain the full path for the target location
-            targetFullPath = pair.second + std::wstring(L"\\") + remainingFilePath;
+        // Pre-pend the VFS target directory to obtain the full path for the target location
+        targetFullPath = it->second + std::wstring(L"\\") + remainingFilePath;
 
-            //Stop looping through the list
-            return S_OK;
-        }
+        //Stop looping through the list
+        return S_OK;
     }
 
     return E_NOT_SET;

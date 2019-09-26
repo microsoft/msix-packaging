@@ -18,11 +18,19 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
         if (std::experimental::filesystem::is_directory(p.path()))
         {
             std::wstring installedPackageFamilyName = GetFamilyNameFromFullName(p.path().filename());
-            if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName)
-                && !CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
+            if (CaseInsensitiveEquals(currentPackageFamilyName, installedPackageFamilyName))
             {
-                RETURN_IF_FAILED(RemovePackage(p.path().filename()));
-                return S_OK;
+                if (CaseInsensitiveEquals(m_msixRequest->GetPackageInfo()->GetPackageFullName(), p.path().filename()))
+                {
+                    m_msixRequest->SetIsReinstall(true);
+                    TraceLoggingWrite(g_MsixTraceLoggingProvider, "Reinstalling package.");
+                    return S_OK;
+                }
+                else
+                {
+                    RETURN_IF_FAILED(RemovePackage(p.path().filename()));
+                    return S_OK;
+                }
             }
         }
     }

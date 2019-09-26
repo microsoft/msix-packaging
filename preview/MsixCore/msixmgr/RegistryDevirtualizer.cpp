@@ -112,11 +112,12 @@ bool RegistryDevirtualizer::IsExcludeKey(RegistryKey* realKey)
     const std::wstring excludeKeys[] = 
     {
         uninstallKeySubPath,   // uninstall key will be written by MsixInstaller itself, no need to copy from package
+        sharedDllsKeyPath,     // virtual file handler will handle writing changes to this path
     };
 
     for (auto excludeKey : excludeKeys)
     {
-        if (realKey->GetPath().find(excludeKey) != std::string::npos)
+        if (CaseInsensitiveIsSubString(realKey->GetPath(), excludeKey))
         {
             return true;
         }
@@ -216,14 +217,32 @@ HRESULT RegistryDevirtualizer::DetokenizeData(std::wstring& data)
         std::wstring token = data.substr(beginToken + 2, (endToken - beginToken - 2)); // +2 to skip over [{ characters, -2 to omit }] characters
 
         std::map<std::wstring, std::wstring> map = FilePathMappings::GetInstance().GetMap();
-        for (auto& pair : map)
+        auto it = map.find(token);
+        if (it != map.end())
         {
-            if (token.find(pair.first) != std::wstring::npos)
+            // replace the entire braces [{token}] with what it represents
+            data.replace(beginToken, endToken + 2 - beginToken, it->second); // +2 to include the }] characters
+            foundToken = true;
+        }
+
+        if (!foundToken)
+        {
+            for (auto& pair : map)
             {
-                // replace the entire braces [{token}] with what it represents
-                data.replace(beginToken, endToken + 2 - beginToken, pair.second); // +2 to include the }] characters
-                foundToken = true;
-                break;
+                if (token.find(pair.first) != std::wstring::npos)
+                {
+                    // replace the entire braces [{token}] with what it represents
+                    data.replace(beginToken, endToken + 2 - beginToken, pair.second); // +2 to include the }] characters
+                    foundToken = true;
+
+                    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                        "Failed to find exact match for token; using approximation",
+                        TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                        TraceLoggingValue(token.c_str(), "token"),
+                        TraceLoggingValue(pair.first.c_str(), "VFS"),
+                        TraceLoggingValue(pair.second.c_str(), "real"));
+                    break;
+                }
             }
         }
 

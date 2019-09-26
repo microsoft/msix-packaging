@@ -133,6 +133,11 @@ public:
         _In_opt_ PCWSTR name,
         _In_ UINT32 value);
 
+    HRESULT GetUInt32ValueIfExists(
+        _In_ PCWSTR name,
+        _Out_ UINT32 & value,
+        _Out_ bool & exists);
+
     template<typename TAction> static HRESULT EnumKeyAndDoActionForAllSubkeys(
         _In_ RegistryKey* registryKey,
         _In_ TAction subkeyActionFunction)
