@@ -50,6 +50,19 @@
       <Name>WixUIExtension</Name>
     </WixExtension>
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="en-us.wxl" />
+    <EmbeddedResource Include="fr-fr.wxl" />
+    <EmbeddedResource Include="pt-pt.wxl" />
+    <EmbeddedResource Include="de-de.wxl" />
+    <EmbeddedResource Include="es-es.wxl" />
+    <EmbeddedResource Include="it-it.wxl" />
+    <EmbeddedResource Include="ja-jp.wxl" />
+    <EmbeddedResource Include="ko-kr.wxl" />
+    <EmbeddedResource Include="ru-ru.wxl" />
+    <EmbeddedResource Include="zh-cn.wxl" />
+    <EmbeddedResource Include="zh-tw.wxl" />
+  </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
   <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">

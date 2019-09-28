@@ -19,18 +19,18 @@ $transformEmbedScript = "$ProjectDir\WiSubStg.vbs"
 $wixUIExtensionDll = $WixExtDir + "WixUIExtension.dll"
 
 # keep original copy to create transforms off of, and have a combined copy that has all the embedded transforms
-copy "$TargetDir\$TargetName.msi" "$TargetDir\$TargetName-orig.msi"
+copy "$TargetDir\en-us\$TargetName.msi" "$TargetDir\$TargetName.msi"
 
 cd $ProjectDir
 $languages.GetEnumerator() |% {
 	$language = $_.key
 	$lcid = $_.value
 
-    #generate an msi for each language
-	& "$lightExe" -out $TargetDir\$TargetName-$language.msi -cultures:$language -ext "$wixUIExtensionDll" -sval -wixprojectfile $ProjectPath obj\Release\Product.wixobj
+    #generate an msi for each language (this is already handled by the build)
+	#& "$lightExe" -out $TargetDir\$TargetName-$language.msi -cultures:$language -ext "$wixUIExtensionDll" -sval -wixprojectfile $ProjectPath obj\Release\Product.wixobj
 
     #create language-specific transform - wrong codepage will generate on error, but the package seems to work anyway.
-	& "$torchExe" $TargetDir\$TargetName-orig.msi $TargetDir\$TargetName-$language.msi -o $TargetDir\$language.mst | out-null
+	& "$torchExe" $TargetDir\en-us\$TargetName.msi $TargetDir\$language\$TargetName.msi -o $TargetDir\$language.mst | out-null
     #embed transform into the combined msi
     & "cscript.exe" $transformEmbedScript $TargetDir\$TargetName.msi $TargetDir\$language.mst $lcid
 }
