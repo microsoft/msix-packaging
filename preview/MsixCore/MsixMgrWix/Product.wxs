@@ -9,7 +9,7 @@
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Product Id="*" Name="MSIX Core" Language="1033" Version="!(bind.FileVersion.MsixMgrExe)" Manufacturer="Microsoft" UpgradeCode="2fe180f8-3fb8-48a0-b01e-68f47fc0ec34">
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Languages="1033,1031,1034,1036,1040,1041,1042,2070,1049,2052,1028"/>
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate EmbedCab="yes" />

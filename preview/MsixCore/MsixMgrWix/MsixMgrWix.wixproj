@@ -56,12 +56,7 @@
     <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>cd $(ProjectDir)
-"$(WixExtDir)Light.exe" -out $(TargetDir)\$(TargetName)-fr-FR.msi -pdbout $(TargetPdbPath) -cultures:fr-FR -ext "$(WixExtDir)WixUIExtension.dll" -sval -contentsfile obj\Release\MsixMgrWix.wixproj.BindContentsFileListnull.txt -outputsfile obj\Release\MsixMgrWix.wixproj.BindOutputsFileListnull.txt -builtoutputsfile obj\Release\MsixMgrWix.wixproj.BindBuiltOutputsFileListnull.txt -wixprojectfile $(ProjectPath) obj\Release\Product.wixobj
-cd $(OutDir)
-"$(WixExtDir)Torch.exe" $(TargetFileName) $(TargetName)-fr-FR.msi -o fr-FR.mst
-copy $(TargetFileName)  $(TargetName)-multi.msi
-cscript ..\..\WiSubStg.vbs $(TargetName)-multi.msi fr-FR.mst 1036</PostBuildEvent>
+    <PostBuildEvent>powershell $(ProjectDir)postbuild.ps1 %27$(ProjectDir)%27 %27$(WixExtDir)%27 %27$(TargetDir)%27 %27$(TargetName)%27 %27$(ProjectPath)%27</PostBuildEvent>
   </PropertyGroup>
   <!--
 	To modify your build process, add your task inside one of the targets below and uncomment it.
