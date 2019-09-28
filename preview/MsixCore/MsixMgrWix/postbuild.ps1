@@ -1,3 +1,8 @@
+# Postbuild script to create a multilanguage msi with embedded transforms
+# This creates a separate MSI with UI resources for each language by re-running light.exe with different -cultures: flags
+# Then creates a language-specific transform for each language using WiX tool's torch.exe
+# Then embeds each transform into the MSI using WiSubStg.vbs which was copied from MSI SDK scripts
+
 param (
     [string]$ProjectDir,
     [string]$WixExtDir,
@@ -14,20 +19,18 @@ $transformEmbedScript = "$ProjectDir\WiSubStg.vbs"
 $wixUIExtensionDll = $WixExtDir + "WixUIExtension.dll"
 
 # keep original copy to create transforms off of, and have a combined copy that has all the embedded transforms
-copy "$TargetDir\$TargetName.msi" "$TargetDir\$TargetName-multi.msi"
+copy "$TargetDir\$TargetName.msi" "$TargetDir\$TargetName-orig.msi"
 
 cd $ProjectDir
 $languages.GetEnumerator() |% {
 	$language = $_.key
+	$lcid = $_.value
+
     #generate an msi for each language
 	& "$lightExe" -out $TargetDir\$TargetName-$language.msi -cultures:$language -ext "$wixUIExtensionDll" -sval -wixprojectfile $ProjectPath obj\Release\Product.wixobj
-}
 
-$languages.GetEnumerator() |% {
-	$language = $_.key
-	$lcid = $_.value
-    #create language-specific transform
-	& "$torchExe" $TargetDir\$TargetName.msi $TargetDir\$TargetName-$language.msi -o $TargetDir\$language.mst | out-null
+    #create language-specific transform - wrong codepage will generate on error, but the package seems to work anyway.
+	& "$torchExe" $TargetDir\$TargetName-orig.msi $TargetDir\$TargetName-$language.msi -o $TargetDir\$language.mst | out-null
     #embed transform into the combined msi
-    & "cscript.exe" $transformEmbedScript $TargetDir\$TargetName-multi.msi $TargetDir\$language.mst $lcid
+    & "cscript.exe" $transformEmbedScript $TargetDir\$TargetName.msi $TargetDir\$language.mst $lcid
 }
