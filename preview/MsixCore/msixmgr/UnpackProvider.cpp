@@ -19,10 +19,11 @@ namespace MsixCoreLib
     HRESULT UnpackPackage(
         _In_ std::wstring packageFilePath,
         _In_ std::wstring destination,
-        _In_ bool isApplyACLs)
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature)
     {
         MSIX_PACKUNPACK_OPTION unpackOption = MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE;
-        MSIX_VALIDATION_OPTION validationOption = MSIX_VALIDATION_OPTION_FULL;
+        MSIX_VALIDATION_OPTION validationOption = validateSignature ? MSIX_VALIDATION_OPTION_FULL : MSIX_VALIDATION_OPTION_SKIPSIGNATURE;
 
         auto unpackDestinationUTF8 = utf16_to_utf8(destination);
         std::vector<char> unpackDestination(unpackDestinationUTF8.c_str(), unpackDestinationUTF8.c_str() + unpackDestinationUTF8.size() + 1);
@@ -68,11 +69,12 @@ namespace MsixCoreLib
     HRESULT UnpackBundle(
         _In_ std::wstring packageFilePath,
         _In_ std::wstring destination,
-        _In_ bool isApplyACLs)
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature)
     {
         MSIX_APPLICABILITY_OPTIONS applicabilityOption = static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE);
         MSIX_PACKUNPACK_OPTION unpackOption = MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE;
-        MSIX_VALIDATION_OPTION validationOption = MSIX_VALIDATION_OPTION_FULL;
+        MSIX_VALIDATION_OPTION validationOption = validateSignature ? MSIX_VALIDATION_OPTION_FULL : MSIX_VALIDATION_OPTION_SKIPSIGNATURE;
 
         auto unpackDestinationUTF8 = utf16_to_utf8(destination);
         std::vector<char> unpackDestination(unpackDestinationUTF8.c_str(), unpackDestinationUTF8.c_str() + unpackDestinationUTF8.size() + 1);

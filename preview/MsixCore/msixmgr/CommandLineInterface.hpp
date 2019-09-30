@@ -81,6 +81,7 @@ public:
     HRESULT Init();
     bool IsQuietMode() { return m_quietMode; }
     bool IsApplyACLs() { return m_applyACLs; }
+    bool IsValidateSignature() { return m_validateSignature; }
     std::wstring GetPackageFilePathToInstall() { return m_packageFilePath; }
     std::wstring GetPackageFullName() { return m_packageFullName; }
     std::wstring GetUnpackDestination() { return m_unpackDestination; }
@@ -97,6 +98,7 @@ private:
     std::wstring m_unpackDestination;
     bool m_quietMode;
     bool m_applyACLs;
+    bool m_validateSignature;
 
     OperationType m_operationType = OperationType::Undefined;
 
