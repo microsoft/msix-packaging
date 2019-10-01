@@ -61,7 +61,7 @@ namespace MSIX {
         MissingAppxManifestXML      = ERROR_FACILITY + 0x0034,
         DuplicateFootprintFile      = ERROR_FACILITY + 0x0035,
         UnknownFileNameEncoding     = ERROR_FACILITY + 0x0036,
-        DuplicatePayloadFile        = ERROR_FACILITY + 0x0037,
+        DuplicateFile               = ERROR_FACILITY + 0x0037,
 
         // Signature errors
         SignatureInvalid            = ERROR_FACILITY + 0x0041,

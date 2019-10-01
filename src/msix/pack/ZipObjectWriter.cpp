@@ -10,6 +10,7 @@
 #include "ZipFileStream.hpp"
 #include "DeflateStream.hpp"
 #include "StreamHelper.hpp"
+#include "Encoding.hpp"
 
 namespace MSIX {
 
@@ -69,7 +70,11 @@ namespace MSIX {
         ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForLfhOrClose, "Invalid zip writer state");
 
         auto result = m_centralDirectories.find(name);
-        ThrowErrorIf(Error::DuplicatePayloadFile, result != m_centralDirectories.end(), std::string("Adding duplicated file " + name + "to package").c_str());
+        if (result != m_centralDirectories.end())
+        {
+            auto message = "Adding duplicated file " + Encoding::DecodeFileName(name) + "to package";
+            ThrowErrorAndLog(Error::DuplicateFile, message.c_str());
+        }
 
         // Get position were the lfh is going to be written
         ULARGE_INTEGER pos = {0};
