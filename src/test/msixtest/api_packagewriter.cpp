@@ -352,6 +352,39 @@ TEST_CASE("Api_AppxPackageWriter_closed", "[api]")
             fileStream.Get()));
 }
 
+TEST_CASE("Api_AppxPackageWriter_add_same_payload_file")
+{
+    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
+
+    MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
+    InitializePackageWriter(outputStream.Get(), &packageWriter);
+
+    auto contentStream = MsixTest::StreamFile("test_file.txt", false, true);
+    WriteContentToStream(618963, contentStream.Get());
+
+    // Adding file same file twice
+    REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
+        TestConstants::GoodFileNames[1].second.c_str(),
+        TestConstants::ContentType.c_str(),
+        APPX_COMPRESSION_OPTION_NORMAL,
+        contentStream.Get()));
+
+    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::DuplicatePayloadFile),
+        packageWriter->AddPayloadFile(
+        TestConstants::GoodFileNames[1].second.c_str(),
+        TestConstants::ContentType.c_str(),
+        APPX_COMPRESSION_OPTION_NORMAL,
+        contentStream.Get()));
+
+    // The package should be in an invalid state now.
+    REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidState),
+        packageWriter->AddPayloadFile(
+        TestConstants::GoodFileNames[1].second.c_str(),
+        TestConstants::ContentType.c_str(),
+        APPX_COMPRESSION_OPTION_NORMAL,
+        contentStream.Get()));
+}
+
 class GeneratedEasilyCompressedFileStream final : public MSIX::StreamBase
 {
 public:

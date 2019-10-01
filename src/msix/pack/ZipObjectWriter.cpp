@@ -68,6 +68,9 @@ namespace MSIX {
     {
         ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForLfhOrClose, "Invalid zip writer state");
 
+        auto result = m_centralDirectories.find(name);
+        ThrowErrorIf(Error::DuplicatePayloadFile, result != m_centralDirectories.end(), std::string("Adding duplicated file " + name + "to package").c_str());
+
         // Get position were the lfh is going to be written
         ULARGE_INTEGER pos = {0};
         ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
