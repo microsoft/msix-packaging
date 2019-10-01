@@ -135,6 +135,10 @@
       <Command>
       </Command>
     </CustomBuildStep>
+    <PreBuildEvent>
+      <Command>
+      </Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -198,6 +202,9 @@
     <Manifest>
       <AdditionalManifestFiles>WindowsCompatibility.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
+    <PreBuildEvent>
+      <Command>powershell.exe -ExecutionPolicy Bypass -File $(ProjectDir)update_version.ps1 $(ProjectDir)msixmgr.rc</Command>
+    </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ApplyACLsProvider.hpp" />
