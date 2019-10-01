@@ -134,11 +134,11 @@ int main(int argc, char * argv[])
 
             if (IsPackageFile(packageFilePath))
             {
-                hr = MsixCoreLib::UnpackPackage(packageFilePath, unpackDestination, cli.IsApplyACLs());
+                hr = MsixCoreLib::UnpackPackage(packageFilePath, unpackDestination, cli.IsApplyACLs(), cli.IsValidateSignature());
             }
             else if (IsBundleFile(packageFilePath))
             {
-                hr = MsixCoreLib::UnpackBundle(packageFilePath, unpackDestination, cli.IsApplyACLs());
+                hr = MsixCoreLib::UnpackBundle(packageFilePath, unpackDestination, cli.IsApplyACLs(), cli.IsValidateSignature());
             }
             else
             {

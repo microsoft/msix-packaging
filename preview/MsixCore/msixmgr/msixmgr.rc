@@ -102,6 +102,7 @@ BEGIN
 	IDS_STRING_HELP_OPTION_UNPACK_PACKAGEPATH "the path to the package to unpack"
 	IDS_STRING_HELP_OPTION_UNPACK_DESTINATION "the directory to place the resulting package folder(s) in"
 	IDS_STRING_HELP_OPTION_UNPACK_APPLYACLS "optional parameter that applies ACLs to the resulting package folder(s) and their parent folder"
+        IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE "optional parameter that validates a package's signature file before unpacking the package. This will require that the package's certificate is installed on the machine."
 	IDS_STRING_HELP_OPTION_APPLYACLS "Applies ACLs to a package folder (an unpacked package)"
 	IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH "the path to the folder to apply acls to"
 

@@ -114,6 +114,19 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                     commandLineInterface->m_applyACLs = true;
                     return S_OK;
                 }),
+            },
+            {
+                L"-validateSignature",
+                Option(false, IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE,
+                    [&](CommandLineInterface* commandLineInterface, const std::string&)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_validateSignature = true;
+                    return S_OK;
+                }),
             }
         })
     },
