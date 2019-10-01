@@ -379,7 +379,7 @@ TEST_CASE("Api_AppxPackageWriter_add_same_payload_file")
     // The package should be in an invalid state now.
     REQUIRE_HR(static_cast<HRESULT>(MSIX::Error::InvalidState),
         packageWriter->AddPayloadFile(
-        TestConstants::GoodFileNames[1].second.c_str(),
+        TestConstants::GoodFileNames[0].second.c_str(),
         TestConstants::ContentType.c_str(),
         APPX_COMPRESSION_OPTION_NORMAL,
         contentStream.Get()));
