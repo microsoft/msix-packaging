@@ -99,6 +99,13 @@ namespace MsixCoreLib
     /// @param utf16Path - The filepath to create a directory in utf16
     int mkdirp(std::wstring& utf16Path);
 
+    /// GetFileVersion for file
+    ///
+    /// @param file - the file to get version for
+    /// @param version - fileversion
+    /// @param isUnversioned - whether the file does not have a version
+    HRESULT GetFileVersion(std::wstring file, _Out_ UINT64& version, _Out_ bool& isUnversioned);
+
     //
     // Stripped down ComPtr class provided for those platforms that do not already have a ComPtr class.
     //

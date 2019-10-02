@@ -7,6 +7,8 @@
 
 HRESULT MsixCoreLib::Windows10Redirector::AddPackageWithProgress(const std::wstring & packageFilePath, std::shared_ptr<MsixResponse>& msixResponse)
 {
+    TraceLoggingWrite(g_MsixTraceLoggingProvider, "AddPackageWithProgress using PackageManager");
+
     winrt::init_apartment();
     
     winrt::Windows::Foundation::Uri packageUri{ packageFilePath };
@@ -36,6 +38,8 @@ HRESULT MsixCoreLib::Windows10Redirector::AddPackageWithProgress(const std::wstr
 
 HRESULT MsixCoreLib::Windows10Redirector::AddPackage(const std::wstring & packageFilePath)
 {
+    TraceLoggingWrite(g_MsixTraceLoggingProvider, "AddPackage using PackageManager");
+
     winrt::init_apartment();
 
     winrt::Windows::Foundation::Uri packageUri{ packageFilePath };
@@ -54,6 +58,8 @@ HRESULT MsixCoreLib::Windows10Redirector::AddPackage(const std::wstring & packag
 
 HRESULT MsixCoreLib::Windows10Redirector::RemovePackage(const std::wstring & packageFullName)
 {
+    TraceLoggingWrite(g_MsixTraceLoggingProvider, "RemovePackage using PackageManager");
+
     winrt::init_apartment();
 
     winrt::Windows::Management::Deployment::PackageManager packageManager;

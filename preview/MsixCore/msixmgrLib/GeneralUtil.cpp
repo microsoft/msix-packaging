@@ -276,4 +276,38 @@ namespace MsixCoreLib
         return 0;
     }
 
+    HRESULT GetFileVersion(std::wstring file, _Out_ UINT64& version, _Out_ bool& isUnversioned)
+    {
+        isUnversioned = true;
+        DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
+        if (size == 0)
+        {
+            DWORD error = GetLastError();
+            if (error == ERROR_RESOURCE_DATA_NOT_FOUND || error == ERROR_RESOURCE_TYPE_NOT_FOUND)
+            {
+                // Does not have version info, isUnversioned = true was set earlier.
+                version = 0;
+                return S_OK;
+            }
+            RETURN_IF_FAILED(HRESULT_FROM_WIN32(error));
+        }
+
+        std::unique_ptr<BYTE[]> versionInfo(new BYTE[size]);
+        if (!GetFileVersionInfo(file.c_str(), 0, size, versionInfo.get()))
+        {
+            RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+        }
+
+        VS_FIXEDFILEINFO* fileInfo = nullptr;
+        UINT fileInfoLength = 0;
+        if (!VerQueryValue(versionInfo.get(), TEXT("\\"), (LPVOID*)&fileInfo, &fileInfoLength))
+        {
+            RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+        }
+
+        version = ((UINT64)(fileInfo->dwFileVersionMS) << 32) + fileInfo->dwFileVersionLS;
+        isUnversioned = false;
+
+        return S_OK;
+    }
 }
