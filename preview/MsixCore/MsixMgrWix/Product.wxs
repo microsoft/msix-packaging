@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-	<Product Id="*" Name="msixmgr" Language="1033" Version="1.0.0.0" Manufacturer="Microsoft" UpgradeCode="2fe180f8-3fb8-48a0-b01e-68f47fc0ec34">
+	<Product Id="*" Name="msixmgr" Language="1033" Version="!(bind.FileVersion.MsixMgrExe)" Manufacturer="Microsoft" UpgradeCode="2fe180f8-3fb8-48a0-b01e-68f47fc0ec34">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
@@ -33,7 +33,7 @@
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
 			
 			<Component Id="MsixMgrExe">
-				<File Source="$(var.msixmgr.TargetPath)" />
+				<File Id="MsixMgrExe" Source="$(var.msixmgr.TargetPath)" />
 				<ProgId Id="APPX" Description="Extracts package, reads manifest and unpacks VFS" Icon="MsixIcon" IconIndex="0" Advertise="yes">
 					<Extension Id="appx" Advertise="yes">
 						<Verb Id="open" Command="&amp;Open" Argument="-AddPackage &quot;%1&quot;" />

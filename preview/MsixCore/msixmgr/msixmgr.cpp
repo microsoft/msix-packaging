@@ -26,6 +26,30 @@ using namespace MsixCoreLib;
 
 TRACELOGGING_DECLARE_PROVIDER(g_MsixTraceLoggingProvider);
 
+HRESULT LogFileInfo()
+{
+    WCHAR filePath[MAX_PATH];
+    DWORD lengthCopied = GetModuleFileNameW(nullptr, filePath, MAX_PATH);
+    if (lengthCopied == 0)
+    {
+        RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
+    }
+
+    UINT64 version = 0;
+    bool isUnversioned = false;
+    RETURN_IF_FAILED(GetFileVersion(filePath, version, isUnversioned));
+
+    std::wstring versionString =
+        std::to_wstring((version & 0xFFFF000000000000) >> 48) + L"." +
+        std::to_wstring((version & 0x0000FFFF00000000) >> 32) + L"." +
+        std::to_wstring((version & 0x00000000FFFF0000) >> 16) + L"." +
+        std::to_wstring(version & 0x000000000000FFFF);
+    TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+        "msixmgr.exe file version",
+        TraceLoggingValue(versionString.c_str(), "Version"));
+    return S_OK;
+}
+
 int main(int argc, char * argv[])
 {
     // Register the providers
@@ -38,6 +62,8 @@ int main(int argc, char * argv[])
         std::wcout << GetStringResource(IDS_STRING_FAILED_COM_INITIALIZATION) << " " << std::hex << hrCoInitialize << std::endl;
         return 1;
     }
+
+    (void)(LogFileInfo());
 
     CommandLineInterface cli(argc, argv);
 
@@ -64,6 +90,8 @@ int main(int argc, char * argv[])
             {
                 if (IsWindows10RS3OrLater())
                 {
+                    TraceLoggingWrite(g_MsixUITraceLoggingProvider, "Windows10RS3 or later: redirecting to appInstaller");
+
                     const int bufSize = 1024;
                     wchar_t path[bufSize];
                     if (!GetFullPathNameW(cli.GetPackageFilePathToInstall().c_str(), bufSize, path, nullptr))
