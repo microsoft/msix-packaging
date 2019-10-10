@@ -20,7 +20,8 @@ HRESULT Extractor::GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** str
 {
     std::wstring fullFileName = path + std::wstring(L"\\") + fileName;
     RETURN_IF_FAILED(HRESULT_FROM_WIN32(mkdirp(fullFileName)));
-    RETURN_IF_FAILED(CreateStreamOnFileUTF16(fullFileName.c_str(), false, stream));
+    std::wstring longFileName = std::wstring(L"\\\\?\\") + fullFileName;
+    RETURN_IF_FAILED(CreateStreamOnFileUTF16(longFileName.c_str(), false, stream));
     return S_OK;
 }
 
