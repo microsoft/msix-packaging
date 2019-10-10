@@ -145,6 +145,10 @@ namespace MsixCoreLib
         {
             return m_packageDirectoryPath;
         }
+        virtual std::wstring GetResolvedExecutableFilePath()
+        {
+            return FilePathMappings::GetInstance().GetExecutablePath(m_relativeExecutableFilePath, m_packageFullName.c_str());
+        }
         std::vector<std::wstring> GetCapabilities()
         {
             return m_capabilities;
