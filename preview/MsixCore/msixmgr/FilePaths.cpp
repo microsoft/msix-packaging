@@ -83,6 +83,7 @@ HRESULT FilePathMappings::InitializePaths()
     TextOle<WCHAR> windowsPath;
     TextOle<WCHAR> commonAppDataPath;
     TextOle<WCHAR> localAppDataPath;
+    TextOle<WCHAR> localAppDataLowPath;
     TextOle<WCHAR> appDataPath;
     TextOle<WCHAR> commonProgramsPath;
     
@@ -94,6 +95,8 @@ HRESULT FilePathMappings::InitializePaths()
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_ProgramData, 0, NULL, &commonAppDataPath));
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_RoamingAppData, 0, NULL, &appDataPath));
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_CommonPrograms, 0, NULL, &commonProgramsPath));
+    RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppData, 0, NULL, &localAppDataPath));
+    RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, NULL, &localAppDataLowPath));
     
     std::wstring appVSystem32CatrootPath = std::wstring(systemPath.Get());
     std::wstring appVSystem32Catroot2Path = std::wstring(systemPath.Get());
@@ -126,6 +129,8 @@ HRESULT FilePathMappings::InitializePaths()
     m_map[L"AppVSystems32Driverstore"] = appVSystem32DriverstorePath;
     m_map[L"AppVSystems32Logfiles"] = appVSystem32LogfilesPath;
     m_map[L"AppVSystems32Spool"] = appVSystem32SpoolPath;
+    m_map[L"Local AppData"] = std::wstring(localAppDataPath.Get());
+    m_map[L"LocalAppDataLow"] = std::wstring(localAppDataLowPath.Get());
 
 #ifdef _WIN64
     TextOle<WCHAR> programFilesX64Path;
