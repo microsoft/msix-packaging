@@ -60,7 +60,7 @@ namespace MsixCoreLib
             substring.begin(), substring.end(),
             [](wchar_t ch1, wchar_t ch2) { return std::toupper(ch1, std::locale()) == std::toupper(ch2, std::locale()); }
         );
-        return (it != substring.end());
+        return (it != string.end());
     }
 
     HRESULT GetAttributeValueFromElement(IMsixElement * element, const std::wstring attributeName, std::wstring & attributeValue)
