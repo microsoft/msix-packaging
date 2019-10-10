@@ -137,13 +137,13 @@ namespace MsixCoreLib
 
         std::unique_ptr<IStream> GetLogo();
 
-        virtual std::wstring GetFullExecutableFilePath()
-        {
-            return m_packageDirectoryPath + m_relativeExecutableFilePath;
-        }
         virtual std::wstring GetInstalledLocation()
         {
             return m_packageDirectoryPath;
+        }
+        virtual std::wstring GetResolvedExecutableFilePath()
+        {
+            return FilePathMappings::GetInstance().GetExecutablePath(m_relativeExecutableFilePath, m_packageFullName.c_str());
         }
         std::vector<std::wstring> GetCapabilities()
         {
