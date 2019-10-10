@@ -239,7 +239,7 @@ HRESULT UI::LaunchInstalledApp()
 {
     shared_ptr<IInstalledPackage> installedPackage;
     RETURN_IF_FAILED(m_packageManager->FindPackage(m_packageInfo->GetPackageFullName(), installedPackage));
-    
+
     HRESULT hrShellExecute = ShellExecuteFromExplorer(installedPackage->GetResolvedExecutableFilePath().c_str());
     if (FAILED(hrShellExecute))
     {

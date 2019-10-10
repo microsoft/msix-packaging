@@ -24,7 +24,6 @@ namespace MsixCoreLib {
     class IInstalledPackage : public IPackage
     {
     public:
-        virtual std::wstring GetFullExecutableFilePath() = 0;
         virtual std::wstring GetInstalledLocation() = 0;
         virtual std::wstring GetResolvedExecutableFilePath() = 0;
         virtual ~IInstalledPackage() {}
