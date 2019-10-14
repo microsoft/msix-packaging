@@ -19,8 +19,8 @@ const PCWSTR Extractor::HandlerName = L"Extractor";
 HRESULT Extractor::GetOutputStream(LPCWSTR path, LPCWSTR fileName, IStream** stream)
 {
     std::wstring fullFileName = path + std::wstring(L"\\") + fileName;
-    RETURN_IF_FAILED(HRESULT_FROM_WIN32(mkdirp(fullFileName)));
     std::wstring longFileName = std::wstring(L"\\\\?\\") + fullFileName;
+    RETURN_IF_FAILED(HRESULT_FROM_WIN32(mkdirp(longFileName)));
     RETURN_IF_FAILED(CreateStreamOnFileUTF16(longFileName.c_str(), false, stream));
     return S_OK;
 }

@@ -37,7 +37,8 @@ HRESULT PopulatePackageInfo::GetPackageInfoFromManifest(const std::wstring & dir
     // On non-Win32 platforms CoCreateAppxFactory will return 0x80070032 (e.g. HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED))
     // So on all platforms, it's always safe to call CoCreateAppxFactoryWithHeap, just be sure to bring your own heap!
     ComPtr<IStream> inputStream;
-    RETURN_IF_FAILED(CreateStreamOnFileUTF16(manifestPath.c_str(), /*forRead*/ true, &inputStream));
+    std::wstring longManifestPath = std::wstring(L"\\\\?\\") + manifestPath;
+    RETURN_IF_FAILED(CreateStreamOnFileUTF16(longManifestPath.c_str(), /*forRead*/ true, &inputStream));
 
     // Create a new package reader using the factory.
     ComPtr<IAppxFactory> appxFactory;

@@ -246,7 +246,7 @@ namespace MsixCoreLib
     int mkdirp(std::wstring& utf16Path)
     {
         replace(utf16Path, L'/', L'\\');
-        for (std::size_t i = 3; i < utf16Path.size(); i++) // 3 skips past c:
+        for (std::size_t i = 7; i < utf16Path.size(); i++) // 7 skips past \\?\ for handling long file path and c:
         {
             if (utf16Path[i] == L'\0')
             {
