@@ -11,6 +11,8 @@ dataCompressionLib=NDK_libz
 bundle=off
 xmlparser=javaxml
 validationParser=off
+samples=on
+tests=on
 
 usage()
 {
@@ -25,6 +27,8 @@ usage()
     echo $'\t' "-parser-xerces          Use xerces xml parser instead of default javaxml"
     echo $'\t' "-sb                     Skip bundle support."
     echo $'\t' "--validation-parser|-vp Enable XML schema validation."
+    echo $'\t' "--skip-samples          Skip building samples."
+    echo $'\t' "--skip-tests            Skip building tests."
 }
 
 printsetup()
@@ -39,6 +43,8 @@ printsetup()
     echo "parser:" $xmlparser
     echo "Skip bundle support:" $bundle
     echo "Validation parser:" $validationParser
+    echo "Build samples:" $samples
+    echo "Build tests:" $tests
 }
 
 while [ "$1" != "" ]; do
@@ -75,6 +81,10 @@ while [ "$1" != "" ]; do
         --validation-parser ) validationParser=on
                 ;;
         -vp )   validationParser=on
+                ;;
+        --skip-samples ) samples=off
+                ;;
+        --skip-tests ) tests=off
                 ;;
         * )       usage
                   exit 1
@@ -114,7 +124,7 @@ find . -name *msix* -d | xargs rm -r
 echo "cmake -DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_NDK="$ndk "-DCMAKE_SYSTEM_VERSION="$version "-DANDROID_SDK="$sdk
 echo "-DANDROID_SDK_VERSION="$sdkver "-DCMAKE_ANDROID_ARCH_ABI="$arch "-DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang"
 echo "-DCMAKE_ANDROID_STL_TYPE=c++_shared -DCMAKE_BUILD_TYPE="$build "-DSKIP_BUNDLES="$bundle "-DXML_PARSER="$xmlparser
-echo "-DUSE_VALIDATION_PARSER="$validationParser $zlib "-DAOSP=on .."
+echo "-DUSE_VALIDATION_PARSER="$validationParser $zlib "-DSKIP_SAMPLES="$samples "-DSKIP_TESTS="$tests "-DAOSP=on .."
 cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK="$ndk" \
     -DCMAKE_SYSTEM_VERSION="$version" \
@@ -127,5 +137,7 @@ cmake -DCMAKE_SYSTEM_NAME=Android \
     -DSKIP_BUNDLES=$bundle \
     -DXML_PARSER=$xmlparser \
     -DUSE_VALIDATION_PARSER=$validationParser \
+    -DMSIX_SAMPLES=$samples \
+    -DMSIX_TESTS=$tests \
     $zlib -DAOSP=on ..
 make
