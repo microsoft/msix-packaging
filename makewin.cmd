@@ -35,6 +35,8 @@ set crypto="-DCRYPTO_LIB=crypt32"
 set msvc="-DUSE_STATIC_MSVC=off"
 set bundle="-DSKIP_BUNDLES=off"
 set pack="-DMSIX_PACK=off"
+set samples="-DMSIX_SAMPLES=on"
+set tests="-DMSIX_TESTS=on"
 
 :parseArgs
 if /I "%~2" == "--debug" (
@@ -86,6 +88,12 @@ if /I "%~2" == "--pack" (
     set pack="-DMSIX_PACK=on"
     set validationParser="-DUSE_VALIDATION_PARSER=on"
 )
+if /I "%~2" == "--skip-samples" (
+    set samples="-DMSIX_SAMPLES=off"
+)
+if /I "%~2" == "--skip-tests" (
+    set tests="-DMSIX_TESTS=off"
+)
 shift /2
 if not "%~2"=="" goto parseArgs
 
@@ -94,8 +102,8 @@ cd .vs
 if exist CMakeFiles rd /s /q CMakeFiles
 if exist CMakeCache.txt del CMakeCache.txt
 
-echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% %pack% -G"NMake Makefiles" ..
-cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% %pack% -G"NMake Makefiles" ..
+echo cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% %pack% %samples% %tests% -G"NMake Makefiles" ..
+cmake -DWIN32=on -DCMAKE_BUILD_TYPE=%build% %validationParser% %zlib% %parser% %crypto% %msvc% %bundle% %pack% %samples% %tests% -G"NMake Makefiles" ..
 nmake /NOLOGO
 
 goto Exit
@@ -116,6 +124,8 @@ echo    --crypto-openssl, -co    = Use OpenSSL crypto [currently for testing]. D
 echo    -mt                      = Use compiler flag /MT to use static version of the run-time library.
 echo    --skip-bundles, -sb      = Turn off bundle support.
 echo    --pack                   = Include packaging features. Sets validation parser on.
+echo    --skip-samples           = Skip building samples.
+echo    --skip-test              = Skip building tests.
 echo    --help, -h, /?           = Print this usage information and exit.
 :Exit
 EXIT /B 0

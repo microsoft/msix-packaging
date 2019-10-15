@@ -7,6 +7,8 @@ xmlparser=applexml
 addressSanitizer=off
 validationParser=off
 pack=off
+samples=on
+tests=on
 
 usage()
 {
@@ -18,6 +20,8 @@ usage()
     echo $'\t' "-asan                   Turn on address sanitizer for memory corruption detection."
     echo $'\t' "--validation-parser|-vp Enable XML schema validation."
     echo $'\t' "--pack                  Include packaging features. Uses MSIX SDK Zlib and Xerces with validation parser on."
+    echo $'\t' "--skip-samples          Skip building samples."
+    echo $'\t' "--skip-tests            Skip building tests."
 }
 
 printsetup()
@@ -29,6 +33,8 @@ printsetup()
     echo "Address Sanitizer:" $addressSanitizerFlag
     echo "Validation parser:" $validationParser
     echo "Pack support:" $pack 
+    echo "Build samples:" $samples
+    echo "Build tests:" $tests
 }
 
 while [ "$1" != "" ]; do
@@ -55,6 +61,10 @@ while [ "$1" != "" ]; do
                  xmlparser=xerces
                  validationParser=on
                 ;;
+        --skip-samples ) samples=off
+                ;;
+        --skip-tests ) tests=off
+                ;;
         -h )    usage
                 exit
                 ;;
@@ -73,12 +83,14 @@ find . -name *msix* -d | xargs rm -r
 
 echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DSKIP_BUNDLES="$bundle 
 echo "-DXML_PARSER="$xmlparser "-DASAN="$addressSanitizer "-DUSE_VALIDATION_PARSER="$validationParser 
-echo "-DMSIX_PACK="$pack "-DMACOS=on .."
+echo "-DMSIX_PACK="$pack "-DMSIX_SAMPLES="$samples "-DMSIX_TESTS="$tests "-DMACOS=on .."
 cmake -DCMAKE_BUILD_TYPE=$build \
       -DXML_PARSER=$xmlparser \
       -DSKIP_BUNDLES=$bundle \
       -DASAN=$addressSanitizer \
       -DUSE_VALIDATION_PARSER=$validationParser \
       -DMSIX_PACK=$pack \
+      -DMSIX_SAMPLES=$samples \
+      -DMSIX_TESTS=$tests \
       $zlib -DMACOS=on ..
 make

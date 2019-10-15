@@ -4,6 +4,8 @@ build=MinSizeRel
 bundle=off
 validationParser=off
 pack=off
+samples=on
+tests=on
 
 usage()
 {
@@ -12,6 +14,8 @@ usage()
     echo $'\t' "-sb                     Skip bundle support."
     echo $'\t' "--validation-parser|-vp Enable XML schema validation."
     echo $'\t' "--pack                  Include packaging features. Sets validation parser on."
+    echo $'\t' "--skip-samples          Skip building samples."
+    echo $'\t' "--skip-tests            Skip building tests."
 }
 
 printsetup()
@@ -20,6 +24,8 @@ printsetup()
     echo "Skip bundle support:" $bundle
     echo "Validation parser:" $validationParser
     echo "Pack support:" $pack 
+    echo "Build samples:" $samples
+    echo "Build tests:" $tests
 }
 
 while [ "$1" != "" ]; do
@@ -39,6 +45,10 @@ while [ "$1" != "" ]; do
         --pack ) pack=on
                  validationParser=on
                  ;;
+        --skip-samples ) samples=off
+                ;;
+        --skip-tests ) tests=off
+                ;;
         * )     usage
                 exit 1
     esac
@@ -53,11 +63,13 @@ cd .vs
 find . -depth -name *msix* | xargs -0 -r rm -rf
 
 echo "cmake -DCMAKE_BUILD_TYPE="$build "-DSKIP_BUNDLES="$bundle "-DUSE_VALIDATION_PARSER="$validationParser 
-echo "-DCMAKE_TOOLCHAIN_FILE=../cmake/linux.cmake" "-DMSIX_PACK="$pack "-DLINUX=on .."
+echo "-DCMAKE_TOOLCHAIN_FILE=../cmake/linux.cmake" "-DMSIX_PACK="$pack "-DMSIX_SAMPLES="$samples "-DMSIX_TESTS="$tests "-DLINUX=on .."
 cmake -DCMAKE_BUILD_TYPE=$build \
       -DSKIP_BUNDLES=$bundle \
       -DUSE_VALIDATION_PARSER=$validationParser \
       -DCMAKE_TOOLCHAIN_FILE=../cmake/linux.cmake \
       -DMSIX_PACK=$pack \
+      -DMSIX_SAMPLES=$samples \
+      -DMSIX_TESTS=$tests \
       -DLINUX=on ..
 make

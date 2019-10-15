@@ -6,12 +6,9 @@
 #include <iostream>
 #include <vector>
 #include <map>
-
-#ifdef WIN32
-#include <experimental/filesystem>
-using namespace std::experimental::filesystem;
-#else 
 #include <queue>
+
+#ifndef WIN32
 #include <fts.h>
 #include <dirent.h>
 #endif
@@ -141,14 +138,45 @@ static const std::map<std::string, APPX_COMPRESSION_OPTION> extToContentType =
 #ifdef WIN32
 std::vector<std::string> GetAllFilesInDirectory(const std::string& directory)
 {
+    static std::wstring dot(L".");
+    static std::wstring dotdot(L"..");
+
     std::vector<std::string> files;
-    for (const auto& file : recursive_directory_iterator(directory))
+    std::queue<std::wstring> directories;
+    directories.push(utf8_to_utf16(directory));
+
+    do
     {
-        if (!is_directory(file))
+        std::wstring root = directories.front();
+        std::wstring directory = root + L"\\*";
+        directories.pop();
+
+        WIN32_FIND_DATA findFileData = {};
+        std::unique_ptr<std::remove_pointer<HANDLE>::type, decltype(&::FindClose)> find(
+            FindFirstFile(reinterpret_cast<LPCWSTR>(directory.c_str()), &findFileData),
+            &FindClose);
+        
+        if (INVALID_HANDLE_VALUE != find.get())
         {
-            files.push_back(file.path().string());
+            do
+            {
+                std::wstring utf16Name = std::wstring(findFileData.cFileName);
+                std::wstring child = root + L"\\" + utf16Name;
+                if (findFileData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+                {
+                    if (dot != utf16Name && dotdot != utf16Name)
+                    {
+                        directories.push(child);
+                    }
+                }
+                else
+                {
+                    files.push_back(utf16_to_utf8(child));
+                }
+            } while(FindNextFile(find.get(), &findFileData));
         }
-    }
+
+    } while (!directories.empty());
     return files;
 }
 #else
