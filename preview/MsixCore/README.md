@@ -64,9 +64,16 @@ Uninstallation - The -quietUX parameter can also be used here.
 ```
 msixmgr.exe -RemovePackage notepadplus_0.0.0.1_x64__8wekyb3d8bbwe
 ```
-Unpacking -
+
+The following commands depend on ApplyACLs.dll and msix.dll. Please place these next to msixmgr.exe.
+
+Unpacking - Extracts contents of .appx, .msix, .appxbundle, or .msixbundle into a folder. Folder will be named according to the package full name of the package and will be placed in the given destination directory. The -applyacls option can be optionally specified to apply ACLs to the resulting folder.
 ```
-msixmgr.exe -Unpack notepadplus.msix
+msixmgr.exe -Unpack -packagepath C:\SomeDirectory\notepadplus.msix -destination C:\output [-applyacls]
+```
+Applying ACLs - Applies ACLs to a package folder 
+```
+msixmgr.exe -applyacls -packagepath C:\name_version_arch_pub
 ```
 
 ## Build Status
