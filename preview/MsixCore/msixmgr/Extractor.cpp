@@ -155,6 +155,8 @@ HRESULT Extractor::ExecuteForAddRequest()
     RETURN_IF_FAILED(CreatePackageRoot());
 
     RETURN_IF_FAILED(ExtractPackage());
+
+    RETURN_IF_FAILED(m_msixRequest->GetPackageInfo()->ProcessPSFIfNecessary());
     return S_OK;
 }
 

@@ -6,6 +6,9 @@
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
 #include <fstream>
+#include <experimental/filesystem> // C++-standard header file name
+#include <filesystem> // Microsoft-specific implementation header file name
+
 using namespace MsixCoreLib;
 
 //
@@ -77,6 +80,7 @@ HRESULT PackageBase::ParseManifest(IMsixElement* element)
     RETURN_IF_FAILED(applicationElement->GetAttributeValue(L"Executable", &executablePath));
     RETURN_IF_FAILED(applicationElement->GetAttributeValue(L"Id", &applicationId));
     m_relativeExecutableFilePath = executablePath.Get();
+
     m_applicationId = applicationId.Get();
 
     ComPtr<IMsixElementEnumerator> visualElementsEnum;
@@ -126,6 +130,32 @@ HRESULT PackageBase::ParseManifestCapabilities(IMsixElement* element)
 
         RETURN_IF_FAILED(capabilitiesEnum->MoveNext(&hc));
     }
+    return S_OK;
+}
+
+HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
+{
+    m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(m_relativeExecutableFilePath, m_packageFullName.c_str());
+
+    if (!CaseInsensitiveIsSubString(m_relativeExecutableFilePath, L"PSFLauncher"))
+    {
+        // Package doesn't have PSF - nothing to do
+        return S_OK;
+    }
+
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Processing PSF redirection",
+        TraceLoggingWideString(m_relativeExecutableFilePath.c_str(), "PSF Executable"));
+
+    // By default the PSF information is in config.json, but could be in a different json file.
+    for (auto& p : std::experimental::filesystem::directory_iterator(m_packageDirectoryPath))
+    {
+        if (std::experimental::filesystem::is_regular_file(p.path()) && p.path().extension() == ".json")
+        {
+            // parse the file and see if it has info we need.
+        }
+    }
+
     return S_OK;
 }
 
@@ -245,6 +275,8 @@ HRESULT InstalledPackage::MakeFromManifestReader(const std::wstring & directoryP
 
     RETURN_IF_FAILED(instance->SetManifestReader(manifestReader));
     instance->m_packageDirectoryPath = directoryPath + L"\\";
+
+    RETURN_IF_FAILED(instance->ProcessPSFIfNecessary());
 
     *packageInfo = instance;
 

@@ -28,10 +28,10 @@ private:
     /// Creates the Shell link for the start menu shortcut.
     /// Uses the Shell's IShellLink and IPersistFile interfaces
     /// to create and store a shortcut to the specified object.
-    /// @param targetFilePath - full file path to the application exe
+    /// @param executionInfo - Contains full file path to the application exe and possibly also working directory and commandline argument
     /// @param linkFilePath - full file path to the shortcut .lnk file
     /// @param description - description of the Shell link, stored in the Comment field of the link properties.
     /// @param appUserModelId- Application User Model ID, needed to display toasts.
-    HRESULT CreateLink(PCWSTR targetFilePath, PCWSTR linkFilePath, PCWSTR description, PCWSTR appUserModelId = NULL);
+    HRESULT CreateLink(ExecutionInfo* executionInfo, PCWSTR linkFilePath, PCWSTR description, PCWSTR appUserModelId = NULL);
 };
 }

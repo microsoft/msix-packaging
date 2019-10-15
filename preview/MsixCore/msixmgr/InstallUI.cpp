@@ -219,18 +219,34 @@ HRESULT GetDesktopAutomationObject(REFIID riid, void **ppv)
     return S_OK;
 }
 
-HRESULT ShellExecuteFromExplorer(PCWSTR pszFile)
+HRESULT ShellExecuteFromExplorer(ExecutionInfo* executionInfo)
 {
     ComPtr<IShellFolderViewDual> folderView;
     RETURN_IF_FAILED(GetDesktopAutomationObject(IID_PPV_ARGS(&folderView)));
     ComPtr<IDispatch> dispatch;
     RETURN_IF_FAILED(folderView->get_Application(&dispatch));
 
-    Bstr bstrfile(pszFile);
+    Bstr bstrfile(executionInfo->resolvedExecutableFilePath.c_str());
+    Bstr bstrArguments(executionInfo->commandLineArguments.c_str());
+    VARIANT vtArguments = {};
+    if (!executionInfo->commandLineArguments.empty())
+    {
+        vtArguments.vt = VT_BSTR;
+        vtArguments.bstrVal = bstrArguments;
+    }
+
+    Bstr bstrWorkingDirectory(executionInfo->workingDirectory.c_str());
+    VARIANT vtDirectory = {};
+    if (!executionInfo->workingDirectory.empty())
+    {
+        vtArguments.vt = VT_BSTR;
+        vtArguments.bstrVal = bstrWorkingDirectory;
+    }
+
     VARIANT vtEmpty = {}; // VT_EMPTY
     ComPtr<IShellDispatch2> shellDispatch;
     RETURN_IF_FAILED(dispatch->QueryInterface(IID_PPV_ARGS(&shellDispatch)));
-    RETURN_IF_FAILED(shellDispatch->ShellExecute(bstrfile, vtEmpty /*arguments*/, vtEmpty /*directory*/, vtEmpty /*operation*/, vtEmpty /*show*/));
+    RETURN_IF_FAILED(shellDispatch->ShellExecute(bstrfile, vtArguments, vtDirectory, vtEmpty /*operation*/, vtEmpty /*show*/));
     return S_OK;
 }
 
@@ -240,7 +256,7 @@ HRESULT UI::LaunchInstalledApp()
     shared_ptr<IInstalledPackage> installedPackage;
     RETURN_IF_FAILED(m_packageManager->FindPackage(m_packageInfo->GetPackageFullName(), installedPackage));
 
-    HRESULT hrShellExecute = ShellExecuteFromExplorer(installedPackage->GetResolvedExecutableFilePath().c_str());
+    HRESULT hrShellExecute = ShellExecuteFromExplorer(installedPackage->GetExecutionInfo());
     if (FAILED(hrShellExecute))
     {
         TraceLoggingWrite(g_MsixUITraceLoggingProvider,
