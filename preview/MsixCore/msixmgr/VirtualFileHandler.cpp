@@ -231,7 +231,8 @@ HRESULT VirtualFileHandler::CopyVfsFileIfNecessary(std::wstring sourceFullPath, 
 
     if (needToCopyFile)
     {
-        HRESULT hrMkdir = HRESULT_FROM_WIN32(mkdirp(targetFullPath));
+        std::wstring targetLongFullPath = std::wstring(L"\\\\?\\") + targetFullPath;
+        HRESULT hrMkdir = HRESULT_FROM_WIN32(mkdirp(targetLongFullPath));
         if (FAILED(hrMkdir))
         {
             TraceLoggingWrite(g_MsixTraceLoggingProvider,
