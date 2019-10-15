@@ -75,7 +75,7 @@ cd .vs
 find . -name *msix* -d | xargs rm -r
 
 echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake -DCMAKE_OSX_ARCHITECTURES="$arch 
-echo "-DXML_PARSER="$xmlparser "-DUSE_VALIDATION_PARSER="$validationParser "-DSKIP_BUNDLES="$bundle "-DSKIP_SAMPLES="$samples "-DSKIP_TESTS="$tests  "-DIOS=on .."
+echo "-DXML_PARSER="$xmlparser "-DUSE_VALIDATION_PARSER="$validationParser "-DSKIP_BUNDLES="$bundle "-DMSIX_SAMPLES="$samples "-DMSIX__TESTS="$tests "-DIOS=on .."
 cmake -DCMAKE_BUILD_TYPE=$build \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake \
     -DCMAKE_OSX_ARCHITECTURES=$arch \

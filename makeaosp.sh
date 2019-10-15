@@ -124,7 +124,7 @@ find . -name *msix* -d | xargs rm -r
 echo "cmake -DCMAKE_SYSTEM_NAME=Android -DCMAKE_ANDROID_NDK="$ndk "-DCMAKE_SYSTEM_VERSION="$version "-DANDROID_SDK="$sdk
 echo "-DANDROID_SDK_VERSION="$sdkver "-DCMAKE_ANDROID_ARCH_ABI="$arch "-DCMAKE_ANDROID_NDK_TOOLCHAIN_VERSION=clang"
 echo "-DCMAKE_ANDROID_STL_TYPE=c++_shared -DCMAKE_BUILD_TYPE="$build "-DSKIP_BUNDLES="$bundle "-DXML_PARSER="$xmlparser
-echo "-DUSE_VALIDATION_PARSER="$validationParser $zlib "-DSKIP_SAMPLES="$samples "-DSKIP_TESTS="$tests "-DAOSP=on .."
+echo "-DUSE_VALIDATION_PARSER="$validationParser $zlib "-DMSIX_SAMPLES="$samples "-DMSIX__TESTS="$tests "-DAOSP=on .."
 cmake -DCMAKE_SYSTEM_NAME=Android \
     -DCMAKE_ANDROID_NDK="$ndk" \
     -DCMAKE_SYSTEM_VERSION="$version" \

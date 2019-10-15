@@ -83,7 +83,7 @@ find . -name *msix* -d | xargs rm -r
 
 echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DSKIP_BUNDLES="$bundle 
 echo "-DXML_PARSER="$xmlparser "-DASAN="$addressSanitizer "-DUSE_VALIDATION_PARSER="$validationParser 
-echo "-DMSIX_PACK="$pack "-DSKIP_SAMPLES="$samples "-DSKIP_TESTS="$tests "-DMACOS=on .."
+echo "-DMSIX_PACK="$pack "-DMSIX_SAMPLES="$samples "-DMSIX__TESTS="$tests "-DMACOS=on .."
 cmake -DCMAKE_BUILD_TYPE=$build \
       -DXML_PARSER=$xmlparser \
       -DSKIP_BUNDLES=$bundle \
