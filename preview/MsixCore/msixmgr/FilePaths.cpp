@@ -51,8 +51,9 @@ std::wstring FilePathMappings::GetExecutablePath(std::wstring packageExecutableP
     {
         MsixCoreLib_GetPathChild(executionPathWSTR);
 
+        std::wstring executionPathDirectory = executionPathWSTR.substr(0, executionPathWSTR.find_first_of(L'\\'));
         //Checks if the executable is in one of the known folders
-        auto it = m_map.find(executionPathWSTR);
+        auto it = m_map.find(executionPathDirectory);
         if(it != m_map.end())
         {
             //The executable exists in an unpacked directory
