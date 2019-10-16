@@ -50,19 +50,19 @@ std::wstring FilePathMappings::GetExecutablePath(std::wstring packageExecutableP
     if (executionPathWSTR.find(L"VFS") != std::wstring::npos)
     {
         MsixCoreLib_GetPathChild(executionPathWSTR);
+
+        std::wstring executionPathDirectory = executionPathWSTR.substr(0, executionPathWSTR.find_first_of(L'\\'));
         //Checks if the executable is in one of the known folders
-        for (auto pair : m_map) 
+        auto it = m_map.find(executionPathDirectory);
+        if(it != m_map.end())
         {
-            if (executionPathWSTR.find(pair.first) != std::wstring::npos)
-            {
-                //The executable exists in an unpacked directory
-                std::wstring executablePath = pair.second;
+            //The executable exists in an unpacked directory
+            std::wstring executablePath = it->second;
                 
-                MsixCoreLib_GetPathChild(executionPathWSTR);
-                executablePath.push_back(L'\\');
-                executablePath.append(executionPathWSTR);
-                return executablePath;
-            }
+            MsixCoreLib_GetPathChild(executionPathWSTR);
+            executablePath.push_back(L'\\');
+            executablePath.append(executionPathWSTR);
+            return executablePath;
         }
     }
 
