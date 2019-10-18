@@ -385,6 +385,51 @@ else
 	writeFail
 }
 
+# This is a PSF (Package Support Framework) example package, which relies on PSF to pass in command line arguments 
+ShowTestHeader("Add, launch and remove package that relies on PSF")
+$output = & $executable -AddPackage JavaPSFexample.appx -quietUx
+if ($output -eq $null)
+{
+    $startMenuShortcut = "$env:allusersprofile\Microsoft\Windows\Start Menu\Programs\Packaged Java.lnk"
+	start-process $startMenuShortcut
+	start-sleep 5
+	$appprocess = get-process |? {$_.mainwindowtitle -eq "BTS Site Manager" }
+	if ($appprocess -eq $null)
+	{
+		write-host ("Unable to launch Java PSF example (BTS Site Manager)")
+        $output = & $executable -RemovePackage PackagedJava_7.1.1037.0_x64__8wekyb3d8bbwe
+		writeFail
+	}
+	else
+	{
+        $appprocess | stop-process
+		$output = & $executable -RemovePackage PackagedJava_7.1.1037.0_x64__8wekyb3d8bbwe
+        if ($output -ne $null)
+		{
+			$output
+			write-host ("Add/launch passed, but remove package failed")
+		}
+
+        if (-not (test-path HKCU:\PSFTest))
+        {
+            write-host ("PSF Script did not write expected regkey")
+            writeFail
+
+        }
+	    else
+        {
+			rd HKCU:\PSFTest
+		    writeSuccess
+        }
+	}
+}
+else
+{
+	$output
+	writeFail
+}
+
+
 if ($takeTrace)
 {
 	& .\msixtrace.ps1 -stop

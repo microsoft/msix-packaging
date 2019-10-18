@@ -16,9 +16,43 @@ HRESULT PSFScriptExecuter::ExecuteForAddRequest()
         return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
 
-    // Run the script
+    // Read script parameters from PSF config and update executionInfo
 
 
+    
+    std::wstring workingDirectory = m_msixRequest->GetPackageInfo()->GetExecutionInfo()->workingDirectory;
+
+    // DO NOT COMPLETE PR: temporarily hardcode to show we can execute scripts
+    std::wstring scriptName = L"CreatePSFTestRegKey.ps1";
+    workingDirectory = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager";
+
+    std::wstring scriptPath = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + workingDirectory + L"\\" + scriptName;
+    std::wstring psArguments = L"-file \"" + scriptPath + L"\"";
+
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Executing PSF script",
+        TraceLoggingValue(scriptPath.c_str(), "ScriptPath"),
+        TraceLoggingValue(psArguments.c_str(), "Arguments"));
+
+    // TODO: Fill in true for whether PSF says to show or not.
+    INT showCmd = (false) ? SW_SHOW : SW_HIDE;
+
+    SHELLEXECUTEINFOW shellExecuteInfo = {};
+    shellExecuteInfo.cbSize = sizeof(SHELLEXECUTEINFOW);
+    shellExecuteInfo.fMask = SEE_MASK_NOCLOSEPROCESS;
+    shellExecuteInfo.lpFile = L"powershell.exe";
+    shellExecuteInfo.lpParameters = psArguments.c_str();
+    shellExecuteInfo.nShow = showCmd;
+
+    // Run the script, and wait for it to finish if desired
+    ShellExecuteExW(&shellExecuteInfo);
+    bool waitForFinish = true;
+    if (waitForFinish)
+    {
+        WaitForSingleObject(shellExecuteInfo.hProcess, INFINITE);
+    }
+    CloseHandle(shellExecuteInfo.hProcess);
+    
     return S_OK;
 }
 

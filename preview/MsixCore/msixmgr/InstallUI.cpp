@@ -239,8 +239,8 @@ HRESULT ShellExecuteFromExplorer(ExecutionInfo* executionInfo)
     VARIANT vtDirectory = {};
     if (!executionInfo->workingDirectory.empty())
     {
-        vtArguments.vt = VT_BSTR;
-        vtArguments.bstrVal = bstrWorkingDirectory;
+        vtDirectory.vt = VT_BSTR;
+        vtDirectory.bstrVal = bstrWorkingDirectory;
     }
 
     VARIANT vtEmpty = {}; // VT_EMPTY

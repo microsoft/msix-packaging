@@ -23,11 +23,14 @@ namespace MsixCoreLib
         std::wstring m_publisherName;
         std::wstring m_relativeLogoPath;
         std::wstring m_packageDirectoryPath;
-        ExecutionInfo m_executionInfo;
+
         std::vector<std::wstring> m_capabilities;
 
         ComPtr<IAppxManifestReader> m_manifestReader;
         unsigned int m_numberOfPayloadFiles = 0;
+
+        /// Note: ExecutionInfo is populated by ProcessPSFIsNecessary() and may not be filled in on initialization.
+        ExecutionInfo m_executionInfo;
     public:
         std::wstring GetPackageFullName() { return m_packageFullName; }
         std::wstring GetPackageFamilyName() { return m_packageFamilyName; }
@@ -165,7 +168,6 @@ namespace MsixCoreLib
         /// the actual .msix package file is no longer accessible.
         static HRESULT MakeFromManifestReader(const std::wstring & directoryPath, IAppxManifestReader* manifestReader, std::shared_ptr<InstalledPackage>* packageInfo);
         InstalledPackage() :PackageBase(), IInstalledPackage() {}
-    private:
-        std::wstring m_packageDirectoryPath;
+    
     };
 }
