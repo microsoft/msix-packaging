@@ -218,6 +218,7 @@
     <ClInclude Include="..\msixmgr\StartMenuLink.hpp" />
     <ClInclude Include="..\msixmgr\PrepareDevirtualizedRegistry.hpp" />
     <ClInclude Include="..\msixmgr\WriteDevirtualizedRegistry.hpp" />
+    <ClInclude Include="..\msixmgr\PSFHandler.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\msixmgr\ComInterface.cpp" />
@@ -253,6 +254,7 @@
     <ClCompile Include="msixmgrActions.cpp" />
     <ClCompile Include="..\msixmgr\PrepareDevirtualizedRegistry.cpp" />
     <ClCompile Include="..\msixmgr\WriteDevirtualizedRegistry.cpp" />
+    <ClCompile Include="..\msixmgr\PSFHandler.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
