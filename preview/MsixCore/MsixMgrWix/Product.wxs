@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<?if $(var.Platform) = x64 ?>
+	<?define PlatformProgramFilesFolder = "ProgramFiles64Folder" ?>
+	<?define Win64 = "yes" ?>
+<?else ?>
+	<?define PlatformProgramFilesFolder = "ProgramFilesFolder" ?>
+	<?define Win64 = "no" ?>
+<?endif ?>
+
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Product Id="*" Name="msixmgr" Language="1033" Version="!(bind.FileVersion.MsixMgrExe)" Manufacturer="Microsoft" UpgradeCode="2fe180f8-3fb8-48a0-b01e-68f47fc0ec34">
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
@@ -21,7 +29,7 @@
 
 	<Fragment>
 		<Directory Id="TARGETDIR" Name="SourceDir">
-			<Directory Id="ProgramFilesFolder">
+			<Directory Id="$(var.PlatformProgramFilesFolder)">
 				<Directory Id="INSTALLFOLDER" Name="msixmgr">
 					<Directory Id="Assets" Name="Assets"/>
 				</Directory>
@@ -32,7 +40,7 @@
 	<Fragment>
 		<ComponentGroup Id="ProductComponents" Directory="INSTALLFOLDER">
 			
-			<Component Id="MsixMgrExe">
+			<Component Id="MsixMgrExe" Win64="$(var.Win64)">
 				<File Id="MsixMgrExe" Source="$(var.msixmgr.TargetPath)" />
 				<ProgId Id="APPX" Description="Extracts package, reads manifest and unpacks VFS" Icon="MsixIcon" IconIndex="0" Advertise="yes">
 					<Extension Id="appx" Advertise="yes">
@@ -46,7 +54,7 @@
 				</ProgId>
 				<Environment Id="PATH" Name="PATH" Value="[INSTALLFOLDER]" Permanent="no" Part="last" Action="set" System="no" />
 			</Component>
-			<Component Id="MsixDll">
+			<Component Id="MsixDll" Win64="$(var.Win64)">
 				<File Source="$(var.msixmgr.TargetDir)\msix.dll" />
 			</Component>
 			
