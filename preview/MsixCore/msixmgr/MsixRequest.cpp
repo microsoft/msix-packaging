@@ -38,6 +38,7 @@
 #include "AutoPlay.hpp"
 #include "VirtualFileHandler.hpp"
 #include "AppExecutionAlias.hpp"
+#include "PSFHandler.hpp"
 
 #include "Constants.hpp"
 
@@ -72,7 +73,8 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {PopulatePackageInfo::HandlerName,          {PopulatePackageInfo::CreateHandler,          ValidateTargetDeviceFamily::HandlerName,   ReturnError,         nullptr}},
     {ValidateTargetDeviceFamily::HandlerName,   {ValidateTargetDeviceFamily::CreateHandler,   ProcessPotentialUpdate::HandlerName,       ReturnError,         nullptr}},
     {ProcessPotentialUpdate::HandlerName,       {ProcessPotentialUpdate::CreateHandler,       Extractor::HandlerName,                    ReturnError,         nullptr}},
-    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    PrepareDevirtualizedRegistry::HandlerName, ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {Extractor::HandlerName,                    {Extractor::CreateHandler,                    PSFHandler::HandlerName,                   ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {PSFHandler::HandlerName,                   {PSFHandler::CreateHandler,                   PrepareDevirtualizedRegistry::HandlerName, ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, VirtualFileHandler::HandlerName,           ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {VirtualFileHandler::HandlerName,           {VirtualFileHandler::CreateHandler,           WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   StartMenuLink::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
