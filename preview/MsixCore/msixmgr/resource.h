@@ -37,6 +37,9 @@
 #define IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE   131
 #define IDS_STRING_HELP_OPTION_APPLYACLS                  132
 #define IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH      133
+#define IDS_STRING_LOADING_PACKAGE_ERROR                  134
+#define IDS_STRING_WXS_ERROR_PART1                        135
+#define IDS_STRING_WXS_ERROR_PART2                        136
 
 // Next default values for new objects
 // 
