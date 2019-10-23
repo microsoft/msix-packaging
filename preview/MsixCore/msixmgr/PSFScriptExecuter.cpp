@@ -50,6 +50,16 @@ HRESULT PSFScriptExecuter::ExecuteForAddRequest()
     if (waitForFinish)
     {
         WaitForSingleObject(shellExecuteInfo.hProcess, INFINITE);
+        DWORD exitCode = 0;
+        if (!GetExitCodeProcess(shellExecuteInfo.hProcess, &exitCode))
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to get exit code of PSF script");
+        }
+
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "PSF script exit code",
+            TraceLoggingValue(exitCode, "Exit code"));
     }
     CloseHandle(shellExecuteInfo.hProcess);
     
