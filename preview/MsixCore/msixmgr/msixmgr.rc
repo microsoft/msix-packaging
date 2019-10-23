@@ -105,6 +105,9 @@ BEGIN
         IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE "optional parameter that validates a package's signature file before unpacking the package. This will require that the package's certificate is installed on the machine."
 	IDS_STRING_HELP_OPTION_APPLYACLS "Applies ACLs to a package folder (an unpacked package)"
 	IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH "the path to the folder to apply acls to"
+	IDS_STRING_LOADING_PACKAGE_ERROR "Loading Package Failed"
+	IDS_STRING_WXS_ERROR_PART1 "Warning - removing this will cause the following app(s) to be unremovable: "
+	IDS_STRING_WXS_ERROR_PART2 ". These app(s) should be removed before proceeding."
 
 	END
 
