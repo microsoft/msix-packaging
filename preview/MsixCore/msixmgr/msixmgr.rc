@@ -147,9 +147,10 @@ BEGIN
     IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH 
                             "the path to the folder to apply acls to"
     IDS_STRING_LOADING_FAILED "Loading Package Failed"
-    IDS_STRING_WXS_REMOVE   " Remove"
-    IDS_STRING_WXS_ERROR_MSG 
-                            "Warning - removing this will cause the following app(s) to be unremovable: [MSIXMGR_PRODUCTS]. These app(s) should be removed before proceeding"
+    IDS_STRING_WXS_ERROR_MSG_1 
+                            "Warning - removing this will cause the following app(s) to be unremovable:"
+    IDS_STRING_WXS_ERROR_MSG_2 
+                            "These app(s) should be removed before proceeding."
 END
 
 #endif    // English (United States) resources

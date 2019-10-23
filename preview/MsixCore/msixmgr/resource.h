@@ -38,8 +38,8 @@
 #define IDS_STRING_HELP_OPTION_APPLYACLS 132
 #define IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH 133
 #define IDS_STRING_LOADING_FAILED       134
-#define IDS_STRING_WXS_REMOVE           135
-#define IDS_STRING_WXS_ERROR_MSG        136
+#define IDS_STRING_WXS_ERROR_MSG_1      135
+#define IDS_STRING_WXS_ERROR_MSG_2      136
 
 // Next default values for new objects
 // 
