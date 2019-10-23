@@ -23,8 +23,8 @@
 		<InstallUISequence>
 			<Custom Action='GetMsixmgrProductsCA' Before='RemoveConfirmationDlg'>Installed AND NOT RESUME AND NOT Preselected AND NOT PATCH</Custom>
 		</InstallUISequence>
-		<WixVariable Id="WixUIBannerBmp" Value="./MSIXCoreBanner-01.bmp" />
-		<WixVariable Id="WixUIDialogBmp" Value="./MSIXDialog-01.bmp" />
+		<WixVariable Id="WixUIBannerBmp" Value="./MSIXCoreBanner-01.jpg" />
+		<WixVariable Id="WixUIDialogBmp" Value="./MSIXDialog-01.jpg" />
 	</Product>
 
 	<Fragment>
