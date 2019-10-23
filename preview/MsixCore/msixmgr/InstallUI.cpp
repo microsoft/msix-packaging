@@ -48,7 +48,7 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
         std::wstringstream wstringstream;
         wstringstream << L"Failed getting package information with: 0x" << std::hex << m_loadingPackageInfoCode;
         auto g_messageText = wstringstream.str();
-        ChangeText(hWnd, L"Loading Package failed", g_messageText);
+        ChangeText(hWnd, GetStringResource(IDS_STRING_LOADING_PACKAGE_ERROR), g_messageText);
     }
     return S_OK;
 }
