@@ -161,7 +161,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>msixmgrLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;msixmgr_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>.;..\msixmgr;inc;..\..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.;..\msixmgr;inc;..\..\..\.vs\src\msix;..\msixmgr\include\rapidjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
       <LanguageStandard>stdcpp17</LanguageStandard>
       <AdditionalOptions>/await</AdditionalOptions>
