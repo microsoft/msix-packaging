@@ -37,6 +37,7 @@
 #include "FirewallRules.hpp"
 #include "AutoPlay.hpp"
 #include "VirtualFileHandler.hpp"
+#include "PSFScriptExecuter.hpp"
 #include "AppExecutionAlias.hpp"
 
 #include "Constants.hpp"
@@ -75,7 +76,8 @@ std::map<PCWSTR, AddHandlerInfo> AddHandlers =
     {Extractor::HandlerName,                    {Extractor::CreateHandler,                    PrepareDevirtualizedRegistry::HandlerName, ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {PrepareDevirtualizedRegistry::HandlerName, {PrepareDevirtualizedRegistry::CreateHandler, VirtualFileHandler::HandlerName,           ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {VirtualFileHandler::HandlerName,           {VirtualFileHandler::CreateHandler,           WriteDevirtualizedRegistry::HandlerName,   ExecuteErrorHandler, ErrorHandler::HandlerName}},
-    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   StartMenuLink::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {WriteDevirtualizedRegistry::HandlerName,   {WriteDevirtualizedRegistry::CreateHandler,   PSFScriptExecuter::HandlerName,            ExecuteErrorHandler, ErrorHandler::HandlerName}},
+    {PSFScriptExecuter::HandlerName,            {PSFScriptExecuter::CreateHandler,            StartMenuLink::HandlerName,                ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {StartMenuLink::HandlerName,                {StartMenuLink::CreateHandler,                AddRemovePrograms::HandlerName,            ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {AddRemovePrograms::HandlerName,            {AddRemovePrograms::CreateHandler,            Protocol::HandlerName,                     ExecuteErrorHandler, ErrorHandler::HandlerName}},
     {Protocol::HandlerName,                     {Protocol::CreateHandler,                     ComInterface::HandlerName,                 ExecuteErrorHandler, ErrorHandler::HandlerName}},

@@ -183,6 +183,7 @@
     <ClInclude Include="..\msixmgr\ComServer.hpp" />
     <ClInclude Include="..\msixmgr\Constants.hpp" />
     <ClInclude Include="..\msixmgr\ErrorHandler.hpp" />
+    <ClInclude Include="..\msixmgr\PSFScriptExecuter.hpp" />
     <ClInclude Include="..\msixmgr\StartupTask.hpp" />
     <ClInclude Include="..\msixmgr\ValidateTargetDeviceFamily.hpp" />
     <ClInclude Include="..\msixmgr\FirewallRules.hpp" />
@@ -228,6 +229,7 @@
     <ClCompile Include="..\msixmgr\FileTypeAssociation.cpp" />
     <ClCompile Include="..\msixmgr\InstallComplete.cpp" />
     <ClCompile Include="..\msixmgr\MsixRequest.cpp" />
+    <ClCompile Include="..\msixmgr\PSFScriptExecuter.cpp" />
     <ClCompile Include="..\msixmgr\StartupTask.cpp" />
     <ClCompile Include="..\msixmgr\ValidateTargetDeviceFamily.cpp" />
     <ClCompile Include="..\msixmgr\FirewallRules.cpp" />

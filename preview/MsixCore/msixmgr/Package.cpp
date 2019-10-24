@@ -6,6 +6,9 @@
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
 #include <fstream>
+#include <experimental/filesystem> // C++-standard header file name
+#include <filesystem> // Microsoft-specific implementation header file name
+
 using namespace MsixCoreLib;
 
 //
@@ -77,6 +80,7 @@ HRESULT PackageBase::ParseManifest(IMsixElement* element)
     RETURN_IF_FAILED(applicationElement->GetAttributeValue(L"Executable", &executablePath));
     RETURN_IF_FAILED(applicationElement->GetAttributeValue(L"Id", &applicationId));
     m_relativeExecutableFilePath = executablePath.Get();
+
     m_applicationId = applicationId.Get();
 
     ComPtr<IMsixElementEnumerator> visualElementsEnum;
@@ -126,6 +130,47 @@ HRESULT PackageBase::ParseManifestCapabilities(IMsixElement* element)
 
         RETURN_IF_FAILED(capabilitiesEnum->MoveNext(&hc));
     }
+    return S_OK;
+}
+
+HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
+{
+    m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(m_relativeExecutableFilePath, m_packageFullName.c_str());
+
+    if (!CaseInsensitiveIsSubString(m_relativeExecutableFilePath, L"PSFLauncher"))
+    {
+        // Package doesn't have PSF - nothing to do
+        return S_OK;
+    }
+
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Processing PSF redirection",
+        TraceLoggingWideString(m_relativeExecutableFilePath.c_str(), "PSF Executable"),
+        TraceLoggingWideString(GetPackageDirectoryPath().c_str(), "path"));
+
+    // By default the PSF information is in config.json, but could be in a different json file.
+    for (auto& p : std::experimental::filesystem::directory_iterator(GetPackageDirectoryPath()))
+    {
+        if (std::experimental::filesystem::is_regular_file(p.path()) && CaseInsensitiveEquals(p.path().extension(), L".json"))
+        {
+            // parse the file and see if it has info we need.
+            // TODO: fill this in with actual stuff. Hardcoding for this test package for now
+            std::wstring psfExecutable = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager\\jre\\1_6_0\\bin\\javaw.exe";
+            std::wstring psfWorkingDirectory = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager";
+            m_executionInfo.commandLineArguments = L"-splash:Splash_Wn_BTS_Site_Manager.png -cp cl\\cl.jar -client com.nokia.em.poseidon.PoseidonStarter -confFile cl\\CLConf.xml";
+
+            // resolve the given paths from json into full paths.
+            m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(psfExecutable, m_packageFullName.c_str());
+            m_executionInfo.workingDirectory = FilePathMappings::GetInstance().GetExecutablePath(psfWorkingDirectory, m_packageFullName.c_str());
+
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "PSF redirection",
+                TraceLoggingWideString(m_executionInfo.resolvedExecutableFilePath.c_str(), "Resolved PSF executable"),
+                TraceLoggingWideString(m_executionInfo.workingDirectory.c_str(), "WorkingDirectory"),
+                TraceLoggingWideString(m_executionInfo.commandLineArguments.c_str(), "Arguments"));
+        }
+    }
+
     return S_OK;
 }
 
@@ -245,6 +290,8 @@ HRESULT InstalledPackage::MakeFromManifestReader(const std::wstring & directoryP
 
     RETURN_IF_FAILED(instance->SetManifestReader(manifestReader));
     instance->m_packageDirectoryPath = directoryPath + L"\\";
+
+    RETURN_IF_FAILED(instance->ProcessPSFIfNecessary());
 
     *packageInfo = instance;
 

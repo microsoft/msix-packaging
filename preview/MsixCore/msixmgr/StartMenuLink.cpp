@@ -15,18 +15,24 @@ using namespace MsixCoreLib;
 
 const PCWSTR StartMenuLink::HandlerName = L"StartMenuLink";
 
-HRESULT StartMenuLink::CreateLink(PCWSTR targetFilePath, PCWSTR linkFilePath, PCWSTR description, PCWSTR appUserModelId)
+HRESULT StartMenuLink::CreateLink(ExecutionInfo* executionInfo, PCWSTR linkFilePath, PCWSTR description, PCWSTR appUserModelId)
 {
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Creating Link",
-        TraceLoggingValue(targetFilePath, "TargetFilePath"),
+        TraceLoggingValue(executionInfo->resolvedExecutableFilePath.c_str(), "ExecutableFilePath"),
+        TraceLoggingValue(executionInfo->commandLineArguments.c_str(), "Arguments"),
+        TraceLoggingValue(executionInfo->workingDirectory.c_str(), "WorkingDirectory"),
         TraceLoggingValue(linkFilePath, "LinkFilePath"),
         TraceLoggingValue(appUserModelId, "AppUserModelId"));
 
     ComPtr<IShellLink> shellLink;
     RETURN_IF_FAILED(CoCreateInstance(CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER, IID_IShellLink, reinterpret_cast<LPVOID*>(&shellLink)));
-    RETURN_IF_FAILED(shellLink->SetPath(targetFilePath));
-    RETURN_IF_FAILED(shellLink->SetArguments(L""));
+    RETURN_IF_FAILED(shellLink->SetPath(executionInfo->resolvedExecutableFilePath.c_str()));
+    RETURN_IF_FAILED(shellLink->SetArguments(executionInfo->commandLineArguments.c_str()));
+    if (!executionInfo->workingDirectory.empty())
+    {
+        RETURN_IF_FAILED(shellLink->SetWorkingDirectory(executionInfo->workingDirectory.c_str()));
+    }
 
     if (appUserModelId != NULL && appUserModelId[0] != 0)
     {
@@ -56,9 +62,8 @@ HRESULT StartMenuLink::ExecuteForAddRequest()
     auto packageInfo = m_msixRequest->GetPackageInfo();
 
     std::wstring filePath = FilePathMappings::GetInstance().GetMap()[L"Common Programs"] + L"\\" + packageInfo->GetDisplayName() + L".lnk";
-    std::wstring resolvedExecutableFullPath = packageInfo->GetResolvedExecutableFilePath();
     std::wstring appUserModelId = m_msixRequest->GetPackageInfo()->GetId();
-    RETURN_IF_FAILED(CreateLink(resolvedExecutableFullPath.c_str(), filePath.c_str(), L"", appUserModelId.c_str()));
+    RETURN_IF_FAILED(CreateLink(packageInfo->GetExecutionInfo(), filePath.c_str(), L"", appUserModelId.c_str()));
 
     return S_OK;
 }
