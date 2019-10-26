@@ -8,8 +8,14 @@
 #include <fstream>
 #include <experimental/filesystem> // C++-standard header file name
 #include <filesystem> // Microsoft-specific implementation header file name
+#include "document.h"
+#include "stringbuffer.h"
+#include "writer.h"
+#include "istreamwrapper.h"
+#include "ostreamwrapper.h"
 
 using namespace MsixCoreLib;
+using namespace rapidjson;
 
 //
 // Gets the stream of a file.
@@ -154,6 +160,28 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
         if (std::experimental::filesystem::is_regular_file(p.path()) && CaseInsensitiveEquals(p.path().extension(), L".json"))
         {
             // parse the file and see if it has info we need.
+            std::wstring jsonFile = p.path();
+            std::ifstream ifs(jsonFile);
+            IStreamWrapper isw(ifs);
+
+            Document doc;
+            doc.ParseStream(isw);
+
+            if (doc.HasParseError())
+            {
+                //return error
+            }
+
+            const Value& apps = doc["applications"];
+
+            for (Value::ConstValueIterator itr =apps.Begin(); itr != apps.End(); ++itr)
+            {
+                std::string id = (*itr)["id"].GetString();
+                std::string executable = (*itr)["executable"].GetString();
+                std::string arguments = (*itr)["arguments"].GetString();
+                std::string workingDirectory = (*itr)["workingDirectory"].GetString();
+            }
+
             // TODO: fill this in with actual stuff. Hardcoding for this test package for now
             std::wstring psfExecutable = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager\\jre\\1_6_0\\bin\\javaw.exe";
             std::wstring psfWorkingDirectory = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager";

@@ -4,6 +4,7 @@
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
+#include "document.h"
 
 using namespace MsixCoreLib;
 
@@ -17,7 +18,7 @@ HRESULT PSFScriptExecuter::ExecuteForAddRequest()
     }
 
     // Read script parameters from PSF config and update executionInfo
-
+    RETURN_IF_FAILED(m_msixRequest->GetPackageInfo()->ProcessPSFIfNecessary());
 
     
     std::wstring workingDirectory = m_msixRequest->GetPackageInfo()->GetExecutionInfo()->workingDirectory;
