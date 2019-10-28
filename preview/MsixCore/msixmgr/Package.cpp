@@ -174,28 +174,44 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
 
             const Value& apps = doc["applications"];
 
-            for (Value::ConstValueIterator itr =apps.Begin(); itr != apps.End(); ++itr)
+            for (Value::ConstValueIterator itr = apps.Begin(); itr != apps.End(); ++itr)
             {
                 std::string id = (*itr)["id"].GetString();
-                std::string executable = (*itr)["executable"].GetString();
-                std::string arguments = (*itr)["arguments"].GetString();
-                std::string workingDirectory = (*itr)["workingDirectory"].GetString();
+                std::wstring jsonApplicationId;
+                jsonApplicationId.assign(id.begin(), id.end());
+
+                //ApplicationId in json should match applicationId from the xml manifest. Right now, we only process first application from the xml manifest anyway
+                if (CaseInsensitiveEquals(jsonApplicationId, m_applicationId))
+                {
+                    std::string executable = (*itr)["executable"].GetString();
+                    std::wstring psfExecutable;
+                    psfExecutable.assign(executable.begin(), executable.end());
+
+                    std::string arguments = (*itr)["arguments"].GetString();
+                    std::wstring psfArguements;
+                    psfArguements.assign(arguments.begin(), arguments.end());
+
+                    std::string workingDirectory = (*itr)["workingDirectory"].GetString();
+                    std::wstring psfWorkingDirectory;
+                    psfWorkingDirectory.assign(workingDirectory.begin(), workingDirectory.end());
+
+                    // TODO: fill this in with actual stuff. Hardcoding for this xctest package for now
+                    //std::wstring psfExecutable = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager\\jre\\1_6_0\\bin\\javaw.exe";
+                    //std::wstring psfWorkingDirectory = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager";
+                    //m_executionInfo.commandLineArguments = L"-splash:Splash_Wn_BTS_Site_Manager.png -cp cl\\cl.jar -client com.nokia.em.poseidon.PoseidonStarter -confFile cl\\CLConf.xml";
+                    m_executionInfo.commandLineArguments = psfArguements;
+
+                    // resolve the given paths from json into full paths.
+                    m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(psfExecutable, m_packageFullName.c_str());
+                    m_executionInfo.workingDirectory = FilePathMappings::GetInstance().GetExecutablePath(psfWorkingDirectory, m_packageFullName.c_str());
+
+                    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                        "PSF redirection",
+                        TraceLoggingWideString(m_executionInfo.resolvedExecutableFilePath.c_str(), "Resolved PSF executable"),
+                        TraceLoggingWideString(m_executionInfo.workingDirectory.c_str(), "WorkingDirectory"),
+                        TraceLoggingWideString(m_executionInfo.commandLineArguments.c_str(), "Arguments"));
+                }
             }
-
-            // TODO: fill this in with actual stuff. Hardcoding for this test package for now
-            std::wstring psfExecutable = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager\\jre\\1_6_0\\bin\\javaw.exe";
-            std::wstring psfWorkingDirectory = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager";
-            m_executionInfo.commandLineArguments = L"-splash:Splash_Wn_BTS_Site_Manager.png -cp cl\\cl.jar -client com.nokia.em.poseidon.PoseidonStarter -confFile cl\\CLConf.xml";
-
-            // resolve the given paths from json into full paths.
-            m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(psfExecutable, m_packageFullName.c_str());
-            m_executionInfo.workingDirectory = FilePathMappings::GetInstance().GetExecutablePath(psfWorkingDirectory, m_packageFullName.c_str());
-
-            TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                "PSF redirection",
-                TraceLoggingWideString(m_executionInfo.resolvedExecutableFilePath.c_str(), "Resolved PSF executable"),
-                TraceLoggingWideString(m_executionInfo.workingDirectory.c_str(), "WorkingDirectory"),
-                TraceLoggingWideString(m_executionInfo.commandLineArguments.c_str(), "Arguments"));
         }
     }
 
