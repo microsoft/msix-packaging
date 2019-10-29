@@ -195,21 +195,27 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
                     std::wstring psfWorkingDirectory;
                     psfWorkingDirectory.assign(workingDirectory.begin(), workingDirectory.end());
 
-                    // TODO: fill this in with actual stuff. Hardcoding for this xctest package for now
-                    //std::wstring psfExecutable = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager\\jre\\1_6_0\\bin\\javaw.exe";
-                    //std::wstring psfWorkingDirectory = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager";
-                    //m_executionInfo.commandLineArguments = L"-splash:Splash_Wn_BTS_Site_Manager.png -cp cl\\cl.jar -client com.nokia.em.poseidon.PoseidonStarter -confFile cl\\CLConf.xml";
                     m_executionInfo.commandLineArguments = psfArguements;
 
                     // resolve the given paths from json into full paths.
                     m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(psfExecutable, m_packageFullName.c_str());
                     m_executionInfo.workingDirectory = FilePathMappings::GetInstance().GetExecutablePath(psfWorkingDirectory, m_packageFullName.c_str());
 
+                    const Value& startScript = (*itr)["startScript"];
+                    std::string scriptPath = startScript["scriptPath"].GetString();
+                    std::wstring psfScriptPath;
+                    psfScriptPath.assign(scriptPath.begin(), scriptPath.end());
+                    m_scriptSettings.scriptPath = psfScriptPath;
+
+                    bool showWindow = startScript["showWindow"].GetBool();
+                    m_scriptSettings.showWindow = showWindow;
+
                     TraceLoggingWrite(g_MsixTraceLoggingProvider,
                         "PSF redirection",
                         TraceLoggingWideString(m_executionInfo.resolvedExecutableFilePath.c_str(), "Resolved PSF executable"),
                         TraceLoggingWideString(m_executionInfo.workingDirectory.c_str(), "WorkingDirectory"),
-                        TraceLoggingWideString(m_executionInfo.commandLineArguments.c_str(), "Arguments"));
+                        TraceLoggingWideString(m_executionInfo.commandLineArguments.c_str(), "Arguments"),
+                        TraceLoggingWideString(m_scriptSettings.scriptPath.c_str(), "StartScript - ScriptPath"));
                 }
             }
         }
