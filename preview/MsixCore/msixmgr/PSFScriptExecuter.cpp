@@ -31,7 +31,6 @@ HRESULT PSFScriptExecuter::ExecuteForAddRequest()
         TraceLoggingValue(scriptPath.c_str(), "ScriptPath"),
         TraceLoggingValue(psArguments.c_str(), "Arguments"));
 
-    // TODO: Fill in true for whether PSF says to show or not.
     bool showWindow = m_msixRequest->GetPackageInfo()->GetScriptSettings()->showWindow;
     INT showCmd = (showWindow) ? SW_SHOW : SW_HIDE;
 
@@ -44,8 +43,8 @@ HRESULT PSFScriptExecuter::ExecuteForAddRequest()
 
     // Run the script, and wait for it to finish if desired
     ShellExecuteExW(&shellExecuteInfo);
-    bool waitForFinish = true;
-    if (waitForFinish)
+    bool waitForScriptToFinish = m_msixRequest->GetPackageInfo()->GetScriptSettings()->waitForScriptToFinish;
+    if (waitForScriptToFinish)
     {
         WaitForSingleObject(shellExecuteInfo.hProcess, INFINITE);
         DWORD exitCode = 0;

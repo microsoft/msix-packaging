@@ -7,6 +7,7 @@ static const std::wstring sharedDllsKeyPath = L"Software\\Microsoft\\Windows\\Cu
 static const std::wstring registryDatFile = L"\\registry.dat";
 static const std::wstring blockMapFile = L"\\AppxBlockMap.xml";
 static const std::wstring manifestFile = L"\\AppxManifest.xml";
+static const std::wstring psfConfigFile = L"config.json";
 static const std::wstring classesKeyPath = L"SOFTWARE\\Classes";
 static const std::wstring desktopTargetDeviceFamilyName = L"MSIXCore.Desktop";
 static const std::wstring serverTargetDeviceFamilyName = L"MSIXCore.Server";
