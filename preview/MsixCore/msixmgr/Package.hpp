@@ -33,7 +33,7 @@ namespace MsixCoreLib
         ExecutionInfo m_executionInfo;
 
         /// Struct populated by ProcessPSFIsNecessary() and containing scriptrun information 
-        ScriptSettings m_scriptSettings;
+        ScriptSettings m_scriptSettings = {NULL, true, false, true};
     public:
         std::wstring GetPackageFullName() { return m_packageFullName; }
         std::wstring GetPackageFamilyName() { return m_packageFamilyName; }

@@ -189,6 +189,9 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
                     // Fail if endScript is present in current implementation as we do not support those cases yet
                     if ((*itr).HasMember("endScript"))
                     {
+                        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                            "presence of endScript in config.json is not supported currently");
+
                         return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
                     }
 
@@ -226,12 +229,12 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
 
                             if (runOnce == false)
                             {
+                                TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                                    "runOnce = false is not supported currently",
+                                    TraceLoggingWideString((LPCWSTR)runOnce, "runOnce"));
+
                                 return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
                             }
-                        }
-                        else
-                        {
-                            m_scriptSettings.runOnce = false;
                         }
 
                         if (startScript.HasMember("showWindow"))
@@ -239,19 +242,11 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
                             bool showWindow = startScript["showWindow"].GetBool();
                             m_scriptSettings.showWindow = showWindow;
                         }
-                        else
-                        {
-                            m_scriptSettings.showWindow = false;
-                        }
 
                         if (startScript.HasMember("waitForScriptToFinish"))
                         {
                             bool waitForScriptToFinish = startScript["waitForScriptToFinish"].GetBool();
                             m_scriptSettings.waitForScriptToFinish = waitForScriptToFinish;
-                        }
-                        else
-                        {
-                            m_scriptSettings.waitForScriptToFinish = false;
                         }
                     }
 
