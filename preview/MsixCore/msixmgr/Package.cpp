@@ -160,7 +160,15 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
     bool configFileExists = false;
     RETURN_IF_FAILED(FileExists(jsonConfigFile, configFileExists));
 
-    if (configFileExists)
+    if (!configFileExists)
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Config.json is not found in the directory",
+            TraceLoggingWideString(jsonConfigFile.c_str(), "Config.json file path"));
+
+        return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
+    }
+    else
     {
         // parse the file and see if it has info we need.
         std::ifstream ifs(jsonConfigFile);
@@ -171,6 +179,10 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
 
         if (doc.HasParseError())
         {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Config.json has a document parsing error",
+                TraceLoggingWideString(jsonConfigFile.c_str(), "Config.json file path"));
+
             return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
         }
         if (doc.HasMember("applications"))
@@ -182,6 +194,10 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
                 std::string id = (*itr)["id"].GetString();
                 std::wstring jsonApplicationId;
                 jsonApplicationId.assign(id.begin(), id.end());
+
+                TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                    "Application id found in config.json file",
+                    TraceLoggingWideString(jsonApplicationId.c_str(), "jsonApplicationId"));
 
                 //ApplicationId in json should match applicationId from the xml manifest. Right now, we only process first application from the xml manifest anyway
                 if (CaseInsensitiveEquals(jsonApplicationId, m_applicationId))
@@ -231,7 +247,7 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
                             {
                                 TraceLoggingWrite(g_MsixTraceLoggingProvider,
                                     "runOnce = false is not supported currently",
-                                    TraceLoggingWideString((LPCWSTR)runOnce, "runOnce"));
+                                    TraceLoggingBool(runOnce, "runOnce"));
 
                                 return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
                             }
@@ -262,6 +278,9 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
             }
         }
     }    
+
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Application id config.json file does not match application id from appxmanifest.xml");
 
     return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
 }
