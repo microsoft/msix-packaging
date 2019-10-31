@@ -30,10 +30,10 @@ namespace MsixCoreLib {
 
     struct ScriptSettings
     {
-        std::wstring scriptPath = NULL;
-        bool runOnce = true;
-        bool showWindow = false;
-        bool waitForScriptToFinish = true;
+        std::wstring scriptPath;
+        bool runOnce{ true };
+        bool showWindow{ false };
+        bool waitForScriptToFinish{ true };
     };
 
     class IInstalledPackage : public IPackage
