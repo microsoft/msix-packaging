@@ -3,13 +3,20 @@
 #include "Package.hpp"
 #include "FilePaths.hpp"
 #include "GeneralUtil.hpp"
+#include "Constants.hpp"
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
 #include <fstream>
 #include <experimental/filesystem> // C++-standard header file name
 #include <filesystem> // Microsoft-specific implementation header file name
+#include "document.h"
+#include "stringbuffer.h"
+#include "writer.h"
+#include "istreamwrapper.h"
+#include "ostreamwrapper.h"
 
 using namespace MsixCoreLib;
+using namespace rapidjson;
 
 //
 // Gets the stream of a file.
@@ -148,30 +155,134 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
         TraceLoggingWideString(m_relativeExecutableFilePath.c_str(), "PSF Executable"),
         TraceLoggingWideString(GetPackageDirectoryPath().c_str(), "path"));
 
-    // By default the PSF information is in config.json, but could be in a different json file.
-    for (auto& p : std::experimental::filesystem::directory_iterator(GetPackageDirectoryPath()))
+    // PSF config information should be in a file called config.json, so look for that file
+    std::wstring jsonConfigFile = GetPackageDirectoryPath() + psfConfigFile;
+    bool configFileExists = false;
+    RETURN_IF_FAILED(FileExists(jsonConfigFile, configFileExists));
+
+    if (!configFileExists)
     {
-        if (std::experimental::filesystem::is_regular_file(p.path()) && CaseInsensitiveEquals(p.path().extension(), L".json"))
-        {
-            // parse the file and see if it has info we need.
-            // TODO: fill this in with actual stuff. Hardcoding for this test package for now
-            std::wstring psfExecutable = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager\\jre\\1_6_0\\bin\\javaw.exe";
-            std::wstring psfWorkingDirectory = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager";
-            m_executionInfo.commandLineArguments = L"-splash:Splash_Wn_BTS_Site_Manager.png -cp cl\\cl.jar -client com.nokia.em.poseidon.PoseidonStarter -confFile cl\\CLConf.xml";
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Config.json is not found in the directory",
+            TraceLoggingWideString(jsonConfigFile.c_str(), "Config.json file path"));
 
-            // resolve the given paths from json into full paths.
-            m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(psfExecutable, m_packageFullName.c_str());
-            m_executionInfo.workingDirectory = FilePathMappings::GetInstance().GetExecutablePath(psfWorkingDirectory, m_packageFullName.c_str());
-
-            TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                "PSF redirection",
-                TraceLoggingWideString(m_executionInfo.resolvedExecutableFilePath.c_str(), "Resolved PSF executable"),
-                TraceLoggingWideString(m_executionInfo.workingDirectory.c_str(), "WorkingDirectory"),
-                TraceLoggingWideString(m_executionInfo.commandLineArguments.c_str(), "Arguments"));
-        }
+        return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
     }
+    else
+    {
+        // parse the file and see if it has info we need.
+        std::ifstream ifs(jsonConfigFile);
+        IStreamWrapper isw(ifs);
 
-    return S_OK;
+        Document doc;
+        doc.ParseStream(isw);
+
+        if (doc.HasParseError())
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Config.json has a document parsing error",
+                TraceLoggingWideString(jsonConfigFile.c_str(), "Config.json file path"));
+
+            return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+        }
+        if (doc.HasMember("applications"))
+        {
+            const Value& apps = doc["applications"];
+
+            for (Value::ConstValueIterator itr = apps.Begin(); itr != apps.End(); ++itr)
+            {
+                std::string id = (*itr)["id"].GetString();
+                std::wstring jsonApplicationId;
+                jsonApplicationId.assign(id.begin(), id.end());
+
+                TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                    "Application id found in config.json file",
+                    TraceLoggingWideString(jsonApplicationId.c_str(), "jsonApplicationId"));
+
+                //ApplicationId in json should match applicationId from the xml manifest. Right now, we only process first application from the xml manifest anyway
+                if (CaseInsensitiveEquals(jsonApplicationId, m_applicationId))
+                {
+                    // Fail if endScript is present in current implementation as we do not support those cases yet
+                    if ((*itr).HasMember("endScript"))
+                    {
+                        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                            "presence of endScript in config.json is not supported currently");
+
+                        return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+                    }
+
+                    std::string executable = (*itr)["executable"].GetString();
+                    std::wstring psfExecutable;
+                    psfExecutable.assign(executable.begin(), executable.end());
+
+                    std::string arguments = (*itr)["arguments"].GetString();
+                    std::wstring psfArguments;
+                    psfArguments.assign(arguments.begin(), arguments.end());
+
+                    std::string workingDirectory = (*itr)["workingDirectory"].GetString();
+                    std::wstring psfWorkingDirectory;
+                    psfWorkingDirectory.assign(workingDirectory.begin(), workingDirectory.end());
+
+                    m_executionInfo.commandLineArguments = psfArguments;
+
+                    // resolve the given paths from json into full paths.
+                    m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(psfExecutable, m_packageFullName.c_str());
+                    m_executionInfo.workingDirectory = FilePathMappings::GetInstance().GetExecutablePath(psfWorkingDirectory, m_packageFullName.c_str());
+
+                    if ((*itr).HasMember("startScript"))
+                    {
+                        const Value& startScript = (*itr)["startScript"];
+
+                        std::string scriptPath = startScript["scriptPath"].GetString();
+                        std::wstring psfScriptPath;
+                        psfScriptPath.assign(scriptPath.begin(), scriptPath.end());
+                        m_scriptSettings.scriptPath = psfScriptPath;
+
+                        if (startScript.HasMember("runOnce"))
+                        {
+                            bool runOnce = startScript["runOnce"].GetBool();
+                            m_scriptSettings.runOnce = runOnce;
+
+                            if (runOnce == false)
+                            {
+                                TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                                    "runOnce = false is not supported currently",
+                                    TraceLoggingBool(runOnce, "runOnce"));
+
+                                return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+                            }
+                        }
+
+                        if (startScript.HasMember("showWindow"))
+                        {
+                            bool showWindow = startScript["showWindow"].GetBool();
+                            m_scriptSettings.showWindow = showWindow;
+                        }
+
+                        if (startScript.HasMember("waitForScriptToFinish"))
+                        {
+                            bool waitForScriptToFinish = startScript["waitForScriptToFinish"].GetBool();
+                            m_scriptSettings.waitForScriptToFinish = waitForScriptToFinish;
+                        }
+                    }
+
+                    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                        "PSF redirection",
+                        TraceLoggingWideString(m_executionInfo.resolvedExecutableFilePath.c_str(), "Resolved PSF executable"),
+                        TraceLoggingWideString(m_executionInfo.workingDirectory.c_str(), "WorkingDirectory"),
+                        TraceLoggingWideString(m_executionInfo.commandLineArguments.c_str(), "Arguments"),
+                        TraceLoggingWideString(m_scriptSettings.scriptPath.c_str(), "StartScript - ScriptPath"));
+
+                    return S_OK;
+                }
+            }
+        }
+    }    
+
+    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+        "Application id config.json file does not match application id from appxmanifest.xml");
+
+    return HRESULT_FROM_WIN32(ERROR_NOT_FOUND);
 }
 
 HRESULT Package::MakeFromPackageReader(IAppxPackageReader * packageReader, std::shared_ptr<Package> * packageInfo)

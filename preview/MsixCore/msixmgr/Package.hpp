@@ -31,12 +31,16 @@ namespace MsixCoreLib
 
         /// Note: ExecutionInfo is populated by ProcessPSFIsNecessary() and may not be filled in on initialization.
         ExecutionInfo m_executionInfo;
+
+        /// Struct populated by ProcessPSFIsNecessary() and containing scriptrun information 
+        ScriptSettings m_scriptSettings;
     public:
         std::wstring GetPackageFullName() { return m_packageFullName; }
         std::wstring GetPackageFamilyName() { return m_packageFamilyName; }
         std::wstring GetRelativeExecutableFilePath() { return m_relativeExecutableFilePath; }
         std::wstring GetResolvedExecutableFilePath();
         ExecutionInfo* GetExecutionInfo() { return &m_executionInfo; }
+        ScriptSettings* GetScriptSettings() { return &m_scriptSettings; }
         std::wstring GetDisplayName() { return m_displayName; }
         std::wstring GetId() { return m_appUserModelId; }
         unsigned long long GetVersionNumber() { return m_version; }
@@ -102,6 +106,7 @@ namespace MsixCoreLib
         std::wstring GetRelativeExecutableFilePath() { return m_relativeExecutableFilePath; }
         std::wstring GetResolvedExecutableFilePath();
         ExecutionInfo* GetExecutionInfo() { return &m_executionInfo; }
+        ScriptSettings* GetScriptSettings() { return &m_scriptSettings; }
         std::wstring GetDisplayName() { return m_displayName; }
         std::wstring GetId() { return m_appUserModelId; }
         unsigned long long GetVersionNumber() { return m_version; }
@@ -147,6 +152,7 @@ namespace MsixCoreLib
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
         std::wstring GetApplicationId() { return m_applicationId; }
         virtual ExecutionInfo* GetExecutionInfo() { return &m_executionInfo; }
+        virtual ScriptSettings* GetScriptSettings() { return &m_scriptSettings; }
 
         std::unique_ptr<IStream> GetLogo();
 

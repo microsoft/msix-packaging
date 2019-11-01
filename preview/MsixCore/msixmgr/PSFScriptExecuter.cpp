@@ -4,6 +4,7 @@
 #include "GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
 #include "MsixTraceLoggingProvider.hpp"
+#include "document.h"
 
 using namespace MsixCoreLib;
 
@@ -17,16 +18,12 @@ HRESULT PSFScriptExecuter::ExecuteForAddRequest()
     }
 
     // Read script parameters from PSF config and update executionInfo
-
-
+    RETURN_IF_FAILED(m_msixRequest->GetPackageInfo()->ProcessPSFIfNecessary());
     
     std::wstring workingDirectory = m_msixRequest->GetPackageInfo()->GetExecutionInfo()->workingDirectory;
+    std::wstring scriptName = m_msixRequest->GetPackageInfo()->GetScriptSettings()->scriptPath;
 
-    // DO NOT COMPLETE PR: temporarily hardcode to show we can execute scripts
-    std::wstring scriptName = L"CreatePSFTestRegKey.ps1";
-    workingDirectory = L"Nokia Siemens Networks\\Managers\\BTS Site\\BTS Site Manager";
-
-    std::wstring scriptPath = m_msixRequest->GetPackageInfo()->GetPackageDirectoryPath() + workingDirectory + L"\\" + scriptName;
+    std::wstring scriptPath = workingDirectory + L"\\" + scriptName;
     std::wstring psArguments = L"-file \"" + scriptPath + L"\"";
 
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
@@ -34,8 +31,8 @@ HRESULT PSFScriptExecuter::ExecuteForAddRequest()
         TraceLoggingValue(scriptPath.c_str(), "ScriptPath"),
         TraceLoggingValue(psArguments.c_str(), "Arguments"));
 
-    // TODO: Fill in true for whether PSF says to show or not.
-    INT showCmd = (false) ? SW_SHOW : SW_HIDE;
+    bool showWindow = m_msixRequest->GetPackageInfo()->GetScriptSettings()->showWindow;
+    INT showCmd = (showWindow) ? SW_SHOW : SW_HIDE;
 
     SHELLEXECUTEINFOW shellExecuteInfo = {};
     shellExecuteInfo.cbSize = sizeof(SHELLEXECUTEINFOW);
@@ -46,8 +43,8 @@ HRESULT PSFScriptExecuter::ExecuteForAddRequest()
 
     // Run the script, and wait for it to finish if desired
     ShellExecuteExW(&shellExecuteInfo);
-    bool waitForFinish = true;
-    if (waitForFinish)
+    bool waitForScriptToFinish = m_msixRequest->GetPackageInfo()->GetScriptSettings()->waitForScriptToFinish;
+    if (waitForScriptToFinish)
     {
         WaitForSingleObject(shellExecuteInfo.hProcess, INFINITE);
         DWORD exitCode = 0;

@@ -28,11 +28,20 @@ namespace MsixCoreLib {
         std::wstring workingDirectory;
     };
 
+    struct ScriptSettings
+    {
+        std::wstring scriptPath;
+        bool runOnce{ true };
+        bool showWindow{ false };
+        bool waitForScriptToFinish{ true };
+    };
+
     class IInstalledPackage : public IPackage
     {
     public:
         virtual std::wstring GetInstalledLocation() = 0;
         virtual ExecutionInfo* GetExecutionInfo() = 0;
+        virtual ScriptSettings* GetScriptSettings() = 0;
         virtual ~IInstalledPackage() {}
     protected:
         IInstalledPackage() {}
