@@ -1,0 +1,13 @@
+{
+  "Registrations": [
+    {
+      "component": {
+        "type": "git",
+        "git": {
+          "repositoryUrl": "https://github.com/Tencent/rapidjson",
+          "commitHash": "87d4c3abc60b6d722f9775c2af5061cbd4e5af0f"
+        }
+      }
+    }
+  ]
+}

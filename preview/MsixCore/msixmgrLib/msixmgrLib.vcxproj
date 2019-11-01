@@ -256,6 +256,9 @@
     <ClCompile Include="..\msixmgr\PrepareDevirtualizedRegistry.cpp" />
     <ClCompile Include="..\msixmgr\WriteDevirtualizedRegistry.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <None Include="cgmanifest.json" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>
