@@ -114,6 +114,7 @@ int main(int argc, char * argv[])
         }
         case OperationType::Remove:
         {
+            FreeConsole();
             AutoPtr<IPackageManager> packageManager;
             RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
 
