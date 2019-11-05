@@ -5,7 +5,7 @@
         "type": "git",
         "git": {
           "repositoryUrl": "https://github.com/Tencent/rapidjson",
-          "commitHash": "87d4c3abc60b6d722f9775c2af5061cbd4e5af0f"
+          "commitHash": "1a825d24fa322a5fe721624b2ed7a18b6de9b48a"
         }
       }
     }
