@@ -57,6 +57,10 @@
 			<Component Id="MsixDll" Win64="$(var.Win64)">
 				<File Source="$(var.msixmgr.TargetDir)\msix.dll" />
 			</Component>
+
+      <Component Id="NoticeFile">
+        <File Source="NOTICE.html" />
+      </Component>
 			
 		</ComponentGroup>
 		<ComponentGroup Id="Assets" Directory="Assets">
