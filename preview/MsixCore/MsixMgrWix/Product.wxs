@@ -60,7 +60,7 @@
 
       <Component Id="NoticeFile">
         <File Source="NOTICE.html" />
-    </Component>
+      </Component>
 			
 		</ComponentGroup>
 		<ComponentGroup Id="Assets" Directory="Assets">
