@@ -32,7 +32,7 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(const wstring & packag
     }
 
     ComPtr<IStream> packageStream;
-    if (FAILED(CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &packageStream)))
+    if (FAILED(CreateStreamOnPackageUrl(packageFilePath.c_str(), &packageStream)))
     {
         return nullptr;
     }
@@ -82,6 +82,7 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStrea
     return impl->GetMsixResponse();
 }
 
+
 HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOptions options)
 {
     if (IsWindows10RS3OrLater())
@@ -89,14 +90,10 @@ HRESULT PackageManager::AddPackage(const wstring & packageFilePath, DeploymentOp
         RETURN_IF_FAILED(Windows10Redirector::AddPackage(packageFilePath));
         return S_OK;
     }
-
+    
     ComPtr<IStream> packageStream;
-    auto res = CreateStreamOnFileUTF16(packageFilePath.c_str(), /*forRead */ true, &packageStream);
-    if (FAILED(res))
-    {
-        return res;
-    }
-
+    RETURN_IF_FAILED(CreateStreamOnPackageUrl(packageFilePath, &packageStream));
+    
     return AddPackage(packageStream.Get(), options);
 }
 
@@ -162,6 +159,28 @@ HRESULT PackageManager::GetPackageInfo(const wstring & directoryPath, shared_ptr
     RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromManifest(directoryPath.c_str(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo));
     
     installedPackage = std::dynamic_pointer_cast<IInstalledPackage>(packageInfo);
+    return S_OK;
+}
+
+HRESULT MsixCoreLib::PackageManager::CreateStreamOnPackageUrl(const std::wstring & package, IStream ** stream)
+{
+    std::wstring httpPrefix(L"http");
+    bool isPathHttp = package.compare(0, httpPrefix.length(), httpPrefix) == 0;
+    if (isPathHttp)
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "HTTP file detected, will download to cache",
+            TraceLoggingValue(package.c_str(), "PackageFilePath"));
+        WCHAR fileName[MAX_PATH];
+        RETURN_IF_FAILED(URLDownloadToCacheFile(nullptr /*activex iunknown*/, package.c_str(), fileName, MAX_PATH, 0 /*reserved*/, nullptr /*bindstatuscallback*/));
+
+        RETURN_IF_FAILED(CreateStreamOnFileUTF16(fileName, true /*forRead*/, stream));
+    }
+    else // file path
+    {
+        RETURN_IF_FAILED(CreateStreamOnFileUTF16(package.c_str(), true /*forRead */, stream));
+    }
+
     return S_OK;
 }
 
@@ -255,7 +274,7 @@ HRESULT PackageManager::GetMsixPackageInfo(const wstring & msixFullPath, shared_
     
     shared_ptr<Package> packageInfo;
     ComPtr<IStream> packageStream;
-    RETURN_IF_FAILED(CreateStreamOnFileUTF16(msixFullPath.c_str(), /*forRead */ true, &packageStream));
+    RETURN_IF_FAILED(CreateStreamOnPackageUrl(msixFullPath.c_str(), &packageStream));
     RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromPackage(packageStream.Get(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo));
     
     package = dynamic_pointer_cast<IPackage>(packageInfo);

@@ -92,16 +92,25 @@ int main(int argc, char * argv[])
                 {
                     TraceLoggingWrite(g_MsixUITraceLoggingProvider, "Windows10RS3 or later: redirecting to appInstaller");
 
-                    const int bufSize = 1024;
-                    wchar_t path[bufSize];
-                    if (!GetFullPathNameW(cli.GetPackageFilePathToInstall().c_str(), bufSize, path, nullptr))
-                    {
-                        return HRESULT_FROM_WIN32(GetLastError());
-                    }
-
                     std::wstring protocol = std::wstring(L"ms-appinstaller:?source=");
-                    protocol.append(path);
 
+                    std::wstring httpPrefix(L"http");
+                    bool isPathHttp = cli.GetPackageFilePathToInstall().compare(0, httpPrefix.length(), httpPrefix) == 0;
+                    if (isPathHttp)
+                    {
+                        protocol.append(cli.GetPackageFilePathToInstall());
+                    }
+                    else
+                    {
+                        const int bufSize = 1024;
+                        wchar_t path[bufSize];
+                        if (!GetFullPathNameW(cli.GetPackageFilePathToInstall().c_str(), bufSize, path, nullptr))
+                        {
+                            return HRESULT_FROM_WIN32(GetLastError());
+                        }
+
+                        protocol.append(path);
+                    }
                     ShellExecuteW(nullptr, L"Open", protocol.c_str(), nullptr, nullptr, SW_SHOWNORMAL);
                 }
                 else
