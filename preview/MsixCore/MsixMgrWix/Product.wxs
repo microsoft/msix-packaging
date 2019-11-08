@@ -148,6 +148,7 @@
 			<!-- ARPNOREPAIR+ARPNOREMOVE are specified to force the MODIFY verb, which will display maintenance UI as the only option in Add/remove Programs-->
 			<Property Id="ARPNOREPAIR" Value="1" />
 			<Property Id="ARPNOREMOVE" Value="1" />
+			<Property Id="ARPPRODUCTICON" Value="MsixIcon" />
 		</UI>
 
 		<UIRef Id="WixUI_Common" />
