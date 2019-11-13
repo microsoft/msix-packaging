@@ -9,7 +9,7 @@
 
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
 	<Product Id="*" Name="MSIX Core" Language="1033" Version="!(bind.FileVersion.MsixMgrExe)" Manufacturer="Microsoft" UpgradeCode="2fe180f8-3fb8-48a0-b01e-68f47fc0ec34">
-		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" />
+		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Languages="1033,1031,1034,1036,1040,1041,1042,2070,1049,2052,1028"/>
 
 		<MajorUpgrade DowngradeErrorMessage="A newer version of [ProductName] is already installed." />
 		<MediaTemplate EmbedCab="yes" />
@@ -57,6 +57,10 @@
 			<Component Id="MsixDll" Win64="$(var.Win64)">
 				<File Source="$(var.msixmgr.TargetDir)\msix.dll" />
 			</Component>
+
+      <Component Id="NoticeFile">
+        <File Source="NOTICE.html" />
+      </Component>
 			
 		</ComponentGroup>
 		<ComponentGroup Id="Assets" Directory="Assets">
@@ -74,10 +78,10 @@
 		<UI>
 			<!-- Based off of the Maintenance dialog, we only allow Remove; we only show this dialog to warn of msixmgr apps that need to be removed-->
 			<Dialog Id="RemoveConfirmationDlg" Width="370" Height="270" Title="!(loc.MaintenanceTypeDlg_Title)">
-				<Control Id="RemoveButton" Type="PushButton" X="40" Y="171" Width="80" Height="17" ToolTip="!(loc.MaintenanceTypeDlgRemoveButtonTooltip)" Text="&amp;Remove Anyway">
+				<Control Id="RemoveButton" Type="PushButton" X="40" Y="171" Width="80" Height="17" ToolTip="!(loc.MaintenanceTypeDlgRemoveButtonTooltip)" Text="!(loc.MaintenanceTypeDlgRemoveButton)">
 					<Publish Property="WixUI_InstallMode" Value="Remove">1</Publish>
 				</Control>
-				<Control Id="WarningText" Type="Text" X="40" Y="81" Width="280" Height="40" NoPrefix="yes" Text="{\WixUI_Font_Title}Warning - removing this will cause the following app(s) installed by this to be unremovable: [MSIXMGR_PRODUCTS]. These app(s) should be removed before proceeding" Hidden="yes">
+				<Control Id="WarningText" Type="Text" X="40" Y="81" Width="280" Height="40" NoPrefix="yes" Text="{\WixUI_Font_Title}!(loc.OrphanedPackageWarning)" Hidden="yes">
 					<Condition Action="show">MSIXMGR_PRODUCTS</Condition>
 				</Control>
 				<Control Id="RemoveText" Type="Text" X="60" Y="191" Width="280" Height="20" NoPrefix="yes" Text="!(loc.MaintenanceTypeDlgRemoveText)">
@@ -88,7 +92,7 @@
 				<Control Id="BannerBitmap" Type="Bitmap" X="0" Y="0" Width="370" Height="44" TabSkip="no" Text="!(loc.MaintenanceTypeDlgBannerBitmap)" />
 				<Control Id="BannerLine" Type="Line" X="0" Y="44" Width="370" Height="0" />
 				<Control Id="BottomLine" Type="Line" X="0" Y="234" Width="370" Height="0" />
-				<Control Id="Title" Type="Text" X="15" Y="6" Width="340" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}Remove Installation" />
+				<Control Id="Title" Type="Text" X="15" Y="6" Width="340" Height="15" Transparent="yes" NoPrefix="yes" Text="{\WixUI_Font_Title}!(loc.MaintenanceTypeDlgRemoveButtonTooltip)" />
 				<Control Id="Description" Type="Text" X="25" Y="23" Width="340" Height="20" Transparent="yes" NoPrefix="yes" Text="!(loc.MaintenanceTypeDlgDescription)" />
 			</Dialog>
 			<InstallUISequence>
@@ -144,6 +148,7 @@
 			<!-- ARPNOREPAIR+ARPNOREMOVE are specified to force the MODIFY verb, which will display maintenance UI as the only option in Add/remove Programs-->
 			<Property Id="ARPNOREPAIR" Value="1" />
 			<Property Id="ARPNOREMOVE" Value="1" />
+			<Property Id="ARPPRODUCTICON" Value="MsixIcon" />
 		</UI>
 
 		<UIRef Id="WixUI_Common" />
