@@ -40,7 +40,7 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
     if (SUCCEEDED(m_loadingPackageInfoCode))
     {
         auto displayText = m_installOrUpdateText + L" " + m_displayName + L"?";
-        auto messageText = L"Publisher: " + m_publisherCommonName + L"\nVersion: " + m_version;
+        auto messageText = GetStringResource(IDS_STRING_PUBLISHER) + m_publisherCommonName + L"\n" + GetStringResource(IDS_STRING_VERSION) + m_version;
         ChangeText(hWnd, displayText, messageText, m_logoStream.get());
     }
     else
@@ -438,7 +438,7 @@ BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
     g_checkboxHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
         L"BUTTON",
-        L"Launch when ready",  // text
+        GetStringResource(IDS_STRING_LAUNCH_CHECKBOX).c_str(),  // text
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, // style
         parentRect.left + 50, // x coord
         parentRect.bottom - 60,  // y coord
@@ -459,7 +459,7 @@ BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
     g_buttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
         L"Button",
-        L"Install",  // text
+        GetStringResource(IDS_STRING_INSTALLTEXT).c_str(),  // text
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
@@ -478,7 +478,7 @@ BOOL UI::CreateCancelButton(HWND parentHWnd, RECT parentRect)
     g_CancelbuttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
         L"BUTTON",
-        L"Cancel",  // text
+        GetStringResource(IDS_STRING_UI_CANCEL).c_str(),  // text
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
@@ -497,7 +497,7 @@ BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect, int xDiff, int yDi
     g_LaunchbuttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
         L"BUTTON",
-        L"Launch",  // text
+        GetStringResource(IDS_STRING_LAUNCHBUTTON).c_str(),  // text
         WS_TABSTOP | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - xDiff, // x coord
         parentRect.bottom - yDiff,  // y coord
@@ -517,7 +517,7 @@ BOOL UI::CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect)
     g_percentageTextHWnd = CreateWindowEx(
         WS_EX_LEFT,
         L"Static",
-        L"Installing app package",
+        GetStringResource(IDS_STRING_INSTALLING_APP).c_str(),
         WS_CHILD ,
         parentRect.left + 50,
         parentRect.bottom - scrollHeight - 143,
@@ -549,7 +549,7 @@ BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
     g_staticErrorTextHWnd = CreateWindowEx(
         WS_EX_LEFT,
         L"Static",
-        L"Reason:",
+        GetStringResource(IDS_STRING_ERROR_REASON_TEXT).c_str(),
         WS_CHILD,
         parentRect.left + 50,
         parentRect.bottom - 80,
@@ -603,7 +603,7 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     layoutRect.Y += 40;
     graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
 
-    std::wstring capabilitiesHeading = L"Capabilties:";
+    std::wstring capabilitiesHeading = GetStringResource(IDS_STRING_CAPABILITIES);
     layoutRect.Y += 40;
     graphics.DrawString(capabilitiesHeading.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
 
