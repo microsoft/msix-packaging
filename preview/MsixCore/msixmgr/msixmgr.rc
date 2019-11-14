@@ -115,7 +115,6 @@ BEGIN
 	IDS_STRING_CAPABILITIES "Capabilities:"
 	IDS_STRING_INSTALLING_APP "Installing app package"
 	IDS_STRING_ERROR_REASON_TEXT "Reason:"
-	IDS_STRING_ERROR_INIT_WINDOW_FAILED "Call to CreateWindow failed!"
 
 	END
 

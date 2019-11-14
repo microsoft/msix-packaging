@@ -648,7 +648,7 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
 
     if (!hWnd)
     {
-        MessageBox(NULL, GetStringResource(IDS_STRING_ERROR_INIT_WINDOW_FAILED).c_str(), title.c_str(), NULL);
+        MessageBox(NULL, L"Call to CreateWindow failed!", title.c_str(), NULL);
         return 1;
     }
 
