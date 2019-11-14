@@ -459,7 +459,7 @@ BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
     g_buttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
         L"Button",
-        L"Install",  // text
+        GetStringResource(IDS_STRING_INSTALLTEXT).c_str(),  // text
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
@@ -478,7 +478,7 @@ BOOL UI::CreateCancelButton(HWND parentHWnd, RECT parentRect)
     g_CancelbuttonHWnd = CreateWindowEx(
         WS_EX_LEFT, // extended window style
         L"BUTTON",
-        L"Cancel",  // text
+        GetStringResource(IDS_STRING_UI_CANCEL).c_str(),  // text
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
@@ -517,7 +517,7 @@ BOOL UI::CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect)
     g_percentageTextHWnd = CreateWindowEx(
         WS_EX_LEFT,
         L"Static",
-        L"Installing app package",
+        GetStringResource(IDS_STRING_INSTALLING_APP).c_str(),
         WS_CHILD ,
         parentRect.left + 50,
         parentRect.bottom - scrollHeight - 143,
@@ -549,7 +549,7 @@ BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
     g_staticErrorTextHWnd = CreateWindowEx(
         WS_EX_LEFT,
         L"Static",
-        L"Reason:",
+        GetStringResource(IDS_STRING_ERROR_REASON_TEXT).c_str(),
         WS_CHILD,
         parentRect.left + 50,
         parentRect.bottom - 80,
@@ -648,7 +648,7 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
 
     if (!hWnd)
     {
-        MessageBox(NULL, L"Call to CreateWindow failed!", title.c_str(), NULL);
+        MessageBox(NULL, GetStringResource(IDS_STRING_ERROR_INIT_WINDOW_FAILED).c_str(), title.c_str(), NULL);
         return 1;
     }
 
