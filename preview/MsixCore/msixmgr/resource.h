@@ -45,6 +45,9 @@
 #define IDS_STRING_PUBLISHER            139
 #define IDS_STRING_VERSION              140
 #define IDS_STRING_CAPABILITIES         141
+#define IDS_STRING_INSTALLING_APP       142
+#define IDS_STRING_ERROR_REASON_TEXT    143
+#define IDS_STRING_ERROR_INIT_WINDOW_FAILED   144
 
 // Next default values for new objects
 // 
