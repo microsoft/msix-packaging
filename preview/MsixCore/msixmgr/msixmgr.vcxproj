@@ -104,7 +104,12 @@
       <DelayLoadDLLs>api-ms-win-core-winrt-string-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-1.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
+      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"
+"$(WDKBinRoot)\$(Platform)\muirct.exe" -q "..\msixmgrLib\resourceConfig.rcconfig.xml" -v 2 -x 0x0409 -g 0x0409 "$(OutDir)msixmgr.exe" "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe.mui"
+copy /y "$(OutDir)msixmgr.exe" "$(OutDir)msixmgrOriginal.exe"
+copy /y "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe"
+del "$(OutDir)msixmgr_LN.exe"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -129,7 +134,12 @@
       <DelayLoadDLLs>api-ms-win-core-winrt-string-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-1.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
+      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"
+"$(WDKBinRoot)\$(Platform)\muirct.exe" -q "..\msixmgrLib\resourceConfig.rcconfig.xml" -v 2 -x 0x0409 -g 0x0409 "$(OutDir)msixmgr.exe" "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe.mui"
+copy /y "$(OutDir)msixmgr.exe" "$(OutDir)msixmgrOriginal.exe"
+copy /y "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe"
+del "$(OutDir)msixmgr_LN.exe"
+</Command>
     </PostBuildEvent>
     <CustomBuildStep>
       <Command>
@@ -163,7 +173,12 @@
       <DelayLoadDLLs>api-ms-win-core-winrt-string-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-1.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"</Command>
+      <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"
+"$(WDKBinRoot)\$(Platform)\muirct.exe" -q "..\msixmgrLib\resourceConfig.rcconfig.xml" -v 2 -x 0x0409 -g 0x0409 "$(OutDir)msixmgr.exe" "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe.mui"
+copy /y "$(OutDir)msixmgr.exe" "$(OutDir)msixmgrOriginal.exe"
+copy /y "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe"
+del "$(OutDir)msixmgr_LN.exe"
+</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -194,10 +209,10 @@
     </Link>
     <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"
-"$(WDKBinRoot)\$(Platform)\muirct.exe" -q "..\msixmgrLib\resourceConfig.rcconfig.xml" -v 2 -x 0x0409 -g 0x0409 "..\$(Platform)\Release\msixmgr.exe" "..\$(Platform)\Release\msixmgr_LN.exe" "..\$(Platform)\Release\msixmgr.exe.mui"
-copy /y "..\$(Platform)\Release\msixmgr.exe" "..\$(Platform)\Release\msixmgrOriginal.exe"
-copy /y "..\$(Platform)\Release\msixmgr_LN.exe" "..\$(Platform)\Release\msixmgr.exe"
-del "..\$(Platform)\Release\msixmgr_LN.exe"
+"$(WDKBinRoot)\$(Platform)\muirct.exe" -q "..\msixmgrLib\resourceConfig.rcconfig.xml" -v 2 -x 0x0409 -g 0x0409 "$(OutDir)msixmgr.exe" "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe.mui"
+copy /y "$(OutDir)msixmgr.exe" "$(OutDir)msixmgrOriginal.exe"
+copy /y "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe"
+del "$(OutDir)msixmgr_LN.exe" 
 </Command>
     </PostBuildEvent>
     <Manifest>
