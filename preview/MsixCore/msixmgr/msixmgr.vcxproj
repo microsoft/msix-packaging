@@ -103,7 +103,7 @@
       <AdditionalDependencies>msixmgrlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>api-ms-win-core-winrt-string-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-1.dll</DelayLoadDLLs>
     </Link>
-    <PostBuildEvent Condition="$(RunOrNot)=='true'">
+    <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"
 "$(WDKBinRoot)\$(Platform)\muirct.exe" -q "..\msixmgrLib\resourceConfig.rcconfig.xml" -v 2 -x 0x0409 -g 0x0409 "$(OutDir)msixmgr.exe" "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe.mui"
 copy /y "$(OutDir)msixmgr.exe" "$(OutDir)msixmgrOriginal.exe"
@@ -133,7 +133,7 @@ del "$(OutDir)msixmgr_LN.exe"
       <AdditionalDependencies>msixmgrlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>api-ms-win-core-winrt-string-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-1.dll</DelayLoadDLLs>
     </Link>
-    <PostBuildEvent Condition="$(RunOrNot)=='true'">
+    <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"
 "$(WDKBinRoot)\$(Platform)\muirct.exe" -q "..\msixmgrLib\resourceConfig.rcconfig.xml" -v 2 -x 0x0409 -g 0x0409 "$(OutDir)msixmgr.exe" "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe.mui"
 copy /y "$(OutDir)msixmgr.exe" "$(OutDir)msixmgrOriginal.exe"
@@ -172,7 +172,7 @@ del "$(OutDir)msixmgr_LN.exe"
       <AdditionalDependencies>msixmgrlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>api-ms-win-core-winrt-string-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-1.dll</DelayLoadDLLs>
     </Link>
-    <PostBuildEvent Condition="$(RunOrNot)=='true'">
+    <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"
 "$(WDKBinRoot)\$(Platform)\muirct.exe" -q "..\msixmgrLib\resourceConfig.rcconfig.xml" -v 2 -x 0x0409 -g 0x0409 "$(OutDir)msixmgr.exe" "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe.mui"
 copy /y "$(OutDir)msixmgr.exe" "$(OutDir)msixmgrOriginal.exe"
@@ -207,7 +207,7 @@ del "$(OutDir)msixmgr_LN.exe"
       <AdditionalDependencies>msixmgrlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>api-ms-win-core-winrt-string-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-1.dll</DelayLoadDLLs>
     </Link>
-    <PostBuildEvent Condition="$(RunOrNot)=='true'">
+    <PostBuildEvent>
       <Command>xcopy /Y /D "..\..\..\.vs\bin\msix.dll" "$(OutDir)"
 "$(WDKBinRoot)\$(Platform)\muirct.exe" -q "..\msixmgrLib\resourceConfig.rcconfig.xml" -v 2 -x 0x0409 -g 0x0409 "$(OutDir)msixmgr.exe" "$(OutDir)msixmgr_LN.exe" "$(OutDir)msixmgr.exe.mui"
 copy /y "$(OutDir)msixmgr.exe" "$(OutDir)msixmgrOriginal.exe"
