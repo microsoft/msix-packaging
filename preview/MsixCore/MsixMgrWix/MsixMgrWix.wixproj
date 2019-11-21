@@ -51,17 +51,30 @@
     </WixExtension>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="en-us.wxl" />
-    <EmbeddedResource Include="fr-fr.wxl" />
-    <EmbeddedResource Include="pt-pt.wxl" />
-    <EmbeddedResource Include="de-de.wxl" />
-    <EmbeddedResource Include="es-es.wxl" />
-    <EmbeddedResource Include="it-it.wxl" />
-    <EmbeddedResource Include="ja-jp.wxl" />
-    <EmbeddedResource Include="ko-kr.wxl" />
-    <EmbeddedResource Include="ru-ru.wxl" />
-    <EmbeddedResource Include="zh-cn.wxl" />
-    <EmbeddedResource Include="zh-tw.wxl" />
+    <EmbeddedResource Include="de-de\strings.wxl" />
+    <EmbeddedResource Include="en-us\strings.wxl" />
+    <EmbeddedResource Include="es-es\strings.wxl" />
+    <EmbeddedResource Include="fr-fr\strings.wxl" />
+    <EmbeddedResource Include="it-it\strings.wxl" />
+    <EmbeddedResource Include="ja-jp\strings.wxl" />
+    <EmbeddedResource Include="ko-kr\strings.wxl" />
+    <EmbeddedResource Include="pt-pt\strings.wxl" />
+    <EmbeddedResource Include="ru-ru\strings.wxl" />
+    <EmbeddedResource Include="zh-cn\strings.wxl" />
+    <EmbeddedResource Include="zh-tw\strings.wxl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="en-us" />
+    <Folder Include="de-de" />
+    <Folder Include="es-es" />
+    <Folder Include="fr-fr" />
+    <Folder Include="it-it" />
+    <Folder Include="ja-jp" />
+    <Folder Include="ko-kr" />
+    <Folder Include="pt-pt" />
+    <Folder Include="ru-ru" />
+    <Folder Include="zh-cn" />
+    <Folder Include="zh-tw" />
   </ItemGroup>
   <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />

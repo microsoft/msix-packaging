@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="es-es" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="OrphanedPackageWarning">Advertencia: al quitar esto, las siguientes aplicaciones no se podrán quitar: [MSIXMGR_PRODUCTS]. Estas aplicaciones deben quitarse antes de continuar.</String>
+</WixLocalization>
