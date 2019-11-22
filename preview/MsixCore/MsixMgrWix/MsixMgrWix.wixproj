@@ -30,9 +30,11 @@
     <SuppressValidation>True</SuppressValidation>
     <Cultures>
     </Cultures>
+    <DefineConstants>SourceDir=..\msixmgr\loc</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Product.wxs" />
+    <Compile Include="LocalizedFiles.wxs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\msixmgr\msixmgr.vcxproj">

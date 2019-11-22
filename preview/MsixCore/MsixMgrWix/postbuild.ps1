@@ -26,9 +26,6 @@ $languages.GetEnumerator() |% {
 	$language = $_.key
 	$lcid = $_.value
 
-    #generate an msi for each language (this is already handled by the build)
-	#& "$lightExe" -out $TargetDir\$TargetName-$language.msi -cultures:$language -ext "$wixUIExtensionDll" -sval -wixprojectfile $ProjectPath obj\Release\Product.wixobj
-
     #create language-specific transform - wrong codepage will generate on error, but the package seems to work anyway.
 	& "$torchExe" $TargetDir\en-us\$TargetName.msi $TargetDir\$language\$TargetName.msi -o $TargetDir\$language.mst | out-null
     #embed transform into the combined msi
