@@ -16,7 +16,9 @@
 
 		<Feature Id="ProductFeature" Title="MsixMgrWix" Level="1">
 			<ComponentGroupRef Id="ProductComponents" />
-			<ComponentGroupRef Id="Assets" />
+		  <ComponentGroupRef Id="Assets" />
+      <ComponentGroupRef Id ="EnglishMUIFile" />
+      <ComponentGroupRef Id="LocalizationMUIFiles" />
 		</Feature>
 		<Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 		<UIRef Id="WixUI_InstallDir_Custom"/>
