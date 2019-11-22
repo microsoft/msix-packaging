@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="pt-pt" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-	<String Id="OrphanedPackageWarning">Aviso - remover este item fará com que as seguintes aplicações deixem de poder ser removidas:  [MSIXMGR_PRODUCTS]. Estas aplicações devem ser removidas antes de continuar.</String>
+  <String Id="OrphanedPackageWarning">Aviso - remover este item farÃ¡ com que as seguintes aplicaÃ§Ãµes deixem de poder ser removidas:  [MSIXMGR_PRODUCTS]. Estas aplicaÃ§Ãµes devem ser removidas antes de continuar.</String>
 </WixLocalization>

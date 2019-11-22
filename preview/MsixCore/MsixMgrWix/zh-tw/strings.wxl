@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="zh-tw" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-	<String Id="OrphanedPackageWarning">警告 - 移除此操作會造成下列應用程式無法移除：  [MSIXMGR_PRODUCTS]。 必須先移除這些應用程式才能繼續進行。</String>
+  <String Id="OrphanedPackageWarning">è­¦å‘Š - ç§»é™¤æ­¤æ“ä½œæœƒé€ æˆä¸‹åˆ—æ‡‰ç”¨ç¨‹å¼ç„¡æ³•ç§»é™¤ï¼š  [MSIXMGR_PRODUCTS]ã€‚ å¿…é ˆå…ˆç§»é™¤é€™äº›æ‡‰ç”¨ç¨‹å¼æ‰èƒ½ç¹¼çºŒé€²è¡Œã€‚</String>
 </WixLocalization>
