@@ -45,6 +45,7 @@ namespace MsixCoreLib
         std::wstring GetId() { return m_appUserModelId; }
         unsigned long long GetVersionNumber() { return m_version; }
         std::wstring GetVersion();
+        HRESULT GetElementTextFromQuery(IMsixElement * element, PCWSTR query, std::wstring & text);
         std::wstring GetPublisher() { return m_publisher; }
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
         std::wstring GetApplicationId() { return m_applicationId; }

@@ -62,8 +62,37 @@ std::wstring PackageBase::GetVersion()
     return ConvertVersionToString(m_version);
 }
 
+HRESULT PackageBase::GetElementTextFromQuery(IMsixElement* element, PCWSTR query, std::wstring & text)
+{
+    BOOL hc = FALSE;
+    ComPtr<IMsixElementEnumerator> elementEnum;
+    RETURN_IF_FAILED(element->GetElements(query, &elementEnum));
+    RETURN_IF_FAILED(elementEnum->GetHasCurrent(&hc));
+    if (!hc)
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Query unexpectedly returned no results",
+            TraceLoggingValue(query, "Query"),
+            TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+        return E_NOT_SET;
+    }
+
+    ComPtr<IMsixElement> queriedElement;
+    RETURN_IF_FAILED(elementEnum->GetCurrent(&queriedElement));
+
+    Text<wchar_t> elementText;
+    RETURN_IF_FAILED(queriedElement->GetText(&elementText));
+    text = elementText.Get();
+
+    return S_OK;
+}
+
 HRESULT PackageBase::ParseManifest(IMsixElement* element)
 {
+    RETURN_IF_FAILED(GetElementTextFromQuery(element, L"/*[local-name()='Package']/*[local-name()='Properties']/*[local-name()='DisplayName']", m_displayName));
+    RETURN_IF_FAILED(GetElementTextFromQuery(element, L"/*[local-name()='Package']/*[local-name()='Properties']/*[local-name()='PublisherDisplayName']", m_publisherName));
+    RETURN_IF_FAILED(GetElementTextFromQuery(element, L"/*[local-name()='Package']/*[local-name()='Properties']/*[local-name()='Logo']", m_relativeLogoPath));
+
     BOOL hc = FALSE;
     ComPtr<IMsixElementEnumerator> applicationElementEnum;
     RETURN_IF_FAILED(element->GetElements(
@@ -89,29 +118,6 @@ HRESULT PackageBase::ParseManifest(IMsixElement* element)
     m_relativeExecutableFilePath = executablePath.Get();
 
     m_applicationId = applicationId.Get();
-
-    ComPtr<IMsixElementEnumerator> visualElementsEnum;
-    RETURN_IF_FAILED(applicationElement->GetElements(L"*[local-name()='VisualElements']", &visualElementsEnum));
-    RETURN_IF_FAILED(visualElementsEnum->GetHasCurrent(&hc));
-    if (!hc)
-    {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "No DisplayName Found",
-            TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
-        return E_NOT_SET;
-    }
-
-    ComPtr<IMsixElement> visualElementsElement;
-    RETURN_IF_FAILED(visualElementsEnum->GetCurrent(&visualElementsElement));
-
-    Text<wchar_t> displayName;
-    RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"DisplayName", &displayName));
-    m_displayName = displayName.Get();
-
-    Text<WCHAR> logo;
-    RETURN_IF_FAILED(visualElementsElement->GetAttributeValue(L"Square150x150Logo", &logo));
-    m_relativeLogoPath = logo.Get();
-    return S_OK;
 
     return S_OK;
 }
@@ -329,9 +335,6 @@ HRESULT PackageBase::SetManifestReader(IAppxManifestReader * manifestReader)
     Text<WCHAR> publisher;
     RETURN_IF_FAILED(manifestId->GetPublisher(&publisher));
     m_publisher = publisher.Get();
-
-    m_publisherName = m_publisher.substr(m_publisher.find_first_of(L"=") + 1,
-        m_publisher.find_first_of(L",") - m_publisher.find_first_of(L"=") - 1);
 
     RETURN_IF_FAILED(manifestId->GetVersion(&m_version));
 
