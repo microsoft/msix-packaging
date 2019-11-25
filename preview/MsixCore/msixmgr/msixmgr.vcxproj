@@ -101,7 +101,7 @@
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\Debug;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\x86\Debug;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>msixmgrlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
@@ -170,7 +170,7 @@ del "$(OutDir)msixmgr_LN.exe"
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>..\Release;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>..\x86\Release;..\..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
       <AdditionalDependencies>msixmgrlib.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
