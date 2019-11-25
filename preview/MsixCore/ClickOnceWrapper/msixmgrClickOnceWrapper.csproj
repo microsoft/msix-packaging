@@ -26,7 +26,7 @@
     <InstallUrl>https://appinstallerdemo.azurewebsites.net/MSIXCore/</InstallUrl>
     <OpenBrowserOnPublish>false</OpenBrowserOnPublish>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>10</ApplicationRevision>
+    <ApplicationRevision>11</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -199,6 +199,6 @@
   </PropertyGroup>
   <Target Name="CreateLocOutputDirectoryStructure">
     <MakeDir Directories="$(OutDir)en-us" />
-    <Copy SourceFiles="..\$(PlatformName)\$(ConfigurationName)\msixmgr.exe.mui" DestinationFolder="$(OutDir)en-us" />
+    <Copy SourceFiles="..\$(PlatformTarget)\$(ConfigurationName)\msixmgr.exe.mui" DestinationFolder="$(OutDir)en-us" />
   </Target>
 </Project>
