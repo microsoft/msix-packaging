@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="lt-LT" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="OrphanedPackageWarning">
+		Įspėjimas – pašalinus, toliau nurodyta (-os) programėlė (-ės) bus įdiegta (-os) taip, kad nebūtų galima pašalinti: [MSIXMGR_PRODUCTS]. Šią (-ias) programėlę (-es) reikia pašalinti prieš tęsiant.</String>
+</WixLocalization>

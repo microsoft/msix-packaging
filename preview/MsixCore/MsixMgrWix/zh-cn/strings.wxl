@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="zh-cn" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-	<String Id="OrphanedPackageWarning">警告 - 删除此项将导致以下应用无法删除:  [MSIXMGR_PRODUCTS]. 在继续之前，应该删除这些应用。</String>
+	<String Id="OrphanedPackageWarning">
+		警告: 如果删除此项，将导致此项安装的以下应用无法删除: [MSIXMGR_PRODUCTS]。必须先删除这些应用，然后才能继续操作。</String>
 </WixLocalization>

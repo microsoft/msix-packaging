@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="ru-ru" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-	<String Id="OrphanedPackageWarning">Предупреждение. Если удалить это, следующие приложения будет невозможно удалить: [MSIXMGR_PRODUCTS]. Перед продолжением необходимо удалить эти приложения.</String>
+	<String Id="OrphanedPackageWarning">
+		Внимание! Если удалить этот объект, следующие приложения, установленные с помощью него, станут неудаляемыми: [MSIXMGR_PRODUCTS]. Прежде чем продолжить, эти приложения нужно удалить.</String>
 </WixLocalization>

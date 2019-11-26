@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="bg-BG" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="OrphanedPackageWarning">
+		Предупреждение – премахването на това ще направи следното(ите) инсталирано(и) от него приложение(я) невъзможни за премахване: [MSIXMGR_PRODUCTS]. Приложението(ята) трябва да се премахне(ат), преди да продължите.</String>
+</WixLocalization>
