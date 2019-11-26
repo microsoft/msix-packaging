@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="el-GR" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="OrphanedPackageWarning">
+		Προειδοποίηση - η κατάργηση αυτού του στοιχείου θα έχει ως αποτέλεσμα την κατάργηση της εγκατάστασης των ακόλουθων εφαρμογών: [MSIXMGR_PRODUCTS]. Αυτές οι εφαρμογές θα πρέπει να καταργηθούν πριν συνεχίσετε.</String>
+</WixLocalization>

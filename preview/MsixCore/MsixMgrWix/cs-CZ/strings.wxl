@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="cs-CZ" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="OrphanedPackageWarning">
+		Varování: Odebrání této položky způsobí, že nebude možné odebrat následující aplikace: [MSIXMGR_PRODUCTS]. Tyto aplikace je třeba odebrat ještě předtím, než budete pokračovat.</String>
+</WixLocalization>

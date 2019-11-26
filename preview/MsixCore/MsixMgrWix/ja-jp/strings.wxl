@@ -1,4 +1,5 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="ja-jp" xmlns="http://schemas.microsoft.com/wix/2006/localization">
-	<String Id="OrphanedPackageWarning">警告 - これを削除すると、次のアプリが削除できなくなります: [MSIXMGR_PRODUCTS]。 続行する前に、これらのアプリを削除する必要があります。</String>
+	<String Id="OrphanedPackageWarning">
+		警告 - これを削除すると、インストールされた次のアプリが削除できなくなります: [MSIXMGR_PRODUCTS]。続行する前に、これらのアプリを削除する必要があります。</String>
 </WixLocalization>
