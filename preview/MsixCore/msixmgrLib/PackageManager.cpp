@@ -275,7 +275,17 @@ HRESULT PackageManager::GetMsixPackageInfo(const wstring & msixFullPath, shared_
     shared_ptr<Package> packageInfo;
     ComPtr<IStream> packageStream;
     RETURN_IF_FAILED(CreateStreamOnPackageUrl(msixFullPath.c_str(), &packageStream));
-    RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromPackage(packageStream.Get(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo));
+    HRESULT hrGetPackageInfoFromPackage = PopulatePackageInfo::GetPackageInfoFromPackage(packageStream.Get(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, &packageInfo);
+    if (FAILED(hrGetPackageInfoFromPackage) && hrGetPackageInfoFromPackage == 0x8bad0031)
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Error - Signature missing from package, calling api again",
+            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+            TraceLoggingValue(hrGetPackageInfoFromPackage, "HR"));
+
+        RETURN_IF_FAILED(PopulatePackageInfo::GetPackageInfoFromPackage(packageStream.Get(), MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &packageInfo));
+        return 0x8bad0031;
+    }
     
     package = dynamic_pointer_cast<IPackage>(packageInfo);
     return S_OK;
