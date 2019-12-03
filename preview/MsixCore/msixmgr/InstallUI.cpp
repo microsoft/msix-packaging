@@ -17,6 +17,7 @@
 
 #include "Util.hpp"
 #include "msixmgrLogger.hpp"
+#include "MsixErrors.hpp"
 // MSIXWindows.hpp defines NOMINMAX and undefines min and max because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. We can't use namespace std because c++17 defines std::byte, which conflicts with ::byte
 #define max std::max
@@ -45,7 +46,7 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
     }
     else
     {
-        auto displayText = m_displayName + GetStringResource(IDS_STRING_LOADING_PACKAGE_ERROR);
+        auto displayText = m_displayName + L" " + GetStringResource(IDS_STRING_LOADING_PACKAGE_ERROR);
         std::wstringstream wstringstream;
         wstringstream << L"Failed getting package information with: 0x" << std::hex << m_loadingPackageInfoCode;
         auto g_messageText = wstringstream.str();
@@ -341,7 +342,23 @@ HRESULT UI::ParseInfoFromPackage()
         {
         case InstallUIAdd:
         {
-            RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo));
+            HRESULT hrGetMsixPackageInfo = m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL);
+            if (hrGetMsixPackageInfo == 0x8bad0031)
+            {
+                TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+                    "Error - Signature missing from package, calling api again with signature skip validation parameter",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
+
+                RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
+                m_displayName = m_packageInfo->GetDisplayName();
+                return 0x8bad0031;
+                //return static_cast<HRESULT>(MSIX::Error::MissingAppxSignatureP7X);
+            }
+            else
+            {
+                RETURN_IF_FAILED(hrGetMsixPackageInfo);
+            }
         }
         break;
         case InstallUIRemove:
