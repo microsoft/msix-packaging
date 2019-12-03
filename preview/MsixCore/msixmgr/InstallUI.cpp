@@ -343,7 +343,7 @@ HRESULT UI::ParseInfoFromPackage()
         case InstallUIAdd:
         {
             HRESULT hrGetMsixPackageInfo = m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL);
-            if (hrGetMsixPackageInfo == 0x8bad0031)
+            if (hrGetMsixPackageInfo == static_cast<HRESULT>(MSIX::Error::MissingAppxSignatureP7X))
             {
                 TraceLoggingWrite(g_MsixUITraceLoggingProvider,
                     "Error - Signature missing from package, calling api again with signature skip validation parameter",
@@ -352,8 +352,7 @@ HRESULT UI::ParseInfoFromPackage()
 
                 RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
                 m_displayName = m_packageInfo->GetDisplayName();
-                return 0x8bad0031;
-                //return static_cast<HRESULT>(MSIX::Error::MissingAppxSignatureP7X);
+                return static_cast<HRESULT>(MSIX::Error::MissingAppxSignatureP7X);
             }
             else
             {
