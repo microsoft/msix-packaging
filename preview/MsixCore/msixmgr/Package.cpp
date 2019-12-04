@@ -338,6 +338,8 @@ HRESULT PackageBase::SetManifestReader(IAppxManifestReader * manifestReader)
 
     RETURN_IF_FAILED(manifestId->GetVersion(&m_version));
 
+    RETURN_IF_FAILED(manifestId->GetArchitecture(&m_architecture));
+
     Text<WCHAR> packageFullName;
     RETURN_IF_FAILED(manifestId->GetPackageFullName(&packageFullName));
     m_packageFullName = packageFullName.Get();
