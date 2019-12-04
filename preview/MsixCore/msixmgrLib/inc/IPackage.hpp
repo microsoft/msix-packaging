@@ -2,12 +2,15 @@
 #include <Windows.h>
 #include <vector>
 #include <memory>
+#include "AppxPackaging.hpp"
+
 namespace MsixCoreLib {
 
     class IPackage {
     public:
         virtual unsigned long long GetVersionNumber() = 0;
         virtual std::wstring GetVersion() = 0;
+        virtual APPX_PACKAGE_ARCHITECTURE GetArchitecture() = 0;
         virtual std::wstring GetPublisherDisplayName() = 0;
         virtual std::wstring GetPackageFullName() = 0;
         virtual std::wstring GetPackageFamilyName() = 0;

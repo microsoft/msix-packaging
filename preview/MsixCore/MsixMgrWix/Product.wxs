@@ -83,7 +83,7 @@
 				<Control Id="RemoveButton" Type="PushButton" X="40" Y="171" Width="80" Height="17" ToolTip="!(loc.MaintenanceTypeDlgRemoveButtonTooltip)" Text="!(loc.MaintenanceTypeDlgRemoveButton)">
 					<Publish Property="WixUI_InstallMode" Value="Remove">1</Publish>
 				</Control>
-				<Control Id="WarningText" Type="Text" X="40" Y="81" Width="280" Height="40" NoPrefix="yes" Text="{\WixUI_Font_Title}!(loc.OrphanedPackageWarning)" Hidden="yes">
+				<Control Id="WarningText" Type="Text" X="40" Y="81" Width="280" Height="80" NoPrefix="yes" Text="{\WixUI_Font_Title}!(loc.OrphanedPackageWarning)" Hidden="yes">
 					<Condition Action="show">MSIXMGR_PRODUCTS</Condition>
 				</Control>
 				<Control Id="RemoveText" Type="Text" X="60" Y="191" Width="280" Height="20" NoPrefix="yes" Text="!(loc.MaintenanceTypeDlgRemoveText)">

@@ -23,6 +23,7 @@ namespace MsixCoreLib
         std::wstring m_publisherName;
         std::wstring m_relativeLogoPath;
         std::wstring m_packageDirectoryPath;
+        APPX_PACKAGE_ARCHITECTURE m_architecture;
 
         std::vector<std::wstring> m_capabilities;
 
@@ -56,6 +57,7 @@ namespace MsixCoreLib
             m_packageDirectoryPath = FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_packageFullName + L"\\";
             return m_packageDirectoryPath;
         }
+        APPX_PACKAGE_ARCHITECTURE GetArchitecture() { return m_architecture; }
 
         std::vector<std::wstring> GetCapabilities()
         {
@@ -116,6 +118,7 @@ namespace MsixCoreLib
         std::wstring GetPublisherDisplayName() { return m_publisherName; }
         std::unique_ptr<IStream> GetLogo();
         std::wstring GetApplicationId() { return m_applicationId; }
+        APPX_PACKAGE_ARCHITECTURE GetArchitecture() { return m_architecture; }
 
         std::vector<std::wstring> GetCapabilities()
         {
@@ -165,7 +168,9 @@ namespace MsixCoreLib
         {
             return FilePathMappings::GetInstance().GetExecutablePath(m_relativeExecutableFilePath, m_packageFullName.c_str());
         }
-        
+
+        APPX_PACKAGE_ARCHITECTURE GetArchitecture() { return m_architecture; }
+
         std::vector<std::wstring> GetCapabilities()
         {
             return m_capabilities;

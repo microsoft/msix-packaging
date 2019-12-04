@@ -31,6 +31,7 @@
 #include "ProcessPotentialUpdate.hpp"
 #include "InstallComplete.hpp"
 #include "ErrorHandler.hpp"
+#include "ValidateArchitecture.hpp"
 #include "ValidateTargetDeviceFamily.hpp"
 #include "PrepareDevirtualizedRegistry.hpp"
 #include "WriteDevirtualizedRegistry.hpp"
@@ -70,7 +71,8 @@ struct RemoveHandlerInfo
 std::map<PCWSTR, AddHandlerInfo> AddHandlers =
 {
     //HandlerName                               Function to create                            NextHandler (on success)                   ErrorHandlingMode    ErrorHandler (when ExecuteErrorHandler)
-    {PopulatePackageInfo::HandlerName,          {PopulatePackageInfo::CreateHandler,          ValidateTargetDeviceFamily::HandlerName,   ReturnError,         nullptr}},
+    {PopulatePackageInfo::HandlerName,          {PopulatePackageInfo::CreateHandler,          ValidateArchitecture::HandlerName,         ReturnError,         nullptr}},
+    {ValidateArchitecture::HandlerName,         {ValidateArchitecture::CreateHandler,         ValidateTargetDeviceFamily::HandlerName,   ReturnError,         nullptr}},
     {ValidateTargetDeviceFamily::HandlerName,   {ValidateTargetDeviceFamily::CreateHandler,   ProcessPotentialUpdate::HandlerName,       ReturnError,         nullptr}},
     {ProcessPotentialUpdate::HandlerName,       {ProcessPotentialUpdate::CreateHandler,       Extractor::HandlerName,                    ReturnError,         nullptr}},
     {Extractor::HandlerName,                    {Extractor::CreateHandler,                    PrepareDevirtualizedRegistry::HandlerName, ExecuteErrorHandler, ErrorHandler::HandlerName}},
