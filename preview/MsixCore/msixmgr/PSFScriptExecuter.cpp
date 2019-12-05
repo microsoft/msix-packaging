@@ -19,9 +19,14 @@ HRESULT PSFScriptExecuter::ExecuteForAddRequest()
 
     // Read script parameters from PSF config and update executionInfo
     RETURN_IF_FAILED(m_msixRequest->GetPackageInfo()->ProcessPSFIfNecessary());
-    
-    std::wstring workingDirectory = m_msixRequest->GetPackageInfo()->GetExecutionInfo()->workingDirectory;
+
     std::wstring scriptName = m_msixRequest->GetPackageInfo()->GetScriptSettings()->scriptPath;
+    if (scriptName.length() == 0)
+    {
+        return S_OK;
+    }
+
+    std::wstring workingDirectory = m_msixRequest->GetPackageInfo()->GetExecutionInfo()->workingDirectory;
 
     std::wstring scriptPath = workingDirectory + L"\\" + scriptName;
     std::wstring psArguments = L"-file \"" + scriptPath + L"\"";
