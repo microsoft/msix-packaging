@@ -371,7 +371,6 @@ HRESULT UI::ParseInfoFromPackage()
 
 HRESULT UI::ShowUI()
 {
-    m_loadingPackageInfoCode = ParseInfoFromPackage();
 
     std::thread thread(StartUIThread, this);
     thread.detach();
@@ -383,6 +382,7 @@ HRESULT UI::ShowUI()
 
 void UI::PreprocessRequest()
 {
+    m_loadingPackageInfoCode = ParseInfoFromPackage();
     if (FAILED(m_loadingPackageInfoCode))
     {
         return;
@@ -654,6 +654,7 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
 
     SetHwnd(hWnd);
     SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
+    ShowWindow(hWnd, nCmdShow);
     PreprocessRequest();
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
