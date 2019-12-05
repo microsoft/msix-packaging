@@ -70,6 +70,7 @@ private:
     std::unique_ptr<IStream> m_logoStream;
     std::wstring m_version = L"";
     std::vector<std::wstring> m_capabilities;
+    std::wstring m_displayErrorString = L"";
 
     HRESULT m_loadingPackageInfoCode = 0;
     UIType m_type;
@@ -183,6 +184,8 @@ public:
     void DisplayError(HRESULT hr);
 
     HRESULT ShowUI();
+
+    void SetDisplayInfo();
 
     void CloseUI();
 };

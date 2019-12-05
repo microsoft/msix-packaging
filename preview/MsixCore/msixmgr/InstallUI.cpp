@@ -18,6 +18,7 @@
 #include "Util.hpp"
 #include "msixmgrLogger.hpp"
 #include "MsixErrors.hpp"
+
 // MSIXWindows.hpp defines NOMINMAX and undefines min and max because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. We can't use namespace std because c++17 defines std::byte, which conflicts with ::byte
 #define max std::max
@@ -38,19 +39,24 @@ static const int g_height = 400; // height of window
 
 HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
 {
+    auto messageText = GetStringResource(IDS_STRING_PUBLISHER) + m_publisherCommonName + L"\n" + GetStringResource(IDS_STRING_VERSION) + m_version;
+
     if (SUCCEEDED(m_loadingPackageInfoCode))
     {
         auto displayText = m_installOrUpdateText + L" " + m_displayName + L"?";
-        auto messageText = GetStringResource(IDS_STRING_PUBLISHER) + m_publisherCommonName + L"\n" + GetStringResource(IDS_STRING_VERSION) + m_version;
         ChangeText(hWnd, displayText, messageText, m_logoStream.get());
+        ShowWindow(g_checkboxHWnd, SW_SHOW); //Show launch checkbox
+        ShowWindow(g_buttonHWnd, SW_SHOW); //Show install button
     }
     else
     {
         auto displayText = m_displayName + L" " + GetStringResource(IDS_STRING_LOADING_PACKAGE_ERROR);
-        std::wstringstream wstringstream;
-        wstringstream << L"Failed getting package information with: 0x" << std::hex << m_loadingPackageInfoCode;
-        auto g_messageText = wstringstream.str();
-        ChangeText(hWnd, displayText, g_messageText);
+        ChangeText(hWnd, displayText, messageText, m_logoStream.get());
+        ShowWindow(g_staticErrorTextHWnd, SW_SHOW); //Show error text heading
+        ShowWindow(g_staticErrorDescHWnd, SW_SHOW); //Show error description
+        std::wstringstream errorDescription;
+        errorDescription << m_displayErrorString;
+        SetWindowText(g_staticErrorDescHWnd, errorDescription.str().c_str());
     }
     return S_OK;
 }
@@ -351,12 +357,41 @@ HRESULT UI::ParseInfoFromPackage()
                     TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
 
                 RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
-                m_displayName = m_packageInfo->GetDisplayName();
+                m_displayErrorString = L"Ask the app developer for a new app package. This one isn't signed with a trusted certificate (0x8bad0031)";
+                SetDisplayInfo();
                 return static_cast<HRESULT>(MSIX::Error::MissingAppxSignatureP7X);
+            }
+            else if (hrGetMsixPackageInfo == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
+            {
+                TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+                    "Error - Certificate is not trusted, calling api again with signature skip validation parameter",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
+
+                RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
+                m_displayErrorString = L"Either you need a new certificate installed for this app package, or you need a new app package with trusted certificates. Your system administrator or the app developer can help. A certificate chain processed, but terminated in a root certificate which isn't trusted (0x8bad0042)";
+                SetDisplayInfo();
+                return static_cast<HRESULT>(MSIX::Error::CertNotTrusted);
+            }
+            else if (hrGetMsixPackageInfo == static_cast<HRESULT>(MSIX::Error::FileOpen))
+            {
+                /*TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+                    "Error - Invalid or corrupt File error, calling api again with signature skip validation parameter",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
+
+                RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
+                m_displayErrorString = L"The package is either corrupted or invalid.";
+                SetDisplayInfo();
+                return static_cast<HRESULT>(MSIX::Error::FileOpen);*/
             }
             else
             {
-                RETURN_IF_FAILED(hrGetMsixPackageInfo);
+                if (FAILED(hrGetMsixPackageInfo))
+                {
+                    SetDisplayInfo();
+                    return hrGetMsixPackageInfo;
+                }
             }
         }
         break;
@@ -370,6 +405,13 @@ HRESULT UI::ParseInfoFromPackage()
         }
     }
 
+    SetDisplayInfo();
+
+    return S_OK;
+}
+
+void UI::SetDisplayInfo()
+{
     // Obtain publisher name
     m_publisherCommonName = m_packageInfo->GetPublisherDisplayName();
 
@@ -382,8 +424,6 @@ HRESULT UI::ParseInfoFromPackage()
 
     //Obtain package capabilities
     m_capabilities = m_packageInfo->GetCapabilities();
-
-    return S_OK;
 }
 
 HRESULT UI::ShowUI()
@@ -456,7 +496,7 @@ BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
         WS_EX_LEFT, // extended window style
         L"BUTTON",
         GetStringResource(IDS_STRING_LAUNCH_CHECKBOX).c_str(),  // text
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, // style
+        WS_TABSTOP | WS_CHILD | BS_AUTOCHECKBOX, // style
         parentRect.left + 50, // x coord
         parentRect.bottom - 60,  // y coord
         165,  // width
@@ -477,7 +517,7 @@ BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
         WS_EX_LEFT, // extended window style
         L"Button",
         GetStringResource(IDS_STRING_INSTALLTEXT).c_str(),  // text
-        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
+        WS_TABSTOP | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
         120,  // width
