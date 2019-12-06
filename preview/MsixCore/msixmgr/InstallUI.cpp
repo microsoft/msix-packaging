@@ -373,9 +373,9 @@ HRESULT UI::ParseInfoFromPackage()
                 SetDisplayInfo();
                 return static_cast<HRESULT>(MSIX::Error::CertNotTrusted);
             }
-            else if (hrGetMsixPackageInfo == static_cast<HRESULT>(MSIX::Error::FileOpen))
+            /*else if (hrGetMsixPackageInfo == static_cast<HRESULT>(MSIX::Error::FileOpen))
             {
-                /*TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+                TraceLoggingWrite(g_MsixUITraceLoggingProvider,
                     "Error - Invalid or corrupt File error, calling api again with signature skip validation parameter",
                     TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
                     TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
@@ -383,13 +383,13 @@ HRESULT UI::ParseInfoFromPackage()
                 RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
                 m_displayErrorString = L"The package is either corrupted or invalid.";
                 SetDisplayInfo();
-                return static_cast<HRESULT>(MSIX::Error::FileOpen);*/
-            }
+                return static_cast<HRESULT>(MSIX::Error::FileOpen);
+            }*/
             else
             {
                 if (FAILED(hrGetMsixPackageInfo))
                 {
-                    SetDisplayInfo();
+                    SetDisplayInfo(); // dont display package info in this case
                     return hrGetMsixPackageInfo;
                 }
             }
