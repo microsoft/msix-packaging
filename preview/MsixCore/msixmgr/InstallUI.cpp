@@ -39,25 +39,35 @@ static const int g_height = 400; // height of window
 
 HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
 {
-    auto messageText = GetStringResource(IDS_STRING_PUBLISHER) + m_publisherCommonName + L"\n" + GetStringResource(IDS_STRING_VERSION) + m_version;
-
     if (SUCCEEDED(m_loadingPackageInfoCode))
     {
         auto displayText = m_installOrUpdateText + L" " + m_displayName + L"?";
+        auto messageText = GetStringResource(IDS_STRING_PUBLISHER) + m_publisherCommonName + L"\n" + GetStringResource(IDS_STRING_VERSION) + m_version;
         ChangeText(hWnd, displayText, messageText, m_logoStream.get());
         ShowWindow(g_checkboxHWnd, SW_SHOW); //Show launch checkbox
         ShowWindow(g_buttonHWnd, SW_SHOW); //Show install button
     }
     else
     {
-        auto displayText = m_displayName + L" " + GetStringResource(IDS_STRING_LOADING_PACKAGE_ERROR);
-        ChangeText(hWnd, displayText, messageText, m_logoStream.get());
+        if (m_packageInfo != nullptr) //Valid package, display package information
+        {
+            auto displayText = m_displayName + L" " + GetStringResource(IDS_STRING_LOADING_PACKAGE_ERROR);
+            auto messageText = GetStringResource(IDS_STRING_PUBLISHER) + m_publisherCommonName + L"\n" + GetStringResource(IDS_STRING_VERSION) + m_version;
+            ChangeText(hWnd, displayText, messageText, m_logoStream.get());
+        }
+        else // Invalid package, no package information
+        {
+            auto displayText = GetStringResource(IDS_STRING_LOADING_PACKAGE_OPEN_ERROR);
+            ChangeText(hWnd, displayText, L"");;
+        }
+
         ShowWindow(g_staticErrorTextHWnd, SW_SHOW); //Show error text heading
         ShowWindow(g_staticErrorDescHWnd, SW_SHOW); //Show error description
         std::wstringstream errorDescription;
-        errorDescription << m_displayErrorString;
+        errorDescription << std::hex << L"0x" << m_loadingPackageInfoCode << L" - " << m_displayErrorString;
         SetWindowText(g_staticErrorDescHWnd, errorDescription.str().c_str());
     }
+
     return S_OK;
 }
 
@@ -357,8 +367,7 @@ HRESULT UI::ParseInfoFromPackage()
                     TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
 
                 RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
-                m_displayErrorString = L"Ask the app developer for a new app package. This one isn't signed with a trusted certificate (0x8bad0031)";
-                SetDisplayInfo();
+                m_displayErrorString = L"0x8bad0031 - Ask the app developer for a new app package. This one isn't signed with a trusted certificate";
                 return static_cast<HRESULT>(MSIX::Error::MissingAppxSignatureP7X);
             }
             else if (hrGetMsixPackageInfo == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
@@ -369,29 +378,18 @@ HRESULT UI::ParseInfoFromPackage()
                     TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
 
                 RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
-                m_displayErrorString = L"Either you need a new certificate installed for this app package, or you need a new app package with trusted certificates. Your system administrator or the app developer can help. A certificate chain processed, but terminated in a root certificate which isn't trusted (0x8bad0042)";
-                SetDisplayInfo();
+                m_displayErrorString = L"0x8bad0042 - Either you need a new certificate installed for this app package, or you need a new app package with trusted certificates. Your system administrator or the app developer can help. A certificate chain processed, but terminated in a root certificate which isn't trusted";
                 return static_cast<HRESULT>(MSIX::Error::CertNotTrusted);
             }
-            /*else if (hrGetMsixPackageInfo == static_cast<HRESULT>(MSIX::Error::FileOpen))
+            else
             {
                 TraceLoggingWrite(g_MsixUITraceLoggingProvider,
-                    "Error - Invalid or corrupt File error, calling api again with signature skip validation parameter",
+                    "Error - Unable to open package.",
                     TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
                     TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
 
-                RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
-                m_displayErrorString = L"The package is either corrupted or invalid.";
-                SetDisplayInfo();
-                return static_cast<HRESULT>(MSIX::Error::FileOpen);
-            }*/
-            else
-            {
-                if (FAILED(hrGetMsixPackageInfo))
-                {
-                    SetDisplayInfo(); // dont display package info in this case
-                    return hrGetMsixPackageInfo;
-                }
+                m_displayErrorString = L"Unable to open package. Please go to aka.ms/msix for more information.";
+                RETURN_IF_FAILED(hrGetMsixPackageInfo);
             }
         }
         break;
@@ -405,30 +403,32 @@ HRESULT UI::ParseInfoFromPackage()
         }
     }
 
-    SetDisplayInfo();
-
     return S_OK;
 }
 
 void UI::SetDisplayInfo()
 {
-    // Obtain publisher name
-    m_publisherCommonName = m_packageInfo->GetPublisherDisplayName();
+    if (m_packageInfo != nullptr)
+    {
+        // Obtain publisher name
+        m_publisherCommonName = m_packageInfo->GetPublisherDisplayName();
 
-    // Obtain version number
-    m_version = m_packageInfo->GetVersion();
+        // Obtain version number
+        m_version = m_packageInfo->GetVersion();
 
-    //Obtain the number of files
-    m_displayName = m_packageInfo->GetDisplayName();
-    m_logoStream = std::move(m_packageInfo->GetLogo());
+        //Obtain the number of files
+        m_displayName = m_packageInfo->GetDisplayName();
+        m_logoStream = std::move(m_packageInfo->GetLogo());
 
-    //Obtain package capabilities
-    m_capabilities = m_packageInfo->GetCapabilities();
+        //Obtain package capabilities
+        m_capabilities = m_packageInfo->GetCapabilities();
+    }
 }
 
 HRESULT UI::ShowUI()
 {
     m_loadingPackageInfoCode = ParseInfoFromPackage();
+    SetDisplayInfo();
 
     std::thread thread(StartUIThread, this);
     thread.detach();
@@ -658,18 +658,22 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
 
     graphics.DrawString(displayName.c_str(), -1, &displayNameFont, layoutRect, &format, &textBrush);
     layoutRect.Y += 40;
-    graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
 
-    std::wstring capabilitiesHeading = GetStringResource(IDS_STRING_CAPABILITIES);
-    layoutRect.Y += 40;
-    graphics.DrawString(capabilitiesHeading.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
-
-    layoutRect.Y += 17;
-    for (std::wstring capability : m_capabilities)
+    if (!messageText.empty())
     {
-        std::wstring capabilityString = L"\x2022 " + GetStringResource(IDS_RUNFULLTRUST_CAPABILITY);
-        graphics.DrawString(capabilityString.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
-        layoutRect.Y += 20;
+        graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+
+        std::wstring capabilitiesHeading = GetStringResource(IDS_STRING_CAPABILITIES);
+        layoutRect.Y += 40;
+        graphics.DrawString(capabilitiesHeading.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+
+        layoutRect.Y += 17;
+        for (std::wstring capability : m_capabilities)
+        {
+            std::wstring capabilityString = L"\x2022 " + GetStringResource(IDS_RUNFULLTRUST_CAPABILITY);
+            graphics.DrawString(capabilityString.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+            layoutRect.Y += 20;
+        }
     }
 
     if (logoStream != nullptr)
