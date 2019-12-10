@@ -773,7 +773,7 @@ void UI::ButtonClicked()
                     ShowWindow(g_progressHWnd, SW_HIDE);
                     ShowWindow(g_checkboxHWnd, SW_HIDE);
                     ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
-                    m_displayErrorString = sender.GetTextStatus();
+                    m_displayErrorString = GetStringResource(sender.GetTextStatus());
                     DisplayError(sender.GetHResultTextCode());
                 }
                 break;

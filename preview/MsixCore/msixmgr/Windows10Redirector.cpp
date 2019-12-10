@@ -31,7 +31,7 @@ HRESULT MsixCoreLib::Windows10Redirector::AddPackageWithProgress(const std::wstr
     if (deploymentOperation.Status() == winrt::Windows::Foundation::AsyncStatus::Error)
     {
         auto deploymentResult{ deploymentOperation.GetResults() };
-        msixResponse->SetErrorStatus(deploymentOperation.ErrorCode(), deploymentResult.ErrorText().c_str());
+        //msixResponse->SetErrorStatus(deploymentOperation.ErrorCode(), deploymentResult.ErrorText().c_str());
     }
     return S_OK;
 }

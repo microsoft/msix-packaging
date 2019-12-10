@@ -21,7 +21,7 @@ namespace MsixCoreLib {
         virtual inline float GetPercentage() const = 0;
         virtual inline InstallationStep GetStatus() const  = 0;
         virtual inline HRESULT GetHResultTextCode() const = 0;
-        virtual inline std::wstring GetTextStatus() const = 0;
+        virtual inline UINT GetTextStatus() const = 0;
         virtual inline void CancelRequest() = 0;
     };
 }

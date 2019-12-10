@@ -42,6 +42,8 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
                             "Incoming version is not an update, but the same family name as an already installed package.",
                             TraceLoggingValue(p.path().filename().c_str(), "PackageCurrentlyInstalled"),
                             TraceLoggingValue(m_msixRequest->GetPackageFullName(), "PackageToBeInstalled"));
+
+                        m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_PACKAGE_DOWNGRADE), IDS_STRING_PACKAGE_DOWNGRADE_ERROR);
                         return HRESULT_FROM_WIN32(ERROR_INSTALL_PACKAGE_DOWNGRADE);
                     }
                 }

@@ -20,7 +20,7 @@ private:
     HRESULT m_hresultTextCode = 0;
 
     /// Detailed text status of the msix response
-    std::wstring m_textStatus;
+    UINT m_textStatus;
 
     /// Progress percentage of the msix deployment
     float m_percentage;
@@ -58,7 +58,7 @@ public:
     /// Sets the detailed text status in the msix response object
     ///
     /// @param textStatus - the textStatus to be set 
-    inline void SetTextStatus(std::wstring textStatus)
+    inline void SetTextStatus(UINT textStatus)
     {
         m_textStatus = textStatus;
     }
@@ -66,7 +66,7 @@ public:
     /// Returns the detailed text status as set in the msix response object
     ///
     /// @return textStatus in the msix response
-    virtual inline std::wstring GetTextStatus() const
+    virtual inline UINT GetTextStatus() const
     {
         return m_textStatus;
     }
@@ -81,7 +81,7 @@ public:
     ///
     /// @param errorCode - code associated to the error
     /// @param errorText - description of the error
-    void SetErrorStatus(HRESULT errorCode, std::wstring errorText);
+    void SetErrorStatus(HRESULT errorCode, UINT errorText);
 
     /// Set a callback for the UI
     ///

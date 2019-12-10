@@ -3,6 +3,7 @@
 #include "AppxPackaging.hpp"
 #include <winmeta.h>
 #include <string.h>
+#include "resource.h"
 
 namespace MsixCoreLib
 {

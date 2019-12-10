@@ -19,6 +19,7 @@ HRESULT ValidateArchitecture::ExecuteForAddRequest()
 {
     if (!IsArchitectureCompatibleWithOS())
     {
+        m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_WRONG_PROCESSOR_ARCHITECTURE), IDS_STRING_INVALID_ARCHITECTURE_ERROR);
         return HRESULT_FROM_WIN32(ERROR_INSTALL_WRONG_PROCESSOR_ARCHITECTURE);
     }
 
