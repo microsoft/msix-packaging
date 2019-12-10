@@ -48,6 +48,36 @@ namespace MsixCoreLib
         return fullName.substr(0, fullName.find(L"_")) + fullName.substr(fullName.find_last_of(L"_"));
     }
 
+    UINT64 ConvertVersionStringToUint64(const std::wstring& versionString)
+    {
+        UINT64 version = 0;
+        size_t position = 0;
+        auto nextPeriod = versionString.find(L'.', position);
+        version = (UINT64)std::stoi(versionString.substr(position, nextPeriod)) << 0x30;
+
+        position = nextPeriod + 1;
+        nextPeriod = versionString.find(L'.', position);
+        version += (UINT64)std::stoi(versionString.substr(position, nextPeriod)) << 0x20;
+
+        position = nextPeriod + 1;
+        nextPeriod = versionString.find(L'.', position);
+        version += (UINT64)std::stoi(versionString.substr(position, nextPeriod)) << 0x10;
+
+        position = nextPeriod + 1;
+        nextPeriod = versionString.find(L'.', position);
+        version += (UINT64)std::stoi(versionString.substr(position, nextPeriod));
+
+        return version;
+    }
+
+    UINT64 GetVersionFromFullName(const std::wstring & fullName)
+    {
+        auto firstUnderscore = fullName.find(L"_") + 1;
+        auto versionString = fullName.substr(firstUnderscore, fullName.find(L"_", firstUnderscore) - firstUnderscore);
+
+        return ConvertVersionStringToUint64(versionString);
+    }
+
     bool CaseInsensitiveEquals(const std::wstring& left, const std::wstring& right)
     {
         return (_wcsicmp(left.c_str(), right.c_str()) == 0);

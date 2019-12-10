@@ -46,6 +46,8 @@ namespace MsixCoreLib
     /// @return packageFamilyName for the packageFullName
     std::wstring GetFamilyNameFromFullName(const std::wstring& fullName);
 
+    UINT64 GetVersionFromFullName(const std::wstring& fullName);
+
     /// Determines if two strings are case-insensitive equals
     ///
     /// @param left - one of the two strings

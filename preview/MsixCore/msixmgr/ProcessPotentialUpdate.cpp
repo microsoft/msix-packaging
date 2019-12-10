@@ -28,8 +28,22 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
                 }
                 else
                 {
-                    RETURN_IF_FAILED(RemovePackage(p.path().filename()));
-                    return S_OK;
+                    UINT64 versionToBeInstalled = m_msixRequest->GetPackageInfo()->GetVersionNumber();
+                    UINT64 versionCurrentlyInstalled = GetVersionFromFullName(p.path().filename());
+
+                    if (versionToBeInstalled > versionCurrentlyInstalled)
+                    {
+                        RETURN_IF_FAILED(RemovePackage(p.path().filename()));
+                        return S_OK;
+                    }
+                    else
+                    {
+                        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                            "Incoming version is not an update, but the same family name as an already installed package.",
+                            TraceLoggingValue(p.path().filename().c_str(), "PackageCurrentlyInstalled"),
+                            TraceLoggingValue(m_msixRequest->GetPackageFullName(), "PackageToBeInstalled"));
+                        return HRESULT_FROM_WIN32(ERROR_INSTALL_PACKAGE_DOWNGRADE);
+                    }
                 }
             }
         }
