@@ -61,11 +61,7 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
             ChangeText(hWnd, displayText, L"");;
         }
 
-        ShowWindow(g_staticErrorTextHWnd, SW_SHOW); //Show error text heading
-        ShowWindow(g_staticErrorDescHWnd, SW_SHOW); //Show error description
-        std::wstringstream errorDescription;
-        errorDescription << std::hex << L"0x" << m_loadingPackageInfoCode << L" - " << m_displayErrorString;
-        SetWindowText(g_staticErrorDescHWnd, errorDescription.str().c_str());
+        DisplayError(m_loadingPackageInfoCode);
     }
 
     return S_OK;
@@ -367,7 +363,7 @@ HRESULT UI::ParseInfoFromPackage()
                     TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
 
                 RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
-                m_displayErrorString = L"0x8bad0031 - Ask the app developer for a new app package. This one isn't signed with a trusted certificate";
+                m_displayErrorString = GetStringResource(IDS_STRING_SIG_MISSING_ERROR);
                 return static_cast<HRESULT>(MSIX::Error::MissingAppxSignatureP7X);
             }
             else if (hrGetMsixPackageInfo == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
@@ -378,7 +374,7 @@ HRESULT UI::ParseInfoFromPackage()
                     TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
 
                 RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
-                m_displayErrorString = L"0x8bad0042 - Either you need a new certificate installed for this app package, or you need a new app package with trusted certificates. Your system administrator or the app developer can help. A certificate chain processed, but terminated in a root certificate which isn't trusted";
+                m_displayErrorString = GetStringResource(IDS_STRING_ROOT_SIG_UNTRUSTED_ERROR);
                 return static_cast<HRESULT>(MSIX::Error::CertNotTrusted);
             }
             else
@@ -388,7 +384,7 @@ HRESULT UI::ParseInfoFromPackage()
                     TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
                     TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
 
-                m_displayErrorString = L"Unable to open package. Please go to aka.ms/msix for more information.";
+                m_displayErrorString = GetStringResource(IDS_STRING_CANNOT_OPEN_PACKAGE_ERROR);
                 RETURN_IF_FAILED(hrGetMsixPackageInfo);
             }
         }
@@ -750,6 +746,13 @@ void UI::ButtonClicked()
                 break;
                 case InstallationStep::InstallationStepError:
                 {
+                    g_installing = false;
+                    ShowWindow(g_percentageTextHWnd, SW_HIDE);
+                    ShowWindow(g_staticPercentText, SW_HIDE);
+                    ShowWindow(g_progressHWnd, SW_HIDE);
+                    ShowWindow(g_checkboxHWnd, SW_HIDE);
+                    ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
+                    m_displayErrorString = GetStringResource(IDS_STRING_GENERIC_INSTALL_FAILED_ERROR);
                     DisplayError(sender.GetHResultTextCode());
                 }
                 break;
@@ -775,19 +778,12 @@ void UI::UpdateDisplayPercent(float displayPercent)
 }
 
 void UI::DisplayError(HRESULT hr)
-{
-    g_installing = false;
-    ShowWindow(g_percentageTextHWnd, SW_HIDE);
-    ShowWindow(g_staticPercentText, SW_HIDE);
-    ShowWindow(g_progressHWnd, SW_HIDE);
-    ShowWindow(g_checkboxHWnd, SW_HIDE);
-    ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
-    
+{   
     //Show Error Window
     ShowWindow(g_staticErrorTextHWnd, SW_SHOW);
     ShowWindow(g_staticErrorDescHWnd, SW_SHOW);
     std::wstringstream errorDescription;
-    errorDescription << GetStringResource(IDS_STRING_ERROR_MSG) << std::hex << hr << ".";
+    errorDescription << std::hex << L"0x" << hr << L" - " << m_displayErrorString;
     SetWindowText(g_staticErrorDescHWnd, errorDescription.str().c_str());
 }
 
