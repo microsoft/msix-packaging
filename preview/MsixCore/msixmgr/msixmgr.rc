@@ -123,7 +123,6 @@ BEGIN
     IDS_STRING_INVALID_TDF_ERROR "A Prerequisite for an install could not be satisfied."
     IDS_STRING_INVALID_ARCHITECTURE_ERROR "The deployment operation failed because the package targets the wrong processor architecture."
     IDS_STRING_PACKAGE_DOWNGRADE_ERROR "The package could not be installed because a higher version of this package is already installed."
-    IDS_STRING_REMOVE_PACKAGE_ERROR "Failed to process add request"
     
 	END
 
