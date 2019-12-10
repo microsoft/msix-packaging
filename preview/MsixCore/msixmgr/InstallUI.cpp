@@ -44,11 +44,12 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
         auto displayText = m_installOrUpdateText + L" " + m_displayName + L"?";
         auto messageText = GetStringResource(IDS_STRING_PUBLISHER) + m_publisherCommonName + L"\n" + GetStringResource(IDS_STRING_VERSION) + m_version;
         ChangeText(hWnd, displayText, messageText, m_logoStream.get());
-        ShowWindow(g_checkboxHWnd, SW_SHOW); //Show launch checkbox
-        ShowWindow(g_buttonHWnd, SW_SHOW); //Show install button
     }
     else
     {
+        ShowWindow(g_checkboxHWnd, SW_HIDE); //Hide launch checkbox
+        ShowWindow(g_buttonHWnd, SW_HIDE); //Hide install button
+
         if (m_packageInfo != nullptr) //Valid package, display package information
         {
             auto displayText = m_displayName + L" " + GetStringResource(IDS_STRING_LOADING_PACKAGE_ERROR);
@@ -492,7 +493,7 @@ BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
         WS_EX_LEFT, // extended window style
         L"BUTTON",
         GetStringResource(IDS_STRING_LAUNCH_CHECKBOX).c_str(),  // text
-        WS_TABSTOP | WS_CHILD | BS_AUTOCHECKBOX, // style
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, // style
         parentRect.left + 50, // x coord
         parentRect.bottom - 60,  // y coord
         165,  // width
@@ -513,7 +514,7 @@ BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
         WS_EX_LEFT, // extended window style
         L"Button",
         GetStringResource(IDS_STRING_INSTALLTEXT).c_str(),  // text
-        WS_TABSTOP | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
+        WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
         120,  // width
