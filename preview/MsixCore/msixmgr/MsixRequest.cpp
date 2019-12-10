@@ -176,7 +176,7 @@ HRESULT MsixRequest::ProcessAddRequest()
         }
         if (FAILED(hr) && currentHandler.errorMode != IgnoreAndProcessNextHandler)
         {
-            m_msixResponse->SetErrorStatus(hr, IDS_STRING_GENERIC_INSTALL_FAILED_ERROR);
+            m_msixResponse->SetErrorStatus(hr, L"Unable to install package.Please go to aka.ms/msix for more information.");
             
             if (currentHandler.errorMode == ReturnError)
             {
@@ -220,7 +220,7 @@ HRESULT MsixRequest::ProcessRemoveRequest()
                 TraceLoggingUInt32(currentHandler.errorMode, "ErrorMode"));
             if (currentHandler.errorMode == ReturnError)
             {
-                m_msixResponse->SetErrorStatus(hr, IDS_STRING_REMOVE_PACKAGE_ERROR);
+                m_msixResponse->SetErrorStatus(hr, L"Failed to process add request");
                 return hr;
             }
         }

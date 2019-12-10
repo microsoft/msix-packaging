@@ -45,7 +45,7 @@ HRESULT ValidateTargetDeviceFamily::ParseAndValidateTargetDeviceFamilyFromPackag
             "No Target device family Found",
             TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
 
-        m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_PREREQUISITE_FAILED), IDS_STRING_INVALID_TDF_ERROR);
+        m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_PREREQUISITE_FAILED), L"A Prerequisite for an install could not be satisfied.");
         return HRESULT_FROM_WIN32(ERROR_INSTALL_PREREQUISITE_FAILED);
     }
 
@@ -103,7 +103,7 @@ HRESULT ValidateTargetDeviceFamily::ParseAndValidateTargetDeviceFamilyFromPackag
         "Target device family name or manifest min version are not compatible with the OS",
         TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
 
-    m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_PREREQUISITE_FAILED), IDS_STRING_INVALID_TDF_ERROR);
+    m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_PREREQUISITE_FAILED), L"A Prerequisite for an install could not be satisfied.");
     return HRESULT_FROM_WIN32(ERROR_INSTALL_PREREQUISITE_FAILED);
 }
 

@@ -43,7 +43,7 @@ HRESULT ProcessPotentialUpdate::ExecuteForAddRequest()
                             TraceLoggingValue(p.path().filename().c_str(), "PackageCurrentlyInstalled"),
                             TraceLoggingValue(m_msixRequest->GetPackageFullName(), "PackageToBeInstalled"));
 
-                        m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_PACKAGE_DOWNGRADE), IDS_STRING_PACKAGE_DOWNGRADE_ERROR);
+                        m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_PACKAGE_DOWNGRADE), L"The package could not be installed because a higher version of this package is already installed.");
                         return HRESULT_FROM_WIN32(ERROR_INSTALL_PACKAGE_DOWNGRADE);
                     }
                 }

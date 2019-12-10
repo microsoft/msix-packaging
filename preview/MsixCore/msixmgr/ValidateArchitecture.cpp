@@ -19,7 +19,7 @@ HRESULT ValidateArchitecture::ExecuteForAddRequest()
 {
     if (!IsArchitectureCompatibleWithOS())
     {
-        m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_WRONG_PROCESSOR_ARCHITECTURE), IDS_STRING_INVALID_ARCHITECTURE_ERROR);
+        m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_WRONG_PROCESSOR_ARCHITECTURE), L"The deployment operation failed because the package targets the wrong processor architecture.");
         return HRESULT_FROM_WIN32(ERROR_INSTALL_WRONG_PROCESSOR_ARCHITECTURE);
     }
 

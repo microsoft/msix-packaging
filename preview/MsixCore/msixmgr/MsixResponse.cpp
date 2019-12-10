@@ -22,7 +22,7 @@ void MsixResponse::SetCallback(std::function<void(const IMsixResponse& sender)> 
     m_callback = callback;
 }
 
-void MsixResponse::SetErrorStatus(HRESULT errorCode, UINT errorText)
+void MsixResponse::SetErrorStatus(HRESULT errorCode, std::wstring errorText)
 {
     // Set response object with generic response if not explicitly caught and set by handlers already
     if (SUCCEEDED(GetHResultTextCode()))

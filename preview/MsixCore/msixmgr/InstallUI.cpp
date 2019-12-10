@@ -773,7 +773,24 @@ void UI::ButtonClicked()
                     ShowWindow(g_progressHWnd, SW_HIDE);
                     ShowWindow(g_checkboxHWnd, SW_HIDE);
                     ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
-                    m_displayErrorString = GetStringResource(sender.GetTextStatus());
+
+                    if(sender.GetHResultTextCode() == HRESULT_FROM_WIN32(ERROR_INSTALL_PREREQUISITE_FAILED))
+                    {
+                        m_displayErrorString = GetStringResource(IDS_STRING_INVALID_TDF_ERROR);
+                    }
+                    else if (sender.GetHResultTextCode() == HRESULT_FROM_WIN32(ERROR_INSTALL_WRONG_PROCESSOR_ARCHITECTURE))
+                    {
+                        m_displayErrorString = GetStringResource(IDS_STRING_INVALID_ARCHITECTURE_ERROR);
+                    }
+                    else if (sender.GetHResultTextCode() == HRESULT_FROM_WIN32(ERROR_INSTALL_PACKAGE_DOWNGRADE))
+                    {
+                        m_displayErrorString = GetStringResource(IDS_STRING_PACKAGE_DOWNGRADE_ERROR);
+                    }
+                    else
+                    {
+                        m_displayErrorString = GetStringResource(IDS_STRING_GENERIC_INSTALL_FAILED_ERROR);
+                    }
+
                     DisplayError(sender.GetHResultTextCode());
                 }
                 break;
