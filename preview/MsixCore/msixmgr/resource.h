@@ -47,6 +47,7 @@
 #define IDS_STRING_CAPABILITIES         141
 #define IDS_STRING_INSTALLING_APP       142
 #define IDS_STRING_ERROR_REASON_TEXT    143
+#define IDS_STRING_LOADING_PACKAGE      144
 
 // Next default values for new objects
 // 
