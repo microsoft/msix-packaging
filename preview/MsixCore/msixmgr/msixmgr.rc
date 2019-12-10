@@ -114,11 +114,13 @@ BEGIN
 	IDS_STRING_CAPABILITIES "Capabilities:"
 	IDS_STRING_INSTALLING_APP "Installing app package"
     IDS_STRING_ERROR_REASON_TEXT "Reason:"
+    IDS_STRING_LOADING_PACKAGE "Loading Package..."
     IDS_STRING_LOADING_PACKAGE_OPEN_ERROR "Cannot open app package"
     IDS_STRING_SIG_MISSING_ERROR "Ask the app developer for a new app package. This one isn't signed with a trusted certificate"
     IDS_STRING_ROOT_SIG_UNTRUSTED_ERROR "Either you need a new certificate installed for this app package, or you need a new app package with trusted certificates. Your system administrator or the app developer can help. A certificate chain processed, but terminated in a root certificate which isn't trusted"
     IDS_STRING_CANNOT_OPEN_PACKAGE_ERROR "Unable to open package. Please go to aka.ms/msix for more information."
     IDS_STRING_GENERIC_INSTALL_FAILED_ERROR "Unable to install package. Please go to aka.ms/msix for more information."
+    
 	END
 
 #endif    // English (United States) resources

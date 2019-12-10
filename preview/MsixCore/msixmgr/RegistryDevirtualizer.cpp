@@ -136,10 +136,14 @@ HRESULT RegistryDevirtualizer::CopyAndDevirtualizeRegistryTree(RegistryKey* virt
     }
 
     RETURN_IF_FAILED(RegistryKey::EnumKeyAndDoActionForAllSubkeys(virtualKey,
-        [&](PCWSTR subKeyName, RegistryKey*, bool*) -> HRESULT
+        [&](PCWSTR enumeratedSubKeyName, RegistryKey*, bool*) -> HRESULT
     {
+        std::wstring subKeyNameWstring(enumeratedSubKeyName);
+        RETURN_IF_FAILED(DetokenizeData(subKeyNameWstring));
+        PCWSTR subKeyName = subKeyNameWstring.c_str();
+
         RegistryKey sourceSubKey;
-        RETURN_IF_FAILED(virtualKey->OpenSubKey(subKeyName, KEY_READ, &sourceSubKey));
+        RETURN_IF_FAILED(virtualKey->OpenSubKey(enumeratedSubKeyName, KEY_READ, &sourceSubKey));
 
         TraceLoggingWrite(g_MsixTraceLoggingProvider,
             "Creating subkey",
@@ -189,6 +193,8 @@ HRESULT RegistryDevirtualizer::CopyAndDevirtualizeRegistryTree(RegistryKey* virt
     // for each value of this key, devirtualize it and write it to the real key.
     for (DWORD i = 0; i < valuesCount; i++)
     {
+        valueNameBuffer[0] = 0;
+        valueDataBuffer[0] = 0;
         DWORD nameLength = static_cast<DWORD>(valueNameBuffer.size());
         DWORD dataLength = static_cast<DWORD>(valueDataBuffer.size());
         valueType = REG_NONE;
@@ -197,6 +203,7 @@ HRESULT RegistryDevirtualizer::CopyAndDevirtualizeRegistryTree(RegistryKey* virt
             reinterpret_cast<LPBYTE>(&valueDataBuffer[0]), &dataLength));
 
         std::wstring valueNameString(valueNameBuffer.begin(), valueNameBuffer.end());
+        RETURN_IF_FAILED(DetokenizeData(valueNameString));
         RETURN_IF_FAILED(DevirtualizeValue(realKey, valueNameString.c_str(), valueDataBuffer, dataLength, valueType));
     }
     return S_OK;
