@@ -4,7 +4,7 @@
 #include <functional>
 #include "IMsixResponse.hpp"
 
-#include "GeneralUtil.hpp"
+#include "../msixmgrLib/GeneralUtil.hpp"
 namespace MsixCoreLib
 {
 /// The response class tracks the response state of the msix deploy operation

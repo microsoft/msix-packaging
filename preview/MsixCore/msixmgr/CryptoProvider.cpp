@@ -1,10 +1,10 @@
 #include <Windows.h>
 #include <WinCrypt.h>
 #include <BcryptLibrary.hpp>
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <CryptoProvider.hpp>
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include <memory>
 
 namespace MsixCoreLib

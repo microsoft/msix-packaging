@@ -1,12 +1,11 @@
 #include <windows.h>
 
 #include "PopulatePackageInfo.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "FilePaths.hpp"
 #include <TraceLoggingProvider.h>
-#include <experimental/filesystem> // C++-standard header file name
 #include "Constants.hpp"
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 using namespace std;
 using namespace MsixCoreLib;
 

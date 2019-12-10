@@ -5,10 +5,10 @@
 
 #include "FilePaths.hpp"
 #include "ComInterface.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "Constants.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 using namespace MsixCoreLib;
 
 const PCWSTR ComInterface::HandlerName = L"ComInterface";

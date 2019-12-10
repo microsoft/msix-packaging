@@ -4,9 +4,9 @@
 #include <CommCtrl.h>
 
 #include "WriteDevirtualizedRegistry.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include "Constants.hpp"
 #include "RegistryDevirtualizer.hpp"
 

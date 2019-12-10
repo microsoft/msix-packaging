@@ -4,9 +4,9 @@
 
 #include "RegistryKey.hpp"
 #include "AutoPlay.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include "Constants.hpp"
 #include "CryptoProvider.hpp"
 #include "Base32Encoding.hpp"

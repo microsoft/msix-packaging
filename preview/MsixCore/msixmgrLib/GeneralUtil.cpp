@@ -7,6 +7,7 @@
 #include <memory>
 #include <filesystem>
 #include <fstream>
+#include <algorithm>
 
 // MSIXWindows.hpp defines NOMINMAX and undefines min and max because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. We can't use namespace std because c++17 defines std::byte, which conflicts with ::byte
@@ -105,7 +106,7 @@ namespace MsixCoreLib
     /// Creates an .ico file next to the logo path which is .png by simply prepending the ICO header.
     HRESULT ConvertLogoToIcon(std::wstring logoPath, std::wstring & iconPath)
     {
-        experimental::filesystem::path path(logoPath);
+        filesystem::path path(logoPath);
         iconPath = path.replace_extension(L".ico");
 
         bool fileExists = false;
@@ -115,7 +116,7 @@ namespace MsixCoreLib
             return S_OK;
         }
 
-        uintmax_t size = experimental::filesystem::file_size(logoPath);
+        uintmax_t size = filesystem::file_size(logoPath);
         ifstream input(logoPath, std::ios::binary);
         ofstream output(iconPath, std::ios::binary);
 
@@ -288,7 +289,7 @@ namespace MsixCoreLib
     HRESULT GetFileVersion(std::wstring file, _Out_ UINT64& version, _Out_ bool& isUnversioned)
     {
         isUnversioned = true;
-        DWORD size = GetFileVersionInfoSize(file.c_str(), nullptr);
+        DWORD size = GetFileVersionInfoSizeW(file.c_str(), nullptr);
         if (size == 0)
         {
             DWORD error = GetLastError();
@@ -302,7 +303,7 @@ namespace MsixCoreLib
         }
 
         std::unique_ptr<BYTE[]> versionInfo(new BYTE[size]);
-        if (!GetFileVersionInfo(file.c_str(), 0, size, versionInfo.get()))
+        if (!GetFileVersionInfoW(file.c_str(), 0, size, versionInfo.get()))
         {
             RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
         }

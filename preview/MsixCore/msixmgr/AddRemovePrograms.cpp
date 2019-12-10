@@ -5,9 +5,9 @@
 
 #include "RegistryKey.hpp"
 #include "AddRemovePrograms.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include "Constants.hpp"
 using namespace MsixCoreLib;
 

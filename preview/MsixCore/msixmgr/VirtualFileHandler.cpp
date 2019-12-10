@@ -1,17 +1,16 @@
 #include <windows.h>
 #include <iostream>
-#include <experimental/filesystem> // C++-standard header file name
 #include <filesystem> // Microsoft-specific implementation header file name
 
 #include "VirtualFileHandler.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "FootprintFiles.hpp"
 #include "FilePaths.hpp"
 #include "Constants.hpp"
 
 #include "RegistryDevirtualizer.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 
 using namespace MsixCoreLib;
 
@@ -21,9 +20,9 @@ HRESULT VirtualFileHandler::ExecuteForAddRequest()
 {
     auto vfsDirectoryPath = m_msixRequest->GetPackageDirectoryPath() + L"\\VFS";
 
-    for (auto& p : std::experimental::filesystem::recursive_directory_iterator(vfsDirectoryPath))
+    for (auto& p : std::filesystem::recursive_directory_iterator(vfsDirectoryPath))
     {
-        if (std::experimental::filesystem::is_regular_file(p.path()))
+        if (std::filesystem::is_regular_file(p.path()))
         {
             RETURN_IF_FAILED(CopyVfsFileToLocal(p.path()));
         }
@@ -105,7 +104,7 @@ HRESULT IsFileModified(std::wstring file, _Out_ bool& isModified)
     const int TwoSecondsInFileTimeIncrements = 20000000; // FILETIME is in 100 nanosecond increments
 
     WIN32_FILE_ATTRIBUTE_DATA strData;
-    if (!GetFileAttributesEx(file.c_str(), GetFileExInfoStandard, (LPVOID)&strData))
+    if (!GetFileAttributesExW(file.c_str(), GetFileExInfoStandard, (LPVOID)&strData))
     {
         RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
     }
@@ -240,7 +239,7 @@ HRESULT VirtualFileHandler::CopyVfsFileIfNecessary(std::wstring sourceFullPath, 
                 TraceLoggingValue(targetFullPath.c_str(), "FullPath"),
                 TraceLoggingValue(hrMkdir, "HR"));
         }
-        else if (!CopyFile(sourceFullPath.c_str(), targetFullPath.c_str(), FALSE /*failIfExists*/))
+        else if (!CopyFileW(sourceFullPath.c_str(), targetFullPath.c_str(), FALSE /*failIfExists*/))
         {
             DWORD error = GetLastError();
             TraceLoggingWrite(g_MsixTraceLoggingProvider,
@@ -317,7 +316,7 @@ HRESULT VirtualFileHandler::RemoveVfsFile(std::wstring fileName)
 
     if (shouldDelete)
     {
-        bool success = DeleteFile(fullPath.c_str());
+        bool success = DeleteFileW(fullPath.c_str());
         if (!success)
         {
             TraceLoggingWrite(g_MsixTraceLoggingProvider,
@@ -333,7 +332,7 @@ HRESULT VirtualFileHandler::RemoveVfsFile(std::wstring fileName)
 
             // instead of checking if the directory is empty, just try to delete it.
             // if it's not empty it'll fail with expected error code that we can ignore
-            success = RemoveDirectory(fullPath.c_str());
+            success = RemoveDirectoryW(fullPath.c_str());
             if (!success)
             {
                 DWORD error = GetLastError();

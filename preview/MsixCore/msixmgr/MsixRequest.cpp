@@ -1,4 +1,4 @@
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "MsixRequest.hpp"
 
 #include <string>
@@ -13,10 +13,9 @@
 #include "FootprintFiles.hpp"
 #include "FilePaths.hpp"
 #include <cstdio>
-#include <experimental/filesystem> // C++-standard header file name
 #include <filesystem> // Microsoft-specific implementation header file name
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 
 // handlers
 #include "Extractor.hpp"

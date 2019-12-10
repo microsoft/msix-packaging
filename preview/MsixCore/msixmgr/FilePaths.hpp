@@ -1,7 +1,7 @@
 #pragma once
 #include <map>
 #include <string>
-#include "GeneralUtil.hpp"
+#include "../msixmgrLib/GeneralUtil.hpp"
 namespace MsixCoreLib
 {
 /// FilePath Mappings maps the VFS tokens to the actual folder on disk.

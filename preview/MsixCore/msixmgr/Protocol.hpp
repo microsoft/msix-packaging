@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 #include "RegistryKey.hpp"
 #include <vector>

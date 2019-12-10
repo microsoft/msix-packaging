@@ -3,9 +3,9 @@
 #include <shlobj_core.h>
 #include <CommCtrl.h>
 
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include "ErrorHandler.hpp"
 #include "MsixRequest.hpp"
 using namespace MsixCoreLib;

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <netfw.h>
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 #include "MsixRequest.hpp"
 

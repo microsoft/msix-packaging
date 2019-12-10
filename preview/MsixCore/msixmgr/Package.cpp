@@ -2,18 +2,17 @@
 
 #include "Package.hpp"
 #include "FilePaths.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "Constants.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include <fstream>
-#include <experimental/filesystem> // C++-standard header file name
 #include <filesystem> // Microsoft-specific implementation header file name
-#include "document.h"
-#include "stringbuffer.h"
-#include "writer.h"
-#include "istreamwrapper.h"
-#include "ostreamwrapper.h"
+#include "include/rapidjson/document.h"
+#include "include/rapidjson/stringbuffer.h"
+#include "include/rapidjson/writer.h"
+#include "include/rapidjson/istreamwrapper.h"
+#include "include/rapidjson/ostreamwrapper.h"
 
 using namespace MsixCoreLib;
 using namespace rapidjson;

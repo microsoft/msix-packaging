@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GeneralUtil.hpp"
+#include "../msixmgrLib/GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 #include "MsixRequest.hpp"
 

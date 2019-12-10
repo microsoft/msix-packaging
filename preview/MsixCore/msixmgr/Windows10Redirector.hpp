@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "MsixResponse.hpp"
 
 namespace MsixCoreLib

@@ -1,8 +1,8 @@
 #include <windows.h>
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "RegistryKey.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include "Constants.hpp"
 #include "AppExecutionAlias.hpp"
 

@@ -5,9 +5,9 @@
 
 #include "FilePaths.hpp"
 #include "ValidateTargetDeviceFamily.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include <VersionHelpers.h>
 #include "Constants.hpp"
 

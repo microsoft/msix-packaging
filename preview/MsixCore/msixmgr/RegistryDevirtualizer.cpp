@@ -2,7 +2,7 @@
 #include "FilePaths.hpp"
 #include "Constants.hpp"
 #include <vector>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 
 using namespace MsixCoreLib;
 
@@ -457,7 +457,7 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
         }
 
         RETURN_IF_FAILED(CreateTempKeyName(localInstance->m_loadedHiveKeyName));
-        RETURN_IF_FAILED(HRESULT_FROM_WIN32(RegLoadKey(HKEY_USERS, localInstance->m_loadedHiveKeyName.c_str(), localInstance->m_registryHiveFileName.c_str())));
+        RETURN_IF_FAILED(HRESULT_FROM_WIN32(RegLoadKeyW(HKEY_USERS, localInstance->m_loadedHiveKeyName.c_str(), localInstance->m_registryHiveFileName.c_str())));
     }
 
     *instance = localInstance;
@@ -483,7 +483,7 @@ HRESULT RegistryDevirtualizer::UnloadMountedHive()
     {
         m_rootKey.Close();
 
-        LSTATUS status = RegUnLoadKey(HKEY_USERS, m_loadedHiveKeyName.c_str());
+        LSTATUS status = RegUnLoadKeyW(HKEY_USERS, m_loadedHiveKeyName.c_str());
 
         if (status == ERROR_SUCCESS)
         {

@@ -3,7 +3,7 @@
 #include "Constants.hpp"
 #include "PopulatePackageInfo.hpp"
 #include "MsixTraceLoggingProvider.hpp"
-#include <experimental/filesystem>
+#include <filesystem>
 #include <thread>
 #include <regex>
 #include "Windows10Redirector.hpp"
@@ -47,7 +47,7 @@ shared_ptr<IMsixResponse> PackageManager::AddPackageAsync(IStream * packageStrea
         auto msixResponse = std::make_shared<MsixResponse>();
         msixResponse->SetCallback(callback);
 
-        TCHAR tempPackagePath[MAX_PATH];
+        WCHAR tempPackagePath[MAX_PATH];
         if (FAILED(Windows10Redirector::ConvertIStreamToPackagePath(packageStream, tempPackagePath)))
         {
             return nullptr;
@@ -201,9 +201,9 @@ HRESULT PackageManager::FindPackageByFamilyName(const wstring & packageFamilyNam
     RETURN_IF_FAILED(filemapping.GetInitializationResult());
     auto msixCoreDirectory = filemapping.GetMsixCoreDirectory();
 
-    for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
+    for (auto& p : filesystem::directory_iterator(msixCoreDirectory))
     {
-        if (experimental::filesystem::is_directory(p.path()))
+        if (filesystem::is_directory(p.path()))
         {
             auto installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
             if (CaseInsensitiveEquals(installedAppFamilyName, packageFamilyName))
@@ -234,9 +234,9 @@ HRESULT PackageManager::FindPackages(const std::wstring & searchParameter, uniqu
     std::regex searchParameterRegExp(searchParameterString, std::regex_constants::icase);
 
     std::vector<std::wstring> packageFullNames;
-    for (auto& p : experimental::filesystem::directory_iterator(msixCoreDirectory))
+    for (auto& p : filesystem::directory_iterator(msixCoreDirectory))
     {
-        if (experimental::filesystem::is_directory(p.path()))
+        if (filesystem::is_directory(p.path()))
         {
             wstring installedAppFamilyName = GetFamilyNameFromFullName(p.path().filename());
             std::string installedAppFamilyNameString(installedAppFamilyName.begin(), installedAppFamilyName.end());

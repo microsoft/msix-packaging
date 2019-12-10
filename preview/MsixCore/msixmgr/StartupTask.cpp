@@ -5,10 +5,10 @@
 
 #include "FilePaths.hpp"
 #include "StartupTask.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "Constants.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include <taskschd.h>
 using namespace MsixCoreLib;
 

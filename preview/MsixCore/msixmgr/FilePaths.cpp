@@ -1,8 +1,8 @@
 #include "FilePaths.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <shlobj_core.h>
 #include <KnownFolders.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 
 using namespace MsixCoreLib;
 

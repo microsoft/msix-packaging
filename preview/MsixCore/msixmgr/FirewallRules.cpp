@@ -3,13 +3,12 @@
 
 #include <shlobj_core.h>
 #include <CommCtrl.h>
-#include <experimental/filesystem>
 #include <netfw.h>
 
 #include "FirewallRules.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include "Constants.hpp"
 
 #pragma comment( lib, "ole32.lib" )

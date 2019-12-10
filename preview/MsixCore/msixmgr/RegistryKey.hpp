@@ -1,7 +1,7 @@
 #pragma once
 
-#include "GeneralUtil.hpp"
-#include "MsixTraceLoggingProvider.hpp"
+#include "../GeneralUtil.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 namespace MsixCoreLib
 {
 /// Encapsulates and lifetimes the HKEY used by the RegOpenKey et al APIs.

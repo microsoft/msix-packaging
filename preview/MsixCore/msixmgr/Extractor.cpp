@@ -1,17 +1,16 @@
 #include <windows.h>
 #include <iostream>
-#include <experimental/filesystem> // C++-standard header file name
 #include <filesystem> // Microsoft-specific implementation header file name
 
 #include "Extractor.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "FootprintFiles.hpp"
 #include "FilePaths.hpp"
 #include "Constants.hpp"
 
 #include "RegistryDevirtualizer.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 using namespace MsixCoreLib;
 
 const PCWSTR Extractor::HandlerName = L"Extractor";
@@ -129,7 +128,7 @@ HRESULT Extractor::ExtractPayloadFiles()
 HRESULT Extractor::CreatePackageRoot()
 {
     std::wstring packagePath = FilePathMappings::GetInstance().GetMsixCoreDirectory();
-    if (!CreateDirectory(packagePath.c_str(), nullptr))
+    if (!CreateDirectoryW(packagePath.c_str(), nullptr))
     {
         DWORD lastError = GetLastError();
         if (lastError != ERROR_ALREADY_EXISTS)
@@ -138,7 +137,7 @@ HRESULT Extractor::CreatePackageRoot()
         }
     }
 
-    if (!CreateDirectory((FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_msixRequest->GetPackageInfo()->GetPackageFullName()).c_str(), nullptr))
+    if (!CreateDirectoryW((FilePathMappings::GetInstance().GetMsixCoreDirectory() + m_msixRequest->GetPackageInfo()->GetPackageFullName()).c_str(), nullptr))
     {
         DWORD lastError = GetLastError();
         if (lastError != ERROR_ALREADY_EXISTS)
@@ -166,7 +165,7 @@ HRESULT Extractor::ExecuteForRemoveRequest()
 
     std::error_code error;
     auto packageDirectoryPath = m_msixRequest->GetPackageDirectoryPath();
-    uintmax_t numRemoved = std::experimental::filesystem::remove_all(packageDirectoryPath, error);
+    uintmax_t numRemoved = std::filesystem::remove_all(packageDirectoryPath, error);
 
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Removed directory",

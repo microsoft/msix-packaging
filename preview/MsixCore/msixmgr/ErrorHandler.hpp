@@ -2,7 +2,7 @@
 
 #include <windows.h>
 #include <string>
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "IPackageHandler.hpp"
 #include "MsixRequest.hpp"
 

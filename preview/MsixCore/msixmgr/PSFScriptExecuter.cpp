@@ -1,10 +1,10 @@
 #include <windows.h>
 
 #include "PSFScriptExecuter.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
-#include "document.h"
+#include "../MsixTraceLoggingProvider.hpp"
+#include "include/rapidjson/document.h"
 
 using namespace MsixCoreLib;
 

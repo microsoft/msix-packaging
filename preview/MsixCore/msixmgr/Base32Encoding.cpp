@@ -1,9 +1,9 @@
 #include <Windows.h>
 #include <Base32Encoding.hpp>
 
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include <assert.h>
 
 namespace MsixCoreLib

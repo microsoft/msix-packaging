@@ -7,9 +7,9 @@
 
 #include "FilePaths.hpp"
 #include "StartMenuLink.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 
 using namespace MsixCoreLib;
 

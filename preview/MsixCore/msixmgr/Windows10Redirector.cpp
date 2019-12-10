@@ -1,7 +1,7 @@
 #include "Windows10Redirector.hpp"
 #include <winrt/Windows.Foundation.h>
 #include <winrt/Windows.Management.Deployment.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include <sddl.h>
 #include <AclAPI.h>
 

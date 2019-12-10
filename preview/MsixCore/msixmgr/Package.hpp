@@ -1,5 +1,5 @@
 #pragma once
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "AppxPackaging.hpp"
 #include "MSIXWindows.hpp"
 #include "IPackage.hpp"

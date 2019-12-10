@@ -5,11 +5,11 @@
 
 #include "FilePaths.hpp"
 #include "FileTypeAssociation.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include "Constants.hpp"
 #include <TraceLoggingProvider.h>
 #include "RegistryKey.hpp"
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 
 using namespace MsixCoreLib;
 

@@ -2,12 +2,11 @@
 
 #include <shlobj_core.h>
 #include <CommCtrl.h>
-#include <experimental/filesystem> // C++-standard header file name
 
 #include "PrepareDevirtualizedRegistry.hpp"
-#include "GeneralUtil.hpp"
+#include "../GeneralUtil.hpp"
 #include <TraceLoggingProvider.h>
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 #include "Constants.hpp"
 #include "RegistryDevirtualizer.hpp"
 

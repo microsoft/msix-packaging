@@ -1,5 +1,5 @@
 #include "RegistryKey.hpp"
-#include "MsixTraceLoggingProvider.hpp"
+#include "../MsixTraceLoggingProvider.hpp"
 using namespace MsixCoreLib;
 
 HRESULT RegistryKey::Open(
