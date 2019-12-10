@@ -174,7 +174,12 @@ HRESULT MsixRequest::ProcessAddRequest()
         }
         if (FAILED(hr) && currentHandler.errorMode != IgnoreAndProcessNextHandler)
         {
-            m_msixResponse->SetErrorStatus(hr, L"Failed to process add request");
+            // Set response object with generic response if not explicitly caught and set by handlers already
+            if (!m_msixResponse->GetHResultTextCode())
+            {
+                m_msixResponse->SetErrorStatus(hr, L"Unable to install package. Please go to aka.ms/msix for more information.");
+            }
+            
             if (currentHandler.errorMode == ReturnError)
             {
                 return hr;

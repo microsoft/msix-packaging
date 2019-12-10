@@ -753,7 +753,7 @@ void UI::ButtonClicked()
                     ShowWindow(g_progressHWnd, SW_HIDE);
                     ShowWindow(g_checkboxHWnd, SW_HIDE);
                     ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
-                    m_displayErrorString = GetStringResource(IDS_STRING_GENERIC_INSTALL_FAILED_ERROR);
+                    m_displayErrorString = sender.GetTextStatus();
                     DisplayError(sender.GetHResultTextCode());
                 }
                 break;
