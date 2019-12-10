@@ -22,6 +22,7 @@
 #define max std::max
 #define min std::min
 #include <GdiPlus.h>
+#include <Uxtheme.h>
 using namespace std;
 using namespace MsixCoreLib;
 
@@ -37,6 +38,12 @@ static const int g_height = 400; // height of window
 
 HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
 {
+    if (SUCCEEDED(m_loadingPackageInfoCode) && !m_loadedPackageInfo)
+    {
+        DisplayLoadingPackage(hWnd);
+        return S_OK;
+    }
+
     if (SUCCEEDED(m_loadingPackageInfoCode))
     {
         auto displayText = m_installOrUpdateText + L" " + m_displayName + L"?";
@@ -267,37 +274,9 @@ HRESULT UI::LaunchInstalledApp()
     return S_OK;
 }
 
-void StartParseFile(HWND hWnd)
-{
-    int result = 0;
-
-    if (result != 0)
-    {
-        std::cout << "Error: " << std::hex << result << " while extracting the appx package" << std::endl;
-        Text<char> text;
-        auto logResult = GetLogTextUTF8(MyAllocate, &text);
-        if (0 == logResult)
-        {
-            std::cout << "LOG:" << std::endl << text.content << std::endl;
-        }
-        else
-        {
-            std::cout << "UNABLE TO GET LOG WITH HR=" << std::hex << logResult << std::endl;
-        }
-    }
-}
-
-void CommandFunc(HWND hWnd, RECT windowRect) {
-    std::thread t1(StartParseFile, hWnd);
-    t1.detach();
-    return;
-}
-
 void StartUIThread(UI* ui)
 {
-    // Free the console that we started with
-    FreeConsole();
-
+    InitCommonControls();
     // Register WindowClass and create the window
     HINSTANCE hInstance = GetModuleHandle(NULL);
 
@@ -366,12 +345,14 @@ HRESULT UI::ParseInfoFromPackage()
     //Obtain package capabilities
     m_capabilities = m_packageInfo->GetCapabilities();
 
+    m_loadedPackageInfo = true;
     return S_OK;
 }
 
 HRESULT UI::ShowUI()
 {
-    m_loadingPackageInfoCode = ParseInfoFromPackage();
+    // Free the console that we started with
+    FreeConsole();
 
     std::thread thread(StartUIThread, this);
     thread.detach();
@@ -383,6 +364,7 @@ HRESULT UI::ShowUI()
 
 void UI::PreprocessRequest()
 {
+    m_loadingPackageInfoCode = ParseInfoFromPackage();
     if (FAILED(m_loadingPackageInfoCode))
     {
         return;
@@ -448,6 +430,10 @@ BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
         (HMENU)IDC_LAUNCHCHECKBOX, // menu
         reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
         NULL);
+
+    // Disable visual styles for this control. Common controls 6 doesn't allow this control to be transparent via WM_CTLCOLORSTATIC
+    // Without disabling styles, on aero theme, this'll have an ugly gray background on the otherwise white dialog.
+    SetWindowTheme(g_checkboxHWnd, L" ", L" ");
 
     //Set default checkbox state to checked
     SendMessage(g_checkboxHWnd, BM_SETCHECK, BST_CHECKED, 0);
@@ -608,7 +594,7 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     graphics.DrawString(capabilitiesHeading.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
 
     layoutRect.Y += 17;
-    for (std::wstring capability : m_capabilities)
+    if (m_capabilities.size() > 0)
     {
         std::wstring capabilityString = L"\x2022 " + GetStringResource(IDS_RUNFULLTRUST_CAPABILITY);
         graphics.DrawString(capabilityString.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
@@ -629,6 +615,31 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     EndPaint(parentHWnd, &paint);
 
     return TRUE;
+}
+
+BOOL UI::DisplayLoadingPackage(HWND parentHWnd)
+{
+    ShowWindow(g_checkboxHWnd, SW_HIDE);
+    ShowWindow(g_buttonHWnd, SW_HIDE);
+    PAINTSTRUCT paint;
+    HDC deviceContext = BeginPaint(parentHWnd, &paint);
+
+    Gdiplus::Graphics graphics(deviceContext);
+
+    Gdiplus::RectF layoutRect(50, (g_height / 2) - 50, g_width - 144, 100);
+    
+    Gdiplus::Font messageFont(L"Arial", 10);
+    Gdiplus::StringFormat format;
+    format.SetAlignment(Gdiplus::StringAlignmentCenter);
+    auto windowsTextColor = Gdiplus::Color();
+    windowsTextColor.SetFromCOLORREF(GetSysColor(COLOR_WINDOWTEXT));
+    Gdiplus::SolidBrush textBrush(windowsTextColor);
+
+    auto messageText = GetStringResource(IDS_STRING_LOADING_PACKAGE);
+    graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+
+    EndPaint(parentHWnd, &paint);
+    return true;
 }
 
 int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& windowClass, const std::wstring& title)
@@ -654,9 +665,18 @@ int UI::CreateInitWindow(HINSTANCE hInstance, int nCmdShow, const std::wstring& 
 
     SetHwnd(hWnd);
     SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)this);
-    PreprocessRequest();
     ShowWindow(hWnd, nCmdShow);
     UpdateWindow(hWnd);
+    PreprocessRequest();
+    
+    ShowWindow(hWnd, nCmdShow);
+    UpdateWindow(hWnd);
+    if (SUCCEEDED(m_loadingPackageInfoCode))
+    {
+        ShowWindow(g_checkboxHWnd, SW_SHOW);
+        ShowWindow(g_buttonHWnd, SW_SHOW);
+    }
+    InvalidateRect(hWnd, 0, TRUE);
 
     // Main message loop:
     MSG msg;

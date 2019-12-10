@@ -71,6 +71,7 @@ private:
     std::wstring m_version = L"";
     std::vector<std::wstring> m_capabilities;
 
+    bool m_loadedPackageInfo = false;
     HRESULT m_loadingPackageInfoCode = 0;
     UIType m_type;
 
@@ -165,6 +166,11 @@ public:
     /// @param parentHWnd - the HWND of the window to be changed
     /// @param windowText - the text to change the window to
     BOOL ChangeText(HWND parentHWnd, std::wstring displayText, std::wstring  messageText, IStream* logoStream = nullptr);
+
+    /// Display the loading package message
+    ///
+    /// @param parentHWnd - the HWND of the window to be changed
+    BOOL DisplayLoadingPackage(HWND parentHWnd);
 
     /// Sends the WM_INSTALLCOMPLETE_MSG message to the main window when app installation is complete
     void SendInstallCompleteMsg();
