@@ -95,7 +95,6 @@ BEGIN
                             "Clicking on Yes will uninstall the app. Are you sure you want to cancel the install?"
     IDS_STRING_REINSTALLAPP "Reinstall"
     IDS_RUNFULLTRUST_CAPABILITY "Uses all system resources"
-    IDS_STRING_ERROR_MSG    "App installation failed with error message: An internal error occurred with error 0x"
 	IDS_STRING_HELPTEXT_DESCRIPTION " Description:\n -----------\n \tInstalls an msix package, removes an msix package or queries for msix packages.\n \tMay also unpack msix packages and apply ACLs to the resulting package folders\n\n"
     IDS_STRING_HELPTEXT_OPTIONS " Options:\n -------\n"
     IDS_STRING_HELP_OPTION_UNPACK "Unpack a package (.appx, .msix, .appxbundle, .msixbundle) and extract its contents to a folder."
@@ -105,7 +104,7 @@ BEGIN
         IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE "optional parameter that validates a package's signature file before unpacking the package. This will require that the package's certificate is installed on the machine."
 	IDS_STRING_HELP_OPTION_APPLYACLS "Applies ACLs to a package folder (an unpacked package)"
 	IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH "the path to the folder to apply acls to"
-	IDS_STRING_LOADING_PACKAGE_ERROR "Loading Package Failed"
+	IDS_STRING_LOADING_PACKAGE_ERROR "installation failed"
 	IDS_STRING_WXS_ERROR_PART1 "Warning - removing this will cause the following app(s) to be unremovable: "
 	IDS_STRING_WXS_ERROR_PART2 "These app(s) should be removed before proceeding."
 	IDS_STRING_LAUNCH_CHECKBOX "Launch when ready"
@@ -114,9 +113,18 @@ BEGIN
 	IDS_STRING_VERSION "Version: "
 	IDS_STRING_CAPABILITIES "Capabilities:"
 	IDS_STRING_INSTALLING_APP "Installing app package"
-	IDS_STRING_ERROR_REASON_TEXT "Reason:"
+    IDS_STRING_ERROR_REASON_TEXT "Reason:"
     IDS_STRING_LOADING_PACKAGE "Loading Package..."
-
+    IDS_STRING_LOADING_PACKAGE_OPEN_ERROR "Cannot open app package"
+    IDS_STRING_SIG_MISSING_ERROR "Ask the app developer for a new app package. This one isn't signed with a trusted certificate"
+    IDS_STRING_ROOT_SIG_UNTRUSTED_ERROR "Either you need a new certificate installed for this app package, or you need a new app package with trusted certificates. Your system administrator or the app developer can help. A certificate chain processed, but terminated in a root certificate which isn't trusted"
+    IDS_STRING_CANNOT_OPEN_PACKAGE_ERROR "Unable to open package. Please go to aka.ms/msix for more information."
+    IDS_STRING_GENERIC_INSTALL_FAILED_ERROR "Unable to install package. Please go to aka.ms/msix for more information."
+    IDS_STRING_INVALID_TDF_ERROR "A Prerequisite for an install could not be satisfied."
+    IDS_STRING_INVALID_ARCHITECTURE_ERROR "The deployment operation failed because the package targets the wrong processor architecture."
+    IDS_STRING_PACKAGE_DOWNGRADE_ERROR "The package could not be installed because a higher version of this package is already installed."
+    IDS_STRING_USER_CANCELLED_INSTALL_ERROR "User cancelled installation."
+    
 	END
 
 #endif    // English (United States) resources

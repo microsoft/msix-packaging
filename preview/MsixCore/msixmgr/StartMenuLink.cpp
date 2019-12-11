@@ -57,6 +57,7 @@ HRESULT StartMenuLink::ExecuteForAddRequest()
 {
     if (m_msixRequest->GetMsixResponse()->GetIsInstallCancelled())
     {
+        m_msixRequest->GetMsixResponse()->SetErrorStatus(HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT), L"User cancelled installation.");
         return HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT);
     }
     auto packageInfo = m_msixRequest->GetPackageInfo();

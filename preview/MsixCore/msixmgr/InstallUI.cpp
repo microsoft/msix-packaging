@@ -17,6 +17,8 @@
 
 #include "Util.hpp"
 #include "msixmgrLogger.hpp"
+#include "MsixErrors.hpp"
+
 // MSIXWindows.hpp defines NOMINMAX and undefines min and max because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. We can't use namespace std because c++17 defines std::byte, which conflicts with ::byte
 #define max std::max
@@ -25,7 +27,6 @@
 #include <Uxtheme.h>
 using namespace std;
 using namespace MsixCoreLib;
-
 
 static const int g_width = 500;  // width of window
 static const int g_height = 400; // height of window
@@ -52,11 +53,24 @@ HRESULT UI::DrawPackageInfo(HWND hWnd, RECT windowRect)
     }
     else
     {
-        std::wstringstream wstringstream;
-        wstringstream << L"Failed getting package information with: 0x" << std::hex << m_loadingPackageInfoCode;
-        auto g_messageText = wstringstream.str();
-        ChangeText(hWnd, GetStringResource(IDS_STRING_LOADING_PACKAGE_ERROR), g_messageText);
+        ShowWindow(g_checkboxHWnd, SW_HIDE); //Hide launch checkbox
+        ShowWindow(g_buttonHWnd, SW_HIDE); //Hide install button
+
+        if (m_packageInfo != nullptr) //Valid package, display package information
+        {
+            auto displayText = m_displayName + L" " + GetStringResource(IDS_STRING_LOADING_PACKAGE_ERROR);
+            auto messageText = GetStringResource(IDS_STRING_PUBLISHER) + m_publisherCommonName + L"\n" + GetStringResource(IDS_STRING_VERSION) + m_version;
+            ChangeText(hWnd, displayText, messageText, m_logoStream.get());
+        }
+        else // Invalid package, no package information
+        {
+            auto displayText = GetStringResource(IDS_STRING_LOADING_PACKAGE_OPEN_ERROR);
+            ChangeText(hWnd, displayText, L"");;
+        }
+
+        DisplayError(m_loadingPackageInfoCode);
     }
+
     return S_OK;
 }
 
@@ -319,7 +333,39 @@ HRESULT UI::ParseInfoFromPackage()
         {
         case InstallUIAdd:
         {
-            RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo));
+            HRESULT hrGetMsixPackageInfo = m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL);
+            if (hrGetMsixPackageInfo == static_cast<HRESULT>(MSIX::Error::MissingAppxSignatureP7X))
+            {
+                TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+                    "Error - Signature missing from package, calling api again with signature skip validation parameter",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
+
+                RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
+                m_displayErrorString = GetStringResource(IDS_STRING_SIG_MISSING_ERROR);
+                return static_cast<HRESULT>(MSIX::Error::MissingAppxSignatureP7X);
+            }
+            else if (hrGetMsixPackageInfo == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
+            {
+                TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+                    "Error - Certificate is not trusted, calling api again with signature skip validation parameter",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
+
+                RETURN_IF_FAILED(m_packageManager->GetMsixPackageInfo(m_path, m_packageInfo, MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE));
+                m_displayErrorString = GetStringResource(IDS_STRING_ROOT_SIG_UNTRUSTED_ERROR);
+                return static_cast<HRESULT>(MSIX::Error::CertNotTrusted);
+            }
+            else
+            {
+                TraceLoggingWrite(g_MsixUITraceLoggingProvider,
+                    "Error - Unable to open package.",
+                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                    TraceLoggingValue(hrGetMsixPackageInfo, "HR"));
+
+                m_displayErrorString = GetStringResource(IDS_STRING_CANNOT_OPEN_PACKAGE_ERROR);
+                RETURN_IF_FAILED(hrGetMsixPackageInfo);
+            }
         }
         break;
         case InstallUIRemove:
@@ -332,21 +378,28 @@ HRESULT UI::ParseInfoFromPackage()
         }
     }
 
-    // Obtain publisher name
-    m_publisherCommonName = m_packageInfo->GetPublisherDisplayName();
-
-    // Obtain version number
-    m_version = m_packageInfo->GetVersion();
-
-    //Obtain the number of files
-    m_displayName = m_packageInfo->GetDisplayName();
-    m_logoStream = std::move(m_packageInfo->GetLogo());
-
-    //Obtain package capabilities
-    m_capabilities = m_packageInfo->GetCapabilities();
-
-    m_loadedPackageInfo = true;
     return S_OK;
+}
+
+void UI::SetDisplayInfo()
+{
+    if (m_packageInfo != nullptr)
+    {
+        // Obtain publisher name
+        m_publisherCommonName = m_packageInfo->GetPublisherDisplayName();
+
+        // Obtain version number
+        m_version = m_packageInfo->GetVersion();
+
+        //Obtain the number of files
+        m_displayName = m_packageInfo->GetDisplayName();
+        m_logoStream = std::move(m_packageInfo->GetLogo());
+
+        //Obtain package capabilities
+        m_capabilities = m_packageInfo->GetCapabilities();
+
+        m_loadedPackageInfo = true;
+    }
 }
 
 HRESULT UI::ShowUI()
@@ -365,6 +418,7 @@ HRESULT UI::ShowUI()
 void UI::PreprocessRequest()
 {
     m_loadingPackageInfoCode = ParseInfoFromPackage();
+    SetDisplayInfo();
     if (FAILED(m_loadingPackageInfoCode))
     {
         return;
@@ -587,18 +641,22 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
 
     graphics.DrawString(displayName.c_str(), -1, &displayNameFont, layoutRect, &format, &textBrush);
     layoutRect.Y += 40;
-    graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
 
-    std::wstring capabilitiesHeading = GetStringResource(IDS_STRING_CAPABILITIES);
-    layoutRect.Y += 40;
-    graphics.DrawString(capabilitiesHeading.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
-
-    layoutRect.Y += 17;
-    if (m_capabilities.size() > 0)
+    if (!messageText.empty())
     {
-        std::wstring capabilityString = L"\x2022 " + GetStringResource(IDS_RUNFULLTRUST_CAPABILITY);
-        graphics.DrawString(capabilityString.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
-        layoutRect.Y += 20;
+        graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+
+        std::wstring capabilitiesHeading = GetStringResource(IDS_STRING_CAPABILITIES);
+        layoutRect.Y += 40;
+        graphics.DrawString(capabilitiesHeading.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+
+        layoutRect.Y += 17;
+        if (m_capabilities.size() > 0)
+        {
+            std::wstring capabilityString = L"\x2022 " + GetStringResource(IDS_RUNFULLTRUST_CAPABILITY);
+            graphics.DrawString(capabilityString.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+            layoutRect.Y += 20;
+        }
     }
 
     if (logoStream != nullptr)
@@ -709,6 +767,34 @@ void UI::ButtonClicked()
                 break;
                 case InstallationStep::InstallationStepError:
                 {
+                    g_installing = false;
+                    ShowWindow(g_percentageTextHWnd, SW_HIDE);
+                    ShowWindow(g_staticPercentText, SW_HIDE);
+                    ShowWindow(g_progressHWnd, SW_HIDE);
+                    ShowWindow(g_checkboxHWnd, SW_HIDE);
+                    ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
+
+                    if(sender.GetHResultTextCode() == HRESULT_FROM_WIN32(ERROR_INSTALL_PREREQUISITE_FAILED))
+                    {
+                        m_displayErrorString = GetStringResource(IDS_STRING_INVALID_TDF_ERROR);
+                    }
+                    else if (sender.GetHResultTextCode() == HRESULT_FROM_WIN32(ERROR_INSTALL_WRONG_PROCESSOR_ARCHITECTURE))
+                    {
+                        m_displayErrorString = GetStringResource(IDS_STRING_INVALID_ARCHITECTURE_ERROR);
+                    }
+                    else if (sender.GetHResultTextCode() == HRESULT_FROM_WIN32(ERROR_INSTALL_PACKAGE_DOWNGRADE))
+                    {
+                        m_displayErrorString = GetStringResource(IDS_STRING_PACKAGE_DOWNGRADE_ERROR);
+                    }
+                    else if (sender.GetHResultTextCode() == HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT))
+                    {
+                        m_displayErrorString = GetStringResource(IDS_STRING_USER_CANCELLED_INSTALL_ERROR);
+                    }
+                    else
+                    {
+                        m_displayErrorString = GetStringResource(IDS_STRING_GENERIC_INSTALL_FAILED_ERROR);
+                    }
+
                     DisplayError(sender.GetHResultTextCode());
                 }
                 break;
@@ -734,19 +820,12 @@ void UI::UpdateDisplayPercent(float displayPercent)
 }
 
 void UI::DisplayError(HRESULT hr)
-{
-    g_installing = false;
-    ShowWindow(g_percentageTextHWnd, SW_HIDE);
-    ShowWindow(g_staticPercentText, SW_HIDE);
-    ShowWindow(g_progressHWnd, SW_HIDE);
-    ShowWindow(g_checkboxHWnd, SW_HIDE);
-    ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
-    
+{   
     //Show Error Window
     ShowWindow(g_staticErrorTextHWnd, SW_SHOW);
     ShowWindow(g_staticErrorDescHWnd, SW_SHOW);
     std::wstringstream errorDescription;
-    errorDescription << GetStringResource(IDS_STRING_ERROR_MSG) << std::hex << hr << ".";
+    errorDescription << std::hex << L"0x" << hr << L" - " << m_displayErrorString;
     SetWindowText(g_staticErrorDescHWnd, errorDescription.str().c_str());
 }
 

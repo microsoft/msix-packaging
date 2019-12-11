@@ -1,6 +1,5 @@
 #pragma once
 #include "inc/IPackageManager.hpp"
-#include "inc/IPackage.hpp"
 
 namespace MsixCoreLib {
 
@@ -18,7 +17,7 @@ namespace MsixCoreLib {
         HRESULT FindPackage(const std::wstring & packageFullName, std::shared_ptr<IInstalledPackage> & installedPackage) override;
         HRESULT FindPackageByFamilyName(const std::wstring & packageFamilyName, std::shared_ptr<IInstalledPackage> & installedPackage) override;
         HRESULT FindPackages(const std::wstring & searchParameter, std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> & installedPackages) override;
-        HRESULT GetMsixPackageInfo(const std::wstring & msixFullPath, std::shared_ptr<IPackage> & package) override;
+        HRESULT GetMsixPackageInfo(const std::wstring & msixFullPath, std::shared_ptr<IPackage> & package, MSIX_VALIDATION_OPTION validationOption) override;
     private:
         HRESULT GetPackageInfo(const std::wstring & directoryPath, std::shared_ptr<IInstalledPackage> & installedPackage);
         HRESULT CreateStreamOnPackageUrl(const std::wstring & package, IStream** stream);

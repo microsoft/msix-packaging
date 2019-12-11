@@ -5,6 +5,7 @@
 #include "IMsixResponse.hpp"
 #include "IPackage.hpp"
 #include "DeploymentOptions.hpp"
+#include "AppxPackaging.hpp"
 
 namespace MsixCoreLib {
     class IPackageManager
@@ -19,6 +20,6 @@ namespace MsixCoreLib {
         virtual HRESULT FindPackage(const std::wstring & packageFullName, std::shared_ptr<IInstalledPackage> &package) = 0;
         virtual HRESULT FindPackageByFamilyName(const std::wstring & packageFamilyName, std::shared_ptr<IInstalledPackage> & installedPackage) = 0;
         virtual HRESULT FindPackages(const std::wstring & searchParameter, std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> & installedPackages) = 0;
-        virtual HRESULT GetMsixPackageInfo(const std::wstring & msixFullPath, std::shared_ptr<IPackage> & package) = 0;
+        virtual HRESULT GetMsixPackageInfo(const std::wstring & msixFullPath, std::shared_ptr<IPackage> & package, MSIX_VALIDATION_OPTION validationOption) = 0;
     };
 }
