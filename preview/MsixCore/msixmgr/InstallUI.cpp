@@ -786,6 +786,10 @@ void UI::ButtonClicked()
                     {
                         m_displayErrorString = GetStringResource(IDS_STRING_PACKAGE_DOWNGRADE_ERROR);
                     }
+                    else if (sender.GetHResultTextCode() == HRESULT_FROM_WIN32(ERROR_INSTALL_USEREXIT))
+                    {
+                        m_displayErrorString = GetStringResource(IDS_STRING_USER_CANCELLED_INSTALL_ERROR);
+                    }
                     else
                     {
                         m_displayErrorString = GetStringResource(IDS_STRING_GENERIC_INSTALL_FAILED_ERROR);
