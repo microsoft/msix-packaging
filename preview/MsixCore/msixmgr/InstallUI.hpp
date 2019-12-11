@@ -26,7 +26,6 @@ static HWND g_progressHWnd = NULL;
 static HWND g_CancelbuttonHWnd = NULL;
 static HWND g_LaunchbuttonHWnd = NULL;
 static HWND g_percentageTextHWnd = NULL;
-static HWND g_staticPercentText = NULL;
 static HWND g_staticErrorTextHWnd = NULL;
 static HWND g_staticErrorDescHWnd = NULL;
 static bool g_launchCheckBoxState = true; /// launch checkbox is checked by default
