@@ -160,7 +160,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             ShowWindow(g_progressHWnd, SW_HIDE); //hide progress bar
             ShowWindow(g_checkboxHWnd, SW_HIDE); //hide launch check box
             ShowWindow(g_percentageTextHWnd, SW_HIDE);
-            ShowWindow(g_staticPercentText, SW_HIDE);
             ShowWindow(g_LaunchbuttonHWnd, SW_SHOW);
         }
     }
@@ -561,26 +560,13 @@ BOOL UI::CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect)
         WS_CHILD ,
         parentRect.left + 50,
         parentRect.bottom - scrollHeight - 145,
-        175,
+        300,
         20,
         parentHWnd,
         (HMENU)IDC_STATICPERCENTCONTROL,
         reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
         0);
 
-    g_staticPercentText = CreateWindowEx(
-        WS_EX_LEFT,
-        L"Static",
-        L"0%...",
-        WS_CHILD,
-        parentRect.left + 225,
-        parentRect.bottom - scrollHeight - 145,
-        80,
-        20,
-        parentHWnd,
-        (HMENU)IDC_STATICPERCENTCONTROL,
-        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
-        0);
     return TRUE;
 }
 
@@ -774,7 +760,6 @@ void UI::ButtonClicked()
                 {
                     g_installing = false;
                     ShowWindow(g_percentageTextHWnd, SW_HIDE);
-                    ShowWindow(g_staticPercentText, SW_HIDE);
                     ShowWindow(g_progressHWnd, SW_HIDE);
                     ShowWindow(g_checkboxHWnd, SW_HIDE);
                     ShowWindow(g_CancelbuttonHWnd, SW_HIDE);
@@ -818,10 +803,10 @@ void UI::SendInstallCompleteMsg()
 void UI::UpdateDisplayPercent(float displayPercent)
 {
     std::wstringstream ss;
-    ss << (int)displayPercent << "%...";
-    SetWindowText(g_staticPercentText, ss.str().c_str());
-    ShowWindow(g_staticPercentText, SW_HIDE);
-    ShowWindow(g_staticPercentText, SW_SHOW);
+    ss << GetStringResource(IDS_STRING_INSTALLING_APP) << " " << (int)displayPercent << "%...";
+    SetWindowText(g_percentageTextHWnd, ss.str().c_str());
+    ShowWindow(g_percentageTextHWnd, SW_HIDE);
+    ShowWindow(g_percentageTextHWnd, SW_SHOW);
 }
 
 void UI::DisplayError(HRESULT hr)
