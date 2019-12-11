@@ -20,7 +20,7 @@ Clone the msix-packaging repository to a local workspace and build it x64 (see h
 ```
 Makewin.cmd x64 -mt
 ```
-Open the msix-packaging/preview/MsixCore/msixmgr.sln file in Visual Studio 2017. Build the msixmgr project in release/x64 to create the msixmgr.exe
+Open the msix-packaging/MsixCore/msixmgr.sln file in Visual Studio 2017. Build the msixmgr project in release/x64 to create the msixmgr.exe
 
 ## Using a MSI Setup Project
 Once the msixmgr project has been built, the MsixMgrWix project can be built. The MsixMgrWix project has an additional dependency on the GetMsixmgrProducts project, which builds a custom action for the MSI package.
@@ -43,7 +43,7 @@ All MSIXCore.Desktop apps will deploy to the server (with a gui) based operating
 
 ## Using the Command Line
 The executables can also be manually deployed to a Windows 7 SP1 or higher machine without using the MSI setup project. Place the msix.dll and msixmgr.exe in the same location. 
-Sample packages can be found at msix-packaging/preview/MsixCore/tests; these can be copied over to a Windows 7 SP1 or higher machine and installed, although they may require adding the APPX_TEST_ROOT.cer (in the same tests folder) to the trusted store in order to install. Some of these packages are large and are stored using git lfs (Large File Storage).
+Sample packages can be found at msix-packaging/MsixCore/tests; these can be copied over to a Windows 7 SP1 or higher machine and installed, although they may require adding the APPX_TEST_ROOT.cer (in the same tests folder) to the trusted store in order to install. Some of these packages are large and are stored using git lfs (Large File Storage).
 
 ```
 certutil -addstore root APPX_TEST_ROOT.cer
