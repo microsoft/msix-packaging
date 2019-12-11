@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="de-de" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
-		Warnung: Das Entfernen dieses Produkts führt dazu, dass die folgenden App(s), die dadurch installiert werden, nicht mehr entfernt werden können: [MSIXMGR_PRODUCTS]. Diese App(s) sollten vor dem Fortfahren entfernt werden.</String>
+		Warning - removing this will cause the following app(s) installed by this to be unremovable: [MSIXMGR_PRODUCTS]. These app(s) should be removed before proceeding.</String>
 </WixLocalization>
