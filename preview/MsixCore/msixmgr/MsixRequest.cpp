@@ -176,7 +176,7 @@ HRESULT MsixRequest::ProcessAddRequest()
         }
         if (FAILED(hr) && currentHandler.errorMode != IgnoreAndProcessNextHandler)
         {
-            m_msixResponse->SetErrorStatus(hr, L"Unable to install package.Please go to aka.ms/msix for more information.");
+            m_msixResponse->SetErrorStatus(hr, L"Unable to install package. Please go to aka.ms/msix for more information.");
             
             if (currentHandler.errorMode == ReturnError)
             {
