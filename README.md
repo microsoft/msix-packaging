@@ -8,6 +8,8 @@
    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
    documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).
 
+   An example of such a client app is the [MSIX Core project](MsixCore/README.md), which installs .msix/.appx packages on Windows 7 SP1 and later versions of Windows.
+
 ## Overview
 The MSIX SDK project includes cross platform API support for packing and unpacking of .msix/.appx packages
 
