@@ -303,11 +303,20 @@ endif()
 
 # Parser
 if(XML_PARSER MATCHES xerces)
-    target_include_directories(${PROJECT_NAME} PRIVATE
-        ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
-        ${MSIX_PROJECT_ROOT}/lib/xerces/src
-    )
-    target_link_libraries(${PROJECT_NAME} PRIVATE xerces-c)
+    # Try and find the xerces package first (e.g. if vcpkg has it)
+
+    find_package(XercesC CONFIG)
+
+    if (XercesC_FOUND)
+        target_include_directories(${PROJECT_NAME} PRIVATE ${XercesC_INCLUDE_DIRS})
+        target_link_libraries(${PROJECT_NAME} PRIVATE ${XercesC_LIBRARIES})
+    else()
+        target_include_directories(${PROJECT_NAME} PRIVATE
+            ${CMAKE_LIBRARY_OUTPUT_DIRECTORY}/xerces/src
+            ${MSIX_PROJECT_ROOT}/lib/xerces/src
+        )
+        target_link_libraries(${PROJECT_NAME} PRIVATE xerces-c)
+    endif()
 endif()
 
 if(XML_PARSER MATCHES applexml)
