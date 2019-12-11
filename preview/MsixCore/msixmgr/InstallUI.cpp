@@ -560,7 +560,7 @@ BOOL UI::CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect)
         GetStringResource(IDS_STRING_INSTALLING_APP).c_str(),
         WS_CHILD ,
         parentRect.left + 50,
-        parentRect.bottom - scrollHeight - 143,
+        parentRect.bottom - scrollHeight - 145,
         175,
         20,
         parentHWnd,
@@ -573,9 +573,9 @@ BOOL UI::CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect)
         L"Static",
         L"0%...",
         WS_CHILD,
-        parentRect.left + 200,
-        parentRect.bottom - scrollHeight - 143,
-        175,
+        parentRect.left + 225,
+        parentRect.bottom - scrollHeight - 145,
+        80,
         20,
         parentHWnd,
         (HMENU)IDC_STATICPERCENTCONTROL,
@@ -663,9 +663,14 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     {
         // We shouldn't fail if the image can't be loaded, just don't show it.
         auto image = Gdiplus::Image::FromStream(logoStream, FALSE);
+
+        UINT width = image->GetWidth();
+        UINT height = image->GetHeight();
+        width = (width > 180) ? 180 : width;
+        height = (height > 180) ? 180 : height;
         if (image != nullptr)
         {
-            Gdiplus::Status status = graphics.DrawImage(image, g_width - 200, 25);
+            Gdiplus::Status status = graphics.DrawImage(image, g_width - 200, 25, width, height);
             delete image;
         }
     }
