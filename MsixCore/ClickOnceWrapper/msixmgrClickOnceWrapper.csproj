@@ -91,6 +91,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>true</Prefer32Bit>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <DebugSymbols>true</DebugSymbols>
@@ -193,7 +194,7 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PrepareForRunDependsOn>$(PrepareForRunDependsOn);CreateLocOutputDirectoryStructure</PrepareForRunDependsOn>
+    <PrepareForBuildDependsOn>$(PrepareForBuildDependsOn);CreateLocOutputDirectoryStructure</PrepareForBuildDependsOn>
     <PreBuildEvent>
     </PreBuildEvent>
   </PropertyGroup>
