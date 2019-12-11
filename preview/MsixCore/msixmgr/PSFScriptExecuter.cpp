@@ -30,7 +30,7 @@ HRESULT PSFScriptExecuter::ExecuteForAddRequest()
     std::wstring workingDirectory = m_msixRequest->GetPackageInfo()->GetExecutionInfo()->workingDirectory;
 
     std::wstring scriptPath = workingDirectory + L"\\" + scriptName;
-    std::wstring psArguments = L"-file \"" + scriptPath + L"\"";
+    std::wstring psArguments = L"-executionpolicy bypass -file \"" + scriptPath + L"\"";
 
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Executing PSF script",
