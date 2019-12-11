@@ -146,6 +146,18 @@ HRESULT PackageBase::ParseManifestCapabilities(IMsixElement* element)
     return S_OK;
 }
 
+bool GetMemberFromJsonNode(const Value* node, PCSTR memberName, std::wstring & memberValue)
+{
+    if (!node->HasMember(memberName))
+    {
+        return false;
+    }
+    std::string memberValueString = (*node)[memberName].GetString();
+    
+    memberValue.assign(memberValueString.begin(), memberValueString.end());
+    return true;
+}
+
 HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
 {
     m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(m_relativeExecutableFilePath, m_packageFullName.c_str());
@@ -170,7 +182,8 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
     {
         TraceLoggingWrite(g_MsixTraceLoggingProvider,
             "Config.json is not found in the directory",
-            TraceLoggingWideString(jsonConfigFile.c_str(), "Config.json file path"));
+            TraceLoggingWideString(jsonConfigFile.c_str(), "Config.json file path"),
+            TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
 
         return HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND);
     }
@@ -187,7 +200,8 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
         {
             TraceLoggingWrite(g_MsixTraceLoggingProvider,
                 "Config.json has a document parsing error",
-                TraceLoggingWideString(jsonConfigFile.c_str(), "Config.json file path"));
+                TraceLoggingWideString(jsonConfigFile.c_str(), "Config.json file path"),
+                TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
 
             return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
         }
@@ -197,90 +211,110 @@ HRESULT MsixCoreLib::PackageBase::ProcessPSFIfNecessary()
 
             for (Value::ConstValueIterator itr = apps.Begin(); itr != apps.End(); ++itr)
             {
-                std::string id = (*itr)["id"].GetString();
                 std::wstring jsonApplicationId;
-                jsonApplicationId.assign(id.begin(), id.end());
+                bool idExists = GetMemberFromJsonNode(itr, "id", jsonApplicationId);
+                if (!idExists)
+                {
+                    continue;
+                }
 
                 TraceLoggingWrite(g_MsixTraceLoggingProvider,
                     "Application id found in config.json file",
                     TraceLoggingWideString(jsonApplicationId.c_str(), "jsonApplicationId"));
 
                 //ApplicationId in json should match applicationId from the xml manifest. Right now, we only process first application from the xml manifest anyway
-                if (CaseInsensitiveEquals(jsonApplicationId, m_applicationId))
+                if (!CaseInsensitiveEquals(jsonApplicationId, m_applicationId))
                 {
-                    // Fail if endScript is present in current implementation as we do not support those cases yet
-                    if ((*itr).HasMember("endScript"))
+                    continue;
+                }
+
+                // Fail if endScript is present in current implementation as we do not support those cases yet
+                if ((*itr).HasMember("endScript"))
+                {
+                    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                        "presence of endScript in config.json is not supported currently",
+                        TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+
+                    return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+                }
+
+                std::wstring psfExecutable;
+                bool executableExists = GetMemberFromJsonNode(itr, "executable", psfExecutable);
+                if (!executableExists)
+                {
+                    TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                        "No executable specified for application",
+                        TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
+
+                    return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
+                }
+
+                std::wstring psfArguments;
+                bool argumentExists = GetMemberFromJsonNode(itr, "arguments", psfArguments);
+                
+                std::wstring psfWorkingDirectory;
+                bool workingDirectoryExists = GetMemberFromJsonNode(itr, "workingDirectory", psfWorkingDirectory);
+                
+                m_executionInfo.commandLineArguments = psfArguments;
+
+                // resolve the given paths from json into full paths.
+                m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(psfExecutable, m_packageFullName.c_str());
+                m_executionInfo.workingDirectory = FilePathMappings::GetInstance().GetExecutablePath(psfWorkingDirectory, m_packageFullName.c_str());
+
+                if ((*itr).HasMember("startScript"))
+                {
+                    const Value& startScript = (*itr)["startScript"];
+
+                    std::wstring psfScriptPath;
+                    bool scriptPathExists = GetMemberFromJsonNode(&startScript, "scriptPath", psfScriptPath);
+                    if (!scriptPathExists)
                     {
                         TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                            "presence of endScript in config.json is not supported currently");
+                            "No scriptPath specified for PSF script",
+                            TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
 
                         return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
                     }
 
-                    std::string executable = (*itr)["executable"].GetString();
-                    std::wstring psfExecutable;
-                    psfExecutable.assign(executable.begin(), executable.end());
+                    m_scriptSettings.scriptPath = psfScriptPath;
 
-                    std::string arguments = (*itr)["arguments"].GetString();
-                    std::wstring psfArguments;
-                    psfArguments.assign(arguments.begin(), arguments.end());
-
-                    std::string workingDirectory = (*itr)["workingDirectory"].GetString();
-                    std::wstring psfWorkingDirectory;
-                    psfWorkingDirectory.assign(workingDirectory.begin(), workingDirectory.end());
-
-                    m_executionInfo.commandLineArguments = psfArguments;
-
-                    // resolve the given paths from json into full paths.
-                    m_executionInfo.resolvedExecutableFilePath = FilePathMappings::GetInstance().GetExecutablePath(psfExecutable, m_packageFullName.c_str());
-                    m_executionInfo.workingDirectory = FilePathMappings::GetInstance().GetExecutablePath(psfWorkingDirectory, m_packageFullName.c_str());
-
-                    if ((*itr).HasMember("startScript"))
+                    if (startScript.HasMember("runOnce"))
                     {
-                        const Value& startScript = (*itr)["startScript"];
+                        bool runOnce = startScript["runOnce"].GetBool();
+                        m_scriptSettings.runOnce = runOnce;
 
-                        std::string scriptPath = startScript["scriptPath"].GetString();
-                        std::wstring psfScriptPath;
-                        psfScriptPath.assign(scriptPath.begin(), scriptPath.end());
-                        m_scriptSettings.scriptPath = psfScriptPath;
-
-                        if (startScript.HasMember("runOnce"))
+                        if (runOnce == false)
                         {
-                            bool runOnce = startScript["runOnce"].GetBool();
-                            m_scriptSettings.runOnce = runOnce;
+                            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                                "runOnce = false is not supported currently",
+                                TraceLoggingBool(runOnce, "runOnce"),
+                                TraceLoggingLevel(WINEVENT_LEVEL_ERROR));
 
-                            if (runOnce == false)
-                            {
-                                TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                                    "runOnce = false is not supported currently",
-                                    TraceLoggingBool(runOnce, "runOnce"));
-
-                                return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
-                            }
-                        }
-
-                        if (startScript.HasMember("showWindow"))
-                        {
-                            bool showWindow = startScript["showWindow"].GetBool();
-                            m_scriptSettings.showWindow = showWindow;
-                        }
-
-                        if (startScript.HasMember("waitForScriptToFinish"))
-                        {
-                            bool waitForScriptToFinish = startScript["waitForScriptToFinish"].GetBool();
-                            m_scriptSettings.waitForScriptToFinish = waitForScriptToFinish;
+                            return HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED);
                         }
                     }
 
-                    TraceLoggingWrite(g_MsixTraceLoggingProvider,
-                        "PSF redirection",
-                        TraceLoggingWideString(m_executionInfo.resolvedExecutableFilePath.c_str(), "Resolved PSF executable"),
-                        TraceLoggingWideString(m_executionInfo.workingDirectory.c_str(), "WorkingDirectory"),
-                        TraceLoggingWideString(m_executionInfo.commandLineArguments.c_str(), "Arguments"),
-                        TraceLoggingWideString(m_scriptSettings.scriptPath.c_str(), "StartScript - ScriptPath"));
+                    if (startScript.HasMember("showWindow"))
+                    {
+                        bool showWindow = startScript["showWindow"].GetBool();
+                        m_scriptSettings.showWindow = showWindow;
+                    }
 
-                    return S_OK;
+                    if (startScript.HasMember("waitForScriptToFinish"))
+                    {
+                        bool waitForScriptToFinish = startScript["waitForScriptToFinish"].GetBool();
+                        m_scriptSettings.waitForScriptToFinish = waitForScriptToFinish;
+                    }
                 }
+
+                TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                    "PSF redirection",
+                    TraceLoggingWideString(m_executionInfo.resolvedExecutableFilePath.c_str(), "Resolved PSF executable"),
+                    TraceLoggingWideString(m_executionInfo.workingDirectory.c_str(), "WorkingDirectory"),
+                    TraceLoggingWideString(m_executionInfo.commandLineArguments.c_str(), "Arguments"),
+                    TraceLoggingWideString(m_scriptSettings.scriptPath.c_str(), "StartScript - ScriptPath"));
+
+                return S_OK;
             }
         }
     }    
