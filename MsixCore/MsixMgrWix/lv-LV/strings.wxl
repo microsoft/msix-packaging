@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="lv-LV" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
-		Brīdinājums-noņemot šo, šādi instalētās programmas tiks noņemtas nenoņemamas: [MSIXMGR_PRODUCTS]. Pirms turpināt, šīs programmas ir jānoņem.</String>
+		Warning - removing this will cause the following app(s) installed by this to be unremovable: [MSIXMGR_PRODUCTS]. These app(s) should be removed before proceeding.</String>
 </WixLocalization>

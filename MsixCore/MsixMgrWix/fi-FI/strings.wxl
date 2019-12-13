@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="fi-FI" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
-		Varoitus – jos poistat tämän, seuraavia sovelluksia ei voi poistaa: [MSIXMGR_PRODUCTS]. Nämä sovellukset on poistettava ennen jatkamista.</String>
+		Warning - removing this will cause the following app(s) installed by this to be unremovable: [MSIXMGR_PRODUCTS]. These app(s) should be removed before proceeding.</String>
 </WixLocalization>
