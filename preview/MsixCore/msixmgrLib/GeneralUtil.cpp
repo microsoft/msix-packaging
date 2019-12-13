@@ -191,7 +191,11 @@ namespace MsixCoreLib
 
     BOOL IsWindows10RS3OrLater()
     {
-        OSVERSIONINFOEX osvi;
+        //
+        // RoojuC: Disable Win10 redirection to AppxSvc.
+        //
+
+        /*OSVERSIONINFOEX osvi;
         ZeroMemory(&osvi, sizeof(OSVERSIONINFOEX));
 
         osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
@@ -204,7 +208,9 @@ namespace MsixCoreLib
         VER_SET_CONDITION(dwlConditionMask, VER_MINORVERSION, VER_GREATER_EQUAL);
         VER_SET_CONDITION(dwlConditionMask, VER_BUILDNUMBER, VER_GREATER_EQUAL);
 
-        return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask);
+        return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask);*/
+
+        return FALSE;
     }
 
     bool EndsWith(std::wstring const &fullString, std::wstring const &ending) {
