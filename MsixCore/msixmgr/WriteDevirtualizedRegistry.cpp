@@ -16,7 +16,18 @@ const PCWSTR WriteDevirtualizedRegistry::HandlerName = L"WriteDevirtualizedRegis
 
 HRESULT WriteDevirtualizedRegistry::ExecuteForAddRequest()
 {
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->Run(false));
+    const HRESULT hrWriteRegistry = m_msixRequest->GetRegistryDevirtualizer()->Run(false);
+    if (FAILED(hrWriteRegistry))
+    {
+        const HRESULT hrUnloadMountedHive = m_msixRequest->GetRegistryDevirtualizer()->UnloadMountedHive();
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Unable to write registry",
+            TraceLoggingLevel(WINEVENT_LEVEL_ERROR),
+            TraceLoggingValue(hrWriteRegistry, "HR"),
+            TraceLoggingValue(hrUnloadMountedHive, "HR"));
+
+        return hrWriteRegistry;
+    }
     RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->UnloadMountedHive());
     return S_OK;
 }

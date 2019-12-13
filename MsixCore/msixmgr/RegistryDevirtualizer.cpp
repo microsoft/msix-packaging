@@ -30,7 +30,13 @@ HRESULT RegistryDevirtualizer::Run(_In_ bool remove)
     }
 
     std::wstring rootPath = m_loadedHiveKeyName + L"\\Registry";
-    RETURN_IF_FAILED(m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ));
+    HRESULT hrOpenRootKey = m_rootKey.Open(HKEY_USERS, rootPath.c_str(), KEY_READ);
+    if (hrOpenRootKey == HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND))
+    {
+        TraceLoggingWrite(g_MsixTraceLoggingProvider,
+            "Skipping registry devirtualization because root Registry hive does not exist.");
+        return S_OK;
+    }
     
     for (auto mapping : mappings)
     {
