@@ -477,7 +477,7 @@ BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, // style
         parentRect.left + 50, // x coord
         parentRect.bottom - 60,  // y coord
-        165,  // width
+        180,  // width
         35,  // height
         parentHWnd,  // parent
         (HMENU)IDC_LAUNCHCHECKBOX, // menu
