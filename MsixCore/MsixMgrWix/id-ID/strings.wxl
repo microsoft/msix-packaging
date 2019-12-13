@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <WixLocalization Culture="id-ID" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
-		Warning - removing this will cause the following app(s) installed by this to be unremovable: [MSIXMGR_PRODUCTS]. These app(s) should be removed before proceeding.</String>
+		Peringatan - menghapus ini akan menyebabkan aplikasi berikut yang diinstal oleh ini menjadi tidak dapat dihapus: [MSIXMGR_PRODUCTS]. Aplikasi ini harus dihapus sebelum melanjutkan.</String>
 </WixLocalization>
