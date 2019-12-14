@@ -77,10 +77,12 @@ bool IsAdmin()
                 break;
             }
 
+            BOOL isUserAdmin = IsUserAnAdmin();
             TraceLoggingWrite(g_MsixUITraceLoggingProvider, "ElevationType",
                 TraceLoggingValue(elevationTypeString, "ElevationTypeString"),
-                TraceLoggingValue((DWORD)type, "elevationTypeEnum"));
-            if (type == TokenElevationTypeFull)
+                TraceLoggingValue((DWORD)type, "elevationTypeEnum"),
+                TraceLoggingValue(isUserAdmin, "isUserAdmin"));
+            if (type == TokenElevationTypeFull || (type == TokenElevationTypeDefault && isUserAdmin))
             {
                 return true;
             }
