@@ -416,7 +416,6 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
 
     if (registryFileExists)
     {
-        localInstance->m_hiveFileNameExists = true;
         HANDLE userToken = nullptr;
         if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, &userToken))
         {
@@ -464,6 +463,8 @@ HRESULT RegistryDevirtualizer::Create(std::wstring hiveFileName, MsixRequest* ms
 
         RETURN_IF_FAILED(CreateTempKeyName(localInstance->m_loadedHiveKeyName));
         RETURN_IF_FAILED(HRESULT_FROM_WIN32(RegLoadKey(HKEY_USERS, localInstance->m_loadedHiveKeyName.c_str(), localInstance->m_registryHiveFileName.c_str())));
+        
+        localInstance->m_hiveFileNameExists = true;
     }
 
     *instance = localInstance;
