@@ -90,7 +90,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         ui->CreateCheckbox(hWnd, windowRect);
         ui->InstallButton(hWnd, windowRect);
-        ui->CreateLaunchButton(hWnd, windowRect, 275, 60);
+        ui->CreateLaunchButton(hWnd, windowRect, 255, 60);
         ui->CreateDisplayPercentageText(hWnd, windowRect);
         ui->CreateDisplayErrorText(hWnd, windowRect);
         break;
@@ -502,7 +502,7 @@ BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
-        120,  // width
+        100,  // width
         35,  // height
         parentHWnd,  // parent
         (HMENU)IDC_INSTALLBUTTON, // menu
@@ -521,7 +521,7 @@ BOOL UI::CreateCancelButton(HWND parentHWnd, RECT parentRect)
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
-        120,  // width
+        100,  // width
         35,  // height
         parentHWnd,  // parent
         (HMENU)IDC_CANCELBUTTON, // menu
@@ -540,7 +540,7 @@ BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect, int xDiff, int yDi
         WS_TABSTOP | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - xDiff, // x coord
         parentRect.bottom - yDiff,  // y coord
-        120,  // width
+        100,  // width
         35,  // height
         parentHWnd,  // parent
         (HMENU)IDC_LAUNCHBUTTON, // menu
@@ -578,7 +578,7 @@ BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
         GetStringResource(IDS_STRING_ERROR_REASON_TEXT).c_str(),
         WS_CHILD,
         parentRect.left + 50,
-        parentRect.bottom - 80,
+        parentRect.bottom - 120,
         120,
         20,
         parentHWnd,
@@ -588,13 +588,14 @@ BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
 
     g_staticErrorDescHWnd = CreateWindowEx(
         WS_EX_LEFT,
-        L"Static",
+        L"EDIT",
         L"",
-        WS_CHILD | WS_BORDER,
+        WS_CHILD | WS_VSCROLL |
+        ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL,
         parentRect.left + 50,
-        parentRect.bottom - 60,
+        parentRect.bottom - 100,
         375,
-        40,
+        80,
         parentHWnd,
         (HMENU)IDC_STATICERRORCONTROL,
         reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
