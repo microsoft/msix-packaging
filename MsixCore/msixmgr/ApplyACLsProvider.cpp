@@ -30,9 +30,10 @@ namespace MsixCoreLib
         HMODULE applyACLsLocal = LoadLibrary(L"applyacls.dll");
         applyACLsDll.reset(&applyACLsLocal);
 
-        if (applyACLsDll == nullptr)
+        if (*applyACLsDll == nullptr)
         {
-            std::wcout << "Failed to load applyacls.dll. Please confirm the dll is next to this exe" << std::endl;
+            std::wcout << "Failed to load applyacls.dll. Please confirm the dll is next to this exe. ApplyACLs should only be used for setting up a Windows Virtual Desktop." << std::endl;
+            return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
         }
 
         typedef HRESULT(STDMETHODCALLTYPE *APPLYACLSTOPACKAGEFOLDER)(PCWSTR folderPath);

@@ -475,9 +475,9 @@ BOOL UI::CreateCheckbox(HWND parentHWnd, RECT parentRect)
         L"BUTTON",
         GetStringResource(IDS_STRING_LAUNCH_CHECKBOX).c_str(),  // text
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_AUTOCHECKBOX, // style
-        parentRect.left + 50, // x coord
+        parentRect.left + 30, // x coord
         parentRect.bottom - 60,  // y coord
-        180,  // width
+        185,  // width
         35,  // height
         parentHWnd,  // parent
         (HMENU)IDC_LAUNCHCHECKBOX, // menu
@@ -502,7 +502,7 @@ BOOL UI::InstallButton(HWND parentHWnd, RECT parentRect) {
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
-        100,  // width
+        120,  // width
         35,  // height
         parentHWnd,  // parent
         (HMENU)IDC_INSTALLBUTTON, // menu
@@ -521,7 +521,7 @@ BOOL UI::CreateCancelButton(HWND parentHWnd, RECT parentRect)
         WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - 100 - 50, // x coord
         parentRect.bottom - 60,  // y coord
-        100,  // width
+        120,  // width
         35,  // height
         parentHWnd,  // parent
         (HMENU)IDC_CANCELBUTTON, // menu
@@ -540,7 +540,7 @@ BOOL UI::CreateLaunchButton(HWND parentHWnd, RECT parentRect, int xDiff, int yDi
         WS_TABSTOP | WS_CHILD | BS_DEFPUSHBUTTON | BS_FLAT, // style
         parentRect.right - xDiff, // x coord
         parentRect.bottom - yDiff,  // y coord
-        100,  // width
+        120,  // width
         35,  // height
         parentHWnd,  // parent
         (HMENU)IDC_LAUNCHBUTTON, // menu
@@ -591,7 +591,7 @@ BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
         L"EDIT",
         L"",
         WS_CHILD | WS_VSCROLL |
-        ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL,
+        ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
         parentRect.left + 50,
         parentRect.bottom - 100,
         375,
@@ -617,7 +617,7 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
 
     Gdiplus::Graphics graphics(deviceContext);
 
-    Gdiplus::RectF layoutRect(50, 50, g_width - 144, 100);
+    Gdiplus::RectF layoutRect(30, 30, g_width - 250, 100);
     Gdiplus::Font displayNameFont(L"Arial", 16);
     Gdiplus::Font messageFont(L"Arial", 10);
     Gdiplus::StringFormat format;
@@ -626,24 +626,26 @@ BOOL UI::ChangeText(HWND parentHWnd, std::wstring displayName, std::wstring mess
     windowsTextColor.SetFromCOLORREF(GetSysColor(COLOR_WINDOWTEXT));
     Gdiplus::SolidBrush textBrush(windowsTextColor);
 
+    Gdiplus::RectF displayNameBoundRect;
+    graphics.MeasureString(displayName.c_str(), -1, &displayNameFont, layoutRect, &format, &displayNameBoundRect);
     graphics.DrawString(displayName.c_str(), -1, &displayNameFont, layoutRect, &format, &textBrush);
-    layoutRect.Y += 40;
+    layoutRect.Y += displayNameBoundRect.Height;
+    layoutRect.X = 50;
 
     if (!messageText.empty())
     {
+        Gdiplus::RectF messageBoundRect;
+        graphics.MeasureString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &messageBoundRect);
         graphics.DrawString(messageText.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+        layoutRect.Y += messageBoundRect.Height + 5;
 
-        std::wstring capabilitiesHeading = GetStringResource(IDS_STRING_CAPABILITIES);
-        layoutRect.Y += 40;
-        graphics.DrawString(capabilitiesHeading.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
+        std::wstring capabilities = GetStringResource(IDS_STRING_CAPABILITIES);
 
-        layoutRect.Y += 17;
         if (m_capabilities.size() > 0)
         {
-            std::wstring capabilityString = L"\x2022 " + GetStringResource(IDS_RUNFULLTRUST_CAPABILITY);
-            graphics.DrawString(capabilityString.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
-            layoutRect.Y += 20;
+            capabilities += L"\n\x2022 " + GetStringResource(IDS_RUNFULLTRUST_CAPABILITY);
         }
+        graphics.DrawString(capabilities.c_str(), -1, &messageFont, layoutRect, &format, &textBrush);
     }
 
     if (logoStream != nullptr)

@@ -16,22 +16,39 @@ const PCWSTR WriteDevirtualizedRegistry::HandlerName = L"WriteDevirtualizedRegis
 
 HRESULT WriteDevirtualizedRegistry::ExecuteForAddRequest()
 {
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->Run(false));
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->UnloadMountedHive());
+    if (m_msixRequest->GetRegistryDevirtualizer() != nullptr)
+    {
+        const HRESULT hrWriteRegistry = m_msixRequest->GetRegistryDevirtualizer()->Run(false);
+        if (FAILED(hrWriteRegistry))
+        {
+            const HRESULT hrUnloadMountedHive = m_msixRequest->GetRegistryDevirtualizer()->UnloadMountedHive();
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to write registry",
+                TraceLoggingLevel(WINEVENT_LEVEL_ERROR),
+                TraceLoggingValue(hrWriteRegistry, "HR"),
+                TraceLoggingValue(hrUnloadMountedHive, "HR"));
+
+            return hrWriteRegistry;
+        }
+        RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->UnloadMountedHive());
+    }
     return S_OK;
 }
 
 HRESULT WriteDevirtualizedRegistry::ExecuteForRemoveRequest()
 {
-    const HRESULT hrRemoveRegistry = m_msixRequest->GetRegistryDevirtualizer()->Run(true);
-    if (FAILED(hrRemoveRegistry))
+    if (m_msixRequest->GetRegistryDevirtualizer() != nullptr)
     {
-        TraceLoggingWrite(g_MsixTraceLoggingProvider,
-            "Unable to remove registry",
-            TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-            TraceLoggingValue(hrRemoveRegistry, "HR"));
+        const HRESULT hrRemoveRegistry = m_msixRequest->GetRegistryDevirtualizer()->Run(true);
+        if (FAILED(hrRemoveRegistry))
+        {
+            TraceLoggingWrite(g_MsixTraceLoggingProvider,
+                "Unable to remove registry",
+                TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                TraceLoggingValue(hrRemoveRegistry, "HR"));
+        }
+        RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->UnloadMountedHive());
     }
-    RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->UnloadMountedHive());
     return S_OK;
 }
 

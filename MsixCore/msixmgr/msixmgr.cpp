@@ -6,6 +6,7 @@
 #include <CommCtrl.h>
 
 #include <string>
+#include <sstream>
 #include <iostream>
 #include <vector>
 #include <TraceLoggingProvider.h>
@@ -50,11 +51,82 @@ HRESULT LogFileInfo()
     return S_OK;
 }
 
+bool IsAdmin()
+{
+    HANDLE token = nullptr;
+    if (OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &token))
+    {
+        TOKEN_ELEVATION_TYPE type;
+        DWORD length = sizeof(TOKEN_ELEVATION_TYPE);
+        if (GetTokenInformation(token, TokenElevationType, &type, sizeof(TOKEN_ELEVATION_TYPE), &length))
+        {
+            PWSTR elevationTypeString = nullptr;
+            switch (type)
+            {
+            case TokenElevationTypeDefault:
+                elevationTypeString = L"DefaultType";
+                break;
+            case TokenElevationTypeFull:
+                elevationTypeString = L"Full";
+                break;
+            case TokenElevationTypeLimited:
+                elevationTypeString = L"Limited";
+                break;
+            default:
+                elevationTypeString = L"unknown";
+                break;
+            }
+
+            BOOL isUserAdmin = IsUserAnAdmin();
+            TraceLoggingWrite(g_MsixUITraceLoggingProvider, "ElevationType",
+                TraceLoggingValue(elevationTypeString, "ElevationTypeString"),
+                TraceLoggingValue((DWORD)type, "elevationTypeEnum"),
+                TraceLoggingValue(isUserAdmin, "isUserAdmin"));
+            if (type == TokenElevationTypeFull || (type == TokenElevationTypeDefault && isUserAdmin))
+            {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
+void RelaunchAsAdmin(int argc, char * argv[])
+{
+    // free the console window so it's not showing when UAC prompt shows.
+    FreeConsole();
+
+    SHELLEXECUTEINFOW shellExecuteInfo = {};
+    shellExecuteInfo.cbSize = sizeof(SHELLEXECUTEINFOW);
+    shellExecuteInfo.fMask = SEE_MASK_DEFAULT;
+    shellExecuteInfo.lpVerb = L"runas";
+    shellExecuteInfo.lpFile = L"msixmgr.exe";
+    shellExecuteInfo.nShow = SW_SHOW;
+
+    std::wstringstream argumentstream;
+    for (int i = 1; i < argc; i++)
+    {
+        argumentstream << argv[i] << L" ";
+    }
+    std::wstring args = argumentstream.str();
+
+    shellExecuteInfo.lpParameters = args.c_str();
+
+    TraceLoggingWrite(g_MsixUITraceLoggingProvider, "Relaunching as admin",
+        TraceLoggingValue(args.c_str(), "args"));
+
+    ShellExecuteExW(&shellExecuteInfo);
+}
+
 int main(int argc, char * argv[])
 {
     // Register the providers
     TraceLoggingRegister(g_MsixUITraceLoggingProvider);
     TraceLoggingRegister(g_MsixTraceLoggingProvider);
+
+    // Determine if running as admin up front to log the result in all codepaths
+    bool isAdmin = IsAdmin();
 
     HRESULT hrCoInitialize = CoInitializeEx(NULL, COINIT_MULTITHREADED);
     if (FAILED(hrCoInitialize))
@@ -79,6 +151,11 @@ int main(int argc, char * argv[])
 
             if (cli.IsQuietMode())
             {
+                if (!isAdmin)
+                {
+                    RelaunchAsAdmin(argc, argv);
+                    return 0;
+                }
                 HRESULT hrAddPackage = packageManager->AddPackage(cli.GetPackageFilePathToInstall(), DeploymentOptions::None);
                 if (FAILED(hrAddPackage))
                 {
@@ -115,6 +192,11 @@ int main(int argc, char * argv[])
                 }
                 else
                 {
+                    if (!isAdmin)
+                    {
+                        RelaunchAsAdmin(argc, argv);
+                        return 0;
+                    }
                     auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
                     ui->ShowUI();
                 }
@@ -123,6 +205,11 @@ int main(int argc, char * argv[])
         }
         case OperationType::Remove:
         {
+            if (!isAdmin)
+            {
+                RelaunchAsAdmin(argc, argv);
+                return 0;
+            }
             FreeConsole();
             AutoPtr<IPackageManager> packageManager;
             RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
