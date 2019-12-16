@@ -12,7 +12,7 @@
 		<Package InstallerVersion="200" Compressed="yes" InstallScope="perMachine" Languages="1033,1031,1034,1036,1040,1041,1042,2070,1049,2052,1028"/>
 
 		<?if $(var.Platform) = x86 ?>
-			<Condition xmlns="http://schemas.microsoft.com/wix/2006/wi" Message="This x86 version of MSIX Core can not be installed on an x64 machine. Install the x64 version." >
+			<Condition xmlns="http://schemas.microsoft.com/wix/2006/wi" Message="!(loc.BlockX86OnX64)" >
 				<![CDATA[Not VersionNT64]]>
 			</Condition>
 		<?endif?>
