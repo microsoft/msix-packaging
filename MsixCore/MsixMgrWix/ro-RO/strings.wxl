@@ -2,4 +2,5 @@
 <WixLocalization Culture="ro-RO" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Avertisment – eliminarea acestui element va determina ca următoarele aplicații instalate de aceasta să nu poată fi eliminate: [MSIXMGR_PRODUCTS]. Aceste aplicații trebuie eliminate înainte de a continua.</String>
+	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
 </WixLocalization>

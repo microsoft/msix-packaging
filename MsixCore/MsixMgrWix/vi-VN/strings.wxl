@@ -2,4 +2,5 @@
 <WixLocalization Culture="vi-VN" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Cảnh báo - loại bỏ chương trình này sẽ khiến không thể gỡ bỏ (các) ứng dụng sau được cài đặt bởi chương trình này: [MSIXMGR_PRODUCTS]. (Các) ứng dụng này nên được loại bỏ trước khi tiếp tục.</String>
+	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
 </WixLocalization>
