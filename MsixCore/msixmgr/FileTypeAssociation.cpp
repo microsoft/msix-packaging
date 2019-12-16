@@ -167,7 +167,10 @@ HRESULT FileTypeAssociation::ProcessFtaForAdd(Fta& fta)
         }
 
         bool registryHasExtension = false;
-        RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->HasFTA(*extensionName, registryHasExtension));
+        if (m_msixRequest->GetRegistryDevirtualizer() != nullptr)
+        {
+            RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->HasFTA(*extensionName, registryHasExtension));
+        }
 
         if (registryHasExtension)
         {
@@ -260,7 +263,10 @@ HRESULT FileTypeAssociation::ProcessFtaForRemove(Fta& fta)
     for (auto extensionName = fta.extensions.begin(); extensionName != fta.extensions.end(); ++extensionName)
     {
         bool registryHasExtension = false;
-        RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->HasFTA(*extensionName, registryHasExtension));
+        if (m_msixRequest->GetRegistryDevirtualizer() != nullptr)
+        {
+            RETURN_IF_FAILED(m_msixRequest->GetRegistryDevirtualizer()->HasFTA(*extensionName, registryHasExtension));
+        }
 
         if (registryHasExtension)
         {
