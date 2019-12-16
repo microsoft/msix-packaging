@@ -2,4 +2,5 @@
 <WixLocalization Culture="it-it" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Avvertenza: la rimozione di questo elemento farà sì che le app installate da questo strumento non potranno più essere rimosse: [MSIXMGR_PRODUCTS]. Queste app devono essere rimosse prima di continuare.</String>
+	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
 </WixLocalization>

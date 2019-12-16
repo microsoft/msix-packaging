@@ -2,4 +2,5 @@
 <WixLocalization Culture="ko-kr" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		경고 - 제거하면 이를 통해 설치한 다음 앱이 제거할 수 없게 됩니다. [MSIXMGR_PRODUCTS]. 계속하기 전에 이러한 앱을 제거해야 합니다.</String>
+	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
 </WixLocalization>
