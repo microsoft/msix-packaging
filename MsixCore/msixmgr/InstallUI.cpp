@@ -90,7 +90,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
     case WM_CREATE:
         ui->CreateCheckbox(hWnd, windowRect);
         ui->InstallButton(hWnd, windowRect);
-        ui->CreateLaunchButton(hWnd, windowRect, 255, 60);
+        ui->CreateLaunchButton(hWnd, windowRect, 275, 60);
         ui->CreateDisplayPercentageText(hWnd, windowRect);
         ui->CreateDisplayErrorText(hWnd, windowRect);
         break;
@@ -588,10 +588,9 @@ BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
 
     g_staticErrorDescHWnd = CreateWindowEx(
         WS_EX_LEFT,
-        L"EDIT",
+        L"Static",
         L"",
-        WS_CHILD | WS_VSCROLL |
-        ES_LEFT | ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY,
+        WS_CHILD,
         parentRect.left + 50,
         parentRect.bottom - 100,
         375,
