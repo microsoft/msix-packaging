@@ -7,7 +7,7 @@ std::wstring GetStringResource(UINT resourceId)
 {
     HMODULE instance = GetModuleHandle(nullptr);
 
-    WCHAR buffer[MAX_PATH] = L"";
+    WCHAR buffer[2*MAX_PATH] = L"";
     int loadStringRet = LoadStringW(instance, resourceId, buffer, ARRAYSIZE(buffer));
     if (loadStringRet <= 0)
     {
