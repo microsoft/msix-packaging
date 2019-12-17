@@ -455,7 +455,7 @@ BOOL UI::CreateProgressBar(HWND parentHWnd, RECT parentRect)
         (LPTSTR)NULL,
         WS_CHILD,
         parentRect.left + 50, // x coord
-        parentRect.bottom - scrollHeight - 125, // y coord
+        parentRect.bottom - scrollHeight - 105, // y coord
         parentRect.right - 100, // width
         scrollHeight, // height
         parentHWnd, // parent
@@ -560,8 +560,8 @@ BOOL UI::CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect)
         GetStringResource(IDS_STRING_INSTALLING_APP).c_str(),
         WS_CHILD ,
         parentRect.left + 50,
-        parentRect.bottom - scrollHeight - 145,
-        300,
+        parentRect.bottom - scrollHeight - 135,
+        375,
         20,
         parentHWnd,
         (HMENU)IDC_STATICPERCENTCONTROL,
