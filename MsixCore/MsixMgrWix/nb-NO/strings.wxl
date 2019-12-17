@@ -2,4 +2,5 @@
 <WixLocalization Culture="nb-NO" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Advarsel!  Hvis du fjerner denne, blir følgende apper installert av denne være ikke-flyttbare: [MSIXMGR_PRODUCTS]. Disse appene må fjernes før du fortsetter.</String>
+	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
 </WixLocalization>
