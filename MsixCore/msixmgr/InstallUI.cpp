@@ -198,7 +198,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             ENLINK * enLinkInfo = (ENLINK *)lParam;
             if (enLinkInfo->msg == WM_LBUTTONUP)
             {
-                ShellExecute(NULL, L"open", enLinkInfo->chrg., NULL, NULL, SW_SHOWNORMAL);
+                /*TEXTRANGE urlText;
+                int urlLen;
+                LPWSTR urlString;
+                urlText.chrg.cpMin = enLinkInfo->chrg.cpMin;
+                urlText.chrg.cpMax = enLinkInfo->chrg.cpMax;
+                urlText.lpstrText = urlString;
+
+                urlLen = SendMessage(g_staticErrorDescHWnd, EM_GETTEXTRANGE, NULL, &urlText);*/
+                
+                
+                /*TEXTRANGE tr;
+                tr.chrg = enLinkInfo->chrg;
+                tr.lpstrText = enLinkInfo->chrg.cpMax - enLinkInfo->chrg.cpMin + 1;
+                SendMessage(g_staticErrorDescHWnd, EM_GETTEXTRANGE, 0, (LPARAM)tr);*/
+
+                CHARRANGE chrg;
+                SendMessage(g_staticErrorDescHWnd, EM_EXSETSEL, 0, (LPARAM)&chrg);
+                //ShellExecute(NULL, L"open", chrg., NULL, NULL, SW_SHOWNORMAL);
+            }
+            else if (enLinkInfo->msg == WM_MOUSEMOVE)
+            {
             }
             break;
         }
@@ -467,7 +487,7 @@ BOOL UI::CreateProgressBar(HWND parentHWnd, RECT parentRect)
         (LPTSTR)NULL,
         WS_CHILD,
         parentRect.left + 50, // x coord
-        parentRect.bottom - scrollHeight - 125, // y coord
+        parentRect.bottom - scrollHeight - 105, // y coord
         parentRect.right - 100, // width
         scrollHeight, // height
         parentHWnd, // parent
@@ -572,8 +592,8 @@ BOOL UI::CreateDisplayPercentageText(HWND parentHWnd, RECT parentRect)
         GetStringResource(IDS_STRING_INSTALLING_APP).c_str(),
         WS_CHILD ,
         parentRect.left + 50,
-        parentRect.bottom - scrollHeight - 145,
-        300,
+        parentRect.bottom - scrollHeight - 135,
+        375,
         20,
         parentHWnd,
         (HMENU)IDC_STATICPERCENTCONTROL,
@@ -606,6 +626,7 @@ BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
         parentRect.left + 50, parentRect.bottom - 110, 375, 80,
         parentHWnd, (HMENU)IDC_STATICERRORCONTROL, reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)), NULL);
 
+    SendMessage(g_staticErrorDescHWnd, EM_SETEVENTMASK, 0, ENM_LINK);
     SendMessage(g_staticErrorDescHWnd, EM_AUTOURLDETECT, (WPARAM)TRUE, (LPARAM)0);
     return TRUE;
 }
