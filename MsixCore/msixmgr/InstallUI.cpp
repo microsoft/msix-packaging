@@ -18,6 +18,7 @@
 #include "Util.hpp"
 #include "msixmgrLogger.hpp"
 #include "MsixErrors.hpp"
+#include "Richedit.h"
 
 // MSIXWindows.hpp defines NOMINMAX and undefines min and max because we want to use std::min/std::max from <algorithm>
 // GdiPlus.h requires a definiton for min and max. We can't use namespace std because c++17 defines std::byte, which conflicts with ::byte
@@ -578,7 +579,7 @@ BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
         GetStringResource(IDS_STRING_ERROR_REASON_TEXT).c_str(),
         WS_CHILD,
         parentRect.left + 50,
-        parentRect.bottom - 120,
+        parentRect.bottom - 130,
         120,
         20,
         parentHWnd,
@@ -586,19 +587,12 @@ BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
         reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
         0);
 
-    g_staticErrorDescHWnd = CreateWindowEx(
-        WS_EX_LEFT,
-        L"Static",
-        L"",
-        WS_CHILD,
-        parentRect.left + 50,
-        parentRect.bottom - 100,
-        375,
-        80,
-        parentHWnd,
-        (HMENU)IDC_STATICERRORCONTROL,
-        reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)),
-        0);
+    LoadLibrary(TEXT("Msftedit.dll"));
+
+    g_staticErrorDescHWnd = CreateWindowEx(0, MSFTEDIT_CLASS, L"",
+        ES_MULTILINE | WS_CHILD | ES_READONLY | WS_VSCROLL | ES_NOHIDESEL | WS_TABSTOP,
+        parentRect.left + 50, parentRect.bottom - 110, 375, 80,
+        parentHWnd, (HMENU)IDC_STATICERRORCONTROL, reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)), NULL);
 
     return TRUE;
 }
