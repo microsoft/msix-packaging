@@ -200,13 +200,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 SendMessage(g_staticErrorDescHWnd, EM_EXSETSEL, 0, (LPARAM)&(enLinkInfo->chrg));
 
-                WCHAR arr[MAX_PATH];
-                SendMessage(g_staticErrorDescHWnd, EM_GETSELTEXT, 0, (LPARAM)&arr);
+                WCHAR url[MAX_PATH];
+                SendMessage(g_staticErrorDescHWnd, EM_GETSELTEXT, 0, (LPARAM)&url);
                 
-                ShellExecute(NULL, L"open", arr, NULL, NULL, SW_SHOWNORMAL);
-            }
-            else if (enLinkInfo->msg == WM_MOUSEMOVE)
-            {
+                ShellExecute(NULL, L"open", url, NULL, NULL, SW_SHOWNORMAL);
             }
             break;
         }
