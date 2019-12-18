@@ -2,5 +2,5 @@
 <WixLocalization Culture="el-GR" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Προειδοποίηση - η κατάργηση αυτού του στοιχείου θα έχει ως αποτέλεσμα την κατάργηση της εγκατάστασης των ακόλουθων εφαρμογών: [MSIXMGR_PRODUCTS]. Αυτές οι εφαρμογές θα πρέπει να καταργηθούν πριν συνεχίσετε.</String>
-	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
+	<String Id="BlockX86OnX64">Αυτή η έκδοση x86 του πυρήνα MSIX δεν μπορεί να εγκατασταθεί σε υπολογιστή x64. Εγκαταστήστε το msixmgrSetup-x64.msi.</String>
 </WixLocalization>

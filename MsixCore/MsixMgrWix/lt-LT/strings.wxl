@@ -2,5 +2,5 @@
 <WixLocalization Culture="lt-LT" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Įspėjimas – pašalinus, toliau nurodyta (-os) programėlė (-ės) bus įdiegta (-os) taip, kad nebūtų galima pašalinti: [MSIXMGR_PRODUCTS]. Šią (-ias) programėlę (-es) reikia pašalinti prieš tęsiant.</String>
-	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
+	<String Id="BlockX86OnX64">„MSIX Core“ x86 versijos negalima įdiegti x64 kompiuteryje. Įdiekite msixmgrSetup-x64. msi.</String>
 </WixLocalization>
