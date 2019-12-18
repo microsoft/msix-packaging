@@ -191,6 +191,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         PostQuitMessage(0);
         exit(0);
         break;
+    case WM_NOTIFY:
+        switch (((LPNMHDR)lParam)->code)
+        {
+        case EN_LINK:
+            ENLINK * enLinkInfo = (ENLINK *)lParam;
+            if (enLinkInfo->msg == WM_LBUTTONUP)
+            {
+                SendMessage(g_staticErrorDescHWnd, EM_EXSETSEL, 0, (LPARAM)&(enLinkInfo->chrg));
+
+                WCHAR url[MAX_PATH];
+                SendMessage(g_staticErrorDescHWnd, EM_GETSELTEXT, 0, (LPARAM)&url);
+                
+                ShellExecute(NULL, L"open", url, NULL, NULL, SW_SHOWNORMAL);
+            }
+            break;
+        }
+        break;
     default:
         return DefWindowProc(hWnd, message, wParam, lParam);
         break;
@@ -594,6 +611,8 @@ BOOL UI::CreateDisplayErrorText(HWND parentHWnd, RECT parentRect)
         parentRect.left + 50, parentRect.bottom - 110, 375, 80,
         parentHWnd, (HMENU)IDC_STATICERRORCONTROL, reinterpret_cast<HINSTANCE>(GetWindowLongPtr(parentHWnd, GWLP_HINSTANCE)), NULL);
 
+    SendMessage(g_staticErrorDescHWnd, EM_SETEVENTMASK, 0, ENM_LINK);
+    SendMessage(g_staticErrorDescHWnd, EM_AUTOURLDETECT, (WPARAM)TRUE, (LPARAM)0);
     return TRUE;
 }
 
