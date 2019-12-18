@@ -2,5 +2,5 @@
 <WixLocalization Culture="pl-PL" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Ostrzeżenie — usunięcie tego pakietu spowoduje, że nie będzie można usunąć następujących zainstalowanych przez niego aplikacji: [MSIXMGR_PRODUCTS]. Te aplikacje należy usunąć przed kontynuowaniem.</String>
-	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
+	<String Id="BlockX86OnX64">Tej wersji x86 programu MSIX Core nie można zainstalować na komputerze o architekturze x64. Zainstaluj program msixmgrSetup-x64.msi.</String>
 </WixLocalization>

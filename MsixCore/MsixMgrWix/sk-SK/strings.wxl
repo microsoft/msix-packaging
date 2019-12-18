@@ -2,5 +2,5 @@
 <WixLocalization Culture="sk-SK" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Upozornenie: Odstránenie tejto položky bude mať za následok, že nebude možné odstrániť tieto aplikácie: [MSIXMGR_PRODUCTS]. Tieto aplikácie by sa mali pred pokračovaním odstrániť.</String>
-	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
+	<String Id="BlockX86OnX64">Táto x86 verzia jadra MSIX sa nedá nainštalovať do počítača s architektúrou x64. Nainštalujte msixmgrSetup-x64.msi.</String>
 </WixLocalization>
