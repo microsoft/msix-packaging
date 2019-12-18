@@ -2,5 +2,5 @@
 <WixLocalization Culture="zh-tw" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		警告 - 刪除此內容將導致此內容安裝的下列應用程式無法移除：[MSIXMGR_PRODUCTS]。必須先移除這些應用程式，才能繼續操作。</String>
-	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
+	<String Id="BlockX86OnX64">這個 x86 版本的 MSIX Core 無法安裝在 x64 電腦上。請安裝 msixmgrSetup-x64.msi。</String>
 </WixLocalization>
