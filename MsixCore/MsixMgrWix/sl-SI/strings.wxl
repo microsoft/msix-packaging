@@ -2,4 +2,5 @@
 <WixLocalization Culture="sl-SI" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Opozorilo – če to odstranite, naslednjih aplikacij, ki bodo nameščene, ne bo mogoče odstraniti: [MSIXMGR_PRODUCTS]. Te aplikacije je treba odstraniti, preden nadaljujete.</String>
+	<String Id="BlockX86OnX64">Te x86-bitne različice rešitve MSIX Core ni mogoče namestiti v x64-bitni računalnik. Namestite msixmgrSetup-x64.msi.</String>
 </WixLocalization>

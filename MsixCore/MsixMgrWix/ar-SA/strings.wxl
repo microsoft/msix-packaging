@@ -2,4 +2,5 @@
 <WixLocalization Culture="ar-SA" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		تحذير - عند إزالة هذا، سيصبح التطبيق (التطبيقات) التالي المُثبت بواسطته غير قابل للإزالة: [MSIXMGR_PRODUCTS]. يجب إزالة هذا التطبيق (التطبيقات) قبل المتابعة.</String>
+	<String Id="BlockX86OnX64">يتعذر تثبيت إصدار x86 هذا من MSIX Core على جهاز x64. يُرجى تثبيت msixmgrSetup-x64.msi.</String>
 </WixLocalization>

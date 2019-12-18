@@ -45,7 +45,7 @@ namespace GetMsixmgrProducts
 
                                             if (msixmgrInstalledProducts.Length > 0)
                                             {
-                                                msixmgrInstalledProducts += " ";
+                                                msixmgrInstalledProducts += ", ";
                                             }
                                             msixmgrInstalledProducts += displayName;
                                         }

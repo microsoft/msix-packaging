@@ -2,5 +2,5 @@
 <WixLocalization Culture="fr-fr" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Avertissement : la suppression de cette action a pour effet d'empêcher de supprimer la ou les applications suivantes : [MSIXMGR_PRODUCTS]. Vous devez supprimer ces applications avant de continuer.</String>
-	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
+	<String Id="BlockX86OnX64">Cette version x86 de MSIX Core ne peut pas être installée sur un ordinateur x64. Installez msixmgrSetup-x64.msi.</String>
 </WixLocalization>

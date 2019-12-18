@@ -2,4 +2,5 @@
 <WixLocalization Culture="fi-FI" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Varoitus – jos poistat tämän, seuraavia sovelluksia ei voi poistaa: [MSIXMGR_PRODUCTS]. Nämä sovellukset on poistettava ennen jatkamista.</String>
+	<String Id="BlockX86OnX64">Tätä MSIX Coren x86-versiota ei voi asentaa x64-koneeseen. Asenna msixmgrSetup-x64.msi.</String>
 </WixLocalization>

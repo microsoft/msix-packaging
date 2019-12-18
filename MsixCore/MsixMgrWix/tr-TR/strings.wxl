@@ -2,4 +2,5 @@
 <WixLocalization Culture="tr-TR" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Uyarı - Bu programı kaldırmak, bu program tarafından yüklenen şu uygulamanın kaldırılamaz olmasına neden olur: [MSIXMGR_PRODUCTS]. Devam etmeden önce bu uygulamalar kaldırılmalıdır.</String>
+	<String Id="BlockX86OnX64">MSIX Core'un bu x86 sürümü, bir x64 makineye yüklenemez. Lütfen msixmgrSetup-x64.msi dosyasını yükleyin.</String>
 </WixLocalization>

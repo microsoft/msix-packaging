@@ -2,4 +2,5 @@
 <WixLocalization Culture="hu-HU" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Figyelmeztetés: Ez a művelet a következő, ez által telepített alkalmazás(ok) eltávolíthatatlanná válását fogja okozni: [MSIXMGR_PRODUCTS]. A továbblépés előtt érdemes lehet eltávolítani ez(eke)t az alkalmazás(oka)t.</String>
+	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
 </WixLocalization>
