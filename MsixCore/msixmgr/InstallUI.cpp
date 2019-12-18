@@ -198,24 +198,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             ENLINK * enLinkInfo = (ENLINK *)lParam;
             if (enLinkInfo->msg == WM_LBUTTONUP)
             {
-                /*TEXTRANGE urlText;
-                int urlLen;
-                LPWSTR urlString;
-                urlText.chrg.cpMin = enLinkInfo->chrg.cpMin;
-                urlText.chrg.cpMax = enLinkInfo->chrg.cpMax;
-                urlText.lpstrText = urlString;
+                SendMessage(g_staticErrorDescHWnd, EM_EXSETSEL, 0, (LPARAM)&(enLinkInfo->chrg));
 
-                urlLen = SendMessage(g_staticErrorDescHWnd, EM_GETTEXTRANGE, NULL, &urlText);*/
+                WCHAR arr[MAX_PATH];
+                SendMessage(g_staticErrorDescHWnd, EM_GETSELTEXT, 0, (LPARAM)&arr);
                 
-                
-                /*TEXTRANGE tr;
-                tr.chrg = enLinkInfo->chrg;
-                tr.lpstrText = enLinkInfo->chrg.cpMax - enLinkInfo->chrg.cpMin + 1;
-                SendMessage(g_staticErrorDescHWnd, EM_GETTEXTRANGE, 0, (LPARAM)tr);*/
-
-                CHARRANGE chrg;
-                SendMessage(g_staticErrorDescHWnd, EM_EXSETSEL, 0, (LPARAM)&chrg);
-                //ShellExecute(NULL, L"open", chrg., NULL, NULL, SW_SHOWNORMAL);
+                ShellExecute(NULL, L"open", arr, NULL, NULL, SW_SHOWNORMAL);
             }
             else if (enLinkInfo->msg == WM_MOUSEMOVE)
             {
