@@ -103,7 +103,7 @@ else
 
 ShowTestHeader("FindPackageByFullName succeeds")
 $output = & $executable  -FindPackage notepadplus_0.0.0.0_x64__8wekyb3d8bbwe
-if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+if ($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe")
 {
 	writeSuccess
 }
@@ -115,7 +115,7 @@ else
 
 ShowTestHeader("FindPackageByFamilyName succeeds")
 $output = & $executable  -FindPackage notepadplus_8wekyb3d8bbwe
-if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+if ($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe")
 {
 	writeSuccess
 }
@@ -127,7 +127,7 @@ else
 
 ShowTestHeader("FindPackageByFullName with wildcards")
 $output = & $executable  -FindPackage *padplus_0.0.*
-if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+if ($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe")
 {
 	writeSuccess
 }
@@ -139,7 +139,7 @@ else
 
 ShowTestHeader("FindPackageByFamilyName with wildcards")
 $output = & $executable  -FindPackage *adplus_8wekyb3d8bbw?
-if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+if ($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe")
 {
 	writeSuccess
 }
@@ -151,7 +151,7 @@ else
 
 ShowTestHeader("FindPackage fails to find non-existent package")
 $output = & $executable  -FindPackage fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe
-if (($output -match "fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe").count -gt 0)
+if ($output -match "fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe")
 {
 	$output
 	writeFail
@@ -165,8 +165,8 @@ ShowTestHeader("FindPackage A* should return two packages")
 $outputAddPackage = & $executable -AddPackage acdual.msix -quietUx
 $outputAddPackageSecond = & $executable -AddPackage AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe.msix -quietUx
 $outputFindPackage = & $executable  -FindPackage a*
-if (($outputFindPackage -match "AutoClickComServerSample_1.1.0.0_x86__8wekyb3d8bbwe").count -gt 0 -and
-      ($outputFindPackage -match "AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe").count -gt 0)
+if (($outputFindPackage -match "AutoClickComServerSample_1.1.0.0_x86__8wekyb3d8bbwe") -and
+      ($outputFindPackage -match "AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe"))
 {
 	writeSuccess
 }
@@ -389,7 +389,7 @@ if ($output -eq $null)
 	else
 	{
 		$appprocess | stop-process
-		stop-process -name acdual 
+		stop-process -name acdual -erroraction SilentlyContinue > $null
 		$output = & $executable -RemovePackage AutoClickComServerSample_1.1.0.0_x86__8wekyb3d8bbwe
 		if ($output -ne $null)
 		{
