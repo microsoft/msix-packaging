@@ -25,28 +25,39 @@ if (-not (test-path $executable))
 	exit
 }
 
+$global:testcase = 0
+$global:currenttest=""
+$global:failedtests= new-object System.Collections.ArrayList
+
 function writeSuccess
 {
 	write-host "Success" -foregroundcolor green
+	if ($takeTrace)
+	{
+		powershell -file .\msixtrace.ps1 -stop -skipparsing $true > $null
+	}
 }
 
 function writeFail
 {
 	write-host "FAIL" -foregroundcolor red
+	if ($takeTrace)
+	{
+		& .\msixtrace.ps1 -stop
+	}
+	$global:failedtests.add($global:currenttest)
 }
-
-if ($takeTrace)
-{
-	& .\msixtrace.ps1 -start
-}
-
-$global:testcase = 0
 
 function ShowTestHeader($testname)
 {
 	$now = [datetime]::Now.tostring("yyyy-MM-dd hh:mm:ss.fffffff")
 	write-host "$now Testcase $global:testcase : $testname"
 	$global:testcase++
+	$global:currenttest=$testname
+	if ($takeTrace)
+	{
+		powershell -file .\msixtrace.ps1 -start > $null
+	}
 }
 
 New-PSDrive -PSProvider registry -Root HKEY_CLASSES_ROOT -Name HKCR -errorAction SilentlyContinue
@@ -61,6 +72,7 @@ if ($output.tostring().contains("8bad0042"))
 }
 else
 {
+	$output
 	writeFail
 }
 
@@ -91,52 +103,57 @@ else
 
 ShowTestHeader("FindPackageByFullName succeeds")
 $output = & $executable  -FindPackage notepadplus_0.0.0.0_x64__8wekyb3d8bbwe
-if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+if ($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe")
 {
 	writeSuccess
 }
 else
 {
+	$output
 	writeFail
 }
 
 ShowTestHeader("FindPackageByFamilyName succeeds")
 $output = & $executable  -FindPackage notepadplus_8wekyb3d8bbwe
-if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+if ($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe")
 {
 	writeSuccess
 }
 else
 {
+	$output
 	writeFail
 }
 
 ShowTestHeader("FindPackageByFullName with wildcards")
 $output = & $executable  -FindPackage *padplus_0.0.*
-if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+if ($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe")
 {
 	writeSuccess
 }
 else
 {
+	$output
 	writeFail
 }
 
 ShowTestHeader("FindPackageByFamilyName with wildcards")
 $output = & $executable  -FindPackage *adplus_8wekyb3d8bbw?
-if (($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe").count -gt 0)
+if ($output -match "notepadplus_0.0.0.0_x64__8wekyb3d8bbwe")
 {
 	writeSuccess
 }
 else
 {
+	$output
 	writeFail
 }
 
 ShowTestHeader("FindPackage fails to find non-existent package")
 $output = & $executable  -FindPackage fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe
-if (($output -match "fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe").count -gt 0)
+if ($output -match "fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe")
 {
+	$output
 	writeFail
 }
 else
@@ -148,13 +165,16 @@ ShowTestHeader("FindPackage A* should return two packages")
 $outputAddPackage = & $executable -AddPackage acdual.msix -quietUx
 $outputAddPackageSecond = & $executable -AddPackage AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe.msix -quietUx
 $outputFindPackage = & $executable  -FindPackage a*
-if (($outputFindPackage -match "AutoClickComServerSample_1.1.0.0_x86__8wekyb3d8bbwe").count -gt 0 -and
-      ($outputFindPackage -match "AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe").count -gt 0)
+if (($outputFindPackage -match "AutoClickComServerSample_1.1.0.0_x86__8wekyb3d8bbwe") -and
+      ($outputFindPackage -match "AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe"))
 {
 	writeSuccess
 }
 else
 {
+	$outputAddPackage
+	$outputAddPackageSecond
+	$outputFindPackage
 	writeFail
 }
 $output = & $executable -RemovePackage AutoClickSecondComServerSample_1.1.1.0_x86__8wekyb3d8bbwe
@@ -369,7 +389,7 @@ if ($output -eq $null)
 	else
 	{
 		$appprocess | stop-process
-		stop-process -name acdual 
+		stop-process -name acdual -erroraction SilentlyContinue > $null
 		$output = & $executable -RemovePackage AutoClickComServerSample_1.1.0.0_x86__8wekyb3d8bbwe
 		if ($output -ne $null)
 		{
@@ -430,9 +450,19 @@ else
 }
 
 
-if ($takeTrace)
+if ($global:failedtests.count -gt 0)
 {
-	& .\msixtrace.ps1 -stop
+	write-host "There are failed tests:" -foregroundcolor red
+	foreach ($test in $global:failedtests)
+	{
+		write-host $test -foregroundcolor red
+	}
+	exit 42
 }
+else
+{
+	write-host "All tests passed successfully" -foregroundcolor green
+}
+
 
 # manual test: install with UX, launch the package using start menu shortcut, open appwiz.cpl and remove package.
