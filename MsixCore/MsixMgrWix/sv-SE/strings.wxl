@@ -2,5 +2,5 @@
 <WixLocalization Culture="sv-SE" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		Varning! Om du tar bort detta kommer du inte att kunna ta bort följande appar som installerats av detta: [MSIXMGR_PRODUCTS]. De här apparna bör tas bort innan du fortsätter.</String>
-	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
+	<String Id="BlockX86OnX64">Den här x86-versionen av MSIX Core kan inte installeras på en x64-dator. Installera msixmgrSetup-x64.msi.</String>
 </WixLocalization>

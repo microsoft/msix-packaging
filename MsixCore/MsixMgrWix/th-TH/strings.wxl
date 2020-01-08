@@ -2,5 +2,5 @@
 <WixLocalization Culture="th-TH" xmlns="http://schemas.microsoft.com/wix/2006/localization">
 	<String Id="OrphanedPackageWarning">
 		คำเตือน - การลบสิ่งนี้จะเป็นสาเหตุให้ไม่สามารถลบแอปต่อไปนี้ซึ่งสิ่งนี้ติดตั้งไว้ออกได้: [MSIXMGR_PRODUCTS] ควรลบแอปเหล่านี้ออกก่อนที่จะดำเนินการต่อ</String>
-	<String Id="BlockX86OnX64">This x86 version of MSIX Core cannot be installed on an x64 machine. Please install the msixmgrSetup-x64.msi.</String>
+	<String Id="BlockX86OnX64">ไม่สามารถติดตั้ง MSIX Core เวอร์ชัน x86 นี้ในเครื่อง x64 ได้ โปรดติดตั้ง msixmgrSetup-x64. msi</String>
 </WixLocalization>
