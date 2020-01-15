@@ -1722,6 +1722,16 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     char* utf8Destination
 ) noexcept;
 
+MSIX_API HRESULT STDMETHODCALLTYPE GetPackageId(
+    IAppxFactory* msixFactory,
+    const std::string& name,
+    const std::string& version,
+    const std::string& resourceId,
+    const std::string& architecture,
+    const std::string& publisher,
+    IAppxManifestPackageId** packageId
+) noexcept;
+
 #ifdef MSIX_PACK
 
 MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(

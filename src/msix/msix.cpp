@@ -19,6 +19,8 @@
 #include "AppxPackageWriter.hpp"
 #include "ScopeExit.hpp"
 
+#include "AppxPackageInfo.hpp"
+
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
 #undef MSIX_API
@@ -250,6 +252,31 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
     ThrowHrIfFailed(UnpackBundleFromBundleReader(packUnpackOptions, reader.Get(), utf8Destination));
 
     return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
+MSIX_API HRESULT STDMETHODCALLTYPE GetPackageId(
+    IAppxFactory* factory,
+    const std::string& name,
+    const std::string& version,
+    const std::string& resourceId,
+    const std::string& architecture,
+    const std::string& publisher,
+    IAppxManifestPackageId** packageId) noexcept try
+{
+    MSIX::ComPtr<IAppxFactory> factoryLocal(factory);
+    auto packageIdLocal =
+        MSIX::ComPtr<IAppxManifestPackageId>::Make<MSIX::AppxManifestPackageId>(
+            factoryLocal.As<IMsixFactory>().Get(),
+            name,
+            version,
+            resourceId,
+            architecture,
+            publisher);
+
+    *packageId = packageIdLocal.Detach();
+
+    return S_OK;
+
 } CATCH_RETURN();
 
 #ifdef MSIX_PACK
