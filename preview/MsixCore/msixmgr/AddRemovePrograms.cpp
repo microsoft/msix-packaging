@@ -55,10 +55,10 @@ HRESULT AddRemovePrograms::CreateHandler(MsixRequest * msixRequest, IPackageHand
 HRESULT AddRemovePrograms::WriteUninstallKey(RegistryKey & uninstallKey)
 {
     auto packageInfo = m_msixRequest->GetPackageInfo();
-    std::wstring packageFullName = packageInfo->GetPackageFullName();
+    std::wstring packageUninstallKey = packageInfo->GetPackageFamilyName();
 
     RegistryKey packageKey;
-    RETURN_IF_FAILED(uninstallKey.CreateSubKey(packageFullName.c_str(), KEY_WRITE, &packageKey));
+    RETURN_IF_FAILED(uninstallKey.CreateSubKey(packageUninstallKey.c_str(), KEY_WRITE, &packageKey));
 
     std::wstring displayName = packageInfo->GetDisplayName();
     RETURN_IF_FAILED(packageKey.SetStringValue(L"DisplayName", displayName));
@@ -73,7 +73,7 @@ HRESULT AddRemovePrograms::WriteUninstallKey(RegistryKey & uninstallKey)
         RETURN_IF_FAILED(HRESULT_FROM_WIN32(GetLastError()));
     }
 
-    std::wstring uninstallCommand = filePath + std::wstring(L" -RemovePackage ") + packageFullName;
+    std::wstring uninstallCommand = filePath + std::wstring(L" -RemovePackage ") + packageUninstallKey;
     RETURN_IF_FAILED(packageKey.SetStringValue(L"UninstallString", uninstallCommand));
 
     RETURN_IF_FAILED(packageKey.SetStringValue(L"Publisher", packageInfo->GetPublisherDisplayName()));
@@ -86,7 +86,7 @@ HRESULT AddRemovePrograms::WriteUninstallKey(RegistryKey & uninstallKey)
 
     TraceLoggingWrite(g_MsixTraceLoggingProvider,
         "Added Uninstall key successfully",
-        TraceLoggingValue(packageFullName.c_str(), "packageFullName"),
+        TraceLoggingValue(packageInfo->GetPackageFullName().c_str(), "packageFullName"),
         TraceLoggingValue(uninstallCommand.c_str(), "uninstallString"),
         TraceLoggingValue(displayName.c_str(), "displayName"),
         TraceLoggingValue(directoryPath.c_str(), "installLocation"),

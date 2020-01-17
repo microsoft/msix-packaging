@@ -147,6 +147,9 @@ HRESULT FilePathMappings::InitializePaths()
     TextOle<WCHAR> programFilesPath;
     RETURN_IF_FAILED(SHGetKnownFolderPath(FOLDERID_ProgramFiles, 0, NULL, &programFilesPath));
 
-    m_msixCoreDirectory = std::wstring(programFilesPath.Get()) + std::wstring(L"\\MsixCoreApps\\");
+    // RoojuC: Change to a different directory, so there is no interference between our lib and the open-source lib.
+    // Original: m_msixCoreDirectory = std::wstring(programFilesPath.Get()) + std::wstring(L"\\MsixCoreApps\\");
+
+    m_msixCoreDirectory = std::wstring(programFilesPath.Get()) + std::wstring(L"\\AppInstallerApps\\");
     return S_OK;
 }
