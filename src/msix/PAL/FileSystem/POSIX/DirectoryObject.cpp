@@ -69,6 +69,7 @@ namespace MSIX {
             *p = '\0';
             ThrowErrorIfNot(Error::FileCreateDirectory,(mkdir(path.c_str(), mode) != -1 || errno == EEXIST), path.c_str());
             *p = v;
+            if (*p != '\0') {p++;}
         }
     }
 
