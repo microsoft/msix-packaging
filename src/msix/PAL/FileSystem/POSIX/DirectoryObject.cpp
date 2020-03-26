@@ -62,8 +62,14 @@ namespace MSIX {
         if (*p == '/') { p++; }
         while (*p != '\0')
         {
-            p++;
-            while (*p != '\0' && *p != '/') { p++; }
+            while (*p != '/')
+            {
+                p++;
+                if (*p == '\0')
+                {
+                    break;
+                }
+            }
 
             char v = *p;
             *p = '\0';
