@@ -126,7 +126,7 @@ To compile, run the following command from the android folder:
 
 ### Enable pack features
 
-   By default, pack is *NOT* turn on in the build scripts and is not supported for mobile devices. Use the --pack option in the build scripts or pass -DMSIX_PACK=on to the CMake command to enable it.
+   By default, pack is *NOT* turned on in the build scripts and is not supported for mobile devices. Use the --pack option in the build scripts or pass -DMSIX_PACK=on to the CMake command to enable it. You will have to set also -DUSE_VALIDATION_PARSE=on in the build script, otherwise the build operation will fail.
   
 ## Build Status
 The following native platforms are in development now:
