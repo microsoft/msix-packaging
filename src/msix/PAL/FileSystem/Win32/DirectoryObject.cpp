@@ -9,6 +9,7 @@
 #include "MSIXWindows.hpp"
 #include "UnicodeConversion.hpp"
 #include "MsixFeatureSelector.hpp"
+#include "StringHelper.hpp"
 
 #include <memory>
 #include <iostream>
@@ -105,11 +106,36 @@ namespace MSIX {
             "FindNextFile");
     }
 
-    static std::string GetFullPath(const std::string& path)
+    std::string CleanDirectory(const std::string& path)
+    {
+        const std::string currentDirectory = ".\\";
+
+        std::string cleanPath = Helper::toBackSlash(path);
+
+        if (cleanPath.size() <= currentDirectory.size())
+        {
+            return cleanPath;
+        }
+
+        if (cleanPath.substr(0, currentDirectory.size()) == currentDirectory)
+        {
+            return cleanPath.substr(currentDirectory.size());
+        }
+
+        return cleanPath;
+    }
+
+    std::string GetFullPath(const std::string& path)
     {
         const std::wstring longPathPrefix = LR"(\\?\)";
 
-        auto pathWide = utf8_to_wstring(path);
+        // GetFullPathNameW doesn't play nice with relatives paths. For example, "output" and ".\output" return
+        // different values when nBufferLength is 0. MSDN states that this API "Multithreaded applications and shared
+        // library code should not use the GetFullPathName function and should avoid using relative path names".
+        // This makes us not support relative paths, but support directories from the current directory (aka .\dir)
+        std::string cleanPath = CleanDirectory(path);
+
+        auto pathWide = utf8_to_wstring(cleanPath);
 
         std::wstring result = longPathPrefix;
         size_t prefixChars = longPathPrefix.size();
