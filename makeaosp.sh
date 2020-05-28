@@ -23,7 +23,7 @@ usage()
     echo $'\t' "-sdkver sdk_version     Android SDK version. Default/minimum 24."
     echo $'\t' "-arch arch              Architecture ABI. Default x86"
     echo $'\t' "-b build_type           Default MinSizeRel"
-    echo $'\t' "-xzlib                  Use MSIX SDK Zlib insctead of inbox libz.so"
+    echo $'\t' "-xzlib                  Use MSIX SDK Zlib instead of inbox libz.so"
     echo $'\t' "-parser-xerces          Use xerces xml parser instead of default javaxml"
     echo $'\t' "-sb                     Skip bundle support."
     echo $'\t' "--validation-parser|-vp Enable XML schema validation."

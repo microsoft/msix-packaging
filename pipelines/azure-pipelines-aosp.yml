@@ -34,19 +34,19 @@ jobs:
     # TODO: add builds using xerces if needed.
     matrix:
       debug_emulator:
-        _arguments: -b Debug
+        _arguments: -b Debug -xzlib
         _artifact: AOSP-x86chk
       release_emulator:
-        _arguments: -b MinSizeRel
+        _arguments: -b MinSizeRel -xzlib
         _artifact: AOSP-x86
       release_emulator_nobundle:
-        _arguments: -b MinSizeRel -sb
+        _arguments: -b MinSizeRel -sb -xzlib
         _artifact: AOSP-x86-nobundle
       release_arm:
-        _arguments: -b MinSizeRel -arch armeabi-v7a 
+        _arguments: -b MinSizeRel -arch armeabi-v7a -xzlib
         _artifact: AOSP-arm
       release_arm_nobundle:
-        _arguments: -b MinSizeRel -arch armeabi-v7a -sb
+        _arguments: -b MinSizeRel -arch armeabi-v7a -sb -xzlib
         _artifact: AOSP-arm-nobundle
   steps:
   - task: Bash@3
