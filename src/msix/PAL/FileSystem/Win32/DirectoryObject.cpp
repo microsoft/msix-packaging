@@ -106,36 +106,11 @@ namespace MSIX {
             "FindNextFile");
     }
 
-    std::string CleanDirectory(const std::string& path)
-    {
-        const std::string currentDirectory = ".\\";
-
-        std::string cleanPath = Helper::toBackSlash(path);
-
-        if (cleanPath.size() <= currentDirectory.size())
-        {
-            return cleanPath;
-        }
-
-        if (cleanPath.substr(0, currentDirectory.size()) == currentDirectory)
-        {
-            return cleanPath.substr(currentDirectory.size());
-        }
-
-        return cleanPath;
-    }
-
     std::string GetFullPath(const std::string& path)
     {
         const std::wstring longPathPrefix = LR"(\\?\)";
 
-        // GetFullPathNameW doesn't play nice with relatives paths. For example, "output" and ".\output" return
-        // different values when nBufferLength is 0. MSDN states that this API "Multithreaded applications and shared
-        // library code should not use the GetFullPathName function and should avoid using relative path names".
-        // This makes us not support relative paths, but support directories from the current directory (aka .\dir)
-        std::string cleanPath = CleanDirectory(path);
-
-        auto pathWide = utf8_to_wstring(cleanPath);
+        auto pathWide = utf8_to_wstring(path);
 
         std::wstring result = longPathPrefix;
         size_t prefixChars = longPathPrefix.size();
@@ -156,12 +131,32 @@ namespace MSIX {
         // When requesting size, length accounts for null char
         result.resize(prefixChars + length, L' ');
 
-        DWORD newlength = GetFullPathNameW(pathWide.c_str(), length, &result[prefixChars], nullptr);
+        DWORD newLength = GetFullPathNameW(pathWide.c_str(), length, &result[prefixChars], nullptr);
 
-        // On success, length does not account for null char
-        ThrowLastErrorIf(length == 0, "Failed to get necessary char count for GetFullPathNameW");
-        ThrowErrorIf(Error::Unexpected, (length - 1) != newlength, "Result length was unexpected");
-        result.resize(prefixChars + newlength);
+        // On success, newLength does not account for null char
+        ThrowLastErrorIf(newLength == 0, "Failed to get necessary char count for GetFullPathNameW");
+
+        // The normal scenario is that length - 1 == newLength, but for relative paths, GetFullPathName
+        // doesn't return the correct case size and there's no guarantee it will be always bigger than needed. 
+        // If we are in a case that length > newlenght there's no harm, just resize the string. Otherwise, it means 
+        // that the first length was not correct and the path didn't get resolved correctly. Try until previous length
+        // is lower than the next call.
+        if (length < newLength)
+        {
+            DWORD retry = 1;
+            DWORD previousLength = 0;
+
+            do
+            {
+                previousLength = newLength + retry;
+                result.resize(prefixChars + previousLength, L' ');
+                newLength = GetFullPathNameW(pathWide.c_str(), previousLength, &result[prefixChars], nullptr);
+                retry++;
+            } while ((previousLength > newLength) && retry <= 10);
+            
+        }
+
+        result.resize(prefixChars + newLength);
 
         return wstring_to_utf8(result);
     }
