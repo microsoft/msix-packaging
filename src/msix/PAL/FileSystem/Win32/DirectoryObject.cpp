@@ -152,7 +152,7 @@ namespace MSIX {
                 result.resize(prefixChars + previousLength, L' ');
                 newLength = GetFullPathNameW(pathWide.c_str(), previousLength, &result[prefixChars], nullptr);
                 retry++;
-            } while ((previousLength > newLength) && retry <= 10);
+            } while ((previousLength < newLength) && retry <= 10);
             
         }
 
