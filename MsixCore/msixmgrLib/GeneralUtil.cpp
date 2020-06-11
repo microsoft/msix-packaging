@@ -236,8 +236,7 @@ namespace MsixCoreLib
         return VerifyVersionInfo(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_BUILDNUMBER, dwlConditionMask);
     }
 
-    bool EndsWith(std::wstring const &fullString, std::wstring const &ending) {
-        
+    bool EndsWith(std::wstring const &fullString, std::wstring const &ending) { 
         if (fullString.length() >= ending.length()) {
             std::wstring fullStringPrefix = fullString.substr(fullString.length() - ending.length(), ending.length());
             return CaseInsensitiveEquals(fullStringPrefix, ending);
