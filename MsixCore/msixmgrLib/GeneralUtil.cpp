@@ -237,8 +237,10 @@ namespace MsixCoreLib
     }
 
     bool EndsWith(std::wstring const &fullString, std::wstring const &ending) {
+        
         if (fullString.length() >= ending.length()) {
-            return (0 == fullString.compare(fullString.length() - ending.length(), ending.length(), ending));
+            std::wstring fullStringPrefix = fullString.substr(fullString.length() - ending.length(), ending.length());
+            return CaseInsensitiveEquals(fullStringPrefix, ending);
         }
         else {
             return false;
