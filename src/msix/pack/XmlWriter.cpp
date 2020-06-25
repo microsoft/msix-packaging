@@ -124,7 +124,7 @@ namespace MSIX {
 //  and all #xD characters are replaced by &#xD; 
     void XmlWriter::WriteTextValue(const std::string& value)
     {
-        for (int i = 0; i < value.size(); i++)
+        for (size_t i = 0; i < value.size(); i++)
         {
             if (value[i] == '&')
             {

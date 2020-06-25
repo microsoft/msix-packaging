@@ -73,11 +73,13 @@ namespace MSIX {
 
         ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForLfhOrClose, "Invalid zip writer state");
 
-        auto result = m_centralDirectories.find(name);
-        if (result != m_centralDirectories.end())
+        for (const auto& cd : m_zipObject->GetCentralDirectories())
         {
-            auto message = "Adding duplicated file " + Encoding::DecodeFileName(name) + "to package";
-            ThrowErrorAndLog(Error::DuplicateFile, message.c_str());
+            if (cd.first == name)
+            {
+                auto message = "Adding duplicated file " + Encoding::DecodeFileName(name) + "to package";
+                ThrowErrorAndLog(Error::DuplicateFile, message.c_str());
+            }
         }
 
         // Get position were the lfh is going to be written
