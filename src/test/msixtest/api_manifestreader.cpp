@@ -623,13 +623,13 @@ TEST_CASE("Api_AppxManifestReader_OptionalPackage", "[api]")
 
     std::vector<std::string> expectedPublisherValues =
     {
-        "", // We expect the value to be NULL. Handle this special case separately  
+        "CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US",  
         "CN=Microsoft Corporation2, O=Microsoft Corporation2, L=Redmond2, S=Washington, C=US2",
     };
 
     std::vector<std::string> expectedPackageFamilyNameValues =
     {
-        "SampleAppManifest_8wekyb3d8bbwe",
+        "Demo.MyMainApp_8wekyb3d8bbwe",
         "Demo.MyMainApp_4395hyxtvknyy",
     };
 
@@ -653,26 +653,13 @@ TEST_CASE("Api_AppxManifestReader_OptionalPackage", "[api]")
         REQUIRE_SUCCEEDED(dependencyUtf8->GetName(&nameUtf8));
         REQUIRE(expectedName == nameUtf8.ToString());
 
-        if (numDep == 0)
-        {
-            MsixTest::Wrappers::Buffer<wchar_t> publisher;
-            REQUIRE_SUCCEEDED(dependency->GetPublisher(&publisher));
-            REQUIRE(publisher.Get() == NULL);
+        MsixTest::Wrappers::Buffer<wchar_t> publisher;
+        REQUIRE_SUCCEEDED(dependency->GetPublisher(&publisher));
+        REQUIRE(expectedPublisherValues[numDep] == publisher.ToString());
 
-            MsixTest::Wrappers::Buffer<char> publisherUtf8;
-            REQUIRE_SUCCEEDED(dependencyUtf8->GetPublisher(&publisherUtf8));
-            REQUIRE(publisherUtf8.Get() == NULL);
-        }
-        else
-        {
-            MsixTest::Wrappers::Buffer<wchar_t> publisher;
-            REQUIRE_SUCCEEDED(dependency->GetPublisher(&publisher));
-            REQUIRE(expectedPublisherValues[numDep] == publisher.ToString());
-
-            MsixTest::Wrappers::Buffer<char> publisherUtf8;
-            REQUIRE_SUCCEEDED(dependencyUtf8->GetPublisher(&publisherUtf8));
-            REQUIRE(expectedPublisherValues[numDep] == publisherUtf8.ToString());
-        }
+        MsixTest::Wrappers::Buffer<char> publisherUtf8;
+        REQUIRE_SUCCEEDED(dependencyUtf8->GetPublisher(&publisherUtf8));
+        REQUIRE(expectedPublisherValues[numDep] == publisherUtf8.ToString());
 
         MsixTest::Wrappers::Buffer<wchar_t> packageFamilyName;
         REQUIRE_SUCCEEDED(dependency->GetPackageFamilyName(&packageFamilyName));

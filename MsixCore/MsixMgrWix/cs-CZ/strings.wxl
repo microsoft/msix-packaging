@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="cs-CZ" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="OrphanedPackageWarning">
+		Varování: Odebrání této položky způsobí, že nebude možné odebrat následující aplikace: [MSIXMGR_PRODUCTS]. Tyto aplikace je třeba odebrat ještě předtím, než budete pokračovat.</String>
+	<String Id="BlockX86OnX64">Tuto verzi jádra MSIX pro x86 nejde nainstalovat na počítač x64. Nainstalujte prosím soubor msixmgrSetup-x64.msi.</String>
+</WixLocalization>

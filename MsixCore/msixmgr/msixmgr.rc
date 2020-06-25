@@ -1,0 +1,162 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""winres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_ICONBIG             ICON                    "icon1.ico"
+
+IDI_ICONSMALL           ICON                    "icon2.ico"
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE
+BEGIN
+    IDS_STRING_FAILED_REQUEST "Failed to process request"
+    IDS_STRING_FAILED_COM_INITIALIZATION "Failed to initialize com"
+    IDS_STRING_HELP_OPTION_ADDPACKAGE 
+                            "Add the package at the specified file path."
+    IDS_STRING_HELP_OPTION_REMOVEPACKAGE 
+                            "Remove the package with the specified package full name."
+    IDS_STRING_HELP_OPTION_QUIETMODE "Quiet mode - no user interaction."
+    IDS_STRING_HELP_OPTION_FINDALLPACKAGES "Find all installed packages."
+    IDS_STRING_HELP_OPTION_FINDPACKAGE 
+                            "Find package with the specific package full name."
+    IDS_STRING_HELP_OPTION_HELP "Display this help text."
+    IDS_STRING_HELPTEXT_USAGE     " Usage:\n ------\n \tmsixmgr.exe [options]\n \tmsixmgr.exe -Unpack -packagePath <path to package> -destination <output folder> [-applyacls]\n \tmsixmgr.exe -ApplyACLs -packagePath <package folder path>\n\n"
+    IDS_STRING_UI_CANCEL    "Cancel"
+END
+
+STRINGTABLE
+BEGIN
+    IDS_STRING_UI_CLOSE     "Close"
+    IDS_STRING_UI_TITLE     "MSIX Installer"
+    IDS_STRING_UI_INSTALL_COMPLETE "Installation Completed"
+    IDS_STRING_UI_UNINSTALL_COMPLETE "Uninstallation Completed"
+    IDS_STRING_UI_COMPLETION_MESSAGE "You may close this installation window"
+    IDS_STRING_INSTALLTEXT  "Install"
+    IDS_STRING_UPDATETEXT   "Update"
+    IDS_STRING_CANCEL_INSTALLPOPUP 
+                            "Are you sure you want to cancel the install?"
+    IDS_STRING_CANCEL_POPUP_TITLE "Cancel App install"
+    IDS_STRING_CANCEL_UPDATEPOPUP 
+                            "Clicking on Yes will uninstall the app. Are you sure you want to cancel the install?"
+    IDS_STRING_REINSTALLAPP "Reinstall"
+    IDS_RUNFULLTRUST_CAPABILITY "Uses all system resources"
+	IDS_STRING_HELPTEXT_DESCRIPTION " Description:\n -----------\n \tInstalls an msix package, removes an msix package or queries for msix packages.\n \tMay also unpack msix packages and apply ACLs to the resulting package folders\n\n"
+    IDS_STRING_HELPTEXT_OPTIONS " Options:\n -------\n"
+    IDS_STRING_HELP_OPTION_UNPACK "Unpack a package (.appx, .msix, .appxbundle, .msixbundle) and extract its contents to a folder."
+	IDS_STRING_HELP_OPTION_UNPACK_PACKAGEPATH "the path to the package to unpack"
+	IDS_STRING_HELP_OPTION_UNPACK_DESTINATION "the directory to place the resulting package folder(s) in"
+	IDS_STRING_HELP_OPTION_UNPACK_APPLYACLS "optional parameter that applies ACLs to the resulting package folder(s) and their parent folder"
+        IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE "optional parameter that validates a package's signature file before unpacking the package. This will require that the package's certificate is installed on the machine."
+	IDS_STRING_HELP_OPTION_APPLYACLS "Applies ACLs to a package folder (an unpacked package)"
+	IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH "the path to the folder to apply acls to"
+	IDS_STRING_LOADING_PACKAGE_ERROR "installation failed"
+	IDS_STRING_WXS_ERROR_PART1 "Warning - removing this will cause the following app(s) to be unremovable: "
+	IDS_STRING_WXS_ERROR_PART2 "These app(s) should be removed before proceeding."
+	IDS_STRING_LAUNCH_CHECKBOX "Launch when ready"
+	IDS_STRING_LAUNCHBUTTON "Launch"
+	IDS_STRING_PUBLISHER "Publisher: "
+	IDS_STRING_VERSION "Version: "
+	IDS_STRING_CAPABILITIES "Capabilities:"
+	IDS_STRING_INSTALLING_APP "Installing app package"
+    IDS_STRING_ERROR_REASON_TEXT "Reason:"
+    IDS_STRING_LOADING_PACKAGE "Loading Package..."
+    IDS_STRING_LOADING_PACKAGE_OPEN_ERROR "Cannot open app package"
+    IDS_STRING_SIG_MISSING_ERROR "Ask the app developer for a new app package. This one isn't signed with a trusted certificate."
+    IDS_STRING_ROOT_SIG_UNTRUSTED_ERROR "Either you need a new certificate installed for this app package, or you need a new app package with trusted certificates. Your system administrator or the app developer can help. A certificate chain processed, but terminated in a root certificate which isn't trusted."
+    IDS_STRING_CANNOT_OPEN_PACKAGE_ERROR "Unable to open package. Please go to https://aka.ms/msix for more information."
+    IDS_STRING_GENERIC_INSTALL_FAILED_ERROR "Unable to install package. Please go to https://aka.ms/msix for more information."
+    IDS_STRING_INVALID_TDF_ERROR "A Prerequisite for an install could not be satisfied."
+    IDS_STRING_INVALID_ARCHITECTURE_ERROR "The deployment operation failed because the package targets the wrong processor architecture."
+    IDS_STRING_PACKAGE_DOWNGRADE_ERROR "The package could not be installed because a higher version of this package is already installed."
+    IDS_STRING_USER_CANCELLED_INSTALL_ERROR "User cancelled installation."
+    
+	END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+#define VER_FILEVERSION 0,0,0,0
+#define VER_FILEVERSION_STR "0.0.0.0"
+
+VS_VERSION_INFO VERSIONINFO
+FILEVERSION VER_FILEVERSION
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "FileVersion", VER_FILEVERSION_STR
+        END
+    END
+END

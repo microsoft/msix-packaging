@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" InitialTargets="EnsureWixToolsetInstalled" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProductVersion>3.10</ProductVersion>
+    <ProjectGuid>ce395dc5-a1d0-4a35-8699-fc57a84ccf48</ProjectGuid>
+    <SchemaVersion>2.0</SchemaVersion>
+    <OutputName>msixmgrSetup</OutputName>
+    <OutputType>Package</OutputType>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <DefineConstants>Debug;SourceDir=..\msixmgr\loc</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <SuppressValidation>True</SuppressValidation>
+    <DefineConstants>SourceDir=..\msixmgr\loc</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <DefineConstants>Debug;SourceDir=..\msixmgr\loc</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\$(Platform)\$(Configuration)\</OutputPath>
+    <IntermediateOutputPath>obj\$(Platform)\$(Configuration)\</IntermediateOutputPath>
+    <SuppressValidation>True</SuppressValidation>
+    <Cultures>
+    </Cultures>
+    <DefineConstants>SourceDir=..\msixmgr\loc</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="Product.wxs" />
+    <Compile Include="LocalizedFiles.wxs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\msixmgr\msixmgr.vcxproj">
+      <Name>msixmgr</Name>
+      <Project>{aad31763-5e65-47fd-958a-08e35ab83025}</Project>
+      <Private>True</Private>
+      <DoNotHarvest>True</DoNotHarvest>
+      <RefProjectOutputGroups>Binaries;Content;Satellites</RefProjectOutputGroups>
+      <RefTargetDir>INSTALLFOLDER</RefTargetDir>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <WixExtension Include="WixUIExtension">
+      <HintPath>$(WixExtDir)\WixUIExtension.dll</HintPath>
+      <Name>WixUIExtension</Name>
+    </WixExtension>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="de-de\strings.wxl" />
+    <EmbeddedResource Include="en-us\strings.wxl" />
+    <EmbeddedResource Include="es-es\strings.wxl" />
+    <EmbeddedResource Include="fr-fr\strings.wxl" />
+    <EmbeddedResource Include="it-it\strings.wxl" />
+    <EmbeddedResource Include="ja-jp\strings.wxl" />
+    <EmbeddedResource Include="ko-kr\strings.wxl" />
+    <EmbeddedResource Include="pt-pt\strings.wxl" />
+    <EmbeddedResource Include="ru-ru\strings.wxl" />
+    <EmbeddedResource Include="zh-cn\strings.wxl" />
+    <EmbeddedResource Include="zh-tw\strings.wxl" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="en-us" />
+    <Folder Include="de-de" />
+    <Folder Include="es-es" />
+    <Folder Include="fr-fr" />
+    <Folder Include="it-it" />
+    <Folder Include="ja-jp" />
+    <Folder Include="ko-kr" />
+    <Folder Include="pt-pt" />
+    <Folder Include="ru-ru" />
+    <Folder Include="zh-cn" />
+    <Folder Include="zh-tw" />
+  </ItemGroup>
+  <Import Project="$(WixTargetsPath)" Condition=" '$(WixTargetsPath)' != '' " />
+  <Import Project="$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets" Condition=" '$(WixTargetsPath)' == '' AND Exists('$(MSBuildExtensionsPath32)\Microsoft\WiX\v3.x\Wix.targets') " />
+  <Target Name="EnsureWixToolsetInstalled" Condition=" '$(WixTargetsImported)' != 'true' ">
+    <Error Text="The WiX Toolset v3.11 (or newer) build tools must be installed to build this project. To download the WiX Toolset, see http://wixtoolset.org/releases/" />
+  </Target>
+  <PropertyGroup>
+    <PostBuildEvent>powershell $(ProjectDir)postbuild.ps1 %27$(ProjectDir)%27 %27$(WixExtDir)%27 %27$(TargetDir)%27 %27$(TargetName)%27 %27$(ProjectPath)%27</PostBuildEvent>
+  </PropertyGroup>
+  <!--
+	To modify your build process, add your task inside one of the targets below and uncomment it.
+	Other similar extension points exist, see Wix.targets.
+	<Target Name="BeforeBuild">
+	</Target>
+	<Target Name="AfterBuild">
+	</Target>
+	-->
+</Project>

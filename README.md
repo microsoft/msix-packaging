@@ -8,6 +8,8 @@
    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
    documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).
 
+   An example of such a client app is the [MSIX Core project](MsixCore/README.md), which installs .msix/.appx packages on Windows 7 SP1 and later versions of Windows.
+
 ## Overview
 The MSIX SDK project includes cross platform API support for packing and unpacking of .msix/.appx packages
 
@@ -124,7 +126,7 @@ To compile, run the following command from the android folder:
 
 ### Enable pack features
 
-   By default, pack is *NOT* turn on in the build scripts and is not supported for mobile devices. Use the --pack option in the build scripts or pass -DMSIX_PACK=on to the CMake command to enable it.
+   By default, pack is *NOT* turned on in the build scripts and is not supported for mobile devices. Use the --pack option in the build scripts or pass -DMSIX_PACK=on to the CMake command to enable it. You will have to set also -DUSE_VALIDATION_PARSE=on in the build script, otherwise the build operation will fail.
   
 ## Build Status
 The following native platforms are in development now:

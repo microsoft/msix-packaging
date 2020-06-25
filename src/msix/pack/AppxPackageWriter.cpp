@@ -227,6 +227,18 @@ namespace MSIX {
     void AppxPackageWriter::AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
         bool addToBlockMap, const char* contentType, bool forceContentTypeOverride, bool forceDataDescriptor)
     {
+        std::string opcFileName;
+        // Don't encode [Content Type].xml
+        if (contentType != nullptr)
+        {
+            opcFileName = Encoding::EncodeFileName(name);
+        }
+        else
+        {
+            opcFileName = name;
+        }
+        auto fileInfo = m_zipWriter->PrepareToAddFile(opcFileName, toCompress);
+
         // Add content type to [Content Types].xml
         if (contentType != nullptr)
         {
@@ -239,18 +251,6 @@ namespace MSIX {
         ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::END, &end));
         ThrowHrIfFailed(stream->Seek(start, StreamBase::Reference::START, nullptr));
         std::uint64_t uncompressedSize = static_cast<std::uint64_t>(end.QuadPart);
-
-        std::string opcFileName;
-        // Don't encode [Content Type].xml
-        if (contentType != nullptr)
-        {
-            opcFileName = Encoding::EncodeFileName(name);
-        }
-        else
-        {
-            opcFileName = name;
-        }
-        auto fileInfo = m_zipWriter->PrepareToAddFile(opcFileName, toCompress);
 
         // Add file to block map.
         if (addToBlockMap)

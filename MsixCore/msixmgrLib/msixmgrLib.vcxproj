@@ -1,0 +1,271 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{46BE19BD-72E0-4452-9919-33A1F8A5F064}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>msixmgr</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0.17134.0</WindowsTargetPlatformVersion>
+    <ProjectName>msixmgrLib</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v141</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>No</LinkIncremental>
+    <OutDir>$(SolutionDir)x86\$(Configuration)\</OutDir>
+    <IntDir>x86\$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>No</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>No</LinkIncremental>
+    <IntDir>x86\$(Configuration)\</IntDir>
+    <OutDir>$(SolutionDir)x86\$(Configuration)\</OutDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>No</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>msixmgrLib_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>.;..\msixmgr;inc;..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>msixmgrLib_EXPORTS;WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>.;..\msixmgr;inc;..\..\.vs\src\msix;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>msixmgrLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>.;..\msixmgr;inc;..\..\.vs\src\msix;..\msixmgr\include\rapidjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/await</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>msixmgrLib_EXPORTS;WIN32;NDEBUG;_CONSOLE;msixmgr_EXPORTS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>false</ConformanceMode>
+      <AdditionalIncludeDirectories>.;..\msixmgr;inc;..\..\.vs\src\msix;..\msixmgr\include\rapidjson;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/await</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <UACExecutionLevel>RequireAdministrator</UACExecutionLevel>
+      <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalDependencies>Version.lib;msix.lib;msi.lib;comctl32.lib;gdiplus.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\msixmgr\AddRemovePrograms.hpp" />
+    <ClInclude Include="..\msixmgr\ComInterface.hpp" />
+    <ClInclude Include="..\msixmgr\ComServer.hpp" />
+    <ClInclude Include="..\msixmgr\Constants.hpp" />
+    <ClInclude Include="..\msixmgr\ErrorHandler.hpp" />
+    <ClInclude Include="..\msixmgr\PSFScriptExecuter.hpp" />
+    <ClInclude Include="..\msixmgr\StartupTask.hpp" />
+    <ClInclude Include="..\msixmgr\ValidateArchitecture.hpp" />
+    <ClInclude Include="..\msixmgr\ValidateTargetDeviceFamily.hpp" />
+    <ClInclude Include="..\msixmgr\FirewallRules.hpp" />
+    <ClInclude Include="..\msixmgr\Windows10Redirector.hpp" />
+    <ClInclude Include="..\msixmgr\AutoPlay.hpp" />
+    <ClInclude Include="..\msixmgr\BcryptLibrary.hpp" />
+    <ClInclude Include="..\msixmgr\CryptoProvider.hpp" />
+    <ClInclude Include="..\msixmgr\Base32Encoding.hpp" />
+    <ClInclude Include="..\msixmgr\VirtualFileHandler.hpp" />
+    <ClInclude Include="..\msixmgr\AppExecutionAlias.hpp" />
+    <ClInclude Include="inc\IMsixResponse.hpp" />
+    <ClInclude Include="inc\DeploymentOptions.hpp" />
+    <ClInclude Include="..\msixmgr\Extractor.hpp" />
+    <ClInclude Include="..\msixmgr\FileTypeAssociation.hpp" />
+    <ClInclude Include="..\msixmgr\FootprintFiles.hpp" />
+    <ClInclude Include="inc\IPackageManager.hpp" />
+    <ClInclude Include="..\msixmgr\InstallComplete.hpp" />
+    <ClInclude Include="..\msixmgr\MsixRequest.hpp" />
+    <ClInclude Include="GeneralUtil.hpp" />
+    <ClInclude Include="..\msixmgr\FilePaths.hpp" />
+    <ClInclude Include="inc\IPackage.hpp" />
+    <ClInclude Include="inc\msixmgrActions.hpp" />
+    <ClInclude Include="..\msixmgr\IPackageHandler.hpp" />
+    <ClInclude Include="..\msixmgr\MsixResponse.hpp" />
+    <ClInclude Include="MsixTraceLoggingProvider.hpp" />
+    <ClInclude Include="PackageManager.hpp" />
+    <ClInclude Include="..\msixmgr\Package.hpp" />
+    <ClInclude Include="..\msixmgr\PopulatePackageInfo.hpp" />
+    <ClInclude Include="..\msixmgr\ProcessPotentialUpdate.hpp" />
+    <ClInclude Include="..\msixmgr\Protocol.hpp" />
+    <ClInclude Include="..\msixmgr\RegistryDevirtualizer.hpp" />
+    <ClInclude Include="..\msixmgr\RegistryKey.hpp" />
+    <ClInclude Include="..\msixmgr\StartMenuLink.hpp" />
+    <ClInclude Include="..\msixmgr\PrepareDevirtualizedRegistry.hpp" />
+    <ClInclude Include="..\msixmgr\WriteDevirtualizedRegistry.hpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\msixmgr\ComInterface.cpp" />
+    <ClCompile Include="..\msixmgr\ComServer.cpp" />
+    <ClCompile Include="..\msixmgr\ErrorHandler.cpp" />
+    <ClCompile Include="..\msixmgr\Extractor.cpp" />
+    <ClCompile Include="..\msixmgr\FilePaths.cpp" />
+    <ClCompile Include="..\msixmgr\FileTypeAssociation.cpp" />
+    <ClCompile Include="..\msixmgr\InstallComplete.cpp" />
+    <ClCompile Include="..\msixmgr\MsixRequest.cpp" />
+    <ClCompile Include="..\msixmgr\PSFScriptExecuter.cpp" />
+    <ClCompile Include="..\msixmgr\StartupTask.cpp" />
+    <ClCompile Include="..\msixmgr\ValidateArchitecture.cpp" />
+    <ClCompile Include="..\msixmgr\ValidateTargetDeviceFamily.cpp" />
+    <ClCompile Include="..\msixmgr\FirewallRules.cpp" />
+    <ClCompile Include="..\msixmgr\Windows10Redirector.cpp" />
+    <ClCompile Include="..\msixmgr\AutoPlay.cpp" />
+    <ClCompile Include="..\msixmgr\BcryptLibrary.cpp" />
+    <ClCompile Include="..\msixmgr\CryptoProvider.cpp" />
+    <ClCompile Include="..\msixmgr\Base32Encoding.cpp" />
+    <ClCompile Include="..\msixmgr\VirtualFileHandler.cpp" />
+    <ClCompile Include="..\msixmgr\AppExecutionAlias.cpp" />
+    <ClCompile Include="GeneralUtil.cpp" />
+    <ClCompile Include="..\msixmgr\MsixResponse.cpp" />
+    <ClCompile Include="MsixTraceLoggingProvider.cpp" />
+    <ClCompile Include="PackageManager.cpp" />
+    <ClCompile Include="..\msixmgr\Package.cpp" />
+    <ClCompile Include="..\msixmgr\PopulatePackageInfo.cpp" />
+    <ClCompile Include="..\msixmgr\ProcessPotentialUpdate.cpp" />
+    <ClCompile Include="..\msixmgr\Protocol.cpp" />
+    <ClCompile Include="..\msixmgr\RegistryDevirtualizer.cpp" />
+    <ClCompile Include="..\msixmgr\RegistryKey.cpp" />
+    <ClCompile Include="..\msixmgr\AddRemovePrograms.cpp" />
+    <ClCompile Include="..\msixmgr\StartMenuLink.cpp" />
+    <ClCompile Include="msixmgrActions.cpp" />
+    <ClCompile Include="..\msixmgr\PrepareDevirtualizedRegistry.cpp" />
+    <ClCompile Include="..\msixmgr\WriteDevirtualizedRegistry.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cgmanifest.json" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

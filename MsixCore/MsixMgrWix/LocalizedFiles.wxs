@@ -1,0 +1,307 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+    <Fragment>
+        <ComponentGroup Id="EnglishMUIFile" Directory="en_US">
+            <Component Id="EnUsMui">
+                <File Source="$(var.msixmgr.TargetDir)\msixmgr.exe.mui" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="en_US" Name="en-US"/>
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <ComponentGroup Id="LocalizationMUIFiles">
+            <Component Id="cmpFC018C0DEFD3C3B61724B6E6CD9B96EC" Directory="dir0CDE734731DD1D1A8B608163D9A4DDDF" Guid="*">
+                <File Id="filA50AFEFE7CFC294737BEFC9A1F9149C6" KeyPath="yes" Source="$(var.SourceDir)\ar-SA\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp3927697F4FC1654D8CC3DD26B14CF2B3" Directory="dirD943E1B87434201B02F84CDF9A72A799" Guid="*">
+                <File Id="fil86D7E1C5AA6198F7FD661EC843FB4D16" KeyPath="yes" Source="$(var.SourceDir)\bg-BG\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp9ADF8BA842384E9F0D5A7052B138B384" Directory="dir303B232F796369111ED98653E401742A" Guid="*">
+                <File Id="filA545B6D521DF992F8B4A3DD7B282F650" KeyPath="yes" Source="$(var.SourceDir)\cs-CZ\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp850A81CC26BD9F5DBD28CB2287C8FC22" Directory="dirD1BAD1ABF3DDB678F5848BC2126E96E3" Guid="*">
+                <File Id="fil752EA91A9F8121C998FE4ABB7D85ECC8" KeyPath="yes" Source="$(var.SourceDir)\da-DK\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpB74AB699B22B1ED36777A5CC9914CAC0" Directory="dir498A511E130E0F7342684B70257EE3DB" Guid="*">
+                <File Id="fil074B4275FB6B8229168EB1781DE0A63A" KeyPath="yes" Source="$(var.SourceDir)\de-DE\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpF27BB5A7F7CC77F9D108BD2FBDE2A98F" Directory="dir8ED9CFA5AAA7DA5A1A8D1330458D30EE" Guid="*">
+                <File Id="fil7814CD7FD85FE858A82ED07FADCEBD85" KeyPath="yes" Source="$(var.SourceDir)\el-GR\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpD1D4FF96252C12816BD9FADD4DCCF6FB" Directory="dirFD22B9ED3191515EF3C68C1355E84623" Guid="*">
+                <File Id="fil92779270A32F2686CB7ABABB851A5192" KeyPath="yes" Source="$(var.SourceDir)\es-ES\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpE169C991F2A356601DEA720002F398A5" Directory="dirB07ACEF73AA48FFEFDC9EA779302BA84" Guid="*">
+                <File Id="fil91110E04D8B9F2F3915F7305568F8333" KeyPath="yes" Source="$(var.SourceDir)\et-EE\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpF955D2E3F0DD488C7C8043CF6B0DB4EC" Directory="dir28A102E0197DF130471D55FAED060635" Guid="*">
+                <File Id="fil094D120EDEBB801FAAEA1C96F39594A5" KeyPath="yes" Source="$(var.SourceDir)\fi-FI\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp13986DF3F72EBC6F90E77FF80007D9E1" Directory="dir401B40AA12C4662908FCCA1E3AA98C69" Guid="*">
+                <File Id="fil36DDE26A395EF951A52046A6C3C0CF17" KeyPath="yes" Source="$(var.SourceDir)\fr-FR\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp86092600D9D71053E973817DFA6308E0" Directory="dirF3276CE02973321999DB4E448F4BDECA" Guid="*">
+                <File Id="fil87E527365EF64AC67A92C9DB7A860908" KeyPath="yes" Source="$(var.SourceDir)\he-IL\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp427775C3A467D6C852B282F373D89C9B" Directory="dir9FB96B7C06A837F963F03340E329E100" Guid="*">
+                <File Id="fil8515B485DB5AB0449343D051F6E89A10" KeyPath="yes" Source="$(var.SourceDir)\hr-HR\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp0713731454421BDFB818ADFED87B1380" Directory="dirDAF35BB4D9F55DF699762556B17626A7" Guid="*">
+                <File Id="fil32BE378F13F3F6C7DC0DB192A57718F6" KeyPath="yes" Source="$(var.SourceDir)\hu-HU\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp5E5205C6F163E86DEAF8533DEF4A4077" Directory="dir7EB5DB566B4517613EA31BD0B3CE7415" Guid="*">
+                <File Id="filCF4D6C835BEE811207C2EADEADBBED8D" KeyPath="yes" Source="$(var.SourceDir)\id-ID\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpEBC260432EFF925E1E88CB6E7BFA1444" Directory="dirA3AA455EB0DBE812F6CA00361960CA47" Guid="*">
+                <File Id="fil9E3C2EF4B62A2F4A65C4370ED6471713" KeyPath="yes" Source="$(var.SourceDir)\it-IT\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpD8AFF6D7220672A9DE98CBF14A16A8FE" Directory="dir19751C3BB7983F811B369672D3E38CF2" Guid="*">
+                <File Id="filB2BE662C83D6C8F42A4B1A0AE88868ED" KeyPath="yes" Source="$(var.SourceDir)\ja-JP\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp882EA29B5FF640639C6E497182BDE812" Directory="dir43C5E88A45C2898953EF690E0AA0DB20" Guid="*">
+                <File Id="filDD876C2D3088D70783B10069BCED03A0" KeyPath="yes" Source="$(var.SourceDir)\ko-KR\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpB32A48E8326195A87519E6F4AD56A991" Directory="dirF3316E95C2952D062C9A9D5701D1F7CB" Guid="*">
+                <File Id="filBC3FDC650FCADA023C96B9CC1851E833" KeyPath="yes" Source="$(var.SourceDir)\lt-LT\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp06FEB844D9BCF5BC507D9DC0AFB5F4DA" Directory="dirCEC564CF82027CB895D433F2CFD87D42" Guid="*">
+                <File Id="fil27A600D4D8D1CD79D6094DDAF1F007E7" KeyPath="yes" Source="$(var.SourceDir)\lv-LV\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpD19074C865AD4BD2B15DFF77A4FFE64A" Directory="dir1FB4D6B7E14015E0CF05A13AD024FE67" Guid="*">
+                <File Id="fil44802BA0A6F3DA3264E600EB87BE2E65" KeyPath="yes" Source="$(var.SourceDir)\nb-NO\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp2E5AC822F2C92ECA53C1AF69D7B0200C" Directory="dir92DCDD9C29CCFBFF7364F94732ED194A" Guid="*">
+                <File Id="filB502E74884319E9CB1EFAE29D27F824A" KeyPath="yes" Source="$(var.SourceDir)\nl-NL\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpF03BBDBCBB64EFDB6676647CDDC490B3" Directory="dirA92293CCCD163B824F1BAA78754AB540" Guid="*">
+                <File Id="fil39470827465A11002AC512C40F17B416" KeyPath="yes" Source="$(var.SourceDir)\pl-PL\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp626B13D4B8979279E044AA7FECAA9BC5" Directory="dir820444C52549436C3E52FCB7773C5884" Guid="*">
+                <File Id="fil6A92622223B65FB80BC5061C4ADF5422" KeyPath="yes" Source="$(var.SourceDir)\pt-BR\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp6D6CF5311A7CC3FDF63DF5B8B22FE7FA" Directory="dirBC0703DFDB8888F7E622C5EBEFD8B3F3" Guid="*">
+                <File Id="filA2CB2CDCC420E9861AC971A9449C6778" KeyPath="yes" Source="$(var.SourceDir)\pt-PT\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp88C27CA466CB0A30B5670B0E92BB20EA" Directory="dir03D99532236C6E68A69F6809624C82AC" Guid="*">
+                <File Id="fil8BA4F33E8C858412E495AD81B4885ED0" KeyPath="yes" Source="$(var.SourceDir)\ro-RO\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp53D9B5B9D6F4B8B09A41AC1E0722C3CD" Directory="dir68C2694543F83F297326A43CBD958D38" Guid="*">
+                <File Id="filA955CEF47E0959827035CCE7F51A821B" KeyPath="yes" Source="$(var.SourceDir)\ru-RU\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp70B0E66FCA167D97DF7EB2A72265918B" Directory="dir55EFD42CE775BB0D5D99B3FBFDF24C7D" Guid="*">
+                <File Id="fil8486CA7BDF2D5AF2C561AC5EC5A0E780" KeyPath="yes" Source="$(var.SourceDir)\sk-SK\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpD50AA6C098D3D8960B3224CBD3C6EA0E" Directory="dirDE0B9F366E638918741C37E4629E6D5E" Guid="*">
+                <File Id="fil1591329C85B2B9246F648B46C75A2404" KeyPath="yes" Source="$(var.SourceDir)\sl-SI\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpF23A90FFAFCF485818F2F199725EE0F8" Directory="dir7A3819436232CC8422C4AD9056DE07EB" Guid="*">
+                <File Id="fil402956D03B76A4008A8D3ADFEB1AA505" KeyPath="yes" Source="$(var.SourceDir)\sr-Latn-RS\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp6EFDCFD7D01C9483C0EAEA0B3CFEA5FD" Directory="dir6A870D3C4BA7155221DDA523A8768B00" Guid="*">
+                <File Id="fil8FC1676E3446B8A79328AA2E8A1633A4" KeyPath="yes" Source="$(var.SourceDir)\sv-SE\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp74A21308C09A09BF78C6C2EC0E908C7C" Directory="dir5DDB4FDD2D10DC034F81CD628676BB26" Guid="*">
+                <File Id="filF8330C218D64D0462ECC71CACF831416" KeyPath="yes" Source="$(var.SourceDir)\th-TH\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp781A970FAD9BF3D078AE591FEE274C10" Directory="dirB8115E09C9DC6B5C5B36CC5F813B5145" Guid="*">
+                <File Id="fil428946129D18092DBAD9EEB7724697C1" KeyPath="yes" Source="$(var.SourceDir)\tr-TR\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpE688E740C2A04CE81E0130F5571A4303" Directory="dirF90C684C0D4FB1F1B01DFFD220260AF9" Guid="*">
+                <File Id="fil9770429208F0ED56362B090CA26EABDB" KeyPath="yes" Source="$(var.SourceDir)\uk-UA\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp02A509172B7318F9E43C5EA347A2F37D" Directory="dir8B1251E29B37EC6C1348CEB3620D5D41" Guid="*">
+                <File Id="fil62FF17D7AFC9FEC3E5B359C1B6A13E07" KeyPath="yes" Source="$(var.SourceDir)\vi-VN\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmpA2684A8B0EFAA62B2BAFF1B9C060D6D5" Directory="dir7EC94F70A1BA4DDB580EE8B8EF686A2F" Guid="*">
+                <File Id="fil08692F1BBA912D101F60154C1A1B018B" KeyPath="yes" Source="$(var.SourceDir)\zh-CN\msixmgr.exe.mui" />
+            </Component>
+            <Component Id="cmp68FA7A032CE2E724B2248A34F05683F2" Directory="dir8B2467683E967819BC59A1FF59610C7B" Guid="*">
+                <File Id="filF77D05CE4C344D05470FC8D9E99F479A" KeyPath="yes" Source="$(var.SourceDir)\zh-TW\msixmgr.exe.mui" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir03D99532236C6E68A69F6809624C82AC" Name="ro-RO" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir0CDE734731DD1D1A8B608163D9A4DDDF" Name="ar-SA" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir19751C3BB7983F811B369672D3E38CF2" Name="ja-JP" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir1FB4D6B7E14015E0CF05A13AD024FE67" Name="nb-NO" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir28A102E0197DF130471D55FAED060635" Name="fi-FI" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir303B232F796369111ED98653E401742A" Name="cs-CZ" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir401B40AA12C4662908FCCA1E3AA98C69" Name="fr-FR" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir43C5E88A45C2898953EF690E0AA0DB20" Name="ko-KR" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir498A511E130E0F7342684B70257EE3DB" Name="de-DE" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir55EFD42CE775BB0D5D99B3FBFDF24C7D" Name="sk-SK" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir5DDB4FDD2D10DC034F81CD628676BB26" Name="th-TH" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir68C2694543F83F297326A43CBD958D38" Name="ru-RU" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir6A870D3C4BA7155221DDA523A8768B00" Name="sv-SE" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir7A3819436232CC8422C4AD9056DE07EB" Name="sr-Latn-RS" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir7EB5DB566B4517613EA31BD0B3CE7415" Name="id-ID" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir7EC94F70A1BA4DDB580EE8B8EF686A2F" Name="zh-CN" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir820444C52549436C3E52FCB7773C5884" Name="pt-BR" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir8B1251E29B37EC6C1348CEB3620D5D41" Name="vi-VN" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir8B2467683E967819BC59A1FF59610C7B" Name="zh-TW" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir8ED9CFA5AAA7DA5A1A8D1330458D30EE" Name="el-GR" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir92DCDD9C29CCFBFF7364F94732ED194A" Name="nl-NL" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dir9FB96B7C06A837F963F03340E329E100" Name="hr-HR" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirA3AA455EB0DBE812F6CA00361960CA47" Name="it-IT" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirA92293CCCD163B824F1BAA78754AB540" Name="pl-PL" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirB07ACEF73AA48FFEFDC9EA779302BA84" Name="et-EE" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirB8115E09C9DC6B5C5B36CC5F813B5145" Name="tr-TR" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirBC0703DFDB8888F7E622C5EBEFD8B3F3" Name="pt-PT" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirCEC564CF82027CB895D433F2CFD87D42" Name="lv-LV" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirD1BAD1ABF3DDB678F5848BC2126E96E3" Name="da-DK" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirD943E1B87434201B02F84CDF9A72A799" Name="bg-BG" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirDAF35BB4D9F55DF699762556B17626A7" Name="hu-HU" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirDE0B9F366E638918741C37E4629E6D5E" Name="sl-SI" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirF3276CE02973321999DB4E448F4BDECA" Name="he-IL" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirF3316E95C2952D062C9A9D5701D1F7CB" Name="lt-LT" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirF90C684C0D4FB1F1B01DFFD220260AF9" Name="uk-UA" />
+        </DirectoryRef>
+    </Fragment>
+    <Fragment>
+        <DirectoryRef Id="INSTALLFOLDER">
+            <Directory Id="dirFD22B9ED3191515EF3C68C1355E84623" Name="es-ES" />
+        </DirectoryRef>
+    </Fragment>
+</Wix>

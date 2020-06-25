@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="ru-ru" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="OrphanedPackageWarning">
+		Внимание! Если удалить этот объект, следующие приложения, установленные с помощью него, станут неудаляемыми: [MSIXMGR_PRODUCTS]. Прежде чем продолжить, эти приложения нужно удалить.</String>
+	<String Id="BlockX86OnX64">Эту версию MSIX Core x86 невозможно установить на компьютере с 64-битной архитектурой. Установите версию msixmgrSetup-x64.msi.</String>
+</WixLocalization>

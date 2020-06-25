@@ -4,21 +4,25 @@
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
 project (PackSample)
 
-# Define two variables in order not to repeat ourselves.
-set(BINARY_NAME PackSample)
-
 if(WIN32)
     set(DESCRIPTION "PackSample manifest")
-    configure_file(${MSIX_PROJECT_ROOT}/manifest.cmakein ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest CRLF)
-    set(MANIFEST ${CMAKE_CURRENT_BINARY_DIR}/${BINARY_NAME}.exe.manifest)
+    configure_file(${MSIX_PROJECT_ROOT}/manifest.cmakein ${MSIX_SAMPLE_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe.manifest CRLF)
+    set(MANIFEST ${MSIX_SAMPLE_OUTPUT_DIRECTORY}/${PROJECT_NAME}.exe.manifest)
 endif()
 
-add_executable(${BINARY_NAME}
+add_executable(${PROJECT_NAME}
     PackSample.cpp
     ${MANIFEST}
     )
 
-target_include_directories(${BINARY_NAME} PRIVATE ${MSIX_BINARY_ROOT}/src/msix ../inc)
+target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_BINARY_ROOT}/src/msix ../inc)
 
-add_dependencies(${BINARY_NAME} msix)
-target_link_libraries(${BINARY_NAME} PUBLIC msix)
+target_link_libraries(${PROJECT_NAME} PUBLIC msix)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES
+  ARCHIVE_OUTPUT_DIRECTORY "${MSIX_SAMPLE_OUTPUT_DIRECTORY}"
+  LIBRARY_OUTPUT_DIRECTORY "${MSIX_SAMPLE_OUTPUT_DIRECTORY}"
+  RUNTIME_OUTPUT_DIRECTORY "${MSIX_SAMPLE_OUTPUT_DIRECTORY}"
+)
+
+add_dependencies(${PROJECT_NAME} msix)

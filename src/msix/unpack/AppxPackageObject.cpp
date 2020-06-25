@@ -401,7 +401,7 @@ namespace MSIX {
             auto file = std::find(std::begin(m_applicablePackagesNames), std::end(m_applicablePackagesNames), fileName);
             if (file == std::end(m_applicablePackagesNames))
             {
-                std::string targetName;
+                std::string targetName = Encoding::DecodeFileName(fileName);
                 if ((options & MSIX_PACKUNPACK_OPTION_CREATEPACKAGESUBFOLDER) || options & MSIX_PACKUNPACK_OPTION_UNPACKWITHFLATSTRUCTURE)
                 {
                     ComPtr<IAppxManifestPackageId> packageId;
@@ -419,11 +419,7 @@ namespace MSIX {
                     // by looking at "/" in the string. If to->GetPathSeparator() is used the subfolder with
                     // the package full name won't be created on Windows, but it will on other platforms.
                     // This means that we have different behaviors in non-Win platforms.
-                    targetName = packageId.As<IAppxManifestPackageIdInternal>()->GetPackageFullName() + "/" + fileName;
-                }
-                else
-                {
-                    targetName = Encoding::DecodeFileName(fileName);
+                    targetName = packageId.As<IAppxManifestPackageIdInternal>()->GetPackageFullName() + "/" + targetName;
                 }
 
                 auto deleteFile = MSIX::scope_exit([&targetName]

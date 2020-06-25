@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="et-EE" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="OrphanedPackageWarning">
+		Hoiatus – selle eemaldamisel ei saa järgmisi selle installitud rakendusi eemaldada: [MSIXMGR_PRODUCTS]. Need rakendused tuleks enne jätkamist eemaldada.</String>
+	<String Id="BlockX86OnX64">MSIX Core'i x86-versiooni ei saa installida x64-arvutisse. Installige msixmgrSetup-x64.msi.</String>
+</WixLocalization>

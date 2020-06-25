@@ -1,0 +1,6 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="sr-Latn-RS" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+	<String Id="OrphanedPackageWarning">
+		Upozorenje – uklanjanje ovoga će dovesti do toga da sledeće aplikacije instalirane ovim nije moguće ukloniti: [MSIXMGR_PRODUCTS]. Ove aplikacije treba da se uklone pre nego što nastavite.</String>
+	<String Id="BlockX86OnX64">Ova x86 verzija MSIX jezgra ne može da se instalira na x64 računar. Instalirajte msixmgrSetup-x64.msi.</String>
+</WixLocalization>

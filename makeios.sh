@@ -6,6 +6,8 @@ dataCompressionLib=libcompression
 bundle=off
 xmlparser=applexml
 validationParser=off
+samples=on
+tests=on
 
 usage()
 {
@@ -16,6 +18,8 @@ usage()
     echo $'\t' "-sb                     Skip bundle support."
     echo $'\t' "-parser-xerces          Use xerces xml parser instead of default apple xml parser."
     echo $'\t' "--validation-parser|-vp Enable XML schema validation."
+    echo $'\t' "--skip-samples          Skip building samples."
+    echo $'\t' "--skip-tests            Skip building tests."
 }
 
 printsetup()
@@ -26,6 +30,8 @@ printsetup()
     echo "Skip bundle support:" $bundle
     echo "Parser:" $xmlparser
     echo "Validation parser:" $validationParser
+    echo "Build samples:" $samples
+    echo "Build tests:" $tests
 }
 
 while [ "$1" != "" ]; do
@@ -51,6 +57,10 @@ while [ "$1" != "" ]; do
         -h )    usage
                 exit
                 ;;
+        --skip-samples ) samples=off
+                ;;
+        --skip-tests ) tests=off
+                ;;
         * )     usage
                 exit 1
     esac
@@ -65,12 +75,14 @@ cd .vs
 find . -name *msix* -d | xargs rm -r
 
 echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake -DCMAKE_OSX_ARCHITECTURES="$arch 
-echo "-DXML_PARSER="$xmlparser "-DUSE_VALIDATION_PARSER="$validationParser "-DSKIP_BUNDLES="$bundle "-DIOS=on .."
+echo "-DXML_PARSER="$xmlparser "-DUSE_VALIDATION_PARSER="$validationParser "-DSKIP_BUNDLES="$bundle "-DMSIX_SAMPLES="$samples "-DMSIX_TESTS="$tests "-DIOS=on .."
 cmake -DCMAKE_BUILD_TYPE=$build \
     -DCMAKE_TOOLCHAIN_FILE=../cmake/ios.cmake \
     -DCMAKE_OSX_ARCHITECTURES=$arch \
     -DXML_PARSER=$xmlparser \
     -DUSE_VALIDATION_PARSER=$validationParser \
     -DSKIP_BUNDLES=$bundle \
+    -DMSIX_SAMPLES=$samples \
+    -DMSIX_TESTS=$tests \
     $zlib -DIOS=on .. 
 make
