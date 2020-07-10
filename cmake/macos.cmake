@@ -1,4 +1,4 @@
-# This is a workaround while Xcode 12 is still in beta.
+# This is a check to fail arm64 build if the Xcode version is not adecuate.
 
 # Get xcode version and build.
 execute_process(COMMAND xcodebuild -version OUTPUT_VARIABLE XCODE_OUTPUT ERROR_QUIET OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -18,7 +18,7 @@ if (CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
     endif()
 
     # WARNING, this will be false once Xcode 12 is release. Currently there are two
-    # Xcode-beta 12, build 12A8161k and build 12A6163b. The later does NOT support arm64
+    # Xcode-beta 12, build 12A8161k and build 12A6163b. The latter does NOT support arm64
     if (NOT XCODE_BUILD MATCHES "12A8161k")
         message(FATAL_ERROR "arm64 is not supported for Xcode build ${XCODE_BUILD}")
     endif()
