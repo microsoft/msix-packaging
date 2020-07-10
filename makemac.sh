@@ -5,6 +5,7 @@ dataCompressionLib=libcompression
 bundle=off
 xmlparserLib=applexml
 xmlparser="-DXML_PARSER=applexml"
+arch=x86_64
 
 usage()
 {
@@ -13,6 +14,7 @@ usage()
     echo $'\t' "-xzlib Use MSIX SDK Zlib instead of inbox libCompression api. Default on MacOS is libCompression."
     echo $'\t' "-sb Skip bundle support."
     echo $'\t' "-parser-xerces Use xerces xml parser instead of default apple xml parser."
+    echo $'\t' "-arch arch              Architecture. Default x86_64"
 }
 
 printsetup()
@@ -39,6 +41,9 @@ while [ "$1" != "" ]; do
         -h )    usage
                 exit
                 ;;
+        -arch ) shift
+                arch=$1
+                ;;
         * )     usage
                 exit 1
     esac
@@ -52,5 +57,6 @@ cd .vs
 # clean up any old builds of msix modules
 find . -name *msix* -d | xargs rm -r
 
-cmake -DCMAKE_BUILD_TYPE=$build $zlib -DSKIP_BUNDLES=$bundle $xmlparser -DMACOS=on ..
+cmake -DCMAKE_BUILD_TYPE=$build $zlib -DSKIP_BUNDLES=$bundle $xmlparser -DCMAKE_OSX_ARCHITECTURES=$arch \
+      -DCMAKE_TOOLCHAIN_FILE=../cmake/macos.cmake -DMACOS=on ..
 make
