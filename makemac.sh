@@ -9,6 +9,7 @@ validationParser=off
 pack=off
 samples=on
 tests=on
+arch=x86_64
 
 usage()
 {
@@ -22,6 +23,7 @@ usage()
     echo $'\t' "--pack                  Include packaging features. Uses MSIX SDK Zlib and Xerces with validation parser on."
     echo $'\t' "--skip-samples          Skip building samples."
     echo $'\t' "--skip-tests            Skip building tests."
+    echo $'\t' "-arch arch              Architecture. Default x86_64"
 }
 
 printsetup()
@@ -68,6 +70,9 @@ while [ "$1" != "" ]; do
         -h )    usage
                 exit
                 ;;
+        -arch ) shift
+                arch=$1
+                ;;
         * )     usage
                 exit 1
     esac
@@ -83,7 +88,7 @@ find . -name *msix* -d | xargs rm -r
 
 echo "cmake -DCMAKE_BUILD_TYPE="$build $zlib "-DSKIP_BUNDLES="$bundle 
 echo "-DXML_PARSER="$xmlparser "-DASAN="$addressSanitizer "-DUSE_VALIDATION_PARSER="$validationParser 
-echo "-DMSIX_PACK="$pack "-DMSIX_SAMPLES="$samples "-DMSIX_TESTS="$tests "-DMACOS=on .."
+echo "-DMSIX_PACK="$pack "-DMSIX_SAMPLES="$samples "-DMSIX_TESTS="$tests "-DCMAKE_OSX_ARCHITECTURES="$arch "-DMACOS=on .."
 cmake -DCMAKE_BUILD_TYPE=$build \
       -DXML_PARSER=$xmlparser \
       -DSKIP_BUNDLES=$bundle \
@@ -92,5 +97,7 @@ cmake -DCMAKE_BUILD_TYPE=$build \
       -DMSIX_PACK=$pack \
       -DMSIX_SAMPLES=$samples \
       -DMSIX_TESTS=$tests \
+      -DCMAKE_OSX_ARCHITECTURES=$arch \
+      -DCMAKE_TOOLCHAIN_FILE=../cmake/macos.cmake \
       $zlib -DMACOS=on ..
 make
