@@ -1,0 +1,17 @@
+﻿// -----------------------------------------------------------------------
+//  <copyright file="ILogMessage.cs" company="Microsoft">
+//      Copyright (c) Microsoft Corporation.  All rights reserved.
+//  </copyright>
+// -----------------------------------------------------------------------
+namespace Microsoft.Packaging.SDKUtils.Logger
+{
+    /// <summary>
+    /// Log message
+    /// </summary>
+    public interface ILogMessage
+    {
+        Logger.LogLevels LogLevel { get; }
+
+        string GetLogMessage(Logger.LogDecorations logDecoration, Logger.LogLevels logLevel);
+    }
+}
