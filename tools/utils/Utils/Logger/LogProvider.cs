@@ -4,7 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.Logger
+namespace Microsoft.Packaging.Utils.Logger
 {
     /// <summary>
     /// Log provider class (providers can be: Trace output, file, debug output, event viewer etc.)

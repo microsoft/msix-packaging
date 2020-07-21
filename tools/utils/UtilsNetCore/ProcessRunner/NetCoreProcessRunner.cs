@@ -4,12 +4,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.ProcessRunner
+namespace Microsoft.Packaging.Utils.ProcessRunner
 {
     using System;
     using System.IO;
     using System.Runtime.InteropServices;
-    using Microsoft.Packaging.SDKUtils.Logger;
+    using Microsoft.Packaging.Utils.Logger;
 
     /// <summary>
     /// Implements a ProcessRunnerBase which runs on NetCore.

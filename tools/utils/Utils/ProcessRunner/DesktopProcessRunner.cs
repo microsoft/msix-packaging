@@ -4,14 +4,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.ProcessRunner
+namespace Microsoft.Packaging.Utils.ProcessRunner
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
-    using Microsoft.Packaging.SDKUtils.Logger;
+    using Microsoft.Packaging.Utils.Logger;
 
     /// <summary>
     /// Implements a process runner which runs on Desktop

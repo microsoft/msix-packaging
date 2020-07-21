@@ -6,7 +6,7 @@
 
 namespace UtilsNetCoreTests
 {
-    using Microsoft.Packaging.SDKUtils.Logger;
+    using Microsoft.Packaging.Utils.Logger;
     using Microsoft.VisualStudio.TestTools.UnitTesting;
     using System;
     using System.IO;

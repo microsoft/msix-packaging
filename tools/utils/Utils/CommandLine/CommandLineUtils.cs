@@ -5,10 +5,10 @@
 //-----------------------------------------------------------------------
 
 // Please use CLIApplication instead, this class is being deprecated.
-namespace Microsoft.Packaging.SDKUtils.CommandLine
+namespace Microsoft.Packaging.Utils.CommandLine
 {
     using System;
-    using Microsoft.Packaging.SDKUtils.Logger;
+    using Microsoft.Packaging.Utils.Logger;
 
     /// <summary>
     /// A class that contains helper functions for parsing command-line arguments.

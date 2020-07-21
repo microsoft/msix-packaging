@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.ProcessRunner
+namespace Microsoft.Packaging.Utils.ProcessRunner
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

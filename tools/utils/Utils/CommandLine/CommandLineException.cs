@@ -5,7 +5,7 @@
 //-----------------------------------------------------------------------
 
 // Please use CLIApplication instead, this class is being deprecated.
-namespace Microsoft.Packaging.SDKUtils.CommandLine
+namespace Microsoft.Packaging.Utils.CommandLine
 {
     using System;
 

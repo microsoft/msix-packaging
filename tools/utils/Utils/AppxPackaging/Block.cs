@@ -4,11 +4,11 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.AppxPackaging
+namespace Microsoft.Packaging.Utils.AppxPackaging
 {
     using System;
     using System.Runtime.InteropServices;
-    using Microsoft.Packaging.SDKUtils.AppxPackagingInterop;
+    using Microsoft.Packaging.Utils.AppxPackagingInterop;
 
     /// <summary>
     /// Stores information about a block.

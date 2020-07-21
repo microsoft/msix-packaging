@@ -4,13 +4,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.ProcessRunner
+namespace Microsoft.Packaging.Utils.ProcessRunner
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Reflection;
-    using Microsoft.Packaging.SDKUtils.Logger;
+    using Microsoft.Packaging.Utils.Logger;
 
     /// <summary>
     ///  The class to inherit from for all SDK related process runner tools.

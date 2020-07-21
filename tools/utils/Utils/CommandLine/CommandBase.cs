@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.CommandLine
+namespace Microsoft.Packaging.Utils.CommandLine
 {
     using System;
     using Microsoft.Extensions.CommandLineUtils;

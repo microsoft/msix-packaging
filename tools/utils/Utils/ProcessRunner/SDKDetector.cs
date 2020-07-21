@@ -4,12 +4,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.ProcessRunner
+namespace Microsoft.Packaging.Utils.ProcessRunner
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using Microsoft.Packaging.SDKUtils.Logger;
+    using Microsoft.Packaging.Utils.Logger;
     using Microsoft.Win32;
 
     /// <summary>

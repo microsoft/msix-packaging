@@ -9,7 +9,7 @@ namespace UtilsTests
     using System;
     using System.IO;
     using Microsoft.Extensions.CommandLineUtils;
-    using Microsoft.Packaging.SDKUtils.CommandLine;
+    using Microsoft.Packaging.Utils.CommandLine;
     using WEX.Logging.Interop;
 
     /// <summary>

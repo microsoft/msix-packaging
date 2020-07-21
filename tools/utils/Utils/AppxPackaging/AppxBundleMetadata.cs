@@ -4,13 +4,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.AppxPackaging
+namespace Microsoft.Packaging.Utils.AppxPackaging
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Runtime.InteropServices.ComTypes;
-    using Microsoft.Packaging.SDKUtils.AppxPackagingInterop;
+    using Microsoft.Packaging.Utils.AppxPackagingInterop;
 
     /// <summary>
     /// Class that represents appx bundle information.

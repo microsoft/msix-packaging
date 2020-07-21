@@ -6,7 +6,7 @@
 
 namespace UtilsTests
 {
-    using Microsoft.Packaging.SDKUtils.Logger;
+    using Microsoft.Packaging.Utils.Logger;
     using WEX.Logging.Interop;
     using WEX.TestExecution.Markup;
 

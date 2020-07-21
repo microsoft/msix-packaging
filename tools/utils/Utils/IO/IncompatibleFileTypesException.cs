@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils
+namespace Microsoft.Packaging.Utils
 {
     using System;
 

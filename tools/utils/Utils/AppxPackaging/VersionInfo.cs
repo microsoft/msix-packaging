@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.AppxPackaging
+namespace Microsoft.Packaging.Utils.AppxPackaging
 {
     using System;
 

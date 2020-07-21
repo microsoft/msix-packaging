@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.IO
+namespace Microsoft.Packaging.Utils.IO
 {
     using System;
     using System.Collections.Generic;

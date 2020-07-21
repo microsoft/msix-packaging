@@ -3,7 +3,7 @@
 //      Copyright (c) Microsoft Corporation.  All rights reserved.
 //  </copyright>
 // -----------------------------------------------------------------------
-namespace Microsoft.Packaging.SDKUtils.Logger
+namespace Microsoft.Packaging.Utils.Logger
 {
     using System;
     using System.Diagnostics;

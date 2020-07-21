@@ -4,7 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.SDKUtils.Logger
+namespace Microsoft.Packaging.Utils.Logger
 {
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
