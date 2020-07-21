@@ -72,22 +72,22 @@ namespace Microsoft.Packaging.Utils.ProcessRunner
 
             if (string.IsNullOrEmpty(oldPackageOrBlockmapPath))
             {
-                throw new ArgumentException("Old package or blackmap path is null or empty", "oldPackageOrBlockmapPath");
+                throw new ArgumentException("Old package or blockmap path is null or empty", "oldPackageOrBlockmapPath");
             }
 
             if (!File.Exists(oldPackageOrBlockmapPath))
             {
-                throw new ArgumentException("Old package or blackmap path does not exist", "oldPackageOrBlockmapPath");
+                throw new ArgumentException("Old package or blockmap path does not exist", "oldPackageOrBlockmapPath");
             }
 
             if (string.IsNullOrEmpty(newPackageOrBlockmapPath))
             {
-                throw new ArgumentException("New package or blackmap path is null or empty", "newPackageOrBlockmapPath");
+                throw new ArgumentException("New package or blockmap path is null or empty", "newPackageOrBlockmapPath");
             }
 
             if (!File.Exists(newPackageOrBlockmapPath))
             {
-                throw new ArgumentException("New package or blackmap path does not exist", "newPackageOrBlockmapPath");
+                throw new ArgumentException("New package or blockmap path does not exist", "newPackageOrBlockmapPath");
             }
 
             if (string.IsNullOrEmpty(xmlOutputPath))

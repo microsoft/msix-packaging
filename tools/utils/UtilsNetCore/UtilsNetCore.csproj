@@ -81,7 +81,6 @@
     <Compile Include="$(SolutionDir)\Utils\AppxPackaging\PackagingConstants.cs" Link="AppxPackaging\AppxBundleMetadata.cs" />
     <Compile Include="$(SolutionDir)\Utils\AppxPackaging\PackagingUtils.cs" Link="AppxPackaging\AppxBundleMetadata.cs" />
     <Compile Include="$(SolutionDir)\Utils\AppxPackaging\VersionInfo.cs" Link="AppxPackaging\AppxBundleMetadata.cs" />
-    <Compile Include="$(SolutionDir)\Utils\CommandLine\CommandLineUtils.cs" Link="CommandLine\CommandLineUtils.cs" />
     <Compile Include="$(SolutionDir)\Utils\CommandLine\CommandLineException.cs" Link="CommandLine\CommandLineException.cs" />
     <Compile Include="$(SolutionDir)\Utils\IO\EmbeddedResourcesUtils.cs" Link="IO\EmbeddedResourcesUtils.cs" />
     <Compile Include="$(SolutionDir)\Utils\IO\FileSystemUtils.cs" Link="IO\FileSystemUtils.cs" />

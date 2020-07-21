@@ -20,7 +20,7 @@ namespace Microsoft.Packaging.Utils.IO
         /// </summary>
         /// <param name="resourceName">the name of the resource</param>
         /// <returns>the stream containing the resource</returns>
-        public static Stream GetResrouceAsStream(string resourceName)
+        public static Stream GetResourceAsStream(string resourceName)
         {
             Assembly assembly = Assembly.GetCallingAssembly();
             string[] embeddedResouceNames = assembly.GetManifestResourceNames();
@@ -36,12 +36,12 @@ namespace Microsoft.Packaging.Utils.IO
         /// </summary>
         /// <param name="resourceName">the name of the resource</param>
         /// <returns>the path to the temporary file where the resource was copied</returns>
-        public static string GetResrouceAsFile(string resourceName)
+        public static string GetResourceAsFile(string resourceName)
         {
             string tempFilePath = Path.GetTempFileName();
             using (FileStream file = File.Create(tempFilePath))
             {
-                using (Stream fileStream = GetResrouceAsStream(resourceName))
+                using (Stream fileStream = GetResourceAsStream(resourceName))
                 {
                     fileStream.Position = 0;
                     fileStream.CopyTo(file);

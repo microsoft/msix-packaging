@@ -4,7 +4,6 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-// Please use CLIApplication instead, this class is being deprecated.
 namespace Microsoft.Packaging.Utils.CommandLine
 {
     using System;

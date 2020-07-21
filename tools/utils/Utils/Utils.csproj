@@ -101,7 +101,6 @@
     <Compile Include="CommandLine\ArgumentConfiguration.cs" />
     <Compile Include="CommandLine\CLIApplication.cs" />
     <Compile Include="CommandLine\CommandBase.cs" />
-    <Compile Include="CommandLine\CommandLineUtils.cs" />
     <Compile Include="CommandLine\CommandLineException.cs" />
     <Compile Include="CommandLine\ConfiguredInputs.cs" />
     <Compile Include="CommandLine\InputConfigurationBase.cs" />

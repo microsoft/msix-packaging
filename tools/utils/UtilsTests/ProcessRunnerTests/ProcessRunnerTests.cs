@@ -31,9 +31,9 @@ namespace UtilsTests
         {
             Log.Comment("Initializing ProcessRunner test.");
 
-            // Copy the tool from share under the current directory for testing.
+            // Copy the tool to the current directory for testing.
             this.testDirectory = TestContext.Properties["TestDeploymentDir"].ToString();
-            this.testDataDirectory = this.testDirectory + "peetutils\\test-data\\MakeAppx\\";
+            this.testDataDirectory = this.testDirectory + "utils\\test-data\\MakeAppx\\";
             try
             {
                 if (!File.Exists(this.testDirectory + toolName))
@@ -48,7 +48,7 @@ namespace UtilsTests
         }
 
         /// <summary>
-        /// Test CleanUp. 
+        /// Test CleanUp.
         /// </summary>
         [TestCleanup]
         public new void TestCleanup()
@@ -96,7 +96,7 @@ namespace UtilsTests
 
         /// <summary>
         /// Method to test the SDKToolProcessRunner, SDKDetector and MakeAppxRunner
-        /// by passing the tool directory. 
+        /// by passing the tool directory.
         /// </summary>
         [TestMethod]
         public void SDKToolProcessRunnerTest_InitializeFromToolDirectory_GenerateAppxBundle_Success()
