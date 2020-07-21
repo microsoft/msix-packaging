@@ -603,7 +603,7 @@ int main(int argc, char* argv[])
         }
 
         Text text;
-        auto logResult = GetLogTextUTF8(MyAllocate, &text);
+        auto logResult = MsixGetLogTextUTF8(MyAllocate, &text);
         if (0 == logResult)
         {
             std::cout << "LOG:" << std::endl << text.content << std::endl;

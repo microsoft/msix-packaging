@@ -446,7 +446,7 @@ int main(int argc, char* argv[])
     {
         std::cout << "Error: " << std::hex << hr << " while extracting the appx package" <<std::endl;
         Text<char> text;
-        auto logResult = GetLogTextUTF8(MyAllocate, &text);
+        auto logResult = MsixGetLogTextUTF8(MyAllocate, &text);
         if (0 == logResult)
         {   std::cout << "LOG:" << std::endl << text.content << std::endl;
         }

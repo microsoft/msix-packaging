@@ -1738,7 +1738,11 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
 typedef LPVOID STDMETHODCALLTYPE COTASKMEMALLOC(SIZE_T cb);
 typedef void STDMETHODCALLTYPE COTASKMEMFREE(LPVOID pv);
 
-MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept;
+MSIX_API HRESULT STDMETHODCALLTYPE MsixGetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept;
+
+#ifndef GetLogTextUTF8
+#define GetLogTextUTF8(memalloc, logText) MsixGetLogTextUTF8(memalloc, logText)
+#endif
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
