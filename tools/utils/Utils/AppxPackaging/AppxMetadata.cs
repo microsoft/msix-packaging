@@ -14,14 +14,14 @@ namespace Microsoft.Packaging.Utils.AppxPackaging
     using Microsoft.Packaging.Utils.AppxPackagingInterop;
 
     /// <summary>
-    /// Class that represents appx package information.
+    /// Class that represents msix package information.
     /// </summary>
     public class AppxMetadata : PackageMetadata
     {
         /// <summary>
-        /// Initializes a new instance of the AppxMetadata class for an appx package.
+        /// Initializes a new instance of the AppxMetadata class for an msix package.
         /// </summary>
-        /// <param name="filePath">the path to the appx file</param>
+        /// <param name="filePath">the path to the msix file</param>
         public AppxMetadata(string filePath)
         {
             if (string.IsNullOrEmpty(filePath))

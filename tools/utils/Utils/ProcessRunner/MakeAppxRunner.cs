@@ -12,7 +12,7 @@ namespace Microsoft.Packaging.Utils.ProcessRunner
     using System.Linq;
 
     /// <summary>
-    ///  The class to generate an APPX file.
+    ///  The class to generate an MSIX file.
     /// </summary>
     public class MakeAppxRunner : SDKToolProcessRunner
     {
@@ -54,7 +54,7 @@ namespace Microsoft.Packaging.Utils.ProcessRunner
         }
 
         /// <summary>
-        ///  Performs the appx generation.
+        ///  Performs the msix generation.
         /// </summary>
         /// <param name="projectRootFolderPath">The project root folder path.</param>
         /// <param name="outputAppxFilePath">The file path of the output APPX.</param>
@@ -101,14 +101,14 @@ namespace Microsoft.Packaging.Utils.ProcessRunner
 
             this.SpawnToolProcess(makeAppxArgs);
 
-            Logger.Logger.Log(this.LogProviders, "Making APPX succeeded, path = {0}", outputAppxFilePath);
+            Logger.Logger.Log(this.LogProviders, "Making MSIX succeeded, path = {0}", outputAppxFilePath);
         }
 
         /// <summary>
         ///  Performs the appxbundle generation.
         /// </summary>
         /// <param name="appxBundleVersion">The version of the bundle to be generated.</param>
-        /// <param name="rootOfAllAppxs">Folder containing all the appx files to be bundled</param>
+        /// <param name="rootOfAllAppxs">Folder containing all the msix files to be bundled</param>
         /// <param name="outputAppxBundleFilePath">The file path of the output bundle</param>
         public void GenerateAppxBundleFromRootFolder(
             string appxBundleVersion,
@@ -137,14 +137,14 @@ namespace Microsoft.Packaging.Utils.ProcessRunner
 
             this.SpawnToolProcess(makeAppxArgs);
 
-            Logger.Logger.Log(this.LogProviders, "Making APPX Bundle succeeded, path = {0}", outputAppxBundleFilePath);
+            Logger.Logger.Log(this.LogProviders, "Making MSIX Bundle succeeded, path = {0}", outputAppxBundleFilePath);
         }
 
         /// <summary>
         ///  Performs the bundle generation from a manifest file. THis is needed when the plain flat bundle manifest needs to be updated
         ///  to references the encrypted packages.
-        ///  internalPackagesDirectoryPath usually would point to an empty directory for flat bundles, but it can contain appx files
-        ///  if some appx files need to be internal.
+        ///  internalPackagesDirectoryPath usually would point to an empty directory for flat bundles, but it can contain msix files
+        ///  if some msix files need to be internal.
         /// </summary>
         /// <param name="bundleVersion">The version of the bundle to be generated.</param>
         /// <param name="bundleManifestPath">Path to the bundle manifest path</param>\

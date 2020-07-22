@@ -13,7 +13,7 @@ namespace Microsoft.Packaging.Utils.AppxPackaging
     using Microsoft.Packaging.Utils.AppxPackagingInterop;
 
     /// <summary>
-    /// Class that represents appx bundle information.
+    /// Class that represents msix bundle information.
     /// </summary>
     public class AppxBundleMetadata : PackageMetadata
     {
@@ -32,7 +32,7 @@ namespace Microsoft.Packaging.Utils.AppxPackaging
         /// Initializes a new instance of the AppxBundleMetadata class.
         /// </summary>
         /// <param name="parentBundleInfo">the parent bundle from which this bundle is referenced</param>
-        /// <param name="fileRelativePath">the relative path to the appxbundle file, as referenced 
+        /// <param name="fileRelativePath">the relative path to the appxbundle file, as referenced
         /// from a parent appxbundle file</param>
         public AppxBundleMetadata(AppxBundleMetadata parentBundleInfo, string fileRelativePath)
         {
@@ -53,17 +53,17 @@ namespace Microsoft.Packaging.Utils.AppxPackaging
         public IAppxBundleReader AppxBundleReader { get; private set; }
 
         /// <summary>
-        /// Gets the list of all the external appx packages referenced by the bundle, which belong to the same family.
+        /// Gets the list of all the external msix packages referenced by the bundle, which belong to the same family.
         /// </summary>
         public IList<ExternalPackageReference> ExternalAppxPackages { get; private set; } = new List<ExternalPackageReference>();
 
         /// <summary>
-        /// Gets the list of all the internal appx packages bundled in this bundle
+        /// Gets the list of all the internal msix packages bundled in this bundle
         /// </summary>
         public IList<string> InternalAppxPackagesRelativePaths { get; private set; } = new List<string>();
 
         /// <summary>
-        /// Gets the list of all the physical optional appx packages referenced by this bundle, which don't belong to 
+        /// Gets the list of all the physical optional msix packages referenced by this bundle, which don't belong to
         /// a physical optional bundle file.
         /// </summary>
         public IList<ExternalPackageReference> OptionalAppxPackages { get; private set; } = new List<ExternalPackageReference>();
@@ -119,7 +119,7 @@ namespace Microsoft.Packaging.Utils.AppxPackaging
                 IAppxBundleManifestPackageInfo subPackageInfo = subPackagesEnumerator.GetCurrent();
 
                 // If the package is not contained within the bundle, the corresponding package element in the bundle manifest
-                // would not have an offset field. In such a case and only in that case, the AppxPackaging APIs would return 0 
+                // would not have an offset field. In such a case and only in that case, the AppxPackaging APIs would return 0
                 // when retrieving the offset.
                 if (subPackageInfo.GetOffset() == 0)
                 {
@@ -163,7 +163,7 @@ namespace Microsoft.Packaging.Utils.AppxPackaging
                 }
                 else
                 {
-                    // Otherwise, the PackageInfo child elements of the OptionalBundle element point to the optional appx packages.
+                    // Otherwise, the PackageInfo child elements of the OptionalBundle element point to the optional msix packages.
                     IAppxBundleManifestPackageInfoEnumerator optionalPackagesEnumerator = optionalBundleInfo.GetPackageInfoItems();
 
                     while (optionalPackagesEnumerator.GetHasCurrent())

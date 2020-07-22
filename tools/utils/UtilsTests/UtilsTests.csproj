@@ -94,14 +94,6 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="TE.Managed">
-      <HintPath>$(TaefRootDirectory)TE.Managed.dll</HintPath>
-    </Reference>
-    <Reference Include="Wex.Logger.Interop">
-      <HintPath>$(TaefRootDirectory)Wex.Logger.Interop.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Utils\Utils.csproj">
       <Project>{94f4f0ad-548e-4ff2-af95-9d5e7aa24c6f}</Project>
       <Name>Utils</Name>

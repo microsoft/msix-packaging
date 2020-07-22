@@ -20,7 +20,7 @@ namespace UtilsTests
     {
         private static CLIApplication m_application;
         private static bool m_isCalled = false;
-        private static int m_numberOfElements = 0; 
+        private static int m_numberOfElements = 0;
 
         /// <summary>
         /// Test Initialize.
@@ -188,7 +188,7 @@ namespace UtilsTests
             // Validate option wa and xa command
             ValidateCommand(true, m_application, new string[] { "-wa", "a", "-xa" });
 
-            // Validate command cleanup 
+            // Validate command cleanup
             ValidateCommand(true, m_application, new string[] { "cleanup" });
         }
 
@@ -303,7 +303,7 @@ namespace UtilsTests
         }
 
         /// <summary>
-        /// Validate onCmmandPreExecute delegate is being executed.
+        /// Validate onCommandPreExecute delegate is being executed.
         /// </summary>
         [TestMethod]
         public void CommandLine_Validate_OnCommandPreExecute()
@@ -474,7 +474,7 @@ namespace UtilsTests
         }
 
         /// <summary>
-        /// Validate OnInputValidationError for CommandBase clases return expected errors.
+        /// Validate OnInputValidationError for CommandBase classes return expected errors.
         /// </summary>
         [TestMethod]
         public void CommandLine_Validate_CommandBase_OnInputValidationError()
@@ -487,7 +487,7 @@ namespace UtilsTests
         }
 
         /// <summary>
-        /// Validate OnInputValidationError for CommandBase clases return expected errors.
+        /// Validate OnInputValidationError for CommandBase classes return expected errors.
         /// </summary>
         [TestMethod]
         public void CommandLine_Validate_CommandBase_TestValidateAllInputs()
@@ -611,7 +611,7 @@ namespace UtilsTests
         }
 
         /// <summary>
-        /// Test CleanUp. 
+        /// Test CleanUp.
         /// </summary>
         [TestCleanup]
         public new void TestCleanup()

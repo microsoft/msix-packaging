@@ -3,7 +3,6 @@
         <CollectionProperty Name="RecognizedWords">
             <Value>Pii</Value>
             <Value>Etw</Value>
-            <Value>osgwiki</Value>
             <Value>appx</Value>
             <Value>appxbundle</Value>
             <Value>blockmap</Value>

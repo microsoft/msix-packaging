@@ -55,7 +55,7 @@ namespace Microsoft.Packaging.Utils.ProcessRunner
         /// <summary>
         /// Create delta package from updated package based on baseline package.
         /// </summary>
-        /// <param name="updatedPackagePath">Path to updated appx package.</param>
+        /// <param name="updatedPackagePath">Path to updated msix package.</param>
         /// <param name="baselinePackagePath">Path to baseline package</param>
         /// <param name="deltaPackagePath">Path to delta OPC package.</param>
         /// <param name="workingDirectory">Output path for temporary files.</param>
@@ -133,7 +133,7 @@ namespace Microsoft.Packaging.Utils.ProcessRunner
         /// <summary>
         /// Create delta package from updated package based on baseline package.
         /// </summary>
-        /// <param name="updatedPackagePath">Path to updated appx package.</param>
+        /// <param name="updatedPackagePath">Path to updated msix package.</param>
         /// <param name="baselineBlockMapPath">Path to baseline package blockmap.</param>
         /// <param name="baselinePackageFullName">Baseline package full name.</param>
         /// <param name="deltaPackagePath">Path to delta OPC package.</param>

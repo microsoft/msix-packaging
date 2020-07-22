@@ -9,7 +9,6 @@ namespace UtilsTests
     using System;
     using System.IO;
     using System.Threading;
-    using Microsoft.Packaging.Utils.Logger;
     using Microsoft.Packaging.Utils.ProcessRunner;
     using WEX.Logging.Interop;
     using WEX.TestExecution;
@@ -20,7 +19,12 @@ namespace UtilsTests
     {
         private static string toolName = "MakeAppx.exe";
         private static string appxBundle = "TestAppxBundle.appxbundle";
+
+        // Directory with the test data.
         private string testDataDirectory;
+        private string testToolDirectory;
+
+        // Directory from which the tests are run.
         private string testDirectory;
 
         /// <summary>
@@ -32,13 +36,14 @@ namespace UtilsTests
             Log.Comment("Initializing ProcessRunner test.");
 
             // Copy the tool to the current directory for testing.
-            this.testDirectory = TestContext.Properties["TestDeploymentDir"].ToString();
-            this.testDataDirectory = this.testDirectory + "utils\\test-data\\MakeAppx\\";
+            this.testDirectory = Environment.CurrentDirectory + "\\";
+            this.testDataDirectory = this.testDirectory + "TestData\\";
+            this.testToolDirectory = this.testDataDirectory + "MakeAppx\\";
             try
             {
                 if (!File.Exists(this.testDirectory + toolName))
                 {
-                    File.Copy(this.testDataDirectory + toolName, this.testDirectory + toolName);
+                    File.Copy(this.testToolDirectory + toolName, this.testDirectory + toolName);
                 }
             }
             catch (Exception exception)
@@ -106,10 +111,10 @@ namespace UtilsTests
             Log.Comment("Testing SDKToolProcessRunner, SDKDetector, MakeAppxRunner" +
                 " by passing the Tool Directory.");
 
-            VerifyOperation verifyOperation = delegate { runner = new MakeAppxRunner(this.testDataDirectory); };
+            VerifyOperation verifyOperation = delegate { runner = new MakeAppxRunner(this.testToolDirectory); };
             Verify.NoThrow(verifyOperation);
 
-            runner = new MakeAppxRunner(this.testDataDirectory)
+            runner = new MakeAppxRunner(this.testToolDirectory)
             {
                 OverwriteExistingFiles = true
             };
@@ -134,7 +139,7 @@ namespace UtilsTests
         public void ProcessRunnerTest_TerminateProcess_Success()
         {
             Log.Comment("Testing Process Runner -> Terminate Process.");
-            string exePath = Path.Combine(this.testDirectory, @"peetutils\test-data\LongRunningProcess.exe");
+            string exePath = Path.Combine(this.testDataDirectory, "UtilsTestExe.exe");
 
             using (DesktopProcessRunner processRunner = new DesktopProcessRunner())
             {
@@ -170,7 +175,7 @@ namespace UtilsTests
         public void ProcessRunnerTest_ValidateExitCode_Success()
         {
             Log.Comment("Testing ProcessRunner ValidateExitCode");
-            string exePath = Path.Combine(this.testDirectory, @"peetutils\test-data\LongRunningProcess.exe");
+            string exePath = Path.Combine(this.testDataDirectory, "UtilsTestExe.exe");
 
             using (DesktopProcessRunner processRunner = new DesktopProcessRunner())
             {
@@ -241,7 +246,7 @@ namespace UtilsTests
         [TestMethod]
         public void SDKDector_GetLastInstalledPlatformDirectory_ByVersion()
         {
-            string rootPath = Path.Combine(this.testDirectory, @"peetutils\test-data\SDKDetectorByVersion");
+            string rootPath = Path.Combine(this.testDataDirectory, "SDKDetectorByVersion");
             Directory.CreateDirectory(rootPath);
 
             string subDir1 = Path.Combine(rootPath, "1.0.9.1"); // newest by version
@@ -265,7 +270,7 @@ namespace UtilsTests
         [TestMethod]
         public void SDKDector_GetLastInstalledPlatformDirectory_ByLatestWrite()
         {
-            string rootPath = Path.Combine(this.testDirectory, @"peetutils\test-data\SDKDetectorByLatestWrite");
+            string rootPath = Path.Combine(this.testDataDirectory, "SDKDetectorByLatestWrite");
             Directory.CreateDirectory(rootPath);
 
             string subDir1 = Path.Combine(rootPath, "1.0.9.1");
