@@ -28,7 +28,6 @@ list(APPEND MSIX_EXPORTS
     "CreateStreamOnFile"
     "CreateStreamOnFileUTF16"
     "MsixGetLogTextUTF8"
-    "GetLogTextUTF8=MsixGetLogTextUTF8"
     "CoCreateAppxBundleFactory"
     "CoCreateAppxBundleFactoryWithHeap"
     ${MSIX_UNPACK_EXPORTS}
