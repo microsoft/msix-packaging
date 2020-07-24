@@ -271,6 +271,12 @@ namespace MSIX {
     {
         m_root = GetFullPath(root);
 
+        auto lastOf = m_root.find_last_of(GetPathSeparator());
+        if (lastOf == m_root.length() - 1)
+        {
+            m_root = m_root.substr(0, m_root.length() - 1);
+        }
+
         if (createRootIfNecessary)
         {
             std::queue<DirectoryInfo> directories;
