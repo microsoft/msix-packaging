@@ -1740,8 +1740,14 @@ typedef void STDMETHODCALLTYPE COTASKMEMFREE(LPVOID pv);
 
 MSIX_API HRESULT STDMETHODCALLTYPE MsixGetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept;
 
+#ifndef MSIX_DEFINE_GetLogTextUTF8_BACKCOMPAT
+#define MSIX_DEFINE_GetLogTextUTF8_BACKCOMPAT 1
+#endif
+
+#if MSIX_DEFINE_GetLogTextUTF8_BACKCOMPAT
 #ifndef GetLogTextUTF8
 #define GetLogTextUTF8(memalloc, logText) MsixGetLogTextUTF8(memalloc, logText)
+#endif
 #endif
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
