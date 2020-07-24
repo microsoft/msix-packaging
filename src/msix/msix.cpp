@@ -41,7 +41,7 @@ static void finalizer(void) {
 LPVOID STDMETHODCALLTYPE InternalAllocate(SIZE_T cb)  { return std::malloc(cb); }
 void STDMETHODCALLTYPE InternalFree(LPVOID pv)        { std::free(pv); }
 
-MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept try
+MSIX_API HRESULT STDMETHODCALLTYPE MsixGetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept try
 {
     ThrowErrorIf(MSIX::Error::InvalidParameter, (logText == nullptr || *logText != nullptr), "bad pointer" );
     std::size_t countBytes = sizeof(char)*(MSIX::Global::Log::Text().size()+1);
