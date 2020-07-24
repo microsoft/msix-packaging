@@ -36,8 +36,8 @@ namespace UtilsTests
             Log.Comment("Initializing ProcessRunner test.");
 
             // Copy the tool to the current directory for testing.
-            this.testDirectory = Environment.CurrentDirectory + "\\";
-            this.testDataDirectory = this.testDirectory + "TestData\\";
+            this.testDirectory = TestContext.TestDeploymentDir;
+            this.testDataDirectory = Environment.CurrentDirectory + "\\TestData\\";
             this.testToolDirectory = this.testDataDirectory + "MakeAppx\\";
             try
             {
