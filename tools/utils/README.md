@@ -25,3 +25,15 @@ To run the tests, go to `msix-packaging/tools/utils/` and call `te.exe` on `Util
 cd msix-packaging/tools/utils/
 te.exe UtilsTests/bin/Debug/UtilsTests.dll
 ```
+
+## Data/Telemetry
+
+This library includes instrumentation to collect usage and diagnostic (error) data and send it to Microsoft to help improve the products using it.
+
+If you build the library yourself the instrumentation will not be enabled and no data will be sent to Microsoft.
+
+The library respects machine wide privacy settings and users can opt-out on their device, as documented in the Microsoft Windows privacy statement [here](https://support.microsoft.com/en-us/help/4468236/diagnostics-feedback-and-privacy-in-windows-10-microsoft-privacy).
+
+In short to opt-out, go to `Start`, then select `Settings` > `Privacy` > `Diagnostics & feedback`, and select `Basic`.
+
+See the [privacy statement](PRIVACY.md) for more details.
