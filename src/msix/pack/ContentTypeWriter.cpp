@@ -44,17 +44,24 @@ namespace MSIX {
     {
         auto percentageEncodedName = Encoding::EncodeFileName(name);
 
+        auto filename = percentageEncodedName;
+        auto lastSlash = filename.find_last_of("/");
+        if (lastSlash != std::string::npos)
+        {
+            filename = filename.substr(lastSlash + 1);
+        }
+
         if (forceOverride)
         {
             AddOverride(percentageEncodedName, contentType);
             return;
         }
 
-        auto findLastPeriod = percentageEncodedName.find_last_of(".");
+        auto findLastPeriod = filename.find_last_of(".");
         if (findLastPeriod != std::string::npos)
         {
             // See if already exist
-            std::string ext = percentageEncodedName.substr(percentageEncodedName.find_last_of(".") + 1);
+            std::string ext = filename.substr(findLastPeriod + 1);
             std::string normalizedExt = ext;
             std::transform(normalizedExt.begin(), normalizedExt.end(), normalizedExt.begin(), ::tolower);
             auto find = m_defaultExtensions.find(normalizedExt);
