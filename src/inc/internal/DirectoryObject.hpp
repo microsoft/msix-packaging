@@ -58,7 +58,7 @@ namespace MSIX {
         ComPtr<IStream> OpenFile(const std::string& fileName, MSIX::FileStream::Mode mode) override;
         std::multimap<std::uint64_t, std::string> GetFilesByLastModDate() override;
 
-        static const char* GetPathSeparator();
+        char GetPathSeparator() const;
 
     protected:
         std::string m_root;
