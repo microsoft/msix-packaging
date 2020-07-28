@@ -5,10 +5,12 @@
     xmlns="http://schemas.microsoft.com/appx/2017/bundle"
     xmlns:b="http://schemas.microsoft.com/appx/2017/bundle"
     xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
-    xmlns:b4="http://schemas.microsoft.com/appx/2018/bundle">
+    xmlns:b4="http://schemas.microsoft.com/appx/2018/bundle"
+    xmlns:b5="http://schemas.microsoft.com/appx/2019/bundle">
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types" />
   <xs:import namespace="http://schemas.microsoft.com/appx/2018/bundle" />
+  <xs:import namespace="http://schemas.microsoft.com/appx/2019/bundle" />
 
   <xs:element name="Bundle">
     <xs:complexType>
@@ -22,16 +24,18 @@
         </xs:element>
         <xs:element name="Packages" minOccurs="1" maxOccurs="1">
           <xs:complexType>
-            <xs:sequence>
-              <xs:element ref="Package" minOccurs="1" maxOccurs="10000" />
-            </xs:sequence>
+            <xs:choice minOccurs="1" maxOccurs="10000">
+              <xs:element ref="Package"/>
+              <xs:element ref="b5:Package"/>
+            </xs:choice>
           </xs:complexType>
         </xs:element>
         <xs:element name="OptionalBundle" minOccurs="0" maxOccurs="10000">
           <xs:complexType>
-            <xs:sequence>
-              <xs:element ref="Package" minOccurs="1" maxOccurs="10000" />
-            </xs:sequence>
+            <xs:choice minOccurs="1" maxOccurs="10000">
+              <xs:element ref="Package"/>
+              <xs:element ref="b5:Package"/>
+            </xs:choice>
             <xs:attribute name="Name" type="t:ST_PackageName" use="required" />
             <xs:attribute name="Publisher" type="t:ST_Publisher_2010_v2" use="required" />
             <xs:attribute name="Version" type="t:ST_VersionQuad" use="optional" />

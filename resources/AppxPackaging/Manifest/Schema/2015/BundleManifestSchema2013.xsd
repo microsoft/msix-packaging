@@ -5,10 +5,12 @@
     xmlns="http://schemas.microsoft.com/appx/2013/bundle"
     xmlns:b="http://schemas.microsoft.com/appx/2013/bundle"
     xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
-    xmlns:b4="http://schemas.microsoft.com/appx/2018/bundle">
+    xmlns:b4="http://schemas.microsoft.com/appx/2018/bundle"
+    xmlns:b5="http://schemas.microsoft.com/appx/2019/bundle">
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types" />
   <xs:import namespace="http://schemas.microsoft.com/appx/2018/bundle" />
+  <xs:import namespace="http://schemas.microsoft.com/appx/2019/bundle" />
 
   <!-- Root bundle element -->
   <xs:element name="Bundle">
@@ -23,8 +25,8 @@
         </xs:element>
         <xs:element name="Packages">
           <xs:complexType>
-            <xs:sequence>
-              <xs:element name="Package" maxOccurs="10000">
+            <xs:choice minOccurs="1" maxOccurs="10000">
+              <xs:element name="Package">
                 <xs:complexType>
                   <xs:all>
                     <xs:element name="Resources" type="CT_Resources" />
@@ -51,7 +53,8 @@
                   <xs:field xpath="@DXFeatureLevel"/>
                 </xs:unique>
               </xs:element>
-            </xs:sequence>
+              <xs:element ref="b5:Package"/>
+            </xs:choice>
           </xs:complexType>
         </xs:element>
       </xs:all>

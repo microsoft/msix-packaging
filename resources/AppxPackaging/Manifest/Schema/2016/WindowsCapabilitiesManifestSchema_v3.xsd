@@ -20,10 +20,12 @@
            xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"
            xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
            xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+           xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"/>
 
   <!-- Starting RS2, wincap extensions will skip manifest validation -->
   <xs:element name="Extension" substitutionGroup="f:ExtensionChoice">
@@ -33,6 +35,7 @@
       </xs:sequence>
       <xs:attribute name="Category" type="t:ST_ExtensionCategory_Windows_Restricted_Party3" use="required"/>
       <xs:attributeGroup ref="t:ExtensionBaseAttributes"/>
+      <xs:attributeGroup ref="uap10:TrustLevelGroup"/>
     </xs:complexType>
   </xs:element>
 

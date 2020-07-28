@@ -103,6 +103,19 @@
       <xs:maxLength value="64"/>
     </xs:restriction>
   </xs:simpleType>
+
+  <xs:simpleType name="ST_FileNameCharSet_2019">
+    <xs:restriction base="ST_NonEmptyString">
+      <xs:pattern value="[^&lt;&gt;&quot;:%|?\x01-\x1f]+"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ST_FileType_2019">
+    <xs:restriction base="ST_FileNameCharSet_2019">
+      <xs:pattern value="(\*|.[^.\*]+)"/>
+      <xs:maxLength value="64"/>
+    </xs:restriction>
+  </xs:simpleType>
   
   <xs:simpleType name="ST_FileTypeOrStar">
     <xs:restriction base="ST_NonEmptyString">
@@ -749,10 +762,27 @@
     </xs:restriction>
   </xs:simpleType>
 
+  <xs:simpleType name="ST_ExtensionCategory_Uap10">
+    <xs:restriction base="xs:string">
+      <!-- Application Extensions -->
+      <xs:enumeration value="windows.protocol"/>
+      <!-- Package Extensions -->
+      <xs:enumeration value="windows.hostRuntime"/>
+      <xs:enumeration value="windows.installedLocationVirtualization"/>
+      <xs:enumeration value="windows.mediaContentDecryptionModule"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:simpleType name="ST_ExtensionCategory_Com">
     <xs:restriction base="xs:string">
       <xs:enumeration value="windows.comServer"/>
       <xs:enumeration value="windows.comInterface"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ST_ExtensionCategory_Preview_Com">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="windows.comServer"/>
     </xs:restriction>
   </xs:simpleType>
 
@@ -1125,6 +1155,13 @@
       <xs:pattern value="[a-z][-a-z0-9\.\+]*"/>
       <xs:minLength value="2"/>
       <xs:maxLength value="39"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:simpleType name="ST_Protocol_2019">
+    <xs:restriction base="ST_NonEmptyString">
+      <xs:minLength value="2"/>
+      <xs:maxLength value="2048"/>
     </xs:restriction>
   </xs:simpleType>
 

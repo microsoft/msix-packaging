@@ -129,6 +129,12 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
             "http://schemas.microsoft.com/appx/manifest/uap/windows10/7"                               "uap7"               "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v7.xsd")
         list(APPEND MANIFEST_UAP8
             "http://schemas.microsoft.com/appx/manifest/uap/windows10/8"                               "uap8"               "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v8.xsd")
+        list(APPEND MANIFEST_COM3
+            "http://schemas.microsoft.com/appx/manifest/com/windows10/3"                               "com3"               "AppxPackaging/Manifest/Schema/2019/ComManifestSchema_v3.xsd")
+        list(APPEND MANIFEST_PREVIEWAPPCOMPAT
+            "http://schemas.microsoft.com/appx/manifest/preview/windows10/msixappcompatsupport"        "previewappcompat"   "AppxPackaging/Manifest/Schema/2019/PreviewManifestSchema_MsixAppCompatSupport.xsd")
+        list(APPEND MANIFEST_UAP10
+            "http://schemas.microsoft.com/appx/manifest/uap/windows10/10"                              "uap10"              "AppxPackaging/Manifest/Schema/2019/UapManifestSchema_v10.xsd" )
         list(APPEND RESOURCES_APPXMANIFEST
             MANIFEST_FOUNDATION
             MANIFEST_UAP
@@ -162,7 +168,10 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
             MANIFEST_UAP5
             MANIFEST_UAP6
             MANIFEST_UAP7
-            MANIFEST_UAP8)
+            MANIFEST_UAP8
+            MANIFEST_COM3
+            MANIFEST_PREVIEWAPPCOMPAT
+            MANIFEST_UAP10)
 
         # Bundle manifest
         list(APPEND BUNDLE_2014
@@ -173,11 +182,14 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
             "http://schemas.microsoft.com/appx/2017/bundle" "b3" "AppxPackaging/Manifest/Schema/2017/BundleManifestSchema2017.xsd")
         list(APPEND BUNDLE_2018
             "http://schemas.microsoft.com/appx/2018/bundle" "b4" "AppxPackaging/Manifest/Schema/2018/BundleManifestSchema2018.xsd")
+        list(APPEND BUNDLE_2019
+            "http://schemas.microsoft.com/appx/2019/bundle" "b5" "AppxPackaging/Manifest/Schema/2019/BundleManifestSchema2019.xsd")
         list(APPEND RESOURCES_APPXBUNDLEMANIFEST
             BUNDLE_2014
             BUNDLE_2016
             BUNDLE_2017
-            BUNDLE_2018)
+            BUNDLE_2018
+            BUNDLE_2019)
 
         if (XML_PARSER MATCHES xerces)
             file(COPY ${RESOURCES_DIR} DESTINATION "${CMAKE_CURRENT_BINARY_DIR}")
@@ -236,6 +248,19 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
                 APPTYPES_TEXT "${APPTYPES_TEXT}")
 
             file(WRITE "${RESOURCES_DIR}/${APPX_TYPES_FILE}" "${APPTYPES_TEXT}")
+
+            # DesktopManifestSchema_v6.xsd 
+            list(GET MANIFEST_DESK6 2 DESK6_FILE)
+            file(READ "${RESOURCES_DIR}/${DESK6_FILE}" DESK6_TEXT)
+
+            # ST_ServiceName same as ST_Description above
+            string(REGEX REPLACE 
+                [[\\x01-\\x1f]]
+                [[\\t\\n\\r]]
+                DESK6_TEXT "${DESK6_TEXT}")
+
+            file(WRITE "${RESOURCES_DIR}/${DESK6_FILE}" "${DESK6_TEXT}")
+
         endif()
 
         function(CreateNamespaceManager LIST OUTPUT)
