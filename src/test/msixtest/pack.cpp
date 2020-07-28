@@ -45,6 +45,22 @@ TEST_CASE("Pack_Good", "[pack]")
     MsixTest::Pack::ValidatePackageStream(outputPackage);
 }
 
+TEST_CASE("Pack_Good_EndsWithSeparator", "[pack]")
+{
+    HRESULT expected      = S_OK;
+
+#ifdef WIN32
+    std::string directory = "input\\";
+#else
+    std::string directory = "input/";
+#endif
+
+    RunPackTest(expected, directory);
+
+    // Verify output package
+    MsixTest::Pack::ValidatePackageStream(outputPackage);
+}
+
 // Fail if there's no AppxManifest.xml
 TEST_CASE("Pack_AppxManifestNotPresent", "[pack]")
 {
