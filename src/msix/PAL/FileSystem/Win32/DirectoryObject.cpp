@@ -289,7 +289,7 @@ namespace MSIX
         {
             std::queue<DirectoryInfo> directories;
             SplitDirectories(m_root, directories, true);
-            EnsureDirectoryStructureExists({}, directories, GetPathSeparator(), false);
+            EnsureDirectoryStructureExists({}, directories, false, GetPathSeparator());
         }
     }
 
