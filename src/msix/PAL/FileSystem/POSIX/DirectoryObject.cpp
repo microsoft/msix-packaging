@@ -51,12 +51,6 @@ namespace MSIX
             }
         }
 
-        std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
-        {
-            // TODO: Implement when standing-up the pack side for test validation purposes
-            NOTIMPLEMENTED;
-        }
-
         #define DEFAULT_MODE S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
         void mkdirp(std::string& path, size_t startPos = 0, mode_t mode = DEFAULT_MODE)
         {
@@ -73,6 +67,12 @@ namespace MSIX
                 if (*p != '\0') {p++;}
             }
         }
+    }
+
+    std::vector<std::string> DirectoryObject::GetFileNames(FileNameOptions)
+    {
+        // TODO: Implement when standing-up the pack side for test validation purposes
+        NOTIMPLEMENTED;
     }
 
     char DirectoryObject::GetPathSeparator() const { return '/'; }
