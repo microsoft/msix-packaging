@@ -1,0 +1,36 @@
+<StyleCopSettings Version="105">
+    <GlobalSettings>
+        <CollectionProperty Name="RecognizedWords">
+            <Value>Pii</Value>
+            <Value>Etw</Value>
+            <Value>appx</Value>
+            <Value>appxbundle</Value>
+            <Value>blockmap</Value>
+            <Value>cmd</Value>
+            <Value>dapx</Value>
+            <Value>msix</Value>
+            <Value>msixbundle</Value>
+        </CollectionProperty>
+    </GlobalSettings>
+    <Analyzers>
+        <Analyzer AnalyzerId="StyleCop.CSharp.DocumentationRules">
+            <Rules>
+                <Rule Name="ElementsMustBeDocumented">
+                    <RuleSettings>
+                        <BooleanProperty Name="Enabled">False</BooleanProperty>
+                    </RuleSettings>
+                </Rule>
+            </Rules>
+            <AnalyzerSettings />
+        </Analyzer>
+        <Analyzer AnalyzerId="Microsoft.StyleCop.CSharp.NamingRules">
+            <Rules>
+                <Rule Name="VariableNamesMustNotBePrefixed">
+                    <RuleSettings>
+                        <BooleanProperty Name="Enabled">False</BooleanProperty>
+                    </RuleSettings>
+                </Rule>
+            </Rules>
+        </Analyzer>
+    </Analyzers>
+</StyleCopSettings>
