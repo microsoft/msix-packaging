@@ -26,6 +26,8 @@ cd msix-packaging/tools/utils/
 te.exe UtilsTests/bin/Debug/UtilsTests.dll
 ```
 
+MakeAppx.exe and related binaries under `msix-packaging/tools/utils/TestData/MakeAppx` are taken from the redistributable binaries available in the [MSIX Toolkit](https://github.com/microsoft/msix-toolkit).
+
 ## Data/Telemetry
 
 This library includes instrumentation to collect usage and diagnostic (error) data and send it to Microsoft to help improve the products using it.
