@@ -28,6 +28,7 @@
            xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"
            xmlns:uap7="http://schemas.microsoft.com/appx/manifest/uap/windows10/7"
            xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
+           xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
            xmlns:wincap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities"
            xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
            xmlns:rescap6="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/6"
@@ -50,6 +51,7 @@
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/7"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/iot/windows10/2"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"/>
@@ -103,7 +105,7 @@
       <xs:field xpath="@Name"/>
     </xs:unique>
     <xs:unique name="Extension_FileType">
-      <xs:selector xpath="f:Applications/f:Application/f:Extensions/uap:Extension/uap:FileTypeAssociation/uap:SupportedFileTypes/uap:FileType"/>
+      <xs:selector xpath="f:Applications/f:Application/f:Extensions/uap:Extension/uap:FileTypeAssociation/uap:SupportedFileTypes/uap:FileType | f:Applications/f:Application/f:Extensions/uap:Extension/uap:FileTypeAssociation/uap:SupportedFileTypes/uap10:FileType"/>
       <xs:field xpath="."/>
     </xs:unique>
     <xs:unique name="Extension_Protocol">
@@ -172,6 +174,8 @@
       <xs:element ref="desktop6:RegistryWriteVirtualization" minOccurs="0"/>
       <xs:element ref="desktop6:FileSystemWriteVirtualization" minOccurs="0"/>
       <xs:element ref="rescap6:ModificationPackage" minOccurs="0"/>
+      <xs:element ref="uap10:AllowExternalContent" minOccurs="0"/>
+      <xs:element ref="uap10:PackageIntegrity" minOccurs="0"/>
     </xs:all>
   </xs:complexType>
 
@@ -209,6 +213,7 @@
       <xs:element ref="MainPackageDependencyChoice2" minOccurs="0" maxOccurs="1000"/>
       <xs:element ref="uap5:DriverDependency" minOccurs="0" maxOccurs="1000"/>
       <xs:element ref="uap7:OSPackageDependency" minOccurs="0" maxOccurs="1000"/>
+      <xs:element ref="uap10:HostRuntimeDependency" minOccurs="0" maxOccurs="1"/>
     </xs:sequence>
   </xs:complexType>
 
@@ -267,6 +272,7 @@
             <xs:element name="PublisherCacheFolders" type="CT_PublisherCacheFolders"/>
           </xs:choice>
           <xs:attribute name="Category" type="t:ST_PackageExtensionCategory_Foundation" use="required"/>
+          <xs:attributeGroup ref="uap10:TrustLevelGroup"/>
         </xs:complexType>
       </xs:element>
       <xs:element ref="ExtensionChoice"/>
@@ -349,8 +355,11 @@
           <xs:attribute name="ResourceGroup" type="t:ST_AsciiWindowsId" use="optional"/>
           <xs:attribute ref="desktop4:Subsystem" use="optional"/>
           <xs:attribute ref="iot2:Subsystem" use="optional"/>
+          <xs:attribute ref="uap10:Subsystem" use="optional"/>
           <xs:attribute ref="desktop4:SupportsMultipleInstances" use="optional"/>
           <xs:attribute ref="iot2:SupportsMultipleInstances" use="optional"/>
+          <xs:attribute ref="uap10:SupportsMultipleInstances" use="optional"/>
+          <xs:attributeGroup ref="uap10:TrustLevelGroup"/>
         </xs:complexType>
         <xs:unique name="ApplicationContentUrisRule_Match">
           <xs:selector xpath="uap:ApplicationContentUriRules/uap:Rule"/>
@@ -430,6 +439,7 @@
       </xs:choice>
       <xs:attribute name="Category" type="t:ST_ApplicationExtensionCategory_Foundation" use="required"/>
       <xs:attributeGroup ref="t:ExtensionBaseAttributes"/>
+      <xs:attributeGroup ref="uap10:TrustLevelGroup"/>
     </xs:complexType>
     <xs:unique name="BackgroundTasks_Type">
       <xs:selector xpath="f:BackgroundTasks/f:Task | f:BackgroundTasks/uap:Task"/>

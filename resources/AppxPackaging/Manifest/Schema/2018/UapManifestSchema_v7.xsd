@@ -21,12 +21,14 @@
            xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
            xmlns:uap4="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"
            xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
+           xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"/>
 
   <xs:element name="Extension" substitutionGroup="f:ExtensionChoice">
     <xs:complexType>
@@ -36,6 +38,7 @@
       </xs:choice>
       <xs:attribute name="Category" type="t:ST_ExtensionCategory_Uap7" use="required"/>
       <xs:attributeGroup ref="t:ExtensionBaseAttributes"/>
+      <xs:attributeGroup ref="uap10:TrustLevelGroup"/>
     </xs:complexType>
   </xs:element>
 
@@ -64,6 +67,7 @@
       <xs:all>
         <xs:element name="ImportRedirectionTable" type="t:ST_DllFile" minOccurs="0"/>
         <xs:element ref="uap8:ActiveCodePage" minOccurs="0"/>
+        <xs:element ref="uap10:LanguagePreference" minOccurs="0"/>
       </xs:all>
     </xs:complexType>
   </xs:element>
