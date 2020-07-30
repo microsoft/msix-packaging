@@ -8,8 +8,6 @@
    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
    documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).
 
-   An example of such a client app is the [MSIX Core project](MsixCore/README.md), which installs .msix/.appx packages on Windows 7 SP1 and later versions of Windows.
-
 ## Overview
 The MSIX SDK project includes cross platform API support for packing and unpacking of .msix/.appx packages
 
@@ -17,6 +15,7 @@ The MSIX SDK project includes cross platform API support for packing and unpacki
 |--------------------------------------|---------------------------------|
 | **msix**      | A shared library (DLL on Win32, dylib on macOS, SO on Linux and Android) that exports a subset of the functionality contained within appxpackaging.dll on Windows. See [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) for additional details.<br />On all platforms instead of CoCreating IAppxFactory, a C-style export: CoCreateAppxFactory is provided. Similarly, the CoCreateAppxBundleFactory export is equivalent as CoCreating IAppxBundleFactory.<br /><br /> The 'UnpackPackage' and 'UnpackBundle' exports that provide a simplified unpackage implementation. Similarly, PackPackage provides a simplified package implementation. See the [samples directory](sample) for usage of the SDK.|
 | **makemsix**  | A command line wrapper over the MSIX library entrypoints. makemsix supports pack and unpack. Use the -? to get information about the options supported.|
+| **MSIX Core** | A client app that uses installs .msix/.appx packages on Windows 7 SP1 and later versions of Windows. Go to the [MSIX Core project](MsixCore/README.md) page, to get more details.|
 
 Guidance on how to package your app contents and construct your app manifest such that it can take advantage of the cross platform support of this SDK is [here](tdf-guidance.md).
 
