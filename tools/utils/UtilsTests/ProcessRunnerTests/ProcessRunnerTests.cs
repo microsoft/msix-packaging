@@ -81,7 +81,13 @@ namespace UtilsTests
         /// Method to test the SDKToolProcessRunner, SDKDetector and MakeAppxRunner.
         /// Verifies that MakeAppxRunner throws an exception as the required tool is missing.
         /// </summary>
+        /// <remarks>
+        /// This test only succeeds if the machine running it does not have an installed SDK.
+        /// This is ignored by default as test machines are likely to have an installed SDK.
+        /// To run the test, pass the /runIgnoredTests flag to te.exe
+        /// </remarks>
         [TestMethod]
+        [Ignore]
         public void SDKToolProcessRunnerTest_InitializeFromToolPath_Failure()
         {
             // Delete the file from current path if it exists.
