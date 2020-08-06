@@ -12,11 +12,11 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Microsoft.Packaging.Utils.Properties")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyDescription("Library for utilities like AppxPackaging, AppxPackagingInterop, CommandLine, IO, Logger, ProcessRunner, and StandardInput.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyProduct("Microsoft.Packaging.Utils.Properties")]
-[assembly: AssemblyCopyright("Microsoft Copyright ©  2018")]
+[assembly: AssemblyCopyright("© Microsoft Corporation. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -34,6 +34,5 @@ using System.Runtime.InteropServices;
 //      Minor Version 1.0.0.0
 //      Build Number 1.0.0.0
 //      Revision 1.0.0.0
-//      This files is needed to test locally any change on BDCTool or PackageEditor.
 [assembly: AssemblyVersion("1.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
