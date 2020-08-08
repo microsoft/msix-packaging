@@ -4,12 +4,12 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.ProcessRunner
+namespace Microsoft.Msix.Utils.ProcessRunner
 {
     using System;
     using System.IO;
     using System.Runtime.InteropServices;
-    using Microsoft.Packaging.Utils.Logger;
+    using Microsoft.Msix.Utils.Logger;
 
     /// <summary>
     /// Implements a ProcessRunnerBase which runs on NetCore.

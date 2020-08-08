@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.ProcessRunner
+namespace Microsoft.Msix.Utils.ProcessRunner
 {
     using System;
     using System.IO;

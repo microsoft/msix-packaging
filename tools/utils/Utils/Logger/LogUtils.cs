@@ -4,7 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.Logger
+namespace Microsoft.Msix.Utils.Logger
 {
     using System;
     using System.IO;

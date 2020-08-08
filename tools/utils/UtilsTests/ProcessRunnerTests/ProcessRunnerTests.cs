@@ -9,7 +9,7 @@ namespace UtilsTests
     using System;
     using System.IO;
     using System.Threading;
-    using Microsoft.Packaging.Utils.ProcessRunner;
+    using Microsoft.Msix.Utils.ProcessRunner;
     using WEX.Logging.Interop;
     using WEX.TestExecution;
     using WEX.TestExecution.Markup;

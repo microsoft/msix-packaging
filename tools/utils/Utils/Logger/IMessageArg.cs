@@ -3,7 +3,7 @@
 //      Copyright (c) Microsoft Corporation.  All rights reserved.
 //  </copyright>
 // -----------------------------------------------------------------------
-namespace Microsoft.Packaging.Utils.Logger
+namespace Microsoft.Msix.Utils.Logger
 {
     /// <summary>
     /// Message argument interface

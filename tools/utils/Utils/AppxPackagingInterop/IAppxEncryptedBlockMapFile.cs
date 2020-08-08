@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.AppxPackagingInterop
+namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
     using System;
     using System.Diagnostics.CodeAnalysis;

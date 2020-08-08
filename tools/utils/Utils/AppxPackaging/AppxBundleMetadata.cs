@@ -4,13 +4,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.AppxPackaging
+namespace Microsoft.Msix.Utils.AppxPackaging
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Runtime.InteropServices.ComTypes;
-    using Microsoft.Packaging.Utils.AppxPackagingInterop;
+    using Microsoft.Msix.Utils.AppxPackagingInterop;
 
     /// <summary>
     /// Class that represents msix bundle information.

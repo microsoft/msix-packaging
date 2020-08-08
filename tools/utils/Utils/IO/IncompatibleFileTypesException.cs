@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils
+namespace Microsoft.Msix.Utils
 {
     using System;
 

@@ -7,8 +7,8 @@
     <ProjectGuid>{94F4F0AD-548E-4FF2-AF95-9D5E7AA24C6F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <NoStandardLibraries>false</NoStandardLibraries>
-    <RootNamespace>Microsoft.Packaging.Utils</RootNamespace>
-    <AssemblyName>Microsoft.Packaging.Utils</AssemblyName>
+    <RootNamespace>Microsoft.Msix.Utils</RootNamespace>
+    <AssemblyName>Microsoft.Msix.Utils</AssemblyName>
     <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>

@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.CommandLine
+namespace Microsoft.Msix.Utils.CommandLine
 {
     using System;
     using System.Collections.Generic;
