@@ -1,0 +1,5 @@
+<SignConfigXML>
+  <job platform="" configuration="" dest="__OUTPATHROOT__" jobname="ISS EngFun" approvers="">
+    <file src="__INPATHROOT__\Microsoft.Msix.Utils*.nupkg" signType="NuGet" />
+  </job>
+</SignConfigXML>
