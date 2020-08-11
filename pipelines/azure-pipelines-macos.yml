@@ -29,7 +29,7 @@ pr:
 jobs:
 - job: macOS
   pool:
-    name: Hosted macOS
+    name: Azure Pipelines
     vmImage: macOS-latest
   strategy:
     # TODO: add builds using xerces if needed.
@@ -68,12 +68,7 @@ jobs:
   steps:
 
   # Az Pipelines has Xcode 11.6 as default. For arm64, change to supported Xcode. 
-  - script: |
-      ls /Applications
-      sudo xcode-select -switch /Applications/Xcode_12_beta.app/Contents/Developer
-      xcodebuild -version
-      sudo xcode-select -switch /Applications/Xcode_12.app/Contents/Developer
-      xcodebuild -version
+  - script: sudo xcode-select -switch /Applications/Xcode_12_beta.app/Contents/Developer
     displayName: 'Set up'
     condition: and(succeeded(), contains(variables['Agent.JobName'], 'arm64'))
 
