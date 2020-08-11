@@ -30,6 +30,7 @@ jobs:
 - job: macOS
   pool:
     name: Hosted macOS
+    vmImage: macOS-latest
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:
