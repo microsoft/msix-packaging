@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.Telemetry
+namespace Microsoft.Msix.Utils.Telemetry
 {
     using System;
     using Microsoft.Diagnostics.Tracing;

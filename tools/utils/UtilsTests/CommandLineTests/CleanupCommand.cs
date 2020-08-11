@@ -7,7 +7,7 @@
 namespace UtilsTests
 {
     using Microsoft.Extensions.CommandLineUtils;
-    using Microsoft.Packaging.Utils.CommandLine;
+    using Microsoft.Msix.Utils.CommandLine;
     using WEX.Logging.Interop;
 
     /// <summary>

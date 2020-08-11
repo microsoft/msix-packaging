@@ -4,7 +4,7 @@
 //  </copyright>
 // -----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.Logger
+namespace Microsoft.Msix.Utils.Logger
 {
     /// <summary>
     /// Log provider class (providers can be: Trace output, file, debug output, event viewer etc.)

@@ -10,7 +10,7 @@ namespace UtilsTests
     using System.Collections.Generic;
     using System.IO;
     using Microsoft.Extensions.CommandLineUtils;
-    using Microsoft.Packaging.Utils.CommandLine;
+    using Microsoft.Msix.Utils.CommandLine;
     using WEX.Logging.Interop;
     using WEX.TestExecution;
     using WEX.TestExecution.Markup;

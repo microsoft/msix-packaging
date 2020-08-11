@@ -4,14 +4,14 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.ProcessRunner
+namespace Microsoft.Msix.Utils.ProcessRunner
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
     using System.Globalization;
     using System.IO;
-    using Microsoft.Packaging.Utils.Logger;
+    using Microsoft.Msix.Utils.Logger;
 
     /// <summary>
     /// Implements a process runner which runs on Desktop

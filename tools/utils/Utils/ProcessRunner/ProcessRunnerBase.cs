@@ -4,13 +4,13 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.ProcessRunner
+namespace Microsoft.Msix.Utils.ProcessRunner
 {
     using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Text;
-    using Microsoft.Packaging.Utils.Logger;
+    using Microsoft.Msix.Utils.Logger;
 
     /// <summary>
     /// Provides a base from which all process runner implementations derive from.

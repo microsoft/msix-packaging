@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.AppxPackaging
+namespace Microsoft.Msix.Utils.AppxPackaging
 {
     using System.Collections.Generic;
 

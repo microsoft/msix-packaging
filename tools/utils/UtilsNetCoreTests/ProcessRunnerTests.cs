@@ -7,7 +7,7 @@
 namespace UtilsNetCoreTests
 {
     using Microsoft.VisualStudio.TestTools.UnitTesting;
-    using Microsoft.Packaging.Utils.ProcessRunner;
+    using Microsoft.Msix.Utils.ProcessRunner;
     using System;
 
     [TestClass]

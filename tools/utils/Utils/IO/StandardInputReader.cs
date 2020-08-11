@@ -4,7 +4,7 @@
 // </copyright>
 //-----------------------------------------------------------------------
 
-namespace Microsoft.Packaging.Utils.IO
+namespace Microsoft.Msix.Utils.IO
 {
     using System;
     using System.Collections.Generic;
