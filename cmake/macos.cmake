@@ -14,13 +14,6 @@ if (CMAKE_OSX_ARCHITECTURES MATCHES "arm64")
     if (XCODE_VERSION LESS 12.0)
         # If you see this and you have Xcode-beta 12 do:
         # sudo xcode-select -switch /Applications/Xcode-beta.app/Contents/Developer
-        message(FATAL_ERROR "arm64 is only supported on Xcode 12 12A8161k at this time. Found version ${XCODE_VERSION}. To enable arm64 builds please download Xcode beta 12 build 12A8161k and run `sudo xcode-select -switch /Applications/Xcode-beta.app/Contents/Developer`")
+        message(FATAL_ERROR "arm64 is only supported on Xcode 12 at this time. Found version ${XCODE_VERSION}. To enable arm64 builds please download Xcode beta 12 and run `sudo xcode-select -switch /Applications/Xcode-beta.app/Contents/Developer`")
     endif()
-
-    # WARNING, this will be false once Xcode 12 is release. Currently there are two
-    # Xcode-beta 12, build 12A8161k and build 12A6163b. The latter does NOT support arm64
-    if (NOT XCODE_BUILD MATCHES "12A8161k")
-        message(FATAL_ERROR "arm64 is only supported on Xcode 12 12A8161k at this time. Found build ${XCODE_BUILD}")
-    endif()
-
 endif()
