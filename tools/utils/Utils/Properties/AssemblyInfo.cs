@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("Microsoft.Msix.Utils.Properties")]
-[assembly: AssemblyDescription("Library for utilities like AppxPackaging, AppxPackagingInterop, CommandLine, IO, Logger, ProcessRunner, and StandardInput.")]
+[assembly: AssemblyDescription("Library containing utility types for MSIX, and interop for the Packaging API")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Microsoft")]
 [assembly: AssemblyProduct("Microsoft.Msix.Utils.Properties")]
