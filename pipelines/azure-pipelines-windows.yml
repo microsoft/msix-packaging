@@ -28,7 +28,7 @@ pr:
 jobs:
 - job: Windows
   pool:
-    name: Hosted VS2017
+    vmImage: 'windows-latest'
     demands: Cmd
   strategy:
     # TODO: add debug for validation parser and xerces if needed.
