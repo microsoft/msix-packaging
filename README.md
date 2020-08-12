@@ -96,14 +96,14 @@ See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-inte
 
 ### On Mac using make:
 ```
-   ./makemac
-   ./makeios
+   ./makemac [options]
+   ./makeios [options]
 ```
 
 ### On Linux using make:
 ```
-   ./makelinux
-   ./makeaosp
+   ./makelinux [options]
+   ./makeaosp [options]
 ``` 
 
 ### How to compile for Android on Windows:
