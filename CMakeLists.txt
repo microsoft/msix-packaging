@@ -2,6 +2,7 @@
 # See LICENSE file in the project root for full license information.
 
 cmake_minimum_required(VERSION 3.8.0 FATAL_ERROR)
+project(msix-sdk)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 message(STATUS "--------------------------------")
