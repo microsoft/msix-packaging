@@ -151,7 +151,7 @@ We recommend using the [makeaosp](makeaosp) script to build for Android on non-W
 
 ## Apple Silicon
 To enable building the MSIX SDK to run on Apple Silicon do the following:
-1. Install Xcode beta 12 build 12A8161k (https://developer.apple.com/download/)
+1. Install Xcode beta 12 build (https://developer.apple.com/download/)
 2. Change active developer directory `sudo xcode-select -switch /Applications/Xcode-beta.app/Contents/Developer`
 3. Build using makemac.sh `./makemac.sh -arch arm64 --skip-tests`
 
