@@ -149,6 +149,12 @@ We also produce msix-jni.jar which acts as a helper to get the languages from th
 The default level for the SDK level is 24 because we use the [Configuration class](https://developer.android.com/reference/android/content/res/Configuration) and, depending on the version of the device, we either use the locale attribute (deprecated as of API level 24) or getLocales.
 We recommend using the [makeaosp](makeaosp) script to build for Android on non-Windows devices.
 
+## Apple Silicon
+To enable building the MSIX SDK to run on Apple Silicon do the following:
+1. Install Xcode beta 12 build (https://developer.apple.com/download/)
+2. Change active developer directory `sudo xcode-select -switch /Applications/Xcode-beta.app/Contents/Developer`
+3. Build using makemac.sh `./makemac.sh -arch arm64 --skip-tests`
+
 ## Testing
 ----------
 Unit tests should be run on builds that have the "Release" or "RelWithDebug" CMAKE switch. 
