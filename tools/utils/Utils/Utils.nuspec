@@ -3,9 +3,13 @@
   <metadata>
     <id>Microsoft.Msix.Utils</id>
     <version>$version$</version>
-    <description>$description$</description>
-    <authors>$author$</authors>
+    <description>Library containing utility types for MSIX, and interop for the Packaging API.</description>
+    <authors>Microsoft</authors>
+    <owners></owners>
+    <copyright>© Microsoft Corporation. All rights reserved.</copyright>
     <license type="expression">MIT</license>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <projectUrl>https://github.com/microsoft/msix-packaging</projectUrl>
+    <tags>MSIX APPX</tags>
   </metadata>
 </package>
