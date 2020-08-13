@@ -119,7 +119,7 @@ jobs:
       ArtifactName: $(_artifact)
     condition: succeededOrFailed()
 
--job:
+- job: macOS_universal_nopack
   dependsOn:
     - 'macOS release_nopack'
     - 'macOS release_nopack_arm64'
@@ -133,7 +133,7 @@ jobs:
         artifact_x86: MACOS
         artifact_arm64: MACOSarm64
 
--job:
+- job: macOS_universal_nobundle
   dependsOn:
     - 'macOS release_nobundle'
     - 'macOS release_nobundle_arm64'
@@ -147,7 +147,7 @@ jobs:
         artifact_x86: MACOS-nobundle
         artifact_arm64: MACOSarm64-nobundle
 
--job:
+- job: macOS_universal_pack
   dependsOn:
     - 'macOS release_pack'
     - 'macOS release_pack_arm64'
@@ -160,4 +160,3 @@ jobs:
         artifact_output: MACOS-pack-Universal
         artifact_x86: MACOS-pack
         artifact_arm64: MACOSarm64-pack
-
