@@ -45,7 +45,7 @@ jobs:
         _artifact: MACOS-nobundle
       release_pack:
         _arguments: -b MinSizeRel --pack
-        _artifact: MACOSchk-pack
+        _artifact: MACOS-pack
       debug_pack:
         _arguments: -b Debug --pack
         _artifact: MACOSchk-pack
@@ -61,7 +61,7 @@ jobs:
         _artifact: MACOSarm64-nobundle
       release_pack_arm64:
         _arguments: -b MinSizeRel --pack -arch arm64 --skip-tests
-        _artifact: MACOSarm64chk-pack
+        _artifact: MACOSarm64-pack
       debug_pack_arm64:
         _arguments: -b Debug --pack -arch arm64 --skip-tests
         _artifact: MACOSarm64chk-pack
@@ -118,3 +118,46 @@ jobs:
     inputs:
       ArtifactName: $(_artifact)
     condition: succeededOrFailed()
+
+-job:
+  dependsOn:
+    - 'macOS release_nopack'
+    - 'macOS release_nopack_arm64'
+  pool:
+    name: Azure Pipelines
+    vmImage: macOS-latest
+  steps:
+    - template: templates/macos-universal.yml
+      parameters:
+        artifact_output: MACOS-Universal
+        artifact_x86: MACOS
+        artifact_arm64: MACOSarm64
+
+-job:
+  dependsOn:
+    - 'macOS release_nobundle'
+    - 'macOS release_nobundle_arm64'
+  pool:
+    name: Azure Pipelines
+    vmImage: macOS-latest
+  steps:
+    - template: templates/macos-universal.yml
+      parameters:
+        artifact_output: MACOS-nobundle-Universal
+        artifact_x86: MACOS-nobundle
+        artifact_arm64: MACOSarm64-nobundle
+
+-job:
+  dependsOn:
+    - 'macOS release_pack'
+    - 'macOS release_pack_arm64'
+  pool:
+    name: Azure Pipelines
+    vmImage: macOS-latest
+  steps:
+    - template: templates/macos-universal.yml
+      parameters:
+        artifact_output: MACOS-pack-Universal
+        artifact_x86: MACOS-pack
+        artifact_arm64: MACOSarm64-pack
+
