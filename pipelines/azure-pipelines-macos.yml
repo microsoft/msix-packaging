@@ -29,7 +29,8 @@ pr:
 jobs:
 - job: macOS
   pool:
-    name: Hosted macOS
+    name: Azure Pipelines
+    vmImage: macOS-latest
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:
@@ -48,7 +49,29 @@ jobs:
       debug_pack:
         _arguments: -b Debug --pack
         _artifact: MACOSchk-pack
+      # arm64
+      debug_nopack_arm64:
+        _arguments: -b Debug -arch arm64 --skip-tests
+        _artifact: MACOSarm64chk
+      release_nopack_arm64:
+        _arguments: -b MinSizeRel -arch arm64 --skip-tests
+        _artifact: MACOSarm64
+      release_nobundle_arm64:
+        _arguments: -b MinSizeRel -sb -arch arm64 --skip-tests
+        _artifact: MACOSarm64-nobundle
+      release_pack_arm64:
+        _arguments: -b MinSizeRel --pack -arch arm64 --skip-tests
+        _artifact: MACOSarm64chk-pack
+      debug_pack_arm64:
+        _arguments: -b Debug --pack -arch arm64 --skip-tests
+        _artifact: MACOSarm64chk-pack
   steps:
+
+  # Az Pipelines has Xcode 11.6 as default. For arm64, change to supported Xcode. 
+  - script: sudo xcode-select -switch /Applications/Xcode_12_beta.app/Contents/Developer
+    displayName: 'Set up'
+    condition: and(succeeded(), contains(variables['Agent.JobName'], 'arm64'))
+
   - task: Bash@3
     displayName: Build
     inputs:
@@ -64,14 +87,14 @@ jobs:
   - script: 'msixtest/msixtest -s -r junit -o TEST-MsixSDK-$(_artifact).xml'
     workingDirectory: .vs
     displayName: 'macOS BVTs'
-    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'))
+    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'), not(contains(variables['Agent.JobName'], 'arm64')))
   
   - task: PublishTestResults@2
     displayName: 'Publish $(_artifact) Test Results'
     inputs:
       failTaskOnFailedTests: true
       testRunTitle: $(_artifact)
-    condition: and(succeededOrFailed(), contains(variables['Agent.JobName'], 'release'))
+    condition: and(succeededOrFailed(), contains(variables['Agent.JobName'], 'release'), not(contains(variables['Agent.JobName'], 'arm64')))
 
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
