@@ -121,8 +121,7 @@ jobs:
 
 - job: macOS_universal_nopack
   dependsOn:
-    - 'macOS release_nopack'
-    - 'macOS release_nopack_arm64'
+    - 'macOS'
   pool:
     name: Azure Pipelines
     vmImage: macOS-latest
@@ -135,8 +134,7 @@ jobs:
 
 - job: macOS_universal_nobundle
   dependsOn:
-    - 'macOS release_nobundle'
-    - 'macOS release_nobundle_arm64'
+    - 'macOS'
   pool:
     name: Azure Pipelines
     vmImage: macOS-latest
@@ -149,8 +147,7 @@ jobs:
 
 - job: macOS_universal_pack
   dependsOn:
-    - 'macOS release_pack'
-    - 'macOS release_pack_arm64'
+    - 'macOS'
   pool:
     name: Azure Pipelines
     vmImage: macOS-latest
