@@ -45,6 +45,9 @@ jobs:
       release_arm64:
         _arguments: -b MinSizeRel -arch arm64
         _artifact: iOS-arm64
+      release_arm64_nobundle:
+        _arguments: -b MinSizeRel -arch arm64 -sb
+        _artifact: iOS-arm64-nobundle
   steps:
   - task: Bash@3
     displayName: Build

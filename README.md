@@ -148,7 +148,7 @@ The following native platforms are in development now:
 **Release x32 Xerces With Pack**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&jobName=Windows&configuration=Windows%20release_32_xerces)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
 **Release x64 Xerces With Pack**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&jobName=Windows&configuration=Windows%20release_64_xerces)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
 
-Built in the Azure Pipelines Hosted VS2017 pool. See specifications [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/win/Vs2017-Server2016-Readme.md)
+Built in the Azure Pipelines windows-latest pool. See specifications [here](https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md)
 
 ### macOS
 ||master|
@@ -158,8 +158,16 @@ Built in the Azure Pipelines Hosted VS2017 pool. See specifications [here](https
 **Release Without Bundle support**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release_nobundle)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
 **Debug With Pack**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20debug_pack)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
 **Release With Pack**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release_pack)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Debug arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20debug_nopack_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release_nopack_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release Without Bundle support arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release_nobundle_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Debug With Pack arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20debug_pack_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release With Pack arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release_pack_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release Universal**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS_universal_nopack)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release Without Bundle support Universal**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS_universal_nobundle)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release With Pack Universal**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macO_universal_pack)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
 
-Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-10.14-Readme.md)
+Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.15-Readme.md)
 
 ### iOS
 ||master|

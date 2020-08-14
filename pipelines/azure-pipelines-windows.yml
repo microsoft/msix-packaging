@@ -68,7 +68,7 @@ jobs:
         _artifact: WIN32-pack
       release_64_pack:
         _arguments: x64 --pack
-        _artifact: WIN32-pack
+        _artifact: WIN32-x64-pack
       debug_32_pack:
         _arguments: x86 -d --pack
         _artifact: WIN32chk-pack
