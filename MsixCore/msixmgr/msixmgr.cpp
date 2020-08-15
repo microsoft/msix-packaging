@@ -19,7 +19,9 @@
 #include <VersionHelpers.h>
 #include "UnpackProvider.hpp"
 #include "ApplyACLsProvider.hpp"
+#include "CIMProvider.hpp"
 #include "MsixErrors.hpp"
+#include <filesystem>
 
 #include <msixmgrActions.hpp>
 using namespace std;
@@ -192,13 +194,13 @@ int main(int argc, char * argv[])
                 }
                 else
                 {
-                    if (!isAdmin)
-                    {
-                        RelaunchAsAdmin(argc, argv);
-                        return 0;
-                    }
-                    auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
-                    ui->ShowUI();
+                if (!isAdmin)
+                {
+                    RelaunchAsAdmin(argc, argv);
+                    return 0;
+                }
+                auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
+                ui->ShowUI();
                 }
             }
             break;
@@ -246,7 +248,7 @@ int main(int argc, char * argv[])
                 }
 
                 std::cout << numPackages << " Package(s) found" << std::endl;
-            }      
+            }
 
             return S_OK;
         }
@@ -254,47 +256,101 @@ int main(int argc, char * argv[])
         {
             HRESULT hr = S_OK;
 
-            auto packageFilePath = cli.GetPackageFilePathToInstall();
+            auto packageSourcePath = cli.GetPackageFilePathToInstall();
             auto unpackDestination = cli.GetUnpackDestination();
+            auto rootDirectory = cli.GetRootDirectory();
+            UnpackDestinationFileType fileType = cli.GetFileType();
+            bool createFile = cli.IsCreate();
 
-            if (IsPackageFile(packageFilePath))
+            if (fileType == UnpackDestinationFileType::CIM)
             {
-                hr = MsixCoreLib::UnpackPackage(packageFilePath, unpackDestination, cli.IsApplyACLs(), cli.IsValidateSignature());
-            }
-            else if (IsBundleFile(packageFilePath))
-            {
-                hr = MsixCoreLib::UnpackBundle(packageFilePath, unpackDestination, cli.IsApplyACLs(), cli.IsValidateSignature());
-            }
-            else
-            {
-                std::wcout << std::endl;
-                std::wcout << "Invalid package path: " << packageFilePath << std::endl;
-                std::wcout << "Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
-                std::wcout << std::endl;
-                return E_INVALIDARG;
-            }
-            if (FAILED(hr))
-            {
-                std::wcout << std::endl;
-                std::wcout << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << packageFilePath << std::endl;
-                if (hr == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
+                if (rootDirectory.empty() || fileType == UnpackDestinationFileType::NotSpecified)
                 {
-                    std::wcout << L"Please confirm that the certificate has been installed for this package" << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "Creating a file with the -create option requires both a -rootDirectory and -fileType" << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
                 }
-                else if (hr == static_cast<HRESULT>(MSIX::Error::FileWrite))
+                if (cli.IsApplyACLs())
                 {
-                    std::wcout << L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space." << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "Applying ACLs is not applicable for CIM files." << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
                 }
-                std::wcout << std::endl;
-            }
-            else
-            {
-                std::wcout << std::endl;
-                std::wcout << "Successfully unpacked and applied ACLs for package: " << packageFilePath << std::endl;
-                std::wcout << "If your package is a store-signed package, please note that store-signed apps require a license file to be included, which can be downloaded from the Microsoft Store for Business"  << std::endl;
-                std::wcout << std::endl;
-            }
+                if (!EndsWith(unpackDestination, L".cim"))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Invalid CIM file name." << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
+                }
 
+                // Create a temporary directory to unpack package(s) since we cannot unpack to the CIM directly.
+                std::wstring currentDirectory = std::filesystem::current_path();
+                UUID uniqueId;
+                RPC_STATUS status = UuidCreate(&uniqueId);
+                if (status != RPC_S_OK && status != RPC_S_UUID_LOCAL_ONLY)
+                {
+                    return HRESULT_FROM_WIN32(status);
+                }
+                RPC_WSTR uniqueIDRPCString = NULL;
+                std::wstring uniqueIDString;
+                if (UuidToStringW(&uniqueId, &uniqueIDRPCString) == RPC_S_OK)
+                {
+                    uniqueIDString = (WCHAR*) uniqueIDRPCString;
+                    RpcStringFreeW(&uniqueIDRPCString);
+                }
+                std::wstring tempDirPathString = currentDirectory + L"\\" + uniqueIDString;
+                std::filesystem::path tempDirPath(tempDirPathString);
+                bool createTempDirResult = std::filesystem::create_directory(tempDirPath);
+                // TO-DO: Proper error handling
+                if (!createTempDirResult)
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Failed to create temp directory" << std::endl;
+                    std::wcout << std::endl;
+                    return E_FAIL;
+                }
+                  
+                RETURN_IF_FAILED(MsixCoreLib::Unpack(packageSourcePath, tempDirPathString, false /*applyACLs*/, cli.IsValidateSignature()));
+
+                RETURN_IF_FAILED(MsixCoreLib::CreateAndAddToCIM(unpackDestination, tempDirPathString, rootDirectory));
+
+                // Best-effort attempt to remove temp directory
+                std::filesystem::remove_all(tempDirPath);
+            }
+            // UnpackDestinationFileType::NotSpecified is only valid if unpacking to an existing VHD
+            else if (fileType == UnpackDestinationFileType::NotSpecified || fileType == UnpackDestinationFileType::VHD || fileType == UnpackDestinationFileType::VHDX)
+            {
+                if (createFile)
+                {
+                    // TO-DO: Add ability to create VHD
+
+                    //ULONGLONG size = 500 * 1024 * 1024;
+                    //std::wstring mountPoint;
+                    //hr = MsixCoreLib::CreateAndMount(size, packageFilePath.c_str(), mountPoint);
+                    //if (FAILED(hr))
+                    //{
+                    //    std::wcout << std::endl;
+                    //    std::wcout << "Failed to create and mount vhd with error: " << hr << std::endl;
+                    //    std::wcout << std::endl;
+                    //    return hr;
+                    //}
+                    //else
+                    //{
+                    //    std::wcout << std::endl;
+                    //    std::wcout << "Successfully created VHD and mounted to drive: " << mountPoint.c_str() << std::endl;
+                    //    std::wcout << std::endl;
+                    //}
+
+                    return ERROR_NOT_SUPPORTED;
+                }
+                else
+                {
+                    RETURN_IF_FAILED(MsixCoreLib::Unpack(packageSourcePath, unpackDestination, cli.IsApplyACLs(), cli.IsValidateSignature()));
+                }
+            }
             return hr;
         }
         case OperationType::ApplyACLs:

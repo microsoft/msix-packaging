@@ -9,12 +9,108 @@
 #include <CommCtrl.h>
 #include <map>
 #include <iostream>
+#include <filesystem>
+#include "MsixErrors.hpp"
 
 using namespace MsixCoreLib;
 using namespace std;
 
 namespace MsixCoreLib
 {
+    HRESULT Unpack(
+        _In_ std::wstring source,
+        _In_ std::wstring destination,
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature)
+    {
+        filesystem::path sourcePath(source);
+        bool isDirectory = filesystem::is_directory(sourcePath);
+        if (isDirectory)
+        {
+            RETURN_IF_FAILED(UnpackPackagesFromDirectory(source, destination, isApplyACLs, validateSignature));
+        }
+        else
+        {
+            RETURN_IF_FAILED(UnpackPackageOrBundle(source, destination, isApplyACLs, validateSignature));
+        }
+
+        return S_OK;
+    }
+
+    HRESULT UnpackPackagesFromDirectory(
+        _In_ std::wstring source,
+        _In_ std::wstring destination,
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature)
+    {
+        if (!filesystem::is_directory(filesystem::path(source)))
+        {
+            return E_INVALIDARG;
+        }
+
+        HRESULT hrUnpackFromDirectory = S_OK;
+        for (const auto& entry : filesystem::directory_iterator(source))
+        {
+            auto fullFilePath = entry.path().wstring();
+            if (entry.is_regular_file())
+            {
+                // We'll return just the last failure
+                // UnpackPackageOrBundle() will handle outputting hresult for each failed package
+                HRESULT hr = UnpackPackageOrBundle(fullFilePath, destination, isApplyACLs, validateSignature);
+                if (FAILED(hr))
+                {
+                    hrUnpackFromDirectory = hr;
+                }
+            }
+            else
+            {
+                std::wcout << std::endl;
+                std::wcout << "Skipping file object: " << fullFilePath << std::endl;
+                std::wcout << std::endl;
+            }
+        }
+        return hrUnpackFromDirectory;
+    }
+
+    HRESULT UnpackPackageOrBundle(
+        _In_ std::wstring source,
+        _In_ std::wstring destination,
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature)
+    {
+        HRESULT hr = S_OK;
+        if (IsPackageFile(source))
+        {
+            hr = MsixCoreLib::UnpackPackage(source, destination, isApplyACLs, validateSignature);
+        }
+        else if (IsBundleFile(source))
+        {
+            hr = MsixCoreLib::UnpackBundle(source, destination, isApplyACLs, validateSignature);
+        }
+        else
+        {
+            std::wcout << std::endl;
+            std::wcout << "Invalid package path: " << source << std::endl;
+            std::wcout << "Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
+            std::wcout << std::endl;
+            return E_INVALIDARG;
+        }
+        if (FAILED(hr))
+        {
+            std::wcout << std::endl;
+            std::wcout << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << source << std::endl;
+            if (hr == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
+            {
+                std::wcout << L"Please confirm that the certificate has been installed for this package" << std::endl;
+            }
+            else if (hr == static_cast<HRESULT>(MSIX::Error::FileWrite))
+            {
+                std::wcout << L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space." << std::endl;
+            }
+            std::wcout << std::endl;
+        }
+        return hr;
+    }
 
     HRESULT UnpackPackage(
         _In_ std::wstring packageFilePath,

@@ -6,6 +6,24 @@
 
 namespace MsixCoreLib
 {
+    HRESULT Unpack(
+        _In_ std::wstring source,
+        _In_ std::wstring destination,
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature);
+
+    HRESULT UnpackPackagesFromDirectory(
+        _In_ std::wstring source,
+        _In_ std::wstring destination,
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature);
+
+    HRESULT UnpackPackageOrBundle(
+        _In_ std::wstring source,
+        _In_ std::wstring destination,
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature);
+
     HRESULT UnpackPackage(
         _In_ std::wstring packageFilePath,
         _In_ std::wstring destination,

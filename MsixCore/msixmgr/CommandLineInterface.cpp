@@ -127,6 +127,62 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                     commandLineInterface->m_validateSignature = true;
                     return S_OK;
                 }),
+            },
+            {
+                L"-create",
+                Option(false, IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE,
+                    [&](CommandLineInterface* commandLineInterface, const std::string&)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_create = true;
+                    return S_OK;
+                }),
+            },
+            {
+                L"-rootDirectory",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& rootDirectory)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_rootDirectory = utf8_to_utf16(rootDirectory);
+                    return S_OK;
+                }),
+            },
+            {
+                L"-fileType",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& fileType)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    std::wstring fileTypeW = utf8_to_utf16(fileType);
+                    if (CaseInsensitiveEquals(fileTypeW, L"VHD"))
+                    {
+                        commandLineInterface->m_fileType = UnpackDestinationFileType::VHD;
+                    }
+                    else if (CaseInsensitiveEquals(fileTypeW, L"VHDX"))
+                    {
+                        commandLineInterface->m_fileType = UnpackDestinationFileType::VHDX;
+                    }
+                    else if (CaseInsensitiveEquals(fileTypeW, L"CIM"))
+                    {
+                        commandLineInterface->m_fileType = UnpackDestinationFileType::CIM;
+                    }
+                    else
+                    {
+                        commandLineInterface->m_fileType = UnpackDestinationFileType::NotSpecified;
+                    }
+
+                    return S_OK;
+                }),
             }
         })
     },

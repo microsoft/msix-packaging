@@ -14,6 +14,14 @@ enum OperationType
     ApplyACLs = 6
 };
 
+enum UnpackDestinationFileType
+{
+    NotSpecified = 0,
+    VHD = 1,
+    VHDX = 2,
+    CIM = 3
+};
+
 class CommandLineInterface;
 /// Describes an option to a command that the user may specify used for the command line tool
 struct Option
@@ -82,9 +90,12 @@ public:
     bool IsQuietMode() { return m_quietMode; }
     bool IsApplyACLs() { return m_applyACLs; }
     bool IsValidateSignature() { return m_validateSignature; }
+    bool IsCreate() { return m_create; }
     std::wstring GetPackageFilePathToInstall() { return m_packageFilePath; }
     std::wstring GetPackageFullName() { return m_packageFullName; }
     std::wstring GetUnpackDestination() { return m_unpackDestination; }
+    std::wstring GetRootDirectory() { return m_rootDirectory; }
+    UnpackDestinationFileType GetFileType() { return m_fileType; }
     OperationType GetOperationType() { return m_operationType; }
 private:
     int m_argc = 0;
@@ -96,9 +107,12 @@ private:
     std::wstring m_packageFilePath;
     std::wstring m_packageFullName;
     std::wstring m_unpackDestination;
+    std::wstring m_rootDirectory;
     bool m_quietMode;
     bool m_applyACLs;
     bool m_validateSignature;
+    bool m_create = false;
+    UnpackDestinationFileType m_fileType = UnpackDestinationFileType::NotSpecified;
 
     OperationType m_operationType = OperationType::Undefined;
 

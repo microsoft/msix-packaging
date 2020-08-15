@@ -208,7 +208,7 @@ del "$(OutDir)msixmgr_LN.exe"
       <AdditionalLibraryDirectories>..\x64\Release;..\..\.vs\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
       <AdditionalOptions>comctl32.lib %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>msixmgrlib.lib;msix.lib;msi.lib;comctl32.lib;uxtheme.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;urlmon.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>msixmgrlib.lib;msix.lib;msi.lib;comctl32.lib;uxtheme.lib;gdiplus.lib;version.lib;taskschd.lib;windowsapp_downlevel.lib;windowsapp.lib;urlmon.lib;virtdisk.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <DelayLoadDLLs>api-ms-win-core-winrt-string-l1-1-0.dll;api-ms-win-core-winrt-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-0.dll;api-ms-win-core-winrt-error-l1-1-1.dll</DelayLoadDLLs>
     </Link>
     <PostBuildEvent>
@@ -222,9 +222,13 @@ del "$(OutDir)msixmgr_LN.exe"
     <Manifest>
       <AdditionalManifestFiles>WindowsCompatibility.manifest %(AdditionalManifestFiles)</AdditionalManifestFiles>
     </Manifest>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ApplyACLsProvider.hpp" />
+    <ClInclude Include="CIMProvider.hpp" />
     <ClInclude Include="CommandLineInterface.hpp" />
     <ClInclude Include="InstallUI.hpp" />
     <ClInclude Include="resource.h" />
@@ -234,6 +238,7 @@ del "$(OutDir)msixmgr_LN.exe"
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApplyACLsProvider.cpp" />
+    <ClCompile Include="CIMProvider.cpp" />
     <ClCompile Include="InstallUI.cpp" />
     <ClCompile Include="CommandLineInterface.cpp" />
     <ClCompile Include="UnpackProvider.cpp" />
