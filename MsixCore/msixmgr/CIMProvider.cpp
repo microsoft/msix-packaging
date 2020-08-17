@@ -53,6 +53,76 @@ namespace MsixCoreLib
         return S_OK;
     }
 
+    HRESULT MountCIM(
+        std::wstring cimFilePath,
+        GUID volumeId)
+    {
+        auto autoFreeLibrary = [](HMODULE* module)
+        {
+            if (module != nullptr)
+            {
+                FreeLibrary(*module);
+            }
+        };
 
+        std::unique_ptr<HMODULE, decltype(autoFreeLibrary)>
+            createCIMDll(nullptr, autoFreeLibrary);
+
+        HMODULE createCIMLocal = LoadLibrary(L"createcim.dll");
+        createCIMDll.reset(&createCIMLocal);
+
+        if (*createCIMDll == nullptr)
+        {
+            std::wcout << "Failed to load createcim.dll. Please confirm the dll is next to this exe." << std::endl;
+            return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
+        }
+
+        typedef HRESULT(STDMETHODCALLTYPE *MOUNTCIM)(
+            std::wstring cimFilePath,
+            GUID volumeId);
+
+        MOUNTCIM MountCIMFunc =
+            reinterpret_cast<MOUNTCIM>
+            (GetProcAddress(*createCIMDll, "MountCIM"));
+
+        RETURN_IF_FAILED(MountCIMFunc(cimFilePath, volumeId));
+
+        return S_OK;
+    }
+
+    HRESULT UnmountCIM(
+        GUID volumeId)
+    {
+        auto autoFreeLibrary = [](HMODULE* module)
+        {
+            if (module != nullptr)
+            {
+                FreeLibrary(*module);
+            }
+        };
+
+        std::unique_ptr<HMODULE, decltype(autoFreeLibrary)>
+            createCIMDll(nullptr, autoFreeLibrary);
+
+        HMODULE createCIMLocal = LoadLibrary(L"createcim.dll");
+        createCIMDll.reset(&createCIMLocal);
+
+        if (*createCIMDll == nullptr)
+        {
+            std::wcout << "Failed to load createcim.dll. Please confirm the dll is next to this exe." << std::endl;
+            return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
+        }
+
+        typedef HRESULT(STDMETHODCALLTYPE *UNMOUNTCIM)(
+            GUID volumeId);
+
+        UNMOUNTCIM UnmountCIMFunc =
+            reinterpret_cast<UNMOUNTCIM>
+            (GetProcAddress(*createCIMDll, "UnmountCIM"));
+
+        RETURN_IF_FAILED(UnmountCIMFunc(volumeId));
+
+        return S_OK;
+    }
 
 }

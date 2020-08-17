@@ -8,6 +8,13 @@ namespace MsixCoreLib
         _In_ std::wstring sourcePath,
         _In_ std::wstring rootDirectory);
 
+    HRESULT MountCIM(
+        std::wstring cimFilePath,
+        GUID volumeId);
+
+    HRESULT UnmountCIM(
+        GUID volumeId);
+
 }
 
 

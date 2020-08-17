@@ -350,4 +350,14 @@ namespace MsixCoreLib
 
         return S_OK;
     }
+
+    HRESULT createGUID(GUID *guid)
+    {
+        RPC_STATUS status = UuidCreate(guid);
+        if (status != RPC_S_OK && status != RPC_S_UUID_LOCAL_ONLY)
+        {
+            return HRESULT_FROM_WIN32(status);
+        }
+        return S_OK;
+    }
 }

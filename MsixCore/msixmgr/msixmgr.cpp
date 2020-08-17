@@ -259,12 +259,12 @@ int main(int argc, char * argv[])
             auto packageSourcePath = cli.GetPackageFilePathToInstall();
             auto unpackDestination = cli.GetUnpackDestination();
             auto rootDirectory = cli.GetRootDirectory();
-            UnpackDestinationFileType fileType = cli.GetFileType();
+            WVDFileType fileType = cli.GetFileType();
             bool createFile = cli.IsCreate();
 
-            if (fileType == UnpackDestinationFileType::CIM)
+            if (fileType == WVDFileType::CIM)
             {
-                if (rootDirectory.empty() || fileType == UnpackDestinationFileType::NotSpecified)
+                if (rootDirectory.empty() || fileType == WVDFileType::NotSpecified)
                 {
                     std::wcout << std::endl;
                     std::wcout << "Creating a file with the -create option requires both a -rootDirectory and -fileType" << std::endl;
@@ -288,7 +288,8 @@ int main(int argc, char * argv[])
 
                 // Create a temporary directory to unpack package(s) since we cannot unpack to the CIM directly.
                 std::wstring currentDirectory = std::filesystem::current_path();
-                UUID uniqueId;
+                GUID uniqueId;
+                RETURN_IF_FAILED(createGUID(&uniqueId));
                 RPC_STATUS status = UuidCreate(&uniqueId);
                 if (status != RPC_S_OK && status != RPC_S_UUID_LOCAL_ONLY)
                 {
@@ -321,7 +322,7 @@ int main(int argc, char * argv[])
                 std::filesystem::remove_all(tempDirPath);
             }
             // UnpackDestinationFileType::NotSpecified is only valid if unpacking to an existing VHD
-            else if (fileType == UnpackDestinationFileType::NotSpecified || fileType == UnpackDestinationFileType::VHD || fileType == UnpackDestinationFileType::VHDX)
+            else if (fileType == WVDFileType::NotSpecified || fileType == WVDFileType::VHD || fileType == WVDFileType::VHDX)
             {
                 if (createFile)
                 {
@@ -358,6 +359,81 @@ int main(int argc, char * argv[])
             std::vector<std::wstring> packageFolders;
             packageFolders.push_back(cli.GetPackageFilePathToInstall()); // we're not actually installing anything. The API just returns the file path name we need.
             RETURN_IF_FAILED(MsixCoreLib::ApplyACLs(packageFolders));
+            return S_OK;
+        }
+        case OperationType::MountImage:
+        {
+            if (cli.GetFileType() == WVDFileType::CIM)
+            {
+                if (cli.GetVolumeId().empty())
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Please provide a volume id in order to mount a CIM image" << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
+                }
+
+                std::wstring volumeIdString = cli.GetVolumeId();
+                GUID volumeIdFromString;
+                if (UuidFromStringW((RPC_WSTR)(cli.GetVolumeId().c_str()), &volumeIdFromString) != RPC_S_OK)
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Failed to convert specified volume id {" << volumeIdString << "}  to GUID" << std::endl;
+                    std::wcout << std::endl;
+                    return E_UNEXPECTED;
+                }
+
+                RETURN_IF_FAILED(MsixCoreLib::MountCIM(cli.GetMountImagePath(), volumeIdFromString));
+
+                std::wcout << std::endl;
+                std::wcout << "Image successfully mounted!" << std::endl;
+                std::wcout << "To examine contents in File Explorer, press Win + R and enter the following: " << std::endl;
+                std::wcout << "\\\\?\\Volume{" << volumeIdString << "}" << std::endl;
+                std::wcout << std::endl;
+                std::wcout << "To unmount, run the following command: " << std::endl;
+                std::wcout << "msixmgr.exe -unmountimage -volumeid " << volumeIdString << " -filetype CIM" << std::endl;
+                std::wcout << std::endl;
+            }
+            else
+            {
+                std::wcout << std::endl;
+                std::wcout << "Please specify one of the following supported file types for the -MountImage command: {CIM}" << std::endl;
+                std::wcout << std::endl;
+                return ERROR_NOT_SUPPORTED;
+            }
+            return S_OK;
+        }
+        case OperationType::UnmountImage:
+        {
+            if (cli.GetFileType() == WVDFileType::CIM)
+            {
+                if (cli.GetVolumeId().empty())
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Please provide the id of the volume you would like to unmount using the -volumeId option" << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
+                }
+
+                std::wstring volumeIdString = cli.GetVolumeId();
+                GUID volumeIdFromString;
+                if (UuidFromStringW((RPC_WSTR)(cli.GetVolumeId().c_str()), &volumeIdFromString) != RPC_S_OK)
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Failed to convert specified volume id {" << volumeIdString << "}  to GUID" << std::endl;
+                    std::wcout << std::endl;
+                    return E_UNEXPECTED;
+                }
+
+                RETURN_IF_FAILED(MsixCoreLib::UnmountCIM(volumeIdFromString));
+            }
+            else
+            {
+                std::wcout << std::endl;
+                std::wcout << "Please specify one of the following supported file types for the -UnmountImage command: {CIM}" << std::endl;
+                std::wcout << std::endl;
+                return ERROR_NOT_SUPPORTED;
+            }
             return S_OK;
         }
         default:

@@ -11,10 +11,12 @@ enum OperationType
     Remove = 2,
     FindPackage = 3,
     Unpack = 5,
-    ApplyACLs = 6
+    ApplyACLs = 6,
+    MountImage = 7,
+    UnmountImage = 8
 };
 
-enum UnpackDestinationFileType
+enum WVDFileType
 {
     NotSpecified = 0,
     VHD = 1,
@@ -87,6 +89,7 @@ public:
     /// Displays contextual formatted help to the user used for command line tool
     void DisplayHelp();
     HRESULT Init();
+    void SetWVDFileType(std::wstring fileType);
     bool IsQuietMode() { return m_quietMode; }
     bool IsApplyACLs() { return m_applyACLs; }
     bool IsValidateSignature() { return m_validateSignature; }
@@ -95,7 +98,9 @@ public:
     std::wstring GetPackageFullName() { return m_packageFullName; }
     std::wstring GetUnpackDestination() { return m_unpackDestination; }
     std::wstring GetRootDirectory() { return m_rootDirectory; }
-    UnpackDestinationFileType GetFileType() { return m_fileType; }
+    std::wstring GetMountImagePath() { return m_mountImagePath; }
+    std::wstring GetVolumeId() { return m_volumeId; }
+    WVDFileType GetFileType() { return m_fileType; }
     OperationType GetOperationType() { return m_operationType; }
 private:
     int m_argc = 0;
@@ -108,11 +113,13 @@ private:
     std::wstring m_packageFullName;
     std::wstring m_unpackDestination;
     std::wstring m_rootDirectory;
+    std::wstring m_mountImagePath;
+    std::wstring m_volumeId;
     bool m_quietMode;
     bool m_applyACLs;
     bool m_validateSignature;
     bool m_create = false;
-    UnpackDestinationFileType m_fileType = UnpackDestinationFileType::NotSpecified;
+    WVDFileType m_fileType = WVDFileType::NotSpecified;
 
     OperationType m_operationType = OperationType::Undefined;
 
