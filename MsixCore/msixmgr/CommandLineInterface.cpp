@@ -130,7 +130,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             },
             {
                 L"-create",
-                Option(false, IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE,
+                Option(false, IDS_STRING_HELP_OPTION_UNPACK_CREATE,
                     [&](CommandLineInterface* commandLineInterface, const std::string&)
                 {
                     if (commandLineInterface->m_operationType != OperationType::Unpack)
@@ -143,7 +143,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             },
             {
                 L"-rootDirectory",
-                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_ROOTDIRECTORY,
                     [&](CommandLineInterface* commandLineInterface, const std::string& rootDirectory)
                 {
                     if (commandLineInterface->m_operationType != OperationType::Unpack)
@@ -156,7 +156,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             },
             {
                 L"-fileType",
-                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_FILETYPE,
                     [&](CommandLineInterface* commandLineInterface, const std::string& fileType)
                 {
                     if (commandLineInterface->m_operationType != OperationType::Unpack)
@@ -200,7 +200,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     },
     {
         L"-MountImage",
-        Options(false, IDS_STRING_HELP_OPTION_APPLYACLS, // TO-DO: Update help string
+        Options(false, IDS_STRING_HELP_OPTION_MOUNTIMAGE,
         [&](CommandLineInterface* commandLineInterface, const std::string&)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
@@ -213,7 +213,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
         {
             {
                 L"-imagePath",
-                Option(true, IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH, // TO-DO: Update help string
+                Option(true, IDS_STRING_HELP_OPTION_MOUNTIMAGE_IMAGEPATH,
                     [&](CommandLineInterface* commandLineInterface, const std::string& imagePath)
                 {
                     if (commandLineInterface->m_operationType != OperationType::MountImage)
@@ -226,7 +226,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             },
             {
                 L"-volumeId",
-                Option(true, IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH, // TO-DO: Update help string
+                Option(true, IDS_STRING_HELP_OPTION_MOUNTIMAGE_VOLUMEID,
                     [&](CommandLineInterface* commandLineInterface, const std::string& volumeId)
                 {
                     if (commandLineInterface->m_operationType != OperationType::MountImage)
@@ -239,7 +239,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             },
             {
                 L"-fileType",
-                Option(true, IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH, // TO-DO: Update help string
+                Option(true, IDS_STRING_HELP_OPTION_MOUNT_FILETYPE,
                     [&](CommandLineInterface* commandLineInterface, const std::string& fileType)
                 {
                     if (commandLineInterface->m_operationType != OperationType::MountImage)
@@ -254,7 +254,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
     },
     {
         L"-UnmountImage",
-        Options(false, IDS_STRING_HELP_OPTION_APPLYACLS, // TO-DO: Update help string
+        Options(false, IDS_STRING_HELP_OPTION_UNMOUNTIMAGE,
         [&](CommandLineInterface* commandLineInterface, const std::string&)
         {
             if (commandLineInterface->m_operationType != OperationType::Undefined)
@@ -267,7 +267,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
         {
             {
                 L"-volumeId",
-                Option(true, IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH, // TO-DO: Update help string
+                Option(true, IDS_STRING_HELP_OPTION_UNMOUNTIMAGE_VOLUMEID,
                     [&](CommandLineInterface* commandLineInterface, const std::string& volumeId)
                 {
                     if (commandLineInterface->m_operationType != OperationType::UnmountImage)
@@ -280,7 +280,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             },
             {
                 L"-fileType",
-                Option(true, IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH, // TO-DO: Update help string
+                Option(true, IDS_STRING_HELP_OPTION_MOUNT_FILETYPE,
                     [&](CommandLineInterface* commandLineInterface, const std::string& fileType)
                 {
                     if (commandLineInterface->m_operationType != OperationType::UnmountImage)
