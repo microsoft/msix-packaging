@@ -353,14 +353,29 @@ int main(int argc, char * argv[])
                 }
                 std::wstring tempDirPathString = currentDirectory + L"\\" + uniqueIDString;
                 std::filesystem::path tempDirPath(tempDirPathString);
-                bool createTempDirResult = std::filesystem::create_directory(tempDirPath);
-                // TO-DO: Proper error handling
-                if (!createTempDirResult)
+
+                try
                 {
+                    bool createTempDirResult = std::filesystem::create_directory(tempDirPath);
+                    // Since we're using a GUID, this should almost never happen
+                    if (!createTempDirResult)
+                    {
+                        std::wcout << std::endl;
+                        std::wcout << "Failed to create temp directory " << tempDirPathString << std::endl;
+                        std::wcout << "This may occur when the directory path already exists. Please try again."  << std::endl;
+                        std::wcout << std::endl;
+                        return E_UNEXPECTED;
+                    }
+                }
+                catch (std::exception& e)
+                { 
+                    // Again, we expect that the creation of the temp directory will fail very rarely. Output the exception
+                    // and have the user try again.
                     std::wcout << std::endl;
-                    std::wcout << "Failed to create temp directory" << std::endl;
+                    std::wcout << "Creation of temp directory " << tempDirPathString << " failed with error: " << e.what() << std::endl;
+                    std::wcout << "Please try again." << std::endl;
                     std::wcout << std::endl;
-                    return E_FAIL;
+                    return E_UNEXPECTED;
                 }
 
                 // should applying acls be true by default?
@@ -471,7 +486,7 @@ int main(int argc, char * argv[])
                 if (UuidFromStringW((RPC_WSTR)(cli.GetVolumeId().c_str()), &volumeIdFromString) != RPC_S_OK)
                 {
                     std::wcout << std::endl;
-                    std::wcout << "Failed to convert specified volume id {" << volumeIdString << "}  to GUID" << std::endl;
+                    std::wcout << "Failed to convert specified volume id {" << volumeIdString << "} to GUID" << std::endl;
                     std::wcout << std::endl;
                     return E_UNEXPECTED;
                 }
