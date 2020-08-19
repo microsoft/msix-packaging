@@ -121,6 +121,55 @@ void RelaunchAsAdmin(int argc, char * argv[])
     ShellExecuteExW(&shellExecuteInfo);
 }
 
+void OutputUnpackFailures(
+    _In_ std::wstring packageSource,
+    _In_ std::vector<std::wstring> skippedFiles,
+    _In_ std::vector<std::wstring> failedPackages,
+    _In_ std::vector<HRESULT> failedPackagesErrors)
+{
+    if (!skippedFiles.empty())
+    {
+        std::wcout << std::endl;
+        std::wcout << "[WARNING] The following items from " << packageSource << " were ignored because they are not packages or bundles " << std::endl;
+        std::wcout << std::endl;
+
+        for (int i = 0; i < skippedFiles.size(); i++)
+        {
+            std::wcout << skippedFiles.at(i) << std::endl;
+        }
+
+        std::wcout << std::endl;
+    }
+
+    if (!failedPackages.empty())
+    {
+        std::wcout << std::endl;
+        std::wcout << "[WARNING] The following packages from " << packageSource << " failed to get unpacked. Please try again: " << std::endl;
+        std::wcout << std::endl;
+
+        for (int i = 0; i < failedPackages.size(); i++)
+        {
+            HRESULT hr = failedPackagesErrors.at(i);
+
+            std::wcout << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << failedPackages.at(i) << std::endl;
+            if (hr == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
+            {
+                std::wcout << L"Please confirm that the certificate has been installed for this package" << std::endl;
+            }
+            else if (hr == static_cast<HRESULT>(MSIX::Error::FileWrite))
+            {
+                std::wcout << L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space." << std::endl;
+            }
+            else if (hr == E_INVALIDARG)
+            {
+                std::wcout << "Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
+            }
+
+            std::wcout << std::endl;
+        }
+    }
+}
+
 int main(int argc, char * argv[])
 {
     // Register the providers
@@ -271,13 +320,13 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
                     return E_INVALIDARG;
                 }
-                if (cli.IsApplyACLs())
-                {
-                    std::wcout << std::endl;
-                    std::wcout << "Applying ACLs is not applicable for CIM files." << std::endl;
-                    std::wcout << std::endl;
-                    return E_INVALIDARG;
-                }
+                //if (cli.IsApplyACLs())
+                //{
+                //    std::wcout << std::endl;
+                //    std::wcout << "Applying ACLs is not applicable for CIM files." << std::endl;
+                //    std::wcout << std::endl;
+                //    return E_INVALIDARG;
+                //}
                 if (!EndsWith(unpackDestination, L".cim"))
                 {
                     std::wcout << std::endl;
@@ -313,13 +362,41 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
                     return E_FAIL;
                 }
-                  
-                RETURN_IF_FAILED(MsixCoreLib::Unpack(packageSourcePath, tempDirPathString, false /*applyACLs*/, cli.IsValidateSignature()));
 
-                RETURN_IF_FAILED(MsixCoreLib::CreateAndAddToCIM(unpackDestination, tempDirPathString, rootDirectory));
+                // should applying acls be true by default?
+                std::vector<std::wstring> skippedFiles;
+                std::vector<std::wstring> failedPackages;
+                std::vector<HRESULT> failedPackagesErrors;
+                RETURN_IF_FAILED(MsixCoreLib::Unpack(
+                    packageSourcePath,
+                    tempDirPathString,
+                    true /*applyACLs*/,
+                    cli.IsValidateSignature(),
+                    skippedFiles,
+                    failedPackages,
+                    failedPackagesErrors));
+
+                HRESULT hrCreateCIM = MsixCoreLib::CreateAndAddToCIM(unpackDestination, tempDirPathString, rootDirectory);
 
                 // Best-effort attempt to remove temp directory
                 std::filesystem::remove_all(tempDirPath);
+
+                if (FAILED(hrCreateCIM))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT: " << hr << std::endl;
+                    std::wcout << std::endl;
+                    return hr;
+                }
+                else
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Successfully created the CIM file: " << unpackDestination << std::endl;
+                    std::wcout << std::endl;
+
+                    OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                }
+                 
             }
             // UnpackDestinationFileType::NotSpecified is only valid if unpacking to an existing VHD
             else if (fileType == WVDFileType::NotSpecified || fileType == WVDFileType::VHD || fileType == WVDFileType::VHDX)
@@ -349,7 +426,23 @@ int main(int argc, char * argv[])
                 }
                 else
                 {
-                    RETURN_IF_FAILED(MsixCoreLib::Unpack(packageSourcePath, unpackDestination, cli.IsApplyACLs(), cli.IsValidateSignature()));
+                    std::vector<std::wstring> skippedFiles;
+                    std::vector<std::wstring> failedPackages;
+                    std::vector<HRESULT> failedPackagesErrors;
+                    RETURN_IF_FAILED(MsixCoreLib::Unpack(
+                        packageSourcePath,
+                        unpackDestination,
+                        cli.IsApplyACLs(),
+                        cli.IsValidateSignature(),
+                        skippedFiles,
+                        failedPackages,
+                        failedPackagesErrors));
+
+                    std::wcout << std::endl;
+                    std::wcout << "Finished unpacking packages to: " << unpackDestination << std::endl;
+                    std::wcout << std::endl;
+
+                    OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
                 }
             }
             return hr;
