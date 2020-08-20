@@ -330,49 +330,37 @@ int main(int argc, char * argv[])
                 if (!EndsWith(unpackDestination, L".cim"))
                 {
                     std::wcout << std::endl;
-                    std::wcout << "Invalid CIM file name." << std::endl;
+                    std::wcout << "Invalid CIM file name. File name must have .cim file extension" << std::endl;
                     std::wcout << std::endl;
                     return E_INVALIDARG;
                 }
 
                 // Create a temporary directory to unpack package(s) since we cannot unpack to the CIM directly.
                 std::wstring currentDirectory = std::filesystem::current_path();
-                GUID uniqueId;
-                RETURN_IF_FAILED(createGUID(&uniqueId));
-                RPC_STATUS status = UuidCreate(&uniqueId);
-                if (status != RPC_S_OK && status != RPC_S_UUID_LOCAL_ONLY)
-                {
-                    return HRESULT_FROM_WIN32(status);
-                }
-                RPC_WSTR uniqueIDRPCString = NULL;
-                std::wstring uniqueIDString;
-                if (UuidToStringW(&uniqueId, &uniqueIDRPCString) == RPC_S_OK)
-                {
-                    uniqueIDString = (WCHAR*) uniqueIDRPCString;
-                    RpcStringFreeW(&uniqueIDRPCString);
-                }
-                std::wstring tempDirPathString = currentDirectory + L"\\" + uniqueIDString;
+                std::wstring uniqueIdString;
+                RETURN_IF_FAILED(CreateGUIDString(&uniqueIdString));
+                std::wstring tempDirPathString = currentDirectory + L"\\" + uniqueIdString;
                 std::filesystem::path tempDirPath(tempDirPathString);
 
-                try
+                std::error_code createDirectoryErrorCode;
+                bool createTempDirResult = std::filesystem::create_directory(tempDirPath, createDirectoryErrorCode);
+
+                // Since we're using a GUID, this should almost never happen
+                if (!createTempDirResult)
                 {
-                    bool createTempDirResult = std::filesystem::create_directory(tempDirPath);
-                    // Since we're using a GUID, this should almost never happen
-                    if (!createTempDirResult)
-                    {
-                        std::wcout << std::endl;
-                        std::wcout << "Failed to create temp directory " << tempDirPathString << std::endl;
-                        std::wcout << "This may occur when the directory path already exists. Please try again."  << std::endl;
-                        std::wcout << std::endl;
-                        return E_UNEXPECTED;
-                    }
+                    std::wcout << std::endl;
+                    std::wcout << "Failed to create temp directory " << tempDirPathString << std::endl;
+                    std::wcout << "This may occur when the directory path already exists. Please try again."  << std::endl;
+                    std::wcout << std::endl;
+                    return E_UNEXPECTED;
                 }
-                catch (std::exception& e)
-                { 
+                if (createDirectoryErrorCode.value() != 0)
+                {
                     // Again, we expect that the creation of the temp directory will fail very rarely. Output the exception
                     // and have the user try again.
                     std::wcout << std::endl;
-                    std::wcout << "Creation of temp directory " << tempDirPathString << " failed with error: " << e.what() << std::endl;
+                    std::wcout << "Creation of temp directory " << tempDirPathString << " failed with error: " << createDirectoryErrorCode.value() << std::endl;
+                    std::cout << "Error message: " << createDirectoryErrorCode.message() << std::endl;
                     std::wcout << "Please try again." << std::endl;
                     std::wcout << std::endl;
                     return E_UNEXPECTED;
@@ -394,14 +382,22 @@ int main(int argc, char * argv[])
                 HRESULT hrCreateCIM = MsixCoreLib::CreateAndAddToCIM(unpackDestination, tempDirPathString, rootDirectory);
 
                 // Best-effort attempt to remove temp directory
-                std::filesystem::remove_all(tempDirPath);
+                std::error_code removeTempDirErrorCode;
+                bool removeTemprDirResult = std::filesystem::remove_all(tempDirPath, removeTempDirErrorCode);
+                if (!removeTemprDirResult || removeTempDirErrorCode.value() != 0)
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Failed to remove the temp dir  " << tempDirPath << std::endl;
+                    std::wcout << "Ignoring this non-fatal error and moving on" << std::endl;
+                    std::wcout << std::endl;
+                }
 
                 if (FAILED(hrCreateCIM))
                 {
                     std::wcout << std::endl;
-                    std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT: " << hr << std::endl;
+                    std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hr << std::endl;
                     std::wcout << std::endl;
-                    return hr;
+                    return hrCreateCIM;
                 }
                 else
                 {
@@ -491,16 +487,26 @@ int main(int argc, char * argv[])
                     return E_UNEXPECTED;
                 }
 
-                RETURN_IF_FAILED(MsixCoreLib::MountCIM(cli.GetMountImagePath(), volumeIdFromString));
-
-                std::wcout << std::endl;
-                std::wcout << "Image successfully mounted!" << std::endl;
-                std::wcout << "To examine contents in File Explorer, press Win + R and enter the following: " << std::endl;
-                std::wcout << "\\\\?\\Volume{" << volumeIdString << "}" << std::endl;
-                std::wcout << std::endl;
-                std::wcout << "To unmount, run the following command: " << std::endl;
-                std::wcout << "msixmgr.exe -unmountimage -volumeid " << volumeIdString << " -filetype CIM" << std::endl;
-                std::wcout << std::endl;
+                
+                HRESULT hrMountCIM = MsixCoreLib::MountCIM(cli.GetMountImagePath(), volumeIdFromString);
+                if (FAILED(hrMountCIM))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Mounting the CIM file  " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrMountCIM << std::endl;
+                    std::wcout << std::endl;
+                    return hrMountCIM;
+                }
+                else
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Image successfully mounted!" << std::endl;
+                    std::wcout << "To examine contents in File Explorer, press Win + R and enter the following: " << std::endl;
+                    std::wcout << "\\\\?\\Volume{" << volumeIdString << "}" << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "To unmount, run the following command: " << std::endl;
+                    std::wcout << "msixmgr.exe -unmountimage -volumeid " << volumeIdString << " -filetype CIM" << std::endl;
+                    std::wcout << std::endl;
+                }
             }
             else
             {
@@ -533,7 +539,21 @@ int main(int argc, char * argv[])
                     return E_UNEXPECTED;
                 }
 
-                RETURN_IF_FAILED(MsixCoreLib::UnmountCIM(volumeIdFromString));
+                HRESULT hrUnmountCIM = MsixCoreLib::UnmountCIM(volumeIdFromString);
+
+                if (FAILED(hrUnmountCIM))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Unmounting the CIM with volume id  " << volumeIdString << " failed with HRESULT 0x" << std::hex << hrUnmountCIM << std::endl;
+                    std::wcout << std::endl;
+                    return hrUnmountCIM;
+                }
+                else
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Successfully unmounted the CIM with volume id " << volumeIdString << std::endl;
+                    std::wcout << std::endl;
+                }
             }
             else
             {

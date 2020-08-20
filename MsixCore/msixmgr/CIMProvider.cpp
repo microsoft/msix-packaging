@@ -14,30 +14,48 @@ using namespace std;
 
 namespace MsixCoreLib
 {
+    class CreateCIMDll
+    {
+        public:
+            CreateCIMDll::CreateCIMDll()
+            {
+
+            }
+
+            CreateCIMDll::~CreateCIMDll()
+            {
+                if (module != nullptr)
+                {
+                    FreeLibrary(module);
+                }
+            }
+
+            HRESULT load()
+            {
+                module = LoadLibrary(L"createcim.dll");
+                if (module == nullptr)
+                {
+                    return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
+                }
+                return S_OK;
+            }
+
+            HMODULE get()
+            {
+                return module;
+            }
+
+        private:
+            HMODULE module;
+    };
+
     HRESULT CreateAndAddToCIM(
         _In_ std::wstring cimPath,
         _In_ std::wstring sourcePath,
         _In_ std::wstring rootDirectory)
     {
-        auto autoFreeLibrary = [](HMODULE* module)
-        {
-            if (module != nullptr)
-            {
-                FreeLibrary(*module);
-            }
-        };
-
-        std::unique_ptr<HMODULE, decltype(autoFreeLibrary)>
-            createCIMDll(nullptr, autoFreeLibrary);
-
-        HMODULE createCIMLocal = LoadLibrary(L"createcim.dll");
-        createCIMDll.reset(&createCIMLocal);
-
-        if (*createCIMDll == nullptr)
-        {
-            std::wcout << "Failed to load createcim.dll. Please confirm the dll is next to this exe." << std::endl;
-            return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
-        }
+        CreateCIMDll createCIM;
+        RETURN_IF_FAILED(createCIM.load());
 
         typedef HRESULT(STDMETHODCALLTYPE *CREATEANDADDTOCIMFILE)(
             std::wstring cimFilePath,
@@ -46,7 +64,7 @@ namespace MsixCoreLib
 
         CREATEANDADDTOCIMFILE CreateAndAddToCimFileFunc =
             reinterpret_cast<CREATEANDADDTOCIMFILE>
-            (GetProcAddress(*createCIMDll, "CreateAndAddToCIMFile"));
+            (GetProcAddress(createCIM.get(), "CreateAndAddToCIMFile"));
         
         RETURN_IF_FAILED(CreateAndAddToCimFileFunc(cimPath, sourcePath, rootDirectory));
 
@@ -57,25 +75,8 @@ namespace MsixCoreLib
         std::wstring cimFilePath,
         GUID volumeId)
     {
-        auto autoFreeLibrary = [](HMODULE* module)
-        {
-            if (module != nullptr)
-            {
-                FreeLibrary(*module);
-            }
-        };
-
-        std::unique_ptr<HMODULE, decltype(autoFreeLibrary)>
-            createCIMDll(nullptr, autoFreeLibrary);
-
-        HMODULE createCIMLocal = LoadLibrary(L"createcim.dll");
-        createCIMDll.reset(&createCIMLocal);
-
-        if (*createCIMDll == nullptr)
-        {
-            std::wcout << "Failed to load createcim.dll. Please confirm the dll is next to this exe." << std::endl;
-            return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
-        }
+        CreateCIMDll createCIM;
+        RETURN_IF_FAILED(createCIM.load());
 
         typedef HRESULT(STDMETHODCALLTYPE *MOUNTCIM)(
             std::wstring cimFilePath,
@@ -83,7 +84,7 @@ namespace MsixCoreLib
 
         MOUNTCIM MountCIMFunc =
             reinterpret_cast<MOUNTCIM>
-            (GetProcAddress(*createCIMDll, "MountCIM"));
+            (GetProcAddress(createCIM.get(), "MountCIM"));
 
         RETURN_IF_FAILED(MountCIMFunc(cimFilePath, volumeId));
 
@@ -93,32 +94,15 @@ namespace MsixCoreLib
     HRESULT UnmountCIM(
         GUID volumeId)
     {
-        auto autoFreeLibrary = [](HMODULE* module)
-        {
-            if (module != nullptr)
-            {
-                FreeLibrary(*module);
-            }
-        };
-
-        std::unique_ptr<HMODULE, decltype(autoFreeLibrary)>
-            createCIMDll(nullptr, autoFreeLibrary);
-
-        HMODULE createCIMLocal = LoadLibrary(L"createcim.dll");
-        createCIMDll.reset(&createCIMLocal);
-
-        if (*createCIMDll == nullptr)
-        {
-            std::wcout << "Failed to load createcim.dll. Please confirm the dll is next to this exe." << std::endl;
-            return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
-        }
+        CreateCIMDll createCIM;
+        RETURN_IF_FAILED(createCIM.load());
 
         typedef HRESULT(STDMETHODCALLTYPE *UNMOUNTCIM)(
             GUID volumeId);
 
         UNMOUNTCIM UnmountCIMFunc =
             reinterpret_cast<UNMOUNTCIM>
-            (GetProcAddress(*createCIMDll, "UnmountCIM"));
+            (GetProcAddress(createCIM.get(), "UnmountCIM"));
 
         RETURN_IF_FAILED(UnmountCIMFunc(volumeId));
 

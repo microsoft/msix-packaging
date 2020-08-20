@@ -129,9 +129,9 @@ BEGIN
     IDS_STRING_HELP_OPTION_UNPACK_FILETYPE "the type of file to unpack packages to. Valid file types include {VHD, VHDX, CIM}. This is a required parameter when unpacking to CIM files"
     IDS_STRING_HELP_OPTION_MOUNTIMAGE "Mounts an image of the specified file type"
     IDS_STRING_HELP_OPTION_MOUNTIMAGE_IMAGEPATH "the path to the image file to mount"
-    IDS_STRING_HELP_OPTION_MOUNTIMAGE_VOLUMEID "a GUID to associate with the mounted image. Use this GUID to unmount the mounted image"
+    IDS_STRING_HELP_OPTION_MOUNTIMAGE_VOLUMEID "a GUID (specified without curly braces) to associate with the mounted image. Use this GUID to unmount the mounted image"
     IDS_STRING_HELP_OPTION_UNMOUNTIMAGE "Unmounts the image associated with the provided volume id"
-    IDS_STRING_HELP_OPTION_UNMOUNTIMAGE_VOLUMEID "the GUID associated with the image to unmount"
+    IDS_STRING_HELP_OPTION_UNMOUNTIMAGE_VOLUMEID "the GUID (specified without curly braces) associated with the image to unmount"
 	IDS_STRING_HELP_OPTION_MOUNT_FILETYPE "the type of file to mount or unmount. The following file types are currently supported: CIM"
     
 	END
