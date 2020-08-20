@@ -320,13 +320,6 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
                     return E_INVALIDARG;
                 }
-                //if (cli.IsApplyACLs())
-                //{
-                //    std::wcout << std::endl;
-                //    std::wcout << "Applying ACLs is not applicable for CIM files." << std::endl;
-                //    std::wcout << std::endl;
-                //    return E_INVALIDARG;
-                //}
                 if (!EndsWith(unpackDestination, L".cim"))
                 {
                     std::wcout << std::endl;
@@ -366,14 +359,13 @@ int main(int argc, char * argv[])
                     return E_UNEXPECTED;
                 }
 
-                // should applying acls be true by default?
                 std::vector<std::wstring> skippedFiles;
                 std::vector<std::wstring> failedPackages;
                 std::vector<HRESULT> failedPackagesErrors;
                 RETURN_IF_FAILED(MsixCoreLib::Unpack(
                     packageSourcePath,
                     tempDirPathString,
-                    true /*applyACLs*/,
+                    cli.IsApplyACLs(),
                     cli.IsValidateSignature(),
                     skippedFiles,
                     failedPackages,
