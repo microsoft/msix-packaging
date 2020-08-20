@@ -66,14 +66,6 @@
 #define IDS_STRING_HELP_OPTION_UNMOUNTIMAGE_VOLUMEID 161
 #define IDS_STRING_HELP_OPTION_MOUNT_FILETYPE 162
 
-
-
-
-
-
-
-
-
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
