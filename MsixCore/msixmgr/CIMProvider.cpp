@@ -35,6 +35,10 @@ namespace MsixCoreLib
                 module = LoadLibrary(L"createcim.dll");
                 if (module == nullptr)
                 {
+                    std::wcout << std::endl;
+                    std::wcout << "Failed to load createcim.dll. Please confirm the dll is next to this exe." << std::endl;
+                    std::wcout << std::endl;
+
                     return HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND);
                 }
                 return S_OK;

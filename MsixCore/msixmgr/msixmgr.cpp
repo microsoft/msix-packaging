@@ -406,25 +406,6 @@ int main(int argc, char * argv[])
             {
                 if (createFile)
                 {
-                    // TO-DO: Add ability to create VHD
-
-                    //ULONGLONG size = 500 * 1024 * 1024;
-                    //std::wstring mountPoint;
-                    //hr = MsixCoreLib::CreateAndMount(size, packageFilePath.c_str(), mountPoint);
-                    //if (FAILED(hr))
-                    //{
-                    //    std::wcout << std::endl;
-                    //    std::wcout << "Failed to create and mount vhd with error: " << hr << std::endl;
-                    //    std::wcout << std::endl;
-                    //    return hr;
-                    //}
-                    //else
-                    //{
-                    //    std::wcout << std::endl;
-                    //    std::wcout << "Successfully created VHD and mounted to drive: " << mountPoint.c_str() << std::endl;
-                    //    std::wcout << std::endl;
-                    //}
-
                     return ERROR_NOT_SUPPORTED;
                 }
                 else
