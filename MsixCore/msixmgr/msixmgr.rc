@@ -98,10 +98,10 @@ BEGIN
 	IDS_STRING_HELPTEXT_DESCRIPTION " Description:\n -----------\n \tInstalls an msix package, removes an msix package or queries for msix packages.\n \tMay also unpack msix packages and apply ACLs to the resulting package folders\n\n"
     IDS_STRING_HELPTEXT_OPTIONS " Options:\n -------\n"
     IDS_STRING_HELP_OPTION_UNPACK "Unpack a package (.appx, .msix, .appxbundle, .msixbundle) and extract its contents to a folder."
-	IDS_STRING_HELP_OPTION_UNPACK_PACKAGEPATH "the path to the package to unpack"
+	IDS_STRING_HELP_OPTION_UNPACK_PACKAGEPATH "the path to the package to unpack OR the path to a directory containing multiple packages to unpack"
 	IDS_STRING_HELP_OPTION_UNPACK_DESTINATION "the directory to place the resulting package folder(s) in"
 	IDS_STRING_HELP_OPTION_UNPACK_APPLYACLS "optional parameter that applies ACLs to the resulting package folder(s) and their parent folder"
-        IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE "optional parameter that validates a package's signature file before unpacking the package. This will require that the package's certificate is installed on the machine."
+    IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE "optional parameter that validates a package's signature file before unpacking the package. This will require that the package's certificate is installed on the machine."
 	IDS_STRING_HELP_OPTION_APPLYACLS "Applies ACLs to a package folder (an unpacked package)"
 	IDS_STRING_HELP_OPTION_APPLYACLS_PACKAGEPATH "the path to the folder to apply acls to"
 	IDS_STRING_LOADING_PACKAGE_ERROR "installation failed"
@@ -124,6 +124,15 @@ BEGIN
     IDS_STRING_INVALID_ARCHITECTURE_ERROR "The deployment operation failed because the package targets the wrong processor architecture."
     IDS_STRING_PACKAGE_DOWNGRADE_ERROR "The package could not be installed because a higher version of this package is already installed."
     IDS_STRING_USER_CANCELLED_INSTALL_ERROR "User cancelled installation."
+    IDS_STRING_HELP_OPTION_UNPACK_CREATE "optional parameter that creates a new image with the specified -filetype and unpacks the packages to that image"
+    IDS_STRING_HELP_OPTION_UNPACK_ROOTDIRECTORY "root directory on an image to unpack packages to. Required parameter for unpacking to new and existing CIM files"
+    IDS_STRING_HELP_OPTION_UNPACK_FILETYPE "the type of file to unpack packages to. Valid file types include {VHD, VHDX, CIM}. This is a required parameter when unpacking to CIM files"
+    IDS_STRING_HELP_OPTION_MOUNTIMAGE "Mounts an image of the specified file type"
+    IDS_STRING_HELP_OPTION_MOUNTIMAGE_IMAGEPATH "the path to the image file to mount"
+    IDS_STRING_HELP_OPTION_MOUNTIMAGE_VOLUMEID "a GUID (specified without curly braces) to associate with the mounted image. Use this GUID to unmount the mounted image"
+    IDS_STRING_HELP_OPTION_UNMOUNTIMAGE "Unmounts the image associated with the provided volume id"
+    IDS_STRING_HELP_OPTION_UNMOUNTIMAGE_VOLUMEID "the GUID (specified without curly braces) associated with the image to unmount"
+	IDS_STRING_HELP_OPTION_MOUNT_FILETYPE "the type of file to mount or unmount. The following file types are currently supported: CIM"
     
 	END
 

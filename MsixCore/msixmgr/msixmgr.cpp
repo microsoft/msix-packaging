@@ -19,7 +19,9 @@
 #include <VersionHelpers.h>
 #include "UnpackProvider.hpp"
 #include "ApplyACLsProvider.hpp"
+#include "CIMProvider.hpp"
 #include "MsixErrors.hpp"
+#include <filesystem>
 
 #include <msixmgrActions.hpp>
 using namespace std;
@@ -119,6 +121,55 @@ void RelaunchAsAdmin(int argc, char * argv[])
     ShellExecuteExW(&shellExecuteInfo);
 }
 
+void OutputUnpackFailures(
+    _In_ std::wstring packageSource,
+    _In_ std::vector<std::wstring> skippedFiles,
+    _In_ std::vector<std::wstring> failedPackages,
+    _In_ std::vector<HRESULT> failedPackagesErrors)
+{
+    if (!skippedFiles.empty())
+    {
+        std::wcout << std::endl;
+        std::wcout << "[WARNING] The following items from " << packageSource << " were ignored because they are not packages or bundles " << std::endl;
+        std::wcout << std::endl;
+
+        for (int i = 0; i < skippedFiles.size(); i++)
+        {
+            std::wcout << skippedFiles.at(i) << std::endl;
+        }
+
+        std::wcout << std::endl;
+    }
+
+    if (!failedPackages.empty())
+    {
+        std::wcout << std::endl;
+        std::wcout << "[WARNING] The following packages from " << packageSource << " failed to get unpacked. Please try again: " << std::endl;
+        std::wcout << std::endl;
+
+        for (int i = 0; i < failedPackages.size(); i++)
+        {
+            HRESULT hr = failedPackagesErrors.at(i);
+
+            std::wcout << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << failedPackages.at(i) << std::endl;
+            if (hr == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
+            {
+                std::wcout << L"Please confirm that the certificate has been installed for this package" << std::endl;
+            }
+            else if (hr == static_cast<HRESULT>(MSIX::Error::FileWrite))
+            {
+                std::wcout << L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space." << std::endl;
+            }
+            else if (hr == E_INVALIDARG)
+            {
+                std::wcout << "Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
+            }
+
+            std::wcout << std::endl;
+        }
+    }
+}
+
 int main(int argc, char * argv[])
 {
     // Register the providers
@@ -192,13 +243,13 @@ int main(int argc, char * argv[])
                 }
                 else
                 {
-                    if (!isAdmin)
-                    {
-                        RelaunchAsAdmin(argc, argv);
-                        return 0;
-                    }
-                    auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
-                    ui->ShowUI();
+                if (!isAdmin)
+                {
+                    RelaunchAsAdmin(argc, argv);
+                    return 0;
+                }
+                auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
+                ui->ShowUI();
                 }
             }
             break;
@@ -246,7 +297,7 @@ int main(int argc, char * argv[])
                 }
 
                 std::cout << numPackages << " Package(s) found" << std::endl;
-            }      
+            }
 
             return S_OK;
         }
@@ -254,47 +305,130 @@ int main(int argc, char * argv[])
         {
             HRESULT hr = S_OK;
 
-            auto packageFilePath = cli.GetPackageFilePathToInstall();
+            auto packageSourcePath = cli.GetPackageFilePathToInstall();
             auto unpackDestination = cli.GetUnpackDestination();
+            auto rootDirectory = cli.GetRootDirectory();
+            WVDFileType fileType = cli.GetFileType();
+            bool createFile = cli.IsCreate();
 
-            if (IsPackageFile(packageFilePath))
+            if (fileType == WVDFileType::CIM)
             {
-                hr = MsixCoreLib::UnpackPackage(packageFilePath, unpackDestination, cli.IsApplyACLs(), cli.IsValidateSignature());
-            }
-            else if (IsBundleFile(packageFilePath))
-            {
-                hr = MsixCoreLib::UnpackBundle(packageFilePath, unpackDestination, cli.IsApplyACLs(), cli.IsValidateSignature());
-            }
-            else
-            {
-                std::wcout << std::endl;
-                std::wcout << "Invalid package path: " << packageFilePath << std::endl;
-                std::wcout << "Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
-                std::wcout << std::endl;
-                return E_INVALIDARG;
-            }
-            if (FAILED(hr))
-            {
-                std::wcout << std::endl;
-                std::wcout << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << packageFilePath << std::endl;
-                if (hr == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
+                if (rootDirectory.empty() || fileType == WVDFileType::NotSpecified)
                 {
-                    std::wcout << L"Please confirm that the certificate has been installed for this package" << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "Creating a file with the -create option requires both a -rootDirectory and -fileType" << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
                 }
-                else if (hr == static_cast<HRESULT>(MSIX::Error::FileWrite))
+                if (!EndsWith(unpackDestination, L".cim"))
                 {
-                    std::wcout << L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space." << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "Invalid CIM file name. File name must have .cim file extension" << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
                 }
-                std::wcout << std::endl;
-            }
-            else
-            {
-                std::wcout << std::endl;
-                std::wcout << "Successfully unpacked and applied ACLs for package: " << packageFilePath << std::endl;
-                std::wcout << "If your package is a store-signed package, please note that store-signed apps require a license file to be included, which can be downloaded from the Microsoft Store for Business"  << std::endl;
-                std::wcout << std::endl;
-            }
 
+                // Create a temporary directory to unpack package(s) since we cannot unpack to the CIM directly.
+                std::wstring currentDirectory = std::filesystem::current_path();
+                std::wstring uniqueIdString;
+                RETURN_IF_FAILED(CreateGUIDString(&uniqueIdString));
+                std::wstring tempDirPathString = currentDirectory + L"\\" + uniqueIdString;
+                std::filesystem::path tempDirPath(tempDirPathString);
+
+                std::error_code createDirectoryErrorCode;
+                bool createTempDirResult = std::filesystem::create_directory(tempDirPath, createDirectoryErrorCode);
+
+                // Since we're using a GUID, this should almost never happen
+                if (!createTempDirResult)
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Failed to create temp directory " << tempDirPathString << std::endl;
+                    std::wcout << "This may occur when the directory path already exists. Please try again."  << std::endl;
+                    std::wcout << std::endl;
+                    return E_UNEXPECTED;
+                }
+                if (createDirectoryErrorCode.value() != 0)
+                {
+                    // Again, we expect that the creation of the temp directory will fail very rarely. Output the exception
+                    // and have the user try again.
+                    std::wcout << std::endl;
+                    std::wcout << "Creation of temp directory " << tempDirPathString << " failed with error: " << createDirectoryErrorCode.value() << std::endl;
+                    std::cout << "Error message: " << createDirectoryErrorCode.message() << std::endl;
+                    std::wcout << "Please try again." << std::endl;
+                    std::wcout << std::endl;
+                    return E_UNEXPECTED;
+                }
+
+                std::vector<std::wstring> skippedFiles;
+                std::vector<std::wstring> failedPackages;
+                std::vector<HRESULT> failedPackagesErrors;
+                RETURN_IF_FAILED(MsixCoreLib::Unpack(
+                    packageSourcePath,
+                    tempDirPathString,
+                    cli.IsApplyACLs(),
+                    cli.IsValidateSignature(),
+                    skippedFiles,
+                    failedPackages,
+                    failedPackagesErrors));
+
+                HRESULT hrCreateCIM = MsixCoreLib::CreateAndAddToCIM(unpackDestination, tempDirPathString, rootDirectory);
+
+                // Best-effort attempt to remove temp directory
+                std::error_code removeTempDirErrorCode;
+                bool removeTemprDirResult = std::filesystem::remove_all(tempDirPath, removeTempDirErrorCode);
+                if (!removeTemprDirResult || removeTempDirErrorCode.value() != 0)
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Failed to remove the temp dir  " << tempDirPath << std::endl;
+                    std::wcout << "Ignoring this non-fatal error and moving on" << std::endl;
+                    std::wcout << std::endl;
+                }
+
+                if (FAILED(hrCreateCIM))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hr << std::endl;
+                    std::wcout << std::endl;
+                    return hrCreateCIM;
+                }
+                else
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Successfully created the CIM file: " << unpackDestination << std::endl;
+                    std::wcout << std::endl;
+
+                    OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                }
+                 
+            }
+            // UnpackDestinationFileType::NotSpecified is only valid if unpacking to an existing VHD
+            else if (fileType == WVDFileType::NotSpecified || fileType == WVDFileType::VHD || fileType == WVDFileType::VHDX)
+            {
+                if (createFile)
+                {
+                    return ERROR_NOT_SUPPORTED;
+                }
+                else
+                {
+                    std::vector<std::wstring> skippedFiles;
+                    std::vector<std::wstring> failedPackages;
+                    std::vector<HRESULT> failedPackagesErrors;
+                    RETURN_IF_FAILED(MsixCoreLib::Unpack(
+                        packageSourcePath,
+                        unpackDestination,
+                        cli.IsApplyACLs(),
+                        cli.IsValidateSignature(),
+                        skippedFiles,
+                        failedPackages,
+                        failedPackagesErrors));
+
+                    std::wcout << std::endl;
+                    std::wcout << "Finished unpacking packages to: " << unpackDestination << std::endl;
+                    std::wcout << std::endl;
+
+                    OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                }
+            }
             return hr;
         }
         case OperationType::ApplyACLs:
@@ -302,6 +436,105 @@ int main(int argc, char * argv[])
             std::vector<std::wstring> packageFolders;
             packageFolders.push_back(cli.GetPackageFilePathToInstall()); // we're not actually installing anything. The API just returns the file path name we need.
             RETURN_IF_FAILED(MsixCoreLib::ApplyACLs(packageFolders));
+            return S_OK;
+        }
+        case OperationType::MountImage:
+        {
+            if (cli.GetFileType() == WVDFileType::CIM)
+            {
+                if (cli.GetVolumeId().empty())
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Please provide a volume id in order to mount a CIM image" << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
+                }
+
+                std::wstring volumeIdString = cli.GetVolumeId();
+                GUID volumeIdFromString;
+                if (UuidFromStringW((RPC_WSTR)(cli.GetVolumeId().c_str()), &volumeIdFromString) != RPC_S_OK)
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Failed to convert specified volume id {" << volumeIdString << "} to GUID" << std::endl;
+                    std::wcout << std::endl;
+                    return E_UNEXPECTED;
+                }
+
+                
+                HRESULT hrMountCIM = MsixCoreLib::MountCIM(cli.GetMountImagePath(), volumeIdFromString);
+                if (FAILED(hrMountCIM))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Mounting the CIM file  " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrMountCIM << std::endl;
+                    std::wcout << std::endl;
+                    return hrMountCIM;
+                }
+                else
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Image successfully mounted!" << std::endl;
+                    std::wcout << "To examine contents in File Explorer, press Win + R and enter the following: " << std::endl;
+                    std::wcout << "\\\\?\\Volume{" << volumeIdString << "}" << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "To unmount, run the following command: " << std::endl;
+                    std::wcout << "msixmgr.exe -unmountimage -volumeid " << volumeIdString << " -filetype CIM" << std::endl;
+                    std::wcout << std::endl;
+                }
+            }
+            else
+            {
+                std::wcout << std::endl;
+                std::wcout << "Please specify one of the following supported file types for the -MountImage command: {CIM}" << std::endl;
+                std::wcout << std::endl;
+                return ERROR_NOT_SUPPORTED;
+            }
+            return S_OK;
+        }
+        case OperationType::UnmountImage:
+        {
+            if (cli.GetFileType() == WVDFileType::CIM)
+            {
+                if (cli.GetVolumeId().empty())
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Please provide the id of the volume you would like to unmount using the -volumeId option" << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
+                }
+
+                std::wstring volumeIdString = cli.GetVolumeId();
+                GUID volumeIdFromString;
+                if (UuidFromStringW((RPC_WSTR)(cli.GetVolumeId().c_str()), &volumeIdFromString) != RPC_S_OK)
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Failed to convert specified volume id {" << volumeIdString << "}  to GUID" << std::endl;
+                    std::wcout << std::endl;
+                    return E_UNEXPECTED;
+                }
+
+                HRESULT hrUnmountCIM = MsixCoreLib::UnmountCIM(volumeIdFromString);
+
+                if (FAILED(hrUnmountCIM))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Unmounting the CIM with volume id  " << volumeIdString << " failed with HRESULT 0x" << std::hex << hrUnmountCIM << std::endl;
+                    std::wcout << std::endl;
+                    return hrUnmountCIM;
+                }
+                else
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Successfully unmounted the CIM with volume id " << volumeIdString << std::endl;
+                    std::wcout << std::endl;
+                }
+            }
+            else
+            {
+                std::wcout << std::endl;
+                std::wcout << "Please specify one of the following supported file types for the -UnmountImage command: {CIM}" << std::endl;
+                std::wcout << std::endl;
+                return ERROR_NOT_SUPPORTED;
+            }
             return S_OK;
         }
         default:

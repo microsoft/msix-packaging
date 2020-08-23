@@ -350,4 +350,22 @@ namespace MsixCoreLib
 
         return S_OK;
     }
+
+    HRESULT CreateGUIDString(std::wstring* guidString)
+    {
+        GUID guid;
+        RPC_STATUS status = UuidCreate(&guid);
+        if (status != RPC_S_OK && status != RPC_S_UUID_LOCAL_ONLY)
+        {
+            return HRESULT_FROM_WIN32(status);
+        }
+
+        RPC_WSTR uniqueIDRPCString = NULL;
+        if (UuidToStringW(&guid, &uniqueIDRPCString) == RPC_S_OK)
+        {
+            *guidString = (WCHAR*) uniqueIDRPCString;
+            RpcStringFreeW(&uniqueIDRPCString);
+        }
+        return S_OK;
+    }
 }
