@@ -19,6 +19,7 @@
 #include <VersionHelpers.h>
 #include "UnpackProvider.hpp"
 #include "ApplyACLsProvider.hpp"
+#include "VHDProvider.hpp"
 #include "CIMProvider.hpp"
 #include "MsixErrors.hpp"
 #include <filesystem>
@@ -406,7 +407,117 @@ int main(int argc, char * argv[])
             {
                 if (createFile)
                 {
-                    return ERROR_NOT_SUPPORTED;
+                    if (!(EndsWith(unpackDestination, L".vhd") || (EndsWith(unpackDestination, L".vhdx"))))
+                    {
+                        std::wcout << std::endl;
+                        std::wcout << "Invalid VHD file name. File name must have .vhd or .vhdx file extension" << std::endl;
+                        std::wcout << std::endl;
+                        return E_INVALIDARG;
+                    }
+                    if (EndsWith(packageSourcePath, L"detach"))
+                    {
+                        HRESULT hrMountVHD = MsixCoreLib::UnmountVHD(unpackDestination);
+                        if (FAILED(hrMountVHD))
+                        {
+                            std::wcout << std::endl;
+                            std::wcout << "Unmounting the VHD file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrMountVHD << std::endl;
+                            std::wcout << std::endl;
+                            return hrMountVHD;
+                        }
+                        return S_OK;
+                    }
+
+                    if (fileType == WVDFileType::VHDX)
+                    {
+                        WCHAR volumeName[MAX_PATH];
+                        DWORD bytesReturned;
+                        VOLUME_DISK_EXTENTS diskExtents;
+                        HANDLE hFVol = FindFirstVolumeW(volumeName, sizeof(volumeName));
+
+                        do
+                        {
+                            std::wcout << std::endl;
+                            std::wcout << "Volume Name: " << volumeName << std::endl;
+
+                            //size_t backslashPos = wcslen(volumeName) - 1;
+                            //bool hadTrailingBackslash = volumeName[backslashPos] == '\\';
+                            //if (hadTrailingBackslash) {
+                            //    volumeName[backslashPos] = 0;
+                            //}
+
+                            //HANDLE hVol = CreateFile(volumeName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+                            //if (hVol == INVALID_HANDLE_VALUE) {
+                            //    return E_FAIL;
+                            //}
+
+                            //STORAGE_DEVICE_NUMBER_EX volStorageDeviceInfo = {};
+                            //DWORD volBytesReturned;
+                            //BOOL res = DeviceIoControl(hVol, IOCTL_STORAGE_GET_DEVICE_NUMBER_EX, nullptr,
+                            //    0, &volStorageDeviceInfo, sizeof(volStorageDeviceInfo), &volBytesReturned, nullptr);
+                            //if (!res)
+                            //{
+                            //    DWORD error = GetLastError();
+                            //    std::wcout << std::endl;
+                            //    std::wcout << "Failed to query for vol storage device info: " << error  << std::endl;
+                            //    std::wcout << std::endl;
+                            //}
+
+                            //DWORD  volDeviceNumber = volStorageDeviceInfo.DeviceNumber;
+                            //std::wcout << "volDeviceNumber: " << volDeviceNumber << std::endl;
+
+                            std::wcout << std::endl;
+
+                            // I had a problem where CreateFile complained about the trailing \ and
+                            // SetVolumeMountPoint desperately wanted the backslash there. I ended up 
+                            // doing this to get it working but I'm not a fan and I'd greatly 
+                            // appreciate it if someone has any further info on this matter
+                            int backslashPos = wcslen(volumeName) - 1;
+                            bool hadTrailingBackslash = volumeName[backslashPos] == '\\';
+                            if (hadTrailingBackslash) {
+                                volumeName[backslashPos] = 0;
+                            }
+
+                            HANDLE hVol = CreateFile(volumeName, 0, FILE_SHARE_READ | FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, NULL);
+                            if (hVol == INVALID_HANDLE_VALUE) {
+                                return E_FAIL;
+                            }
+
+                            DeviceIoControl(hVol, IOCTL_VOLUME_GET_VOLUME_DISK_EXTENTS, NULL,
+                                0, &diskExtents, sizeof(diskExtents), &bytesReturned, NULL);
+
+                            for (int i = 0; i < diskExtents.NumberOfDiskExtents; i++)
+                            {
+                                std::wcout << "Disk Extent : " << i<< " has disk number" << diskExtents.Extents[i].DiskNumber << std::endl;
+                            }
+
+
+                            //// If the volume were to span across multiple physical disks, you'd find 
+                            //// more than one Extents here but we don't have to worry about that with VHD
+                            //// Note that 'driveNumber' would be the integer you extracted out of 
+                            //// 'physicalDrive' in the previous snippet
+                            //if (diskExtents.Extents[0].DiskNumber == driveNumber) {
+                            //    if (hadTrailingBackslash) {
+                            //        volumeName[backslashPos] = '\\';
+                            //    }
+
+                            //    // Found volume that's on the VHD, let's mount it with a letter of our choosing.
+                            //    // Warning: SetVolumeMountPoint requires elevation
+                            //    SetVolumeMountPoint("H:\\", volumeName);
+                            
+                        } while (FindNextVolume(hFVol, volumeName, sizeof(volumeName)));
+                        FindVolumeClose(hFVol);
+                    }
+                    else
+                    {
+                        HRESULT hrCreateVHD = MsixCoreLib::CreateAndMountVHD(unpackDestination);
+                        if (FAILED(hrCreateVHD))
+                        {
+                            std::wcout << std::endl;
+                            std::wcout << "Creating the VHD file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
+                            std::wcout << std::endl;
+                            return hrCreateVHD;
+                        }
+                    }
                 }
                 else
                 {
@@ -440,7 +551,8 @@ int main(int argc, char * argv[])
         }
         case OperationType::MountImage:
         {
-            if (cli.GetFileType() == WVDFileType::CIM)
+            WVDFileType fileType = cli.GetFileType();
+            if (fileType == WVDFileType::CIM)
             {
                 if (cli.GetVolumeId().empty())
                 {
@@ -481,10 +593,41 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
                 }
             }
+            else if (fileType == WVDFileType::VHD || fileType == WVDFileType::VHDX)
+            {
+                if (cli.GetMountImagePath().empty())
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Please provide the path to the image you would like to mount." << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
+                }
+
+                HRESULT hrMountVHD = MsixCoreLib::MountVHD(cli.GetMountImagePath());
+                if (FAILED(hrMountVHD))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Mounting the VHD(X) file  " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrMountVHD << std::endl;
+                    std::wcout << std::endl;
+                    return hrMountVHD;
+                }
+                else
+                {
+                    //std::wcout << std::endl;
+                    std::wcout << "Image successfully mounted!" << std::endl;
+                    //std::wcout << "To examine contents in File Explorer, press Win + R and enter the following: " << std::endl;
+                    //std::wcout << "\\\\?\\Volume{" << volumeIdString << "}" << std::endl;
+                    //std::wcout << std::endl;
+                    //std::wcout << "To unmount, run the following command: " << std::endl;
+                    //std::wcout << "msixmgr.exe -unmountimage -volumeid " << volumeIdString << " -filetype CIM" << std::endl;
+                    //std::wcout << std::endl;
+                }
+
+            }
             else
             {
                 std::wcout << std::endl;
-                std::wcout << "Please specify one of the following supported file types for the -MountImage command: {CIM}" << std::endl;
+                std::wcout << "Please specify one of the following supported file types for the -MountImage command: {VHD, VHDX, CIM}" << std::endl;
                 std::wcout << std::endl;
                 return ERROR_NOT_SUPPORTED;
             }
@@ -492,7 +635,8 @@ int main(int argc, char * argv[])
         }
         case OperationType::UnmountImage:
         {
-            if (cli.GetFileType() == WVDFileType::CIM)
+            WVDFileType fileType = cli.GetFileType();
+            if (fileType == WVDFileType::CIM)
             {
                 if (cli.GetVolumeId().empty())
                 {
@@ -528,10 +672,36 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
                 }
             }
+            else if (fileType == WVDFileType::VHD || fileType == WVDFileType::VHDX)
+            {
+                if (cli.GetMountImagePath().empty())
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Please provide the path to the image you would like to unmount." << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
+                }
+
+                HRESULT hrUnmountVHD = MsixCoreLib::UnmountVHD(cli.GetMountImagePath());
+
+                if (FAILED(hrUnmountVHD))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Unmounting the VHD " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrUnmountVHD << std::endl;
+                    std::wcout << std::endl;
+                    return hrUnmountVHD;
+                }
+                else
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Successfully unmounted the VHD " << cli.GetMountImagePath() << std::endl;
+                    std::wcout << std::endl;
+                }
+            }
             else
             {
                 std::wcout << std::endl;
-                std::wcout << "Please specify one of the following supported file types for the -UnmountImage command: {CIM}" << std::endl;
+                std::wcout << "Please specify one of the following supported file types for the -UnmountImage command: {VHD, VHDX, CIM}" << std::endl;
                 std::wcout << std::endl;
                 return ERROR_NOT_SUPPORTED;
             }

@@ -235,6 +235,7 @@ del "$(OutDir)msixmgr_LN.exe"
     <ClInclude Include="UnpackProvider.hpp" />
     <ClInclude Include="Util.hpp" />
     <ClInclude Include="msixmgrLogger.hpp" />
+    <ClInclude Include="VHDProvider.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="ApplyACLsProvider.cpp" />
@@ -245,6 +246,7 @@ del "$(OutDir)msixmgr_LN.exe"
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="msixmgr.cpp" />
     <ClCompile Include="msixmgrLogger.cpp" />
+    <ClCompile Include="VHDProvider.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="msixmgr.rc" />

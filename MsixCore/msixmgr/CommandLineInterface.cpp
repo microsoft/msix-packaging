@@ -266,6 +266,19 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
         },
         {
             {
+                L"-imagePath",
+                Option(true, IDS_STRING_HELP_OPTION_MOUNTIMAGE_IMAGEPATH, // TO-DO UPDATE HELP STRING
+                    [&](CommandLineInterface* commandLineInterface, const std::string& imagePath)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::UnmountImage)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_mountImagePath = utf8_to_utf16(imagePath);
+                    return S_OK;
+                }),
+            },
+            {
                 L"-volumeId",
                 Option(true, IDS_STRING_HELP_OPTION_UNMOUNTIMAGE_VOLUMEID,
                     [&](CommandLineInterface* commandLineInterface, const std::string& volumeId)
