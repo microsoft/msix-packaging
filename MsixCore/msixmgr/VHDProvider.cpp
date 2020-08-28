@@ -52,18 +52,23 @@ namespace MsixCoreLib
     };
 
     HRESULT CreateAndMountVHD(
-        _In_ std::wstring vhdFilePath)
+        _In_ std::wstring vhdFilePath,
+        _In_ ULONGLONG sizeMBs,
+        _Inout_ std::wstring& driveLetter)
     {
         WVDUtilitiesDll wvdUtilities;
         RETURN_IF_FAILED(wvdUtilities.load());
 
-        typedef HRESULT(STDMETHODCALLTYPE *CREATEANDMOUNTVHD)(std::wstring vhdFilePath);
+        typedef HRESULT(STDMETHODCALLTYPE *CREATEANDMOUNTVHD)(
+            std::wstring vhdFilePath,
+            ULONGLONG sizeMBs,
+            std::wstring& driveLetter);
 
         CREATEANDMOUNTVHD CreateAndMountVHD =
             reinterpret_cast<CREATEANDMOUNTVHD>
             (GetProcAddress(wvdUtilities.get(), "CreateAndMountVHD"));
 
-        RETURN_IF_FAILED(CreateAndMountVHD(vhdFilePath));
+        RETURN_IF_FAILED(CreateAndMountVHD(vhdFilePath, sizeMBs, driveLetter));
 
         return S_OK;
     }
@@ -86,18 +91,19 @@ namespace MsixCoreLib
     }
 
     HRESULT MountVHD(
-        _In_ std::wstring vhdFilePath)
+        _In_ std::wstring vhdFilePath,
+        _Inout_ std::wstring& driveLetter)
     {
         WVDUtilitiesDll wvdUtilities;
         RETURN_IF_FAILED(wvdUtilities.load());
 
-        typedef HRESULT(STDMETHODCALLTYPE *MOUNTVHD)(std::wstring vhdFilePath);
+        typedef HRESULT(STDMETHODCALLTYPE *MOUNTVHD)(std::wstring vhdFilePath, std::wstring& driveLetter);
 
         MOUNTVHD MountVHD =
             reinterpret_cast<MOUNTVHD>
             (GetProcAddress(wvdUtilities.get(), "MountVHD"));
 
-        RETURN_IF_FAILED(MountVHD(vhdFilePath));
+        RETURN_IF_FAILED(MountVHD(vhdFilePath, driveLetter));
 
         return S_OK;
     }

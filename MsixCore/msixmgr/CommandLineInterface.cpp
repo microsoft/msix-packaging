@@ -167,6 +167,20 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
 
                     return S_OK;
                 }),
+            },
+            {
+                L"-vhdSize",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_ROOTDIRECTORY,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& vhdSize)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_vhdSize = strtoull(vhdSize.c_str(), NULL, 10 /*base*/);
+
+                    return S_OK;
+                }),
             }
         })
     },
@@ -267,7 +281,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
         {
             {
                 L"-imagePath",
-                Option(true, IDS_STRING_HELP_OPTION_MOUNTIMAGE_IMAGEPATH, // TO-DO UPDATE HELP STRING
+                Option(true, IDS_STRING_HELP_OPTION_MOUNTIMAGE_IMAGEPATH,
                     [&](CommandLineInterface* commandLineInterface, const std::string& imagePath)
                 {
                     if (commandLineInterface->m_operationType != OperationType::UnmountImage)

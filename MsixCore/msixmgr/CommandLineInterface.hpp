@@ -102,6 +102,7 @@ public:
     std::wstring GetVolumeId() { return m_volumeId; }
     WVDFileType GetFileType() { return m_fileType; }
     OperationType GetOperationType() { return m_operationType; }
+    ULONGLONG GetVHDSize() { return m_vhdSize; }
 private:
     int m_argc = 0;
     char ** m_argv = nullptr;
@@ -120,6 +121,7 @@ private:
     bool m_validateSignature;
     bool m_create = false;
     WVDFileType m_fileType = WVDFileType::NotSpecified;
+    ULONGLONG m_vhdSize = -1;
 
     OperationType m_operationType = OperationType::Undefined;
 
