@@ -54,6 +54,7 @@ namespace MsixCoreLib
     HRESULT CreateAndMountVHD(
         _In_ std::wstring vhdFilePath,
         _In_ ULONGLONG sizeMBs,
+        _In_ bool isVHD,
         _Inout_ std::wstring& driveLetter)
     {
         WVDUtilitiesDll wvdUtilities;
@@ -62,13 +63,14 @@ namespace MsixCoreLib
         typedef HRESULT(STDMETHODCALLTYPE *CREATEANDMOUNTVHD)(
             std::wstring vhdFilePath,
             ULONGLONG sizeMBs,
+            bool isVHD,
             std::wstring& driveLetter);
 
         CREATEANDMOUNTVHD CreateAndMountVHD =
             reinterpret_cast<CREATEANDMOUNTVHD>
             (GetProcAddress(wvdUtilities.get(), "CreateAndMountVHD"));
 
-        RETURN_IF_FAILED(CreateAndMountVHD(vhdFilePath, sizeMBs, driveLetter));
+        RETURN_IF_FAILED(CreateAndMountVHD(vhdFilePath, sizeMBs, isVHD, driveLetter));
 
         return S_OK;
     }

@@ -426,7 +426,7 @@ int main(int argc, char * argv[])
                         }
 
                         std::wstring driveLetter;
-                        HRESULT hrCreateVHD = MsixCoreLib::CreateAndMountVHD(unpackDestination, cli.GetVHDSize(), driveLetter);
+                        HRESULT hrCreateVHD = MsixCoreLib::CreateAndMountVHD(unpackDestination, cli.GetVHDSize(), fileType == WVDFileType::VHD,  driveLetter);
                         if (FAILED(hrCreateVHD))
                         {
                             std::wcout << std::endl;
