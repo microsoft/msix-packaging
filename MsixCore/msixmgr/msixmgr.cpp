@@ -417,10 +417,10 @@ int main(int argc, char * argv[])
                     }
                     else
                     {
-                        if (cli.GetVHDSize() <= 0)
+                        if (cli.GetVHDSize() == 0)
                         {
                             std::wcout << std::endl;
-                            std::wcout << "VHD size was either not specified or not valid. Please try again." << std::endl;
+                            std::wcout << "VHD size was not specified. Please provide a vhd size in MB using the -vhdSize option" << std::endl;
                             std::wcout << std::endl;
                             return E_INVALIDARG;
                         }

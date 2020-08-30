@@ -15,6 +15,3 @@ namespace MsixCoreLib
         _In_ std::wstring vhdFilePath,
         _Inout_ std::wstring& driveLetter);
 }
-
-
-

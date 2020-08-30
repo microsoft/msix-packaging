@@ -177,8 +177,19 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                     {
                         return E_INVALIDARG;
                     }
-                    commandLineInterface->m_vhdSize = strtoull(vhdSize.c_str(), NULL, 10 /*base*/);
-
+                    
+                    ULONGLONG maxVhdSizeMB = 2190400ull; // MAX SIZE: 2040 GiB --> 2190400 MB
+                    errno = 0;
+                    ULONGLONG vhdSizeUll = strtoull(vhdSize.c_str(), NULL, 10 /*base*/);
+                    if ((vhdSizeUll == ULLONG_MAX && errno == ERANGE) ||
+                        vhdSizeUll > maxVhdSizeMB ||
+                        vhdSizeUll < 3ull)
+                    {
+                        std::wcout << "Invalid VHD size. Specified value must be at least 3 MB and at most 2190400 MB" << std::endl;
+                        return E_INVALIDARG;
+                    }
+  
+                    commandLineInterface->m_vhdSize = vhdSizeUll;
                     return S_OK;
                 }),
             }

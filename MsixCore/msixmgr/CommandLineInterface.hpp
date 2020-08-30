@@ -121,7 +121,7 @@ private:
     bool m_validateSignature;
     bool m_create = false;
     WVDFileType m_fileType = WVDFileType::NotSpecified;
-    ULONGLONG m_vhdSize = -1;
+    ULONGLONG m_vhdSize = 0;
 
     OperationType m_operationType = OperationType::Undefined;
 
