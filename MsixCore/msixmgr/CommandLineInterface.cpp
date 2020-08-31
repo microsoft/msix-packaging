@@ -170,7 +170,7 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             },
             {
                 L"-vhdSize",
-                Option(true, IDS_STRING_HELP_OPTION_UNPACK_ROOTDIRECTORY,
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_VHDSIZE,
                     [&](CommandLineInterface* commandLineInterface, const std::string& vhdSize)
                 {
                     if (commandLineInterface->m_operationType != OperationType::Unpack)

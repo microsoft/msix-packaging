@@ -75,7 +75,7 @@ BEGIN
     IDS_STRING_HELP_OPTION_FINDPACKAGE 
                             "Find package with the specific package full name."
     IDS_STRING_HELP_OPTION_HELP "Display this help text."
-    IDS_STRING_HELPTEXT_USAGE     " Usage:\n ------\n \tmsixmgr.exe [options]\n \tmsixmgr.exe -Unpack -packagePath <path to package> -destination <output folder> [-applyacls]\n \tmsixmgr.exe -ApplyACLs -packagePath <package folder path>\n\n"
+    IDS_STRING_HELPTEXT_USAGE     " Usage:\n ------\n \tmsixmgr.exe [options]\n \tmsixmgr.exe -Unpack -packagePath <path to package> -destination <output folder> [-applyacls] [-create] [-vhdSize]\n \tmsixmgr.exe -ApplyACLs -packagePath <package folder path>\n \tmsixmgr.exe -MountImage -imagePath <path to image file> -fileType [ VHD | VHDX ]\n \tmsixmgr.exe -MountImage -imagePath <path to image file> -volumeId <GUID> -fileType CIM\n \tmsixmgr.exe -UnmountImage -imagePath <path to image file> -fileType [ VHD | VHDX ]\n\n"
     IDS_STRING_UI_CANCEL    "Cancel"
 END
 
@@ -127,12 +127,13 @@ BEGIN
     IDS_STRING_HELP_OPTION_UNPACK_CREATE "optional parameter that creates a new image with the specified -filetype and unpacks the packages to that image"
     IDS_STRING_HELP_OPTION_UNPACK_ROOTDIRECTORY "root directory on an image to unpack packages to. Required parameter for unpacking to new and existing CIM files"
     IDS_STRING_HELP_OPTION_UNPACK_FILETYPE "the type of file to unpack packages to. Valid file types include {VHD, VHDX, CIM}. This is a required parameter when unpacking to CIM files"
-    IDS_STRING_HELP_OPTION_MOUNTIMAGE "Mounts an image of the specified file type"
-    IDS_STRING_HELP_OPTION_MOUNTIMAGE_IMAGEPATH "the path to the image file to mount"
-    IDS_STRING_HELP_OPTION_MOUNTIMAGE_VOLUMEID "a GUID (specified without curly braces) to associate with the mounted image. Use this GUID to unmount the mounted image"
-    IDS_STRING_HELP_OPTION_UNMOUNTIMAGE "Unmounts the image associated with the provided volume id"
-    IDS_STRING_HELP_OPTION_UNMOUNTIMAGE_VOLUMEID "the GUID (specified without curly braces) associated with the image to unmount"
-	IDS_STRING_HELP_OPTION_MOUNT_FILETYPE "the type of file to mount or unmount. The following file types are currently supported: CIM"
+    IDS_STRING_HELP_OPTION_MOUNTIMAGE "Mounts an image of the specified file type. Supported file types include {VHD, VHDX, CIM}."
+    IDS_STRING_HELP_OPTION_MOUNTIMAGE_IMAGEPATH "the path to the image file to mount or unmount."
+    IDS_STRING_HELP_OPTION_MOUNTIMAGE_VOLUMEID "a GUID (specified without curly braces) to associate with the mounted image. Use this GUID to unmount the mounted image. Use only for CIM files."
+    IDS_STRING_HELP_OPTION_UNMOUNTIMAGE "Unmounts the VHD, VHDX, or CIM image"
+    IDS_STRING_HELP_OPTION_UNMOUNTIMAGE_VOLUMEID "the GUID (specified without curly braces) associated with the image to unmount. Use only for CIM files."
+	IDS_STRING_HELP_OPTION_MOUNT_FILETYPE "the type of file to mount or unmount. The following file types are currently supported: {VHD, VHDX, CIM}"
+	IDS_STRING_HELP_OPTION_UNPACK_VHDSIZE "the desired size of the VHD or VHDX file in MB. Use only for VHD or VHDX files"
     
 	END
 
