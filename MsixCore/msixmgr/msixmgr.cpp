@@ -430,8 +430,24 @@ int main(int argc, char * argv[])
                         if (FAILED(hrCreateVHD))
                         {
                             std::wcout << std::endl;
-                            std::wcout << "Creating the VHD file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
+                            std::wcout << "Creating the VHD(X) file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
+
+                            // Best effort to unmount and delete the VHD file
+                            if (std::filesystem::exists(std::filesystem::path(unpackDestination.c_str())))
+                            {
+                                MsixCoreLib::UnmountVHD(unpackDestination);
+                                if (_wremove(unpackDestination.c_str()) != 0)
+                                {
+                                    std::wcout << "Failed best-effort attempt to delete the incomplete VHD(X) file: "  << unpackDestination << " Please do not use this file." << std::endl;
+                                }
+                                else
+                                {
+                                    std::wcout << "Best-effort attempt to delete the incomplete VHD(X) file " << unpackDestination << " succeeded." << std::endl;
+                                }
+                            }
+
                             std::wcout << std::endl;
+
                             return hrCreateVHD;
                         }
 
