@@ -432,17 +432,20 @@ int main(int argc, char * argv[])
                             std::wcout << std::endl;
                             std::wcout << "Creating the VHD(X) file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
 
-                            // Best effort to unmount and delete the VHD file
-                            if (std::filesystem::exists(std::filesystem::path(unpackDestination.c_str())))
+                            if (hrCreateVHD != HRESULT_FROM_WIN32(ERROR_FILE_EXISTS))
                             {
-                                MsixCoreLib::UnmountVHD(unpackDestination);
-                                if (_wremove(unpackDestination.c_str()) != 0)
+                                // Best effort to unmount and delete the VHD file
+                                if (std::filesystem::exists(std::filesystem::path(unpackDestination.c_str())))
                                 {
-                                    std::wcout << "Failed best-effort attempt to delete the incomplete VHD(X) file: "  << unpackDestination << " Please do not use this file." << std::endl;
-                                }
-                                else
-                                {
-                                    std::wcout << "Best-effort attempt to delete the incomplete VHD(X) file " << unpackDestination << " succeeded." << std::endl;
+                                    MsixCoreLib::UnmountVHD(unpackDestination);
+                                    if (_wremove(unpackDestination.c_str()) != 0)
+                                    {
+                                        std::wcout << "Failed best-effort attempt to delete the incomplete VHD(X) file: " << unpackDestination << " Please do not use this file." << std::endl;
+                                    }
+                                    else
+                                    {
+                                        std::wcout << "Best-effort attempt to delete the incomplete VHD(X) file " << unpackDestination << " succeeded." << std::endl;
+                                    }
                                 }
                             }
 
