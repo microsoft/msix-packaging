@@ -133,7 +133,7 @@ BEGIN
     IDS_STRING_HELP_OPTION_UNMOUNTIMAGE "Unmounts the VHD, VHDX, or CIM image"
     IDS_STRING_HELP_OPTION_UNMOUNTIMAGE_VOLUMEID "the GUID (specified without curly braces) associated with the image to unmount. Use only for CIM files."
 	IDS_STRING_HELP_OPTION_MOUNT_FILETYPE "the type of file to mount or unmount. The following file types are currently supported: {VHD, VHDX, CIM}"
-	IDS_STRING_HELP_OPTION_UNPACK_VHDSIZE "the desired size of the VHD or VHDX file in MB. Use only for VHD or VHDX files"
+	IDS_STRING_HELP_OPTION_UNPACK_VHDSIZE "the desired size of the VHD or VHDX file in MB. Must be between 5 and 2040000 MB. Use only for VHD or VHDX files"
     
 	END
 
