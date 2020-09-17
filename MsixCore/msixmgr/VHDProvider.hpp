@@ -14,5 +14,6 @@ namespace MsixCoreLib
 
     HRESULT MountVHD(
         _In_ std::wstring vhdFilePath,
+        _In_ bool readOnly,
         _Inout_ std::wstring& driveLetter);
 }

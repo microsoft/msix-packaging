@@ -389,7 +389,7 @@ int main(int argc, char * argv[])
                 if (FAILED(hrCreateCIM))
                 {
                     std::wcout << std::endl;
-                    std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hr << std::endl;
+                    std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateCIM << std::endl;
                     std::wcout << std::endl;
                     return hrCreateCIM;
                 }
@@ -563,7 +563,7 @@ int main(int argc, char * argv[])
                 }
 
                 std::wstring driveLetter;
-                HRESULT hrMountVHD = MsixCoreLib::MountVHD(cli.GetMountImagePath(), driveLetter);
+                HRESULT hrMountVHD = MsixCoreLib::MountVHD(cli.GetMountImagePath(), cli.isMountReadOnly(), driveLetter);
                 if (FAILED(hrMountVHD))
                 {
                     std::wcout << std::endl;

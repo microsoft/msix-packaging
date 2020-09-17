@@ -94,6 +94,7 @@ public:
     bool IsApplyACLs() { return m_applyACLs; }
     bool IsValidateSignature() { return m_validateSignature; }
     bool IsCreate() { return m_create; }
+    bool isMountReadOnly() { return m_readOnly; }
     std::wstring GetPackageFilePathToInstall() { return m_packageFilePath; }
     std::wstring GetPackageFullName() { return m_packageFullName; }
     std::wstring GetUnpackDestination() { return m_unpackDestination; }
@@ -120,6 +121,7 @@ private:
     bool m_applyACLs;
     bool m_validateSignature;
     bool m_create = false;
+    bool m_readOnly = true;
     WVDFileType m_fileType = WVDFileType::NotSpecified;
     ULONGLONG m_vhdSize = 0;
 

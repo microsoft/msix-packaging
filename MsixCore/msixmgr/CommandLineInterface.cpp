@@ -274,6 +274,30 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                     commandLineInterface->SetWVDFileType(utf8_to_utf16(fileType));
                     return S_OK;
                 }),
+            },
+            {
+                L"-readOnly",
+                Option(true, IDS_STRING_HELP_OPTION_MOUNT_READONLY,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& readOnly)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::MountImage)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    if (CaseInsensitiveEquals(utf8_to_utf16(readOnly), std::wstring(L"true")))
+                    {
+                        commandLineInterface->m_readOnly = true;
+                    }
+                    else if (CaseInsensitiveEquals(utf8_to_utf16(readOnly), std::wstring(L"false")))
+                    {
+                        commandLineInterface->m_readOnly = false;
+                    }
+                    else
+                    {
+                        return E_INVALIDARG;
+                    }
+                    return S_OK;
+                }),
             }
         })
     },

@@ -94,18 +94,19 @@ namespace MsixCoreLib
 
     HRESULT MountVHD(
         _In_ std::wstring vhdFilePath,
+        _In_ bool readOnly,
         _Inout_ std::wstring& driveLetter)
     {
         WVDUtilitiesDll wvdUtilities;
         RETURN_IF_FAILED(wvdUtilities.load());
 
-        typedef HRESULT(STDMETHODCALLTYPE *MOUNTVHD)(std::wstring vhdFilePath, std::wstring& driveLetter);
+        typedef HRESULT(STDMETHODCALLTYPE *MOUNTVHD)(std::wstring vhdFilePath, bool readOnly, std::wstring& driveLetter);
 
         MOUNTVHD MountVHD =
             reinterpret_cast<MOUNTVHD>
             (GetProcAddress(wvdUtilities.get(), "MountVHD"));
 
-        RETURN_IF_FAILED(MountVHD(vhdFilePath, driveLetter));
+        RETURN_IF_FAILED(MountVHD(vhdFilePath, readOnly, driveLetter));
 
         return S_OK;
     }
