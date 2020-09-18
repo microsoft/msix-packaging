@@ -125,6 +125,11 @@ namespace Microsoft.Msix.Utils.ProcessRunner
         public string OutputLogDirectory { get; set; }
 
         /// <summary>
+        /// Gets or sets the working directory for the process to be started.
+        /// </summary>
+        public string WorkingDirectory { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether the process has started.
         /// </summary>
         protected bool HasStarted { get; set; }

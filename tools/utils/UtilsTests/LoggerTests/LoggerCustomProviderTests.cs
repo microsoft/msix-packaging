@@ -16,29 +16,6 @@ namespace UtilsTests
     internal class LoggerCustomProviderTests : TestBase
     {
         /// <summary>
-        /// Custom provider for test.
-        /// </summary>
-        internal class CustomConsoleLog : LogProvider
-        {
-            public override void Log(ILogMessage logMessage)
-            {
-                if (logMessage == null)
-                {
-                    throw new ArgumentNullException("logMessage");
-                }
-
-                Console.Error.WriteLine(logMessage.GetLogMessage(this.LogDecorations, this.LogLevels));
-            }
-
-            /// <summary>
-            /// De-initializes the console log
-            /// </summary>
-            public override void DeinitLog()
-            {
-            }
-        }
-
-        /// <summary>
         /// Test Initialize.
         /// </summary>
         [TestInitialize]
@@ -95,6 +72,29 @@ namespace UtilsTests
         public new void TestCleanup()
         {
             Logger.Deinit();
+        }
+
+        /// <summary>
+        /// Custom provider for test.
+        /// </summary>
+        internal class CustomConsoleLog : LogProvider
+        {
+            public override void Log(ILogMessage logMessage)
+            {
+                if (logMessage == null)
+                {
+                    throw new ArgumentNullException("logMessage");
+                }
+
+                Console.Error.WriteLine(logMessage.GetLogMessage(this.LogDecorations, this.LogLevels));
+            }
+
+            /// <summary>
+            /// De-initializes the console log
+            /// </summary>
+            public override void DeinitLog()
+            {
+            }
         }
     }
 }

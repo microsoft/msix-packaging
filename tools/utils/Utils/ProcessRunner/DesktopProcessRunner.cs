@@ -127,7 +127,16 @@ namespace Microsoft.Msix.Utils.ProcessRunner
         {
             ProcessStartInfo startInfo = new ProcessStartInfo();
             startInfo.FileName = this.ExePath;
-            startInfo.WorkingDirectory = Path.GetDirectoryName(this.ExePath);
+
+            if (string.IsNullOrEmpty(this.WorkingDirectory))
+            {
+                startInfo.WorkingDirectory = Path.GetDirectoryName(this.ExePath);
+            }
+            else
+            {
+                startInfo.WorkingDirectory = this.WorkingDirectory;
+            }
+
             startInfo.Arguments = this.Arguments;
             startInfo.StandardOutputEncoding = this.StandardOutputEncoding;
             startInfo.StandardErrorEncoding = this.StandardErrorEncoding;
