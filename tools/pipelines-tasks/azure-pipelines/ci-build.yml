@@ -3,15 +3,23 @@
 # Branches that trigger a build on commit
 trigger:
 - master
+- release_v*
 
 # Branches that trigger builds on PR
 pr:
   branches:
     include:
     - master
+    - release_v*
+  paths:
+    include:
+    - tools/pipelines-tasks/*
 
 pool:
   vmImage: 'windows-latest'
+
+variables:
+  tasksRoot: 'tools/pipelines-tasks'
 
 steps:
 
@@ -24,17 +32,18 @@ steps:
 - task: PowerShell@2
   displayName: 'Build the project'
   inputs:
-    filePath: 'build.ps1'
+    filePath: '$(tasksRoot)/build.ps1'
     arguments: 'BuildForProduction'
 
 # Run the tests
 - task: NuGetCommand@2
   displayName: 'Restore NuGet packages for test project'
   inputs:
-    restoreSolution: test/assets/HelloWorldUWPApp/HelloWorldApp.sln
+    restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
 
 - powershell: |
     npx mocha
   displayName: 'Run the tests'
+  workingDirectory: '$(tasksRoot)'
   env:
-    SYSTEM_CULTURE: en-US
+    SYSTEM_CULTURE: 'en-US'

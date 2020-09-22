@@ -1,8 +1,12 @@
 # A sample pipeline using the tasks.
 
+# The pipeline expects to have a secure file named certificate.pfx
+# and a secret variable called Password.
+
 variables:
-  solution: 'test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
-  manifest: 'test/assets/HelloWorldUWPApp/Package.appxmanifest'
+  tasksRoot: 'tools/pipelines-tasks'
+  solution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
+  manifest: '$(tasksRoot)/test/assets/HelloWorldUWPApp/Package.appxmanifest'
   platform: 'x86'
   package: '$(Build.ArtifactStagingDirectory)/package.msix'
 

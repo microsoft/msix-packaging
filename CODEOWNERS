@@ -6,3 +6,6 @@
 
 # Utils library
 /tools/utils/ @ranm-msft @msftrubengu @johnmcpms @lechacon @jamespik
+
+# Azure Pipelines tasks
+/tools/pipelines-tasks @ranm-msft @msftrubengu @johnmcpms @lechacon
