@@ -1,0 +1,53 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "501a9528-7fa4-4cb5-b8da-79ded62b74eb",
+  "name": "MsixSigning",
+  "friendlyName": "MSIX package signing",
+  "instanceNameFormat": "Sign MSIX package",
+  "description": "Sign MSIX packages",
+  "author": "Microsoft Corporation",
+  "category": "Package",
+  "helpMarkDown": "",
+  "execution": {
+    "Node10": {
+      "target": "index.js"
+    }
+  },
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "minimumAgentVersion": "1.95.0",
+  "inputs": [
+    {
+      "name": "package",
+      "type": "string",
+      "label": "Package to sign",
+      "defaultValue": "$(Build.ArtifactStagingDirectory)\\**\\*.msix*",
+      "required": true,
+      "helpMarkDown": "Files to sign. Can be a package or a bundle. All matching files are signed."
+    },
+    {
+      "name": "certificate",
+      "type": "secureFile",
+      "label": "Certificate File",
+      "required": true,
+      "helpMarkDown": "The file name or GUID of the secure certificate to use for signing. The file will be deleted after the pipeline runs."
+    },
+    {
+      "name": "passwordVariable",
+      "type": "string",
+      "label": "Password Variable",
+      "required": true,
+      "helpMarkDown": "The name of the variable which stores the password used to access the certificate file for signing. Note that this is NOT the password itself, but rather the variable name, which can be set under Library."
+    },
+    {
+      "name": "timeStampServer",
+      "type": "string",
+      "label": "Time Stamp Server",
+      "required": false,
+      "helpMarkDown": "A URL that specifies the address of a time stamping server."
+    }
+  ]
+}

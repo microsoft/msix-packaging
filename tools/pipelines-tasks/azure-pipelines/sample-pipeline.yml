@@ -1,0 +1,54 @@
+# A sample pipeline using the tasks.
+
+variables:
+  solution: 'test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
+  manifest: 'test/assets/HelloWorldUWPApp/Package.appxmanifest'
+  platform: 'x86'
+  package: '$(Build.ArtifactStagingDirectory)/package.msix'
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: NuGetCommand@2
+  displayName: 'NuGet restore'
+  inputs:
+    restoreSolution: $(solution)
+
+# Build the package
+- task: MsixPackaging@0
+  inputs:
+    outputPath: $(package)
+    solution: $(solution)
+    clean: true
+    buildConfiguration: release
+    buildPlatform: $(platform)
+    updateAppVersion: true
+    manifestFile: $(manifest)
+    appVersion: '1.2.3.4'
+
+- task: MsixSigning@0
+  inputs:
+    package: $(package)
+    certificate: 'certificate.pfx'
+    passwordVariable: 'Password'
+
+- task: MsixAppAttach@0
+  inputs:
+    package: $(package)
+    vhdxOutputPath: '$(Build.ArtifactStagingDirectory)/App.vhdx'
+    vhdxSize: '5'
+
+- task: AppInstallerFile@0
+  inputs:
+    package: $(package)
+    outputPath: '$(Build.ArtifactStagingDirectory)/App.appinstaller'
+    method: 'create'
+    fileVersion: '1.0.0.0'
+    uri: 'https://example.com/AppInstallerFile'
+    mainItemUri: 'https://example.com/App'
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish Pipeline Artifact'
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)'

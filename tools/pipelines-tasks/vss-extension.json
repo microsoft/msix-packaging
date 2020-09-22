@@ -1,0 +1,75 @@
+{
+  "manifestVersion":  1,
+  "id": "msix-ci-automation-task",
+  "name":  "MSIX Packaging",
+  "version":  "1.0.0",
+  "publisher":  "luchacon-test",
+  "targets":  [
+    {
+      "id":  "Microsoft.VisualStudio.Services"
+    }
+  ],
+  "description":  "Tasks to automate the CI process of a MSIX application.",
+  "categories":  [
+    "Azure Pipelines"
+  ],
+  "icons":  {
+    "default":  "images/extension-icon.png"
+  },
+  "files":  [
+    {
+      "path":  "AppInstallerFile"
+    },
+    {
+      "path":  "MsixAppAttach"
+    },
+    {
+      "path":  "MsixPackaging"
+    },
+    {
+      "path":  "MsixSigning"
+    }
+  ],
+  "contributions":  [
+    {
+      "id":  "app-installer-file",
+      "type":  "ms.vss-distributed-task.task",
+      "targets":  [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties":  {
+        "name":  "AppInstallerFile"
+      }
+    },
+    {
+      "id":  "msix-app-attach",
+      "type":  "ms.vss-distributed-task.task",
+      "targets":  [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties":  {
+        "name":  "MsixAppAttach"
+      }
+    },
+    {
+      "id":  "msix-packaging",
+      "type":  "ms.vss-distributed-task.task",
+      "targets":  [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties":  {
+        "name":  "MsixPackaging"
+      }
+    },
+    {
+      "id":  "msix-signing",
+      "type":  "ms.vss-distributed-task.task",
+      "targets":  [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties":  {
+        "name":  "MsixSigning"
+      }
+    }
+  ]
+}

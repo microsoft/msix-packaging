@@ -1,0 +1,5 @@
+<SignConfigXML>
+  <job platform="" configuration="" dest="__OUTPATHROOT__" jobname="ISS EngFun" approvers="" certSubject="CN=Microsoft Corporation, O=Microsoft Corporation, L=Redmond, S=Washington, C=US">
+    <file src="__INPATHROOT__\MsixPackagingExtension.vsix" signType="AuthenticodeFormer" />
+  </job>
+</SignConfigXML>

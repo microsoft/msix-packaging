@@ -1,0 +1,21 @@
+{
+  "name": "msix-tasks-signing",
+  "version": "1.0.0",
+  "description": "Task to sign MSIX packages",
+  "repository": {
+    "type": "git",
+    "url": "git+github.com/microsoft/msix-ado-tasks-extension.git"
+  },
+  "scripts": {},
+  "author": "Microsoft Coporation",
+  "license": "MIT",
+  "dependencies": {
+    "azure-devops-node-api": "^10.1.1",
+    "azure-pipelines-task-lib": "^2.9.5",
+    "common": "file:../common/msix-tasks-helpers-1.0.0.tgz"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.5",
+    "@types/q": "^1.5.4"
+  }
+}

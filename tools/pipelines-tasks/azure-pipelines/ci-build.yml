@@ -1,0 +1,40 @@
+# Build and test pipeline for CI
+
+# Branches that trigger a build on commit
+trigger:
+- master
+
+# Branches that trigger builds on PR
+pr:
+  branches:
+    include:
+    - master
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+
+- task: NodeTool@0
+  displayName: 'Use Node 10.x'
+  inputs:
+    versionSpec: 10.x
+
+# Build the project
+- task: PowerShell@2
+  displayName: 'Build the project'
+  inputs:
+    filePath: 'build.ps1'
+    arguments: 'BuildForProduction'
+
+# Run the tests
+- task: NuGetCommand@2
+  displayName: 'Restore NuGet packages for test project'
+  inputs:
+    restoreSolution: test/assets/HelloWorldUWPApp/HelloWorldApp.sln
+
+- powershell: |
+    npx mocha
+  displayName: 'Run the tests'
+  env:
+    SYSTEM_CULTURE: en-US
