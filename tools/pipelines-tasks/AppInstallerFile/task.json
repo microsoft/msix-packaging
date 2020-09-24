@@ -1,0 +1,508 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "ced3bc79-ea98-4c51-8a83-ed4e3a0a77ed",
+  "name": "AppInstallerFile",
+  "friendlyName": "App Installer file for MSIX",
+  "instanceNameFormat": "Create App Installer file",
+  "description": "Create or update an App Installer file for MSIX apps",
+  "author": "Microsoft Corporation",
+  "category": "Package",
+  "helpMarkDown": "",
+  "execution": {
+    "Node10": {
+      "target": "index.js"
+    }
+  },
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "minimumAgentVersion": "1.95.0",
+  "groups": [
+    {
+      "name": "optionalItems",
+      "displayName": "Optional Items",
+      "isExpanded": false
+    },
+    {
+      "name": "dependencies",
+      "displayName": "Dependencies",
+      "isExpanded": false
+    }
+  ],
+  "inputs": [
+    {
+      "name": "package",
+      "type": "string",
+      "label": "Package",
+      "required": true,
+      "helpMarkDown": "Path to the package or bundle."
+    },
+    {
+      "name": "outputPath",
+      "type": "string",
+      "label": "Output File Path",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "The path of the App Installer to be written."
+    },
+    {
+      "name": "method",
+      "type": "pickList",
+      "label": "Method to Create App Installer File",
+      "defaultValue": "create",
+      "required": true,
+      "helpMarkDown": "Method used to create the App Installer file.",
+      "options": {
+        "create": "Create a new App Installer file",
+        "update": "Update an existing App Installer file"
+      }
+    },
+    {
+      "name": "existingFile",
+      "type": "filePath",
+      "label": "Path to Existing App Installer File",
+      "required": true,
+      "helpMarkDown": "The path of the existing App Installer file to update.",
+      "visibleRule": "method = update"
+    },
+    {
+      "name": "versionUpdateMethod",
+      "type": "pickList",
+      "label": "Method to Update the App Installer File's Version",
+      "required": true,
+      "defaultValue": "revision",
+      "helpMarkDown": "Increment the major/minor/build/revision of the App Installer file or enter a version number to be used.",
+      "options": {
+        "manual": "Manual Version",
+        "major": "Incremenet Major",
+        "minor": "Increment Minor",
+        "build": "Increment Build",
+        "revision": "Increment Revision"
+      },
+      "visibleRule": "method = update"
+    },
+    {
+      "name": "fileVersion",
+      "type": "string",
+      "label": "Version for App Installer file",
+      "required": true,
+      "defaultValue": "1.0.0.0",
+      "helpMarkDown": "The version number which will be given. Must take the form (major).(minor).(build).(revision).",
+      "visibleRule": "method = create || versionUpdateMethod = manual"
+    },
+    {
+      "name": "uri",
+      "type": "string",
+      "label": "URI",
+      "required": true,
+      "helpMarkDown": "Web URI to the redirected App Installer file.",
+      "visibleRule": "method = create"
+    },
+    {
+      "name": "mainItemUri",
+      "type": "string",
+      "label": "Main Package/Bundle URI",
+      "required": true,
+      "helpMarkDown": "URI to the app package/bundle location.",
+      "visibleRule": "method = create"
+    },
+    {
+      "name": "updateOnLaunch",
+      "type": "boolean",
+      "label": "Update On Launch",
+      "defaultValue": true,
+      "required": false,
+      "helpMarkDown": "Set the app to check for updates when launched.",
+      "visibleRule": "method = create"
+    },
+    {
+      "name": "hoursBetweenUpdateChecks",
+      "type": "string",
+      "label": "Hours Between Update Checks",
+      "defaultValue": "24",
+      "required": false,
+      "helpMarkDown": "How often the system will check for updates to the app.",
+      "visibleRule": "method = create && updateOnLaunch = true"
+    },
+    {
+      "name": "showPromptWhenUpdating",
+      "type": "boolean",
+      "label": "Show UI to User when Updating",
+      "defaultValue": false,
+      "required": false,
+      "helpMarkDown": "Show a UI to notify the user if an update occurs when launching the app.",
+      "visibleRule": "method = create && updateOnLaunch = true"
+    },
+    {
+      "name": "updateBlocksActivation",
+      "type": "boolean",
+      "label": "Update Blocks App Activation",
+      "defaultValue": false,
+      "required": false,
+      "helpMarkDown": "Block the app from launching until the update finishes.",
+      "visibleRule": "method = create && updateOnLaunch = true && showPromptWhenUpdating = true"
+    },
+    {
+      "name": "addOptionalItem1",
+      "type": "pickList",
+      "label": "Add an Optional Package/Bundle",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "optionalItems",
+      "helpMarkDown": "Add an optional package or bundle",
+      "visibleRule": "method = create",
+      "options": {
+        "none": "No Optional Package/Bundle",
+        "package": "Add Optional Package",
+        "bundle": "Add Optional Bundle"
+      }
+    },
+    {
+      "name": "optionalItem1Name",
+      "type": "string",
+      "label": "Optional Item 1: Name",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The package or bundle name of your first optional item to include.",
+      "visibleRule": "method = create && addOptionalItem1 != none"
+    },
+    {
+      "name": "optionalItem1Publisher",
+      "type": "string",
+      "label": "Optional Item 1: Publisher",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The publisher name of the first optional item to include.",
+      "visibleRule": "method = create && addOptionalItem1 != none"
+    },
+    {
+      "name": "optionalItem1Version",
+      "type": "string",
+      "label": "Optional Item 1: Version",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The version number of the first optional item to include.",
+      "visibleRule": "method = create && addOptionalItem1 != none"
+    },
+    {
+      "name": "optionalItem1ProcessorArchitecture",
+      "type": "string",
+      "label": "Optional Item 1: Processor Architecture",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The processor architecture of the first optional item to include.",
+      "visibleRule": "method = create && addOptionalItem1 != none"
+    },
+    {
+      "name": "optionalItem1URI",
+      "type": "string",
+      "label": "Optional Item 1: URI",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The URI of the first optional item to include.",
+      "visibleRule": "method = create && addOptionalItem1 != none"
+    },
+    {
+      "name": "addOptionalItem2",
+      "type": "pickList",
+      "label": "Add a Second Optional Package/Bundle",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "optionalItems",
+      "helpMarkDown": "Add a second optional package or bundle",
+      "visibleRule": "method = create && addOptionalItem1 != none",
+      "options": {
+        "none": "No Optional Package/Bundle",
+        "package": "Add Optional Package",
+        "bundle": "Add Optional Bundle"
+      }
+    },
+    {
+      "name": "optionalItem2Name",
+      "type": "string",
+      "label": "Optional Item 2: Name",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The package or bundle name of your second optional item to include.",
+      "visibleRule": "method = create && addOptionalItem2 != none"
+    },
+    {
+      "name": "optionalItem2Publisher",
+      "type": "string",
+      "label": "Optional Item 2: Publisher",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The publisher name of the second optional item to include.",
+      "visibleRule": "method = create && addOptionalItem2 != none"
+    },
+    {
+      "name": "optionalItem2Version",
+      "type": "string",
+      "label": "Optional Item 2: Version",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The version number of the second optional item to include.",
+      "visibleRule": "method = create && addOptionalItem2 != none"
+    },
+    {
+      "name": "optionalItem2ProcessorArchitecture",
+      "type": "string",
+      "label": "Optional Item 2: Processor Architecture",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The processor architecture of the second optional item to include.",
+      "visibleRule": "method = create && addOptionalItem2 != none"
+    },
+    {
+      "name": "optionalItem2URI",
+      "type": "string",
+      "label": "Optional Item 2: URI",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The URI of the second optional item to include.",
+      "visibleRule": "method = create && addOptionalItem2 != none"
+    },
+    {
+      "name": "addOptionalItem3",
+      "type": "pickList",
+      "label": "Add a Third Optional Package/Bundle",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "optionalItems",
+      "helpMarkDown": "Add a third optional package or bundle",
+      "visibleRule": "method = create && addOptionalItem2 != none",
+      "options": {
+        "none": "No Optional Package/Bundle",
+        "package": "Add Optional Package",
+        "bundle": "Add Optional Bundle"
+      }
+    },
+    {
+      "name": "optionalItem3Name",
+      "type": "string",
+      "label": "Optional Item 3: Name",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The package or bundle name of your third optional item to include.",
+      "visibleRule": "method = create && addOptionalItem3 != none"
+    },
+    {
+      "name": "optionalItem3Publisher",
+      "type": "string",
+      "label": "Optional Item 3: Publisher",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The publisher name of the third optional item to include.",
+      "visibleRule": "method = create && addOptionalItem3 != none"
+    },
+    {
+      "name": "optionalItem3Version",
+      "type": "string",
+      "label": "Optional Item 3: Version",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The version number of the third optional item to include.",
+      "visibleRule": "method = create && addOptionalItem3 != none"
+    },
+    {
+      "name": "optionalItem3ProcessorArchitecture",
+      "type": "string",
+      "label": "Optional Item 3: Processor Architecture",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The processor architecture of the third optional item to include.",
+      "visibleRule": "method = create && addOptionalItem3 != none"
+    },
+    {
+      "name": "optionalItem3URI",
+      "type": "string",
+      "label": "Optional Item 3: URI",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "The URI of the third optional item to include.",
+      "visibleRule": "method = create && addOptionalItem3 != none"
+    },
+    {
+      "name": "addDependency1",
+      "type": "pickList",
+      "label": "Add a Dependency",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "dependencies",
+      "helpMarkDown": "Add a dependency.",
+      "visibleRule": "method = create",
+      "options": {
+        "none": "No Dependency",
+        "package": "Add Package Dependency",
+        "bundle": "Add Bundle Dependency"
+      }
+    },
+    {
+      "name": "dependency1Name",
+      "type": "string",
+      "label": "Dependency 1: Name",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The name of the first dependency to include.",
+      "visibleRule": "method = create && addDependency1 != none"
+    },
+    {
+      "name": "dependency1Publisher",
+      "type": "string",
+      "label": "Dependency 1: Publisher",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The publisher name of the first dependency to include.",
+      "visibleRule": "method = create && addDependency1 != none"
+    },
+    {
+      "name": "dependency1Version",
+      "type": "string",
+      "label": "Dependency 1: Version",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The version number of the first dependency to include.",
+      "visibleRule": "method = create && addDependency1 != none"
+    },
+    {
+      "name": "dependency1ProcessorArchitecture",
+      "type": "string",
+      "label": "Dependency 1: Processor Architecture",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The processor architecture of the first dependency to include.",
+      "visibleRule": "method = create && addDependency1 != none"
+    },
+    {
+      "name": "dependency1URI",
+      "type": "string",
+      "label": "Dependency 1: URI",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The URI of the first dependency to include.",
+      "visibleRule": "method = create && addDependency1 != none"
+    },
+    {
+      "name": "addDependency2",
+      "type": "pickList",
+      "label": "Add a Second Dependency",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "dependencies",
+      "helpMarkDown": "Add a second dependency.",
+      "visibleRule": "method = create && addDependency1 != none",
+      "options": {
+        "none": "No Dependency",
+        "package": "Add Package Dependency",
+        "bundle": "Add Bundle Dependency"
+      }
+    },
+    {
+      "name": "dependency2Name",
+      "type": "string",
+      "label": "Dependency 2: Name",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The name of the second dependency to include.",
+      "visibleRule": "method = create && addDependency2 != none"
+    },
+    {
+      "name": "dependency2Publisher",
+      "type": "string",
+      "label": "Dependency 2: Publisher",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The publisher name of the second dependency to include.",
+      "visibleRule": "method = create && addDependency2 != none"
+    },
+    {
+      "name": "dependency2Version",
+      "type": "string",
+      "label": "Dependency 2: Version",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The version number of the second dependency to include.",
+      "visibleRule": "method = create && addDependency2 != none"
+    },
+    {
+      "name": "dependency2ProcessorArchitecture",
+      "type": "string",
+      "label": "Dependency 2: Processor Architecture",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The processor architecture of the second dependency to include.",
+      "visibleRule": "method = create && addDependency2 != none"
+    },
+    {
+      "name": "dependency2URI",
+      "type": "string",
+      "label": "Dependency 2: URI",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The URI of the second dependency to include.",
+      "visibleRule": "method = create && addDependency2 != none"
+    },
+    {
+      "name": "addDependency3",
+      "type": "pickList",
+      "label": "Add a Third Dependency",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "dependencies",
+      "helpMarkDown": "Add a third dependency.",
+      "visibleRule": "method = create && addDependency2 != none",
+      "options": {
+        "none": "No Dependency",
+        "package": "Add Package Dependency",
+        "bundle": "Add Bundle Dependency"
+      }
+    },
+    {
+      "name": "dependency3Name",
+      "type": "string",
+      "label": "Dependency 3: Name",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The name of the third dependency to include.",
+      "visibleRule": "method = create && addDependency3 != none"
+    },
+    {
+      "name": "dependency3Publisher",
+      "type": "string",
+      "label": "Dependency 3: Publisher",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The publisher name of the third dependency to include.",
+      "visibleRule": "method = create && addDependency3 != none"
+    },
+    {
+      "name": "dependency3Version",
+      "type": "string",
+      "label": "Dependency 3: Version",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The version number of the third dependency to include.",
+      "visibleRule": "method = create && addDependency3 != none"
+    },
+    {
+      "name": "dependency3ProcessorArchitecture",
+      "type": "string",
+      "label": "Dependency 3: Processor Architecture",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The processor architecture of the third dependency to include.",
+      "visibleRule": "method = create && addDependency3 != none"
+    },
+    {
+      "name": "dependency3URI",
+      "type": "string",
+      "label": "Dependency 3: URI",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "The URI of the third dependency to include.",
+      "visibleRule": "method = create && addDependency3 != none"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+{
+  "name": "msix-tasks-helpers",
+  "version": "1.0.0",
+  "description": "Common helpers for the MSIX packaging tasks",
+  "repository": {
+    "type": "git",
+    "url": "git+github.com/microsoft/msix-ado-tasks-extension.git"
+  },
+  "scripts": {},
+  "author": "Microsoft Coporation",
+  "license": "MIT",
+  "dependencies": {
+    "@types/xml2js": "^0.4.5",
+    "adm-zip": "^0.4.16",
+    "azure-devops-node-api": "^10.1.1",
+    "azure-pipelines-task-lib": "^2.9.5",
+    "xml2js": "^0.4.23"
+  },
+  "devDependencies": {
+    "@types/mocha": "^7.0.2",
+    "@types/node": "^14.0.5",
+    "@types/q": "^1.5.4",
+    "sync-request": "^6.1.0"
+  }
+}

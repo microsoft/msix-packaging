@@ -1,0 +1,14 @@
+{
+  "loc.friendlyName": "MSIX package signing",
+  "loc.helpMarkDown": "",
+  "loc.description": "Sign MSIX packages",
+  "loc.instanceNameFormat": "Sign MSIX package",
+  "loc.input.label.package": "Package to sign",
+  "loc.input.help.package": "Files to sign. Can be a package or a bundle. All matching files are signed.",
+  "loc.input.label.certificate": "Certificate File",
+  "loc.input.help.certificate": "The file name or GUID of the secure certificate to use for signing. The file will be deleted after the pipeline runs.",
+  "loc.input.label.passwordVariable": "Password Variable",
+  "loc.input.help.passwordVariable": "The name of the variable which stores the password used to access the certificate file for signing. Note that this is NOT the password itself, but rather the variable name, which can be set under Library.",
+  "loc.input.label.timeStampServer": "Time Stamp Server",
+  "loc.input.help.timeStampServer": "A URL that specifies the address of a time stamping server."
+}

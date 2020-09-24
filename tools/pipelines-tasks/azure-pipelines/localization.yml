@@ -1,0 +1,68 @@
+#
+# Localization
+# This pipeline uploads English strings files to the localization service, downloads any translated
+# files which are available, and checks them in to git. This pipeline relies on Microsoft-internal
+# resources to run.
+#
+
+# Expects a variable called LocServiceKey to contain the OAuth client secret for Touchdown.
+
+trigger: none
+pr: none
+
+name: $(BuildDefinitionName)_$(date:yyMM).$(date:dd)$(rev:rrr)
+
+pool:
+  vmImage: windows-latest
+
+variables:
+  tasksRoot: 'tools/pipelines-tasks'
+  skipComponentGovernanceDetection: true
+
+steps:
+- task: TouchdownBuildTask@1
+  displayName: Send resources to Touchdown Build
+  inputs:
+    teamId: 15687
+    authId: 2796a411-f030-46c1-ae3e-ab56f60ea523
+    authKey: $(LocServiceKey)
+    isPreview: false
+    relativePathRoot: '$(tasksRoot)'
+    resourceFilePath: '*\Strings\resources.resjson\en-US\resources.resjson'
+    appendRelativeDir: true
+
+# TouchdownBuildTask will place the localized files under
+# Strings\resources.resjson\en-US\
+# We need to move them one level up
+# E.g. move Strings\resources.resjson\en-US\fr-FR to make it Strings\resources.resjson\fr-FR
+- powershell: |
+    # Repeat for each strings directory in all tasks
+    Get-ChildItem -Recurse -Depth 1 -Filter Strings | %{
+      $resourcesDir = Join-Path $_.FullName Resources.resjson
+
+      # Remove existing localized files
+      Get-ChildItem $resourcesDir -Exclude en-US | Remove-Item -Recurse
+
+      # Find the misplaced localized files and move them to the right place
+      Get-ChildItem $resourcesDir\en-US -Exclude resources.resjson | %{
+          Move-Item $_ $resourcesDir
+      }
+    }
+  displayName: Place loc files in the right location
+  workingDirectory: '$(tasksRoot)'
+
+- script: |
+    cd $(Build.SourcesDirectory)
+    git add -A
+    git diff --cached --exit-code
+    echo ##vso[task.setvariable variable=hasChanges]%errorlevel%
+    git diff --cached > $(Build.ArtifactStagingDirectory)\LocalizedStrings.patch
+  displayName: Check for changes and create patch file
+  workingDirectory: '$(tasksRoot)'
+
+- task: PublishPipelineArtifact@0
+  displayName: Publish patch file as artifact
+  condition: eq(variables['hasChanges'], '1')
+  inputs:
+    artifactName: Patch
+    targetPath: $(Build.ArtifactStagingDirectory)

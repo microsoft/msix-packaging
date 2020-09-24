@@ -1,0 +1,508 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "ced3bc79-ea98-4c51-8a83-ed4e3a0a77ed",
+  "name": "AppInstallerFile",
+  "friendlyName": "ms-resource:loc.friendlyName",
+  "instanceNameFormat": "ms-resource:loc.instanceNameFormat",
+  "description": "ms-resource:loc.description",
+  "author": "Microsoft Corporation",
+  "category": "Package",
+  "helpMarkDown": "ms-resource:loc.helpMarkDown",
+  "execution": {
+    "Node10": {
+      "target": "index.js"
+    }
+  },
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "minimumAgentVersion": "1.95.0",
+  "groups": [
+    {
+      "name": "optionalItems",
+      "displayName": "ms-resource:loc.group.displayName.optionalItems",
+      "isExpanded": false
+    },
+    {
+      "name": "dependencies",
+      "displayName": "ms-resource:loc.group.displayName.dependencies",
+      "isExpanded": false
+    }
+  ],
+  "inputs": [
+    {
+      "name": "package",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.package",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.package"
+    },
+    {
+      "name": "outputPath",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.outputPath",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.outputPath"
+    },
+    {
+      "name": "method",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.method",
+      "defaultValue": "create",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.method",
+      "options": {
+        "create": "Create a new App Installer file",
+        "update": "Update an existing App Installer file"
+      }
+    },
+    {
+      "name": "existingFile",
+      "type": "filePath",
+      "label": "ms-resource:loc.input.label.existingFile",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.existingFile",
+      "visibleRule": "method = update"
+    },
+    {
+      "name": "versionUpdateMethod",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.versionUpdateMethod",
+      "required": true,
+      "defaultValue": "revision",
+      "helpMarkDown": "ms-resource:loc.input.help.versionUpdateMethod",
+      "options": {
+        "manual": "Manual Version",
+        "major": "Incremenet Major",
+        "minor": "Increment Minor",
+        "build": "Increment Build",
+        "revision": "Increment Revision"
+      },
+      "visibleRule": "method = update"
+    },
+    {
+      "name": "fileVersion",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.fileVersion",
+      "required": true,
+      "defaultValue": "1.0.0.0",
+      "helpMarkDown": "ms-resource:loc.input.help.fileVersion",
+      "visibleRule": "method = create || versionUpdateMethod = manual"
+    },
+    {
+      "name": "uri",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.uri",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.uri",
+      "visibleRule": "method = create"
+    },
+    {
+      "name": "mainItemUri",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.mainItemUri",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.mainItemUri",
+      "visibleRule": "method = create"
+    },
+    {
+      "name": "updateOnLaunch",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.updateOnLaunch",
+      "defaultValue": true,
+      "required": false,
+      "helpMarkDown": "ms-resource:loc.input.help.updateOnLaunch",
+      "visibleRule": "method = create"
+    },
+    {
+      "name": "hoursBetweenUpdateChecks",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.hoursBetweenUpdateChecks",
+      "defaultValue": "24",
+      "required": false,
+      "helpMarkDown": "ms-resource:loc.input.help.hoursBetweenUpdateChecks",
+      "visibleRule": "method = create && updateOnLaunch = true"
+    },
+    {
+      "name": "showPromptWhenUpdating",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.showPromptWhenUpdating",
+      "defaultValue": false,
+      "required": false,
+      "helpMarkDown": "ms-resource:loc.input.help.showPromptWhenUpdating",
+      "visibleRule": "method = create && updateOnLaunch = true"
+    },
+    {
+      "name": "updateBlocksActivation",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.updateBlocksActivation",
+      "defaultValue": false,
+      "required": false,
+      "helpMarkDown": "ms-resource:loc.input.help.updateBlocksActivation",
+      "visibleRule": "method = create && updateOnLaunch = true && showPromptWhenUpdating = true"
+    },
+    {
+      "name": "addOptionalItem1",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.addOptionalItem1",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.addOptionalItem1",
+      "visibleRule": "method = create",
+      "options": {
+        "none": "No Optional Package/Bundle",
+        "package": "Add Optional Package",
+        "bundle": "Add Optional Bundle"
+      }
+    },
+    {
+      "name": "optionalItem1Name",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem1Name",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem1Name",
+      "visibleRule": "method = create && addOptionalItem1 != none"
+    },
+    {
+      "name": "optionalItem1Publisher",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem1Publisher",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem1Publisher",
+      "visibleRule": "method = create && addOptionalItem1 != none"
+    },
+    {
+      "name": "optionalItem1Version",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem1Version",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem1Version",
+      "visibleRule": "method = create && addOptionalItem1 != none"
+    },
+    {
+      "name": "optionalItem1ProcessorArchitecture",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem1ProcessorArchitecture",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem1ProcessorArchitecture",
+      "visibleRule": "method = create && addOptionalItem1 != none"
+    },
+    {
+      "name": "optionalItem1URI",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem1URI",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem1URI",
+      "visibleRule": "method = create && addOptionalItem1 != none"
+    },
+    {
+      "name": "addOptionalItem2",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.addOptionalItem2",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.addOptionalItem2",
+      "visibleRule": "method = create && addOptionalItem1 != none",
+      "options": {
+        "none": "No Optional Package/Bundle",
+        "package": "Add Optional Package",
+        "bundle": "Add Optional Bundle"
+      }
+    },
+    {
+      "name": "optionalItem2Name",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem2Name",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem2Name",
+      "visibleRule": "method = create && addOptionalItem2 != none"
+    },
+    {
+      "name": "optionalItem2Publisher",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem2Publisher",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem2Publisher",
+      "visibleRule": "method = create && addOptionalItem2 != none"
+    },
+    {
+      "name": "optionalItem2Version",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem2Version",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem2Version",
+      "visibleRule": "method = create && addOptionalItem2 != none"
+    },
+    {
+      "name": "optionalItem2ProcessorArchitecture",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem2ProcessorArchitecture",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem2ProcessorArchitecture",
+      "visibleRule": "method = create && addOptionalItem2 != none"
+    },
+    {
+      "name": "optionalItem2URI",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem2URI",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem2URI",
+      "visibleRule": "method = create && addOptionalItem2 != none"
+    },
+    {
+      "name": "addOptionalItem3",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.addOptionalItem3",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.addOptionalItem3",
+      "visibleRule": "method = create && addOptionalItem2 != none",
+      "options": {
+        "none": "No Optional Package/Bundle",
+        "package": "Add Optional Package",
+        "bundle": "Add Optional Bundle"
+      }
+    },
+    {
+      "name": "optionalItem3Name",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem3Name",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem3Name",
+      "visibleRule": "method = create && addOptionalItem3 != none"
+    },
+    {
+      "name": "optionalItem3Publisher",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem3Publisher",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem3Publisher",
+      "visibleRule": "method = create && addOptionalItem3 != none"
+    },
+    {
+      "name": "optionalItem3Version",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem3Version",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem3Version",
+      "visibleRule": "method = create && addOptionalItem3 != none"
+    },
+    {
+      "name": "optionalItem3ProcessorArchitecture",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem3ProcessorArchitecture",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem3ProcessorArchitecture",
+      "visibleRule": "method = create && addOptionalItem3 != none"
+    },
+    {
+      "name": "optionalItem3URI",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.optionalItem3URI",
+      "required": true,
+      "groupName": "optionalItems",
+      "helpMarkDown": "ms-resource:loc.input.help.optionalItem3URI",
+      "visibleRule": "method = create && addOptionalItem3 != none"
+    },
+    {
+      "name": "addDependency1",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.addDependency1",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.addDependency1",
+      "visibleRule": "method = create",
+      "options": {
+        "none": "No Dependency",
+        "package": "Add Package Dependency",
+        "bundle": "Add Bundle Dependency"
+      }
+    },
+    {
+      "name": "dependency1Name",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency1Name",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency1Name",
+      "visibleRule": "method = create && addDependency1 != none"
+    },
+    {
+      "name": "dependency1Publisher",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency1Publisher",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency1Publisher",
+      "visibleRule": "method = create && addDependency1 != none"
+    },
+    {
+      "name": "dependency1Version",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency1Version",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency1Version",
+      "visibleRule": "method = create && addDependency1 != none"
+    },
+    {
+      "name": "dependency1ProcessorArchitecture",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency1ProcessorArchitecture",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency1ProcessorArchitecture",
+      "visibleRule": "method = create && addDependency1 != none"
+    },
+    {
+      "name": "dependency1URI",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency1URI",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency1URI",
+      "visibleRule": "method = create && addDependency1 != none"
+    },
+    {
+      "name": "addDependency2",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.addDependency2",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.addDependency2",
+      "visibleRule": "method = create && addDependency1 != none",
+      "options": {
+        "none": "No Dependency",
+        "package": "Add Package Dependency",
+        "bundle": "Add Bundle Dependency"
+      }
+    },
+    {
+      "name": "dependency2Name",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency2Name",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency2Name",
+      "visibleRule": "method = create && addDependency2 != none"
+    },
+    {
+      "name": "dependency2Publisher",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency2Publisher",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency2Publisher",
+      "visibleRule": "method = create && addDependency2 != none"
+    },
+    {
+      "name": "dependency2Version",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency2Version",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency2Version",
+      "visibleRule": "method = create && addDependency2 != none"
+    },
+    {
+      "name": "dependency2ProcessorArchitecture",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency2ProcessorArchitecture",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency2ProcessorArchitecture",
+      "visibleRule": "method = create && addDependency2 != none"
+    },
+    {
+      "name": "dependency2URI",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency2URI",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency2URI",
+      "visibleRule": "method = create && addDependency2 != none"
+    },
+    {
+      "name": "addDependency3",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.addDependency3",
+      "defaultValue": "none",
+      "required": false,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.addDependency3",
+      "visibleRule": "method = create && addDependency2 != none",
+      "options": {
+        "none": "No Dependency",
+        "package": "Add Package Dependency",
+        "bundle": "Add Bundle Dependency"
+      }
+    },
+    {
+      "name": "dependency3Name",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency3Name",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency3Name",
+      "visibleRule": "method = create && addDependency3 != none"
+    },
+    {
+      "name": "dependency3Publisher",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency3Publisher",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency3Publisher",
+      "visibleRule": "method = create && addDependency3 != none"
+    },
+    {
+      "name": "dependency3Version",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency3Version",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency3Version",
+      "visibleRule": "method = create && addDependency3 != none"
+    },
+    {
+      "name": "dependency3ProcessorArchitecture",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency3ProcessorArchitecture",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency3ProcessorArchitecture",
+      "visibleRule": "method = create && addDependency3 != none"
+    },
+    {
+      "name": "dependency3URI",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.dependency3URI",
+      "required": true,
+      "groupName": "dependencies",
+      "helpMarkDown": "ms-resource:loc.input.help.dependency3URI",
+      "visibleRule": "method = create && addDependency3 != none"
+    }
+  ]
+}

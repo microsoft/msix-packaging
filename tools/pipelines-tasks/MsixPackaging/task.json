@@ -1,0 +1,232 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "e8789f65-a0e2-472b-98ca-8cfd83ccc3c3",
+  "name": "MsixPackaging",
+  "friendlyName": "MSIX build and package",
+  "instanceNameFormat": "MSIX build and package",
+  "description": "Build and package Windows apps using the MSIX package format",
+  "author": "Microsoft Corporation",
+  "category": "Package",
+  "helpMarkDown": "",
+  "execution": {
+    "Node10": {
+      "target": "index.js"
+    }
+  },
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "demands": [
+    "msbuild"
+  ],
+  "minimumAgentVersion": "1.95.0",
+  "groups": [
+    {
+      "name": "msbuild",
+      "displayName": "Advanced Options for MSBuild",
+      "isExpanded": false
+    }
+  ],
+  "inputs": [
+    {
+      "name": "outputPath",
+      "type": "string",
+      "label": "Output Path",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "Path of the generated package or bundle."
+    },
+    {
+      "name": "buildSolution",
+      "type": "boolean",
+      "label": "Build Solution with MSBuild",
+      "defaultValue": "true",
+      "helpMarkDown": "Invoke MSBuild and build the solution from scratch.  If this is selected, you must provide a path to the solution file to build and select the target platforms to build."
+    },
+    {
+      "name": "inputDirectory",
+      "type": "string",
+      "label": "Input Directory",
+      "required": true,
+      "helpMarkDown": "Relative path from the repo root to the directory with the files to be packaged.",
+      "visibleRule": "buildSolution = false"
+    },
+    {
+      "name": "solution",
+      "type": "filePath",
+      "label": "Project to Build",
+      "defaultValue": "**/*.sln",
+      "required": true,
+      "helpMarkDown": "Relative path from repo root of the project or solution to build.  Wildcards can be used.",
+      "visibleRule": "buildSolution = true"
+    },
+    {
+      "name": "clean",
+      "type": "boolean",
+      "label": "Clean Before Building",
+      "defaultValue": false,
+      "required": true,
+      "helpMarkDown": "Run a clean build (/t:clean) prior to the build.",
+      "visibleRule": "buildSolution = true"
+    },
+    {
+      "name": "generateBundle",
+      "type": "boolean",
+      "label": "Generate MSIX Bundle",
+      "defaultValue": false,
+      "required": true,
+      "helpMarkDown": "Generate an MSIX bundle."
+    },
+    {
+      "name": "buildConfiguration",
+      "type": "pickList",
+      "label": "Configuration",
+      "defaultValue": "debug",
+      "helpMarkDown": "The configuration to build the solution with. Only one configuration is supported at a time.",
+      "required": true,
+      "options": {
+        "debug": "Debug",
+        "release": "Release"
+      },
+      "visibleRule": "buildSolution = true"
+    },
+    {
+      "name": "buildPlatform",
+      "type": "string",
+      "label": "Platform",
+      "defaultValue": "",
+      "helpMarkDown": "Specify the platform you want to build such as Win32, x86, x64 or any cpu.",
+      "required": true,
+      "visibleRule": "buildSolution = true && generateBundle = false"
+    },
+    {
+      "name": "buildForX86",
+      "type": "boolean",
+      "label": "Build for x86",
+      "defaultValue": true,
+      "helpMarkDown": "Build the solution for the x86 platform.",
+      "visibleRule": "buildSolution = true && generateBundle = true"
+    },
+    {
+      "name": "buildForX64",
+      "type": "boolean",
+      "label": "Build for x64",
+      "defaultValue": true,
+      "helpMarkDown": "Build the solution for the x64 platform.",
+      "visibleRule": "buildSolution = true && generateBundle = true"
+    },
+    {
+      "name": "buildForArm",
+      "type": "boolean",
+      "label": "Build for ARM",
+      "defaultValue": false,
+      "helpMarkDown": "Build the solution for the ARM platform.",
+      "visibleRule": "buildSolution = true && generateBundle = true"
+    },
+    {
+      "name": "buildForAnyCpu",
+      "type": "boolean",
+      "label": "Build for Any CPU",
+      "defaultValue": false,
+      "helpMarkDown": "Build the solution for the Any CPU platform.",
+      "visibleRule": "buildSolution = true && generateBundle = true"
+    },
+    {
+      "name": "updateAppVersion",
+      "type": "boolean",
+      "label": "Update App Version in Manifest",
+      "defaultValue": false,
+      "required": true,
+      "helpMarkDown": "Update the app version from the one in the manifest."
+    },
+    {
+      "name": "manifestFile",
+      "type": "filePath",
+      "label": "Manifest File to Update Version",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "Path to the manifest file.  This is only used to update the app version.",
+      "visibleRule": "updateAppVersion = true"
+    },
+    {
+      "name": "appVersion",
+      "type": "string",
+      "label": "App Version",
+      "defaultValue": "1.0.0.0",
+      "required": true,
+      "helpMarkDown": "Version number to set for the app.",
+      "visibleRule": "updateAppVersion = true"
+    },
+    {
+      "name": "appPackageDistributionMode",
+      "type": "pickList",
+      "label": "Application Package Distribution Mode",
+      "defaultValue": "StoreAndSideload",
+      "required": true,
+      "helpMarkDown": "Whether to generate the .msixupload file for Store upload, the .msix/.msixbundle for non-Store apps, or both.",
+      "options": {
+        "SideloadOnly": "Create an application package (.msix) or bundle (.msixbundle) for non-Store app",
+        "StoreOnly": "Create an application package upload file (.msixupload) for Store app",
+        "StoreAndSideload": "Both"
+      },
+      "visibleRule": "buildSolution = true"
+    },
+    {
+      "name": "msbuildLocationMethod",
+      "type": "radio",
+      "label": "MSBuild",
+      "required": true,
+      "defaultValue": "version",
+      "groupName": "msbuild",
+      "options": {
+        "version": "Version",
+        "location": "Specify Location"
+      },
+      "visibleRule": "buildSolution = true"
+    },
+    {
+      "name": "msbuildVersion",
+      "type": "pickList",
+      "label": "MSBuild Version",
+      "required": true,
+      "defaultValue": "latest",
+      "groupName": "msbuild",
+      "helpMarkDown": "If the preferred version cannot be found, the latest version found will be used instead.",
+      "visibleRule": "buildSolution = true && msbuildLocationMethod = version",
+      "options": {
+        "latest": "Latest",
+        "16.0": "MSBuild 16.0",
+        "15.0": "MSBuild 15.0",
+        "14.0": "MSBuild 14.0",
+        "12.0": "MSBuild 12.0",
+        "4.0": "MSBuild 4.0"
+      }
+    },
+    {
+      "name": "msbuildArchitecture",
+      "type": "pickList",
+      "label": "MSBuild Architecture",
+      "defaultValue": "x86",
+      "required": true,
+      "groupName": "msbuild",
+      "helpMarkDown": "Optionally supply the architecture (x86, x64) of MSBuild to run.",
+      "visibleRule": "buildSolution = true && msbuildLocationMethod = version",
+      "options": {
+        "x86": "MSBuild x86",
+        "x64": "MSBuild x64"
+      }
+    },
+    {
+      "name": "msbuildLocation",
+      "type": "string",
+      "label": "Path to MSBuild",
+      "defaultValue": "",
+      "groupName": "msbuild",
+      "required": true,
+      "helpMarkDown": "Optionally supply the path to MSBuild.",
+      "visibleRule": "buildSolution = true && msbuildLocationMethod = location"
+    }
+  ]
+}
