@@ -27,7 +27,8 @@ steps:
     authId: 2796a411-f030-46c1-ae3e-ab56f60ea523
     authKey: $(LocServiceKey)
     isPreview: false
-    resourceFilePath: '$(tasksRoot)\*\Strings\resources.resjson\en-US\resources.resjson'
+    relativePathRoot: '$(tasksRoot)'
+    resourceFilePath: '*\Strings\resources.resjson\en-US\resources.resjson'
     appendRelativeDir: true
 
 # TouchdownBuildTask will place the localized files under
