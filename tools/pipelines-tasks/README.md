@@ -9,7 +9,7 @@ This includes the source for Azure Pipelines tasks for:
 ## Building
 
 You need to have Node.js v10 installed (higher versions cause problems with the tests).
-When building for the first, time install the development tools (e.g. TypeScript) and dependencies (e.g. node modules) needed with:
+When building for the first time, install the development tools (e.g. TypeScript) and dependencies (e.g. node modules) needed with:
 ```
 .\build.ps1 InstallDevelopmentTools
 .\build.ps1 InstallDependencies
