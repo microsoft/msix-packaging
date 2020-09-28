@@ -1,0 +1,12 @@
+{
+  "loc.friendlyName": "Crear un paquete para la conexión de aplicaciones MSIX",
+  "loc.helpMarkDown": "",
+  "loc.description": "Crear un paquete VHD o VHDX para adjuntar la aplicación de MSIX",
+  "loc.instanceNameFormat": "Crear un paquete para la conexión de aplicaciones MSIX",
+  "loc.input.label.package": "Ruta de acceso del paquete:",
+  "loc.input.help.package": "La ruta de acceso del paquete.",
+  "loc.input.label.vhdxOutputPath": "Ruta de acceso de salida VHDX",
+  "loc.input.help.vhdxOutputPath": "El nombre del archivo VHDX que se creará en la tarea.",
+  "loc.input.label.vhdxSize": "Tamaño de VHDX (en MB)",
+  "loc.input.help.vhdxSize": "El tamaño máximo en MB del VHDX."
+}

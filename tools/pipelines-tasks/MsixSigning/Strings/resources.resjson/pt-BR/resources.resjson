@@ -1,0 +1,14 @@
+{
+  "loc.friendlyName": "Assinatura de pacote MSIX",
+  "loc.helpMarkDown": "",
+  "loc.description": "Assinar pacotes do MSIX",
+  "loc.instanceNameFormat": "Assinar pacote do MSIX",
+  "loc.input.label.package": "Pacote para assinar",
+  "loc.input.help.package": "Arquivos a assinar. Pode ser um pacote ou um lote. Todos os arquivos correspondentes são assinados.",
+  "loc.input.label.certificate": "Arquivo de Certificado",
+  "loc.input.help.certificate": "O nome de arquivo ou GUID do certificado seguro a ser usado na assinatura. O arquivo será excluído após a execução do pipeline.",
+  "loc.input.label.passwordVariable": "Variável de senha",
+  "loc.input.help.passwordVariable": "O nome da variável que armazena a senha usada para acessar o arquivo de certificado para assinatura. Observe que essa NÃO é a senha em si, mas o nome da variável, que pode ser definido em Biblioteca.",
+  "loc.input.label.timeStampServer": "Servidor de Carimbo de Data/Hora",
+  "loc.input.help.timeStampServer": "Uma URL que especifica o endereço de um servidor de carimbo de data/hora."
+}

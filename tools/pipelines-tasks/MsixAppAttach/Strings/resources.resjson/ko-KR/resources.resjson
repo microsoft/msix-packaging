@@ -1,0 +1,12 @@
+{
+  "loc.friendlyName": "MSIX 앱 연결용 패키지 만들기",
+  "loc.helpMarkDown": "",
+  "loc.description": "MSIX 앱 연결을 위한 VHD 또는 VHDX 패키지 만들기",
+  "loc.instanceNameFormat": "MSIX 앱 연결용 패키지 만들기",
+  "loc.input.label.package": "패키지 경로",
+  "loc.input.help.package": "패키지의 경로입니다.",
+  "loc.input.label.vhdxOutputPath": "VHDX 출력 경로",
+  "loc.input.help.vhdxOutputPath": "작업에서 만드는 VHDX 파일의 이름입니다.",
+  "loc.input.label.vhdxSize": "VHDX 크기(MB)",
+  "loc.input.help.vhdxSize": "VHDX의 최대 크기(Mb)입니다."
+}

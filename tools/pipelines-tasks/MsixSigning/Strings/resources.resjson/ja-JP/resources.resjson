@@ -1,0 +1,14 @@
+{
+  "loc.friendlyName": "MSIX パッケージの署名",
+  "loc.helpMarkDown": "",
+  "loc.description": "MSIX パッケージに署名する",
+  "loc.instanceNameFormat": "MSIX パッケージに署名する",
+  "loc.input.label.package": "署名するパッケージ",
+  "loc.input.help.package": "署名するファイルです。パッケージの場合も、バンドルの場合もあります。一致するファイルはすべて署名されます。",
+  "loc.input.label.certificate": "証明書ファイル",
+  "loc.input.help.certificate": "署名で使用する、セキュリティ証明書のファイル名または GUID です。ファイルは、パイプライン実行後に削除されます。",
+  "loc.input.label.passwordVariable": "パスワード変数",
+  "loc.input.help.passwordVariable": "署名を行うために証明書ファイルにアクセスするのに使用されるパスワードを格納する変数の名前です。これ自体はパスワードではなく、ライブラリで指定することができる変数名であることに注意してください。",
+  "loc.input.label.timeStampServer": "タイム ​​スタンプ サーバー",
+  "loc.input.help.timeStampServer": "タイムスタンプサーバーのアドレスを指定する URL です。"
+}

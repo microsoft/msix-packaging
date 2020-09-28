@@ -1,0 +1,12 @@
+{
+  "loc.friendlyName": "Создание пакета для подключения приложений MSIX",
+  "loc.helpMarkDown": "",
+  "loc.description": "Создать VHD-или VHDX-пакет для MSIX-приложения",
+  "loc.instanceNameFormat": "Создание пакета для подключения приложений MSIX",
+  "loc.input.label.package": "Путь к пакету",
+  "loc.input.help.package": "Путь к пакету.",
+  "loc.input.label.vhdxOutputPath": "Путь вывода VHDX",
+  "loc.input.help.vhdxOutputPath": "Имя VHDX-файла, который будет создан задачей.",
+  "loc.input.label.vhdxSize": "Размер VHDX (в Мб)",
+  "loc.input.help.vhdxSize": "Максимальный размер VHDX-файла (в МБ)."
+}

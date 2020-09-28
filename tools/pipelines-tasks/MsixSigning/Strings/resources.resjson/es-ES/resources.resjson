@@ -1,0 +1,14 @@
+{
+  "loc.friendlyName": "Firmas de paquete MSIX",
+  "loc.helpMarkDown": "",
+  "loc.description": "Firmar paquetes MSIX",
+  "loc.instanceNameFormat": "Firmar paquete MSIX",
+  "loc.input.label.package": "Paquete para firmar",
+  "loc.input.help.package": "Archivos para firmar. Puede ser un paquete o un empaquetado. Se firman todos los archivos coincidentes.",
+  "loc.input.label.certificate": "Archivo de certificado",
+  "loc.input.help.certificate": "El nombre de archivo o GUID del certificado seguro para usar para la firma. El archivo será eliminado después de que la canalización se ejecute.",
+  "loc.input.label.passwordVariable": "Variable de contraseña",
+  "loc.input.help.passwordVariable": "El nombre de la variable que almacena la contraseña utilizada para acceder al archivo del certificado para la firma. Tenga en cuenta que no se trata de la contraseña en sí, sino del nombre de la variable, que se puede establecer en biblioteca.",
+  "loc.input.label.timeStampServer": "Servidor de marca de tiempo",
+  "loc.input.help.timeStampServer": "Una dirección URL que especifica la dirección de un servidor de marca de tiempo."
+}

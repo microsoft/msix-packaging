@@ -1,0 +1,14 @@
+{
+  "loc.friendlyName": "MSIX-Paketsignierung",
+  "loc.helpMarkDown": "",
+  "loc.description": "MSIX-Pakete signieren",
+  "loc.instanceNameFormat": "MSIX-Paket signieren",
+  "loc.input.label.package": "Zu signierendes Paket",
+  "loc.input.help.package": "Zu signierende Dateien. Kann ein Paket oder Bundle sein. Alle passenden Dateien werden signiert.",
+  "loc.input.label.certificate": "Zertifikatsdatei",
+  "loc.input.help.certificate": "Der Dateiname oder der GUID des sicheren Zertifikats, das zum Signieren verwendet wird. Die Datei wird nach dem Ausführen der Pipeline gelöscht.",
+  "loc.input.label.passwordVariable": "Kennwortvariable",
+  "loc.input.help.passwordVariable": "Der Name der Variablen, in der das Passwort gespeichert ist, das für den Zugriff auf die Zertifikatsdatei zum Signieren verwendet wird. Beachten Sie, dass dies NICHT das Passwort selbst ist, sondern der Variablenname, der unter „Bibliothek“ festgelegt werden kann.",
+  "loc.input.label.timeStampServer": "Zeitstempelserver",
+  "loc.input.help.timeStampServer": "Eine URL, die die Adresse eines Zeitstempelservers angibt."
+}

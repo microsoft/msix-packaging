@@ -1,0 +1,12 @@
+{
+  "loc.friendlyName": "建立 MSIX 應用程式連結套件",
+  "loc.helpMarkDown": "",
+  "loc.description": "建立 MSIX 應用程式附加的 VHD 或 VHDX 套件",
+  "loc.instanceNameFormat": "建立 MSIX 應用程式連結套件",
+  "loc.input.label.package": "套件路徑",
+  "loc.input.help.package": "套件的路徑。",
+  "loc.input.label.vhdxOutputPath": "VHDX 輸出路徑",
+  "loc.input.help.vhdxOutputPath": "該工作將建立的 VHDX 檔案名稱。",
+  "loc.input.label.vhdxSize": "VHDX 大小 (MB)",
+  "loc.input.help.vhdxSize": "VHDX 的大小上限 (MB)。"
+}

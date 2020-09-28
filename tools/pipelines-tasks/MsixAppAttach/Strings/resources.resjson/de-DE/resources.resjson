@@ -1,0 +1,12 @@
+{
+  "loc.friendlyName": "Paket für MSIX App Attach erstellen",
+  "loc.helpMarkDown": "",
+  "loc.description": "Ein VHD- oder VHDX-Paket für MSIX App Attach erstellen",
+  "loc.instanceNameFormat": "Paket für MSIX App Attach erstellen",
+  "loc.input.label.package": "Paketpfad",
+  "loc.input.help.package": "Pfad zum Paket.",
+  "loc.input.label.vhdxOutputPath": "VHDX-Ausgabepfad",
+  "loc.input.help.vhdxOutputPath": "Der Name der VHDX-Datei, die von der Aufgabe erstellt wird.",
+  "loc.input.label.vhdxSize": "VHDX-Größe (in MB)",
+  "loc.input.help.vhdxSize": "Die maximale Größe des VHDX in MBs."
+}
