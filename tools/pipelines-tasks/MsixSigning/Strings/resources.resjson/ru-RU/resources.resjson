@@ -1,0 +1,14 @@
+{
+  "loc.friendlyName": "Подписывание пакета MSIX",
+  "loc.helpMarkDown": "",
+  "loc.description": "Подписывать пакеты MSIX",
+  "loc.instanceNameFormat": "Подписать пакет MSIX",
+  "loc.input.label.package": "Пакет для подписи",
+  "loc.input.help.package": "Файлы для подписывания. Могут быть пакетом или набором. Все соответствующие файлы подписаны.",
+  "loc.input.label.certificate": "Файл сертификата",
+  "loc.input.help.certificate": "Имя файла или идентификатор GUID сертификата безопасности, используемого для подписи. Файл будет удален после запуска конвейера.",
+  "loc.input.label.passwordVariable": "Переменная пароля",
+  "loc.input.help.passwordVariable": "Имя переменной, в которой хранится пароль, используемый для доступа к файлу сертификата для подписи. Обратите внимание, что это НЕ сам пароль, а имя переменной, которое можно задать в библиотеке.",
+  "loc.input.label.timeStampServer": "Сервер меток времени",
+  "loc.input.help.timeStampServer": "URL-адрес, указывающий адрес сервера метки времени."
+}

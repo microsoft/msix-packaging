@@ -1,0 +1,14 @@
+{
+  "loc.friendlyName": "MSIX 程序包签名",
+  "loc.helpMarkDown": "",
+  "loc.description": "签署 MSIX 程序包",
+  "loc.instanceNameFormat": "签署 MSIX 程序包",
+  "loc.input.label.package": "要签署的程序包",
+  "loc.input.help.package": "要签名的文件。可以是一个程序包或捆绑包。已对所有匹配的文件进行签名。",
+  "loc.input.label.certificate": "证书文件",
+  "loc.input.help.certificate": "用于签名的安全证书的文件名或 GUID。该文件将在管道运行后删除。",
+  "loc.input.label.passwordVariable": "密码变量",
+  "loc.input.help.passwordVariable": "存储用于访问用于签名的证书文件的密码的变量名称。请注意，这不是密码本身，而是变量名称，可以在“库”下设置。",
+  "loc.input.label.timeStampServer": "时间戳服务器",
+  "loc.input.help.timeStampServer": "指定时间戳服务器地址的 URL。"
+}

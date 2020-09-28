@@ -1,0 +1,14 @@
+{
+  "loc.friendlyName": "Firma pacchetto MSIX",
+  "loc.helpMarkDown": "",
+  "loc.description": "Firma pacchetti MSIX",
+  "loc.instanceNameFormat": "Firma pacchetto MSIX",
+  "loc.input.label.package": "Pacchetto da firmare",
+  "loc.input.help.package": "File da firmare. Può trattarsi di un pacchetto o di un bundle. Tutti i file corrispondenti sono firmati.",
+  "loc.input.label.certificate": "File del certificato",
+  "loc.input.help.certificate": "Nome file o GUID del certificato sicuro da usare per la firma. Il file verrà eliminato dopo l'esecuzione della pipeline.",
+  "loc.input.label.passwordVariable": "Variabile password",
+  "loc.input.help.passwordVariable": "Nome della variabile che archivia la password usata per accedere al file del certificato per la firma. Si noti che questa NON è la password stessa, ma piuttosto il nome della variabile, che può essere impostata in Raccolta.",
+  "loc.input.label.timeStampServer": "Server timestamp",
+  "loc.input.help.timeStampServer": "URL che specifica l'indirizzo di un server di timestamp."
+}

@@ -1,0 +1,14 @@
+{
+  "loc.friendlyName": "Signature du package MSIX",
+  "loc.helpMarkDown": "",
+  "loc.description": "Signer les packages MSIX",
+  "loc.instanceNameFormat": "Signer le package MSIX",
+  "loc.input.label.package": "Package à signer",
+  "loc.input.help.package": "Fichiers à signer. Peut être un package ou un bundle. Tous les fichiers correspondants sont signés.",
+  "loc.input.label.certificate": "Fichier de certificats",
+  "loc.input.help.certificate": "Nom de fichier ou GUID du certificat sécurisé à utiliser pour la signature. Le fichier est supprimé après exécution du pipeline.",
+  "loc.input.label.passwordVariable": "Variable du mot de passe",
+  "loc.input.help.passwordVariable": "Nom de la variable qui stocke le mot de passe utilisé pour accéder au fichier de certificat pour la signature. Notez que ce n’est PAS le mot de passe proprement dit, mais plutôt le nom de la variable, qui peut être positionné sous Bibliothèque.",
+  "loc.input.label.timeStampServer": "Serveur d’horodatage",
+  "loc.input.help.timeStampServer": "URL qui indique l’adresse d’un serveur d’horodatage des heures."
+}
