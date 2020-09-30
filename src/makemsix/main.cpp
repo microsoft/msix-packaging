@@ -553,6 +553,61 @@ Command CreatePackCommand()
 }
 #endif
 
+Command CreateBundleCommand()
+{
+    Command result{ "bundle", "Create a new app bundle from files on disk",
+        {
+            Option{ "-bv:", "Specifies the version number of the bundle being created. The version"
+                            "must be in dotted - quad notation of four integers"
+                            "<Major>.<Minor>.<Build>.<Revision> ranging from 0 to 65535 each.If the"
+                            "/ bv option is not specified or is set to 0.0.0.0, the bundle is created"
+                            "using the current date - time formatted as the version :"
+                            "<Year>.<Month - Day>.<Hour - Minute>.<Second - Millisecond>.", true, 1, "package" },
+            Option{ "-mo", "Generates a bundle manifest only, instead of a full bundle. Input"
+                           "files must all be package manifests in XML format if this option is"
+                            "specified.", true, 1, "directory" },
+            Option{ "-fb", "Generates a fully sparse bundle where all packages are references to"
+                           "packages that exist outside of the bundle file." },
+            Option{ "-pri, -makepriExeFullPath", "You can use /pri to override the default"
+                                                 "MakePri.exe path with the custom fullpath from which makeappx.exe will"
+                                                 "launch the tool from when needed" },
+            Option{ "-kf", "Use this option to encrypt or decrypt the package or bundle using a"
+                           "key file.This option cannot be combined with / kt." },
+            Option{ "-o, -overwrite", "Forces the output to overwrite any existing files with the"
+                                      "same name.By default, the user is asked whether to overwrite existing"
+                                      "files with the same name.You can't use this option with /no." },
+            Option{ "-no, -noOverwrite", "Prevents the output from overwriting any existing files"
+                                         "with the same name.By default, the user is asked whether to overwrite"
+                                         "existing files with the same name.You can't use this option with /o." },
+            Option{ "-v, -verbose", "Enables verbose output of messages to the console."},
+            Option{ TOOL_HELP_COMMAND_STRING, "Displays this help text." },
+        }
+    };
+
+    result.SetDescription({
+        "Creates an app bundle at <output bundle name> by adding all files from",
+        "either <content directory>(including subfolders) or a list of files within"
+        "<mapping file>.If either source contains a bundle manifest, it will be"
+        "ignored."
+
+        "Using / p will result in the bundle being unencrypted, while using / ep will"
+        "result in the bundle being encrypted.If you use / ep you must specify"
+        "either / kt or /kf.",
+        });
+
+    result.SetInvocationFunc([](const Invocation& invocation)
+        {
+            return CreateBundle(
+                GetPackUnpackOptionForBundle(invocation),
+                GetValidationOption(invocation),
+                GetApplicabilityOption(invocation),
+                const_cast<char*>(invocation.GetOptionValue("-p").c_str()),
+                const_cast<char*>(invocation.GetOptionValue("-d").c_str()));
+        });
+
+    return result;
+}
+
 #pragma endregion
 
 // Defines the grammar of commands and each command's associated options,
@@ -567,6 +622,7 @@ int main(int argc, char* argv[])
         #ifdef MSIX_PACK
         CreatePackCommand(),
         #endif
+        CreateBundleCommand(),
     };
 
     // Help command is always last

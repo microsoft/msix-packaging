@@ -14,6 +14,7 @@ list(APPEND MSIX_UNPACK_EXPORTS
     "UnpackBundle"
     "UnpackBundleFromStream"
     "UnpackBundleFromBundleReader"
+    "CreateBundle"
 )
 
 if(MSIX_PACK)

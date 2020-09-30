@@ -1733,6 +1733,14 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
 
 #endif // MSIX_PACK
 
+MSIX_API HRESULT STDMETHODCALLTYPE CreateBundle(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
+    char* utf8SourcePackage,
+    char* utf8Destination
+) noexcept;
+
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.
 typedef LPVOID STDMETHODCALLTYPE COTASKMEMALLOC(SIZE_T cb);

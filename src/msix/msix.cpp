@@ -289,3 +289,14 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
 } CATCH_RETURN();
 
 #endif // MSIX_PACK
+
+MSIX_API HRESULT STDMETHODCALLTYPE CreateBundle(
+    MSIX_PACKUNPACK_OPTION packUnpackOptions,
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
+    char* utf8SourcePackage,
+    char* utf8Destination) noexcept try
+{
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
