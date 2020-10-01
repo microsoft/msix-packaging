@@ -26,7 +26,7 @@ steps:
     teamId: 15687
     authId: 2796a411-f030-46c1-ae3e-ab56f60ea523
     authKey: $(LocServiceKey)
-    isPreview: true
+    isPreview: false
     relativePathRoot: '$(tasksRoot)'
     resourceFilePath: '*\Strings\resources.resjson\en-US\resources.resjson'
     appendRelativeDir: true
