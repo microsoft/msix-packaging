@@ -19,6 +19,7 @@
 #include <VersionHelpers.h>
 #include "UnpackProvider.hpp"
 #include "ApplyACLsProvider.hpp"
+#include "VHDProvider.hpp"
 #include "CIMProvider.hpp"
 #include "MsixErrors.hpp"
 #include <filesystem>
@@ -311,6 +312,10 @@ int main(int argc, char * argv[])
             WVDFileType fileType = cli.GetFileType();
             bool createFile = cli.IsCreate();
 
+            std::vector<std::wstring> skippedFiles;
+            std::vector<std::wstring> failedPackages;
+            std::vector<HRESULT> failedPackagesErrors;
+
             if (fileType == WVDFileType::CIM)
             {
                 if (rootDirectory.empty() || fileType == WVDFileType::NotSpecified)
@@ -359,9 +364,6 @@ int main(int argc, char * argv[])
                     return E_UNEXPECTED;
                 }
 
-                std::vector<std::wstring> skippedFiles;
-                std::vector<std::wstring> failedPackages;
-                std::vector<HRESULT> failedPackagesErrors;
                 RETURN_IF_FAILED(MsixCoreLib::Unpack(
                     packageSourcePath,
                     tempDirPathString,
@@ -387,7 +389,7 @@ int main(int argc, char * argv[])
                 if (FAILED(hrCreateCIM))
                 {
                     std::wcout << std::endl;
-                    std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hr << std::endl;
+                    std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateCIM << std::endl;
                     std::wcout << std::endl;
                     return hrCreateCIM;
                 }
@@ -406,13 +408,82 @@ int main(int argc, char * argv[])
             {
                 if (createFile)
                 {
-                    return ERROR_NOT_SUPPORTED;
+                    if (!(EndsWith(unpackDestination, L".vhd") || (EndsWith(unpackDestination, L".vhdx"))))
+                    {
+                        std::wcout << std::endl;
+                        std::wcout << "Invalid VHD file name. File name must have .vhd or .vhdx file extension" << std::endl;
+                        std::wcout << std::endl;
+                        return E_INVALIDARG;
+                    }
+                    else
+                    {
+                        if (cli.GetVHDSize() == 0)
+                        {
+                            std::wcout << std::endl;
+                            std::wcout << "VHD size was not specified. Please provide a vhd size in MB using the -vhdSize option" << std::endl;
+                            std::wcout << std::endl;
+                            return E_INVALIDARG;
+                        }
+
+                        std::wstring driveLetter;
+                        HRESULT hrCreateVHD = MsixCoreLib::CreateAndMountVHD(unpackDestination, cli.GetVHDSize(), fileType == WVDFileType::VHD,  driveLetter);
+                        if (FAILED(hrCreateVHD))
+                        {
+                            std::wcout << std::endl;
+                            std::wcout << "Creating the VHD(X) file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
+
+                            if (hrCreateVHD != HRESULT_FROM_WIN32(ERROR_FILE_EXISTS))
+                            {
+                                // Best effort to unmount and delete the VHD file
+                                if (std::filesystem::exists(std::filesystem::path(unpackDestination.c_str())))
+                                {
+                                    MsixCoreLib::UnmountVHD(unpackDestination);
+                                    if (_wremove(unpackDestination.c_str()) != 0)
+                                    {
+                                        std::wcout << "Failed best-effort attempt to delete the incomplete VHD(X) file: " << unpackDestination << " Please do not use this file." << std::endl;
+                                    }
+                                    else
+                                    {
+                                        std::wcout << "Best-effort attempt to delete the incomplete VHD(X) file " << unpackDestination << " succeeded." << std::endl;
+                                    }
+                                }
+                            }
+
+                            std::wcout << std::endl;
+
+                            return hrCreateVHD;
+                        }
+
+                        // Unpack to the mounted VHD
+                        std::wstring mountedUnpackDest = driveLetter + L":\\" + cli.GetRootDirectory();
+                        RETURN_IF_FAILED(MsixCoreLib::Unpack(
+                            packageSourcePath,
+                            mountedUnpackDest,
+                            cli.IsApplyACLs(),
+                            cli.IsValidateSignature(),
+                            skippedFiles,
+                            failedPackages,
+                            failedPackagesErrors
+                        ));
+
+                        HRESULT hrUnmount = MsixCoreLib::UnmountVHD(unpackDestination);
+                        if (FAILED(hrUnmount))
+                        {
+                            std::wcout << std::endl;
+                            std::wcout << "Unmounting the VHD  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
+                            std::wcout << "Ignoring as non-fatal error.." << std::endl;
+                            std::wcout << std::endl;
+                        }
+
+                        OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+
+                        std::wcout << std::endl;
+                        std::wcout << "Finished unpacking packages to: " << unpackDestination << std::endl;
+                        std::wcout << std::endl;
+                    }
                 }
                 else
                 {
-                    std::vector<std::wstring> skippedFiles;
-                    std::vector<std::wstring> failedPackages;
-                    std::vector<HRESULT> failedPackagesErrors;
                     RETURN_IF_FAILED(MsixCoreLib::Unpack(
                         packageSourcePath,
                         unpackDestination,
@@ -440,7 +511,8 @@ int main(int argc, char * argv[])
         }
         case OperationType::MountImage:
         {
-            if (cli.GetFileType() == WVDFileType::CIM)
+            WVDFileType fileType = cli.GetFileType();
+            if (fileType == WVDFileType::CIM)
             {
                 if (cli.GetVolumeId().empty())
                 {
@@ -459,7 +531,6 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
                     return E_UNEXPECTED;
                 }
-
                 
                 HRESULT hrMountCIM = MsixCoreLib::MountCIM(cli.GetMountImagePath(), volumeIdFromString);
                 if (FAILED(hrMountCIM))
@@ -481,10 +552,39 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
                 }
             }
+            else if (fileType == WVDFileType::VHD || fileType == WVDFileType::VHDX)
+            {
+                if (cli.GetMountImagePath().empty())
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Please provide the path to the image you would like to mount." << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
+                }
+
+                std::wstring driveLetter;
+                HRESULT hrMountVHD = MsixCoreLib::MountVHD(cli.GetMountImagePath(), cli.isMountReadOnly(), driveLetter);
+                if (FAILED(hrMountVHD))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Mounting the VHD(X) file  " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrMountVHD << std::endl;
+                    std::wcout << std::endl;
+                    return hrMountVHD;
+                }
+                else
+                {
+                    bool isVHD = cli.GetFileType() == WVDFileType::VHD;
+                    std::wcout << std::endl;
+                    std::wcout << "Image " << cli.GetMountImagePath() << " successfully mounted to " << driveLetter << ":\\" <<  std::endl;
+                    std::wcout << "To unmount, run the following command: " << std::endl;
+                    std::wcout << "msixmgr.exe -unmountimage -imagePath " << cli.GetMountImagePath() << " -filetype VHD" << (isVHD ? "" : "X") << std::endl;
+                    std::wcout << std::endl;
+                }
+            }
             else
             {
                 std::wcout << std::endl;
-                std::wcout << "Please specify one of the following supported file types for the -MountImage command: {CIM}" << std::endl;
+                std::wcout << "Please specify one of the following supported file types for the -MountImage command: {VHD, VHDX, CIM}" << std::endl;
                 std::wcout << std::endl;
                 return ERROR_NOT_SUPPORTED;
             }
@@ -492,7 +592,8 @@ int main(int argc, char * argv[])
         }
         case OperationType::UnmountImage:
         {
-            if (cli.GetFileType() == WVDFileType::CIM)
+            WVDFileType fileType = cli.GetFileType();
+            if (fileType == WVDFileType::CIM)
             {
                 if (cli.GetVolumeId().empty())
                 {
@@ -528,10 +629,36 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
                 }
             }
+            else if (fileType == WVDFileType::VHD || fileType == WVDFileType::VHDX)
+            {
+                if (cli.GetMountImagePath().empty())
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Please provide the path to the image you would like to unmount." << std::endl;
+                    std::wcout << std::endl;
+                    return E_INVALIDARG;
+                }
+
+                HRESULT hrUnmountVHD = MsixCoreLib::UnmountVHD(cli.GetMountImagePath());
+
+                if (FAILED(hrUnmountVHD))
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Unmounting the VHD " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrUnmountVHD << std::endl;
+                    std::wcout << std::endl;
+                    return hrUnmountVHD;
+                }
+                else
+                {
+                    std::wcout << std::endl;
+                    std::wcout << "Successfully unmounted the VHD " << cli.GetMountImagePath() << std::endl;
+                    std::wcout << std::endl;
+                }
+            }
             else
             {
                 std::wcout << std::endl;
-                std::wcout << "Please specify one of the following supported file types for the -UnmountImage command: {CIM}" << std::endl;
+                std::wcout << "Please specify one of the following supported file types for the -UnmountImage command: {VHD, VHDX, CIM}" << std::endl;
                 std::wcout << std::endl;
                 return ERROR_NOT_SUPPORTED;
             }

@@ -94,6 +94,7 @@ public:
     bool IsApplyACLs() { return m_applyACLs; }
     bool IsValidateSignature() { return m_validateSignature; }
     bool IsCreate() { return m_create; }
+    bool isMountReadOnly() { return m_readOnly; }
     std::wstring GetPackageFilePathToInstall() { return m_packageFilePath; }
     std::wstring GetPackageFullName() { return m_packageFullName; }
     std::wstring GetUnpackDestination() { return m_unpackDestination; }
@@ -102,6 +103,7 @@ public:
     std::wstring GetVolumeId() { return m_volumeId; }
     WVDFileType GetFileType() { return m_fileType; }
     OperationType GetOperationType() { return m_operationType; }
+    ULONGLONG GetVHDSize() { return m_vhdSize; }
 private:
     int m_argc = 0;
     char ** m_argv = nullptr;
@@ -119,7 +121,9 @@ private:
     bool m_applyACLs;
     bool m_validateSignature;
     bool m_create = false;
+    bool m_readOnly = true;
     WVDFileType m_fileType = WVDFileType::NotSpecified;
+    ULONGLONG m_vhdSize = 0;
 
     OperationType m_operationType = OperationType::Undefined;
 
