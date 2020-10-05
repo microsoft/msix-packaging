@@ -52,7 +52,7 @@ namespace MsixCoreLib
     };
 
     HRESULT CreateAndMountVHD(
-        _In_ const std::wstring vhdFilePath,
+        _In_ const std::wstring& vhdFilePath,
         _In_ ULONGLONG sizeMBs,
         _In_ bool isVHD,
         _Inout_ std::wstring& driveLetter)
@@ -61,7 +61,7 @@ namespace MsixCoreLib
         RETURN_IF_FAILED(wvdUtilities.load());
 
         typedef HRESULT(STDMETHODCALLTYPE *CREATEANDMOUNTVHD)(
-            const std::wstring vhdFilePath,
+            const std::wstring& vhdFilePath,
             ULONGLONG sizeMBs,
             bool isVHD,
             std::wstring& driveLetter);
@@ -76,12 +76,12 @@ namespace MsixCoreLib
     }
 
     HRESULT UnmountVHD(
-        _In_ const std::wstring vhdFilePath)
+        _In_ const std::wstring& vhdFilePath)
     {
         WVDUtilitiesDll wvdUtilities;
         RETURN_IF_FAILED(wvdUtilities.load());
 
-        typedef HRESULT(STDMETHODCALLTYPE *UNMOUNTVHD)(const std::wstring vhdFilePath);
+        typedef HRESULT(STDMETHODCALLTYPE *UNMOUNTVHD)(const std::wstring& vhdFilePath);
 
         UNMOUNTVHD UnmountVHD =
             reinterpret_cast<UNMOUNTVHD>
@@ -93,14 +93,14 @@ namespace MsixCoreLib
     }
 
     HRESULT MountVHD(
-        _In_ const std::wstring vhdFilePath,
+        _In_ const std::wstring& vhdFilePath,
         _In_ bool readOnly,
         _Inout_ std::wstring& driveLetter)
     {
         WVDUtilitiesDll wvdUtilities;
         RETURN_IF_FAILED(wvdUtilities.load());
 
-        typedef HRESULT(STDMETHODCALLTYPE *MOUNTVHD)(const std::wstring vhdFilePath, bool readOnly, std::wstring& driveLetter);
+        typedef HRESULT(STDMETHODCALLTYPE *MOUNTVHD)(const std::wstring& vhdFilePath, bool readOnly, std::wstring& driveLetter);
 
         MOUNTVHD MountVHD =
             reinterpret_cast<MOUNTVHD>
