@@ -16,13 +16,20 @@
 
 #define TOOL_HELP_COMMAND_STRING "-?"
 
+typedef enum : UINT32
+{
+    Never = 0,
+    Always,
+    Unspecified
+} TriStateOption;
+
 struct Invocation;
 
 // Describes an option to a command that the user may specify.
 struct Option
 {
     // Constructor for flags; they can't be required and don't take parameters.
-    Option(std::string name, std::string help) : 
+    Option(std::string name, std::string help) :
         Name(std::move(name)), Required(false), ParameterCount(0), Help(std::move(help))
     {}
 
@@ -163,6 +170,39 @@ struct Invocation
         return false;
     }
 
+    bool ProcessCommonOptions(_Out_ TriStateOption* overwrite) try
+    {
+        *overwrite = Never;
+
+        bool verbose = IsOptionPresent("-v");
+        bool hasOverwrite = IsOptionPresent("-o");
+        bool hasNoOverwrite = IsOptionPresent("-no");
+
+        if (hasOverwrite && hasNoOverwrite)
+        {
+            error = "You can't specify options /o and /no at the same time.";
+            return false;
+        }
+        else if (hasOverwrite)
+        {
+            *overwrite = Always;
+        }
+        else if (hasNoOverwrite)
+        {
+            *overwrite = Never;
+        }
+        else
+        {
+            *overwrite = Unspecified;
+        }
+    }
+    catch (const std::exception& exc)
+    {
+        error = "Exception thrown during ProcessCommonOptions: ";
+        error += exc.what();
+        return false;
+    }
+
     int Run() const try
     {
         if (!command)
@@ -212,6 +252,7 @@ struct Invocation
         return opt->params[0];
     }
 
+
 private:
     mutable std::string error;
     std::string         toolName;
@@ -236,6 +277,7 @@ private:
         auto option = std::find(options.begin(), options.end(), name);
         return (option == options.end() ? nullptr : &*option);
     }
+
 };
 
 void Command::PrintHelpText(const Invocation& invocation) const
@@ -557,29 +599,34 @@ Command CreateBundleCommand()
 {
     Command result{ "bundle", "Create a new app bundle from files on disk",
         {
+            Option{ "-d", "Input directory path.", false, 1, "inputDirectory" },
+            Option{ "-p", "Output bundle file path.", true, 1, "outputBundle" },
+            Option{ "-f", "Mapping file path.", false, 1, "mappingFile" },
             Option{ "-bv:", "Specifies the version number of the bundle being created. The version"
                             "must be in dotted - quad notation of four integers"
                             "<Major>.<Minor>.<Build>.<Revision> ranging from 0 to 65535 each.If the"
                             "/ bv option is not specified or is set to 0.0.0.0, the bundle is created"
                             "using the current date - time formatted as the version :"
-                            "<Year>.<Month - Day>.<Hour - Minute>.<Second - Millisecond>.", true, 1, "package" },
+                            "<Year>.<Month - Day>.<Hour - Minute>.<Second - Millisecond>.", false, 1, "version" },
             Option{ "-mo", "Generates a bundle manifest only, instead of a full bundle. Input"
                            "files must all be package manifests in XML format if this option is"
-                            "specified.", true, 1, "directory" },
+                            "specified." },
             Option{ "-fb", "Generates a fully sparse bundle where all packages are references to"
                            "packages that exist outside of the bundle file." },
-            Option{ "-pri, -makepriExeFullPath", "You can use /pri to override the default"
-                                                 "MakePri.exe path with the custom fullpath from which makeappx.exe will"
-                                                 "launch the tool from when needed" },
+            Option{ "-pri", "You can use /pri to override the default"
+                            "MakePri.exe path with the custom fullpath from which makeappx.exe will"
+                            "launch the tool from when needed" },
             Option{ "-kf", "Use this option to encrypt or decrypt the package or bundle using a"
                            "key file.This option cannot be combined with / kt." },
-            Option{ "-o, -overwrite", "Forces the output to overwrite any existing files with the"
-                                      "same name.By default, the user is asked whether to overwrite existing"
-                                      "files with the same name.You can't use this option with /no." },
-            Option{ "-no, -noOverwrite", "Prevents the output from overwriting any existing files"
-                                         "with the same name.By default, the user is asked whether to overwrite"
-                                         "existing files with the same name.You can't use this option with /o." },
-            Option{ "-v, -verbose", "Enables verbose output of messages to the console."},
+            Option{ "-kt", "Use this option to encrypt or decrypt the package or bundle using the"
+                           "global test key. This option cannot be combined with /kf." },
+            Option{ "-o", "Forces the output to overwrite any existing files with the"
+                           "same name.By default, the user is asked whether to overwrite existing"
+                           "files with the same name.You can't use this option with /no." },
+            Option{ "-no","Prevents the output from overwriting any existing files"
+                           "with the same name.By default, the user is asked whether to overwrite"
+                           "existing files with the same name.You can't use this option with /o." },
+            Option{ "-v", "Enables verbose output of messages to the console."},
             Option{ TOOL_HELP_COMMAND_STRING, "Displays this help text." },
         }
     };
@@ -647,6 +694,28 @@ int main(int argc, char* argv[])
 
         return -1;
     }
+
+    //Process Common options
+    TriStateOption overwrite = Unspecified;
+
+    if (!invocation.ProcessCommonOptions(&overwrite))
+    {
+        std::cout << std::endl;
+        std::cout << "Error: " << invocation.GetErrorText() << std::endl;
+
+        if (invocation.GetParsedCommand())
+        {
+            invocation.GetParsedCommand()->PrintHelpText(invocation);
+        }
+        else
+        {
+            mainHelpCommand.Invoke(invocation);
+        }
+
+        return -1;
+    }
+
+    //bundle specific parsing
 
     int result = invocation.Run();
 

@@ -294,9 +294,27 @@ MSIX_API HRESULT STDMETHODCALLTYPE CreateBundle(
     MSIX_PACKUNPACK_OPTION packUnpackOptions,
     MSIX_VALIDATION_OPTION validationOption,
     MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
-    char* utf8SourcePackage,
-    char* utf8Destination) noexcept try
+    char* directoryPath,
+    char* outputBundle
+) noexcept try
 {
+    //NT_ASSERT(bundleName != NULL);
+    //NT_ASSERT(fileList != NULL);
+    //RETURN_HR_IF_TRUE(E_UNEXPECTED, manifestOnly&& encryptBundle); // This should already be validated by ProcessOptionsForBundle
+
+    MSIX::ComPtr<IStream> packageStream;
+    ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &packageStream));
+
+    MSIX::ComPtr<IAppxBundleWriter> bundleWriter;
+    MSIX::ComPtr<IAppxEncryptedBundleWriter> encryptedBundleWriter;
+    MSIX::ComPtr<IAppxBundleWriter4> bundleWriter4;
+    MSIX::ComPtr<IAppxEncryptedBundleWriter3> encryptedBundleWriter3;
+    {
+
+    }
+
+
     return static_cast<HRESULT>(MSIX::Error::OK);
+
 } CATCH_RETURN();
 
