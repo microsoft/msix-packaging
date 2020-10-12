@@ -291,19 +291,38 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
 #endif // MSIX_PACK
 
 MSIX_API HRESULT STDMETHODCALLTYPE CreateBundle(
-    MSIX_PACKUNPACK_OPTION packUnpackOptions,
-    MSIX_VALIDATION_OPTION validationOption,
-    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
+    MSIX_COMMON_OPTIONS commonOptions,
+    MSIX_BUNDLE_OPTIONS bundleOptions,
     char* directoryPath,
-    char* outputBundle
+    char* outputBundle,
+    char* mappingFile,
+    char* version
 ) noexcept try
 {
+    //process common options
+    if ((commonOptions & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
+    {
+
+
+    }
+
+    AutoPtr<FileList> fileList;
+    AutoPtr<GenericMap<LPCWSTR, LPCWSTR>> externalPackagesList;
+    AutoArray<WCHAR> bundlePath;
+    PCWSTR optionalBundlesManifest;
+    UINT64 bundleVersion = 0;
+    bool encryptBundle = false;
+    EncryptionOptions encryptionOptions = {};
+    bool manifestOnly = false;
+    bool flatBundle = false;
+    PCWSTR makepriExeFullPath = nullptr;
+    
     //NT_ASSERT(bundleName != NULL);
     //NT_ASSERT(fileList != NULL);
     //RETURN_HR_IF_TRUE(E_UNEXPECTED, manifestOnly&& encryptBundle); // This should already be validated by ProcessOptionsForBundle
 
-    MSIX::ComPtr<IStream> packageStream;
-    ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &packageStream));
+    //MSIX::ComPtr<IStream> packageStream;
+    //ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &packageStream));
 
     MSIX::ComPtr<IAppxBundleWriter> bundleWriter;
     MSIX::ComPtr<IAppxEncryptedBundleWriter> encryptedBundleWriter;

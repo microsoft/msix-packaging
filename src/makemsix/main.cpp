@@ -170,39 +170,6 @@ struct Invocation
         return false;
     }
 
-    bool ProcessCommonOptions(_Out_ TriStateOption* overwrite) try
-    {
-        *overwrite = Never;
-
-        bool verbose = IsOptionPresent("-v");
-        bool hasOverwrite = IsOptionPresent("-o");
-        bool hasNoOverwrite = IsOptionPresent("-no");
-
-        if (hasOverwrite && hasNoOverwrite)
-        {
-            error = "You can't specify options /o and /no at the same time.";
-            return false;
-        }
-        else if (hasOverwrite)
-        {
-            *overwrite = Always;
-        }
-        else if (hasNoOverwrite)
-        {
-            *overwrite = Never;
-        }
-        else
-        {
-            *overwrite = Unspecified;
-        }
-    }
-    catch (const std::exception& exc)
-    {
-        error = "Exception thrown during ProcessCommonOptions: ";
-        error += exc.what();
-        return false;
-    }
-
     int Run() const try
     {
         if (!command)
@@ -460,6 +427,40 @@ MSIX_APPLICABILITY_OPTIONS GetApplicabilityOption(const Invocation& invocation)
     return applicability;
 }
 
+MSIX_COMMON_OPTIONS GetCommonOptions(const Invocation& invocation)
+{
+    MSIX_COMMON_OPTIONS commonOptions = MSIX_COMMON_OPTIONS::MSIX_OPTION_NONE;
+
+    if (invocation.IsOptionPresent("-v"))
+    {
+        commonOptions |= MSIX_COMMON_OPTIONS::MSIX_OPTION_VERBOSE;
+    }
+
+    if (invocation.IsOptionPresent("-o"))
+    {
+        commonOptions |= MSIX_COMMON_OPTIONS::MSIX_OPTION_OVERWRITE;
+    }
+
+    if (invocation.IsOptionPresent("-no"))
+    {
+        commonOptions |= MSIX_COMMON_OPTIONS::MSIX_OPTION_NOOVERWRITE;
+    }
+
+    if (invocation.IsOptionPresent("-bv"))
+    {
+        commonOptions |= MSIX_COMMON_OPTIONS::MSIX_OPTION_VERSION;
+    }
+
+    return commonOptions;
+}
+
+MSIX_BUNDLE_OPTIONS GetBundleOptions(const Invocation& invocation)
+{
+    MSIX_BUNDLE_OPTIONS bundleOptions = MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_NONE;
+
+    return bundleOptions;
+}
+
 #pragma region Commands
 
 Command CreateHelpCommand(const std::vector<Command>& commands)
@@ -608,18 +609,8 @@ Command CreateBundleCommand()
                             "/ bv option is not specified or is set to 0.0.0.0, the bundle is created"
                             "using the current date - time formatted as the version :"
                             "<Year>.<Month - Day>.<Hour - Minute>.<Second - Millisecond>.", false, 1, "version" },
-            Option{ "-mo", "Generates a bundle manifest only, instead of a full bundle. Input"
-                           "files must all be package manifests in XML format if this option is"
-                            "specified." },
             Option{ "-fb", "Generates a fully sparse bundle where all packages are references to"
                            "packages that exist outside of the bundle file." },
-            Option{ "-pri", "You can use /pri to override the default"
-                            "MakePri.exe path with the custom fullpath from which makeappx.exe will"
-                            "launch the tool from when needed" },
-            Option{ "-kf", "Use this option to encrypt or decrypt the package or bundle using a"
-                           "key file.This option cannot be combined with / kt." },
-            Option{ "-kt", "Use this option to encrypt or decrypt the package or bundle using the"
-                           "global test key. This option cannot be combined with /kf." },
             Option{ "-o", "Forces the output to overwrite any existing files with the"
                            "same name.By default, the user is asked whether to overwrite existing"
                            "files with the same name.You can't use this option with /no." },
@@ -645,11 +636,12 @@ Command CreateBundleCommand()
     result.SetInvocationFunc([](const Invocation& invocation)
         {
             return CreateBundle(
-                GetPackUnpackOptionForBundle(invocation),
-                GetValidationOption(invocation),
-                GetApplicabilityOption(invocation),
+                GetCommonOptions(invocation),
+                GetBundleOptions(invocation),
+                const_cast<char*>(invocation.GetOptionValue("-d").c_str()),
                 const_cast<char*>(invocation.GetOptionValue("-p").c_str()),
-                const_cast<char*>(invocation.GetOptionValue("-d").c_str()));
+                const_cast<char*>(invocation.GetOptionValue("-f").c_str()),
+                const_cast<char*>(invocation.GetOptionValue("-v").c_str()));
         });
 
     return result;
@@ -694,28 +686,6 @@ int main(int argc, char* argv[])
 
         return -1;
     }
-
-    //Process Common options
-    TriStateOption overwrite = Unspecified;
-
-    if (!invocation.ProcessCommonOptions(&overwrite))
-    {
-        std::cout << std::endl;
-        std::cout << "Error: " << invocation.GetErrorText() << std::endl;
-
-        if (invocation.GetParsedCommand())
-        {
-            invocation.GetParsedCommand()->PrintHelpText(invocation);
-        }
-        else
-        {
-            mainHelpCommand.Invoke(invocation);
-        }
-
-        return -1;
-    }
-
-    //bundle specific parsing
 
     int result = invocation.Run();
 

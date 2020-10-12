@@ -1665,6 +1665,22 @@ enum MSIX_APPLICABILITY_OPTIONS
         MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE = 0x2,
     }   MSIX_APPLICABILITY_OPTIONS;
 
+typedef /* [v1_enum] */
+enum MSIX_COMMON_OPTIONS
+    {
+        MSIX_OPTION_NONE = 0x0,
+        MSIX_OPTION_VERBOSE = 0x1,
+        MSIX_OPTION_OVERWRITE = 0x2,
+        MSIX_OPTION_NOOVERWRITE = 0x4,
+        MSIX_OPTION_VERSION = 0x8,
+    }   MSIX_COMMON_OPTIONS;
+
+typedef /* [v1_enum] */
+enum MSIX_BUNDLE_OPTIONS
+    {
+        MSIX_BUNDLE_OPTION_NONE = 0x0,
+    }   MSIX_BUNDLE_OPTIONS;
+
 #define MSIX_PLATFORM_ALL MSIX_PLATFORM_WINDOWS10      | \
                           MSIX_PLATFORM_WINDOWS10      | \
                           MSIX_PLATFORM_WINDOWS8       | \
@@ -1734,11 +1750,12 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
 #endif // MSIX_PACK
 
 MSIX_API HRESULT STDMETHODCALLTYPE CreateBundle(
-    MSIX_PACKUNPACK_OPTION packUnpackOptions,
-    MSIX_VALIDATION_OPTION validationOption,
-    MSIX_APPLICABILITY_OPTIONS applicabilityOptions,
-    char* utf8SourcePackage,
-    char* utf8Destination
+    MSIX_COMMON_OPTIONS commonOptions,
+    MSIX_BUNDLE_OPTIONS bundleOptions,
+    char* directoryPath,
+    char* outputBundle,
+    char* mappingFile,
+    char* version
 ) noexcept;
 
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying
