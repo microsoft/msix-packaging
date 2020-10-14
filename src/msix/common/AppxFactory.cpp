@@ -88,7 +88,14 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept try
     {
         THROW_IF_BUNDLE_NOT_ENABLED
-        NOTIMPLEMENTED;
+        ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || bundleWriter ==nullptr || *bundleWriter != nullptr), "Invalid parameter");
+        ComPtr<IMsixFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
+        //ComPtr<IAppxPackageWriter> writer;
+        //ThrowHrIfFailed(CreatePackageWriter(outputStream, nullptr, &writer));
+        /*auto result = reader.As<IAppxBundleReader>();
+        *bundleWriter = result.Detach();*/
+        return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) noexcept try

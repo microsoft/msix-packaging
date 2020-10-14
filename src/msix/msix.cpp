@@ -6,6 +6,8 @@
 #include <memory>
 #include <cstdlib>
 #include <functional>
+#include <map>
+#include <experimental/filesystem>
 
 #include "Exceptions.hpp"
 #include "FileStream.hpp"
@@ -18,6 +20,9 @@
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
 #include "ScopeExit.hpp"
+#include <fstream>
+
+namespace fs = std::experimental::filesystem;
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
@@ -290,7 +295,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
 
 #endif // MSIX_PACK
 
-MSIX_API HRESULT STDMETHODCALLTYPE CreateBundle(
+MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     MSIX_COMMON_OPTIONS commonOptions,
     MSIX_BUNDLE_OPTIONS bundleOptions,
     char* directoryPath,
@@ -299,36 +304,58 @@ MSIX_API HRESULT STDMETHODCALLTYPE CreateBundle(
     char* version
 ) noexcept try
 {
-    //process common options
-    if ((commonOptions & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) == 0)
+    //AutoPtr<FileList> fileList;
+    std::unique_ptr<std::map<std::string, std::string>> externalPackagesList;
+    std::string bundlePath;
+    std::string optionalBundlesManifest;
+    UINT64 bundleVersion = 0;
+    bool flatBundle = false;
+
+    //ProcessOptionsForBundle starts here
+    if (version != nullptr)
     {
-
-
+        bundleVersion = std::strtoull(version, NULL, 0);
+        //std::istringstream stream(version);
+        //stream >> bundleVersion;
     }
 
-    AutoPtr<FileList> fileList;
-    AutoPtr<GenericMap<LPCWSTR, LPCWSTR>> externalPackagesList;
-    AutoArray<WCHAR> bundlePath;
-    PCWSTR optionalBundlesManifest;
-    UINT64 bundleVersion = 0;
-    bool encryptBundle = false;
-    EncryptionOptions encryptionOptions = {};
-    bool manifestOnly = false;
-    bool flatBundle = false;
-    PCWSTR makepriExeFullPath = nullptr;
-    
-    //NT_ASSERT(bundleName != NULL);
-    //NT_ASSERT(fileList != NULL);
-    //RETURN_HR_IF_TRUE(E_UNEXPECTED, manifestOnly&& encryptBundle); // This should already be validated by ProcessOptionsForBundle
+    std::cout << "here " << bundleVersion;
 
-    //MSIX::ComPtr<IStream> packageStream;
-    //ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &packageStream));
+    if (0 == (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE))
+    {
+        flatBundle = true;
+    }
+
+    //Process output path
+    if (fs::is_directory(fs::path(outputBundle)))
+    {
+        return E_INVALIDARG;
+    }
+
+    //get fulloutput path
+    //get full input path - processmapping file here and create file list from mappingfile or inputdirectory
+
+    //createbundle
+
+    //check for overwrite here - ResolveOutputPath
+
+    MSIX::ComPtr<IStream> packageStream;
+    ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &packageStream));
+
+    auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
 
     MSIX::ComPtr<IAppxBundleWriter> bundleWriter;
-    MSIX::ComPtr<IAppxEncryptedBundleWriter> encryptedBundleWriter;
     MSIX::ComPtr<IAppxBundleWriter4> bundleWriter4;
-    MSIX::ComPtr<IAppxEncryptedBundleWriter3> encryptedBundleWriter3;
     {
+        MSIX::ComPtr<IAppxBundleFactory> factory;
+        ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
+            MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, 
+            MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL,
+            &factory));
+
+        ThrowHrIfFailed(factory->CreateBundleWriter(packageStream.Get(), bundleVersion, &bundleWriter));
+
+
 
     }
 

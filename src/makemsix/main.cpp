@@ -16,13 +16,6 @@
 
 #define TOOL_HELP_COMMAND_STRING "-?"
 
-typedef enum : UINT32
-{
-    Never = 0,
-    Always,
-    Unspecified
-} TriStateOption;
-
 struct Invocation;
 
 // Describes an option to a command that the user may specify.
@@ -456,7 +449,12 @@ MSIX_COMMON_OPTIONS GetCommonOptions(const Invocation& invocation)
 
 MSIX_BUNDLE_OPTIONS GetBundleOptions(const Invocation& invocation)
 {
-    MSIX_BUNDLE_OPTIONS bundleOptions = MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_NONE;
+    MSIX_BUNDLE_OPTIONS bundleOptions;
+
+    if (invocation.IsOptionPresent("-fb"))
+    {
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE;
+    }
 
     return bundleOptions;
 }
@@ -603,7 +601,7 @@ Command CreateBundleCommand()
             Option{ "-d", "Input directory path.", false, 1, "inputDirectory" },
             Option{ "-p", "Output bundle file path.", true, 1, "outputBundle" },
             Option{ "-f", "Mapping file path.", false, 1, "mappingFile" },
-            Option{ "-bv:", "Specifies the version number of the bundle being created. The version"
+            Option{ "-bv", "Specifies the version number of the bundle being created. The version"
                             "must be in dotted - quad notation of four integers"
                             "<Major>.<Minor>.<Build>.<Revision> ranging from 0 to 65535 each.If the"
                             "/ bv option is not specified or is set to 0.0.0.0, the bundle is created"
@@ -635,13 +633,22 @@ Command CreateBundleCommand()
 
     result.SetInvocationFunc([](const Invocation& invocation)
         {
-            return CreateBundle(
+            char* directoryPath = (invocation.IsOptionPresent("-d")) ?
+                const_cast<char*>(invocation.GetOptionValue("-d").c_str()) : nullptr;
+
+            char* mappingFile = (invocation.IsOptionPresent("-f")) ?
+                const_cast<char*>(invocation.GetOptionValue("-f").c_str()) : nullptr;
+
+            char* version = (invocation.IsOptionPresent("-bv")) ?
+                const_cast<char*>(invocation.GetOptionValue("-bv").c_str()) : nullptr;
+
+            return PackBundle(
                 GetCommonOptions(invocation),
                 GetBundleOptions(invocation),
-                const_cast<char*>(invocation.GetOptionValue("-d").c_str()),
+                directoryPath,
                 const_cast<char*>(invocation.GetOptionValue("-p").c_str()),
-                const_cast<char*>(invocation.GetOptionValue("-f").c_str()),
-                const_cast<char*>(invocation.GetOptionValue("-v").c_str()));
+                mappingFile,
+                version);
         });
 
     return result;
