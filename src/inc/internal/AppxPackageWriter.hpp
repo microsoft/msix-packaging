@@ -32,11 +32,11 @@ public:
 MSIX_INTERFACE(IPackageWriter, 0x32e89da5,0x7cbb,0x4443,0x8c,0xf0,0xb8,0x4e,0xed,0xb5,0x1d,0x0a);
 
 namespace MSIX {
-    class AppxPackageWriter final : public ComClass<AppxPackageWriter, IPackageWriter, IAppxPackageWriter,
+    class AppxPackageWriter final : public ComClass<AppxPackageWriter, IPackageWriter, IAppxPackageWriter, IAppxBundleWriter,
         IAppxPackageWriterUtf8, IAppxPackageWriter3, IAppxPackageWriter3Utf8>
     {
     public:
-        AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip);
+        AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip, bool isBundle);
         ~AppxPackageWriter() {};
 
         // IPackageWriter
@@ -59,6 +59,10 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE AddPayloadFiles(UINT32 fileCount, APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8* payloadFiles,
             UINT64 memoryLimit) noexcept override;
 
+        // IAppxBundleWriter
+        HRESULT STDMETHODCALLTYPE AddPayloadPackage(LPCWSTR fileName, IStream* packageStream) noexcept override;
+        HRESULT STDMETHODCALLTYPE Close() noexcept override;
+
     protected:
         typedef enum
         {
@@ -76,11 +80,14 @@ namespace MSIX {
 
         void ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt);
 
+        //void CloseInternal();
+
         WriterState m_state;
         ComPtr<IMsixFactory> m_factory;
         ComPtr<IZipWriter> m_zipWriter;
         BlockMapWriter m_blockMapWriter;
         ContentTypeWriter m_contentTypeWriter;
+        bool m_isBundle;
     };
 }
 

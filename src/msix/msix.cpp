@@ -7,7 +7,7 @@
 #include <cstdlib>
 #include <functional>
 #include <map>
-#include <experimental/filesystem>
+//#include <experimental/filesystem>
 
 #include "Exceptions.hpp"
 #include "FileStream.hpp"
@@ -327,10 +327,10 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     }
 
     //Process output path
-    if (fs::is_directory(fs::path(outputBundle)))
+    /*if (fs::is_directory(fs::path(outputBundle)))
     {
         return E_INVALIDARG;
-    }
+    }*/
 
     //get fulloutput path
     //get full input path - processmapping file here and create file list from mappingfile or inputdirectory
@@ -339,27 +339,30 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
 
     //check for overwrite here - ResolveOutputPath
 
-    MSIX::ComPtr<IStream> packageStream;
-    ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &packageStream));
-
     auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
-
-    MSIX::ComPtr<IAppxBundleWriter> bundleWriter;
-    MSIX::ComPtr<IAppxBundleWriter4> bundleWriter4;
+    auto deleteFile = MSIX::scope_exit([&outputBundle]
     {
-        MSIX::ComPtr<IAppxBundleFactory> factory;
-        ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
-            MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, 
-            MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL,
-            &factory));
+        remove(outputBundle);
+    });
 
-        ThrowHrIfFailed(factory->CreateBundleWriter(packageStream.Get(), bundleVersion, &bundleWriter));
+    MSIX::ComPtr<IStream> stream;
+    ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &stream));
 
+    MSIX::ComPtr<IAppxBundleFactory> factory;
+    ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
+        MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, 
+        MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL,
+        &factory));
 
+    /*MSIX::ComPtr<IAppxBundleWriter> bundleWriter;
+    MSIX::ComPtr<IAppxBundleWriter4> bundleWriter4;
 
-    }
+    ThrowHrIfFailed(factory->CreateBundleWriter(stream.Get(), bundleVersion, &bundleWriter));
+    //bundleWriter4 = bundleWriter.As<IAppxBundleWriter4>();
 
-
+    bundleWriter.As<IPackageWriter>()->PackPayloadFiles(from);
+    ThrowHrIfFailed(bundleWriter->Close());
+    deleteFile.release();*/
     return static_cast<HRESULT>(MSIX::Error::OK);
 
 } CATCH_RETURN();

@@ -25,7 +25,8 @@
 
 namespace MSIX {
 
-    AppxPackageWriter::AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip) : m_factory(factory), m_zipWriter(zip)
+    AppxPackageWriter::AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip, bool isBundle)
+        : m_factory(factory), m_zipWriter(zip), m_isBundle(isBundle)
     {
         m_state = WriterState::Open;
     }
@@ -44,7 +45,7 @@ namespace MSIX {
         {
             // If any footprint file is present, ignore it. We only require the AppxManifest.xml
             // and any other will be ignored and a new one will be created for the package. 
-            if(!(FileNameValidation::IsFootPrintFile(file.second) || FileNameValidation::IsReservedFolder(file.second)))
+            if(!(FileNameValidation::IsFootPrintFile(file.second, m_isBundle) || FileNameValidation::IsReservedFolder(file.second)))
             {
                 std::string ext = Helper::tolower(file.second.substr(file.second.find_last_of(".") + 1));
                 auto contentType = ContentType::GetContentTypeByExtension(ext);
@@ -151,11 +152,30 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
+    // IAppxBundleWriter
+    HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream) noexcept try
+    {
+        if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
+        // TODO: implement
+        NOTIMPLEMENTED;
+
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxPackageWriter::Close() noexcept try
+    {
+        if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
+
+        // TODO: create appxbundlemanifest and add it to zip
+
+        //CloseInternal();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
     void AppxPackageWriter::ValidateAndAddPayloadFile(const std::string& name, IStream* stream,
         APPX_COMPRESSION_OPTION compressionOpt, const char* contentType)
     {
         ThrowErrorIfNot(Error::InvalidParameter, FileNameValidation::IsFileNameValid(name), "Invalid file name");
-        ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsFootPrintFile(name), "Trying to add footprint file to package");
+        ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsFootPrintFile(name, m_isBundle), "Trying to add footprint file to package");
         ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsReservedFolder(name), "Trying to add file in reserved folder");
         ValidateCompressionOption(compressionOpt);
         AddFileToPackage(name, stream, compressionOpt != APPX_COMPRESSION_OPTION_NONE, true, contentType);
