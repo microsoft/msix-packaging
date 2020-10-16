@@ -66,11 +66,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::Close(IStream* manifest) noexcept try
     {
-        ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
-        auto failState = MSIX::scope_exit([this]
-        {
-            this->m_state = WriterState::Failed;
-        });
+        if (m_isBundle) { return static_cast<HRESULT>(Error::PackageIsBundle); }
 
         ComPtr<IStream> manifestStream(manifest);
 
@@ -80,20 +76,7 @@ namespace MSIX {
         auto manifestContentType = ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE_MANIFEST);
         AddFileToPackage(APPXMANIFEST_XML, manifestStream.Get(), true, true, manifestContentType.c_str());
 
-        // Close blockmap and add it to package
-        m_blockMapWriter.Close();
-        auto blockMapStream = m_blockMapWriter.GetStream();
-        auto blockMapContentType = ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP);
-        AddFileToPackage(APPXBLOCKMAP_XML, blockMapStream.Get(), true, false, blockMapContentType.c_str());
-
-        // Close content types and add it to package
-        m_contentTypeWriter.Close();
-        auto contentTypeStream = m_contentTypeWriter.GetStream();
-        AddFileToPackage(CONTENT_TYPES_XML, contentTypeStream.Get(), true, false, nullptr);
-
-        m_zipWriter->Close();
-        failState.release();
-        m_state = WriterState::Closed;
+        CloseInternal();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
@@ -155,20 +138,46 @@ namespace MSIX {
     // IAppxBundleWriter
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream) noexcept try
     {
-        if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
         // TODO: implement
         NOTIMPLEMENTED;
-
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::Close() noexcept try
     {
         if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
 
-        // TODO: create appxbundlemanifest and add it to zip
+        //ComPtr<IStream> manifestStream(manifest);
 
-        //CloseInternal();
+        // Process AppxBundleManifest.xml
+        // If the creating the AppxManifestObject succeeds, then the stream is valid.
+        /*auto manifestObj = ComPtr<IAppxManifestReader>::Make<AppxManifestObject>(m_factory.Get(), manifestStream.Get());
+        auto manifestContentType = ContentType::GetPayloadFileContentType(APPX_BUNDLE_FOOTPRINT_FILE_TYPE_MANIFEST);
+        AddFileToPackage(APPXBUNDLEMANIFEST_XML, manifestStream.Get(), true, true, manifestContentType.c_str());*/
+
+        CloseInternal();
         return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();
+
+    // IAppxBundleWriter4
+    HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddPackageReference(LPCWSTR fileName, 
+        IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
+    {
+        // TODO: implement
+        NOTIMPLEMENTED;
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream, 
+        BOOL isDefaultApplicablePackage) noexcept try
+    {
+        // TODO: implement
+        NOTIMPLEMENTED;
+    } CATCH_RETURN();
+
+    HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddExternalPackageReference(LPCWSTR fileName,
+        IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
+    {
+        // TODO: implement
+        NOTIMPLEMENTED;
     } CATCH_RETURN();
 
     void AppxPackageWriter::ValidateAndAddPayloadFile(const std::string& name, IStream* stream,
@@ -272,6 +281,32 @@ namespace MSIX {
                        (compressionOpt == APPX_COMPRESSION_OPTION_FAST) ||
                        (compressionOpt == APPX_COMPRESSION_OPTION_SUPERFAST));
         ThrowErrorIfNot(Error::InvalidParameter, result, "Invalid compression option.");
+    }
+
+    // Common close functionality for pack and bundle.
+    // Adds AppxBlockMap.xml, [Content_Types].xml and closes the zip object.
+    void AppxPackageWriter::CloseInternal()
+    {
+        ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
+        auto failState = MSIX::scope_exit([this]
+            {
+                this->m_state = WriterState::Failed;
+            });
+
+        // Close blockmap and add it to package
+        m_blockMapWriter.Close();
+        auto blockMapStream = m_blockMapWriter.GetStream();
+        auto blockMapContentType = ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP);
+        AddFileToPackage(APPXBLOCKMAP_XML, blockMapStream.Get(), true, false, blockMapContentType.c_str());
+
+        // Close content types and add it to package
+        m_contentTypeWriter.Close();
+        auto contentTypeStream = m_contentTypeWriter.GetStream();
+        AddFileToPackage(CONTENT_TYPES_XML, contentTypeStream.Get(), true, false, nullptr);
+
+        m_zipWriter->Close();
+        failState.release();
+        m_state = WriterState::Closed;
     }
 
 }

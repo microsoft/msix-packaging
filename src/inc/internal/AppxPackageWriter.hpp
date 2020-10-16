@@ -32,7 +32,7 @@ public:
 MSIX_INTERFACE(IPackageWriter, 0x32e89da5,0x7cbb,0x4443,0x8c,0xf0,0xb8,0x4e,0xed,0xb5,0x1d,0x0a);
 
 namespace MSIX {
-    class AppxPackageWriter final : public ComClass<AppxPackageWriter, IPackageWriter, IAppxPackageWriter, IAppxBundleWriter,
+    class AppxPackageWriter final : public ComClass<AppxPackageWriter, IPackageWriter, IAppxPackageWriter, IAppxBundleWriter, IAppxBundleWriter4,
         IAppxPackageWriterUtf8, IAppxPackageWriter3, IAppxPackageWriter3Utf8>
     {
     public:
@@ -63,6 +63,14 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE AddPayloadPackage(LPCWSTR fileName, IStream* packageStream) noexcept override;
         HRESULT STDMETHODCALLTYPE Close() noexcept override;
 
+        // IAppxBundleWriter4
+        HRESULT STDMETHODCALLTYPE AddPackageReference(LPCWSTR fileName, IStream* inputStream, 
+            BOOL isDefaultApplicablePackage) noexcept override;
+        HRESULT STDMETHODCALLTYPE AddPayloadPackage(LPCWSTR fileName, IStream* packageStream, 
+            BOOL isDefaultApplicablePackage) noexcept override;
+        HRESULT STDMETHODCALLTYPE AddExternalPackageReference(LPCWSTR fileName, IStream* inputStream,
+            BOOL isDefaultApplicablePackage) noexcept override;
+
     protected:
         typedef enum
         {
@@ -80,7 +88,7 @@ namespace MSIX {
 
         void ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt);
 
-        //void CloseInternal();
+        void CloseInternal();
 
         WriterState m_state;
         ComPtr<IMsixFactory> m_factory;

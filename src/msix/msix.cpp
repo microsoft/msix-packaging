@@ -304,7 +304,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     char* version
 ) noexcept try
 {
-    //AutoPtr<FileList> fileList;
     std::unique_ptr<std::map<std::string, std::string>> externalPackagesList;
     std::string bundlePath;
     std::string optionalBundlesManifest;
@@ -335,11 +334,13 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     //get fulloutput path
     //get full input path - processmapping file here and create file list from mappingfile or inputdirectory
 
-    //createbundle
-
     //check for overwrite here - ResolveOutputPath
 
     auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+
+    // PackBundle assumes AppxBundleManifest.xml to be in the AppxMetadata directory in the directory provided.
+    //auto manifest = from.As<IStorageObject>()->GetFile(MSIX::bundleFootprintFiles[APPX_BUNDLE_FOOTPRINT_FILE_TYPE_MANIFEST]);
+
     auto deleteFile = MSIX::scope_exit([&outputBundle]
     {
         remove(outputBundle);
@@ -354,15 +355,15 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
         MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL,
         &factory));
 
-    /*MSIX::ComPtr<IAppxBundleWriter> bundleWriter;
+    MSIX::ComPtr<IAppxBundleWriter> bundleWriter;
     MSIX::ComPtr<IAppxBundleWriter4> bundleWriter4;
 
     ThrowHrIfFailed(factory->CreateBundleWriter(stream.Get(), bundleVersion, &bundleWriter));
-    //bundleWriter4 = bundleWriter.As<IAppxBundleWriter4>();
+    bundleWriter4 = bundleWriter.As<IAppxBundleWriter4>();
 
-    bundleWriter.As<IPackageWriter>()->PackPayloadFiles(from);
+    //bundleWriter.As<IPackageWriter>()->PackPayloadFiles(from, flatBundle);
     ThrowHrIfFailed(bundleWriter->Close());
-    deleteFile.release();*/
+    deleteFile.release();
     return static_cast<HRESULT>(MSIX::Error::OK);
 
 } CATCH_RETURN();
