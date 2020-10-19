@@ -303,13 +303,9 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     char* version
 ) noexcept try
 {
-    std::unique_ptr<std::map<std::string, std::string>> externalPackagesList;
-    std::string bundlePath;
-    std::string optionalBundlesManifest;
     UINT64 bundleVersion = 0;
     bool flatBundle = false;
 
-    //ProcessOptionsForBundle starts here
     if (version != nullptr)
     {
         bundleVersion = std::strtoull(version, NULL, 0);
@@ -321,25 +317,13 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
 
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
     {
-        std::cout << "verbse si true\n";
+        //process option for verbose
     }
 
     if (0 == (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE))
     {
-        std::cout << "flat bundle true";
         flatBundle = true;
     }
-
-    //Process output path
-    /*if (fs::is_directory(fs::path(outputBundle)))
-    {
-        return E_INVALIDARG;
-    }*/
-
-    //get fulloutput path
-    //get full input path - processmapping file here and create file list from mappingfile or inputdirectory
-
-    //check for overwrite here - ResolveOutputPath
 
     auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
 
