@@ -28,6 +28,9 @@ class IPackageWriter : public IUnknown
 public:
     // TODO: add options if needed
     virtual void PackPayloadFiles(const MSIX::ComPtr<IDirectoryObject>& from) = 0;
+
+    virtual void ProcessBundlePayload(const MSIX::ComPtr<IDirectoryObject>& from, bool flatBundle) = 0;
+
 };
 MSIX_INTERFACE(IPackageWriter, 0x32e89da5,0x7cbb,0x4443,0x8c,0xf0,0xb8,0x4e,0xed,0xb5,0x1d,0x0a);
 
@@ -41,6 +44,8 @@ namespace MSIX {
 
         // IPackageWriter
         void PackPayloadFiles(const ComPtr<IDirectoryObject>& from) override;
+
+        void ProcessBundlePayload(const ComPtr<IDirectoryObject>& from, bool flatBundle) override;
 
         // IAppxPackageWriter
         HRESULT STDMETHODCALLTYPE AddPayloadFile(LPCWSTR fileName, LPCWSTR contentType,

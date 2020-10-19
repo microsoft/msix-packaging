@@ -296,7 +296,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
 #endif // MSIX_PACK
 
 MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
-    MSIX_COMMON_OPTIONS commonOptions,
     MSIX_BUNDLE_OPTIONS bundleOptions,
     char* directoryPath,
     char* outputBundle,
@@ -320,8 +319,14 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
 
     std::cout << "here " << bundleVersion;
 
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
+    {
+        std::cout << "verbse si true\n";
+    }
+
     if (0 == (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE))
     {
+        std::cout << "flat bundle true";
         flatBundle = true;
     }
 
@@ -361,7 +366,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     ThrowHrIfFailed(factory->CreateBundleWriter(stream.Get(), bundleVersion, &bundleWriter));
     bundleWriter4 = bundleWriter.As<IAppxBundleWriter4>();
 
-    //bundleWriter.As<IPackageWriter>()->PackPayloadFiles(from, flatBundle);
+    bundleWriter4.As<IPackageWriter>()->ProcessBundlePayload(from, flatBundle);
     ThrowHrIfFailed(bundleWriter->Close());
     deleteFile.release();
     return static_cast<HRESULT>(MSIX::Error::OK);

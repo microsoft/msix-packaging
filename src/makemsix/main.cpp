@@ -420,36 +420,29 @@ MSIX_APPLICABILITY_OPTIONS GetApplicabilityOption(const Invocation& invocation)
     return applicability;
 }
 
-MSIX_COMMON_OPTIONS GetCommonOptions(const Invocation& invocation)
+MSIX_BUNDLE_OPTIONS GetBundleOptions(const Invocation& invocation)
 {
-    MSIX_COMMON_OPTIONS commonOptions = MSIX_COMMON_OPTIONS::MSIX_OPTION_NONE;
+    MSIX_BUNDLE_OPTIONS bundleOptions = MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NONE;
 
     if (invocation.IsOptionPresent("-v"))
     {
-        commonOptions |= MSIX_COMMON_OPTIONS::MSIX_OPTION_VERBOSE;
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE;
     }
 
     if (invocation.IsOptionPresent("-o"))
     {
-        commonOptions |= MSIX_COMMON_OPTIONS::MSIX_OPTION_OVERWRITE;
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_OPTION_OVERWRITE;
     }
 
     if (invocation.IsOptionPresent("-no"))
     {
-        commonOptions |= MSIX_COMMON_OPTIONS::MSIX_OPTION_NOOVERWRITE;
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NOOVERWRITE;
     }
 
     if (invocation.IsOptionPresent("-bv"))
     {
-        commonOptions |= MSIX_COMMON_OPTIONS::MSIX_OPTION_VERSION;
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERSION;
     }
-
-    return commonOptions;
-}
-
-MSIX_BUNDLE_OPTIONS GetBundleOptions(const Invocation& invocation)
-{
-    MSIX_BUNDLE_OPTIONS bundleOptions;
 
     if (invocation.IsOptionPresent("-fb"))
     {
@@ -643,7 +636,6 @@ Command CreateBundleCommand()
                 const_cast<char*>(invocation.GetOptionValue("-bv").c_str()) : nullptr;
 
             return PackBundle(
-                GetCommonOptions(invocation),
                 GetBundleOptions(invocation),
                 directoryPath,
                 const_cast<char*>(invocation.GetOptionValue("-p").c_str()),

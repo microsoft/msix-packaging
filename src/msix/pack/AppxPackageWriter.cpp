@@ -56,6 +56,45 @@ namespace MSIX {
         failState.release();
     }
 
+    // IPackageWriter
+    void AppxPackageWriter::ProcessBundlePayload(const ComPtr<IDirectoryObject>& from, bool flatBundle)
+    {
+        ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
+        auto failState = MSIX::scope_exit([this]
+            {
+                this->m_state = WriterState::Failed;
+            });
+
+        auto fileMap = from->GetFilesByLastModDate();
+        for (const auto& file : fileMap)
+        {
+            if (!(FileNameValidation::IsFootPrintFile(file.second, m_isBundle) || FileNameValidation::IsReservedFolder(file.second)))
+            {
+                std::string ext = Helper::tolower(file.second.substr(file.second.find_last_of(".") + 1));
+                auto contentType = ContentType::GetContentTypeByExtension(ext);
+                auto stream = from.As<IStorageObject>()->GetFile(file.second);
+
+                if (flatBundle)
+                {
+                    auto appxFactory = m_factory.As<IAppxFactory>();
+
+                    ComPtr<IAppxPackageReader> reader;
+                    ThrowHrIfFailed(appxFactory->CreatePackageReader(stream.Get(), &reader));
+
+                    ValidateAndAddPayloadFile(file.second, stream.Get(), 
+                        APPX_COMPRESSION_OPTION::APPX_COMPRESSION_OPTION_NONE, contentType.GetContentType().c_str());
+
+                }
+                /*else
+                {
+                    //if appx add without compression, else add with compression
+                    ValidateAndAddPayloadFile(file.second, stream.Get(), APPX_COMPRESSION_OPTION::APPX_COMPRESSION_OPTION_NONE, contentType.GetContentType().c_str());
+                }*/
+            }
+        }
+        failState.release();
+    }
+
     // IAppxPackageWriter
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddPayloadFile(LPCWSTR fileName, LPCWSTR contentType,
         APPX_COMPRESSION_OPTION compressionOption, IStream *inputStream) noexcept try
