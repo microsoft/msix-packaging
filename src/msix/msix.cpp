@@ -7,7 +7,6 @@
 #include <cstdlib>
 #include <functional>
 #include <map>
-//#include <experimental/filesystem>
 
 #include "Exceptions.hpp"
 #include "FileStream.hpp"
@@ -20,9 +19,6 @@
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
 #include "ScopeExit.hpp"
-#include <fstream>
-
-namespace fs = std::experimental::filesystem;
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden

@@ -29,6 +29,10 @@ namespace MSIX {
         : m_factory(factory), m_zipWriter(zip), m_isBundle(isBundle)
     {
         m_state = WriterState::Open;
+        if (isBundle)
+        {
+            
+        }
     }
 
     // IPackageWriter
@@ -76,20 +80,8 @@ namespace MSIX {
 
                 if (flatBundle)
                 {
-                    auto appxFactory = m_factory.As<IAppxFactory>();
-
-                    ComPtr<IAppxPackageReader> reader;
-                    ThrowHrIfFailed(appxFactory->CreatePackageReader(stream.Get(), &reader));
-
-                    ValidateAndAddPayloadFile(file.second, stream.Get(), 
-                        APPX_COMPRESSION_OPTION::APPX_COMPRESSION_OPTION_NONE, contentType.GetContentType().c_str());
-
+                    ThrowHrIfFailed(AddPackageReference(utf8_to_wstring(file.second).c_str(), stream.Get(), false));
                 }
-                /*else
-                {
-                    //if appx add without compression, else add with compression
-                    ValidateAndAddPayloadFile(file.second, stream.Get(), APPX_COMPRESSION_OPTION::APPX_COMPRESSION_OPTION_NONE, contentType.GetContentType().c_str());
-                }*/
             }
         }
         failState.release();
@@ -200,10 +192,146 @@ namespace MSIX {
     // IAppxBundleWriter4
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddPackageReference(LPCWSTR fileName, 
         IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
-    {
-        // TODO: implement
-        NOTIMPLEMENTED;
+    {        
+        HRESULT hr = this->AddPackageReferenceInternal(fileName, inputStream, !!isDefaultApplicablePackage);
+
+        if (FAILED(hr))
+        {
+            //fail
+        }
+
+        return hr;
+
     } CATCH_RETURN();
+
+    HRESULT AppxPackageWriter::AddPackageReferenceInternal(
+        _In_ LPCWSTR fileName,
+        _In_ IStream* packageStream,
+        _In_ bool isDefaultApplicablePackage)
+    {
+        auto appxFactory = m_factory.As<IAppxFactory>();
+
+        ComPtr<IAppxPackageReader> reader;
+        ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream, &reader));
+
+        /*if (!this->blockMapInitialized)
+        {
+
+        }*/
+
+        UINT64 packageStreamSize = 0;
+        ThrowHrIfFailed(GetStreamSize(packageStream, &packageStreamSize));
+
+        ThrowHrIfFailed(AddPackage(fileName, reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage, false));
+
+        return S_OK;
+    }
+
+    HRESULT AppxPackageWriter::GetStreamSize(_In_ IStream* stream, _Out_ UINT64* sizeOfStream)
+    {
+        HRESULT hr = S_OK;
+        STATSTG stat;
+        ThrowHrIfFailed(stream->Stat(&stat, STATFLAG_NONAME));
+
+        *sizeOfStream = stat.cbSize.QuadPart;
+        return S_OK;
+    }
+
+    HRESULT AppxPackageWriter::AddPackage(
+        _In_ PCWSTR fileName,
+        _In_ IAppxPackageReader* packageReader,
+        _In_ UINT64 bundleOffset,
+        _In_ UINT64 packageSize,
+        _In_ bool isDefaultApplicableResource,
+        _In_ bool isStub)
+    {
+        ComPtr<IAppxManifestPackageId> packageId;
+        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
+        ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
+        ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
+
+        ThrowHrIfFailed(GetValidatedPackageData(fileName, packageReader, isStub, /*&packageType*/
+            &packageId, &resources, &tdfs));
+
+        //auto innerPackageIdInternal = packageId.As<IAppxManifestPackageIdInternal>();
+
+        ThrowHrIfFailed(AddValidatedPackageData(fileName, bundleOffset, packageSize, packageType, packageId,
+                isDefaultApplicableResource, resources.Get(), tdfs.Get(), isStub));
+        return S_OK;
+
+    }
+
+    HRESULT AppxPackageWriter::GetValidatedPackageData(
+        _In_ PCWSTR fileName,
+        _In_ IAppxPackageReader* packageReader,
+        _In_ bool isStub,
+        /*_Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,*/
+        _Outptr_result_nullonfailure_ IAppxManifestPackageId** packageId,
+        _Outptr_result_nullonfailure_ IAppxManifestQualifiedResourcesEnumerator** resources,
+        _Outptr_result_maybenull_ IAppxManifestTargetDeviceFamiliesEnumerator** tdfs)
+    {
+        ComPtr<IAppxManifestPackageId> loadedPackageId;
+        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE loadedPackageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
+        ComPtr<IAppxManifestQualifiedResourcesEnumerator> loadedResources;
+        ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> loadedTdfs;
+
+        ComPtr<IAppxManifestReader> manifestReader;
+        ThrowHrIfFailed(packageReader->GetManifest(&manifestReader));
+        ThrowHrIfFailed(manifestReader->GetPackageId(&loadedPackageId));
+        //AutoCoTaskMemString packageFullName;
+        //ThrowHrIfFailed(loadedPackageId->GetPackageFullName(&packageFullName));
+        //ComPtr<IAppxManifestReader3> manifestReader3;
+        //ThrowHrIfFailed(manifestReader.As(&manifestReader3));
+        //ThrowHrIfFailed(manifestReader3->GetQualifiedResources(&loadedResources));
+
+        //a lot more validations
+
+        //*packageType = loadedPackageType;
+        *packageId = loadedPackageId.Detach();
+
+        return S_OK;
+
+    }
+
+    HRESULT AppxPackageWriter::AddValidatedPackageData(
+    _In_ PCWSTR fileName,
+    _In_ UINT64 bundleOffset,
+    _In_ UINT64 packageSize,
+    _In_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
+    _In_ ComPtr<IAppxManifestPackageId> packageId,
+    _In_ BOOL isDefaultApplicablePackage,
+    _In_ IAppxManifestQualifiedResourcesEnumerator* resources,
+    _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs,
+    _In_ bool isStub)
+    {
+        //validate package payload extension
+
+        auto innerPackageIdInternal = packageId.As<IAppxManifestPackageIdInternal>();
+
+        PackageInfo packageInfo;
+        packageInfo.type = packageType;
+        packageInfo.architecture = innerPackageIdInternal->GetArchitecture();
+        ThrowHrIfFailed(packageId->GetVersion(&packageInfo.version));
+        packageInfo.resourceId = innerPackageIdInternal->GetResourceId();
+        packageInfo.isDefaultApplicablePackage = isDefaultApplicablePackage;
+        packageInfo.resources = resources;
+        packageInfo.fileName = fileName;
+        packageInfo.size = packageSize;
+        packageInfo.offset = bundleOffset;
+        packageInfo.tdfs = tdfs;
+        packageInfo.isStub = isStub;
+
+        ThrowHrIfFailed(AddPackageInfoToVector(packageInfo));
+
+        return S_OK;
+    }
+
+    HRESULT AppxPackageWriter::AddPackageInfoToVector(_In_ PackageInfo packageInfo)
+    {
+        this->payloadPackages.push_back(packageInfo);
+        //More checks
+        return S_OK;
+    }
 
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream, 
         BOOL isDefaultApplicablePackage) noexcept try

@@ -87,6 +87,7 @@ namespace MSIX {
     // IAppxBundleFactory
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept try
     {
+        //process and set bundle version here
         THROW_IF_BUNDLE_NOT_ENABLED
         ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || bundleWriter == nullptr || *bundleWriter != nullptr), "Invalid parameter");
         //#ifdef MSIX_PACK 

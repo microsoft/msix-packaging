@@ -10,6 +10,7 @@
 #include "AppxBlockMapWriter.hpp"
 #include "ContentTypeWriter.hpp"
 #include "ZipObjectWriter.hpp"
+#include "BundleManifestWriter.hpp"
 
 #include <map>
 #include <memory>
@@ -85,6 +86,25 @@ namespace MSIX {
         }
         WriterState;
 
+        struct PackageInfo
+        {
+            APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE type;
+            UINT64 version;
+            std::string architecture;
+            std::string resourceId;
+            PCWSTR fileName;
+            UINT64 size;
+            UINT64 offset;
+            ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
+            BOOL isDefaultApplicablePackage;
+            ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
+            BOOL isStub;
+        };
+
+        std::vector<PackageInfo> payloadPackages;
+
+        HRESULT AddPackageInfoToVector(_In_ PackageInfo packageInfo);
+
         void ValidateAndAddPayloadFile(const std::string& name, IStream* stream,
             APPX_COMPRESSION_OPTION compressionOpt, const char* contentType);
 
@@ -95,11 +115,46 @@ namespace MSIX {
 
         void CloseInternal();
 
+        HRESULT AddPackageReferenceInternal(_In_ LPCWSTR fileName, _In_ IStream* packageStream,
+            _In_ bool isDefaultApplicablePackage);
+
+        HRESULT GetStreamSize(_In_ IStream* stream, _Out_ UINT64* sizeOfStream);
+
+        HRESULT AddPackage(
+            _In_ PCWSTR fileName,
+            _In_ IAppxPackageReader* packageReader,
+            _In_ UINT64 bundleOffset,
+            _In_ UINT64 packageSize,
+            _In_ bool isDefaultApplicableResource,
+            _In_ bool isStub);
+
+        HRESULT GetValidatedPackageData(
+            _In_ PCWSTR fileName,
+            _In_ IAppxPackageReader* packageReader,
+            _In_ bool isStub,
+            /*_Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,*/
+            _Outptr_result_nullonfailure_ IAppxManifestPackageId** packageId,
+            _Outptr_result_nullonfailure_ IAppxManifestQualifiedResourcesEnumerator** resources,
+            _Outptr_result_maybenull_ IAppxManifestTargetDeviceFamiliesEnumerator** tdfs);
+
+        HRESULT AddValidatedPackageData(
+            _In_ PCWSTR fileName,
+            _In_ UINT64 bundleOffset,
+            _In_ UINT64 packageSize,
+            _In_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
+            _In_ ComPtr<IAppxManifestPackageId> packageId,
+            _In_ BOOL isDefaultApplicablePackage,
+            _In_ IAppxManifestQualifiedResourcesEnumerator* resources,
+            _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs,
+            _In_ bool isStub);
+            
+
         WriterState m_state;
         ComPtr<IMsixFactory> m_factory;
         ComPtr<IZipWriter> m_zipWriter;
         BlockMapWriter m_blockMapWriter;
         ContentTypeWriter m_contentTypeWriter;
+        BundleManifestWriter m_bundleManifestWriter;
         bool m_isBundle;
     };
 }

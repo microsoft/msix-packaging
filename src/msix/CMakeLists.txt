@@ -131,6 +131,7 @@ if(MSIX_PACK)
         pack/ContentType.cpp
         pack/DeflateStream.cpp
         pack/ZipObjectWriter.cpp
+        pack/BundleManifestWriter.cpp
     )
 endif()
 
@@ -225,7 +226,7 @@ endforeach()
 add_library(${PROJECT_NAME} SHARED 
     msix.cpp
     ${MsixSrc}
-)
+ )
 
 # Adding dependency to the third party libs directory
 add_dependencies(${PROJECT_NAME} LIBS)
