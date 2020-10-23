@@ -299,17 +299,17 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     char* version
 ) noexcept try
 {
+    std::unique_ptr<std::map<std::string, std::string>> externalPackagesList;
     UINT64 bundleVersion = 0;
     bool flatBundle = false;
 
+    //Create ProcessOptionsForBundle method
     if (version != nullptr)
     {
         bundleVersion = std::strtoull(version, NULL, 0);
         //std::istringstream stream(version);
         //stream >> bundleVersion;
     }
-
-    std::cout << "here " << bundleVersion;
 
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
     {
@@ -322,9 +322,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     }
 
     auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
-
-    // PackBundle assumes AppxBundleManifest.xml to be in the AppxMetadata directory in the directory provided.
-    //auto manifest = from.As<IStorageObject>()->GetFile(MSIX::bundleFootprintFiles[APPX_BUNDLE_FOOTPRINT_FILE_TYPE_MANIFEST]);
 
     auto deleteFile = MSIX::scope_exit([&outputBundle]
     {

@@ -102,6 +102,9 @@ namespace MSIX {
         };
 
         std::vector<PackageInfo> payloadPackages;
+        std::string mainPackageName;
+        std::string mainPackagePublisher;
+        UINT64 bundleVersion;
 
         HRESULT AddPackageInfoToVector(_In_ PackageInfo packageInfo);
 

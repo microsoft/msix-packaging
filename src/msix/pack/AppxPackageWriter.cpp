@@ -84,6 +84,13 @@ namespace MSIX {
                 }
             }
         }
+
+        //Process external packages passed as input created from mapping file
+        /*if (externalPackagesList != nullptr)
+        {
+
+        }*/
+
         failState.release();
     }
 
@@ -175,7 +182,7 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::Close() noexcept try
     {
-        if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
+        //if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
 
         //ComPtr<IStream> manifestStream(manifest);
 
@@ -184,6 +191,16 @@ namespace MSIX {
         /*auto manifestObj = ComPtr<IAppxManifestReader>::Make<AppxManifestObject>(m_factory.Get(), manifestStream.Get());
         auto manifestContentType = ContentType::GetPayloadFileContentType(APPX_BUNDLE_FOOTPRINT_FILE_TYPE_MANIFEST);
         AddFileToPackage(APPXBUNDLEMANIFEST_XML, manifestStream.Get(), true, true, manifestContentType.c_str());*/
+        
+        //std::string hashMethodString = "http://www.w3.org/2001/04/xmlenc#sha256";
+        //HRESULT hr = S_OK;
+        //ComPtr<IStream> manifestStream;
+        //validate to see that the bundle has atleast one application package, else cannot be closed
+
+        std::string targetXmlNamespace;
+        //validate namespace according to input and assign namespace
+        m_bundleManifestWriter.CreateBundleElement(targetXmlNamespace);
+
 
         CloseInternal();
         return static_cast<HRESULT>(Error::OK);

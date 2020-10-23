@@ -15,18 +15,15 @@ namespace MSIX {
     {
     public:
         BundleManifestWriter();
-
-        HRESULT StartBundleManifest(std::string bundleName, std::string bundlePublisher, UINT64 bundleVersion);
-        HRESULT AddPackage(/*PackageInfo* packageInfo*/);
-        HRESULT AddOptionalBundle(/*OptionalBundleInfo* bundleInfo*/);
+        void CreateBundleElement(std::string targetXmlNamespace);
+        /*HRESULT StartBundleManifest(std::string bundleName, std::string bundlePublisher, UINT64 bundleVersion);
+        HRESULT AddPackage(/*PackageInfo* packageInfo);
+        HRESULT AddOptionalBundle(/*OptionalBundleInfo* bundleInfo);
         HRESULT EndBundleManifest();
-        HRESULT InitializeWriter();
+        HRESULT InitializeWriter();*/
 
-        /*void AddFile(const std::string& name, std::uint64_t uncompressedSize, std::uint32_t lfh);
-        void AddBlock(const std::vector<std::uint8_t>& block, ULONG size, bool isCompressed);
-        void CloseFile();
-        void Close();*/
         ComPtr<IStream> GetStream() { return m_xmlWriter.GetStream(); }
+        std::string GetQualifiedName(std::string namespaceAlias);
 
     protected:
         XmlWriter m_xmlWriter;
