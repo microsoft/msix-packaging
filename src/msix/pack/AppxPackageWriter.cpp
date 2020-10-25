@@ -193,14 +193,24 @@ namespace MSIX {
         AddFileToPackage(APPXBUNDLEMANIFEST_XML, manifestStream.Get(), true, true, manifestContentType.c_str());*/
         
         //std::string hashMethodString = "http://www.w3.org/2001/04/xmlenc#sha256";
-        //HRESULT hr = S_OK;
-        //ComPtr<IStream> manifestStream;
         //validate to see that the bundle has atleast one application package, else cannot be closed
 
         std::string targetXmlNamespace;
         //validate namespace according to input and assign namespace
-        m_bundleManifestWriter.CreateBundleElement(targetXmlNamespace);
+        m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, this->mainPackageName,this->mainPackagePublisher, this->bundleVersion);
 
+        for(std::size_t i = 0; i < this->payloadPackages.size(); i++) 
+        {
+            //Call AddPackage for each package
+            //this->payloadPackages[i].architecture
+        }
+
+        //Do the same loop for this->OptionalBundles
+        
+        //EndBundleManifest -> Ends Packages and Bundle Element
+        m_bundleManifestWriter.EndBundleManifest();
+
+        //Add AppxBundleManifest to the zip
 
         CloseInternal();
         return static_cast<HRESULT>(Error::OK);
