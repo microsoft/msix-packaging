@@ -31,7 +31,8 @@ namespace MSIX {
         void BundleManifestWriter::StartPackagesElement();
         void BundleManifestWriter::WritePackageElement(APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, 
             UINT64 version, std::string architecture, std::string resourceId, std::string fileName, UINT64 offset);
-        void BundleManifestWriter::EndBundleManifest();
+        void BundleManifestWriter::EndPackagesElement();
+        void BundleManifestWriter::Close();
 
         ComPtr<IStream> GetStream() { return m_xmlWriter.GetStream(); }
         std::string GetQualifiedName(std::string namespaceAlias);

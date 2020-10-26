@@ -207,10 +207,14 @@ namespace MSIX {
 
         //Do the same loop for this->OptionalBundles
         
-        //EndBundleManifest -> Ends Packages and Bundle Element
-        m_bundleManifestWriter.EndBundleManifest();
+        //EndBundleManifest -> Ends Packages Element
+        m_bundleManifestWriter.EndPackagesElement();
 
-        //Add AppxBundleManifest to the zip
+        // Add AppxBundleManifest.xml to blockmap and zip
+        m_bundleManifestWriter.Close();
+        auto bundleManifestStream = m_bundleManifestWriter.GetStream();
+        auto bundleManifestContentType = ContentType::GetBundlePayloadFileContentType(APPX_BUNDLE_FOOTPRINT_FILE_TYPE_MANIFEST);
+        AddFileToPackage(APPXBUNDLEMANIFEST_XML, bundleManifestStream.Get(), true, true, bundleManifestContentType.c_str());
 
         CloseInternal();
         return static_cast<HRESULT>(Error::OK);

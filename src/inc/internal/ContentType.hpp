@@ -23,6 +23,7 @@ namespace MSIX {
 
         static const ContentType& GetContentTypeByExtension(std::string& ext);
         static const std::string GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE footprintFile);
+        static const std::string GetBundlePayloadFileContentType(APPX_BUNDLE_FOOTPRINT_FILE_TYPE footprintFile);
     
     private:
         APPX_COMPRESSION_OPTION m_compressionOpt;

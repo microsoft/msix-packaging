@@ -83,8 +83,6 @@ namespace MSIX {
         m_xmlWriter.AddAttribute(identityVersionAttribute, versionString);
 
         m_xmlWriter.CloseElement();
-        m_xmlWriter.StartElement(packagesManifestElement);
-
     }
 
     void BundleManifestWriter::StartPackagesElement()
@@ -143,18 +141,20 @@ namespace MSIX {
         //EndPackage Tag
     }
 
-    void BundleManifestWriter::EndBundleManifest()
+    void BundleManifestWriter::EndPackagesElement()
     {
         //if (currentState == PackagesAdded)
         //{
             //Ends Packages Element if a package has been added
             m_xmlWriter.CloseElement();
         //}
-        
+    }
+
+    void BundleManifestWriter::Close()
+    {
         //Ends Bundle Element
         m_xmlWriter.CloseElement();
     }
-
 
     std::string BundleManifestWriter::GetQualifiedName(std::string namespaceAlias)
     {
