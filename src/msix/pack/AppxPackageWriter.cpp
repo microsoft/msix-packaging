@@ -72,7 +72,7 @@ namespace MSIX {
         auto fileMap = from->GetFilesByLastModDate();
         for (const auto& file : fileMap)
         {
-            if (!(FileNameValidation::IsFootPrintFile(file.second, m_isBundle) || FileNameValidation::IsReservedFolder(file.second)))
+            if (!(FileNameValidation::IsFootPrintFile(file.second, m_isBundle))) //|| FileNameValidation::IsReservedFolder(file.second)))
             {
                 std::string ext = Helper::tolower(file.second.substr(file.second.find_last_of(".") + 1));
                 auto contentType = ContentType::GetContentTypeByExtension(ext);
@@ -185,19 +185,13 @@ namespace MSIX {
         //if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
 
         //ComPtr<IStream> manifestStream(manifest);
-
-        // Process AppxBundleManifest.xml
-        // If the creating the AppxManifestObject succeeds, then the stream is valid.
-        /*auto manifestObj = ComPtr<IAppxManifestReader>::Make<AppxManifestObject>(m_factory.Get(), manifestStream.Get());
-        auto manifestContentType = ContentType::GetPayloadFileContentType(APPX_BUNDLE_FOOTPRINT_FILE_TYPE_MANIFEST);
-        AddFileToPackage(APPXBUNDLEMANIFEST_XML, manifestStream.Get(), true, true, manifestContentType.c_str());*/
         
         //std::string hashMethodString = "http://www.w3.org/2001/04/xmlenc#sha256";
         //validate to see that the bundle has atleast one application package, else cannot be closed
 
         std::string targetXmlNamespace;
         //validate namespace according to input and assign namespace
-        m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, this->mainPackageName,this->mainPackagePublisher, this->bundleVersion);
+        //m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, this->mainPackageName,this->mainPackagePublisher, this->bundleVersion);
 
         for(std::size_t i = 0; i < this->payloadPackages.size(); i++) 
         {
@@ -245,15 +239,12 @@ namespace MSIX {
         ComPtr<IAppxPackageReader> reader;
         ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream, &reader));
 
-        /*if (!this->blockMapInitialized)
-        {
-
-        }*/
+        //Verify that all the input packages uses SHA256 as their hash method
 
         UINT64 packageStreamSize = 0;
         ThrowHrIfFailed(GetStreamSize(packageStream, &packageStreamSize));
-
-        ThrowHrIfFailed(AddPackage(fileName, reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage, false));
+        
+        ThrowHrIfFailed(AddPackage(fileName, reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage));
 
         return S_OK;
     }
@@ -268,72 +259,221 @@ namespace MSIX {
         return S_OK;
     }
 
-    HRESULT AppxPackageWriter::AddPackage(
-        _In_ PCWSTR fileName,
-        _In_ IAppxPackageReader* packageReader,
-        _In_ UINT64 bundleOffset,
-        _In_ UINT64 packageSize,
-        _In_ bool isDefaultApplicableResource,
-        _In_ bool isStub)
+    HRESULT AppxPackageWriter::AddPackage(_In_ PCWSTR fileName, _In_ IAppxPackageReader* packageReader,
+        _In_ UINT64 bundleOffset, _In_ UINT64 packageSize, _In_ bool isDefaultApplicableResource)
     {
         ComPtr<IAppxManifestPackageId> packageId;
-        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
+        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
         ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
 
-        ThrowHrIfFailed(GetValidatedPackageData(fileName, packageReader, isStub, /*&packageType*/
-            &packageId, &resources, &tdfs));
-
-        //auto innerPackageIdInternal = packageId.As<IAppxManifestPackageIdInternal>();
+        ThrowHrIfFailed(GetValidatedPackageData(fileName, packageReader, &packageType, &packageId, &resources, &tdfs));
 
         ThrowHrIfFailed(AddValidatedPackageData(fileName, bundleOffset, packageSize, packageType, packageId,
-                isDefaultApplicableResource, resources.Get(), tdfs.Get(), isStub));
+                isDefaultApplicableResource, resources.Get(), tdfs.Get()));
         return S_OK;
-
     }
 
     HRESULT AppxPackageWriter::GetValidatedPackageData(
         _In_ PCWSTR fileName,
         _In_ IAppxPackageReader* packageReader,
-        _In_ bool isStub,
-        /*_Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,*/
+        _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
         _Outptr_result_nullonfailure_ IAppxManifestPackageId** packageId,
         _Outptr_result_nullonfailure_ IAppxManifestQualifiedResourcesEnumerator** resources,
         _Outptr_result_maybenull_ IAppxManifestTargetDeviceFamiliesEnumerator** tdfs)
     {
+        *packageId = nullptr;
+        *resources = nullptr;
+        *tdfs = nullptr;
+
         ComPtr<IAppxManifestPackageId> loadedPackageId;
-        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE loadedPackageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
+        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE loadedPackageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
         ComPtr<IAppxManifestQualifiedResourcesEnumerator> loadedResources;
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> loadedTdfs;
 
         ComPtr<IAppxManifestReader> manifestReader;
         ThrowHrIfFailed(packageReader->GetManifest(&manifestReader));
         ThrowHrIfFailed(manifestReader->GetPackageId(&loadedPackageId));
-        //AutoCoTaskMemString packageFullName;
-        //ThrowHrIfFailed(loadedPackageId->GetPackageFullName(&packageFullName));
-        //ComPtr<IAppxManifestReader3> manifestReader3;
-        //ThrowHrIfFailed(manifestReader.As(&manifestReader3));
-        //ThrowHrIfFailed(manifestReader3->GetQualifiedResources(&loadedResources));
 
-        //a lot more validations
+        LPWSTR packageFullName;
+        ThrowHrIfFailed(loadedPackageId->GetPackageFullName(&packageFullName));
 
-        //*packageType = loadedPackageType;
+        ComPtr<IAppxManifestReader3> manifestReader3;
+        ThrowHrIfFailed(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader3>::iid, reinterpret_cast<void**>(&manifestReader3)));
+
+        ThrowHrIfFailed(manifestReader3->GetQualifiedResources(&loadedResources));
+
+        HRESULT hr = manifestReader3->GetTargetDeviceFamilies(&loadedTdfs);
+        if (FAILED(hr) && hr != HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
+        {
+            return hr;
+        }
+
+        ThrowHrIfFailed(GetPayloadPackageType(manifestReader.Get(), fileName, &loadedPackageType));
+        //AddPackage checks
+        //ValidateOSVersion checks
+        //ThrowHrIfFailed(PackageMatchesHashMethod(packageReader, fileName, this->requiredHashMethod.Get()));
+
+        ThrowHrIfFailed(ValidateNameAndPublisher(loadedPackageId.Get(), fileName));
+
+        //TDF check
+
+        if (loadedPackageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
+        {
+            ThrowHrIfFailed(ValidateApplicationElement(manifestReader.Get(), fileName));
+
+            /*if (loadedTdfs != nullptr)
+            {
+                ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfCopy;
+                ThrowHrIfFailed(manifestReader3->GetTargetDeviceFamilies(&tdfCopy));
+                //TDF Checks
+            }*/
+        }
+
+        *packageType = loadedPackageType;
         *packageId = loadedPackageId.Detach();
+        *resources = loadedResources.Detach();
 
+        if (loadedTdfs.Get() != nullptr)
+        {
+            *tdfs = loadedTdfs.Detach();
+        }
+         return S_OK;
+    }
+
+    HRESULT AppxPackageWriter::ValidateApplicationElement(
+        _In_ IAppxManifestReader* packageManifestReader,
+        _In_ LPCWSTR fileName)
+    {
+        HRESULT hr = S_OK;
+        ComPtr<IAppxManifestReader4> manifestReader4;
+        ThrowHrIfFailed(packageManifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader4>::iid, reinterpret_cast<void**>(&manifestReader4)));
+
+        ComPtr<IAppxManifestOptionalPackageInfo> optionalPackageInfo;
+        ThrowHrIfFailed(manifestReader4->GetOptionalPackageInfo(&optionalPackageInfo));
+        
+        BOOL packageIsOptional = FALSE;
+        ThrowHrIfFailed(optionalPackageInfo->GetIsOptionalPackage(&packageIsOptional));
+
+        if (!packageIsOptional) // optional payload packages are not required to declare any <Application> elements
+        {
+            ComPtr<IAppxManifestApplicationsEnumerator> applications;
+            ThrowHrIfFailed(packageManifestReader->GetApplications(&applications));
+            BOOL hasApplication = FALSE;
+            ThrowHrIfFailed(applications->GetHasCurrent(&hasApplication));
+
+            if (!hasApplication)
+            {
+                //LPWSTR packageFullName;
+                //GetPackageFullNameFromManifest(packageManifestReader, packageFullName);
+                //Log error NO_APPLICATION, fileName, packageFullName
+                //return APPX_E_INVALID_MANIFEST;
+            }
+        }
+        return hr;
+    }
+
+    HRESULT AppxPackageWriter::ValidateNameAndPublisher(
+        _In_ IAppxManifestPackageId* packageId,
+        _In_ PCWSTR filename)
+    {
+        if (this->mainPackageName == nullptr)
+        {
+            ThrowHrIfFailed(packageId->GetName(&(this->mainPackageName)));
+            ThrowHrIfFailed(packageId->GetPublisher(&(this->mainPackagePublisher)));
+        }
+        else
+        {
+            LPWSTR packageName;
+            ThrowHrIfFailed(packageId->GetName(&packageName));
+            
+            if (!wcscmp(this->mainPackageName, packageName) == 0)
+            {
+                LPWSTR packageFullName;
+                ThrowHrIfFailed(packageId->GetPackageFullName(&packageFullName));
+                //Log mismatched packagename error, filename, packageFullName.get(), this->mainPackageName
+                //return APPX_E_INVALID_MANIFEST;
+            }
+
+            BOOL isPublisherSame = FALSE;
+            ThrowHrIfFailed(packageId->ComparePublisher(this->mainPackagePublisher, &isPublisherSame));
+            if (!isPublisherSame)
+            {
+                LPWSTR packageFullName;
+                ThrowHrIfFailed(packageId->GetPackageFullName(&packageFullName));
+                //Log mismatched publisher error, filename, packageFullName.get(), this->mainPackagePublisher
+                //return APPX_E_INVALID_MANIFEST;
+            }
+        }
         return S_OK;
+    }
 
+    HRESULT AppxPackageWriter::PackageMatchesHashMethod(
+        _In_ IAppxPackageReader* packageReader,
+        _In_ LPCWSTR fileName,
+        _In_ IUri* expectedHashMethod)
+    {
+        HRESULT hr = S_OK;
+        ComPtr<IAppxBlockMapReader> blockMapReader;
+        ThrowHrIfFailed(packageReader->GetBlockMap(&blockMapReader));
+
+        ComPtr<IUri> hashMethod;
+        ThrowHrIfFailed(blockMapReader->GetHashMethod(&hashMethod));
+
+        //std::wstring hashAlgorithmUri;
+        //ThrowHrIfFailed(hashMethod->GetAbsoluteUri(&hashAlgorithmUri));
+
+        /*if(!(wcscmp(hashAlgorithmUri, L"http://www.w3.org/2001/04/xmlenc#sha256") == 0))
+        {
+            //return APPX_E_INVALID_BLOCKMAP;
+        }*/
+
+        return hr;
+    }
+
+    HRESULT AppxPackageWriter::GetPayloadPackageType(
+        _In_ IAppxManifestReader* packageManifestReader,
+        _In_ LPCWSTR fileName,
+        _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType)
+    {
+        HRESULT hr = S_OK;
+        ComPtr<IAppxManifestProperties> packageProperties;
+        ThrowHrIfFailed(packageManifestReader->GetProperties(&packageProperties));
+
+        BOOL isFrameworkPackage = FALSE;
+        hr = packageProperties->GetBoolValue(L"Framework", &isFrameworkPackage);
+        if (FAILED(hr) && (hr != E_INVALIDARG))
+        {
+            return hr;
+        }
+
+        if (isFrameworkPackage)
+        {
+            //This method will fail with
+            /// APPX_E_INVALID_MANIFEST if the manifest is for a Framework package.
+            //return APPX_E_INVALID_MANIFEST;
+        }
+
+        BOOL isResourcePackage = FALSE;
+        hr = packageProperties->GetBoolValue(L"ResourcePackage", &isResourcePackage);
+        if (FAILED(hr) && (hr != E_INVALIDARG))
+        {
+            return hr;
+        }
+
+        *packageType = (isResourcePackage ? APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE : APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION);
+        return S_OK;
     }
 
     HRESULT AppxPackageWriter::AddValidatedPackageData(
-    _In_ PCWSTR fileName,
-    _In_ UINT64 bundleOffset,
-    _In_ UINT64 packageSize,
-    _In_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
-    _In_ ComPtr<IAppxManifestPackageId> packageId,
-    _In_ BOOL isDefaultApplicablePackage,
-    _In_ IAppxManifestQualifiedResourcesEnumerator* resources,
-    _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs,
-    _In_ bool isStub)
+        _In_ PCWSTR fileName,
+        _In_ UINT64 bundleOffset,
+        _In_ UINT64 packageSize,
+        _In_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
+        _In_ ComPtr<IAppxManifestPackageId> packageId,
+        _In_ BOOL isDefaultApplicablePackage,
+        _In_ IAppxManifestQualifiedResourcesEnumerator* resources,
+        _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {
         //validate package payload extension
 
@@ -350,7 +490,6 @@ namespace MSIX {
         packageInfo.size = packageSize;
         packageInfo.offset = bundleOffset;
         packageInfo.tdfs = tdfs;
-        packageInfo.isStub = isStub;
 
         ThrowHrIfFailed(AddPackageInfoToVector(packageInfo));
 
@@ -360,7 +499,24 @@ namespace MSIX {
     HRESULT AppxPackageWriter::AddPackageInfoToVector(_In_ PackageInfo packageInfo)
     {
         this->payloadPackages.push_back(packageInfo);
-        //More checks
+
+        if (packageInfo.offset == 0)
+        {
+            this->hasExternalPackages = true;
+        }
+
+        if (packageInfo.isDefaultApplicablePackage)
+        {
+            this->hasDefaultOrNeutralResources = true;
+        }
+
+        BOOL hasResources = FALSE;
+        ThrowHrIfFailed(packageInfo.resources->GetHasCurrent(&hasResources));
+        if (!hasResources)
+        {
+            this->hasDefaultOrNeutralResources = true;
+        }
+
         return S_OK;
     }
 

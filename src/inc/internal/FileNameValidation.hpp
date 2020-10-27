@@ -4,6 +4,8 @@
 // 
 #pragma once
 
+#include "MSIXWindows.hpp"
+
 #include <string>
 
 namespace MSIX {
@@ -15,5 +17,6 @@ namespace MSIX {
         static bool IsIdentifierValid(const std::string& name);
         static bool IsFootPrintFile(const std::string& fileName, bool isBundle);
         static bool IsReservedFolder(const std::string& fileName);
+        //static HRESULT IsUnderStubFolder(const std::string& fileName, bool* IsUnderStubFolder);
     };
 }

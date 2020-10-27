@@ -102,8 +102,10 @@ namespace MSIX {
         };
 
         std::vector<PackageInfo> payloadPackages;
-        std::string mainPackageName;
-        std::string mainPackagePublisher;
+        bool hasExternalPackages;
+        bool hasDefaultOrNeutralResources;
+        LPWSTR mainPackageName;
+        LPWSTR mainPackagePublisher;
         UINT64 bundleVersion;
 
         HRESULT AddPackageInfoToVector(_In_ PackageInfo packageInfo);
@@ -123,19 +125,13 @@ namespace MSIX {
 
         HRESULT GetStreamSize(_In_ IStream* stream, _Out_ UINT64* sizeOfStream);
 
-        HRESULT AddPackage(
-            _In_ PCWSTR fileName,
-            _In_ IAppxPackageReader* packageReader,
-            _In_ UINT64 bundleOffset,
-            _In_ UINT64 packageSize,
-            _In_ bool isDefaultApplicableResource,
-            _In_ bool isStub);
+        HRESULT AddPackage(_In_ PCWSTR fileName, _In_ IAppxPackageReader* packageReader, _In_ UINT64 bundleOffset,
+            _In_ UINT64 packageSize, _In_ bool isDefaultApplicableResource);
 
         HRESULT GetValidatedPackageData(
             _In_ PCWSTR fileName,
             _In_ IAppxPackageReader* packageReader,
-            _In_ bool isStub,
-            /*_Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,*/
+            _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
             _Outptr_result_nullonfailure_ IAppxManifestPackageId** packageId,
             _Outptr_result_nullonfailure_ IAppxManifestQualifiedResourcesEnumerator** resources,
             _Outptr_result_maybenull_ IAppxManifestTargetDeviceFamiliesEnumerator** tdfs);
@@ -148,10 +144,26 @@ namespace MSIX {
             _In_ ComPtr<IAppxManifestPackageId> packageId,
             _In_ BOOL isDefaultApplicablePackage,
             _In_ IAppxManifestQualifiedResourcesEnumerator* resources,
-            _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs,
-            _In_ bool isStub);
-            
+            _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
 
+        HRESULT GetPayloadPackageType(
+            _In_ IAppxManifestReader* packageManifestReader,
+            _In_ LPCWSTR fileName,
+            _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType);
+
+        HRESULT PackageMatchesHashMethod(
+            _In_ IAppxPackageReader* packageReader,
+            _In_ LPCWSTR fileName,
+            _In_ IUri* expectedHashMethod);
+
+        HRESULT ValidateNameAndPublisher(
+            _In_ IAppxManifestPackageId* packageId,
+            _In_ PCWSTR filename);
+
+        HRESULT ValidateApplicationElement(
+            _In_ IAppxManifestReader* packageManifestReader,
+            _In_ LPCWSTR fileName);
+            
         WriterState m_state;
         ComPtr<IMsixFactory> m_factory;
         ComPtr<IZipWriter> m_zipWriter;
