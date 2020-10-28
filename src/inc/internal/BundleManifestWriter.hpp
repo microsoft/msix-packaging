@@ -6,6 +6,8 @@
 
 #include "XmlWriter.hpp"
 #include "ComHelper.hpp"
+#include "Exceptions.hpp"
+#include "UnicodeConversion.hpp"
 
 #include <vector>
 
@@ -26,11 +28,14 @@ namespace MSIX {
         BundleManifestWriter();
         void BundleManifestWriter::StartBundleManifest(std::string targetXmlNamespace, 
             std::string name, std::string publisher, UINT64 version);
-        void BundleManifestWriter::StartBundleElement(std::string targetXmlNamespace);
+        void BundleManifestWriter::StartBundleElement();
         void BundleManifestWriter::WriteIdentityElement(std::string name, std::string publisher, UINT64 version);
         void BundleManifestWriter::StartPackagesElement();
-        void BundleManifestWriter::WritePackageElement(APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, 
-            UINT64 version, std::string architecture, std::string resourceId, std::string fileName, UINT64 offset);
+        HRESULT BundleManifestWriter::WritePackageElement(APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, 
+            UINT64 version, std::string architecture, std::string resourceId, std::string fileName, UINT64 offset,
+            IAppxManifestQualifiedResourcesEnumerator* resources, IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
+        HRESULT BundleManifestWriter::WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources);
+        HRESULT BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
         void BundleManifestWriter::EndPackagesElement();
         void BundleManifestWriter::Close();
 
@@ -42,7 +47,7 @@ namespace MSIX {
         XmlWriter m_xmlWriter;
         bool packageAdded = false;
 
-        //std::string targetXmlNamespace;
+        std::string targetXmlNamespace;
         //UINT32 currentState;
 
     };

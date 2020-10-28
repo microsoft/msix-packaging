@@ -182,16 +182,10 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::Close() noexcept try
     {
-        //if (!m_isBundle) { return static_cast<HRESULT>(Error::NotImplemented); }
-
-        //ComPtr<IStream> manifestStream(manifest);
-        
-        //std::string hashMethodString = "http://www.w3.org/2001/04/xmlenc#sha256";
-        //validate to see that the bundle has atleast one application package, else cannot be closed
-
         std::string targetXmlNamespace;
         //validate namespace according to input and assign namespace
-        //m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, this->mainPackageName,this->mainPackagePublisher, this->bundleVersion);
+        m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, wstring_to_utf8(this->mainPackageName),
+            wstring_to_utf8(this->mainPackagePublisher), this->bundleVersion);
 
         for(std::size_t i = 0; i < this->payloadPackages.size(); i++) 
         {
@@ -238,8 +232,6 @@ namespace MSIX {
 
         ComPtr<IAppxPackageReader> reader;
         ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream, &reader));
-
-        //Verify that all the input packages uses SHA256 as their hash method
 
         UINT64 packageStreamSize = 0;
         ThrowHrIfFailed(GetStreamSize(packageStream, &packageStreamSize));

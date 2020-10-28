@@ -29,7 +29,11 @@ namespace MSIX {
     static const char* resourcesManifestElement = "Resources";
     static const char* resourceManifestElement = "Resource";
     static const char* resourceLanguageAttribute = "Language";
-    
+    static const char* dependenciesManifestElement = "Dependencies";
+    static const char* targetDeviceFamilyManifestElement = "TargetDeviceFamily";
+    static const char* tdfNameAttribute = "Name";
+    static const char* tdfMinVersionAttribute = "MinVersion";
+    static const char* tdfMaxVersionTestedAttribute = "MaxVersionTested";
                     
     static const char* ApplicationPackageType = "application";
     static const char* ResourcePackageType = "resource";
@@ -47,16 +51,18 @@ namespace MSIX {
 
     BundleManifestWriter::BundleManifestWriter() : m_xmlWriter(XmlWriter(bundleManifestElement)) {}
 
-    void BundleManifestWriter::StartBundleManifest(std::string targetXmlNamespace, std::string name, std::string publisher, UINT64 version)
+    void BundleManifestWriter::StartBundleManifest(std::string targetXmlNamespace, std::string name, 
+        std::string publisher, UINT64 version)
     {
-        StartBundleElement(targetXmlNamespace);
+        this->targetXmlNamespace = targetXmlNamespace;
+        StartBundleElement();
         WriteIdentityElement(name, publisher, version);
         StartPackagesElement();
     }
 
-    void BundleManifestWriter::StartBundleElement(std::string targetXmlNamespace)
+    void BundleManifestWriter::StartBundleElement()
     {
-        m_xmlWriter.AddAttribute(xmlnsAttribute, targetXmlNamespace);
+        m_xmlWriter.AddAttribute(xmlnsAttribute, this->targetXmlNamespace);
         m_xmlWriter.AddAttribute(schemaVersionAttribute, Win2019SchemaVersion);
 
         std::string bundle2018QName = GetQualifiedName(Namespace2018Alias);
@@ -90,8 +96,9 @@ namespace MSIX {
         m_xmlWriter.StartElement(packagesManifestElement);
     }
 
-    void BundleManifestWriter::WritePackageElement(APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, 
-        UINT64 version, std::string architecture, std::string resourceId, std::string fileName, UINT64 offset)
+    HRESULT BundleManifestWriter::WritePackageElement(APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, 
+        UINT64 version, std::string architecture, std::string resourceId, std::string fileName, UINT64 offset, 
+        IAppxManifestQualifiedResourcesEnumerator* resources, IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {
         this->packageAdded = true;
         //if isStub, then Package tag is different
@@ -126,19 +133,97 @@ namespace MSIX {
             m_xmlWriter.AddAttribute(packageFileNameAttribute, fileName);
         }
 
-        /*if(offset != NULL)
-        {
-            //offset
-        }*/
-
-        //Size
-        
-        //IsStub(if isStub, then packageName tag is set here)
-
         //WriteResourcesElement
-        //WriteDependenciesElement
+        ThrowHrIfFailed(WriteResourcesElement(resources));
 
-        //EndPackage Tag
+        //WriteDependenciesElement
+        ThrowHrIfFailed(WriteDependenciesElement(tdfs));
+
+        //End Package Tag
+        m_xmlWriter.CloseElement();
+        return S_OK;
+    }
+
+    HRESULT BundleManifestWriter::WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources)
+    {
+        BOOL hasResources = FALSE;
+        ThrowHrIfFailed(resources->GetHasCurrent(&hasResources));
+
+        if (hasResources)
+        {
+            //Start Resources element
+            m_xmlWriter.StartElement(resourcesManifestElement);
+
+            BOOL hasNext = FALSE;
+            ThrowHrIfFailed(resources->GetHasCurrent(&hasNext));
+            while (hasNext)
+            {
+                ComPtr<IAppxManifestQualifiedResource> resource;
+                ThrowHrIfFailed(resources->GetCurrent(&resource));
+
+                //Start Resource element
+                m_xmlWriter.StartElement(resourceManifestElement);
+
+                LPWSTR languageString;
+                ThrowHrIfFailed(resource->GetLanguage(&languageString));
+                if (languageString != nullptr)
+                {
+                    m_xmlWriter.AddAttribute(resourceLanguageAttribute, wstring_to_utf8(languageString));
+                }
+
+                //End Resource element
+                m_xmlWriter.CloseElement();
+
+                ThrowHrIfFailed(resources->MoveNext(&hasNext));
+            }
+
+            //End Resources element
+            m_xmlWriter.CloseElement(); 
+        }
+        return S_OK;
+    }
+
+    HRESULT BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
+    {
+        BOOL hasNext = FALSE;
+        ThrowHrIfFailed(tdfs->GetHasCurrent(&hasNext));
+
+        if (hasNext)
+        {
+            m_xmlWriter.StartElement(dependenciesManifestElement);
+
+            while (hasNext)
+            {
+                ComPtr<IAppxManifestTargetDeviceFamily> tdf;
+                ThrowHrIfFailed(tdfs->GetCurrent(&tdf));
+
+                //Start TargetDeviceFamily manifest element
+                m_xmlWriter.StartElement(targetDeviceFamilyManifestElement);
+
+                LPWSTR name;
+                ThrowHrIfFailed(tdf->GetName(&name));
+                m_xmlWriter.AddAttribute(tdfNameAttribute, wstring_to_utf8(name));
+
+                UINT64 minVersion;
+                ThrowHrIfFailed(tdf->GetMinVersion(&minVersion));
+                std::string minVerionString = ConvertVersionToString(minVersion);
+                m_xmlWriter.AddAttribute(tdfMinVersionAttribute, minVerionString);
+
+                UINT64 maxVersionTested;
+                ThrowHrIfFailed(tdf->GetMaxVersionTested(&maxVersionTested));
+                std::string maxVersionTestedString = ConvertVersionToString(maxVersionTested);
+                m_xmlWriter.AddAttribute(tdfMaxVersionTestedAttribute, maxVersionTestedString);
+
+                //End TargetDeviceFamily manifest element
+                m_xmlWriter.CloseElement();
+
+                ThrowHrIfFailed(tdfs->MoveNext(&hasNext));
+            }
+
+            //End Dependencies Tag
+            m_xmlWriter.CloseElement();
+        }
+        return S_OK;
     }
 
     void BundleManifestWriter::EndPackagesElement()
