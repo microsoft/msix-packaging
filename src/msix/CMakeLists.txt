@@ -132,6 +132,8 @@ if(MSIX_PACK)
         pack/DeflateStream.cpp
         pack/ZipObjectWriter.cpp
         pack/BundleManifestWriter.cpp
+        pack/BundleWriterHelper.cpp
+        pack/AppxBundleWriter.cpp
     )
 endif()
 

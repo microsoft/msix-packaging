@@ -11,6 +11,7 @@
 #include "VectorStream.hpp"
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
+#include "AppxBundleWriter.hpp"
 #include "ZipObjectWriter.hpp"
 
 #ifdef BUNDLE_SUPPORT
@@ -32,7 +33,7 @@ namespace MSIX {
         ComPtr<IMsixFactory> self;
         ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         auto zip = ComPtr<IZipWriter>::Make<ZipObjectWriter>(outputStream);
-        auto result = ComPtr<IAppxPackageWriter>::Make<AppxPackageWriter>(self.Get(), zip, false);
+        auto result = ComPtr<IAppxPackageWriter>::Make<AppxPackageWriter>(self.Get(), zip);
         *packageWriter = result.Detach();
         #endif
         return static_cast<HRESULT>(Error::OK);
@@ -87,14 +88,13 @@ namespace MSIX {
     // IAppxBundleFactory
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept try
     {
-        //process and set bundle version here
         THROW_IF_BUNDLE_NOT_ENABLED
         ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || bundleWriter == nullptr || *bundleWriter != nullptr), "Invalid parameter");
         //#ifdef MSIX_PACK 
         ComPtr<IMsixFactory> self;
         ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         auto zip = ComPtr<IZipWriter>::Make<ZipObjectWriter>(outputStream);
-        auto result = ComPtr<IAppxBundleWriter>::Make<AppxPackageWriter>(self.Get(), zip, true);
+        auto result = ComPtr<IAppxBundleWriter>::Make<AppxBundleWriter>(self.Get(), zip);
         *bundleWriter = result.Detach();
         //#endif
         return static_cast<HRESULT>(Error::OK);

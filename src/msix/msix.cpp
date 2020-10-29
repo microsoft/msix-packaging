@@ -18,6 +18,7 @@
 #include "AppxPackageObject.hpp"
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
+#include "AppxBundleWriter.hpp"
 #include "ScopeExit.hpp"
 
 #ifndef WIN32
@@ -304,13 +305,11 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     bool flatBundle = false;
 
     //Create ProcessOptionsForBundle method
-    if (version != nullptr)
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERSION)
     {
-        bundleVersion = std::strtoull(version, NULL, 0);
-        //std::istringstream stream(version);
-        //stream >> bundleVersion;
+        //bundleVersion = ConvertVersionStringToUint64(version);
     }
-
+    
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
     {
         //process option for verbose
@@ -343,7 +342,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     ThrowHrIfFailed(factory->CreateBundleWriter(stream.Get(), bundleVersion, &bundleWriter));
     bundleWriter4 = bundleWriter.As<IAppxBundleWriter4>();
 
-    bundleWriter4.As<IPackageWriter>()->ProcessBundlePayload(from, flatBundle);
+    bundleWriter4.As<IBundleWriter>()->ProcessBundlePayload(from, flatBundle);
     ThrowHrIfFailed(bundleWriter->Close());
     deleteFile.release();
     return static_cast<HRESULT>(MSIX::Error::OK);
