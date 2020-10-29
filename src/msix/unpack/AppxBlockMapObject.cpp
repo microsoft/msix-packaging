@@ -142,7 +142,13 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetHashMethod(IUri **hashMethod) noexcept
     {   // Ultimately, this IUri object represents the HashMethod attribute in the blockmap:
-        return static_cast<HRESULT>(Error::NotImplemented);
+        ThrowErrorIf(Error::InvalidParameter, (hashMethod == nullptr || *hashMethod != nullptr), "bad pointer");
+        LPCWSTR hashMethodString = L"http://www.w3.org/2001/04/xmlenc#sha256";
+        /*return CreateUri(
+            hashMethodString,
+            Uri_CREATE_ALLOW_RELATIVE,
+            NULL,
+            hashMethod);*/
     }
 
     HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetStream(IStream **blockMapStream) noexcept try

@@ -184,8 +184,8 @@ namespace MSIX {
     {
         std::string targetXmlNamespace;
         //validate namespace according to input and assign namespace
-        m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, wstring_to_utf8(this->mainPackageName),
-            wstring_to_utf8(this->mainPackagePublisher), this->bundleVersion);
+        //m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, wstring_to_utf8(this->mainPackageName),
+          //  wstring_to_utf8(this->mainPackagePublisher), this->bundleVersion);
 
         for(std::size_t i = 0; i < this->payloadPackages.size(); i++) 
         {
@@ -256,7 +256,9 @@ namespace MSIX {
     {
         ComPtr<IAppxManifestPackageId> packageId;
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
-        ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
+        //ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
+                ComPtr<IAppxManifestResourcesEnumerator> resources;
+
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
 
         ThrowHrIfFailed(GetValidatedPackageData(fileName, packageReader, &packageType, &packageId, &resources, &tdfs));
@@ -271,7 +273,7 @@ namespace MSIX {
         _In_ IAppxPackageReader* packageReader,
         _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
         _Outptr_result_nullonfailure_ IAppxManifestPackageId** packageId,
-        _Outptr_result_nullonfailure_ IAppxManifestQualifiedResourcesEnumerator** resources,
+        _Outptr_result_nullonfailure_ IAppxManifestResourcesEnumerator** resources,
         _Outptr_result_maybenull_ IAppxManifestTargetDeviceFamiliesEnumerator** tdfs)
     {
         *packageId = nullptr;
@@ -280,20 +282,18 @@ namespace MSIX {
 
         ComPtr<IAppxManifestPackageId> loadedPackageId;
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE loadedPackageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
-        ComPtr<IAppxManifestQualifiedResourcesEnumerator> loadedResources;
+        //ComPtr<IAppxManifestQualifiedResourcesEnumerator> loadedResources;
+        ComPtr<IAppxManifestResourcesEnumerator> loadedResources;
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> loadedTdfs;
 
         ComPtr<IAppxManifestReader> manifestReader;
         ThrowHrIfFailed(packageReader->GetManifest(&manifestReader));
         ThrowHrIfFailed(manifestReader->GetPackageId(&loadedPackageId));
 
-        LPWSTR packageFullName;
-        ThrowHrIfFailed(loadedPackageId->GetPackageFullName(&packageFullName));
-
         ComPtr<IAppxManifestReader3> manifestReader3;
         ThrowHrIfFailed(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader3>::iid, reinterpret_cast<void**>(&manifestReader3)));
 
-        ThrowHrIfFailed(manifestReader3->GetQualifiedResources(&loadedResources));
+        ThrowHrIfFailed(manifestReader->GetResources(&loadedResources));
 
         HRESULT hr = manifestReader3->GetTargetDeviceFamilies(&loadedTdfs);
         if (FAILED(hr) && hr != HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
@@ -304,9 +304,10 @@ namespace MSIX {
         ThrowHrIfFailed(GetPayloadPackageType(manifestReader.Get(), fileName, &loadedPackageType));
         //AddPackage checks
         //ValidateOSVersion checks
-        //ThrowHrIfFailed(PackageMatchesHashMethod(packageReader, fileName, this->requiredHashMethod.Get()));
+        //ThrowHrIfFailed(PackageMatchesHashMethod(packageReader, fileName));
 
-        ThrowHrIfFailed(ValidateNameAndPublisher(loadedPackageId.Get(), fileName));
+        auto packageIdInternal = loadedPackageId.As<IAppxManifestPackageIdInternal>();
+        ThrowHrIfFailed(ValidateNameAndPublisher(packageIdInternal.Get(), fileName));
 
         //TDF check
 
@@ -366,33 +367,29 @@ namespace MSIX {
     }
 
     HRESULT AppxPackageWriter::ValidateNameAndPublisher(
-        _In_ IAppxManifestPackageId* packageId,
+        _In_ IAppxManifestPackageIdInternal* packageId,
         _In_ PCWSTR filename)
     {
-        if (this->mainPackageName == nullptr)
+        if(this->mainPackageName.empty())
         {
-            ThrowHrIfFailed(packageId->GetName(&(this->mainPackageName)));
-            ThrowHrIfFailed(packageId->GetPublisher(&(this->mainPackagePublisher)));
+            this->mainPackageName = packageId->GetName();
+            this->mainPackagePublisher = packageId->GetPublisher();
         }
         else
         {
-            LPWSTR packageName;
-            ThrowHrIfFailed(packageId->GetName(&packageName));
+            std::string packageName = packageId->GetName();
             
-            if (!wcscmp(this->mainPackageName, packageName) == 0)
+            if ((this->mainPackageName.compare(packageName)) != 0)
             {
-                LPWSTR packageFullName;
-                ThrowHrIfFailed(packageId->GetPackageFullName(&packageFullName));
+                std::string packageFullName = packageId->GetPackageFullName();
                 //Log mismatched packagename error, filename, packageFullName.get(), this->mainPackageName
                 //return APPX_E_INVALID_MANIFEST;
             }
 
-            BOOL isPublisherSame = FALSE;
-            ThrowHrIfFailed(packageId->ComparePublisher(this->mainPackagePublisher, &isPublisherSame));
-            if (!isPublisherSame)
+            std::string publisherName = packageId->GetPublisher();
+            if ((this->mainPackagePublisher.compare(publisherName)) != 0)
             {
-                LPWSTR packageFullName;
-                ThrowHrIfFailed(packageId->GetPackageFullName(&packageFullName));
+                std::string packageFullName = packageId->GetPackageFullName();
                 //Log mismatched publisher error, filename, packageFullName.get(), this->mainPackagePublisher
                 //return APPX_E_INVALID_MANIFEST;
             }
@@ -402,15 +399,21 @@ namespace MSIX {
 
     HRESULT AppxPackageWriter::PackageMatchesHashMethod(
         _In_ IAppxPackageReader* packageReader,
-        _In_ LPCWSTR fileName,
-        _In_ IUri* expectedHashMethod)
+        _In_ LPCWSTR fileName)
     {
         HRESULT hr = S_OK;
         ComPtr<IAppxBlockMapReader> blockMapReader;
         ThrowHrIfFailed(packageReader->GetBlockMap(&blockMapReader));
 
-        ComPtr<IUri> hashMethod;
-        ThrowHrIfFailed(blockMapReader->GetHashMethod(&hashMethod));
+        //ComPtr<IUri> hashMethod;
+        //ThrowHrIfFailed(blockMapReader->GetHashMethod(&hashMethod));
+
+        //BSTR hashAlgorithmUri;
+        //ThrowHrIfFailed(hashMethod->GetAbsoluteUri(&hashAlgorithmUri));
+
+        /*ComPtr<IUri> expectedHashMethod;
+        std::wstring hashMethodString = L"http://www.w3.org/2001/04/xmlenc#sha256";
+        ThrowHrIfFailed(CreateUri(hashMethodString, 0x0001, NULL, &hashMethod));*/
 
         //std::wstring hashAlgorithmUri;
         //ThrowHrIfFailed(hashMethod->GetAbsoluteUri(&hashAlgorithmUri));
@@ -464,7 +467,9 @@ namespace MSIX {
         _In_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
         _In_ ComPtr<IAppxManifestPackageId> packageId,
         _In_ BOOL isDefaultApplicablePackage,
-        _In_ IAppxManifestQualifiedResourcesEnumerator* resources,
+        //_In_ IAppxManifestQualifiedResourcesEnumerator* resources,
+                _In_ IAppxManifestResourcesEnumerator* resources,
+
         _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {
         //validate package payload extension

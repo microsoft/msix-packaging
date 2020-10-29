@@ -11,6 +11,7 @@
 #include "ContentTypeWriter.hpp"
 #include "ZipObjectWriter.hpp"
 #include "BundleManifestWriter.hpp"
+#include "AppxPackageInfo.hpp"
 
 #include <map>
 #include <memory>
@@ -95,17 +96,18 @@ namespace MSIX {
             PCWSTR fileName;
             UINT64 size;
             UINT64 offset;
-            ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
+            //ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
+            ComPtr<IAppxManifestResourcesEnumerator> resources;
+
             BOOL isDefaultApplicablePackage;
             ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
-            BOOL isStub;
         };
 
         std::vector<PackageInfo> payloadPackages;
         bool hasExternalPackages;
         bool hasDefaultOrNeutralResources;
-        LPWSTR mainPackageName;
-        LPWSTR mainPackagePublisher;
+        std::string mainPackageName;
+        std::string mainPackagePublisher;
         UINT64 bundleVersion;
 
         HRESULT AddPackageInfoToVector(_In_ PackageInfo packageInfo);
@@ -133,7 +135,9 @@ namespace MSIX {
             _In_ IAppxPackageReader* packageReader,
             _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
             _Outptr_result_nullonfailure_ IAppxManifestPackageId** packageId,
-            _Outptr_result_nullonfailure_ IAppxManifestQualifiedResourcesEnumerator** resources,
+            //_Outptr_result_nullonfailure_ IAppxManifestQualifiedResourcesEnumerator** resources,
+                        _Outptr_result_nullonfailure_ IAppxManifestResourcesEnumerator** resources,
+
             _Outptr_result_maybenull_ IAppxManifestTargetDeviceFamiliesEnumerator** tdfs);
 
         HRESULT AddValidatedPackageData(
@@ -143,7 +147,8 @@ namespace MSIX {
             _In_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
             _In_ ComPtr<IAppxManifestPackageId> packageId,
             _In_ BOOL isDefaultApplicablePackage,
-            _In_ IAppxManifestQualifiedResourcesEnumerator* resources,
+            //_In_ IAppxManifestQualifiedResourcesEnumerator* resources,
+            _In_ IAppxManifestResourcesEnumerator* resources,
             _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
 
         HRESULT GetPayloadPackageType(
@@ -153,11 +158,10 @@ namespace MSIX {
 
         HRESULT PackageMatchesHashMethod(
             _In_ IAppxPackageReader* packageReader,
-            _In_ LPCWSTR fileName,
-            _In_ IUri* expectedHashMethod);
+            _In_ LPCWSTR fileName);
 
         HRESULT ValidateNameAndPublisher(
-            _In_ IAppxManifestPackageId* packageId,
+            _In_ IAppxManifestPackageIdInternal* packageId,
             _In_ PCWSTR filename);
 
         HRESULT ValidateApplicationElement(

@@ -96,7 +96,7 @@ namespace MSIX {
         m_xmlWriter.StartElement(packagesManifestElement);
     }
 
-    HRESULT BundleManifestWriter::WritePackageElement(APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, 
+    /*HRESULT BundleManifestWriter::WritePackageElement(APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, 
         UINT64 version, std::string architecture, std::string resourceId, std::string fileName, UINT64 offset, 
         IAppxManifestQualifiedResourcesEnumerator* resources, IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {
@@ -181,7 +181,7 @@ namespace MSIX {
             m_xmlWriter.CloseElement(); 
         }
         return S_OK;
-    }
+    }*/
 
     HRESULT BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {
