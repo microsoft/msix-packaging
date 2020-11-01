@@ -325,6 +325,7 @@ namespace MSIX {
             APPX_CAPABILITY_CLASS_TYPE capabilityClass,
             IAppxManifestCapabilitiesEnumerator **capabilities) noexcept override;
         HRESULT STDMETHODCALLTYPE GetTargetDeviceFamilies(IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept override;
+        //HRESULT STDMETHODCALLTYPE GetQualifiedResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept override;
 
         // IAppxManifestReader4
         HRESULT STDMETHODCALLTYPE GetOptionalPackageInfo(IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept override;
@@ -352,6 +353,7 @@ namespace MSIX {
         ComPtr<IAppxManifestPackageId> m_packageId;
         MSIX_PLATFORMS m_platform = MSIX_PLATFORM_NONE;
         std::vector<ComPtr<IAppxManifestTargetDeviceFamily>> m_tdf;
+        //std::vector<ComPtr<IAppxManifestQualifiedResource>> m_qualifiedResources;
         ComPtr<IXmlDom> m_dom;
     };
 }

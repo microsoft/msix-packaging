@@ -25,10 +25,24 @@
 
 namespace MSIX {
 
-    AppxBundleWriter::AppxBundleWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip)
+    AppxBundleWriter::AppxBundleWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip, std::uint64_t bundleVersion)
         : m_factory(factory), m_zipWriter(zip)
     {
         m_state = WriterState::Open;
+        if(bundleVersion == 0)
+        {
+            SYSTEMTIME time = {0};
+            GetSystemTime(&time);
+
+            // The generated version number has the format: YYYY.MMDD.hhmm.0
+            this->m_bundleWriterHelper.SetBundleVersion((static_cast<std::uint64_t>(time.wYear) << 48) |
+                (static_cast<std::uint64_t>(time.wMonth * 100 + time.wDay) << 32) |
+                (static_cast<std::uint64_t>(time.wHour * 100 + time.wMinute) << 16));
+        }
+        else
+        {
+            this->m_bundleWriterHelper.SetBundleVersion(bundleVersion);
+        }
     }
 
     // IBundleWriter
@@ -75,25 +89,9 @@ namespace MSIX {
 
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::Close() noexcept try
     {
-        std::string targetXmlNamespace;
-        //validate namespace according to input and assign namespace
-        //m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, wstring_to_utf8(this->mainPackageName),
-          //  wstring_to_utf8(this->mainPackagePublisher), this->bundleVersion);
+        ThrowHrIfFailed(m_bundleWriterHelper.EndBundleManifest());
 
-        for(std::size_t i = 0; i < this->m_bundleWriterHelper.GetPayloadPackages().size(); i++) 
-        {
-            //Call AddPackage for each package
-            //this->payloadPackages[i].architecture
-        }
-
-        //Do the same loop for this->OptionalBundles
-        
-        //EndBundleManifest -> Ends Packages Element
-        m_bundleManifestWriter.EndPackagesElement();
-
-        // Add AppxBundleManifest.xml to blockmap and zip
-        m_bundleManifestWriter.Close();
-        auto bundleManifestStream = m_bundleManifestWriter.GetStream();
+        auto bundleManifestStream = m_bundleWriterHelper.GetBundleManifestStream();
         auto bundleManifestContentType = ContentType::GetBundlePayloadFileContentType(APPX_BUNDLE_FOOTPRINT_FILE_TYPE_MANIFEST);
         AddFileToPackage(APPXBUNDLEMANIFEST_XML, bundleManifestStream.Get(), true, true, bundleManifestContentType.c_str());
 
@@ -104,15 +102,10 @@ namespace MSIX {
     // IAppxBundleWriter4
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddPackageReference(LPCWSTR fileName, 
         IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
-    {        
-        HRESULT hr = this->AddPackageReferenceInternal(fileName, inputStream, !!isDefaultApplicablePackage);
+    {   
+        ThrowHrIfFailed(this->AddPackageReferenceInternal(fileName, inputStream, !!isDefaultApplicablePackage));
 
-        if (FAILED(hr))
-        {
-            //fail
-        }
-
-        return hr;
+        return S_OK;
 
     } CATCH_RETURN();
 
@@ -126,10 +119,10 @@ namespace MSIX {
         ComPtr<IAppxPackageReader> reader;
         ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream, &reader));
 
-        UINT64 packageStreamSize = 0;
+        std::uint64_t packageStreamSize = 0;
         ThrowHrIfFailed(this->m_bundleWriterHelper.GetStreamSize(packageStream, &packageStreamSize));
         
-        ThrowHrIfFailed(this->m_bundleWriterHelper.AddPackage(fileName, reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage));
+        ThrowHrIfFailed(this->m_bundleWriterHelper.AddPackage(wstring_to_utf8(fileName), reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage));
 
         return S_OK;
     }
@@ -147,16 +140,6 @@ namespace MSIX {
         // TODO: implement
         NOTIMPLEMENTED;
     } CATCH_RETURN();
-
-    void AppxBundleWriter::ValidateAndAddPayloadFile(const std::string& name, IStream* stream,
-        APPX_COMPRESSION_OPTION compressionOpt, const char* contentType)
-    {
-        ThrowErrorIfNot(Error::InvalidParameter, FileNameValidation::IsFileNameValid(name), "Invalid file name");
-        ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsFootPrintFile(name, true), "Trying to add footprint file to package");
-        ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsReservedFolder(name), "Trying to add file in reserved folder");
-        ValidateCompressionOption(compressionOpt);
-        AddFileToPackage(name, stream, compressionOpt != APPX_COMPRESSION_OPTION_NONE, true, contentType);
-    }
 
     void AppxBundleWriter::AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
         bool addToBlockMap, const char* contentType, bool forceContentTypeOverride)
@@ -239,16 +222,6 @@ namespace MSIX {
         // This could be the compressed or uncompressed size
         auto streamSize = zipFileStream.As<IStreamInternal>()->GetSize();
         m_zipWriter->EndFile(crc, streamSize, uncompressedSize, true);
-    }
-
-    void AppxBundleWriter::ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt)
-    {
-        bool result = ((compressionOpt == APPX_COMPRESSION_OPTION_NONE) ||
-                       (compressionOpt == APPX_COMPRESSION_OPTION_NORMAL) ||
-                       (compressionOpt == APPX_COMPRESSION_OPTION_MAXIMUM) ||
-                       (compressionOpt == APPX_COMPRESSION_OPTION_FAST) ||
-                       (compressionOpt == APPX_COMPRESSION_OPTION_SUPERFAST));
-        ThrowErrorIfNot(Error::InvalidParameter, result, "Invalid compression option.");
     }
 
     // Common close functionality for pack and bundle.

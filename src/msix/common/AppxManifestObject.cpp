@@ -354,7 +354,7 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    // IAppxManifestReader2
+    // IAppxManifestReader2 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetQualifiedResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept
     {
         return static_cast<HRESULT>(Error::NotImplemented);
@@ -380,6 +380,23 @@ namespace MSIX {
             Make<EnumeratorCom<IAppxManifestTargetDeviceFamiliesEnumerator, IAppxManifestTargetDeviceFamily>>(m_tdf).Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
+
+    /*HRESULT STDMETHODCALLTYPE AppxManifestObject::GetQualifiedResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept
+    {
+        ThrowErrorIf(Error::InvalidParameter, (resources == nullptr || *resources != nullptr), "bad pointer");
+        // Parse Resource elements.
+        std::vector<std::string> appxResources;
+        XmlVisitor visitorResource(static_cast<void*>(&appxResources), [](void* r, const ComPtr<IXmlElement>& resourceNode)->bool
+        {
+            std::vector<std::string>* resources = reinterpret_cast<std::vector<std::string>*>(r);
+            auto name = resourceNode->GetAttributeValue(XmlAttributeName::Language);
+            resources->push_back(std::move(name));
+            return true;
+        });
+        m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Resources_Resource, visitorResource);
+        *resources = ComPtr<IAppxManifestQualifiedResourcesEnumerator>::Make<EnumeratorString<IAppxManifestQualifiedResourcesEnumerator, IAppxManifestQualifiedResourcesEnumerator>>(m_factory.Get(), appxResources).Detach();
+        return static_cast<HRESULT>(Error::OK);
+    } CATCH_RETURN();*/
 
     // IAppxManifestReader4
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetOptionalPackageInfo(IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept try

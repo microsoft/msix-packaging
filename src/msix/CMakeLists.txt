@@ -134,6 +134,7 @@ if(MSIX_PACK)
         pack/BundleManifestWriter.cpp
         pack/BundleWriterHelper.cpp
         pack/AppxBundleWriter.cpp
+        pack/GeneralUtil.cpp
     )
 endif()
 

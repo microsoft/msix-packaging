@@ -8,10 +8,42 @@
 #include "ComHelper.hpp"
 #include "Exceptions.hpp"
 #include "UnicodeConversion.hpp"
+#include "GeneralUtil.hpp"
 
 #include <vector>
 
 namespace MSIX {
+
+    struct PackageInfo
+    {
+        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE type;
+        std::uint64_t version;
+        std::string architecture;
+        std::string resourceId;
+        std::string fileName;
+        std::uint64_t size;
+        std::uint64_t offset;
+        //ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
+        ComPtr<IAppxManifestResourcesEnumerator> resources;
+        BOOL isDefaultApplicablePackage;
+        ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
+    };
+
+    //
+    // Helper class to free string buffers obtained from the packaging APIs.
+    //
+    /*template<typename T>
+    class Text
+    {
+    public:
+        T** operator&() { return &content; }
+        ~Text() { Cleanup(); }
+        T* Get() { return content; }
+
+        T* content = nullptr;
+    protected:
+        void Cleanup() { if (content) { std::free(content); content = nullptr; } }
+    };*/
 
     enum ElementWriterState
     {
@@ -31,21 +63,18 @@ namespace MSIX {
         void BundleManifestWriter::StartBundleElement();
         void BundleManifestWriter::WriteIdentityElement(std::string name, std::string publisher, UINT64 version);
         void BundleManifestWriter::StartPackagesElement();
-        /*HRESULT BundleManifestWriter::WritePackageElement(APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, 
-            UINT64 version, std::string architecture, std::string resourceId, std::string fileName, UINT64 offset,
-            IAppxManifestQualifiedResourcesEnumerator* resources, IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
-        HRESULT BundleManifestWriter::WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources);*/
+        HRESULT BundleManifestWriter::WritePackageElement(PackageInfo packageInfo);
+        //HRESULT BundleManifestWriter::WriteResourcesElement(IAppxManifestResourcesEnumerator* resources);
         HRESULT BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
         void BundleManifestWriter::EndPackagesElement();
         void BundleManifestWriter::Close();
 
         ComPtr<IStream> GetStream() { return m_xmlWriter.GetStream(); }
         std::string GetQualifiedName(std::string namespaceAlias);
-        std::string ConvertVersionToString(UINT64 version);
 
     protected:
         XmlWriter m_xmlWriter;
-        bool packageAdded = false;
+        //bool packageAdded = false;
 
         std::string targetXmlNamespace;
         //UINT32 currentState;

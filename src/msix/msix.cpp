@@ -20,6 +20,8 @@
 #include "AppxPackageWriter.hpp"
 #include "AppxBundleWriter.hpp"
 #include "ScopeExit.hpp"
+#include "MSIXWindows.hpp"
+#include "GeneralUtil.hpp"
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
@@ -301,13 +303,13 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
 ) noexcept try
 {
     std::unique_ptr<std::map<std::string, std::string>> externalPackagesList;
-    UINT64 bundleVersion = 0;
+    std::uint64_t bundleVersion = 0;
     bool flatBundle = false;
 
     //Create ProcessOptionsForBundle method
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERSION)
     {
-        //bundleVersion = ConvertVersionStringToUint64(version);
+        bundleVersion = MSIX::ConvertVersionStringToUint64(version);
     }
     
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)

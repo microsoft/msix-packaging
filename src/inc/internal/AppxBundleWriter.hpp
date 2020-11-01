@@ -19,7 +19,7 @@
 #include <future>
 
 // internal interface
-// {32e89da5-7cbb-4443-8cf0-b84eedb51d0a}
+// {ca90bcd9-78a2-4773-820c-0b687de49f99}
 #ifndef WIN32
 interface IBundleWriter : public IUnknown
 #else
@@ -32,13 +32,13 @@ public:
     virtual void ProcessBundlePayload(const MSIX::ComPtr<IDirectoryObject>& from, bool flatBundle) = 0;
 
 };
-MSIX_INTERFACE(IBundleWriter, 0x32e89da5,0x7cbb,0x4443,0x8c,0xf0,0xb8,0x4e,0xed,0xb5,0x1d,0x0a);
+MSIX_INTERFACE(IBundleWriter, 0xca90bcd9,0x78a2,0x4773,0x82,0x0c,0x0b,0x68,0x7d,0xe4,0x9f,0x99);
 
 namespace MSIX {
     class AppxBundleWriter final : public ComClass<AppxBundleWriter, IBundleWriter, IAppxBundleWriter, IAppxBundleWriter4>
     {
     public:
-        AppxBundleWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip);
+        AppxBundleWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip, std::uint64_t bundleVersion);
         ~AppxBundleWriter() {};
 
         // IBundleWriter
@@ -65,18 +65,13 @@ namespace MSIX {
         }
         WriterState;
 
-        void ValidateAndAddPayloadFile(const std::string& name, IStream* stream,
-            APPX_COMPRESSION_OPTION compressionOpt, const char* contentType);
-
         void AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
             bool addToBlockMap, const char* contentType, bool forceContentTypeOverride = false);
 
-        void ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt);
-
-        void CloseInternal();
-
         HRESULT AddPackageReferenceInternal(_In_ LPCWSTR fileName, _In_ IStream* packageStream,
             _In_ bool isDefaultApplicablePackage);
+
+        void CloseInternal();
             
         WriterState m_state;
         ComPtr<IMsixFactory> m_factory;
@@ -84,7 +79,6 @@ namespace MSIX {
         BlockMapWriter m_blockMapWriter;
         ContentTypeWriter m_contentTypeWriter;
         BundleWriterHelper m_bundleWriterHelper;
-        BundleManifestWriter m_bundleManifestWriter;
     };
 }
 

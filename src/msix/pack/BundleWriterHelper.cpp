@@ -14,8 +14,8 @@ namespace MSIX {
         return S_OK;
     }
 
-    HRESULT BundleWriterHelper::AddPackage(_In_ PCWSTR fileName, _In_ IAppxPackageReader* packageReader,
-        _In_ UINT64 bundleOffset, _In_ UINT64 packageSize, _In_ bool isDefaultApplicableResource)
+    HRESULT BundleWriterHelper::AddPackage(_In_ std::string fileName, _In_ IAppxPackageReader* packageReader,
+        _In_ std::uint64_t bundleOffset, _In_ std::uint64_t packageSize, _In_ bool isDefaultApplicableResource)
     {
         ComPtr<IAppxManifestPackageId> packageId;
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
@@ -32,7 +32,7 @@ namespace MSIX {
     }
 
     HRESULT BundleWriterHelper::GetValidatedPackageData(
-        _In_ PCWSTR fileName,
+        _In_ std::string fileName,
         _In_ IAppxPackageReader* packageReader,
         _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
         _Outptr_result_nullonfailure_ IAppxManifestPackageId** packageId,
@@ -99,7 +99,7 @@ namespace MSIX {
 
     HRESULT BundleWriterHelper::ValidateApplicationElement(
         _In_ IAppxManifestReader* packageManifestReader,
-        _In_ LPCWSTR fileName)
+        _In_ std::string fileName)
     {
         HRESULT hr = S_OK;
         ComPtr<IAppxManifestReader4> manifestReader4;
@@ -131,7 +131,7 @@ namespace MSIX {
 
     HRESULT BundleWriterHelper::ValidateNameAndPublisher(
         _In_ IAppxManifestPackageIdInternal* packageId,
-        _In_ PCWSTR filename)
+        _In_ std::string filename)
     {
         if(this->mainPackageName.empty())
         {
@@ -162,7 +162,7 @@ namespace MSIX {
 
     HRESULT BundleWriterHelper::PackageMatchesHashMethod(
         _In_ IAppxPackageReader* packageReader,
-        _In_ LPCWSTR fileName)
+        _In_ std::string fileName)
     {
         HRESULT hr = S_OK;
         ComPtr<IAppxBlockMapReader> blockMapReader;
@@ -191,7 +191,7 @@ namespace MSIX {
 
     HRESULT BundleWriterHelper::GetPayloadPackageType(
         _In_ IAppxManifestReader* packageManifestReader,
-        _In_ LPCWSTR fileName,
+        _In_ std::string fileName,
         _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType)
     {
         HRESULT hr = S_OK;
@@ -224,15 +224,13 @@ namespace MSIX {
     }
 
     HRESULT BundleWriterHelper::AddValidatedPackageData(
-        _In_ PCWSTR fileName,
-        _In_ UINT64 bundleOffset,
-        _In_ UINT64 packageSize,
+        _In_ std::string fileName,
+        _In_ std::uint64_t bundleOffset,
+        _In_ std::uint64_t packageSize,
         _In_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
         _In_ ComPtr<IAppxManifestPackageId> packageId,
-        _In_ BOOL isDefaultApplicablePackage,
-        //_In_ IAppxManifestQualifiedResourcesEnumerator* resources,
-                _In_ IAppxManifestResourcesEnumerator* resources,
-
+        _In_ bool isDefaultApplicablePackage,
+        _In_ IAppxManifestResourcesEnumerator* resources,
         _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {
         //validate package payload extension
@@ -251,14 +249,15 @@ namespace MSIX {
         packageInfo.offset = bundleOffset;
         packageInfo.tdfs = tdfs;
 
-        ThrowHrIfFailed(AddPackageInfoToVector(packageInfo));
+        ThrowHrIfFailed(AddPackageInfoToVector(this->payloadPackages, packageInfo));
 
         return S_OK;
     }
 
-    HRESULT BundleWriterHelper::AddPackageInfoToVector(_In_ PackageInfo packageInfo)
+    HRESULT BundleWriterHelper::AddPackageInfoToVector(std::vector<PackageInfo>& packagesVector, 
+        PackageInfo packageInfo)
     {
-        this->payloadPackages.push_back(packageInfo);
+        packagesVector.push_back(packageInfo);
 
         if (packageInfo.offset == 0)
         {
@@ -280,11 +279,25 @@ namespace MSIX {
         return S_OK;
     }
 
-    std::vector<PackageInfo> BundleWriterHelper::GetPayloadPackages()
+    HRESULT BundleWriterHelper::EndBundleManifest()
     {
-        return this->payloadPackages;
+        std::string targetXmlNamespace = "http://schemas.microsoft.com/appx/2013/bundle";
+        //Compute and assign Namespace for neutral resources or optional bundles
+
+        m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, this->mainPackageName,
+            this->mainPackagePublisher, this->bundleVersion);
+
+        for(std::size_t i = 0; i < this->payloadPackages.size(); i++) 
+        {
+            m_bundleManifestWriter.WritePackageElement(payloadPackages[i]);
+        }
+
+        //Do the same loop for this->OptionalBundles
+        
+        //Ends Packages and bundle Element
+        m_bundleManifestWriter.EndPackagesElement();
+        m_bundleManifestWriter.Close();
+        return S_OK;
     }
-
-
 
 }

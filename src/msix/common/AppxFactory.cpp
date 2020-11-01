@@ -94,7 +94,7 @@ namespace MSIX {
         ComPtr<IMsixFactory> self;
         ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         auto zip = ComPtr<IZipWriter>::Make<ZipObjectWriter>(outputStream);
-        auto result = ComPtr<IAppxBundleWriter>::Make<AppxBundleWriter>(self.Get(), zip);
+        auto result = ComPtr<IAppxBundleWriter>::Make<AppxBundleWriter>(self.Get(), zip, bundleVersion);
         *bundleWriter = result.Detach();
         //#endif
         return static_cast<HRESULT>(Error::OK);

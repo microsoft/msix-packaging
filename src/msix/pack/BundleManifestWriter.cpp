@@ -52,7 +52,7 @@ namespace MSIX {
     BundleManifestWriter::BundleManifestWriter() : m_xmlWriter(XmlWriter(bundleManifestElement)) {}
 
     void BundleManifestWriter::StartBundleManifest(std::string targetXmlNamespace, std::string name, 
-        std::string publisher, UINT64 version)
+        std::string publisher, std::uint64_t version)
     {
         this->targetXmlNamespace = targetXmlNamespace;
         StartBundleElement();
@@ -78,14 +78,14 @@ namespace MSIX {
         m_xmlWriter.AddAttribute("IgnorableNamespaces", ignorableNamespaces);
     }
 
-    void BundleManifestWriter::WriteIdentityElement(std::string name, std::string publisher, UINT64 version)
+    void BundleManifestWriter::WriteIdentityElement(std::string name, std::string publisher, std::uint64_t version)
     {
         m_xmlWriter.StartElement(identityManifestElement);
 
         m_xmlWriter.AddAttribute(identityNameAttribute, name);
         m_xmlWriter.AddAttribute(identityPublisherAttribute, publisher);
 
-        std::string versionString = ConvertVersionToString(version);
+        std::string versionString = MSIX::ConvertVersionToString(version);
         m_xmlWriter.AddAttribute(identityVersionAttribute, versionString);
 
         m_xmlWriter.CloseElement();
@@ -96,55 +96,53 @@ namespace MSIX {
         m_xmlWriter.StartElement(packagesManifestElement);
     }
 
-    /*HRESULT BundleManifestWriter::WritePackageElement(APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, 
-        UINT64 version, std::string architecture, std::string resourceId, std::string fileName, UINT64 offset, 
-        IAppxManifestQualifiedResourcesEnumerator* resources, IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
+    HRESULT BundleManifestWriter::WritePackageElement(PackageInfo packageInfo)
     {
-        this->packageAdded = true;
+        //this->packageAdded = true;
         //if isStub, then Package tag is different
         m_xmlWriter.StartElement(packageManifestElement);
 
         std::string packageTypeString;
-        if(packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
+        if(packageInfo.type == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
         {
             packageTypeString = ApplicationPackageType;
         }
-        else if (packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE)
+        else if (packageInfo.type == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE)
         {
             packageTypeString = ResourcePackageType;
         }
          m_xmlWriter.AddAttribute(packageTypeAttribute, packageTypeString);
 
-        std::string versionString = ConvertVersionToString(version);
+        std::string versionString = MSIX::ConvertVersionToString(packageInfo.version);
         m_xmlWriter.AddAttribute(packageVersionAttribute, versionString);
 
-        if(packageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
+        if(packageInfo.type == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
         {
-            m_xmlWriter.AddAttribute(packageArchitectureAttribute, architecture);
+            m_xmlWriter.AddAttribute(packageArchitectureAttribute, packageInfo.architecture);
         }
 
-        if (!resourceId.empty() && (resourceId.size() > 0))
+        if (!packageInfo.resourceId.empty() && (packageInfo.resourceId.size() > 0))
         {
-            m_xmlWriter.AddAttribute(packageResourceIdAttribute, resourceId);
+            m_xmlWriter.AddAttribute(packageResourceIdAttribute, packageInfo.resourceId);
         }
 
-        if(!fileName.empty())
+        if(!packageInfo.fileName.empty())
         {
-            m_xmlWriter.AddAttribute(packageFileNameAttribute, fileName);
+            m_xmlWriter.AddAttribute(packageFileNameAttribute, packageInfo.fileName);
         }
 
         //WriteResourcesElement
-        ThrowHrIfFailed(WriteResourcesElement(resources));
+        //ThrowHrIfFailed(WriteResourcesElement(packageInfo.resources.Get()));
 
         //WriteDependenciesElement
-        ThrowHrIfFailed(WriteDependenciesElement(tdfs));
+        ThrowHrIfFailed(WriteDependenciesElement(packageInfo.tdfs.Get()));
 
         //End Package Tag
         m_xmlWriter.CloseElement();
         return S_OK;
     }
 
-    HRESULT BundleManifestWriter::WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources)
+    /*HRESULT BundleManifestWriter::WriteResourcesElement(IAppxManifestResourcesEnumerator* resources)
     {
         BOOL hasResources = FALSE;
         ThrowHrIfFailed(resources->GetHasCurrent(&hasResources));
@@ -158,7 +156,7 @@ namespace MSIX {
             ThrowHrIfFailed(resources->GetHasCurrent(&hasNext));
             while (hasNext)
             {
-                ComPtr<IAppxManifestQualifiedResource> resource;
+                ComPtr<IAppxManifestResourcesEnumerator> resource;
                 ThrowHrIfFailed(resources->GetCurrent(&resource));
 
                 //Start Resource element
@@ -200,18 +198,20 @@ namespace MSIX {
                 //Start TargetDeviceFamily manifest element
                 m_xmlWriter.StartElement(targetDeviceFamilyManifestElement);
 
-                LPWSTR name;
+                MSIX::Text<WCHAR> name;
                 ThrowHrIfFailed(tdf->GetName(&name));
-                m_xmlWriter.AddAttribute(tdfNameAttribute, wstring_to_utf8(name));
+                m_xmlWriter.AddAttribute(tdfNameAttribute, wstring_to_utf8(name.Get()));
 
-                UINT64 minVersion;
+                //Get minversion
+                std::uint64_t minVersion;
                 ThrowHrIfFailed(tdf->GetMinVersion(&minVersion));
-                std::string minVerionString = ConvertVersionToString(minVersion);
+                std::string minVerionString = MSIX::ConvertVersionToString(minVersion);
                 m_xmlWriter.AddAttribute(tdfMinVersionAttribute, minVerionString);
 
-                UINT64 maxVersionTested;
+                //Get maxversiontested
+                std::uint64_t maxVersionTested;
                 ThrowHrIfFailed(tdf->GetMaxVersionTested(&maxVersionTested));
-                std::string maxVersionTestedString = ConvertVersionToString(maxVersionTested);
+                std::string maxVersionTestedString = MSIX::ConvertVersionToString(maxVersionTested);
                 m_xmlWriter.AddAttribute(tdfMaxVersionTestedAttribute, maxVersionTestedString);
 
                 //End TargetDeviceFamily manifest element
@@ -249,15 +249,6 @@ namespace MSIX {
         output.append(namespaceAlias);
         return output;
     }
-
-    std::string BundleManifestWriter::ConvertVersionToString(UINT64 version)
-    {
-        return std::to_string((version >> 0x30) & 0xFFFF) + "."
-            + std::to_string((version >> 0x20) & 0xFFFF) + "."
-            + std::to_string((version >> 0x10) & 0xFFFF) + "."
-            + std::to_string((version) & 0xFFFF);
-    }
-
 
 }
 
