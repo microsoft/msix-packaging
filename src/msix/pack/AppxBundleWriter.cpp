@@ -103,16 +103,14 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddPackageReference(LPCWSTR fileName, 
         IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
     {   
-        ThrowHrIfFailed(this->AddPackageReferenceInternal(fileName, inputStream, !!isDefaultApplicablePackage));
+        ThrowHrIfFailed(this->AddPackageReferenceInternal(wstring_to_utf8(fileName), inputStream, !!isDefaultApplicablePackage));
 
         return S_OK;
 
     } CATCH_RETURN();
 
-    HRESULT AppxBundleWriter::AddPackageReferenceInternal(
-        _In_ LPCWSTR fileName,
-        _In_ IStream* packageStream,
-        _In_ bool isDefaultApplicablePackage)
+    HRESULT AppxBundleWriter::AddPackageReferenceInternal(std::string fileName, IStream* packageStream,
+        bool isDefaultApplicablePackage)
     {
         auto appxFactory = m_factory.As<IAppxFactory>();
 
@@ -122,7 +120,7 @@ namespace MSIX {
         std::uint64_t packageStreamSize = 0;
         ThrowHrIfFailed(this->m_bundleWriterHelper.GetStreamSize(packageStream, &packageStreamSize));
         
-        ThrowHrIfFailed(this->m_bundleWriterHelper.AddPackage(wstring_to_utf8(fileName), reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage));
+        ThrowHrIfFailed(this->m_bundleWriterHelper.AddPackage(fileName, reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage));
 
         return S_OK;
     }

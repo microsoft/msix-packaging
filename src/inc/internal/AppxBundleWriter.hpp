@@ -68,8 +68,8 @@ namespace MSIX {
         void AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
             bool addToBlockMap, const char* contentType, bool forceContentTypeOverride = false);
 
-        HRESULT AddPackageReferenceInternal(_In_ LPCWSTR fileName, _In_ IStream* packageStream,
-            _In_ bool isDefaultApplicablePackage);
+        HRESULT AddPackageReferenceInternal(std::string fileName, IStream* packageStream,
+            bool isDefaultApplicablePackage);
 
         void CloseInternal();
             
