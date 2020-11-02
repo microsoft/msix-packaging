@@ -4,8 +4,6 @@
 // 
 #pragma once
 
-#include "MSIXWindows.hpp"
-
 #include <string>
 
 namespace MSIX {
