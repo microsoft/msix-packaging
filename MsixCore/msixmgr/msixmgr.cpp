@@ -512,27 +512,19 @@ int main(int argc, char * argv[])
         case OperationType::MountImage:
         {
             WVDFileType fileType = cli.GetFileType();
+
+            if (cli.GetMountImagePath().empty())
+            {
+                std::wcout << std::endl;
+                std::wcout << "Please provide the path to the image you would like to mount." << std::endl;
+                std::wcout << std::endl;
+                return E_INVALIDARG;
+            }
+
             if (fileType == WVDFileType::CIM)
             {
-                if (cli.GetVolumeId().empty())
-                {
-                    std::wcout << std::endl;
-                    std::wcout << "Please provide a volume id in order to mount a CIM image" << std::endl;
-                    std::wcout << std::endl;
-                    return E_INVALIDARG;
-                }
-
-                std::wstring volumeIdString = cli.GetVolumeId();
-                GUID volumeIdFromString;
-                if (UuidFromStringW((RPC_WSTR)(cli.GetVolumeId().c_str()), &volumeIdFromString) != RPC_S_OK)
-                {
-                    std::wcout << std::endl;
-                    std::wcout << "Failed to convert specified volume id {" << volumeIdString << "} to GUID" << std::endl;
-                    std::wcout << std::endl;
-                    return E_UNEXPECTED;
-                }
-                
-                HRESULT hrMountCIM = MsixCoreLib::MountCIM(cli.GetMountImagePath(), volumeIdFromString);
+                std::wstring volumeId;
+                HRESULT hrMountCIM = MsixCoreLib::MountCIM(cli.GetMountImagePath(), volumeId);
                 if (FAILED(hrMountCIM))
                 {
                     std::wcout << std::endl;
@@ -545,23 +537,16 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
                     std::wcout << "Image successfully mounted!" << std::endl;
                     std::wcout << "To examine contents in File Explorer, press Win + R and enter the following: " << std::endl;
-                    std::wcout << "\\\\?\\Volume{" << volumeIdString << "}" << std::endl;
+                    std::wcout << "\\\\?\\Volume{" << volumeId << "}" << std::endl;
                     std::wcout << std::endl;
-                    std::wcout << "To unmount, run the following command: " << std::endl;
-                    std::wcout << "msixmgr.exe -unmountimage -volumeid " << volumeIdString << " -filetype CIM" << std::endl;
+                    std::wcout << "To unmount, run one of the followings commands: " << std::endl;
+                    std::wcout << "msixmgr.exe -unmountimage -imagePath " << cli.GetMountImagePath() << " -filetype CIM" << std::endl;
+                    std::wcout << "msixmgr.exe -unmountimage -volumeid " << volumeId << " -filetype CIM" << std::endl;
                     std::wcout << std::endl;
                 }
             }
             else if (fileType == WVDFileType::VHD || fileType == WVDFileType::VHDX)
             {
-                if (cli.GetMountImagePath().empty())
-                {
-                    std::wcout << std::endl;
-                    std::wcout << "Please provide the path to the image you would like to mount." << std::endl;
-                    std::wcout << std::endl;
-                    return E_INVALIDARG;
-                }
-
                 std::wstring driveLetter;
                 HRESULT hrMountVHD = MsixCoreLib::MountVHD(cli.GetMountImagePath(), cli.isMountReadOnly(), driveLetter);
                 if (FAILED(hrMountVHD))
@@ -595,37 +580,46 @@ int main(int argc, char * argv[])
             WVDFileType fileType = cli.GetFileType();
             if (fileType == WVDFileType::CIM)
             {
-                if (cli.GetVolumeId().empty())
+                if (cli.GetVolumeId().empty() && cli.GetMountImagePath().empty())
                 {
                     std::wcout << std::endl;
-                    std::wcout << "Please provide the id of the volume you would like to unmount using the -volumeId option" << std::endl;
+                    std::wcout << "To unmount an CIM image, please provide either the CIM file path or the volume the image was mounted to." << std::endl;
+                    std::wcout << "The CIM file path can be specified using the -imagepath option." << std::endl;
+                    std::wcout << "The volume can be specified using the -volumeId option." << std::endl;
                     std::wcout << std::endl;
                     return E_INVALIDARG;
                 }
 
-                std::wstring volumeIdString = cli.GetVolumeId();
-                GUID volumeIdFromString;
-                if (UuidFromStringW((RPC_WSTR)(cli.GetVolumeId().c_str()), &volumeIdFromString) != RPC_S_OK)
-                {
-                    std::wcout << std::endl;
-                    std::wcout << "Failed to convert specified volume id {" << volumeIdString << "}  to GUID" << std::endl;
-                    std::wcout << std::endl;
-                    return E_UNEXPECTED;
-                }
-
-                HRESULT hrUnmountCIM = MsixCoreLib::UnmountCIM(volumeIdFromString);
+                HRESULT hrUnmountCIM = MsixCoreLib::UnmountCIM(cli.GetMountImagePath(), cli.GetVolumeId());
 
                 if (FAILED(hrUnmountCIM))
                 {
                     std::wcout << std::endl;
-                    std::wcout << "Unmounting the CIM with volume id  " << volumeIdString << " failed with HRESULT 0x" << std::hex << hrUnmountCIM << std::endl;
+                    std::wcout << "Unmounting the CIM " << " failed with HRESULT 0x" << std::hex << hrUnmountCIM << std::endl;
+
+                    // ERROR_NOT_FOUND may be returned if only the mount image path but not the volume id was provided
+                    // and msixmgr was unable to find the volume id associated with a given image path.
+                    if (hrUnmountCIM == HRESULT_FROM_WIN32(ERROR_NOT_FOUND) && cli.GetVolumeId().empty())
+                    {
+                        std::wcout << "The error ERROR_NOT_FOUND may indicate a failure to find the volume id associated with a given image path."<< std::endl;
+                        std::wcout << "Please try unmounting using the -volumeId option." << std::endl;
+                    }
+
                     std::wcout << std::endl;
                     return hrUnmountCIM;
                 }
                 else
                 {
                     std::wcout << std::endl;
-                    std::wcout << "Successfully unmounted the CIM with volume id " << volumeIdString << std::endl;
+                    if (!cli.GetMountImagePath().empty())
+                    {
+                        std::wcout << "Successfully unmounted the CIM file: " << cli.GetMountImagePath() << std::endl;
+                    }
+                    else
+                    {
+                        std::wcout << "Successfully unmounted the CIM with volume id: " << cli.GetVolumeId() << std::endl;
+                    }
+
                     std::wcout << std::endl;
                 }
             }
