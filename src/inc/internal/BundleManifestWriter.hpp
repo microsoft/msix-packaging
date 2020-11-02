@@ -25,7 +25,7 @@ namespace MSIX {
         std::uint64_t offset;
         //ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
         ComPtr<IAppxManifestResourcesEnumerator> resources;
-        BOOL isDefaultApplicablePackage;
+        bool isDefaultApplicablePackage;
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
     };
 

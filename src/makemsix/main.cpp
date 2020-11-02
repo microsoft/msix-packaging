@@ -237,7 +237,6 @@ private:
         auto option = std::find(options.begin(), options.end(), name);
         return (option == options.end() ? nullptr : &*option);
     }
-
 };
 
 void Command::PrintHelpText(const Invocation& invocation) const

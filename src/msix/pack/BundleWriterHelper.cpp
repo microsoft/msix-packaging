@@ -20,7 +20,7 @@ namespace MSIX {
         ComPtr<IAppxManifestPackageId> packageId;
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
         //ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
-                ComPtr<IAppxManifestResourcesEnumerator> resources;
+        ComPtr<IAppxManifestResourcesEnumerator> resources;
 
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
 
