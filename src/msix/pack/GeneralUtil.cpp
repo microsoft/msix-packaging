@@ -32,4 +32,18 @@ namespace MSIX{
             + std::to_string((version) & 0xFFFF);
     }
 
+    bool PathIsExistingFolder(std::string path)
+    {
+        //Get fulloutputpath from path if needed
+        DWORD attributes = GetFileAttributes(utf8_to_wstring(path).c_str());
+        return ((attributes != INVALID_FILE_ATTRIBUTES) && ((attributes & FILE_ATTRIBUTE_DIRECTORY) != 0));
+    }
+
+    bool PathIsExistingFile(std::string path)
+    {
+        //Get fulloutputpath from path if needed
+        DWORD attributes = GetFileAttributes(utf8_to_wstring(path).c_str());
+        return ((attributes != INVALID_FILE_ATTRIBUTES) && ((attributes & FILE_ATTRIBUTE_DIRECTORY) == 0));
+    }
+
 }

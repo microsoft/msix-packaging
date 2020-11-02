@@ -29,31 +29,6 @@ namespace MSIX {
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
     };
 
-    //
-    // Helper class to free string buffers obtained from the packaging APIs.
-    //
-    /*template<typename T>
-    class Text
-    {
-    public:
-        T** operator&() { return &content; }
-        ~Text() { Cleanup(); }
-        T* Get() { return content; }
-
-        T* content = nullptr;
-    protected:
-        void Cleanup() { if (content) { std::free(content); content = nullptr; } }
-    };*/
-
-    enum ElementWriterState
-    {
-        Uninitialized = 0,
-        BundleManifestStarted = 1,
-        PackagesAdded = 2,
-        OptionalBundlesAdded = 3,
-        BundleManifestEnded = 4,
-    };
-
     class BundleManifestWriter final
     {
     public:
@@ -74,10 +49,7 @@ namespace MSIX {
 
     protected:
         XmlWriter m_xmlWriter;
-        //bool packageAdded = false;
-
         std::string targetXmlNamespace;
-        //UINT32 currentState;
 
     };
 }

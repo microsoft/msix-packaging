@@ -305,16 +305,27 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     std::unique_ptr<std::map<std::string, std::string>> externalPackagesList;
     std::uint64_t bundleVersion = 0;
     bool flatBundle = false;
+    bool overWrite = false;
 
-    //Create ProcessOptionsForBundle method
+    //Process Common Options
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERSION)
     {
         bundleVersion = MSIX::ConvertVersionStringToUint64(version);
     }
-    
-    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
+
+    if ((bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_OVERWRITE) && (bundleOptions && MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NOOVERWRITE))
     {
-        //process option for verbose
+        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You can't specify options -o and -no at the same time.");
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_OVERWRITE)
+    {
+        overWrite = true;
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NOOVERWRITE)
+    {
+        overWrite = false;
     }
 
     if (0 == (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE))
@@ -322,7 +333,45 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
         flatBundle = true;
     }
 
-    auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
+    {
+        //process option for verbose
+    }
+
+    //Process output option
+    if(MSIX::PathIsExistingFolder(outputBundle))
+    {
+        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "The output path can't be an existing folder.");
+    }
+
+    //Process Input options
+    if(directoryPath == nullptr && mappingFile == nullptr)
+    {
+        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You must specify either a content directory (-d) or a mapping file (-f).");
+    }
+    else if(directoryPath != nullptr && mappingFile != nullptr)
+    {
+        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You can't specify both a content directory (-d) and a mapping file (-f).");
+    }
+    else if(directoryPath != nullptr)
+    {
+        if(MSIX::PathIsExistingFile(directoryPath))
+        {
+            ThrowErrorAndLog(MSIX::Error::InvalidParameter, "The content directory can't be a file.");
+        }
+    }
+
+    MSIX::ComPtr<IDirectoryObject> from;
+    if(directoryPath != nullptr && outputBundle != nullptr)
+    {
+        from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+    }
+    else if(mappingFile != nullptr && outputBundle != nullptr)
+    {
+        //Create from list from mapping file(Currently keeping it same as above, have to
+        //parse from mapping file into externalPackagesList)
+        from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+    }
 
     auto deleteFile = MSIX::scope_exit([&outputBundle]
     {
