@@ -4,18 +4,16 @@ namespace MSIX {
 
     BundleWriterHelper::BundleWriterHelper() {}
 
-    HRESULT BundleWriterHelper::GetStreamSize(_In_ IStream* stream, _Out_ UINT64* sizeOfStream)
+    std::uint64_t BundleWriterHelper::GetStreamSize(IStream* stream)
     {
-        HRESULT hr = S_OK;
         STATSTG stat;
         ThrowHrIfFailed(stream->Stat(&stat, STATFLAG_NONAME));
 
-        *sizeOfStream = stat.cbSize.QuadPart;
-        return S_OK;
+        return stat.cbSize.QuadPart;
     }
 
-    HRESULT BundleWriterHelper::AddPackage(_In_ std::string fileName, _In_ IAppxPackageReader* packageReader,
-        _In_ std::uint64_t bundleOffset, _In_ std::uint64_t packageSize, _In_ bool isDefaultApplicableResource)
+    void BundleWriterHelper::AddPackage(std::string fileName, IAppxPackageReader* packageReader,
+        std::uint64_t bundleOffset, std::uint64_t packageSize, bool isDefaultApplicableResource)
     {
         ComPtr<IAppxManifestPackageId> packageId;
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
@@ -24,20 +22,19 @@ namespace MSIX {
 
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
 
-        ThrowHrIfFailed(GetValidatedPackageData(fileName, packageReader, &packageType, &packageId, &resources, &tdfs));
+        GetValidatedPackageData(fileName, packageReader, &packageType, &packageId, &resources, &tdfs);
 
-        ThrowHrIfFailed(AddValidatedPackageData(fileName, bundleOffset, packageSize, packageType, packageId,
-                isDefaultApplicableResource, resources.Get(), tdfs.Get()));
-        return S_OK;
+        AddValidatedPackageData(fileName, bundleOffset, packageSize, packageType, packageId,
+                isDefaultApplicableResource, resources.Get(), tdfs.Get());
     }
 
-    HRESULT BundleWriterHelper::GetValidatedPackageData(
-        _In_ std::string fileName,
-        _In_ IAppxPackageReader* packageReader,
-        _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
-        _Outptr_result_nullonfailure_ IAppxManifestPackageId** packageId,
-        _Outptr_result_nullonfailure_ IAppxManifestResourcesEnumerator** resources,
-        _Outptr_result_maybenull_ IAppxManifestTargetDeviceFamiliesEnumerator** tdfs)
+    void BundleWriterHelper::GetValidatedPackageData(
+        std::string fileName,
+        IAppxPackageReader* packageReader,
+        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
+        IAppxManifestPackageId** packageId,
+        IAppxManifestResourcesEnumerator** resources,
+        IAppxManifestTargetDeviceFamiliesEnumerator** tdfs)
     {
         *packageId = nullptr;
         *resources = nullptr;
@@ -58,32 +55,19 @@ namespace MSIX {
 
         ThrowHrIfFailed(manifestReader->GetResources(&loadedResources));
 
-        HRESULT hr = manifestReader3->GetTargetDeviceFamilies(&loadedTdfs);
-        if (FAILED(hr) && hr != HRESULT_FROM_WIN32(ERROR_NOT_FOUND))
-        {
-            return hr;
-        }
+        ThrowHrIfFailed(manifestReader3->GetTargetDeviceFamilies(&loadedTdfs));
 
-        ThrowHrIfFailed(GetPayloadPackageType(manifestReader.Get(), fileName, &loadedPackageType));
-        //AddPackage checks
-        //ValidateOSVersion checks
-        //ThrowHrIfFailed(PackageMatchesHashMethod(packageReader, fileName));
+        GetPayloadPackageType(manifestReader.Get(), fileName, &loadedPackageType);
+        //TODO:: Validate Package matches SHA256 hash method
 
         auto packageIdInternal = loadedPackageId.As<IAppxManifestPackageIdInternal>();
-        ThrowHrIfFailed(ValidateNameAndPublisher(packageIdInternal.Get(), fileName));
+        ValidateNameAndPublisher(packageIdInternal.Get(), fileName);
 
-        //TDF check
+        //TODO: TDF checks
 
         if (loadedPackageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
         {
-            ThrowHrIfFailed(ValidateApplicationElement(manifestReader.Get(), fileName));
-
-            /*if (loadedTdfs != nullptr)
-            {
-                ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfCopy;
-                ThrowHrIfFailed(manifestReader3->GetTargetDeviceFamilies(&tdfCopy));
-                //TDF Checks
-            }*/
+            ValidateApplicationElement(manifestReader.Get(), fileName);
         }
 
         *packageType = loadedPackageType;
@@ -94,14 +78,12 @@ namespace MSIX {
         {
             *tdfs = loadedTdfs.Detach();
         }
-         return S_OK;
     }
 
-    HRESULT BundleWriterHelper::ValidateApplicationElement(
-        _In_ IAppxManifestReader* packageManifestReader,
-        _In_ std::string fileName)
+    void BundleWriterHelper::ValidateApplicationElement(
+        IAppxManifestReader* packageManifestReader,
+        std::string fileName)
     {
-        HRESULT hr = S_OK;
         ComPtr<IAppxManifestReader4> manifestReader4;
         ThrowHrIfFailed(packageManifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader4>::iid, reinterpret_cast<void**>(&manifestReader4)));
 
@@ -120,18 +102,13 @@ namespace MSIX {
 
             if (!hasApplication)
             {
-                //LPWSTR packageFullName;
-                //GetPackageFullNameFromManifest(packageManifestReader, packageFullName);
-                //Log error NO_APPLICATION, fileName, packageFullName
-                //return APPX_E_INVALID_MANIFEST;
+                ThrowErrorAndLog(Error::AppxManifestSemanticError, "The package is not valid in the bundle because its manifest does not declare any Application elements.");
             }
         }
-        return hr;
     }
 
-    HRESULT BundleWriterHelper::ValidateNameAndPublisher(
-        _In_ IAppxManifestPackageIdInternal* packageId,
-        _In_ std::string filename)
+    void BundleWriterHelper::ValidateNameAndPublisher(IAppxManifestPackageIdInternal* packageId,
+        std::string filename)
     {
         if(this->mainPackageName.empty())
         {
@@ -145,95 +122,49 @@ namespace MSIX {
             if ((this->mainPackageName.compare(packageName)) != 0)
             {
                 std::string packageFullName = packageId->GetPackageFullName();
-                //Log mismatched packagename error, filename, packageFullName.get(), this->mainPackageName
-                //return APPX_E_INVALID_MANIFEST;
+                ThrowErrorAndLog(Error::AppxManifestSemanticError, "The package is not valid in the bundle because it has a different package family name than other packages in the bundle.");
             }
 
             std::string publisherName = packageId->GetPublisher();
             if ((this->mainPackagePublisher.compare(publisherName)) != 0)
             {
                 std::string packageFullName = packageId->GetPackageFullName();
-                //Log mismatched publisher error, filename, packageFullName.get(), this->mainPackagePublisher
-                //return APPX_E_INVALID_MANIFEST;
+                ThrowErrorAndLog(Error::AppxManifestSemanticError, "The package is not valid in the bundle because it has a different package family name than other packages in the bundle.");
             }
         }
-        return S_OK;
     }
 
-    HRESULT BundleWriterHelper::PackageMatchesHashMethod(
-        _In_ IAppxPackageReader* packageReader,
-        _In_ std::string fileName)
+    void BundleWriterHelper::GetPayloadPackageType(IAppxManifestReader* packageManifestReader,
+        std::string fileName, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType)
     {
-        HRESULT hr = S_OK;
-        ComPtr<IAppxBlockMapReader> blockMapReader;
-        ThrowHrIfFailed(packageReader->GetBlockMap(&blockMapReader));
-
-        //ComPtr<IUri> hashMethod;
-        //ThrowHrIfFailed(blockMapReader->GetHashMethod(&hashMethod));
-
-        //BSTR hashAlgorithmUri;
-        //ThrowHrIfFailed(hashMethod->GetAbsoluteUri(&hashAlgorithmUri));
-
-        /*ComPtr<IUri> expectedHashMethod;
-        std::wstring hashMethodString = L"http://www.w3.org/2001/04/xmlenc#sha256";
-        ThrowHrIfFailed(CreateUri(hashMethodString, 0x0001, NULL, &hashMethod));*/
-
-        //std::wstring hashAlgorithmUri;
-        //ThrowHrIfFailed(hashMethod->GetAbsoluteUri(&hashAlgorithmUri));
-
-        /*if(!(wcscmp(hashAlgorithmUri, L"http://www.w3.org/2001/04/xmlenc#sha256") == 0))
-        {
-            //return APPX_E_INVALID_BLOCKMAP;
-        }*/
-
-        return hr;
-    }
-
-    HRESULT BundleWriterHelper::GetPayloadPackageType(
-        _In_ IAppxManifestReader* packageManifestReader,
-        _In_ std::string fileName,
-        _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType)
-    {
-        HRESULT hr = S_OK;
         ComPtr<IAppxManifestProperties> packageProperties;
         ThrowHrIfFailed(packageManifestReader->GetProperties(&packageProperties));
 
         BOOL isFrameworkPackage = FALSE;
-        hr = packageProperties->GetBoolValue(L"Framework", &isFrameworkPackage);
-        if (FAILED(hr) && (hr != E_INVALIDARG))
-        {
-            return hr;
-        }
+        ThrowHrIfFailed(packageProperties->GetBoolValue(L"Framework", &isFrameworkPackage));
 
         if (isFrameworkPackage)
         {
-            //This method will fail with
-            /// APPX_E_INVALID_MANIFEST if the manifest is for a Framework package.
-            //return APPX_E_INVALID_MANIFEST;
+            ThrowErrorAndLog(Error::AppxManifestSemanticError, "The package is not valid in the bundle because it is a framework package.");
         }
 
         BOOL isResourcePackage = FALSE;
-        hr = packageProperties->GetBoolValue(L"ResourcePackage", &isResourcePackage);
-        if (FAILED(hr) && (hr != E_INVALIDARG))
-        {
-            return hr;
-        }
+        ThrowHrIfFailed(packageProperties->GetBoolValue(L"ResourcePackage", &isResourcePackage));
 
         *packageType = (isResourcePackage ? APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE : APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION);
-        return S_OK;
     }
 
-    HRESULT BundleWriterHelper::AddValidatedPackageData(
-        _In_ std::string fileName,
-        _In_ std::uint64_t bundleOffset,
-        _In_ std::uint64_t packageSize,
-        _In_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
-        _In_ ComPtr<IAppxManifestPackageId> packageId,
-        _In_ bool isDefaultApplicablePackage,
-        _In_ IAppxManifestResourcesEnumerator* resources,
-        _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
+    void BundleWriterHelper::AddValidatedPackageData(
+        std::string fileName, 
+        std::uint64_t bundleOffset,
+        std::uint64_t packageSize,
+        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
+        ComPtr<IAppxManifestPackageId> packageId,
+        bool isDefaultApplicablePackage,
+        IAppxManifestResourcesEnumerator* resources,
+        IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {
-        //validate package payload extension
+        //TODO: validate package payload extension
 
         auto innerPackageIdInternal = packageId.As<IAppxManifestPackageIdInternal>();
 
@@ -249,12 +180,10 @@ namespace MSIX {
         packageInfo.offset = bundleOffset;
         packageInfo.tdfs = tdfs;
 
-        ThrowHrIfFailed(AddPackageInfoToVector(this->payloadPackages, packageInfo));
-
-        return S_OK;
+        AddPackageInfoToVector(this->payloadPackages, packageInfo);
     }
 
-    HRESULT BundleWriterHelper::AddPackageInfoToVector(std::vector<PackageInfo>& packagesVector, 
+    void BundleWriterHelper::AddPackageInfoToVector(std::vector<PackageInfo>& packagesVector, 
         PackageInfo packageInfo)
     {
         packagesVector.push_back(packageInfo);
@@ -275,14 +204,12 @@ namespace MSIX {
         {
             this->hasDefaultOrNeutralResources = true;
         }
-
-        return S_OK;
     }
 
-    HRESULT BundleWriterHelper::EndBundleManifest()
+    void BundleWriterHelper::EndBundleManifest()
     {
         std::string targetXmlNamespace = "http://schemas.microsoft.com/appx/2013/bundle";
-        //Compute and assign Namespace for neutral resources or optional bundles
+        //TODO: Compute and assign Namespace for neutral resources or optional bundles
 
         m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, this->mainPackageName,
             this->mainPackagePublisher, this->bundleVersion);
@@ -292,12 +219,11 @@ namespace MSIX {
             m_bundleManifestWriter.WritePackageElement(payloadPackages[i]);
         }
 
-        //Do the same loop for this->OptionalBundles
+        //TODO: this->OptionalBundles
         
         //Ends Packages and bundle Element
         m_bundleManifestWriter.EndPackagesElement();
         m_bundleManifestWriter.Close();
-        return S_OK;
     }
 
 }

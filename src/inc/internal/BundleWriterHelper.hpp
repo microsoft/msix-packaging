@@ -20,60 +20,55 @@ namespace MSIX {
     public:
         BundleWriterHelper();
 
-        HRESULT AddPackageInfoToVector(std::vector<PackageInfo>& packagesVector, PackageInfo packageInfo);
+        std::uint64_t GetStreamSize(IStream* stream);
 
-        HRESULT GetStreamSize(_In_ IStream* stream, _Out_ UINT64* sizeOfStream);
+        void AddPackage(std::string fileName, IAppxPackageReader* packageReader, std::uint64_t bundleOffset,
+            std::uint64_t packageSize, bool isDefaultApplicableResource);
 
-        HRESULT AddPackage(_In_ std::string fileName, _In_ IAppxPackageReader* packageReader, _In_ std::uint64_t bundleOffset,
-            _In_ std::uint64_t packageSize, _In_ bool isDefaultApplicableResource);
+        void GetValidatedPackageData(
+            std::string fileName,
+            IAppxPackageReader* packageReader,
+            APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
+            IAppxManifestPackageId** packageId,
+            // IAppxManifestQualifiedResourcesEnumerator** resources,
+            IAppxManifestResourcesEnumerator** resources,
+            IAppxManifestTargetDeviceFamiliesEnumerator** tdfs);
 
-        HRESULT GetValidatedPackageData(
-            _In_ std::string fileName,
-            _In_ IAppxPackageReader* packageReader,
-            _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
-            _Outptr_result_nullonfailure_ IAppxManifestPackageId** packageId,
-            //_Outptr_result_nullonfailure_ IAppxManifestQualifiedResourcesEnumerator** resources,
-                        _Outptr_result_nullonfailure_ IAppxManifestResourcesEnumerator** resources,
-
-            _Outptr_result_maybenull_ IAppxManifestTargetDeviceFamiliesEnumerator** tdfs);
-
-        HRESULT AddValidatedPackageData(
-            _In_ std::string fileName,
-            _In_ std::uint64_t bundleOffset,
-            _In_ std::uint64_t packageSize,
-            _In_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
-            _In_ ComPtr<IAppxManifestPackageId> packageId,
-            _In_ bool isDefaultApplicablePackage,
+        void AddValidatedPackageData(
+            std::string fileName,
+            std::uint64_t bundleOffset,
+            std::uint64_t packageSize,
+            APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
+            ComPtr<IAppxManifestPackageId> packageId,
+            bool isDefaultApplicablePackage,
             //_In_ IAppxManifestQualifiedResourcesEnumerator* resources,
-            _In_ IAppxManifestResourcesEnumerator* resources,
-            _In_ IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
+            IAppxManifestResourcesEnumerator* resources,
+            IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
 
-        HRESULT GetPayloadPackageType(
-            _In_ IAppxManifestReader* packageManifestReader,
-            _In_ std::string fileName,
-            _Out_ APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType);
+        void GetPayloadPackageType(
+            IAppxManifestReader* packageManifestReader,
+            std::string fileName,
+            APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType);
 
-        HRESULT PackageMatchesHashMethod(
-            _In_ IAppxPackageReader* packageReader,
-            _In_ std::string fileName);
+        void ValidateNameAndPublisher(
+            IAppxManifestPackageIdInternal* packageId,
+            std::string filename);
 
-        HRESULT ValidateNameAndPublisher(
-            _In_ IAppxManifestPackageIdInternal* packageId,
-            _In_ std::string filename);
+        void ValidateApplicationElement(
+            IAppxManifestReader* packageManifestReader,
+            std::string fileName);
 
-        HRESULT ValidateApplicationElement(
-            _In_ IAppxManifestReader* packageManifestReader,
-            _In_ std::string fileName);
+        void AddPackageInfoToVector(std::vector<PackageInfo>& packagesVector, PackageInfo packageInfo);
 
-        std::vector<PackageInfo> GetPayloadPackages() { return payloadPackages; }
-
-        HRESULT EndBundleManifest();
+        void EndBundleManifest();
 
         ComPtr<IStream> GetBundleManifestStream() { return m_bundleManifestWriter.GetStream(); }
 
         void SetBundleVersion(std::uint64_t bundleVersion) { this->bundleVersion = bundleVersion; }
 
         std::uint64_t GetBundleVersion() { return this->bundleVersion; }
+
+        std::vector<PackageInfo> GetPayloadPackages() { return payloadPackages; }
     
     private:
         std::vector<PackageInfo> payloadPackages;
@@ -84,6 +79,5 @@ namespace MSIX {
         std::uint64_t bundleVersion;
 
         BundleManifestWriter m_bundleManifestWriter;
-
     };
 }

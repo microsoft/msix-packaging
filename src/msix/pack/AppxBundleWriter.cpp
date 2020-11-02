@@ -96,7 +96,7 @@ namespace MSIX {
             });
 
         //Process AppxBundleManifest.xml and add it to the bundle
-        ThrowHrIfFailed(m_bundleWriterHelper.EndBundleManifest());
+        m_bundleWriterHelper.EndBundleManifest();
 
         auto bundleManifestStream = m_bundleWriterHelper.GetBundleManifestStream();
         auto bundleManifestContentType = ContentType::GetBundlePayloadFileContentType(APPX_BUNDLE_FOOTPRINT_FILE_TYPE_MANIFEST);
@@ -123,13 +123,12 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddPackageReference(LPCWSTR fileName, 
         IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
     {   
-        ThrowHrIfFailed(this->AddPackageReferenceInternal(wstring_to_utf8(fileName), inputStream, !!isDefaultApplicablePackage));
+        this->AddPackageReferenceInternal(wstring_to_utf8(fileName), inputStream, !!isDefaultApplicablePackage);
 
-        return S_OK;
-
+        return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT AppxBundleWriter::AddPackageReferenceInternal(std::string fileName, IStream* packageStream,
+    void AppxBundleWriter::AddPackageReferenceInternal(std::string fileName, IStream* packageStream,
         bool isDefaultApplicablePackage)
     {
         auto appxFactory = m_factory.As<IAppxFactory>();
@@ -137,12 +136,9 @@ namespace MSIX {
         ComPtr<IAppxPackageReader> reader;
         ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream, &reader));
 
-        std::uint64_t packageStreamSize = 0;
-        ThrowHrIfFailed(this->m_bundleWriterHelper.GetStreamSize(packageStream, &packageStreamSize));
+        std::uint64_t packageStreamSize = this->m_bundleWriterHelper.GetStreamSize(packageStream);
         
-        ThrowHrIfFailed(this->m_bundleWriterHelper.AddPackage(fileName, reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage));
-
-        return S_OK;
+        this->m_bundleWriterHelper.AddPackage(fileName, reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage);
     }
 
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream, 

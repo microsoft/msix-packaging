@@ -335,7 +335,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
 
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
     {
-        //process option for verbose
+        //TODO: Process option for verbose
     }
 
     //Process output option
