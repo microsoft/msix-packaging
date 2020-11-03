@@ -23,8 +23,7 @@ namespace MSIX {
         std::string fileName;
         std::uint64_t size;
         std::uint64_t offset;
-        //ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
-        ComPtr<IAppxManifestResourcesEnumerator> resources;
+        ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
         bool isDefaultApplicablePackage;
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
     };
@@ -38,9 +37,9 @@ namespace MSIX {
         void BundleManifestWriter::StartBundleElement();
         void BundleManifestWriter::WriteIdentityElement(std::string name, std::string publisher, UINT64 version);
         void BundleManifestWriter::StartPackagesElement();
-        HRESULT BundleManifestWriter::WritePackageElement(PackageInfo packageInfo);
-        //HRESULT BundleManifestWriter::WriteResourcesElement(IAppxManifestResourcesEnumerator* resources);
-        HRESULT BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
+        void BundleManifestWriter::WritePackageElement(PackageInfo packageInfo);
+        //void BundleManifestWriter::WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources);
+        void BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
         void BundleManifestWriter::EndPackagesElement();
         void BundleManifestWriter::Close();
 

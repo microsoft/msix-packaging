@@ -17,9 +17,7 @@ namespace MSIX {
     {
         ComPtr<IAppxManifestPackageId> packageId;
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
-        //ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
-        ComPtr<IAppxManifestResourcesEnumerator> resources;
-
+        ComPtr<IAppxManifestQualifiedResourcesEnumerator> resources;
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
 
         GetValidatedPackageData(fileName, packageReader, &packageType, &packageId, &resources, &tdfs);
@@ -33,7 +31,7 @@ namespace MSIX {
         IAppxPackageReader* packageReader,
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
         IAppxManifestPackageId** packageId,
-        IAppxManifestResourcesEnumerator** resources,
+        IAppxManifestQualifiedResourcesEnumerator** resources,
         IAppxManifestTargetDeviceFamiliesEnumerator** tdfs)
     {
         *packageId = nullptr;
@@ -42,8 +40,7 @@ namespace MSIX {
 
         ComPtr<IAppxManifestPackageId> loadedPackageId;
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE loadedPackageType = APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION;
-        //ComPtr<IAppxManifestQualifiedResourcesEnumerator> loadedResources;
-        ComPtr<IAppxManifestResourcesEnumerator> loadedResources;
+        ComPtr<IAppxManifestQualifiedResourcesEnumerator> loadedResources;
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> loadedTdfs;
 
         ComPtr<IAppxManifestReader> manifestReader;
@@ -53,11 +50,11 @@ namespace MSIX {
         ComPtr<IAppxManifestReader3> manifestReader3;
         ThrowHrIfFailed(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader3>::iid, reinterpret_cast<void**>(&manifestReader3)));
 
-        ThrowHrIfFailed(manifestReader->GetResources(&loadedResources));
+        ThrowHrIfFailed(manifestReader3->GetQualifiedResources(&loadedResources));
 
         ThrowHrIfFailed(manifestReader3->GetTargetDeviceFamilies(&loadedTdfs));
 
-        GetPayloadPackageType(manifestReader.Get(), fileName, &loadedPackageType);
+        loadedPackageType = GetPayloadPackageType(manifestReader.Get(), fileName);
         //TODO:: Validate Package matches SHA256 hash method
 
         auto packageIdInternal = loadedPackageId.As<IAppxManifestPackageIdInternal>();
@@ -134,8 +131,8 @@ namespace MSIX {
         }
     }
 
-    void BundleWriterHelper::GetPayloadPackageType(IAppxManifestReader* packageManifestReader,
-        std::string fileName, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType)
+    APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE BundleWriterHelper::GetPayloadPackageType(IAppxManifestReader* packageManifestReader,
+        std::string fileName)
     {
         ComPtr<IAppxManifestProperties> packageProperties;
         ThrowHrIfFailed(packageManifestReader->GetProperties(&packageProperties));
@@ -151,7 +148,8 @@ namespace MSIX {
         BOOL isResourcePackage = FALSE;
         ThrowHrIfFailed(packageProperties->GetBoolValue(L"ResourcePackage", &isResourcePackage));
 
-        *packageType = (isResourcePackage ? APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE : APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION);
+        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = (isResourcePackage ? APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE : APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION);
+        return packageType;
     }
 
     void BundleWriterHelper::AddValidatedPackageData(
@@ -161,7 +159,7 @@ namespace MSIX {
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
         ComPtr<IAppxManifestPackageId> packageId,
         bool isDefaultApplicablePackage,
-        IAppxManifestResourcesEnumerator* resources,
+        IAppxManifestQualifiedResourcesEnumerator* resources,
         IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {
         //TODO: validate package payload extension

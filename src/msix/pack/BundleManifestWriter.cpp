@@ -96,10 +96,8 @@ namespace MSIX {
         m_xmlWriter.StartElement(packagesManifestElement);
     }
 
-    HRESULT BundleManifestWriter::WritePackageElement(PackageInfo packageInfo)
+    void BundleManifestWriter::WritePackageElement(PackageInfo packageInfo)
     {
-        //this->packageAdded = true;
-        //if isStub, then Package tag is different
         m_xmlWriter.StartElement(packageManifestElement);
 
         std::string packageTypeString;
@@ -131,15 +129,24 @@ namespace MSIX {
             m_xmlWriter.AddAttribute(packageFileNameAttribute, packageInfo.fileName);
         }
 
+        if(packageInfo.offset > 0)
+        {
+            //TODO: not applicable for flat bundle
+        }
+
+        if (packageInfo.size > 0 && packageInfo.offset > 0)
+        {
+            //TODO: not applicable for flat bundles
+        }
+
         //WriteResourcesElement
-        //ThrowHrIfFailed(WriteResourcesElement(packageInfo.resources.Get()));
+        //WriteResourcesElement(packageInfo.resources.Get());
 
         //WriteDependenciesElement
-        ThrowHrIfFailed(WriteDependenciesElement(packageInfo.tdfs.Get()));
+        WriteDependenciesElement(packageInfo.tdfs.Get());
 
         //End Package Tag
         m_xmlWriter.CloseElement();
-        return S_OK;
     }
 
     /*HRESULT BundleManifestWriter::WriteResourcesElement(IAppxManifestResourcesEnumerator* resources)
@@ -181,7 +188,7 @@ namespace MSIX {
         return S_OK;
     }*/
 
-    HRESULT BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
+    void BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {
         BOOL hasNext = FALSE;
         ThrowHrIfFailed(tdfs->GetHasCurrent(&hasNext));
@@ -223,7 +230,6 @@ namespace MSIX {
             //End Dependencies Tag
             m_xmlWriter.CloseElement();
         }
-        return S_OK;
     }
 
     void BundleManifestWriter::EndPackagesElement()

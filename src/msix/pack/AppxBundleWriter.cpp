@@ -65,8 +65,7 @@ namespace MSIX {
 
                 if (flatBundle)
                 {
-                    ThrowHrIfFailed(AddPackageReference(utf8_to_wstring(file.second).c_str(), stream.Get(), 
-                        false));
+                    ThrowHrIfFailed(AddPackageReference(utf8_to_wstring(file.second).c_str(), stream.Get(), false));
                 }
             }
         }

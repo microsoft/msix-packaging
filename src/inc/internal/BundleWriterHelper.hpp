@@ -30,8 +30,7 @@ namespace MSIX {
             IAppxPackageReader* packageReader,
             APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType,
             IAppxManifestPackageId** packageId,
-            // IAppxManifestQualifiedResourcesEnumerator** resources,
-            IAppxManifestResourcesEnumerator** resources,
+            IAppxManifestQualifiedResourcesEnumerator** resources,
             IAppxManifestTargetDeviceFamiliesEnumerator** tdfs);
 
         void AddValidatedPackageData(
@@ -41,14 +40,12 @@ namespace MSIX {
             APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType,
             ComPtr<IAppxManifestPackageId> packageId,
             bool isDefaultApplicablePackage,
-            //_In_ IAppxManifestQualifiedResourcesEnumerator* resources,
-            IAppxManifestResourcesEnumerator* resources,
+            IAppxManifestQualifiedResourcesEnumerator* resources,
             IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
 
-        void GetPayloadPackageType(
+        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE GetPayloadPackageType(
             IAppxManifestReader* packageManifestReader,
-            std::string fileName,
-            APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE* packageType);
+            std::string fileName);
 
         void ValidateNameAndPublisher(
             IAppxManifestPackageIdInternal* packageId,

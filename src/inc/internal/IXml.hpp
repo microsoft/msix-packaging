@@ -77,6 +77,7 @@ enum class XmlAttributeName : std::uint8_t
     Package_Applications_Application_Id,
     Category,
     MaxMajorVersionTested,
+    DXFeatureLevel,
 };
 
 // {ac94449e-442d-4bed-8fca-83770c0f7ee9}

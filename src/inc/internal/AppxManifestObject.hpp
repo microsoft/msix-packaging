@@ -299,6 +299,45 @@ namespace MSIX {
         std::string m_packageFamilyName;
     };
 
+    class AppxManifestQualifiedResource final : public ComClass<AppxManifestQualifiedResource, IAppxManifestQualifiedResource, IAppxManifestQualifiedResourceUtf8>
+    {
+    public:
+        AppxManifestQualifiedResource(IMsixFactory* factory, std::string& language, std::string& scale, std::string& DXFeatureLevel) :
+            m_factory(factory), m_language(language)
+        {
+            //TODO: Process and assign scale and DXFeatureLevel
+        }
+
+        // IAppxManifestQualifiedResource
+        HRESULT STDMETHODCALLTYPE GetLanguage(LPWSTR *language) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (language == nullptr || *language != nullptr), "bad pointer");
+            return m_factory->MarshalOutString(m_language, language);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetScale(UINT32 *scale) noexcept override try
+        {
+            return static_cast<HRESULT>(Error::NotImplemented);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL *dxFeatureLevel) override try
+        {
+            return static_cast<HRESULT>(Error::NotImplemented);
+        } CATCH_RETURN();
+
+        // IAppxManifestQualifiedResourceUtf8
+        HRESULT STDMETHODCALLTYPE GetLanguage(LPSTR *language) noexcept override try
+        {
+            return m_factory->MarshalOutStringUtf8(m_language, language);
+        } CATCH_RETURN();
+
+    protected:
+        ComPtr<IMsixFactory> m_factory;
+        std::string m_language;
+        std::uint32_t m_scale;
+        DX_FEATURE_LEVEL m_DXFeatureLevel;
+    };
+
     // Object backed by AppxManifest.xml
     class AppxManifestObject final : public ComClass<AppxManifestObject, ChainInterfaces<IAppxManifestReader4, IAppxManifestReader3, IAppxManifestReader2, IAppxManifestReader>,
                                                     IAppxManifestReader5, IVerifierObject, IAppxManifestObject, IMsixDocumentElement>
@@ -317,15 +356,12 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetApplications(IAppxManifestApplicationsEnumerator **applications) noexcept override;
         HRESULT STDMETHODCALLTYPE GetStream(IStream **manifestStream) noexcept override;
 
-        // IAppxManifestReader2
-        HRESULT STDMETHODCALLTYPE GetQualifiedResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept override;
-
         // IAppxManifestReader3
+        HRESULT STDMETHODCALLTYPE GetQualifiedResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept override;
         HRESULT STDMETHODCALLTYPE GetCapabilitiesByCapabilityClass(
             APPX_CAPABILITY_CLASS_TYPE capabilityClass,
             IAppxManifestCapabilitiesEnumerator **capabilities) noexcept override;
         HRESULT STDMETHODCALLTYPE GetTargetDeviceFamilies(IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept override;
-        //HRESULT STDMETHODCALLTYPE GetQualifiedResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept override;
 
         // IAppxManifestReader4
         HRESULT STDMETHODCALLTYPE GetOptionalPackageInfo(IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept override;
@@ -353,7 +389,6 @@ namespace MSIX {
         ComPtr<IAppxManifestPackageId> m_packageId;
         MSIX_PLATFORMS m_platform = MSIX_PLATFORM_NONE;
         std::vector<ComPtr<IAppxManifestTargetDeviceFamily>> m_tdf;
-        //std::vector<ComPtr<IAppxManifestQualifiedResource>> m_qualifiedResources;
         ComPtr<IXmlDom> m_dom;
     };
 }
