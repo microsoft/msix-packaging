@@ -140,7 +140,7 @@ namespace MSIX {
         }
 
         //WriteResourcesElement
-        //WriteResourcesElement(packageInfo.resources.Get());
+        WriteResourcesElement(packageInfo.resources.Get());
 
         //WriteDependenciesElement
         WriteDependenciesElement(packageInfo.tdfs.Get());
@@ -149,7 +149,7 @@ namespace MSIX {
         m_xmlWriter.CloseElement();
     }
 
-    /*HRESULT BundleManifestWriter::WriteResourcesElement(IAppxManifestResourcesEnumerator* resources)
+    void BundleManifestWriter::WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources)
     {
         BOOL hasResources = FALSE;
         ThrowHrIfFailed(resources->GetHasCurrent(&hasResources));
@@ -163,18 +163,20 @@ namespace MSIX {
             ThrowHrIfFailed(resources->GetHasCurrent(&hasNext));
             while (hasNext)
             {
-                ComPtr<IAppxManifestResourcesEnumerator> resource;
+                ComPtr<IAppxManifestQualifiedResource> resource;
                 ThrowHrIfFailed(resources->GetCurrent(&resource));
 
                 //Start Resource element
                 m_xmlWriter.StartElement(resourceManifestElement);
 
-                LPWSTR languageString;
+                MSIX::Text<WCHAR> languageString;
                 ThrowHrIfFailed(resource->GetLanguage(&languageString));
-                if (languageString != nullptr)
+                if (languageString.Get() != nullptr)
                 {
-                    m_xmlWriter.AddAttribute(resourceLanguageAttribute, wstring_to_utf8(languageString));
+                    m_xmlWriter.AddAttribute(resourceLanguageAttribute, wstring_to_utf8(languageString.Get()));
                 }
+
+                //TODO:: Write scale and dxfeaturelevel attributes
 
                 //End Resource element
                 m_xmlWriter.CloseElement();
@@ -185,8 +187,7 @@ namespace MSIX {
             //End Resources element
             m_xmlWriter.CloseElement(); 
         }
-        return S_OK;
-    }*/
+    }
 
     void BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {

@@ -38,7 +38,7 @@ namespace MSIX {
         void BundleManifestWriter::WriteIdentityElement(std::string name, std::string publisher, UINT64 version);
         void BundleManifestWriter::StartPackagesElement();
         void BundleManifestWriter::WritePackageElement(PackageInfo packageInfo);
-        //void BundleManifestWriter::WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources);
+        void BundleManifestWriter::WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources);
         void BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
         void BundleManifestWriter::EndPackagesElement();
         void BundleManifestWriter::Close();
