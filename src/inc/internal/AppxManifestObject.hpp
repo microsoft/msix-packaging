@@ -356,8 +356,10 @@ namespace MSIX {
         HRESULT STDMETHODCALLTYPE GetApplications(IAppxManifestApplicationsEnumerator **applications) noexcept override;
         HRESULT STDMETHODCALLTYPE GetStream(IStream **manifestStream) noexcept override;
 
-        // IAppxManifestReader3
+        // IAppxManifestReader2
         HRESULT STDMETHODCALLTYPE GetQualifiedResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept override;
+                
+        // IAppxManifestReader3
         HRESULT STDMETHODCALLTYPE GetCapabilitiesByCapabilityClass(
             APPX_CAPABILITY_CLASS_TYPE capabilityClass,
             IAppxManifestCapabilitiesEnumerator **capabilities) noexcept override;

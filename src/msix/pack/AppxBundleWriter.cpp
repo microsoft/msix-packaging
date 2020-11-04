@@ -15,12 +15,6 @@
 #include "FileNameValidation.hpp"
 #include "StringHelper.hpp"
 
-#include <string>
-#include <memory>
-#include <future>
-#include <algorithm>
-#include <functional>
-
 #include <zlib.h>
 
 namespace MSIX {

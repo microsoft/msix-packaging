@@ -20,7 +20,6 @@
 #include "AppxPackageWriter.hpp"
 #include "AppxBundleWriter.hpp"
 #include "ScopeExit.hpp"
-#include "MSIXWindows.hpp"
 #include "GeneralUtil.hpp"
 
 #ifndef WIN32

@@ -10,8 +10,6 @@
 #include "BundleManifestWriter.hpp"
 
 #include <map>
-#include <memory>
-#include <future>
 
 namespace MSIX {
 

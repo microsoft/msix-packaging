@@ -212,7 +212,6 @@ struct Invocation
         return opt->params[0];
     }
 
-
 private:
     mutable std::string error;
     std::string         toolName;

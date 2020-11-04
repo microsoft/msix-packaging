@@ -354,7 +354,7 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    // IAppxManifestReader3 
+    // IAppxManifestReader2 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetQualifiedResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept
     {
         ThrowErrorIf(Error::InvalidParameter, (resources == nullptr || *resources != nullptr), "bad pointer");
@@ -384,6 +384,7 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     }
 
+    // IAppxManifestReader3
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetCapabilitiesByCapabilityClass(
         APPX_CAPABILITY_CLASS_TYPE capabilityClass,
         IAppxManifestCapabilitiesEnumerator **capabilities) noexcept
