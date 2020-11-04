@@ -2,7 +2,12 @@
 
 namespace MSIX {
 
-    BundleWriterHelper::BundleWriterHelper() {}
+    BundleWriterHelper::BundleWriterHelper() 
+    {
+        this->bundleVersion = 0;
+        this->hasExternalPackages = false;
+        this->hasDefaultOrNeutralResources = false;
+    }
 
     std::uint64_t BundleWriterHelper::GetStreamSize(IStream* stream)
     {
@@ -207,7 +212,17 @@ namespace MSIX {
     void BundleWriterHelper::EndBundleManifest()
     {
         std::string targetXmlNamespace = "http://schemas.microsoft.com/appx/2013/bundle";
-        //TODO: Compute and assign Namespace for neutral resources or optional bundles
+        bool isPre2018BundleManifest = true;
+        
+        //TODO: Only use new 2018 bundle schema if the bundle contains more than 1 neutral app packages
+        if (this->hasDefaultOrNeutralResources)
+        {
+            targetXmlNamespace = "http://schemas.microsoft.com/appx/2017/bundle";
+        }
+        else if ((this->optionalBundles.size() > 0) || this->hasExternalPackages)
+        {
+            targetXmlNamespace = "http://schemas.microsoft.com/appx/2016/bundle";
+        }
 
         m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, this->mainPackageName,
             this->mainPackagePublisher, this->bundleVersion);

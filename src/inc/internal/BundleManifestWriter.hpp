@@ -28,6 +28,15 @@ namespace MSIX {
         ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfs;
     };
 
+    struct OptionalBundleInfo
+    {
+        std::string name;
+        std::string publisher;
+        std::uint64_t version;
+        std::string fileName;
+        std::vector<PackageInfo> optionalPackages;
+    };
+
     class BundleManifestWriter final
     {
     public:
@@ -44,7 +53,8 @@ namespace MSIX {
         void BundleManifestWriter::Close();
 
         ComPtr<IStream> GetStream() { return m_xmlWriter.GetStream(); }
-        std::string GetQualifiedName(std::string namespaceAlias);
+        std::string GetQualifiedName(std::string namespaceAlias, std::string name);
+        std::string BundleManifestWriter::GetElementName(std::string targetNamespace, std::string targetNamespaceAlias, std::string name);
 
     protected:
         XmlWriter m_xmlWriter;

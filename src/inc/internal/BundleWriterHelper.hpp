@@ -69,6 +69,7 @@ namespace MSIX {
     
     private:
         std::vector<PackageInfo> payloadPackages;
+        std::map<std::string, OptionalBundleInfo> optionalBundles;
         bool hasExternalPackages;
         bool hasDefaultOrNeutralResources;
         std::string mainPackageName;

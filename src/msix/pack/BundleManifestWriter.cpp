@@ -29,8 +29,8 @@ namespace MSIX {
     static const char* resourcesManifestElement = "Resources";
     static const char* resourceManifestElement = "Resource";
     static const char* resourceLanguageAttribute = "Language";
-    static const char* dependenciesManifestElement = "Dependencies";
-    static const char* targetDeviceFamilyManifestElement = "TargetDeviceFamily";
+    static const char* dependenciesManifestElementWithoutPrefix = "Dependencies";
+    static const char* targetDeviceFamilyManifestElementWithoutPrefix = "TargetDeviceFamily";
     static const char* tdfNameAttribute = "Name";
     static const char* tdfMinVersionAttribute = "MinVersion";
     static const char* tdfMaxVersionTestedAttribute = "MaxVersionTested";
@@ -65,10 +65,10 @@ namespace MSIX {
         m_xmlWriter.AddAttribute(xmlnsAttribute, this->targetXmlNamespace);
         m_xmlWriter.AddAttribute(schemaVersionAttribute, Win2019SchemaVersion);
 
-        std::string bundle2018QName = GetQualifiedName(Namespace2018Alias);
+        std::string bundle2018QName = GetQualifiedName(xmlnsAttribute, Namespace2018Alias);
         m_xmlWriter.AddAttribute(bundle2018QName, Namespace2018);
 
-        std::string bundle2019QName = GetQualifiedName(Namespace2019Alias);
+        std::string bundle2019QName = GetQualifiedName(xmlnsAttribute, Namespace2019Alias);
         m_xmlWriter.AddAttribute(bundle2019QName, Namespace2019);
 
         std::string ignorableNamespaces;
@@ -196,7 +196,8 @@ namespace MSIX {
 
         if (hasNext)
         {
-            m_xmlWriter.StartElement(dependenciesManifestElement);
+            std::string dependencyQName = GetElementName(Namespace2018, Namespace2018Alias, dependenciesManifestElementWithoutPrefix);
+            m_xmlWriter.StartElement(dependencyQName);
 
             while (hasNext)
             {
@@ -204,7 +205,8 @@ namespace MSIX {
                 ThrowHrIfFailed(tdfs->GetCurrent(&tdf));
 
                 //Start TargetDeviceFamily manifest element
-                m_xmlWriter.StartElement(targetDeviceFamilyManifestElement);
+                std::string tdfQName = GetElementName(Namespace2018, Namespace2018Alias, targetDeviceFamilyManifestElementWithoutPrefix);
+                m_xmlWriter.StartElement(tdfQName);
 
                 MSIX::Text<WCHAR> name;
                 ThrowHrIfFailed(tdf->GetName(&name));
@@ -235,11 +237,8 @@ namespace MSIX {
 
     void BundleManifestWriter::EndPackagesElement()
     {
-        //if (currentState == PackagesAdded)
-        //{
-            //Ends Packages Element if a package has been added
-            m_xmlWriter.CloseElement();
-        //}
+        //TODO:: Main state to check if package is added and close only if
+        m_xmlWriter.CloseElement();
     }
 
     void BundleManifestWriter::Close()
@@ -248,14 +247,27 @@ namespace MSIX {
         m_xmlWriter.CloseElement();
     }
 
-    std::string BundleManifestWriter::GetQualifiedName(std::string namespaceAlias)
+    std::string BundleManifestWriter::GetElementName(std::string targetNamespace, std::string targetNamespaceAlias, std::string name)
     {
-        std::string output;
-        output.append(xmlnsAttribute);
-        output.append(xmlNamespaceDelimiter);
-        output.append(namespaceAlias);
-        return output;
+        std::string qualifiedName;
+        if ((this->targetXmlNamespace.compare(targetNamespace) != 0) && (!targetNamespaceAlias.empty()))
+        {
+            qualifiedName = GetQualifiedName(targetNamespaceAlias, name);
+        }
+        else
+        {
+            qualifiedName = name;
+        }
+        return qualifiedName;
     }
 
+    std::string BundleManifestWriter::GetQualifiedName(std::string namespaceAlias, std::string name)
+    {
+        std::string output;
+        output.append(namespaceAlias);
+        output.append(xmlNamespaceDelimiter);
+        output.append(name);
+        return output;
+    }
 }
 
