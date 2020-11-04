@@ -1769,8 +1769,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     char* outputPackage
 ) noexcept;
 
-#endif // MSIX_PACK
-
 MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     MSIX_BUNDLE_OPTIONS bundleOptions,
     char* directoryPath,
@@ -1778,6 +1776,8 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     char* mappingFile,
     char* version
 ) noexcept;
+
+#endif // MSIX_PACK
 
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying
 // their allocator/de-allocator pair of preference. Failure to do this will result on E_UNEXPECTED.

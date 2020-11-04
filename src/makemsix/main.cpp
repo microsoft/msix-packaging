@@ -657,8 +657,8 @@ int main(int argc, char* argv[])
         CreateUnbundleCommand(),
         #ifdef MSIX_PACK
         CreatePackCommand(),
-        #endif
         CreateBundleCommand(),
+        #endif
     };
 
     // Help command is always last

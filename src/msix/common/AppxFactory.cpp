@@ -90,13 +90,13 @@ namespace MSIX {
     {
         THROW_IF_BUNDLE_NOT_ENABLED
         ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || bundleWriter == nullptr || *bundleWriter != nullptr), "Invalid parameter");
-        //#ifdef MSIX_PACK 
+        #ifdef MSIX_PACK 
         ComPtr<IMsixFactory> self;
         ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         auto zip = ComPtr<IZipWriter>::Make<ZipObjectWriter>(outputStream);
         auto result = ComPtr<IAppxBundleWriter>::Make<AppxBundleWriter>(self.Get(), zip, bundleVersion);
         *bundleWriter = result.Detach();
-        //#endif
+        #endif
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 

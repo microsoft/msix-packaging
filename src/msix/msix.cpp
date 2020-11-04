@@ -291,8 +291,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
-#endif // MSIX_PACK
-
 MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     MSIX_BUNDLE_OPTIONS bundleOptions,
     char* directoryPath,
@@ -398,4 +396,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     return static_cast<HRESULT>(MSIX::Error::OK);
 
 } CATCH_RETURN();
+
+#endif // MSIX_PACK
 
