@@ -972,6 +972,31 @@ enum tagLOCKTYPE
     };
 #endif 	/* __IAppxBundleWriter_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxBundleWriter4_INTERFACE_DEFINED__
+#define __IAppxBundleWriter4_INTERFACE_DEFINED__
+
+    // {9CD9D523-5009-4C01-9882-DC029FBD47A3}
+    MSIX_INTERFACE(IAppxBundleWriter4,0x9cd9d523,0x5009,0x4c01,0x98,0x82,0xdc,0x02,0x9f,0xbd,0x47,0xa3);
+    interface IAppxBundleWriter4 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadPackage(
+            /* [string][in] */  LPCWSTR   fileName,
+            /* [in] */  IStream*  packageStream,
+            /* [in] */  BOOL      isDefaultApplicablePackage)  noexcept = 0;
+
+        virtual HRESULT AddPackageReference(
+            /* [string][in] */  LPCWSTR   fileName,
+            /* [in] */  IStream*  inputStream,
+            /* [in] */  BOOL      isDefaultApplicablePackage) noexcept = 0;
+
+        virtual HRESULT AddExternalPackageReference(
+            /* [string][in] */  LPCWSTR   fileName,
+            /* [in] */  IStream*  inputStream,
+            /* [in] */  BOOL      isDefaultApplicablePackage) noexcept = 0;
+    };
+#endif 	/* __IAppxBundleWriter4_INTERFACE_DEFINED__ */
+
 #ifndef __IAppxBundleReader_INTERFACE_DEFINED__
 #define __IAppxBundleReader_INTERFACE_DEFINED__
 
