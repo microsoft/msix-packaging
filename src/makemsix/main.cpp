@@ -583,7 +583,6 @@ Command CreatePackCommand()
 
     return result;
 }
-#endif
 
 Command CreateBundleCommand()
 {
@@ -643,6 +642,8 @@ Command CreateBundleCommand()
 
     return result;
 }
+
+#endif
 
 #pragma endregion
 
