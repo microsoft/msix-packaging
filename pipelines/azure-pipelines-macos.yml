@@ -119,41 +119,41 @@ jobs:
       ArtifactName: $(_artifact)
     condition: succeededOrFailed()
 
-- job: macOS_universal_nopack
-  dependsOn:
-    - 'macOS'
-  pool:
-    name: Azure Pipelines
-    vmImage: macOS-latest
-  steps:
-    - template: templates/macos-universal.yml
-      parameters:
-        artifact_output: MACOS-Universal
-        artifact_x86: MACOS
-        artifact_arm64: MACOSarm64
+#- job: macOS_universal_nopack
+#  dependsOn:
+#    - 'macOS'
+#  pool:
+#    name: Azure Pipelines
+#    vmImage: macOS-latest
+#  steps:
+#    - template: templates/macos-universal.yml
+#      parameters:
+#        artifact_output: MACOS-Universal
+#        artifact_x86: MACOS
+#        artifact_arm64: MACOSarm64
 
-- job: macOS_universal_nobundle
-  dependsOn:
-    - 'macOS'
-  pool:
-    name: Azure Pipelines
-    vmImage: macOS-latest
-  steps:
-    - template: templates/macos-universal.yml
-      parameters:
-        artifact_output: MACOS-nobundle-Universal
-        artifact_x86: MACOS-nobundle
-        artifact_arm64: MACOSarm64-nobundle
+#- job: macOS_universal_nobundle
+#  dependsOn:
+#    - 'macOS'
+#  pool:
+#    name: Azure Pipelines
+#    vmImage: macOS-latest
+#  steps:
+#    - template: templates/macos-universal.yml
+#      parameters:
+#        artifact_output: MACOS-nobundle-Universal
+#        artifact_x86: MACOS-nobundle
+#        artifact_arm64: MACOSarm64-nobundle
 
-- job: macOS_universal_pack
-  dependsOn:
-    - 'macOS'
-  pool:
-    name: Azure Pipelines
-    vmImage: macOS-latest
-  steps:
-    - template: templates/macos-universal.yml
-      parameters:
-        artifact_output: MACOS-pack-Universal
-        artifact_x86: MACOS-pack
-        artifact_arm64: MACOSarm64-pack
+#- job: macOS_universal_pack
+#  dependsOn:
+#    - 'macOS'
+#  pool:
+#    name: Azure Pipelines
+#    vmImage: macOS-latest
+#  steps:
+#    - template: templates/macos-universal.yml
+#      parameters:
+#        artifact_output: MACOS-pack-Universal
+#        artifact_x86: MACOS-pack
+#        artifact_arm64: MACOSarm64-pack
