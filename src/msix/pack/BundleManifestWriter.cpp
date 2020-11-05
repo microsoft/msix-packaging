@@ -213,13 +213,13 @@ namespace MSIX {
                 m_xmlWriter.AddAttribute(tdfNameAttribute, wstring_to_utf8(name.Get()));
 
                 //Get minversion
-                std::uint64_t minVersion;
+                UINT64 minVersion;
                 ThrowHrIfFailed(tdf->GetMinVersion(&minVersion));
                 std::string minVerionString = MSIX::ConvertVersionToString(minVersion);
                 m_xmlWriter.AddAttribute(tdfMinVersionAttribute, minVerionString);
 
                 //Get maxversiontested
-                std::uint64_t maxVersionTested;
+                UINT64 maxVersionTested;
                 ThrowHrIfFailed(tdf->GetMaxVersionTested(&maxVersionTested));
                 std::string maxVersionTestedString = MSIX::ConvertVersionToString(maxVersionTested);
                 m_xmlWriter.AddAttribute(tdfMaxVersionTestedAttribute, maxVersionTestedString);

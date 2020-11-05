@@ -44,7 +44,7 @@ namespace MSIX {
         void StartBundleManifest(std::string targetXmlNamespace, 
             std::string name, std::string publisher, UINT64 version);
         void StartBundleElement();
-        void WriteIdentityElement(std::string name, std::string publisher, UINT64 version);
+        void WriteIdentityElement(std::string name, std::string publisher, std::uint64_t version);
         void StartPackagesElement();
         void WritePackageElement(PackageInfo packageInfo);
         void WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources);
