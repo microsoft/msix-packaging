@@ -335,11 +335,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
         //TODO: Process option for verbose
     }
 
-    //Process output option
-    if(MSIX::PathIsExistingFolder(outputBundle))
-    {
-        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "The output path can't be an existing folder.");
-    }
+    //TODO: Error if outputBundle is an existing directory
 
     //Process Input options
     if(directoryPath == nullptr && mappingFile == nullptr)
@@ -350,13 +346,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     {
         ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You can't specify both a content directory (-d) and a mapping file (-f).");
     }
-    else if(directoryPath != nullptr)
-    {
-        if(MSIX::PathIsExistingFile(directoryPath))
-        {
-            ThrowErrorAndLog(MSIX::Error::InvalidParameter, "The content directory can't be a file.");
-        }
-    }
+    //TODO:: Error if directoryPath is a file
 
     MSIX::ComPtr<IDirectoryObject> from;
     if(directoryPath != nullptr && outputBundle != nullptr)

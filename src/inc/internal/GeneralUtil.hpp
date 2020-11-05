@@ -24,10 +24,5 @@ namespace MSIX {
     std::uint64_t ConvertVersionStringToUint64(const std::string& versionString);
 
     std::string ConvertVersionToString(std::uint64_t version);
-
-    bool PathIsExistingFolder(std::string path);
-
-    bool PathIsExistingFile(std::string path);
-
 }
 
