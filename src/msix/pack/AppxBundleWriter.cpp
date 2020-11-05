@@ -14,6 +14,8 @@
 #include "ScopeExit.hpp"
 #include "FileNameValidation.hpp"
 #include "StringHelper.hpp"
+#include <ctime>
+#include <iomanip>
 
 #include <zlib.h>
 
@@ -25,13 +27,12 @@ namespace MSIX {
         m_state = WriterState::Open;
         if(bundleVersion == 0)
         {
-            SYSTEMTIME time = {0};
-            GetSystemTime(&time);
-
             // The generated version number has the format: YYYY.MMDD.hhmm.0
-            this->m_bundleWriterHelper.SetBundleVersion((static_cast<std::uint64_t>(time.wYear) << 48) |
-                (static_cast<std::uint64_t>(time.wMonth * 100 + time.wDay) << 32) |
-                (static_cast<std::uint64_t>(time.wHour * 100 + time.wMinute) << 16));
+            std::time_t t = std::time(nullptr);
+            std::tm tm = *std::gmtime(&t);
+            std::stringstream ss;
+            ss << std::put_time(&tm, "%Y.%m%d.%H%M.0");
+            this->m_bundleWriterHelper.SetBundleVersion(ConvertVersionStringToUint64(ss.str()));
         }
         else
         {

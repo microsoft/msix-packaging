@@ -42,7 +42,7 @@ namespace MSIX {
     public:
         BundleManifestWriter();
         void StartBundleManifest(std::string targetXmlNamespace, 
-            std::string name, std::string publisher, UINT64 version);
+            std::string name, std::string publisher, std::uint64_t version);
         void StartBundleElement();
         void WriteIdentityElement(std::string name, std::string publisher, std::uint64_t version);
         void StartPackagesElement();
