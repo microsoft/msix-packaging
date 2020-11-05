@@ -41,20 +41,20 @@ namespace MSIX {
     {
     public:
         BundleManifestWriter();
-        void BundleManifestWriter::StartBundleManifest(std::string targetXmlNamespace, 
+        void StartBundleManifest(std::string targetXmlNamespace, 
             std::string name, std::string publisher, UINT64 version);
-        void BundleManifestWriter::StartBundleElement();
-        void BundleManifestWriter::WriteIdentityElement(std::string name, std::string publisher, UINT64 version);
-        void BundleManifestWriter::StartPackagesElement();
-        void BundleManifestWriter::WritePackageElement(PackageInfo packageInfo);
-        void BundleManifestWriter::WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources);
-        void BundleManifestWriter::WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
-        void BundleManifestWriter::EndPackagesElement();
-        void BundleManifestWriter::Close();
+        void StartBundleElement();
+        void WriteIdentityElement(std::string name, std::string publisher, UINT64 version);
+        void StartPackagesElement();
+        void WritePackageElement(PackageInfo packageInfo);
+        void WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources);
+        void WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
+        void EndPackagesElement();
+        void Close();
 
         ComPtr<IStream> GetStream() { return m_xmlWriter.GetStream(); }
         std::string GetQualifiedName(std::string namespaceAlias, std::string name);
-        std::string BundleManifestWriter::GetElementName(std::string targetNamespace, std::string targetNamespaceAlias, std::string name);
+        std::string GetElementName(std::string targetNamespace, std::string targetNamespaceAlias, std::string name);
 
     protected:
         XmlWriter m_xmlWriter;
