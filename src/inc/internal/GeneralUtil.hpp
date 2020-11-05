@@ -1,7 +1,6 @@
 #pragma once
 
 #include "MSIXWindows.hpp"
-#include "Windows.h"
 #include "UnicodeConversion.hpp"
 
 namespace MSIX {

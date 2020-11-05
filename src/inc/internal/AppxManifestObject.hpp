@@ -320,7 +320,7 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::NotImplemented);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL *dxFeatureLevel) override try
+        HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL *dxFeatureLevel) noexcept override try
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         } CATCH_RETURN();
