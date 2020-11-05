@@ -130,7 +130,7 @@ namespace MSIX {
         ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream, &reader));
 
         std::uint64_t packageStreamSize = this->m_bundleWriterHelper.GetStreamSize(packageStream);
-        
+                
         this->m_bundleWriterHelper.AddPackage(fileName, reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage);
     }
 

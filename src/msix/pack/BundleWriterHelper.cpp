@@ -12,7 +12,7 @@ namespace MSIX {
     std::uint64_t BundleWriterHelper::GetStreamSize(IStream* stream)
     {
         STATSTG stat;
-        ThrowHrIfFailed(stream->Stat(&stat, STATFLAG_NONAME));
+        ThrowHrIfFailed(stream->Stat(&stat, 1));
 
         return stat.cbSize.QuadPart;
     }
