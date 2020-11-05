@@ -174,7 +174,9 @@ namespace MSIX {
         PackageInfo packageInfo;
         packageInfo.type = packageType;
         packageInfo.architecture = innerPackageIdInternal->GetArchitecture();
-        ThrowHrIfFailed(packageId->GetVersion(&packageInfo.version));
+        UINT64 version;
+        ThrowHrIfFailed(packageId->GetVersion(&version));
+        packageInfo.version = version;
         packageInfo.resourceId = innerPackageIdInternal->GetResourceId();
         packageInfo.isDefaultApplicablePackage = isDefaultApplicablePackage;
         packageInfo.resources = resources;
