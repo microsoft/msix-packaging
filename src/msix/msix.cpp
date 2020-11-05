@@ -310,7 +310,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
         bundleVersion = MSIX::ConvertVersionStringToUint64(version);
     }
 
-    if ((bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_OVERWRITE) && (bundleOptions && MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NOOVERWRITE))
+    if ((bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_OVERWRITE) && (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NOOVERWRITE))
     {
         ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You can't specify options -o and -no at the same time.");
     }
