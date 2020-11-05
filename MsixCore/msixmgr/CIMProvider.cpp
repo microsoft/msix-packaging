@@ -77,14 +77,14 @@ namespace MsixCoreLib
 
     HRESULT MountCIM(
         std::wstring cimFilePath,
-        GUID volumeId)
+        std::wstring& volumeId)
     {
         CreateCIMDll createCIM;
         RETURN_IF_FAILED(createCIM.load());
 
         typedef HRESULT(STDMETHODCALLTYPE *MOUNTCIM)(
             std::wstring cimFilePath,
-            GUID volumeId);
+            std::wstring& volumeId);
 
         MOUNTCIM MountCIMFunc =
             reinterpret_cast<MOUNTCIM>
@@ -96,19 +96,21 @@ namespace MsixCoreLib
     }
 
     HRESULT UnmountCIM(
-        GUID volumeId)
+        _In_opt_ std::wstring cimFilePath,
+        _In_opt_ std::wstring volumeIdString)
     {
         CreateCIMDll createCIM;
         RETURN_IF_FAILED(createCIM.load());
 
         typedef HRESULT(STDMETHODCALLTYPE *UNMOUNTCIM)(
-            GUID volumeId);
+            std::wstring cimFilePath,
+            std::wstring volumeIdString);
 
         UNMOUNTCIM UnmountCIMFunc =
             reinterpret_cast<UNMOUNTCIM>
             (GetProcAddress(createCIM.get(), "UnmountCIM"));
 
-        RETURN_IF_FAILED(UnmountCIMFunc(volumeId));
+        RETURN_IF_FAILED(UnmountCIMFunc(cimFilePath, volumeIdString));
 
         return S_OK;
     }

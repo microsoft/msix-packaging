@@ -250,19 +250,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 }),
             },
             {
-                L"-volumeId",
-                Option(true, IDS_STRING_HELP_OPTION_MOUNTIMAGE_VOLUMEID,
-                    [&](CommandLineInterface* commandLineInterface, const std::string& volumeId)
-                {
-                    if (commandLineInterface->m_operationType != OperationType::MountImage)
-                    {
-                        return E_INVALIDARG;
-                    }
-                    commandLineInterface->m_volumeId = utf8_to_utf16(volumeId);
-                    return S_OK;
-                }),
-            },
-            {
                 L"-fileType",
                 Option(true, IDS_STRING_HELP_OPTION_MOUNT_FILETYPE,
                     [&](CommandLineInterface* commandLineInterface, const std::string& fileType)
