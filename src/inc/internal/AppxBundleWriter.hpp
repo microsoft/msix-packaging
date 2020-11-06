@@ -14,10 +14,6 @@
 #include "BundleManifestWriter.hpp"
 #include "AppxPackageInfo.hpp"
 
-#include <map>
-#include <memory>
-#include <future>
-
 // internal interface
 // {ca90bcd9-78a2-4773-820c-0b687de49f99}
 #ifndef WIN32

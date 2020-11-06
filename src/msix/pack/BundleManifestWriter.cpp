@@ -8,6 +8,8 @@
 #include "Crypto.hpp"
 #include "StringHelper.hpp"
 
+#include "AppxManifestObject.hpp"
+
 #include <vector>
 
 namespace MSIX {
@@ -169,11 +171,11 @@ namespace MSIX {
                 //Start Resource element
                 m_xmlWriter.StartElement(resourceManifestElement);
 
-                MSIX::Text<WCHAR> languageString;
-                ThrowHrIfFailed(resource->GetLanguage(&languageString));
-                if (languageString.Get() != nullptr)
+                auto qualifiedResourceInternal = resource.As<IAppxManifestQualifiedResourceInternal>();
+                std::string languageString = qualifiedResourceInternal->GetLanguage();
+                if (!languageString.empty())
                 {
-                    m_xmlWriter.AddAttribute(resourceLanguageAttribute, wstring_to_utf8(languageString.Get()));
+                    m_xmlWriter.AddAttribute(resourceLanguageAttribute, languageString);
                 }
 
                 //TODO:: Write scale and dxfeaturelevel attributes
@@ -208,9 +210,9 @@ namespace MSIX {
                 std::string tdfQName = GetElementName(Namespace2018, Namespace2018Alias, targetDeviceFamilyManifestElementWithoutPrefix);
                 m_xmlWriter.StartElement(tdfQName);
 
-                MSIX::Text<WCHAR> name;
-                ThrowHrIfFailed(tdf->GetName(&name));
-                m_xmlWriter.AddAttribute(tdfNameAttribute, wstring_to_utf8(name.Get()));
+                auto targetDeviceFamilyInternal = tdf.As<IAppxManifestTargetDeviceFamilyInternal>();
+                std::string name = targetDeviceFamilyInternal->GetName();
+                m_xmlWriter.AddAttribute(tdfNameAttribute, name);
 
                 //Get minversion
                 UINT64 minVersion;
