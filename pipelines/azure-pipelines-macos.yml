@@ -50,21 +50,21 @@ jobs:
         _arguments: -b Debug --pack
         _artifact: MACOSchk-pack
       # arm64
-      debug_nopack_arm64:
-        _arguments: -b Debug -arch arm64 --skip-tests
-        _artifact: MACOSarm64chk
-      release_nopack_arm64:
-        _arguments: -b MinSizeRel -arch arm64 --skip-tests
-        _artifact: MACOSarm64
-      release_nobundle_arm64:
-        _arguments: -b MinSizeRel -sb -arch arm64 --skip-tests
-        _artifact: MACOSarm64-nobundle
-      release_pack_arm64:
-        _arguments: -b MinSizeRel --pack -arch arm64 --skip-tests
-        _artifact: MACOSarm64-pack
-      debug_pack_arm64:
-        _arguments: -b Debug --pack -arch arm64 --skip-tests
-        _artifact: MACOSarm64chk-pack
+      #debug_nopack_arm64:
+      #  _arguments: -b Debug -arch arm64 --skip-tests
+      #  _artifact: MACOSarm64chk
+      #release_nopack_arm64:
+      #  _arguments: -b MinSizeRel -arch arm64 --skip-tests
+      #  _artifact: MACOSarm64
+      #release_nobundle_arm64:
+      #  _arguments: -b MinSizeRel -sb -arch arm64 --skip-tests
+      #  _artifact: MACOSarm64-nobundle
+      #release_pack_arm64:
+      #  _arguments: -b MinSizeRel --pack -arch arm64 --skip-tests
+      #  _artifact: MACOSarm64-pack
+      #debug_pack_arm64:
+      #  _arguments: -b Debug --pack -arch arm64 --skip-tests
+      #  _artifact: MACOSarm64chk-pack
   steps:
 
   # Az Pipelines has Xcode 11.6 as default. For arm64, change to supported Xcode. 
@@ -119,41 +119,41 @@ jobs:
       ArtifactName: $(_artifact)
     condition: succeededOrFailed()
 
-- job: macOS_universal_nopack
-  dependsOn:
-    - 'macOS'
-  pool:
-    name: Azure Pipelines
-    vmImage: macOS-latest
-  steps:
-    - template: templates/macos-universal.yml
-      parameters:
-        artifact_output: MACOS-Universal
-        artifact_x86: MACOS
-        artifact_arm64: MACOSarm64
+#- job: macOS_universal_nopack
+#  dependsOn:
+#    - 'macOS'
+#  pool:
+#    name: Azure Pipelines
+#    vmImage: macOS-latest
+#  steps:
+#    - template: templates/macos-universal.yml
+#      parameters:
+#        artifact_output: MACOS-Universal
+#        artifact_x86: MACOS
+#        artifact_arm64: MACOSarm64
 
-- job: macOS_universal_nobundle
-  dependsOn:
-    - 'macOS'
-  pool:
-    name: Azure Pipelines
-    vmImage: macOS-latest
-  steps:
-    - template: templates/macos-universal.yml
-      parameters:
-        artifact_output: MACOS-nobundle-Universal
-        artifact_x86: MACOS-nobundle
-        artifact_arm64: MACOSarm64-nobundle
+#- job: macOS_universal_nobundle
+#  dependsOn:
+#    - 'macOS'
+#  pool:
+#    name: Azure Pipelines
+#    vmImage: macOS-latest
+#  steps:
+#    - template: templates/macos-universal.yml
+#      parameters:
+#        artifact_output: MACOS-nobundle-Universal
+#        artifact_x86: MACOS-nobundle
+#        artifact_arm64: MACOSarm64-nobundle
 
-- job: macOS_universal_pack
-  dependsOn:
-    - 'macOS'
-  pool:
-    name: Azure Pipelines
-    vmImage: macOS-latest
-  steps:
-    - template: templates/macos-universal.yml
-      parameters:
-        artifact_output: MACOS-pack-Universal
-        artifact_x86: MACOS-pack
-        artifact_arm64: MACOSarm64-pack
+#- job: macOS_universal_pack
+#  dependsOn:
+#    - 'macOS'
+#  pool:
+#    name: Azure Pipelines
+#    vmImage: macOS-latest
+#  steps:
+#    - template: templates/macos-universal.yml
+#      parameters:
+#        artifact_output: MACOS-pack-Universal
+#        artifact_x86: MACOS-pack
+#        artifact_arm64: MACOSarm64-pack

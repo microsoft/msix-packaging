@@ -13,7 +13,7 @@ namespace MSIX {
     {
         static bool IsFileNameValid(const std::string& name);
         static bool IsIdentifierValid(const std::string& name);
-        static bool IsFootPrintFile(const std::string& fileName);
+        static bool IsFootPrintFile(const std::string& fileName, bool isBundle);
         static bool IsReservedFolder(const std::string& fileName);
     };
 }

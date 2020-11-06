@@ -11,6 +11,7 @@
 #include "VectorStream.hpp"
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
+#include "AppxBundleWriter.hpp"
 #include "ZipObjectWriter.hpp"
 
 #ifdef BUNDLE_SUPPORT
@@ -88,7 +89,15 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleWriter(IStream *outputStream, UINT64 bundleVersion, IAppxBundleWriter **bundleWriter) noexcept try
     {
         THROW_IF_BUNDLE_NOT_ENABLED
-        NOTIMPLEMENTED;
+        ThrowErrorIf(Error::InvalidParameter, (outputStream == nullptr || bundleWriter == nullptr || *bundleWriter != nullptr), "Invalid parameter");
+        #ifdef MSIX_PACK 
+        ComPtr<IMsixFactory> self;
+        ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
+        auto zip = ComPtr<IZipWriter>::Make<ZipObjectWriter>(outputStream);
+        auto result = ComPtr<IAppxBundleWriter>::Make<AppxBundleWriter>(self.Get(), zip, bundleVersion);
+        *bundleWriter = result.Detach();
+        #endif
+        return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxFactory::CreateBundleReader(IStream *inputStream, IAppxBundleReader **bundleReader) noexcept try

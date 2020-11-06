@@ -6,6 +6,7 @@
 #include <memory>
 #include <cstdlib>
 #include <functional>
+#include <map>
 
 #include "Exceptions.hpp"
 #include "FileStream.hpp"
@@ -17,7 +18,9 @@
 #include "AppxPackageObject.hpp"
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
+#include "AppxBundleWriter.hpp"
 #include "ScopeExit.hpp"
+#include "VersionHelpers.hpp"
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
@@ -288,4 +291,101 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
+MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
+    MSIX_BUNDLE_OPTIONS bundleOptions,
+    char* directoryPath,
+    char* outputBundle,
+    char* mappingFile,
+    char* version
+) noexcept try
+{
+    std::unique_ptr<std::map<std::string, std::string>> externalPackagesList;
+    std::uint64_t bundleVersion = 0;
+    bool flatBundle = false;
+    bool overWrite = false;
+
+    //Process Common Options
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERSION)
+    {
+        bundleVersion = MSIX::ConvertVersionStringToUint64(version);
+    }
+
+    if ((bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_OVERWRITE) && (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NOOVERWRITE))
+    {
+        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You can't specify options -o and -no at the same time.");
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_OVERWRITE)
+    {
+        overWrite = true;
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NOOVERWRITE)
+    {
+        overWrite = false;
+    }
+
+    if (0 == (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE))
+    {
+        flatBundle = true;
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
+    {
+        //TODO: Process option for verbose
+    }
+
+    //TODO: Error if outputBundle is an existing directory
+
+    //Process Input options
+    if(directoryPath == nullptr && mappingFile == nullptr)
+    {
+        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You must specify either a content directory (-d) or a mapping file (-f).");
+    }
+    else if(directoryPath != nullptr && mappingFile != nullptr)
+    {
+        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You can't specify both a content directory (-d) and a mapping file (-f).");
+    }
+    //TODO:: Error if directoryPath is a file
+
+    MSIX::ComPtr<IDirectoryObject> from;
+    if(directoryPath != nullptr && outputBundle != nullptr)
+    {
+        from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+    }
+    else if(mappingFile != nullptr && outputBundle != nullptr)
+    {
+        //Create from list from mapping file(Currently keeping it same as above, have to
+        //parse from mapping file into externalPackagesList)
+        from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+    }
+
+    auto deleteFile = MSIX::scope_exit([&outputBundle]
+    {
+        remove(outputBundle);
+    });
+
+    MSIX::ComPtr<IStream> stream;
+    ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &stream));
+
+    MSIX::ComPtr<IAppxBundleFactory> factory;
+    ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
+        MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, 
+        MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL,
+        &factory));
+
+    MSIX::ComPtr<IAppxBundleWriter> bundleWriter;
+    MSIX::ComPtr<IAppxBundleWriter4> bundleWriter4;
+
+    ThrowHrIfFailed(factory->CreateBundleWriter(stream.Get(), bundleVersion, &bundleWriter));
+    bundleWriter4 = bundleWriter.As<IAppxBundleWriter4>();
+
+    bundleWriter4.As<IBundleWriter>()->ProcessBundlePayload(from, flatBundle);
+    ThrowHrIfFailed(bundleWriter->Close());
+    deleteFile.release();
+    return static_cast<HRESULT>(MSIX::Error::OK);
+
+} CATCH_RETURN();
+
 #endif // MSIX_PACK
+

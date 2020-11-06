@@ -19,6 +19,7 @@ list(APPEND MSIX_UNPACK_EXPORTS
 if(MSIX_PACK)
     list(APPEND MSIX_PACK_EXPORTS
         "PackPackage"
+        "PackBundle"
     )
 endif()
 
@@ -130,6 +131,10 @@ if(MSIX_PACK)
         pack/ContentType.cpp
         pack/DeflateStream.cpp
         pack/ZipObjectWriter.cpp
+        pack/BundleManifestWriter.cpp
+        pack/BundleWriterHelper.cpp
+        pack/AppxBundleWriter.cpp
+        pack/VersionHelpers.cpp
     )
 endif()
 
@@ -224,7 +229,7 @@ endforeach()
 add_library(${PROJECT_NAME} SHARED 
     msix.cpp
     ${MsixSrc}
-)
+ )
 
 # Adding dependency to the third party libs directory
 add_dependencies(${PROJECT_NAME} LIBS)

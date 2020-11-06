@@ -135,4 +135,22 @@ namespace MSIX {
         // TODO: add other ones if needed, otherwise throw
         ThrowErrorAndLog(Error::NotSupported, "Payload file content type not found");
     }
+
+    const std::string ContentType::GetBundlePayloadFileContentType(APPX_BUNDLE_FOOTPRINT_FILE_TYPE footprintFile)
+    {
+        if (footprintFile == APPX_BUNDLE_FOOTPRINT_FILE_TYPE_MANIFEST)
+        {
+            return "application/vnd.ms-appx.bundlemanifest+xml";
+        }
+        if (footprintFile == APPX_BUNDLE_FOOTPRINT_FILE_TYPE_BLOCKMAP)
+        {
+            return "application/vnd.ms-appx.blockmap+xml";
+        }
+        if (footprintFile == APPX_BUNDLE_FOOTPRINT_FILE_TYPE_SIGNATURE)
+        {
+            return "application/vnd.ms-appx.signature";
+        }
+        // TODO: add other ones if needed, otherwise throw
+        ThrowErrorAndLog(Error::NotSupported, "Bundle Payload file content type not found");
+    }
 }

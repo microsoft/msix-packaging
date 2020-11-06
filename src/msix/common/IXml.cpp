@@ -28,6 +28,7 @@ static const char* attributeNames[] = {
     /* Package_Applications_Application_Id    */"Id",
     /* Category                               */"Category",
     /* MaxMajorVersionTested                  */"MaxMajorVersionTested",
+    /* DXFeatureLevel                         */"DXFeatureLevel",
 };
 
 #ifdef USING_MSXML

@@ -22,7 +22,7 @@ struct Invocation;
 struct Option
 {
     // Constructor for flags; they can't be required and don't take parameters.
-    Option(std::string name, std::string help) : 
+    Option(std::string name, std::string help) :
         Name(std::move(name)), Required(false), ParameterCount(0), Help(std::move(help))
     {}
 
@@ -418,6 +418,38 @@ MSIX_APPLICABILITY_OPTIONS GetApplicabilityOption(const Invocation& invocation)
     return applicability;
 }
 
+MSIX_BUNDLE_OPTIONS GetBundleOptions(const Invocation& invocation)
+{
+    MSIX_BUNDLE_OPTIONS bundleOptions = MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NONE;
+
+    if (invocation.IsOptionPresent("-v"))
+    {
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE;
+    }
+
+    if (invocation.IsOptionPresent("-o"))
+    {
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_OPTION_OVERWRITE;
+    }
+
+    if (invocation.IsOptionPresent("-no"))
+    {
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NOOVERWRITE;
+    }
+
+    if (invocation.IsOptionPresent("-bv"))
+    {
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERSION;
+    }
+
+    if (invocation.IsOptionPresent("-fb"))
+    {
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE;
+    }
+
+    return bundleOptions;
+}
+
 #pragma region Commands
 
 Command CreateHelpCommand(const std::vector<Command>& commands)
@@ -551,6 +583,66 @@ Command CreatePackCommand()
 
     return result;
 }
+
+Command CreateBundleCommand()
+{
+    Command result{ "bundle", "Create a new app bundle from files on disk",
+        {
+            Option{ "-d", "Input directory path.", false, 1, "inputDirectory" },
+            Option{ "-p", "Output bundle file path.", true, 1, "outputBundle" },
+            Option{ "-f", "Mapping file path.", false, 1, "mappingFile" },
+            Option{ "-bv", "Specifies the version number of the bundle being created. The version"
+                            "must be in dotted - quad notation of four integers"
+                            "<Major>.<Minor>.<Build>.<Revision> ranging from 0 to 65535 each.If the"
+                            "/ bv option is not specified or is set to 0.0.0.0, the bundle is created"
+                            "using the current date - time formatted as the version :"
+                            "<Year>.<Month - Day>.<Hour - Minute>.<Second - Millisecond>.", false, 1, "version" },
+            Option{ "-fb", "Generates a fully sparse bundle where all packages are references to"
+                           "packages that exist outside of the bundle file." },
+            Option{ "-o", "Forces the output to overwrite any existing files with the"
+                           "same name.By default, the user is asked whether to overwrite existing"
+                           "files with the same name.You can't use this option with /no." },
+            Option{ "-no","Prevents the output from overwriting any existing files"
+                           "with the same name.By default, the user is asked whether to overwrite"
+                           "existing files with the same name.You can't use this option with /o." },
+            Option{ "-v", "Enables verbose output of messages to the console."},
+            Option{ TOOL_HELP_COMMAND_STRING, "Displays this help text." },
+        }
+    };
+
+    result.SetDescription({
+        "Creates an app bundle at <output bundle name> by adding all files from",
+        "either <content directory>(including subfolders) or a list of files within"
+        "<mapping file>.If either source contains a bundle manifest, it will be"
+        "ignored."
+
+        "Using / p will result in the bundle being unencrypted, while using / ep will"
+        "result in the bundle being encrypted.If you use / ep you must specify"
+        "either / kt or /kf.",
+        });
+
+    result.SetInvocationFunc([](const Invocation& invocation)
+        {
+            char* directoryPath = (invocation.IsOptionPresent("-d")) ?
+                const_cast<char*>(invocation.GetOptionValue("-d").c_str()) : nullptr;
+
+            char* mappingFile = (invocation.IsOptionPresent("-f")) ?
+                const_cast<char*>(invocation.GetOptionValue("-f").c_str()) : nullptr;
+
+            char* version = (invocation.IsOptionPresent("-bv")) ?
+                const_cast<char*>(invocation.GetOptionValue("-bv").c_str()) : nullptr;
+
+            return PackBundle(
+                GetBundleOptions(invocation),
+                directoryPath,
+                const_cast<char*>(invocation.GetOptionValue("-p").c_str()),
+                mappingFile,
+                version);
+        });
+
+    return result;
+}
+
 #endif
 
 #pragma endregion
@@ -566,6 +658,7 @@ int main(int argc, char* argv[])
         CreateUnbundleCommand(),
         #ifdef MSIX_PACK
         CreatePackCommand(),
+        CreateBundleCommand(),
         #endif
     };
 

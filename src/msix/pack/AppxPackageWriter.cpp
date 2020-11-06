@@ -21,8 +21,6 @@
 #include <algorithm>
 #include <functional>
 
-#include <zlib.h>
-
 namespace MSIX {
 
     AppxPackageWriter::AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip) : m_factory(factory), m_zipWriter(zip)
@@ -44,7 +42,7 @@ namespace MSIX {
         {
             // If any footprint file is present, ignore it. We only require the AppxManifest.xml
             // and any other will be ignored and a new one will be created for the package. 
-            if(!(FileNameValidation::IsFootPrintFile(file.second) || FileNameValidation::IsReservedFolder(file.second)))
+            if(!(FileNameValidation::IsFootPrintFile(file.second, false) || FileNameValidation::IsReservedFolder(file.second)))
             {
                 std::string ext = Helper::tolower(file.second.substr(file.second.find_last_of(".") + 1));
                 auto contentType = ContentType::GetContentTypeByExtension(ext);
@@ -155,7 +153,7 @@ namespace MSIX {
         APPX_COMPRESSION_OPTION compressionOpt, const char* contentType)
     {
         ThrowErrorIfNot(Error::InvalidParameter, FileNameValidation::IsFileNameValid(name), "Invalid file name");
-        ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsFootPrintFile(name), "Trying to add footprint file to package");
+        ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsFootPrintFile(name, false), "Trying to add footprint file to package");
         ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsReservedFolder(name), "Trying to add file in reserved folder");
         ValidateCompressionOption(compressionOpt);
         AddFileToPackage(name, stream, compressionOpt != APPX_COMPRESSION_OPTION_NONE, true, contentType);
