@@ -14,6 +14,8 @@
 #include <memory>
 #include <utility>
 
+#include <zlib.h>
+
 // {350dd671-0c40-4cd7-9a5b-27456d604bd0}
 #ifndef WIN32
 interface IZipWriter : public IUnknown

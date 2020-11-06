@@ -20,7 +20,7 @@
 #include "AppxPackageWriter.hpp"
 #include "AppxBundleWriter.hpp"
 #include "ScopeExit.hpp"
-#include "GeneralUtil.hpp"
+#include "VersionHelpers.hpp"
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden

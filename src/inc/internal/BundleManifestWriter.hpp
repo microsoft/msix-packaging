@@ -8,7 +8,7 @@
 #include "ComHelper.hpp"
 #include "Exceptions.hpp"
 #include "UnicodeConversion.hpp"
-#include "GeneralUtil.hpp"
+#include "VersionHelpers.hpp"
 
 #include <vector>
 

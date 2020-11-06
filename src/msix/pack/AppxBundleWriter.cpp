@@ -17,8 +17,6 @@
 #include <ctime>
 #include <iomanip>
 
-#include <zlib.h>
-
 namespace MSIX {
 
     AppxBundleWriter::AppxBundleWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip, std::uint64_t bundleVersion)

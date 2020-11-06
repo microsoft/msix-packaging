@@ -21,8 +21,6 @@
 #include <algorithm>
 #include <functional>
 
-#include <zlib.h>
-
 namespace MSIX {
 
     AppxPackageWriter::AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip) : m_factory(factory), m_zipWriter(zip)
