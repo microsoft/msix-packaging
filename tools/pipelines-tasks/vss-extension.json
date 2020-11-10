@@ -3,7 +3,7 @@
   "id": "msix-ci-automation-task",
   "name":  "MSIX Packaging",
   "version":  "1.0.0",
-  "publisher":  "luchacon-test",
+  "publisher":  "MSIX",
   "targets":  [
     {
       "id":  "Microsoft.VisualStudio.Services"
@@ -15,6 +15,15 @@
   ],
   "icons":  {
     "default":  "images/extension-icon.png"
+  },
+  "content": {
+    "details": {
+        "path": "overview.md"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "uri": "https://github.com/microsoft/msix-packaging"
   },
   "files":  [
     {
@@ -28,6 +37,10 @@
     },
     {
       "path":  "MsixSigning"
+    },
+    {
+      "path":  "images/msix-packaging-ext",
+      "addressable":  true
     }
   ],
   "contributions":  [
