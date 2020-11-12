@@ -44,8 +44,8 @@ namespace MSIX {
         std::string removeLeadingWhitespace(std::string line);
         std::string removeTrailingWhitespace(std::string line);
 
+        int lineNumber;
         static const int NumKnownSections = 4;
-        //static const std::map<std::string, SectionID> KnownSectionNamesMap;
         std::map<std::string, std::string> list;
         bool foundSection[NumKnownSections];
         SectionID currentSectionId;

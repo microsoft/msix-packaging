@@ -15,32 +15,50 @@ namespace MSIX {
         if(mappingFileStream.is_open())
         {
             std::string currentLine;
-            while (std::getline(mappingFileStream, currentLine))
+            HandlerState state = Continue;
+            while ((state != Stop) && (state != Fail))
             {
-                std::string line = removeTrailingWhitespace(removeLeadingWhitespace(currentLine));
-                char firstChar = line[0];
-                switch(firstChar)
+                std::getline(mappingFileStream, currentLine);
+                this->lineNumber++;
+
+                if(!mappingFileStream.eof() && !currentLine.empty())
                 {
-                    case '[':
-                        ParseSectionHeading(line);
+                    std::string line = removeTrailingWhitespace(removeLeadingWhitespace(currentLine));
+                    char firstChar = line[0];
+                    switch(firstChar)
+                    {
+                        case '[':
+                            state = ParseSectionHeading(line);
+                            break;
 
-                    case '"':
-                        /*if (state != MappingFileParserHandler::SkipSection)
-                        {
-                            state = ParseMapping(currentLine, firstChar, handler);
-                        }*/
-                        break;
+                        case '"':
+                            if (state != SkipSection)
+                            {
+                                //state = ParseMapping(currentLine, firstChar, handler);
+                            }
+                            break;
                         
-                    case '\0': // line is empty
-                        break;
+                        case '\0': // line is empty
+                            break;
 
-                    default:
-                        break;
-
-                        //state = SendError(handler, currentLine, firstChar - currentLine + 1,
-                          //  MAKEAPPX_E_MAPPINGFILE_EXPECT_CHAR_2, L'[', L'\"');
+                        default:
+                            break; // remove this
+                            //state = SendError(handler, currentLine, firstChar - currentLine + 1,
+                            //  MAKEAPPX_E_MAPPINGFILE_EXPECT_CHAR_2, L'[', L'\"');
+                    }
+                }
+                else // reached end of file
+                {
+                    state = Stop;
                 }
             }
+
+            if (state == Fail)
+            {
+                //Log::WriteError(false, MAKEAPPX_E_MAPPINGFILE_BAD_LINE, lineNumber);
+                //RETURN_HR(HRESULT_FROM_WIN32(ERROR_BAD_FORMAT));
+            }
+
             mappingFileStream.close();
         }
         else
@@ -48,18 +66,6 @@ namespace MSIX {
             //error
         }
     }
-
-    std::string MappingFileParser::removeLeadingWhitespace(std::string line)
-    {
-	    size_t start = line.find_first_not_of(WHITESPACE);
-	    return (start == std::string::npos) ? "" : line.substr(start);
-    }
-
-    std::string MappingFileParser::removeTrailingWhitespace(std::string line)
-    {
-	    size_t end = line.find_last_not_of(WHITESPACE);
-	    return (end == std::string::npos) ? "" : line.substr(0, end + 1);
-    } 
 
     HandlerState MappingFileParser::ParseSectionHeading(std::string line)
     {
@@ -71,6 +77,7 @@ namespace MSIX {
         }
         else
         {
+            //ThrowErrorAndLog(Error::AppxManifestSemanticError, "The package is not valid in the bundle because its manifest does not declare any Application elements.");
             //Log::WriteError(false, MAKEAPPX_E_MAPPINGFILE_PARSE, lineNumber, columnNumber, reason);
             //return SendError(handler, line, lastChar - line + 1, MAKEAPPX_E_MAPPINGFILE_EXPECT_CHAR, L']');
             return Fail;
@@ -95,7 +102,6 @@ namespace MSIX {
                 return Continue;
             }
         }
-        
         //Log::WriteWarning(false, MAKEAPPX_W_MAPPINGFILE_UNKNOWN_SECTION, name.chars, lineNumber);
         return SkipSection;
     }
@@ -115,5 +121,17 @@ namespace MSIX {
     bool MappingFileParser::IsSectionFound(SectionID sectionId)
     {
         return this->foundSection[sectionId];
+    }
+
+    std::string MappingFileParser::removeLeadingWhitespace(std::string line)
+    {
+	    size_t start = line.find_first_not_of(WHITESPACE);
+	    return (start == std::string::npos) ? "" : line.substr(start);
+    }
+
+    std::string MappingFileParser::removeTrailingWhitespace(std::string line)
+    {
+	    size_t end = line.find_last_not_of(WHITESPACE);
+	    return (end == std::string::npos) ? "" : line.substr(0, end + 1);
     }
 }
