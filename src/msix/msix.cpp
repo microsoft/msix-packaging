@@ -21,6 +21,7 @@
 #include "AppxBundleWriter.hpp"
 #include "ScopeExit.hpp"
 #include "VersionHelpers.hpp"
+#include "MappingFileParser.hpp"
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
@@ -328,6 +329,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     if (0 == (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE))
     {
         flatBundle = true;
+        //if mapping file is not present, error
     }
 
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
@@ -355,8 +357,8 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     }
     else if(mappingFile != nullptr && outputBundle != nullptr)
     {
-        //Create from list from mapping file(Currently keeping it same as above, have to
-        //parse from mapping file into externalPackagesList)
+        MSIX::MappingFileParser mappingFileParser;
+        mappingFileParser.ParseMappingFile(mappingFile);
         from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
     }
 
