@@ -40,6 +40,9 @@ namespace MSIX {
         HandlerState HandleSection(std::string sectionName);
         SectionID GetSectionIDByName(std::string sectionName);
         bool IsSectionFound(SectionID sectionId);
+        
+        HandlerState ParseMapping(std::string line, char firstChar);
+        HandlerState HandleMapping(std::vector<std::string> pathTokens);
 
         std::string removeLeadingWhitespace(std::string line);
         std::string removeTrailingWhitespace(std::string line);
@@ -47,7 +50,7 @@ namespace MSIX {
         int lineNumber;
         static const int NumKnownSections = 4;
         std::map<std::string, std::string> list;
-        bool foundSection[NumKnownSections];
+        bool foundSection[NumKnownSections] = {0};
         SectionID currentSectionId;
     };
 }
