@@ -7,7 +7,10 @@ namespace MSIX {
 
     const std::string WHITESPACE = " \n\r\t";
 
-    MappingFileParser::MappingFileParser() {}
+    MappingFileParser::MappingFileParser() {
+        this->lineNumber = 0;
+        this->errorMessage = "";
+    }
 
     void MappingFileParser::ParseMappingFile(std::string mappingFile)
     {
@@ -40,9 +43,9 @@ namespace MSIX {
                             break;
 
                         default:
-                            break; // remove this
-                            //state = SendError(handler, currentLine, firstChar - currentLine + 1,
-                            //  MAKEAPPX_E_MAPPINGFILE_EXPECT_CHAR_2, L'[', L'\"');
+                            std::ostringstream errorBuilder;
+                            errorBuilder << "Error: The mapping file can't be parsed. At line " << this->lineNumber << ": Expecting '[' or '\"'.";
+                            ThrowErrorAndLog(Error::BadFormat, errorBuilder.str().c_str());
                         }
                     }   
                 }
@@ -54,15 +57,18 @@ namespace MSIX {
 
             if (state == Fail)
             {
-                //Log::WriteError(false, MAKEAPPX_E_MAPPINGFILE_BAD_LINE, lineNumber);
-                //RETURN_HR(HRESULT_FROM_WIN32(ERROR_BAD_FORMAT));
+                std::ostringstream errorBuilder;
+                errorBuilder << "Error: The mapping file can't be parsed. " << this->errorMessage;
+                ThrowErrorAndLog(Error::BadFormat, errorBuilder.str().c_str());
             }
 
             mappingFileStream.close();
         }
         else
         {
-            //error
+            std::ostringstream errorBuilder;
+            errorBuilder << "Error: The system cannot find the file specified: " << mappingFile <<".";
+            ThrowErrorAndLog(Error::FileNotFound, errorBuilder.str().c_str());
         }
     }
 
@@ -76,9 +82,9 @@ namespace MSIX {
         }
         else
         {
-            //ThrowErrorAndLog(Error::AppxManifestSemanticError, "The package is not valid in the bundle because its manifest does not declare any Application elements.");
-            //Log::WriteError(false, MAKEAPPX_E_MAPPINGFILE_PARSE, lineNumber, columnNumber, reason);
-            //return SendError(handler, line, lastChar - line + 1, MAKEAPPX_E_MAPPINGFILE_EXPECT_CHAR, L']');
+            std::ostringstream errorBuilder;
+            errorBuilder << "At line " << this->lineNumber << ": Expecting ']'.";
+            this->errorMessage = errorBuilder.str().c_str();
             return Fail;
         }
     }
@@ -91,7 +97,9 @@ namespace MSIX {
         {
             if (this->IsSectionFound(sectionId))
             {
-                //Log::WriteError(false, MAKEAPPX_E_MAPPINGFILE_DUPLICATE_SECTION, KnownSectionNames[sectionId], lineNumber);
+                std::ostringstream errorBuilder;
+                errorBuilder << "Duplicate " << sectionName << " section found on line " << this->lineNumber << ".";
+                this->errorMessage = errorBuilder.str().c_str();
                 return Fail;
             }
             else
@@ -101,7 +109,6 @@ namespace MSIX {
                 return Continue;
             }
         }
-        //Log::WriteWarning(false, MAKEAPPX_W_MAPPINGFILE_UNKNOWN_SECTION, name.chars, lineNumber);
         return SkipSection;
     }
 
@@ -143,22 +150,30 @@ namespace MSIX {
                 }
                 else
                 {
-                    //return SendError(handler, line, currentChar - line + 1, MAKEAPPX_E_MAPPINGFILE_EXPECT_CHAR, L'\"');
+                    std::ostringstream errorBuilder;
+                    errorBuilder << "At line: " << this->lineNumber << ": Expecting '\"'."; 
+                    this->errorMessage = errorBuilder.str().c_str();
+                    return Fail;
                 }
             }
             else
             {
-                // ERROR mai not starting quote secnond token error
+                std::ostringstream errorBuilder;
+                errorBuilder << "At line: " << this->lineNumber << ": Expecting '\"'."; 
+                this->errorMessage = errorBuilder.str().c_str();
+                return Fail;
             }
 
-            //get nexttoken after space
             line = removeLeadingWhitespace(line);
             if(!line.empty())
             {
                 char nextToken = line.at(0);
                 if ((nextToken == currentChar))
                 {
-                    // ERROR return SendError(handler, line, currentChar - line + 1, MAKEAPPX_E_MAPPINGFILE_NEED_WHITESPACE);
+                    std::ostringstream errorBuilder;
+                    errorBuilder << "At line: " << this->lineNumber << ": Expecting whitespace after '\"'.";
+                    this->errorMessage = errorBuilder.str().c_str();
+                    return Fail;
                 }
                 currentChar = nextToken;
             } 
@@ -179,11 +194,15 @@ namespace MSIX {
         {
             if(pathTokens.size() < 2)
             {
-                //MAKEAPPX_E_FILELIST_MISSING_OUTPUT_FILE
+                std::ostringstream errorBuilder;
+                errorBuilder << "Output file path is missing on line " << this->lineNumber << ".";
+                this->errorMessage = errorBuilder.str().c_str();
             }
             else
             {
-                //MAKEAPPX_E_MAPPINGFILE_TOO_MANY_TOKENS_ON_LINE
+                std::ostringstream errorBuilder;
+                errorBuilder << "Too many tokens on line " << this->lineNumber << ".";
+                this->errorMessage = errorBuilder.str().c_str();
             }
             return Fail;
         }

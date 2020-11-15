@@ -1,6 +1,9 @@
 #pragma once
 
 #include "MSIXWindows.hpp"
+#include "MsixErrors.hpp"
+#include "Exceptions.hpp"
+
 #include <map>
 #include <vector>
 
@@ -52,6 +55,7 @@ namespace MSIX {
         std::map<std::string, std::string> list;
         bool foundSection[NumKnownSections] = {0};
         SectionID currentSectionId;
+        std::string errorMessage;
     };
 }
 
