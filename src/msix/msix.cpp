@@ -300,7 +300,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     char* version
 ) noexcept try
 {
-    std::unique_ptr<std::map<std::string, std::string>> externalPackagesList;
     std::uint64_t bundleVersion = 0;
     bool flatBundle = false;
     bool overWrite = false;

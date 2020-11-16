@@ -44,15 +44,19 @@ namespace MSIX {
         SectionID GetSectionIDByName(std::string sectionName);
         bool IsSectionFound(SectionID sectionId);
         
-        HandlerState ParseMapping(std::string line, char firstChar);
+        HandlerState ParseMapping(std::string line, const char* firstChar);
         HandlerState HandleMapping(std::vector<std::string> pathTokens);
-
-        std::string removeLeadingWhitespace(std::string line);
-        std::string removeTrailingWhitespace(std::string line);
+        std::pair<std::string, const char*> SearchString(const char* line, char c);
+        bool IsWhitespace(char c);
+           
+        /// Returns a pointer to the first non-whitespace character in a string
+        const char* SkipWhitespace(const char* line);
+        std::string RemoveTrailingWhitespace(std::string line);
 
         int lineNumber;
         static const int NumKnownSections = 4;
         std::map<std::string, std::string> list;
+        std::map<std::string, std::string> externalPackagesList;
         bool foundSection[NumKnownSections] = {0};
         SectionID currentSectionId;
         std::string errorMessage;
