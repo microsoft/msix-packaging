@@ -37,12 +37,14 @@ namespace MSIX {
     public:
         MappingFileParser();
         void ParseMappingFile(std::string mappingFile);
+        bool IsSectionFound(SectionID sectionId);
+        std::map<std::string, std::string> GetFileList() { return this->list; }
+        std::map<std::string, std::string> GetExternalPackagesList() { return this->externalPackagesList; }
 
     protected:
         HandlerState ParseSectionHeading(std::string line);
         HandlerState HandleSection(std::string sectionName);
         SectionID GetSectionIDByName(std::string sectionName);
-        bool IsSectionFound(SectionID sectionId);
         
         HandlerState ParseMapping(std::string line, const char* firstChar);
         HandlerState HandleMapping(std::vector<std::string> pathTokens);

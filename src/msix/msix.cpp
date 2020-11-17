@@ -328,7 +328,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     if (0 == (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE))
     {
         flatBundle = true;
-        //if mapping file is not present, error
     }
 
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
@@ -348,18 +347,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
         ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You can't specify both a content directory (-d) and a mapping file (-f).");
     }
     //TODO:: Error if directoryPath is a file
-
-    MSIX::ComPtr<IDirectoryObject> from;
-    if(directoryPath != nullptr && outputBundle != nullptr)
-    {
-        from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
-    }
-    else if(mappingFile != nullptr && outputBundle != nullptr)
-    {
-        MSIX::MappingFileParser mappingFileParser;
-        mappingFileParser.ParseMappingFile(mappingFile);
-        from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
-    }
 
     auto deleteFile = MSIX::scope_exit([&outputBundle]
     {
@@ -381,7 +368,28 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     ThrowHrIfFailed(factory->CreateBundleWriter(stream.Get(), bundleVersion, &bundleWriter));
     bundleWriter4 = bundleWriter.As<IAppxBundleWriter4>();
 
-    bundleWriter4.As<IBundleWriter>()->ProcessBundlePayload(from, flatBundle);
+    if(directoryPath != nullptr && outputBundle != nullptr)
+    {
+        auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+        bundleWriter4.As<IBundleWriter>()->ProcessBundlePayload(from, flatBundle);
+    }
+    else if(mappingFile != nullptr && outputBundle != nullptr)
+    {
+        MSIX::MappingFileParser mappingFileParser;
+        mappingFileParser.ParseMappingFile(mappingFile);
+        if(!mappingFileParser.IsSectionFound(MSIX::SectionID::FilesSection))
+        {
+            std::ostringstream errorBuilder;
+            errorBuilder << "The mapping file " << mappingFile << " is missing a [Files] section.";
+            ThrowErrorAndLog(MSIX::Error::BadFormat, errorBuilder.str().c_str());
+        }
+
+        std::map<std::string, std::string> fileList = mappingFileParser.GetFileList();
+        std::map<std::string, std::string> extPackages = mappingFileParser.GetExternalPackagesList();
+
+        bundleWriter4.As<IBundleWriter>()->ProcessBundlePayloadFromMappingFile(mappingFileParser.GetFileList(), mappingFileParser.GetExternalPackagesList(), flatBundle);
+    }
+
     ThrowHrIfFailed(bundleWriter->Close());
     deleteFile.release();
     return static_cast<HRESULT>(MSIX::Error::OK);

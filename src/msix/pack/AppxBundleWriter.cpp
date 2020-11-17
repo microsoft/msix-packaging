@@ -72,6 +72,36 @@ namespace MSIX {
         failState.release();
     }
 
+    void AppxBundleWriter::ProcessBundlePayloadFromMappingFile(std::map<std::string, std::string> fileList, std::map<std::string, std::string> externalPackagesList, bool flatBundle)
+    {
+        ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
+        auto failState = MSIX::scope_exit([this]
+            {
+                this->m_state = WriterState::Failed;
+            });
+
+        std::map<std::string, std::string>::iterator fileListIterator;
+        for (fileListIterator = fileList.begin(); fileListIterator != fileList.end(); fileListIterator++)
+        {
+            std::string inputPath = fileListIterator->second;
+            std::string outputPath = fileListIterator->first;
+
+            if (!(FileNameValidation::IsFootPrintFile(inputPath, true)))
+            {
+                std::string ext = Helper::tolower(inputPath.substr(inputPath.find_last_of(".") + 1));
+                auto contentType = ContentType::GetContentTypeByExtension(ext);
+                auto stream = ComPtr<IStream>::Make<FileStream>(inputPath, FileStream::Mode::READ);
+
+                if (flatBundle)
+                {
+                    ThrowHrIfFailed(AddPackageReference(utf8_to_wstring(outputPath).c_str(), stream.Get(), false));
+                }
+            }
+        }
+ 
+        failState.release();
+    }
+
     // IAppxBundleWriter
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream) noexcept try
     {
