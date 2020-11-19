@@ -60,6 +60,22 @@ public:
 };
 MSIX_INTERFACE(IAppxManifestQualifiedResourceInternal, 0x9e2fb304,0xcec6,0x4ef0,0x8d,0xf3,0x10,0xbb,0x2c,0xe7,0x14,0xa3);
 
+
+// {6c37be69-b1e0-4764-b892-12a3c5e094a4}
+#ifndef WIN32
+interface IAppxManifestMainPackageDependencyInternal : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IAppxManifestMainPackageDependencyInternal : public IUnknown
+#endif
+{
+public:
+    virtual const std::string& GetName() = 0;
+    virtual const std::string& GetPublisher() = 0;
+};
+MSIX_INTERFACE(IAppxManifestMainPackageDependencyInternal, 0x6c37be69,0xb1e0,0x4764,0xb8,0x92,0x12,0xa3,0xc5,0xe0,0x94,0xa4);
+
 namespace MSIX {
 
     class AppxManifestTargetDeviceFamily final : public ComClass<AppxManifestTargetDeviceFamily, IAppxManifestTargetDeviceFamily, IAppxManifestTargetDeviceFamilyUtf8, IAppxManifestTargetDeviceFamilyInternal>
@@ -281,7 +297,7 @@ namespace MSIX {
         std::string m_mainPackageName;
     };
 
-    class AppxManifestMainPackageDependency final : public ComClass<AppxManifestMainPackageDependency, IAppxManifestMainPackageDependency, IAppxManifestMainPackageDependencyUtf8>
+    class AppxManifestMainPackageDependency final : public ComClass<AppxManifestMainPackageDependency, IAppxManifestMainPackageDependency, IAppxManifestMainPackageDependencyUtf8, IAppxManifestMainPackageDependencyInternal>
     {
     public:
         AppxManifestMainPackageDependency(IMsixFactory* factory, const std::string& name, const std::string& publisher, const std::string& packageFamilyName) :
@@ -325,6 +341,17 @@ namespace MSIX {
             ThrowErrorIf(Error::InvalidParameter, (packageFamilyName == nullptr || *packageFamilyName != nullptr), "bad pointer");
             return m_factory->MarshalOutStringUtf8(m_packageFamilyName, packageFamilyName);
         } CATCH_RETURN();
+
+        //IAppxManifestMainPackageDependencyInternal
+        const std::string& GetName() override
+        {
+            return m_name;
+        }
+
+        const std::string& GetPublisher() override
+        {
+            return m_publisher;
+        }
 
     protected:
         ComPtr<IMsixFactory> m_factory;

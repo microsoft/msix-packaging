@@ -8,6 +8,7 @@
 #include "ZipObjectWriter.hpp"
 #include "AppxPackageInfo.hpp"
 #include "BundleManifestWriter.hpp"
+#include "AppxManifestObject.hpp"
 
 #include <map>
 
@@ -64,6 +65,10 @@ namespace MSIX {
         std::uint64_t GetBundleVersion() { return this->bundleVersion; }
 
         std::vector<PackageInfo> GetPayloadPackages() { return payloadPackages; }
+
+        //Add External packages
+        void AddExternalPackageReferenceFromManifest(std::string fileName, IAppxManifestReader* manifestReader,
+            bool isDefaultApplicablePackage);
     
     private:
         std::vector<PackageInfo> payloadPackages;

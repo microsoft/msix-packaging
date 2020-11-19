@@ -98,6 +98,22 @@ namespace MSIX {
                 }
             }
         }
+
+        if(!externalPackagesList.empty())
+        {
+            std::map<std::string, std::string>::iterator externalPackagesIterator;
+            for (externalPackagesIterator = externalPackagesList.begin(); externalPackagesIterator != externalPackagesList.end(); externalPackagesIterator++)
+            {
+                std::string inputPath = externalPackagesIterator->second;
+                std::string outputPath = externalPackagesIterator->first;
+
+                if (!(FileNameValidation::IsFootPrintFile(inputPath, true)))
+                {
+                    auto inputStream = ComPtr<IStream>::Make<FileStream>(inputPath, FileStream::Mode::READ);
+                    ThrowHrIfFailed(AddExternalPackageReference(utf8_to_wstring(outputPath).c_str(), inputStream.Get(), false));
+                }
+            }
+        }
  
         failState.release();
     }
@@ -173,9 +189,28 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddExternalPackageReference(LPCWSTR fileName,
         IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
     {
-        // TODO: implement
-        NOTIMPLEMENTED;
+        this->AddExternalPackageReferenceHelper(wstring_to_utf8(fileName), inputStream, !!isDefaultApplicablePackage);
+
+        return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
+
+    void AppxBundleWriter::AddExternalPackageReferenceHelper(std::string fileName, IStream* packageStream,
+        bool isDefaultApplicablePackage)
+    {        
+        //read from appxmanifest.xml and bundlemanifest
+
+        auto appxFactory = m_factory.As<IAppxFactory>();
+
+        ComPtr<IAppxPackageReader> packageReader;
+        HRESULT hr = appxFactory->CreatePackageReader(packageStream, &packageReader);
+
+        if(SUCCEEDED(hr))
+        {
+            ComPtr<IAppxManifestReader> manifestReader;
+            ThrowHrIfFailed(packageReader->GetManifest(&manifestReader));
+            this->m_bundleWriterHelper.AddExternalPackageReferenceFromManifest(fileName, manifestReader.Get(), isDefaultApplicablePackage);
+        }
+    }
 
     void AppxBundleWriter::AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
         bool addToBlockMap, const char* contentType, bool forceContentTypeOverride)

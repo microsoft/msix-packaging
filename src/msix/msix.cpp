@@ -383,10 +383,6 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
             errorBuilder << "The mapping file " << mappingFile << " is missing a [Files] section.";
             ThrowErrorAndLog(MSIX::Error::BadFormat, errorBuilder.str().c_str());
         }
-
-        std::map<std::string, std::string> fileList = mappingFileParser.GetFileList();
-        std::map<std::string, std::string> extPackages = mappingFileParser.GetExternalPackagesList();
-
         bundleWriter4.As<IBundleWriter>()->ProcessBundlePayloadFromMappingFile(mappingFileParser.GetFileList(), mappingFileParser.GetExternalPackagesList(), flatBundle);
     }
 

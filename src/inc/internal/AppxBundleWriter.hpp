@@ -70,6 +70,9 @@ namespace MSIX {
 
         void AddPackageReferenceInternal(std::string fileName, IStream* packageStream,
             bool isDefaultApplicablePackage);
+
+        void AddExternalPackageReferenceHelper(std::string fileName, IStream* packageStream,
+            bool isDefaultApplicablePackage);
             
         WriterState m_state;
         ComPtr<IMsixFactory> m_factory;

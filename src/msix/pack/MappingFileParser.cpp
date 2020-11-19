@@ -207,7 +207,15 @@ namespace MSIX {
                 return Fail;
             }
 
-            //Check if input file exists
+            //Check if file exists
+            std::ifstream inputFileStream(inputPath);
+            if(!inputFileStream.is_open())
+            {
+                std::ostringstream errorBuilder;
+                errorBuilder << ": The system cannot find the file specified: " << inputPath; 
+                this->errorMessage = errorBuilder.str().c_str();
+                return Fail;
+            }
 
             if(this->currentSectionId == FilesSection)
             {
