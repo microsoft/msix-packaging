@@ -136,6 +136,7 @@ if(MSIX_PACK)
         pack/AppxBundleWriter.cpp
         pack/VersionHelpers.cpp
         pack/MappingFileParser.cpp
+        pack/BundleValidationHelper.cpp
     )
 endif()
 
