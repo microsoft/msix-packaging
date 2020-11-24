@@ -168,10 +168,8 @@ namespace MSIX {
     void BundleWriterHelper::AddExternalPackageReferenceFromManifest(std::string fileName, IAppxManifestReader* manifestReader,
         bool isDefaultApplicablePackage)
     {
-        //TODO: ValidatePayloadPackageExtension
-
         ComPtr<IAppxManifestReader5> manifestReader5;
-        ThrowHrIfFailed(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader3>::iid, reinterpret_cast<void**>(&manifestReader5)));
+        ThrowHrIfFailed(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader5>::iid, reinterpret_cast<void**>(&manifestReader5)));
         ComPtr<IAppxManifestMainPackageDependenciesEnumerator> mainPackageDependencies;
         ThrowHrIfFailed(manifestReader5->GetMainPackageDependencies(&mainPackageDependencies));
         BOOL hasMoreMainPackageDependencies = FALSE;
@@ -223,19 +221,17 @@ namespace MSIX {
             newBundleInfo.name = packageId->GetName();
             newBundleInfo.publisher = packageId->GetPublisher();
             newBundleInfo.version = 0;
-            newBundleInfo.fileName = nullptr;
 
             optionalBundles.insert(std::pair<std::string, OptionalBundleInfo>(bundleFamilyName, newBundleInfo));
-            optBundlesIterator->second = newBundleInfo;
+            optBundlesIterator = optionalBundles.find(bundleFamilyName);
         }
 
         PackageInfo packageInfo;
         packageInfo.type = this->m_validationHelper.GetPayloadPackageType(manifestReader, fileName);
-        //BundleValidationHelper::AddPackage
+        this->m_validationHelper.AddPackage(packageInfo.type, packageId.Get(), fileName);        
         if (packageInfo.type == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
         {
             this->m_validationHelper.ValidateApplicationElement(manifestReader, fileName);
-            //manifestComparisonHelper.AddManifest
         }
 
         packageInfo.architecture = packageId->GetArchitecture();

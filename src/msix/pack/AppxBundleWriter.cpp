@@ -201,13 +201,13 @@ namespace MSIX {
 
         //Set stream
 
-        ComPtr<IAppxManifestReader> manifestReader;
+        /*ComPtr<IAppxManifestReader> manifestReader;
         HRESULT hr = appxFactory->CreateManifestReader(packageStream, &manifestReader);
         if(SUCCEEDED(hr))
         {
             this->m_bundleWriterHelper.AddExternalPackageReferenceFromManifest(fileName, manifestReader.Get(), isDefaultApplicablePackage);
             return;
-        }
+        }*/
 
         /*ComPtr<IAppxBundleManifestReader> bundleManifestReader;
         hr = appxFactory->CreateBundleManifestReader(packageStream, &bundleManifestReader);
@@ -219,7 +219,7 @@ namespace MSIX {
         }*/
 
         ComPtr<IAppxPackageReader> packageReader;
-        hr = appxFactory->CreatePackageReader(packageStream, &packageReader);
+        HRESULT hr = appxFactory->CreatePackageReader(packageStream, &packageReader);
         if(SUCCEEDED(hr))
         {
             ComPtr<IAppxManifestReader> manifestReader;

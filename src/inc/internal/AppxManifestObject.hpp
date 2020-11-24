@@ -60,7 +60,6 @@ public:
 };
 MSIX_INTERFACE(IAppxManifestQualifiedResourceInternal, 0x9e2fb304,0xcec6,0x4ef0,0x8d,0xf3,0x10,0xbb,0x2c,0xe7,0x14,0xa3);
 
-
 // {6c37be69-b1e0-4764-b892-12a3c5e094a4}
 #ifndef WIN32
 interface IAppxManifestMainPackageDependencyInternal : public IUnknown
@@ -73,6 +72,7 @@ class IAppxManifestMainPackageDependencyInternal : public IUnknown
 public:
     virtual const std::string& GetName() = 0;
     virtual const std::string& GetPublisher() = 0;
+    virtual const std::string& GetPackageFamilyName() = 0;
 };
 MSIX_INTERFACE(IAppxManifestMainPackageDependencyInternal, 0x6c37be69,0xb1e0,0x4764,0xb8,0x92,0x12,0xa3,0xc5,0xe0,0x94,0xa4);
 
@@ -351,6 +351,11 @@ namespace MSIX {
         const std::string& GetPublisher() override
         {
             return m_publisher;
+        }
+
+        const std::string& GetPackageFamilyName() override
+        {
+            return m_packageFamilyName;
         }
 
     protected:
