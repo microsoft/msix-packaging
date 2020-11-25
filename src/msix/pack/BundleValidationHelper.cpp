@@ -28,7 +28,7 @@ namespace MSIX {
 
             if(!this->bundleTargetsRs5OrLess && StartsWith(tdfName, Win10DeviceFamilyNameStartsWith))
             {
-                std::uint64_t minVersion;
+                UINT64 minVersion;
                 ThrowHrIfFailed(tdf->GetMinVersion(&minVersion));
                 if (minVersion <= ConvertVersionStringToUint64(OSVersionRS5))
                 {
@@ -201,9 +201,9 @@ namespace MSIX {
         else
         {
             const LPCWSTR ElementsToTest[] = {L"OSMinVersion", L"OSMaxVersionTested"};
-            for (int i = 0; i < ARRAYSIZE(ElementsToTest); i++)
+            for (int i = 0; i < sizeof(ElementsToTest); i++)
             {
-                std::uint64_t elementValue = 0;
+                UINT64 elementValue = 0;
                 ThrowHrIfFailed(packageManifestReader->GetPrerequisite(ElementsToTest[i], &elementValue));
                 if (elementValue < ConvertVersionStringToUint64(MinimumAllowedOSVersion))
                 {
