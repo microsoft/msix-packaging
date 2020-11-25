@@ -277,6 +277,9 @@ namespace MSIX {
         {
             WritePackageElement(bundleInfo.optionalPackages[i]);
         }
+
+        //End OptionalBundle Tag
+        m_xmlWriter.CloseElement();
     }
 
     void BundleManifestWriter::EndBundleManifest()

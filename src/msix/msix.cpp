@@ -325,7 +325,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
         overWrite = false;
     }
 
-    if (0 == (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE))
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE)
     {
         flatBundle = true;
     }

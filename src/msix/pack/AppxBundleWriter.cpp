@@ -190,36 +190,25 @@ namespace MSIX {
         IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
     {
         this->AddExternalPackageReferenceHelper(wstring_to_utf8(fileName), inputStream, !!isDefaultApplicablePackage);
-
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    void AppxBundleWriter::AddExternalPackageReferenceHelper(std::string fileName, IStream* packageStream,
-        bool isDefaultApplicablePackage)
+    void AppxBundleWriter::AddExternalPackageReferenceHelper(std::string fileName, IStream* packageStream, bool isDefaultApplicablePackage)
     {
         auto appxFactory = m_factory.As<IAppxFactory>();
 
-        //Set stream
+        //TODO:: BundleManifestReader, BundleReader
 
-        /*ComPtr<IAppxManifestReader> manifestReader;
+        ComPtr<IAppxManifestReader> manifestReader;
         HRESULT hr = appxFactory->CreateManifestReader(packageStream, &manifestReader);
         if(SUCCEEDED(hr))
         {
             this->m_bundleWriterHelper.AddExternalPackageReferenceFromManifest(fileName, manifestReader.Get(), isDefaultApplicablePackage);
             return;
-        }*/
-
-        /*ComPtr<IAppxBundleManifestReader> bundleManifestReader;
-        hr = appxFactory->CreateBundleManifestReader(packageStream, &bundleManifestReader);
-        if(SUCCEEDED(hr))
-        {
-            //AddExternalPackageReferenceFromBundleManifest
-            //this->m_bundleWriterHelper.AddExternalPackageReferenceFromManifest(fileName, manifestReader.Get(), isDefaultApplicablePackage);
-            return;
-        }*/
+        }
 
         ComPtr<IAppxPackageReader> packageReader;
-        HRESULT hr = appxFactory->CreatePackageReader(packageStream, &packageReader);
+        hr = appxFactory->CreatePackageReader(packageStream, &packageReader);
         if(SUCCEEDED(hr))
         {
             ComPtr<IAppxManifestReader> manifestReader;
@@ -227,18 +216,6 @@ namespace MSIX {
             this->m_bundleWriterHelper.AddExternalPackageReferenceFromManifest(fileName, manifestReader.Get(), isDefaultApplicablePackage);
             return;
         }
-
-        /*ComPtr<IAppxBundleReader> bundleReader;
-        hr = appxFactory->CreateBundleReader(packageStream, &packageReader);
-        if(SUCCEEDED(hr))
-        {
-            ComPtr<IAppxBundleManifestReader> bundleManifestReader;
-            ThrowHrIfFailed(bundleReader->GetManifest(&bundleManifestReader));
-            //AddExternalPackageReferenceFromBundleManifest
-            //this->m_bundleWriterHelper.AddExternalPackageReferenceFromManifest(fileName, manifestReader.Get(), isDefaultApplicablePackage);
-            return;
-        }*/
-
         ThrowErrorAndLog(Error::InvalidData, "The data is invalid.");
     }
 
