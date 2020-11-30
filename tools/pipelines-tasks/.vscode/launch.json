@@ -1,0 +1,65 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch AppInstallerFile",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "program": "${workspaceFolder}/AppInstallerFile/index.js",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "envFile": "${workspaceFolder}/AppInstallerFile/debug_inputs.env"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch MsixAppAttach",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "program": "${workspaceFolder}/MsixAppAttach/index.js",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "envFile": "${workspaceFolder}/MsixAppAttach/debug_inputs.env"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch MsixSigning",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "program": "${workspaceFolder}/MsixSigning/index.js",
+            "args": ["--mockSecureFileDownload"],
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "envFile": "${workspaceFolder}/MsixSigning/debug_inputs.env"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Launch MsixPackaging",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "preLaunchTask": "tsc: build - tsconfig.json",
+            "program": "${workspaceFolder}/MsixPackaging/index.js",
+            "outFiles": [
+                "${workspaceFolder}/**/*.js"
+            ],
+            "envFile": "${workspaceFolder}/MsixPackaging/debug_inputs.env"
+        }
+    ]
+}
