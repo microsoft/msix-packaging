@@ -14,6 +14,8 @@
 #include "ScopeExit.hpp"
 #include "FileNameValidation.hpp"
 #include "StringHelper.hpp"
+#include "VectorStream.hpp"
+
 #include <ctime>
 #include <iomanip>
 
@@ -63,16 +65,10 @@ namespace MSIX {
             }
         }
 
-        //Process external packages passed as input created from mapping file
-        /*if (externalPackagesList != nullptr)
-        {
-
-        }*/
-
         failState.release();
     }
 
-    void AppxBundleWriter::ProcessBundlePayloadFromMappingFile(std::map<std::string, std::string> fileList, std::map<std::string, std::string> externalPackagesList, bool flatBundle)
+    void AppxBundleWriter::ProcessBundlePayloadFromMappingFile(std::map<std::string, std::string> fileList, bool flatBundle)
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
         auto failState = MSIX::scope_exit([this]
@@ -98,24 +94,57 @@ namespace MSIX {
                 }
             }
         }
+        failState.release();
+    }
 
-        if(!externalPackagesList.empty())
+    void AppxBundleWriter::ProcessExternalPackages(std::map<std::string, std::string> externalPackagesList)
+    {
+        std::map<std::string, std::string>::iterator externalPackagesIterator;
+        for (externalPackagesIterator = externalPackagesList.begin(); externalPackagesIterator != externalPackagesList.end(); externalPackagesIterator++)
         {
-            std::map<std::string, std::string>::iterator externalPackagesIterator;
-            for (externalPackagesIterator = externalPackagesList.begin(); externalPackagesIterator != externalPackagesList.end(); externalPackagesIterator++)
-            {
-                std::string inputPath = externalPackagesIterator->second;
-                std::string outputPath = externalPackagesIterator->first;
+            std::string inputPath = externalPackagesIterator->second;
+            std::string outputPath = externalPackagesIterator->first;
 
-                if (!(FileNameValidation::IsFootPrintFile(inputPath, true)))
+            if (!(FileNameValidation::IsFootPrintFile(inputPath, true)))
+            {
+                auto inputStream = ComPtr<IStream>::Make<FileStream>(inputPath, FileStream::Mode::READ);
+                ThrowHrIfFailed(AddExternalPackageReference(utf8_to_wstring(outputPath).c_str(), inputStream.Get(), false));
+            }
+        }
+    }
+
+    void AppxBundleWriter::ProcessManifestOnlyPayload(std::map<std::string, std::string> fileList, bool flatBundle)
+    {
+        // Here the inputs are package manifests.  Wrap each one in a temporary package and then add them to the bundle.
+        auto appxFactory = m_factory.As<IAppxFactory>();
+
+        std::map<std::string, std::string>::iterator fileListIterator;
+        for (fileListIterator = fileList.begin(); fileListIterator != fileList.end(); fileListIterator++)
+        {
+            std::string inputPath = fileListIterator->second;
+            std::string outputPath = fileListIterator->first;
+
+            if (!(FileNameValidation::IsFootPrintFile(inputPath, true)))
+            {
+                std::vector<std::uint8_t> tempPackageVector;
+			    auto tempPackageStream = ComPtr<IStream>::Make<VectorStream>(&tempPackageVector);                
+
+                auto manifestStream = ComPtr<IStream>::Make<FileStream>(inputPath, FileStream::Mode::READ);
+
+                MSIX::ComPtr<IAppxPackageWriter> tempPackageWriter;
+                ThrowHrIfFailed(appxFactory->CreatePackageWriter(tempPackageStream.Get(), nullptr, &tempPackageWriter));
+                ThrowHrIfFailed(tempPackageWriter->Close(manifestStream.Get()));
+
+                if (flatBundle)
                 {
-                    auto inputStream = ComPtr<IStream>::Make<FileStream>(inputPath, FileStream::Mode::READ);
-                    ThrowHrIfFailed(AddExternalPackageReference(utf8_to_wstring(outputPath).c_str(), inputStream.Get(), false));
+                    ThrowHrIfFailed(AddPackageReference(utf8_to_wstring(outputPath).c_str(), tempPackageStream.Get(), false));
+                }
+                else
+                {
+                    ThrowHrIfFailed(AddPayloadPackage(utf8_to_wstring(outputPath).c_str(), tempPackageStream.Get(), false));
                 }
             }
         }
- 
-        failState.release();
     }
 
     // IAppxBundleWriter
@@ -162,7 +191,6 @@ namespace MSIX {
         IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
     {   
         this->AddPackageReferenceInternal(wstring_to_utf8(fileName), inputStream, !!isDefaultApplicablePackage);
-
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
@@ -182,22 +210,37 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream, 
         BOOL isDefaultApplicablePackage) noexcept try
     {
-        // TODO: implement
-        NOTIMPLEMENTED;
+        this->AddPayloadPackageInternal(wstring_to_utf8(fileName), packageStream, !!isDefaultApplicablePackage);
+        return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
+
+    void AppxBundleWriter::AddPayloadPackageInternal(std::string fileName, IStream* packageStream, bool isDefaultApplicablePackage)
+    {
+        auto appxFactory = m_factory.As<IAppxFactory>();
+
+        ComPtr<IAppxPackageReader> reader;
+        ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream, &reader));
+
+        std::string ext = Helper::tolower(fileName.substr(fileName.find_last_of(".") + 1));
+        auto contentType = ContentType::GetContentTypeByExtension(ext);
+        ValidateAndAddPayloadFile(fileName, packageStream, contentType.GetCompressionOpt(), contentType.GetContentType().c_str());
+
+        //GET CURRENT OFFSET
+        std::uint64_t packageStreamSize = this->m_bundleWriterHelper.GetStreamSize(packageStream);
+
+        this->m_bundleWriterHelper.AddPackage(fileName, reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage);
+    }
 
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddExternalPackageReference(LPCWSTR fileName,
         IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
     {
-        this->AddExternalPackageReferenceHelper(wstring_to_utf8(fileName), inputStream, !!isDefaultApplicablePackage);
+        this->AddExternalPackageReferenceInternal(wstring_to_utf8(fileName), inputStream, !!isDefaultApplicablePackage);
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    void AppxBundleWriter::AddExternalPackageReferenceHelper(std::string fileName, IStream* packageStream, bool isDefaultApplicablePackage)
+    void AppxBundleWriter::AddExternalPackageReferenceInternal(std::string fileName, IStream* packageStream, bool isDefaultApplicablePackage)
     {
         auto appxFactory = m_factory.As<IAppxFactory>();
-
-        //TODO:: BundleManifestReader, BundleReader
 
         ComPtr<IAppxManifestReader> manifestReader;
         HRESULT hr = appxFactory->CreateManifestReader(packageStream, &manifestReader);
@@ -216,7 +259,18 @@ namespace MSIX {
             this->m_bundleWriterHelper.AddExternalPackageReferenceFromManifest(fileName, manifestReader.Get(), isDefaultApplicablePackage);
             return;
         }
+
         ThrowErrorAndLog(Error::InvalidData, "The data is invalid.");
+    }
+
+    void AppxBundleWriter::ValidateAndAddPayloadFile(const std::string& name, IStream* stream,
+        APPX_COMPRESSION_OPTION compressionOpt, const char* contentType)
+    {
+        ThrowErrorIfNot(Error::InvalidParameter, FileNameValidation::IsFileNameValid(name), "Invalid file name");
+        ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsFootPrintFile(name, false), "Trying to add footprint file to package");
+        ThrowErrorIf(Error::InvalidParameter, FileNameValidation::IsReservedFolder(name), "Trying to add file in reserved folder");
+        ValidateCompressionOption(compressionOpt);
+        AddFileToPackage(name, stream, compressionOpt != APPX_COMPRESSION_OPTION_NONE, true, contentType);
     }
 
     void AppxBundleWriter::AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
@@ -302,4 +356,13 @@ namespace MSIX {
         m_zipWriter->EndFile(crc, streamSize, uncompressedSize, true);
     }
 
+    void AppxBundleWriter::ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt)
+    {
+        bool result = ((compressionOpt == APPX_COMPRESSION_OPTION_NONE) ||
+                       (compressionOpt == APPX_COMPRESSION_OPTION_NORMAL) ||
+                       (compressionOpt == APPX_COMPRESSION_OPTION_MAXIMUM) ||
+                       (compressionOpt == APPX_COMPRESSION_OPTION_FAST) ||
+                       (compressionOpt == APPX_COMPRESSION_OPTION_SUPERFAST));
+        ThrowErrorIfNot(Error::InvalidParameter, result, "Invalid compression option.");
+    }
 }

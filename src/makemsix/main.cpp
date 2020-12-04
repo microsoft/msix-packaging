@@ -447,6 +447,11 @@ MSIX_BUNDLE_OPTIONS GetBundleOptions(const Invocation& invocation)
         bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE;
     }
 
+    if (invocation.IsOptionPresent("-mo"))
+    {
+        bundleOptions |= MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_BUNDLEMANIFESTONLY;
+    }
+
     return bundleOptions;
 }
 
@@ -597,6 +602,8 @@ Command CreateBundleCommand()
                             "/ bv option is not specified or is set to 0.0.0.0, the bundle is created"
                             "using the current date - time formatted as the version :"
                             "<Year>.<Month - Day>.<Hour - Minute>.<Second - Millisecond>.", false, 1, "version" },
+            Option{ "-mo", "Generates a bundle manifest only, instead of a full bundle. Input files must all " 
+                            "be package manifests in XML format if this option is specified." },
             Option{ "-fb", "Generates a fully sparse bundle where all packages are references to"
                            "packages that exist outside of the bundle file." },
             Option{ "-o", "Forces the output to overwrite any existing files with the"

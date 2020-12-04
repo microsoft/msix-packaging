@@ -22,6 +22,7 @@
 #include "ScopeExit.hpp"
 #include "VersionHelpers.hpp"
 #include "MappingFileParser.hpp"
+#include "StringStream.hpp"
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
@@ -303,6 +304,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     std::uint64_t bundleVersion = 0;
     bool flatBundle = false;
     bool overWrite = false;
+    bool manifestOnly = false;
 
     //Process Common Options
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERSION)
@@ -330,6 +332,11 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
         flatBundle = true;
     }
 
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_BUNDLEMANIFESTONLY)
+    {
+        manifestOnly = true;
+    }
+
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
     {
         //TODO: Process option for verbose
@@ -348,13 +355,33 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     }
     //TODO:: Error if directoryPath is a file
 
+    MSIX::MappingFileParser mappingFileParser;
+    if(mappingFile != nullptr && outputBundle != nullptr)
+    {
+        mappingFileParser.ParseMappingFile(mappingFile);
+        if(!mappingFileParser.IsSectionFound(MSIX::SectionID::FilesSection))
+        {
+            std::ostringstream errorBuilder;
+            errorBuilder << "The mapping file " << mappingFile << " is missing a [Files] section.";
+            ThrowErrorAndLog(MSIX::Error::BadFormat, errorBuilder.str().c_str());
+        }
+    }
+
     auto deleteFile = MSIX::scope_exit([&outputBundle]
     {
         remove(outputBundle);
     });
 
     MSIX::ComPtr<IStream> stream;
-    ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &stream));
+    /*if(manifestOnly)
+    {
+        stream = MSIX::ComPtr<IStream>::Make<StringStream>();
+        //ThrowHrIfFailed(CreateStreamOnHGlobal(nullptr, true, &stream));
+    }
+    else
+    {*/
+        ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &stream));
+    //}
 
     MSIX::ComPtr<IAppxBundleFactory> factory;
     ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
@@ -368,25 +395,53 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     ThrowHrIfFailed(factory->CreateBundleWriter(stream.Get(), bundleVersion, &bundleWriter));
     bundleWriter4 = bundleWriter.As<IAppxBundleWriter4>();
 
-    if(directoryPath != nullptr && outputBundle != nullptr)
+    if(manifestOnly)
     {
-        auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
-        bundleWriter4.As<IBundleWriter>()->ProcessBundlePayload(from, flatBundle);
+        bundleWriter4.As<IBundleWriter>()->ProcessManifestOnlyPayload(mappingFileParser.GetFileList(), flatBundle);
     }
-    else if(mappingFile != nullptr && outputBundle != nullptr)
+    else
     {
-        MSIX::MappingFileParser mappingFileParser;
-        mappingFileParser.ParseMappingFile(mappingFile);
-        if(!mappingFileParser.IsSectionFound(MSIX::SectionID::FilesSection))
+        if(directoryPath != nullptr && outputBundle != nullptr)
         {
-            std::ostringstream errorBuilder;
-            errorBuilder << "The mapping file " << mappingFile << " is missing a [Files] section.";
-            ThrowErrorAndLog(MSIX::Error::BadFormat, errorBuilder.str().c_str());
+            auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+            bundleWriter4.As<IBundleWriter>()->ProcessBundlePayload(from, flatBundle);
         }
-        bundleWriter4.As<IBundleWriter>()->ProcessBundlePayloadFromMappingFile(mappingFileParser.GetFileList(), mappingFileParser.GetExternalPackagesList(), flatBundle);
+        else if(mappingFile != nullptr && outputBundle != nullptr)
+        {
+            bundleWriter4.As<IBundleWriter>()->ProcessBundlePayloadFromMappingFile(mappingFileParser.GetFileList(), flatBundle);
+        }
+    }
+
+    if(!mappingFileParser.GetExternalPackagesList().empty())
+    {
+        bundleWriter4.As<IBundleWriter>()->ProcessExternalPackages(mappingFileParser.GetExternalPackagesList());
     }
 
     ThrowHrIfFailed(bundleWriter->Close());
+
+    if(manifestOnly)
+    {
+        MSIX::ComPtr<IAppxBundleFactory> appxBundleFactory;
+        ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
+            MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, 
+            MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL,
+            &appxBundleFactory));
+
+        MSIX::ComPtr<IAppxBundleReader> bundleReader;
+        ThrowHrIfFailed(factory->CreateBundleReader(stream.Get(), &bundleReader));
+
+        MSIX::ComPtr<IAppxBundleManifestReader> bundleManifestReader;
+        ThrowHrIfFailed(bundleReader->GetManifest(&bundleManifestReader));
+        
+        MSIX::ComPtr<IStream> bundleManifestStream;
+        ThrowHrIfFailed(bundleManifestReader->GetStream(&bundleManifestStream));
+
+        MSIX::ComPtr<IStream> bundleManifestOutputStream;
+        ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &stream));
+
+
+    }
+
     deleteFile.release();
     return static_cast<HRESULT>(MSIX::Error::OK);
 
