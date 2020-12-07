@@ -113,40 +113,6 @@ namespace MSIX {
         }
     }
 
-    void AppxBundleWriter::ProcessManifestOnlyPayload(std::map<std::string, std::string> fileList, bool flatBundle)
-    {
-        // Here the inputs are package manifests.  Wrap each one in a temporary package and then add them to the bundle.
-        auto appxFactory = m_factory.As<IAppxFactory>();
-
-        std::map<std::string, std::string>::iterator fileListIterator;
-        for (fileListIterator = fileList.begin(); fileListIterator != fileList.end(); fileListIterator++)
-        {
-            std::string inputPath = fileListIterator->second;
-            std::string outputPath = fileListIterator->first;
-
-            if (!(FileNameValidation::IsFootPrintFile(inputPath, true)))
-            {
-                std::vector<std::uint8_t> tempPackageVector;
-			    auto tempPackageStream = ComPtr<IStream>::Make<VectorStream>(&tempPackageVector);                
-
-                auto manifestStream = ComPtr<IStream>::Make<FileStream>(inputPath, FileStream::Mode::READ);
-
-                MSIX::ComPtr<IAppxPackageWriter> tempPackageWriter;
-                ThrowHrIfFailed(appxFactory->CreatePackageWriter(tempPackageStream.Get(), nullptr, &tempPackageWriter));
-                ThrowHrIfFailed(tempPackageWriter->Close(manifestStream.Get()));
-
-                if (flatBundle)
-                {
-                    ThrowHrIfFailed(AddPackageReference(utf8_to_wstring(outputPath).c_str(), tempPackageStream.Get(), false));
-                }
-                else
-                {
-                    ThrowHrIfFailed(AddPayloadPackage(utf8_to_wstring(outputPath).c_str(), tempPackageStream.Get(), false));
-                }
-            }
-        }
-    }
-
     // IAppxBundleWriter
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream) noexcept try
     {
@@ -210,26 +176,9 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream, 
         BOOL isDefaultApplicablePackage) noexcept try
     {
-        this->AddPayloadPackageInternal(wstring_to_utf8(fileName), packageStream, !!isDefaultApplicablePackage);
-        return static_cast<HRESULT>(Error::OK);
+        // TODO: implement
+        NOTIMPLEMENTED;
     } CATCH_RETURN();
-
-    void AppxBundleWriter::AddPayloadPackageInternal(std::string fileName, IStream* packageStream, bool isDefaultApplicablePackage)
-    {
-        auto appxFactory = m_factory.As<IAppxFactory>();
-
-        ComPtr<IAppxPackageReader> reader;
-        ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream, &reader));
-
-        std::string ext = Helper::tolower(fileName.substr(fileName.find_last_of(".") + 1));
-        auto contentType = ContentType::GetContentTypeByExtension(ext);
-        ValidateAndAddPayloadFile(fileName, packageStream, contentType.GetCompressionOpt(), contentType.GetContentType().c_str());
-
-        //GET CURRENT OFFSET
-        std::uint64_t packageStreamSize = this->m_bundleWriterHelper.GetStreamSize(packageStream);
-
-        this->m_bundleWriterHelper.AddPackage(fileName, reader.Get(), 0, packageStreamSize, isDefaultApplicablePackage);
-    }
 
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddExternalPackageReference(LPCWSTR fileName,
         IStream* inputStream, BOOL isDefaultApplicablePackage) noexcept try
