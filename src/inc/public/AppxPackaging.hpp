@@ -1659,6 +1659,7 @@ enum MSIX_VALIDATION_OPTION
                                                                   // If the SDK is compiled without USE_VALIDATION_PARSER,
                                                                   // no schema validation is done, but it needs to be
                                                                   // valid xml.
+        MSIX_VALIDATION_OPTION_SKIPPACKAGEVALIDATION       = 0x8,
     }   MSIX_VALIDATION_OPTION;
 
 typedef /* [v1_enum] */

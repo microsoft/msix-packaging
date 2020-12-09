@@ -221,101 +221,104 @@ namespace MSIX {
                 applicability.InitializeLanguages();
             }
 
-            /*for (const auto& package : bundleInfo->GetPackages())
+            if (!(validation & MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPPACKAGEVALIDATION))
             {
-                auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
-                auto packageName = bundleInfoInternal->GetFileName();
-                auto packageStream = m_container->GetFile(Encoding::EncodeFileName(packageName));
-
-                if (packageStream)
-                {   // The package is in the bundle. Verify is not compressed.
-                    auto zipStream = packageStream.As<IStreamInternal>();
-                    ThrowErrorIf(Error::AppxManifestSemanticError, zipStream->IsCompressed(), "Packages cannot be compressed");
-                }
-                else if (!packageStream && (bundleInfoInternal->GetOffset() == 0)) // This is a flat bundle.
+                for (const auto& package : bundleInfo->GetPackages())
                 {
-                    // We should only do this for flat bundles. If we do it for normal bundles and the user specify a 
-                    // stream factory we will basically unpack any package the user wants with the same name as the package
-                    // we are looking, which sounds dangerous.
-                    ComPtr<IUnknown> streamFactoryUnk;
-                    ThrowHrIfFailed(factoryOverrides->GetCurrentSpecifiedExtension(MSIX_FACTORY_EXTENSION_STREAM_FACTORY, &streamFactoryUnk));
+                    auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
+                    auto packageName = bundleInfoInternal->GetFileName();
+                    auto packageStream = m_container->GetFile(Encoding::EncodeFileName(packageName));
 
-                    if(streamFactoryUnk.Get() != nullptr)
+                    if (packageStream)
+                    {   // The package is in the bundle. Verify is not compressed.
+                        auto zipStream = packageStream.As<IStreamInternal>();
+                        ThrowErrorIf(Error::AppxManifestSemanticError, zipStream->IsCompressed(), "Packages cannot be compressed");
+                    }
+                    else if (!packageStream && (bundleInfoInternal->GetOffset() == 0)) // This is a flat bundle.
                     {
-                        auto streamFactory = streamFactoryUnk.As<IMsixStreamFactory>();
-                        ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePathUtf8(packageName.c_str(), &packageStream));
+                        // We should only do this for flat bundles. If we do it for normal bundles and the user specify a 
+                        // stream factory we will basically unpack any package the user wants with the same name as the package
+                        // we are looking, which sounds dangerous.
+                        ComPtr<IUnknown> streamFactoryUnk;
+                        ThrowHrIfFailed(factoryOverrides->GetCurrentSpecifiedExtension(MSIX_FACTORY_EXTENSION_STREAM_FACTORY, &streamFactoryUnk));
+
+                        if(streamFactoryUnk.Get() != nullptr)
+                        {
+                            auto streamFactory = streamFactoryUnk.As<IMsixStreamFactory>();
+                            ThrowHrIfFailed(streamFactory->CreateStreamOnRelativePathUtf8(packageName.c_str(), &packageStream));
+                        }
+                        else
+                        {   // User didn't specify a stream factory implementation. Assume packages are in the same location
+                            // as the bundle.
+                            auto containerName = GetFileName();
+                            #ifdef WIN32
+                            auto lastSeparator = containerName.find_last_of('\\');
+                            #else
+                            auto lastSeparator = containerName.find_last_of('/');
+                            #endif
+                            auto expandedPackageName = containerName.substr(0, lastSeparator + 1) + packageName;
+                            ThrowHrIfFailed(CreateStreamOnFile(const_cast<char*>(expandedPackageName.c_str()), true, &packageStream));
+                        }
+                        ThrowErrorIfNot(Error::FileNotFound, packageStream, "Package from a flat bundle is not present");
                     }
                     else
-                    {   // User didn't specify a stream factory implementation. Assume packages are in the same location
-                        // as the bundle.
-                        auto containerName = GetFileName();
-                        #ifdef WIN32
-                        auto lastSeparator = containerName.find_last_of('\\');
-                        #else
-                        auto lastSeparator = containerName.find_last_of('/');
-                        #endif
-                        auto expandedPackageName = containerName.substr(0, lastSeparator + 1) + packageName;
-                        ThrowHrIfFailed(CreateStreamOnFile(const_cast<char*>(expandedPackageName.c_str()), true, &packageStream));
+                    {
+                        ThrowErrorIfNot(Error::FileNotFound, packageStream, "Package is not in container");
                     }
-                    ThrowErrorIfNot(Error::FileNotFound, packageStream, "Package from a flat bundle is not present");
+
+                    // Semantic checks
+                    LARGE_INTEGER start = { 0 };
+                    ULARGE_INTEGER end = { 0 };
+                    ThrowHrIfFailed(packageStream->Seek(start, StreamBase::Reference::END, &end));
+                    ThrowHrIfFailed(packageStream->Seek(start, StreamBase::Reference::START, nullptr));
+                    
+                    UINT64 size;
+                    ThrowHrIfFailed(package->GetSize(&size));
+                    ThrowErrorIf(Error::AppxManifestSemanticError, end.u.LowPart != size,
+                        "Size mistmach of package between AppxManifestBundle.appx and container");
+
+                    // Validate the package
+                    ComPtr<IAppxPackageReader> reader;
+                    ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream.Get(), &reader));
+                    ComPtr<IAppxManifestReader> innerPackageManifest;
+                    ThrowHrIfFailed(reader->GetManifest(&innerPackageManifest));
+                    // Do semantic checks to validate the relationship between the AppxBundleManifest and the AppxManifest.
+                    ComPtr<IAppxManifestPackageId> bundlePackageId;
+                    ThrowHrIfFailed(package->GetPackageId(&bundlePackageId));
+                    auto bundlePackageIdInternal = bundlePackageId.As<IAppxManifestPackageIdInternal>();
+
+                    ComPtr<IAppxManifestPackageId> innerPackageId;
+                    ThrowHrIfFailed(innerPackageManifest->GetPackageId(&innerPackageId));
+                    auto innerPackageIdInternal = innerPackageId.As<IAppxManifestPackageIdInternal>();
+                    ThrowErrorIf(Error::AppxManifestSemanticError,
+                        (innerPackageIdInternal->GetPublisher() != bundlePackageIdInternal->GetPublisher()),
+                        "AppxBundleManifest.xml and AppxManifest.xml publisher mismatch");
+                    UINT64 bundlePackageVersion = 0;
+                    UINT64 innerPackageVersion = 0;
+                    ThrowHrIfFailed(bundlePackageId->GetVersion(&bundlePackageVersion));
+                    ThrowHrIfFailed(innerPackageId->GetVersion(&innerPackageVersion));
+                    ThrowErrorIf(Error::AppxManifestSemanticError,
+                        (innerPackageVersion != bundlePackageVersion),
+                        "AppxBundleManifest.xml and AppxManifest.xml version mismatch");
+                    ThrowErrorIf(Error::AppxManifestSemanticError,
+                        (innerPackageIdInternal->GetName() != bundlePackageIdInternal->GetName()),
+                        "AppxBundleManifest.xml and AppxManifest.xml name mismatch");
+                    ThrowErrorIf(Error::AppxManifestSemanticError,
+                        (innerPackageIdInternal->GetArchitecture() != bundlePackageIdInternal->GetArchitecture()) &&
+                        !(innerPackageIdInternal->GetArchitecture().empty() && (bundlePackageIdInternal->GetArchitecture() == "neutral")),
+                        "AppxBundleManifest.xml and AppxManifest.xml architecture mismatch");
+
+                    APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType;
+                    ThrowHrIfFailed(package->GetPackageType(&packageType));
+                    
+                    // Validation is done, now see if the package is applicable.
+                    applicability.AddPackageIfApplicable(reader, packageType, package);
+
+                    m_files[packageName] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
+                    // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
+                    // resource packages that are not languages packages.
                 }
-                else
-                {
-                    ThrowErrorIfNot(Error::FileNotFound, packageStream, "Package is not in container");
-                }
-
-                // Semantic checks
-                LARGE_INTEGER start = { 0 };
-                ULARGE_INTEGER end = { 0 };
-                ThrowHrIfFailed(packageStream->Seek(start, StreamBase::Reference::END, &end));
-                ThrowHrIfFailed(packageStream->Seek(start, StreamBase::Reference::START, nullptr));
-                
-                UINT64 size;
-                ThrowHrIfFailed(package->GetSize(&size));
-                ThrowErrorIf(Error::AppxManifestSemanticError, end.u.LowPart != size,
-                    "Size mistmach of package between AppxManifestBundle.appx and container");
-
-                // Validate the package
-                ComPtr<IAppxPackageReader> reader;
-                ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream.Get(), &reader));
-                ComPtr<IAppxManifestReader> innerPackageManifest;
-                ThrowHrIfFailed(reader->GetManifest(&innerPackageManifest));
-                // Do semantic checks to validate the relationship between the AppxBundleManifest and the AppxManifest.
-                ComPtr<IAppxManifestPackageId> bundlePackageId;
-                ThrowHrIfFailed(package->GetPackageId(&bundlePackageId));
-                auto bundlePackageIdInternal = bundlePackageId.As<IAppxManifestPackageIdInternal>();
-
-                ComPtr<IAppxManifestPackageId> innerPackageId;
-                ThrowHrIfFailed(innerPackageManifest->GetPackageId(&innerPackageId));
-                auto innerPackageIdInternal = innerPackageId.As<IAppxManifestPackageIdInternal>();
-                ThrowErrorIf(Error::AppxManifestSemanticError,
-                    (innerPackageIdInternal->GetPublisher() != bundlePackageIdInternal->GetPublisher()),
-                    "AppxBundleManifest.xml and AppxManifest.xml publisher mismatch");
-                UINT64 bundlePackageVersion = 0;
-                UINT64 innerPackageVersion = 0;
-                ThrowHrIfFailed(bundlePackageId->GetVersion(&bundlePackageVersion));
-                ThrowHrIfFailed(innerPackageId->GetVersion(&innerPackageVersion));
-                ThrowErrorIf(Error::AppxManifestSemanticError,
-                    (innerPackageVersion != bundlePackageVersion),
-                    "AppxBundleManifest.xml and AppxManifest.xml version mismatch");
-                ThrowErrorIf(Error::AppxManifestSemanticError,
-                    (innerPackageIdInternal->GetName() != bundlePackageIdInternal->GetName()),
-                    "AppxBundleManifest.xml and AppxManifest.xml name mismatch");
-                ThrowErrorIf(Error::AppxManifestSemanticError,
-                    (innerPackageIdInternal->GetArchitecture() != bundlePackageIdInternal->GetArchitecture()) &&
-                    !(innerPackageIdInternal->GetArchitecture().empty() && (bundlePackageIdInternal->GetArchitecture() == "neutral")),
-                    "AppxBundleManifest.xml and AppxManifest.xml architecture mismatch");
-
-                APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType;
-                ThrowHrIfFailed(package->GetPackageType(&packageType));
-                
-                // Validation is done, now see if the package is applicable.
-                applicability.AddPackageIfApplicable(reader, packageType, package);
-
-                m_files[packageName] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
-                // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
-                // resource packages that are not languages packages.
-            }*/
+            }
             applicability.GetApplicablePackages(&m_applicablePackages, &m_applicablePackagesNames);
 
         }

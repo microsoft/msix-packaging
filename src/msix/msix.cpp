@@ -461,7 +461,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
         LARGE_INTEGER li{0};    
         ThrowHrIfFailed(stream->Seek(li, MSIX::StreamBase::Reference::START, nullptr));
 
-        MSIX_VALIDATION_OPTION validationOption = MSIX_VALIDATION_OPTION_SKIPSIGNATURE;
+        MSIX_VALIDATION_OPTION validationOption = static_cast<MSIX_VALIDATION_OPTION>(MSIX_VALIDATION_OPTION_SKIPSIGNATURE | MSIX_VALIDATION_OPTION_SKIPPACKAGEVALIDATION);
         MSIX_APPLICABILITY_OPTIONS applicabilityOption = static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE);
         
         MSIX::ComPtr<IAppxBundleFactory> appxBundleFactory;
