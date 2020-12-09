@@ -24,7 +24,6 @@
 #include "MappingFileParser.hpp"
 #include "FileStream.hpp"
 #include "VectorStream.hpp"
-#include "StreamBase.hpp"
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
@@ -375,11 +374,11 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     });
 
     MSIX::ComPtr<IStream> stream;
+    std::vector<std::uint8_t> streamVector;
+
     if(manifestOnly)
     {
-        /*std::vector<std::uint8_t> streamVector;
-        stream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&streamVector);*/
-        ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &stream)); 
+        stream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&streamVector);
     }
     else
     {
@@ -457,18 +456,22 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
 
     ThrowHrIfFailed(bundleWriter->Close());
 
-    /*if(manifestOnly)
+    if(manifestOnly)
     {
-        //setstream
+        LARGE_INTEGER li{0};    
+        ThrowHrIfFailed(stream->Seek(li, MSIX::StreamBase::Reference::START, nullptr));
+
+        MSIX_VALIDATION_OPTION validationOption = MSIX_VALIDATION_OPTION_SKIPSIGNATURE;
+        MSIX_APPLICABILITY_OPTIONS applicabilityOption = static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE);
         
         MSIX::ComPtr<IAppxBundleFactory> appxBundleFactory;
         ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
-            MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE, 
-            MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL,
+            validationOption, 
+            applicabilityOption,
             &appxBundleFactory));
 
         MSIX::ComPtr<IAppxBundleReader> bundleReader;
-        ThrowHrIfFailed(factory->CreateBundleReader(stream.Get(), &bundleReader));
+        ThrowHrIfFailed(appxBundleFactory->CreateBundleReader(stream.Get(), &bundleReader));
 
         MSIX::ComPtr<IAppxBundleManifestReader> bundleManifestReader;
         ThrowHrIfFailed(bundleReader->GetManifest(&bundleManifestReader));
@@ -479,9 +482,12 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
         MSIX::ComPtr<IStream> bundleManifestOutputStream;
         ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &bundleManifestOutputStream));
 
-        ULARGE_INTEGER fileSizeLargeInteger = { 0 };
-        stream->CopyTo(bundleManifestOutputStream.Get(), fileSizeLargeInteger, nullptr, nullptr);
-    }*/
+        ULARGE_INTEGER maxSize = { 0 };
+        maxSize.QuadPart = UINT64_MAX;
+        ULARGE_INTEGER sizeRead = { 0 };
+        ULARGE_INTEGER sizeWritten = { 0 };
+        bundleManifestStream->CopyTo(bundleManifestOutputStream.Get(), maxSize, &sizeRead, &sizeWritten);
+    }
 
     deleteFile.release();
     return static_cast<HRESULT>(MSIX::Error::OK);

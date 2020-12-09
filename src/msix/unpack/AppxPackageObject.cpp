@@ -221,7 +221,7 @@ namespace MSIX {
                 applicability.InitializeLanguages();
             }
 
-            for (const auto& package : bundleInfo->GetPackages())
+            /*for (const auto& package : bundleInfo->GetPackages())
             {
                 auto bundleInfoInternal = package.As<IAppxBundleManifestPackageInfoInternal>();
                 auto packageName = bundleInfoInternal->GetFileName();
@@ -315,7 +315,7 @@ namespace MSIX {
                 m_files[packageName] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
                 // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
                 // resource packages that are not languages packages.
-            }
+            }*/
             applicability.GetApplicablePackages(&m_applicablePackages, &m_applicablePackagesNames);
 
         }

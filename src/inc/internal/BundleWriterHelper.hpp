@@ -71,7 +71,6 @@ namespace MSIX {
         std::string mainPackageName;
         std::string mainPackagePublisher;
         std::uint64_t bundleVersion;
-        //std::uint64_t payloadPackageMinWinTargetDeviceFamilyVersionForWindows = UINT64_MAX;
 
         BundleValidationHelper m_validationHelper;
         BundleManifestWriter m_bundleManifestWriter;

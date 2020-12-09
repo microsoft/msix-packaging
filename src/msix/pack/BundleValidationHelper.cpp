@@ -3,6 +3,7 @@
 namespace MSIX {
 
     const std::string Win10DeviceFamilyNameStartsWith = "Windows.";
+    const std::string NeutralArchString = "neutral";
     const std::string OSVersionRS5 = "10.0.17763.0";
 
     BundleValidationHelper::BundleValidationHelper() 
@@ -11,7 +12,7 @@ namespace MSIX {
     void BundleValidationHelper::ValidateTargetDeviceFamiliesFromManifestPackageId(IAppxManifestPackageIdInternal* packageId, IAppxManifestTargetDeviceFamiliesEnumerator* tdfs, std::string fileName)
     {
         std::string arch = packageId->GetArchitecture();
-        if (arch == "neutral")
+        if (arch == NeutralArchString)
         {
             this->numberOfNeutralAppPackages++;
         }
@@ -36,7 +37,7 @@ namespace MSIX {
                 }
             }
 
-            if(arch == "neutral")
+            if(arch == NeutralArchString)
             {
                 PackageNameInfo packageNameInfo;
                 packageNameInfo.packageFullName = packageId->GetPackageFullName();
