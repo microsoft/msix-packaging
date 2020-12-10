@@ -308,7 +308,7 @@ public:
         ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
         auto intermediate = wstring_to_utf8(name);
         auto attributeValue = GetAttributeValue(intermediate);
-        return m_factory->MarshalOutString(attributeValue, value);
+        return m_factory->MarshalOutString(attributeValue, value); 
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE GetText(LPWSTR* value) noexcept override try
