@@ -26,7 +26,8 @@ class IBundleWriter : public IUnknown
 {
 public:
     virtual void ProcessBundlePayload(const MSIX::ComPtr<IDirectoryObject>& from, bool flatBundle) = 0;
-
+    virtual void ProcessBundlePayloadFromMappingFile(std::map<std::string, std::string> fileList, bool flatBundle) = 0;
+    virtual void ProcessExternalPackages(std::map<std::string, std::string> externalPackagesList) = 0;
 };
 MSIX_INTERFACE(IBundleWriter, 0xca90bcd9,0x78a2,0x4773,0x82,0x0c,0x0b,0x68,0x7d,0xe4,0x9f,0x99);
 
@@ -39,6 +40,8 @@ namespace MSIX {
 
         // IBundleWriter
         void ProcessBundlePayload(const ComPtr<IDirectoryObject>& from, bool flatBundle) override;
+        void ProcessBundlePayloadFromMappingFile(std::map<std::string, std::string> fileList, bool flatBundle) override;
+        void ProcessExternalPackages(std::map<std::string, std::string> externalPackagesList) override;
 
         // IAppxBundleWriter
         HRESULT STDMETHODCALLTYPE AddPayloadPackage(LPCWSTR fileName, IStream* packageStream) noexcept override;
@@ -64,9 +67,14 @@ namespace MSIX {
         void AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
             bool addToBlockMap, const char* contentType, bool forceContentTypeOverride = false);
 
-        void AddPackageReferenceInternal(std::string fileName, IStream* packageStream,
-            bool isDefaultApplicablePackage);
+        void AddPackageReferenceInternal(std::string fileName, IStream* packageStream, bool isDefaultApplicablePackage);
+
+        void AddExternalPackageReferenceInternal(std::string fileName, IStream* packageStream, bool isDefaultApplicablePackage);
             
+        void ValidateAndAddPayloadFile(const std::string& name, IStream* stream, APPX_COMPRESSION_OPTION compressionOpt, const char* contentType);
+
+        void ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt);
+
         WriterState m_state;
         ComPtr<IMsixFactory> m_factory;
         ComPtr<IZipWriter> m_zipWriter;

@@ -8,6 +8,8 @@
 #include "ZipObjectWriter.hpp"
 #include "AppxPackageInfo.hpp"
 #include "BundleManifestWriter.hpp"
+#include "AppxManifestObject.hpp"
+#include "BundleValidationHelper.hpp"
 
 #include <map>
 
@@ -41,17 +43,7 @@ namespace MSIX {
             IAppxManifestQualifiedResourcesEnumerator* resources,
             IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
 
-        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE GetPayloadPackageType(
-            IAppxManifestReader* packageManifestReader,
-            std::string fileName);
-
-        void ValidateNameAndPublisher(
-            IAppxManifestPackageIdInternal* packageId,
-            std::string filename);
-
-        void ValidateApplicationElement(
-            IAppxManifestReader* packageManifestReader,
-            std::string fileName);
+        void ValidateNameAndPublisher(IAppxManifestPackageIdInternal* packageId, std::string filename);
 
         void AddPackageInfoToVector(std::vector<PackageInfo>& packagesVector, PackageInfo packageInfo);
 
@@ -64,6 +56,12 @@ namespace MSIX {
         std::uint64_t GetBundleVersion() { return this->bundleVersion; }
 
         std::vector<PackageInfo> GetPayloadPackages() { return payloadPackages; }
+
+        //Add External packages
+        void AddExternalPackageReferenceFromManifest(std::string fileName, IAppxManifestReader* manifestReader,
+            bool isDefaultApplicablePackage);
+
+        std::uint64_t GetMinTargetDeviceFamilyVersionFromManifestForWindows(IAppxManifestReader* packageManifestReader);
     
     private:
         std::vector<PackageInfo> payloadPackages;
@@ -74,6 +72,7 @@ namespace MSIX {
         std::string mainPackagePublisher;
         std::uint64_t bundleVersion;
 
+        BundleValidationHelper m_validationHelper;
         BundleManifestWriter m_bundleManifestWriter;
     };
 }

@@ -1659,6 +1659,7 @@ enum MSIX_VALIDATION_OPTION
                                                                   // If the SDK is compiled without USE_VALIDATION_PARSER,
                                                                   // no schema validation is done, but it needs to be
                                                                   // valid xml.
+        MSIX_VALIDATION_OPTION_SKIPPACKAGEVALIDATION       = 0x8,
     }   MSIX_VALIDATION_OPTION;
 
 typedef /* [v1_enum] */
@@ -1701,6 +1702,7 @@ enum MSIX_BUNDLE_OPTIONS
         MSIX_OPTION_NOOVERWRITE = 0x4,
         MSIX_OPTION_VERSION = 0x8,
         MSIX_BUNDLE_OPTION_FLATBUNDLE = 0x10,
+        MSIX_BUNDLE_OPTION_BUNDLEMANIFESTONLY = 0x20,
     }   MSIX_BUNDLE_OPTIONS;
 
 #define MSIX_PLATFORM_ALL MSIX_PLATFORM_WINDOWS10      | \

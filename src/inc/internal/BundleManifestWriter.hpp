@@ -14,6 +14,16 @@
 
 namespace MSIX {
 
+    // Tracks the internal state of the Bundle Manifest writer
+    enum ElementWriterState
+    {
+        Uninitialized = 0,
+        BundleManifestStarted = 1,
+        PackagesAdded = 2,
+        OptionalBundlesAdded = 3,
+        BundleManifestEnded = 4,
+    };
+
     struct PackageInfo
     {
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE type;
@@ -46,11 +56,16 @@ namespace MSIX {
         void StartBundleElement();
         void WriteIdentityElement(std::string name, std::string publisher, std::uint64_t version);
         void StartPackagesElement();
+        void AddPackage(PackageInfo packageInfo);
         void WritePackageElement(PackageInfo packageInfo);
         void WriteResourcesElement(IAppxManifestQualifiedResourcesEnumerator* resources);
         void WriteDependenciesElement(IAppxManifestTargetDeviceFamiliesEnumerator* tdfs);
+        void AddOptionalBundle(OptionalBundleInfo bundleInfo);
+        void WriteOptionalBundleElement(OptionalBundleInfo bundleInfo);
+        void EndPackagesElementIfNecessary();
         void EndPackagesElement();
-        void Close();
+        void EndBundleManifest();
+        void EndBundleElement();
 
         ComPtr<IStream> GetStream() { return m_xmlWriter.GetStream(); }
         std::string GetQualifiedName(std::string namespaceAlias, std::string name);
@@ -59,6 +74,6 @@ namespace MSIX {
     protected:
         XmlWriter m_xmlWriter;
         std::string targetXmlNamespace;
-
+        std::uint32_t currentState;
     };
 }

@@ -21,6 +21,9 @@
 #include "AppxBundleWriter.hpp"
 #include "ScopeExit.hpp"
 #include "VersionHelpers.hpp"
+#include "MappingFileParser.hpp"
+#include "FileStream.hpp"
+#include "VectorStream.hpp"
 
 #ifndef WIN32
 // on non-win32 platforms, compile with -fvisibility=hidden
@@ -299,10 +302,10 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     char* version
 ) noexcept try
 {
-    std::unique_ptr<std::map<std::string, std::string>> externalPackagesList;
     std::uint64_t bundleVersion = 0;
     bool flatBundle = false;
     bool overWrite = false;
+    bool manifestOnly = false;
 
     //Process Common Options
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERSION)
@@ -325,9 +328,14 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
         overWrite = false;
     }
 
-    if (0 == (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE))
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE)
     {
         flatBundle = true;
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_BUNDLEMANIFESTONLY)
+    {
+        manifestOnly = true;
     }
 
     if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
@@ -348,16 +356,16 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     }
     //TODO:: Error if directoryPath is a file
 
-    MSIX::ComPtr<IDirectoryObject> from;
-    if(directoryPath != nullptr && outputBundle != nullptr)
+    MSIX::MappingFileParser mappingFileParser;
+    if(mappingFile != nullptr && outputBundle != nullptr)
     {
-        from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
-    }
-    else if(mappingFile != nullptr && outputBundle != nullptr)
-    {
-        //Create from list from mapping file(Currently keeping it same as above, have to
-        //parse from mapping file into externalPackagesList)
-        from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+        mappingFileParser.ParseMappingFile(mappingFile);
+        if(!mappingFileParser.IsSectionFound(MSIX::SectionID::FilesSection))
+        {
+            std::ostringstream errorBuilder;
+            errorBuilder << "The mapping file " << mappingFile << " is missing a [Files] section.";
+            ThrowErrorAndLog(MSIX::Error::BadFormat, errorBuilder.str().c_str());
+        }
     }
 
     auto deleteFile = MSIX::scope_exit([&outputBundle]
@@ -366,11 +374,23 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     });
 
     MSIX::ComPtr<IStream> stream;
-    ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &stream));
+    std::vector<std::uint8_t> streamVector;
+
+    if(manifestOnly)
+    {
+        stream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&streamVector);
+    }
+    else
+    {
+        ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &stream));
+    }
 
     MSIX::ComPtr<IAppxBundleFactory> factory;
+    MSIX_VALIDATION_OPTION validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
+    validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE);
+
     ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
-        MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL, 
+        validationOptions,
         MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL,
         &factory));
 
@@ -380,8 +400,95 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
     ThrowHrIfFailed(factory->CreateBundleWriter(stream.Get(), bundleVersion, &bundleWriter));
     bundleWriter4 = bundleWriter.As<IAppxBundleWriter4>();
 
-    bundleWriter4.As<IBundleWriter>()->ProcessBundlePayload(from, flatBundle);
+    if(manifestOnly)
+    {
+        MSIX::ComPtr<IAppxFactory> appxFactory;
+        ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, 
+            MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE, 
+            &appxFactory));
+
+        std::map<std::string, std::string> fileList = mappingFileParser.GetFileList();
+        std::map<std::string, std::string>::iterator fileListIterator;
+        for (fileListIterator = fileList.begin(); fileListIterator != fileList.end(); fileListIterator++)
+        {
+            std::string inputPath = fileListIterator->second;
+            std::string outputPath = fileListIterator->first;
+
+            std::vector<std::uint8_t> tempPackageVector;
+            auto tempPackageStream = MSIX::ComPtr<IStream>::Make<MSIX::VectorStream>(&tempPackageVector);                
+
+            auto manifestStream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(inputPath, MSIX::FileStream::Mode::READ);
+
+            MSIX::ComPtr<IAppxPackageWriter> tempPackageWriter;
+            ThrowHrIfFailed(appxFactory->CreatePackageWriter(tempPackageStream.Get(), nullptr, &tempPackageWriter));
+            ThrowHrIfFailed(tempPackageWriter->Close(manifestStream.Get()));
+
+            LARGE_INTEGER li{0};    
+            ThrowHrIfFailed(tempPackageStream->Seek(li, MSIX::StreamBase::Reference::START, nullptr));
+
+            if (flatBundle)
+            {
+                ThrowHrIfFailed(bundleWriter4->AddPackageReference(MSIX::utf8_to_wstring(outputPath).c_str(), tempPackageStream.Get(), false));
+            }
+            else
+            {
+                ThrowHrIfFailed(bundleWriter4->AddPayloadPackage(MSIX::utf8_to_wstring(outputPath).c_str(), tempPackageStream.Get(), false));
+            }
+        }
+    }
+    else
+    {
+        if(directoryPath != nullptr && outputBundle != nullptr)
+        {
+            auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+            bundleWriter4.As<IBundleWriter>()->ProcessBundlePayload(from, flatBundle);
+        }
+        else if(mappingFile != nullptr && outputBundle != nullptr)
+        {
+            bundleWriter4.As<IBundleWriter>()->ProcessBundlePayloadFromMappingFile(mappingFileParser.GetFileList(), flatBundle);
+        }
+    }
+
+    if(!mappingFileParser.GetExternalPackagesList().empty())
+    {
+        bundleWriter4.As<IBundleWriter>()->ProcessExternalPackages(mappingFileParser.GetExternalPackagesList());
+    }
+
     ThrowHrIfFailed(bundleWriter->Close());
+
+    if(manifestOnly)
+    {
+        LARGE_INTEGER li{0};    
+        ThrowHrIfFailed(stream->Seek(li, MSIX::StreamBase::Reference::START, nullptr));
+
+        MSIX_VALIDATION_OPTION validationOption = static_cast<MSIX_VALIDATION_OPTION>(MSIX_VALIDATION_OPTION_SKIPSIGNATURE | MSIX_VALIDATION_OPTION_SKIPPACKAGEVALIDATION);
+        MSIX_APPLICABILITY_OPTIONS applicabilityOption = static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE);
+        
+        MSIX::ComPtr<IAppxBundleFactory> appxBundleFactory;
+        ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
+            validationOption, 
+            applicabilityOption,
+            &appxBundleFactory));
+
+        MSIX::ComPtr<IAppxBundleReader> bundleReader;
+        ThrowHrIfFailed(appxBundleFactory->CreateBundleReader(stream.Get(), &bundleReader));
+
+        MSIX::ComPtr<IAppxBundleManifestReader> bundleManifestReader;
+        ThrowHrIfFailed(bundleReader->GetManifest(&bundleManifestReader));
+        
+        MSIX::ComPtr<IStream> bundleManifestStream;
+        ThrowHrIfFailed(bundleManifestReader->GetStream(&bundleManifestStream));
+
+        MSIX::ComPtr<IStream> bundleManifestOutputStream;
+        ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &bundleManifestOutputStream));
+
+        ULARGE_INTEGER maxSize = { 0 };
+        maxSize.QuadPart = UINT64_MAX;
+        ULARGE_INTEGER sizeRead = { 0 };
+        ULARGE_INTEGER sizeWritten = { 0 };
+        bundleManifestStream->CopyTo(bundleManifestOutputStream.Get(), maxSize, &sizeRead, &sizeWritten);
+    }
+
     deleteFile.release();
     return static_cast<HRESULT>(MSIX::Error::OK);
 

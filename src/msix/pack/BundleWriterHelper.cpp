@@ -54,22 +54,26 @@ namespace MSIX {
 
         ComPtr<IAppxManifestReader3> manifestReader3;
         ThrowHrIfFailed(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader3>::iid, reinterpret_cast<void**>(&manifestReader3)));
-
         ThrowHrIfFailed(manifestReader3->GetQualifiedResources(&loadedResources));
-
         ThrowHrIfFailed(manifestReader3->GetTargetDeviceFamilies(&loadedTdfs));
 
-        loadedPackageType = GetPayloadPackageType(manifestReader.Get(), fileName);
-        //TODO:: Validate Package matches SHA256 hash method
-
         auto packageIdInternal = loadedPackageId.As<IAppxManifestPackageIdInternal>();
-        ValidateNameAndPublisher(packageIdInternal.Get(), fileName);
 
-        //TODO: TDF checks
+        loadedPackageType = this->m_validationHelper.GetPayloadPackageType(manifestReader.Get(), fileName);
+        this->m_validationHelper.AddPackage(loadedPackageType, packageIdInternal.Get(), fileName);
+        this->m_validationHelper.ValidateOSVersion(manifestReader.Get(), fileName);        
+
+        ValidateNameAndPublisher(packageIdInternal.Get(), fileName);
 
         if (loadedPackageType == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
         {
-            ValidateApplicationElement(manifestReader.Get(), fileName);
+            this->m_validationHelper.ValidateApplicationElement(manifestReader.Get(), fileName);
+            if (loadedTdfs.Get() != nullptr)
+            {
+                ComPtr<IAppxManifestTargetDeviceFamiliesEnumerator> tdfCopy;
+                ThrowHrIfFailed(manifestReader3->GetTargetDeviceFamilies(&tdfCopy));
+                this->m_validationHelper.ValidateTargetDeviceFamiliesFromManifestPackageId(packageIdInternal.Get(), tdfCopy.Get(), fileName);
+            }
         }
 
         *packageType = loadedPackageType;
@@ -79,33 +83,6 @@ namespace MSIX {
         if (loadedTdfs.Get() != nullptr)
         {
             *tdfs = loadedTdfs.Detach();
-        }
-    }
-
-    void BundleWriterHelper::ValidateApplicationElement(
-        IAppxManifestReader* packageManifestReader,
-        std::string fileName)
-    {
-        ComPtr<IAppxManifestReader4> manifestReader4;
-        ThrowHrIfFailed(packageManifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader4>::iid, reinterpret_cast<void**>(&manifestReader4)));
-
-        ComPtr<IAppxManifestOptionalPackageInfo> optionalPackageInfo;
-        ThrowHrIfFailed(manifestReader4->GetOptionalPackageInfo(&optionalPackageInfo));
-        
-        BOOL packageIsOptional = FALSE;
-        ThrowHrIfFailed(optionalPackageInfo->GetIsOptionalPackage(&packageIsOptional));
-
-        if (!packageIsOptional) // optional payload packages are not required to declare any <Application> elements
-        {
-            ComPtr<IAppxManifestApplicationsEnumerator> applications;
-            ThrowHrIfFailed(packageManifestReader->GetApplications(&applications));
-            BOOL hasApplication = FALSE;
-            ThrowHrIfFailed(applications->GetHasCurrent(&hasApplication));
-
-            if (!hasApplication)
-            {
-                ThrowErrorAndLog(Error::AppxManifestSemanticError, "The package is not valid in the bundle because its manifest does not declare any Application elements.");
-            }
         }
     }
 
@@ -136,27 +113,6 @@ namespace MSIX {
         }
     }
 
-    APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE BundleWriterHelper::GetPayloadPackageType(IAppxManifestReader* packageManifestReader,
-        std::string fileName)
-    {
-        ComPtr<IAppxManifestProperties> packageProperties;
-        ThrowHrIfFailed(packageManifestReader->GetProperties(&packageProperties));
-
-        BOOL isFrameworkPackage = FALSE;
-        ThrowHrIfFailed(packageProperties->GetBoolValue(L"Framework", &isFrameworkPackage));
-
-        if (isFrameworkPackage)
-        {
-            ThrowErrorAndLog(Error::AppxManifestSemanticError, "The package is not valid in the bundle because it is a framework package.");
-        }
-
-        BOOL isResourcePackage = FALSE;
-        ThrowHrIfFailed(packageProperties->GetBoolValue(L"ResourcePackage", &isResourcePackage));
-
-        APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType = (isResourcePackage ? APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE : APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION);
-        return packageType;
-    }
-
     void BundleWriterHelper::AddValidatedPackageData(
         std::string fileName, 
         std::uint64_t bundleOffset,
@@ -167,8 +123,6 @@ namespace MSIX {
         IAppxManifestQualifiedResourcesEnumerator* resources,
         IAppxManifestTargetDeviceFamiliesEnumerator* tdfs)
     {
-        //TODO: validate package payload extension
-
         auto innerPackageIdInternal = packageId.As<IAppxManifestPackageIdInternal>();
 
         PackageInfo packageInfo;
@@ -211,13 +165,117 @@ namespace MSIX {
         }
     }
 
-    void BundleWriterHelper::EndBundleManifest()
+    void BundleWriterHelper::AddExternalPackageReferenceFromManifest(std::string fileName, IAppxManifestReader* manifestReader,
+        bool isDefaultApplicablePackage)
     {
+        ComPtr<IAppxManifestReader5> manifestReader5;
+        ThrowHrIfFailed(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader5>::iid, reinterpret_cast<void**>(&manifestReader5)));
+        ComPtr<IAppxManifestMainPackageDependenciesEnumerator> mainPackageDependencies;
+        ThrowHrIfFailed(manifestReader5->GetMainPackageDependencies(&mainPackageDependencies));
+        BOOL hasMoreMainPackageDependencies = FALSE;
+        ThrowHrIfFailed(mainPackageDependencies->GetHasCurrent(&hasMoreMainPackageDependencies));
+
+        // Validation: this must be an optional package with a main package dependency with the same
+        // name and publisher as the actual main packages added to the bundle
+        ThrowErrorIfNot(Error::AppxManifestSemanticError, hasMoreMainPackageDependencies, "The Appx package's manifest is invalid.");
+        ComPtr<IAppxManifestMainPackageDependency> mainPackage;
+        ThrowHrIfFailed(mainPackageDependencies->GetCurrent(&mainPackage));
+
+        auto mainPackageInternal = mainPackage.As<IAppxManifestMainPackageDependencyInternal>();
+
+        if(this->mainPackageName.empty())
+        {
+            this->mainPackageName = mainPackageInternal->GetName();
+            this->mainPackagePublisher = mainPackageInternal->GetPublisher();
+        }
+        else
+        {
+            std::string packageName = mainPackageInternal->GetName();
+            if(packageName.compare(this->mainPackageName) != 0)
+            {
+                ThrowErrorAndLog(Error::AppxManifestSemanticError, "The Appx package's manifest is invalid.");
+            }
+            
+            std::string publisher = mainPackageInternal->GetPublisher();
+            if(publisher.compare(this->mainPackagePublisher) != 0)
+            {
+                ThrowErrorAndLog(Error::AppxManifestSemanticError, "The Appx package's manifest is invalid.");
+            }
+        }
+
+        // Validation: this cannot be an optional package with multiple main package dependencies
+        ThrowHrIfFailed(mainPackageDependencies->MoveNext(&hasMoreMainPackageDependencies));
+        ThrowErrorIf(Error::AppxManifestSemanticError, hasMoreMainPackageDependencies, "The Appx package's manifest is invalid.");
+
+        // Populate a new PackageInfo entry with info from the optional package's manifest
+        ComPtr<IAppxManifestPackageId> packageId1;
+        ThrowHrIfFailed(manifestReader->GetPackageId(&packageId1));
+
+        auto packageId = packageId1.As<IAppxManifestPackageIdInternal>();
+
+        std::string bundleFamilyName = packageId->GetPackageFamilyName();
+        std::map<std::string, OptionalBundleInfo>::iterator optBundlesIterator = optionalBundles.find(bundleFamilyName);
+        if(optBundlesIterator == optionalBundles.end())
+        {
+            OptionalBundleInfo newBundleInfo;
+            newBundleInfo.name = packageId->GetName();
+            newBundleInfo.publisher = packageId->GetPublisher();
+            newBundleInfo.version = 0;
+
+            optionalBundles.insert(std::pair<std::string, OptionalBundleInfo>(bundleFamilyName, newBundleInfo));
+            optBundlesIterator = optionalBundles.find(bundleFamilyName);
+        }
+
+        PackageInfo packageInfo;
+        packageInfo.type = this->m_validationHelper.GetPayloadPackageType(manifestReader, fileName);
+        this->m_validationHelper.AddPackage(packageInfo.type, packageId.Get(), fileName);        
+        if (packageInfo.type == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
+        {
+            this->m_validationHelper.ValidateApplicationElement(manifestReader, fileName);
+        }
+
+        packageInfo.architecture = packageId->GetArchitecture();
+        UINT64 version;
+        ThrowHrIfFailed(packageId1->GetVersion(&version));
+        packageInfo.version = version;
+        packageInfo.resourceId = packageId->GetResourceId();
+
+        ComPtr<IAppxManifestReader2> manifestReader2;
+        ThrowHrIfFailed(manifestReader->QueryInterface(UuidOfImpl<IAppxManifestReader2>::iid, reinterpret_cast<void**>(&manifestReader2)));
+
+        packageInfo.isDefaultApplicablePackage = isDefaultApplicablePackage;
+        ThrowHrIfFailed(manifestReader2->GetQualifiedResources(&packageInfo.resources));
+        packageInfo.fileName = fileName;
+        packageInfo.offset = 0;
+        packageInfo.size = 0;
+
+        ComPtr<IAppxManifestReader3> manifestReader3;
+        ThrowHrIfFailed(manifestReader2->QueryInterface(UuidOfImpl<IAppxManifestReader3>::iid, reinterpret_cast<void**>(&manifestReader3)));
+        manifestReader3->GetTargetDeviceFamilies(&packageInfo.tdfs);
+
+        AddPackageInfoToVector(optBundlesIterator->second.optionalPackages, packageInfo);        
+    }
+
+    void BundleWriterHelper::EndBundleManifest()
+    {        
+        // A bundle must contain at least one app package.  It's an error to Close
+        // the writer without having added one.
+        bool result = this->m_validationHelper.ContainsApplicationPackage();
+        if (!result)
+        {
+            ThrowErrorAndLog(Error::AppxManifestSemanticError, "The bundle must contain at least one app package targeting a known processor architecture.");
+        }
+        
         std::string targetXmlNamespace = "http://schemas.microsoft.com/appx/2013/bundle";
         bool isPre2018BundleManifest = true;
         
-        //TODO: Only use new 2018 bundle schema if the bundle contains more than 1 neutral app packages
-        if (this->hasDefaultOrNeutralResources)
+        // Only use new 2018 bundle schema if the bundle contains more than 1 neutral app packages
+        if (this->m_validationHelper.ContainsMultipleNeutralAppPackages())
+        {
+            targetXmlNamespace = "http://schemas.microsoft.com/appx/2018/bundle";
+            isPre2018BundleManifest = false;
+        }
+        else if (this->hasDefaultOrNeutralResources)
         {
             targetXmlNamespace = "http://schemas.microsoft.com/appx/2017/bundle";
         }
@@ -226,19 +284,22 @@ namespace MSIX {
             targetXmlNamespace = "http://schemas.microsoft.com/appx/2016/bundle";
         }
 
+        this->m_validationHelper.ValidateContainsMultipleNeutralAppPackages(isPre2018BundleManifest);
         m_bundleManifestWriter.StartBundleManifest(targetXmlNamespace, this->mainPackageName,
             this->mainPackagePublisher, this->bundleVersion);
 
         for(std::size_t i = 0; i < this->payloadPackages.size(); i++) 
         {
-            m_bundleManifestWriter.WritePackageElement(payloadPackages[i]);
+            m_bundleManifestWriter.AddPackage(payloadPackages[i]);
         }
 
-        //TODO: this->OptionalBundles
+        std::map<std::string, OptionalBundleInfo>::iterator optionalBundleIterator = optionalBundles.begin();     
+        while(optionalBundleIterator != optionalBundles.end())
+        {
+            m_bundleManifestWriter.AddOptionalBundle(optionalBundleIterator->second);
+            optionalBundleIterator++;
+        }
         
-        //Ends Packages and bundle Element
-        m_bundleManifestWriter.EndPackagesElement();
-        m_bundleManifestWriter.Close();
-    }
-
+        m_bundleManifestWriter.EndBundleManifest();
+    }       
 }

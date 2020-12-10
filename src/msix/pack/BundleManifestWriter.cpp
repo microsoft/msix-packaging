@@ -7,7 +7,6 @@
 #include "BundleManifestWriter.hpp"
 #include "Crypto.hpp"
 #include "StringHelper.hpp"
-
 #include "AppxManifestObject.hpp"
 
 #include <vector>
@@ -18,27 +17,25 @@ namespace MSIX {
     static const char* schemaVersionAttribute = "SchemaVersion";
     static const char* Win2019SchemaVersion = "5.0";
     static const char* identityManifestElement = "Identity";
-    static const char* identityNameAttribute = "Name";
-    static const char* identityPublisherAttribute = "Publisher";
-    static const char* identityVersionAttribute = "Version";
+    static const char* nameAttribute = "Name";
+    static const char* publisherAttribute = "Publisher";
+    static const char* versionAttribute = "Version";
     static const char* packagesManifestElement = "Packages";
     static const char* packageManifestElement = "Package";
     static const char* packageTypeAttribute = "Type";
-    static const char* packageVersionAttribute = "Version";
     static const char* packageArchitectureAttribute = "Architecture";
     static const char* packageResourceIdAttribute = "ResourceId";
-    static const char* packageFileNameAttribute = "FileName";
+    static const char* fileNameAttribute = "FileName";
     static const char* resourcesManifestElement = "Resources";
     static const char* resourceManifestElement = "Resource";
     static const char* resourceLanguageAttribute = "Language";
     static const char* dependenciesManifestElementWithoutPrefix = "Dependencies";
     static const char* targetDeviceFamilyManifestElementWithoutPrefix = "TargetDeviceFamily";
-    static const char* tdfNameAttribute = "Name";
     static const char* tdfMinVersionAttribute = "MinVersion";
     static const char* tdfMaxVersionTestedAttribute = "MaxVersionTested";
-                    
     static const char* ApplicationPackageType = "application";
     static const char* ResourcePackageType = "resource";
+    static const char* optionalBundleManifestElement = "OptionalBundle";
 
     static const char* NamespaceAlias = "b";
     static const char* Namespace = "http://schemas.microsoft.com/appx/2013/bundle";
@@ -51,7 +48,10 @@ namespace MSIX {
     static const char* Namespace2019Alias = "b5";
     static const char* Namespace2019 = "http://schemas.microsoft.com/appx/2019/bundle";
 
-    BundleManifestWriter::BundleManifestWriter() : m_xmlWriter(XmlWriter(bundleManifestElement)) {}
+    BundleManifestWriter::BundleManifestWriter() : m_xmlWriter(XmlWriter(bundleManifestElement)) 
+    {
+        currentState = Uninitialized;
+    }
 
     void BundleManifestWriter::StartBundleManifest(std::string targetXmlNamespace, std::string name, 
         std::string publisher, std::uint64_t version)
@@ -60,6 +60,7 @@ namespace MSIX {
         StartBundleElement();
         WriteIdentityElement(name, publisher, version);
         StartPackagesElement();
+        currentState = BundleManifestStarted;
     }
 
     void BundleManifestWriter::StartBundleElement()
@@ -84,11 +85,11 @@ namespace MSIX {
     {
         m_xmlWriter.StartElement(identityManifestElement);
 
-        m_xmlWriter.AddAttribute(identityNameAttribute, name);
-        m_xmlWriter.AddAttribute(identityPublisherAttribute, publisher);
+        m_xmlWriter.AddAttribute(nameAttribute, name);
+        m_xmlWriter.AddAttribute(publisherAttribute, publisher);
 
         std::string versionString = MSIX::ConvertVersionToString(version);
-        m_xmlWriter.AddAttribute(identityVersionAttribute, versionString);
+        m_xmlWriter.AddAttribute(versionAttribute, versionString);
 
         m_xmlWriter.CloseElement();
     }
@@ -96,6 +97,12 @@ namespace MSIX {
     void BundleManifestWriter::StartPackagesElement()
     {
         m_xmlWriter.StartElement(packagesManifestElement);
+    }
+
+    void BundleManifestWriter::AddPackage(PackageInfo packageInfo)
+    {
+        WritePackageElement(packageInfo);
+        currentState = PackagesAdded;
     }
 
     void BundleManifestWriter::WritePackageElement(PackageInfo packageInfo)
@@ -114,7 +121,7 @@ namespace MSIX {
          m_xmlWriter.AddAttribute(packageTypeAttribute, packageTypeString);
 
         std::string versionString = MSIX::ConvertVersionToString(packageInfo.version);
-        m_xmlWriter.AddAttribute(packageVersionAttribute, versionString);
+        m_xmlWriter.AddAttribute(versionAttribute, versionString);
 
         if(packageInfo.type == APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE::APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION)
         {
@@ -128,7 +135,7 @@ namespace MSIX {
 
         if(!packageInfo.fileName.empty())
         {
-            m_xmlWriter.AddAttribute(packageFileNameAttribute, packageInfo.fileName);
+            m_xmlWriter.AddAttribute(fileNameAttribute, packageInfo.fileName);
         }
 
         if(packageInfo.offset > 0)
@@ -212,7 +219,7 @@ namespace MSIX {
 
                 auto targetDeviceFamilyInternal = tdf.As<IAppxManifestTargetDeviceFamilyInternal>();
                 std::string name = targetDeviceFamilyInternal->GetName();
-                m_xmlWriter.AddAttribute(tdfNameAttribute, name);
+                m_xmlWriter.AddAttribute(nameAttribute, name);
 
                 //Get minversion
                 UINT64 minVersion;
@@ -237,15 +244,66 @@ namespace MSIX {
         }
     }
 
-    void BundleManifestWriter::EndPackagesElement()
+    void BundleManifestWriter::AddOptionalBundle(OptionalBundleInfo bundleInfo)
     {
-        //TODO:: Main state to check if package is added and close only if
+        EndPackagesElementIfNecessary();
+        WriteOptionalBundleElement(bundleInfo);
+        currentState = OptionalBundlesAdded;
+    }
+
+    // Writes an OptionalBundle element, which can have one or more Package elements inside.
+    // <OptionalBundle Name="opt2" Publisher="CN=DifferentPublisher" Version="1.0.0.0" FileName="OptionalBundle3.appxbundle">
+    void BundleManifestWriter::WriteOptionalBundleElement(OptionalBundleInfo bundleInfo)
+    {
+        ThrowErrorIf(Error::InvalidParameter, bundleInfo.name.empty(), "One or more arguments are invalid");
+        ThrowErrorIf(Error::InvalidParameter, bundleInfo.publisher.empty(), "One or more arguments are invalid");
+
+        m_xmlWriter.StartElement(optionalBundleManifestElement);
+        m_xmlWriter.AddAttribute(nameAttribute, bundleInfo.name);
+        m_xmlWriter.AddAttribute(publisherAttribute, bundleInfo.publisher);
+
+        if (bundleInfo.version > 0)
+        {
+            std::string versionString = MSIX::ConvertVersionToString(bundleInfo.version);
+            m_xmlWriter.AddAttribute(versionAttribute, versionString);
+        }
+
+        if(!bundleInfo.fileName.empty())
+        {
+            m_xmlWriter.AddAttribute(fileNameAttribute, bundleInfo.fileName);
+        }
+
+        for(size_t i = 0; i < bundleInfo.optionalPackages.size(); i++)
+        {
+            WritePackageElement(bundleInfo.optionalPackages[i]);
+        }
+
+        //End OptionalBundle Tag
         m_xmlWriter.CloseElement();
     }
 
-    void BundleManifestWriter::Close()
+    void BundleManifestWriter::EndBundleManifest()
     {
-        //Ends Bundle Element
+        EndPackagesElementIfNecessary();
+        EndBundleElement();
+        currentState = BundleManifestEnded;
+    }
+
+    void BundleManifestWriter::EndPackagesElementIfNecessary()
+    {
+        if (currentState == PackagesAdded)
+        {
+            EndPackagesElement();
+        }
+    }
+
+    void BundleManifestWriter::EndPackagesElement()
+    {
+        m_xmlWriter.CloseElement();
+    }
+
+    void BundleManifestWriter::EndBundleElement()
+    {
         m_xmlWriter.CloseElement();
     }
 
