@@ -76,9 +76,9 @@ public:
     void resetErrors() override {}
 private:
     std::string GetMessage(const XERCES_CPP_NAMESPACE::SAXParseException& exp)
-    {
-        std::u16string utf16FileName = static_cast<std::u16string>(exp.getSystemId());
-        std::u16string utf16Message = static_cast<std::u16string>(exp.getMessage());
+    {    
+        std::u16string utf16FileName(exp.getSystemId());
+        std::u16string utf16Message(exp.getMessage());
         return "Error in " + u16string_to_utf8(utf16FileName) + " [Line " + std::to_string(static_cast<std::uint64_t>(exp.getLineNumber()))
             + ", Col " + std::to_string(static_cast<std::uint64_t>(exp.getColumnNumber())) + "] :: " + u16string_to_utf8(utf16Message);
     }
@@ -92,7 +92,7 @@ public:
 
     InputSource* resolveEntity(XMLResourceIdentifier* resourceIdentifier)
     {
-        std::u16string utf16string = static_cast<std::u16string>(resourceIdentifier->getNameSpace());
+        std::u16string utf16string(resourceIdentifier->getNameSpace());
         std::string id = u16string_to_utf8(utf16string);
         const auto& entry = std::find(m_namespaces.begin(), m_namespaces.end(), id.c_str());
         ThrowErrorIf(MSIX::Error::XmlError, entry == m_namespaces.end(), "Invalid namespace");
@@ -298,7 +298,7 @@ public:
     std::string GetAttributeValue(const std::string& attributeName) override
     {
         XercesXMLChPtr nameAttr(XMLString::transcode(attributeName.c_str()));
-        auto utf16string = static_cast<std::u16string>(m_element->getAttribute(nameAttr.Get()));
+        std::u16string utf16string(m_element->getAttribute(nameAttr.Get()));
         return u16string_to_utf8(utf16string);
     }
 
@@ -308,7 +308,7 @@ public:
         ThrowErrorIf(Error::InvalidParameter, (value == nullptr), "bad pointer.");
         auto intermediate = wstring_to_utf8(name);
         auto attributeValue = GetAttributeValue(intermediate);
-        return m_factory->MarshalOutString(attributeValue, value); 
+        return m_factory->MarshalOutString(attributeValue, value);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE GetText(LPWSTR* value) noexcept override try
