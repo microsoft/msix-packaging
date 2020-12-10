@@ -38,8 +38,8 @@ namespace MSIX {
         MappingFileParser();
         void ParseMappingFile(std::string mappingFile);
         bool IsSectionFound(SectionID sectionId);
-        std::map<std::string, std::string> GetFileList() { return this->list; }
-        std::map<std::string, std::string> GetExternalPackagesList() { return this->externalPackagesList; }
+        std::map<std::string, std::string> GetFileList() const { return this->list; }
+        std::map<std::string, std::string> GetExternalPackagesList() const { return this->externalPackagesList; }
 
     protected:
         HandlerState ParseSectionHeading(std::string line);
