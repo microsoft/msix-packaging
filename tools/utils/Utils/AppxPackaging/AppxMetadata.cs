@@ -26,16 +26,35 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         {
             if (string.IsNullOrEmpty(filePath))
             {
-                throw new ArgumentNullException("filePath");
+                throw new ArgumentNullException(nameof(filePath));
             }
 
             if (!File.Exists(filePath))
             {
-                throw new FileNotFoundException(string.Format("{0} not found", filePath));
+                throw new FileNotFoundException($"{filePath} not found");
             }
 
             this.FilePath = filePath;
             IStream packageStream = StreamUtils.CreateInputStreamOnFile(this.FilePath);
+            Initialize(packageStream);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the AppxMetadata class for an msix package.
+        /// </summary>
+        /// <param name="packageStream">the path to the msix file</param>
+        public AppxMetadata(IStream packageStream)
+        {
+            if (packageStream == null)
+            {
+                throw new ArgumentNullException(nameof(packageStream));
+            }
+
+            Initialize(packageStream);
+        }
+
+        private void Initialize(IStream packageStream)
+        {
             IAppxFactory packageFactory = (IAppxFactory)new AppxFactory();
             this.AppxReader = packageFactory.CreatePackageReader(packageStream);
 
