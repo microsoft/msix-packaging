@@ -36,13 +36,13 @@ namespace Microsoft.Msix.Utils.AppxPackaging
 
             this.FilePath = filePath;
             IStream packageStream = StreamUtils.CreateInputStreamOnFile(this.FilePath);
-            Initialize(packageStream);
+            this.Initialize(packageStream);
         }
 
         /// <summary>
         /// Initializes a new instance of the AppxMetadata class for an msix package.
         /// </summary>
-        /// <param name="packageStream">the path to the msix file</param>
+        /// <param name="packageStream">the msix package stream.</param>
         public AppxMetadata(IStream packageStream)
         {
             if (packageStream == null)
@@ -50,9 +50,39 @@ namespace Microsoft.Msix.Utils.AppxPackaging
                 throw new ArgumentNullException(nameof(packageStream));
             }
 
-            Initialize(packageStream);
+            this.Initialize(packageStream);
         }
 
+        /// <summary>
+        /// Gets the display name of the package
+        /// </summary>
+        public string DisplayName { get; private set; }
+
+        /// <summary>
+        /// Gets the package publisher display name.
+        /// </summary>
+        public string PublisherDisplayName { get; private set; }
+
+        /// <summary>
+        /// Gets the min OS versions for all the devices the package targets
+        /// </summary>
+        public Dictionary<string, VersionInfo> TargetDeviceFamiliesMinVersions { get; private set; }
+            = new Dictionary<string, VersionInfo>();
+
+        /// <summary>
+        /// Gets the min OS version across all the devices this package targets
+        /// </summary>
+        public VersionInfo MinOSVersion { get; private set; }
+
+        /// <summary>
+        /// Gets the reader for this package
+        /// </summary>
+        public IAppxPackageReader AppxReader { get; private set; }
+
+        /// <summary>
+        /// Initializes this instance of the AppxMetadata class from an msix stream.
+        /// </summary>
+        /// <param name="packageStream">the msix package stream.</param>
         private void Initialize(IStream packageStream)
         {
             IAppxFactory packageFactory = (IAppxFactory)new AppxFactory();
@@ -95,31 +125,5 @@ namespace Microsoft.Msix.Utils.AppxPackaging
 
             this.PopulateCommonFields();
         }
-
-        /// <summary>
-        /// Gets the display name of the package
-        /// </summary>
-        public string DisplayName { get; private set; }
-
-        /// <summary>
-        /// Gets the package publisher display name.
-        /// </summary>
-        public string PublisherDisplayName { get; private set; }
-
-        /// <summary>
-        /// Gets the min OS versions for all the devices the package targets
-        /// </summary>
-        public Dictionary<string, VersionInfo> TargetDeviceFamiliesMinVersions { get; private set; }
-            = new Dictionary<string, VersionInfo>();
-
-        /// <summary>
-        /// Gets the min OS version across all the devices this package targets
-        /// </summary>
-        public VersionInfo MinOSVersion { get; private set; }
-
-        /// <summary>
-        /// Gets the reader for this package
-        /// </summary>
-        public IAppxPackageReader AppxReader { get; private set; }
     }
 }
