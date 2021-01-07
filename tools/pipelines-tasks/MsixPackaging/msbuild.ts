@@ -70,6 +70,10 @@ const getMSBuildPathFromVersion = async (msbuildVersion: string, msbuildArchitec
         // it looks in the Global Assembly Cache to find the right version.
         // We use a wrapper script to call the right function from the helper.
         const powershellRunner = tl.tool('powershell');
+        powershellRunner.arg('-NoLogo');
+        powershellRunner.arg('-NoProfile');
+        powershellRunner.arg('-NonInteractive');
+        powershellRunner.arg(['-ExecutionPolicy', 'Unrestricted']);
         powershellRunner.arg(MSBUILD_PATH_HELPER_SCRIPT);
         powershellRunner.arg(['-PreferredVersion', msbuildVersion]);
         powershellRunner.arg(['-Architecture', msbuildArchitecture]);
