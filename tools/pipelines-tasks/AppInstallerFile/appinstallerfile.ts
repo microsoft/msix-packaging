@@ -160,7 +160,7 @@ export const createNew = (
     // Update settings
     if (updateOnLaunch)
     {
-        const onLaunchSettings: any = {};
+        const onLaunchSettings: any = { $: {} };
         newFile.AppInstaller.UpdateSettings =
         {
             OnLaunch: onLaunchSettings
@@ -168,17 +168,17 @@ export const createNew = (
 
         if (hoursBetweenUpdateChecks)
         {
-            onLaunchSettings.HoursBetweenUpdateChecks = hoursBetweenUpdateChecks;
+            onLaunchSettings.$.HoursBetweenUpdateChecks = hoursBetweenUpdateChecks;
         }
 
         if (showPromptWhenUpdating)
         {
-            onLaunchSettings.ShowPrompt = showPromptWhenUpdating;
+            onLaunchSettings.$.ShowPrompt = showPromptWhenUpdating;
         }
 
         if (updateBlocksActivation)
         {
-            onLaunchSettings.UpdateBlocksActivation = updateBlocksActivation;
+            onLaunchSettings.$.UpdateBlocksActivation = updateBlocksActivation;
         }
     }
 

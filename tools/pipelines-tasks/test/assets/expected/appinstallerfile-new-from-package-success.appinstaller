@@ -1,10 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <AppInstaller xmlns="http://schemas.microsoft.com/appx/appinstaller/2018" Version="1.0.0.0" Uri="https://example.com/appinstallerfile-new-from-package-success">
-  <MainPackage Name="7fa9aa49-c12e-4977-8a29-14b25a006dc7" Publisher="CN=HelloWorldPublisher" Version="4.0.0.0" ProcessorArchitecture="x86" Uri="existingPackage.msix"/>
+  <MainPackage Name="7fa9aa49-c12e-4977-8a29-14b25a006dc7" Publisher="CN=HelloWorldPublisher" Version="1.0.0.0" ProcessorArchitecture="x86" Uri="existingPackage.msix"/>
   <OptionalPackages>
     <Package Name="Goodbye World App" Publisher="CN=Goodbye World Inc." Version="2.2.3.3" ProcessorArchitecture="x86" Uri="http://goodbyeworld.com/install"/>
   </OptionalPackages>
   <Dependencies>
     <Bundle Name="Visual Studio" Publisher="CN=Microsoft" Version="10.37.96.549" Uri="https://visualstudio.microsoft.com/thank-you-downloading-visual-studio/?sku=Community&amp;rel=16"/>
   </Dependencies>
+  <UpdateSettings>
+    <OnLaunch HoursBetweenUpdateChecks="24" ShowPrompt="true" UpdateBlocksActivation="true"/>
+  </UpdateSettings>
 </AppInstaller>
