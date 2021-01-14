@@ -22,13 +22,6 @@
     "msbuild"
   ],
   "minimumAgentVersion": "1.95.0",
-  "groups": [
-    {
-      "name": "msbuild",
-      "displayName": "ms-resource:loc.group.displayName.msbuild",
-      "isExpanded": false
-    }
-  ],
   "inputs": [
     {
       "name": "outputPath",
@@ -179,7 +172,6 @@
       "label": "ms-resource:loc.input.label.msbuildLocationMethod",
       "required": true,
       "defaultValue": "version",
-      "groupName": "msbuild",
       "options": {
         "version": "Version",
         "location": "Specify Location"
@@ -192,7 +184,6 @@
       "label": "ms-resource:loc.input.label.msbuildVersion",
       "required": true,
       "defaultValue": "latest",
-      "groupName": "msbuild",
       "helpMarkDown": "ms-resource:loc.input.help.msbuildVersion",
       "visibleRule": "buildSolution = true && msbuildLocationMethod = version",
       "options": {
@@ -210,7 +201,6 @@
       "label": "ms-resource:loc.input.label.msbuildArchitecture",
       "defaultValue": "x86",
       "required": true,
-      "groupName": "msbuild",
       "helpMarkDown": "ms-resource:loc.input.help.msbuildArchitecture",
       "visibleRule": "buildSolution = true && msbuildLocationMethod = version",
       "options": {
@@ -223,7 +213,6 @@
       "type": "string",
       "label": "ms-resource:loc.input.label.msbuildLocation",
       "defaultValue": "",
-      "groupName": "msbuild",
       "required": true,
       "helpMarkDown": "ms-resource:loc.input.help.msbuildLocation",
       "visibleRule": "buildSolution = true && msbuildLocationMethod = location"

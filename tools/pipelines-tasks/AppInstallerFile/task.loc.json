@@ -19,18 +19,6 @@
     "Patch": 0
   },
   "minimumAgentVersion": "1.95.0",
-  "groups": [
-    {
-      "name": "optionalItems",
-      "displayName": "ms-resource:loc.group.displayName.optionalItems",
-      "isExpanded": false
-    },
-    {
-      "name": "dependencies",
-      "displayName": "ms-resource:loc.group.displayName.dependencies",
-      "isExpanded": false
-    }
-  ],
   "inputs": [
     {
       "name": "package",
@@ -150,7 +138,6 @@
       "label": "ms-resource:loc.input.label.addOptionalItem1",
       "defaultValue": "none",
       "required": false,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.addOptionalItem1",
       "visibleRule": "method = create",
       "options": {
@@ -164,45 +151,40 @@
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem1Name",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem1Name",
-      "visibleRule": "method = create && addOptionalItem1 != none"
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle"
     },
     {
       "name": "optionalItem1Publisher",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem1Publisher",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem1Publisher",
-      "visibleRule": "method = create && addOptionalItem1 != none"
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle"
     },
     {
       "name": "optionalItem1Version",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem1Version",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem1Version",
-      "visibleRule": "method = create && addOptionalItem1 != none"
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle"
     },
     {
       "name": "optionalItem1ProcessorArchitecture",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem1ProcessorArchitecture",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem1ProcessorArchitecture",
-      "visibleRule": "method = create && addOptionalItem1 != none"
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle"
     },
     {
       "name": "optionalItem1URI",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem1URI",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem1URI",
-      "visibleRule": "method = create && addOptionalItem1 != none"
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle"
     },
     {
       "name": "addOptionalItem2",
@@ -210,9 +192,8 @@
       "label": "ms-resource:loc.input.label.addOptionalItem2",
       "defaultValue": "none",
       "required": false,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.addOptionalItem2",
-      "visibleRule": "method = create && addOptionalItem1 != none",
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle",
       "options": {
         "none": "No Optional Package/Bundle",
         "package": "Add Optional Package",
@@ -224,45 +205,40 @@
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem2Name",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem2Name",
-      "visibleRule": "method = create && addOptionalItem2 != none"
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle"
     },
     {
       "name": "optionalItem2Publisher",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem2Publisher",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem2Publisher",
-      "visibleRule": "method = create && addOptionalItem2 != none"
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle"
     },
     {
       "name": "optionalItem2Version",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem2Version",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem2Version",
-      "visibleRule": "method = create && addOptionalItem2 != none"
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle"
     },
     {
       "name": "optionalItem2ProcessorArchitecture",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem2ProcessorArchitecture",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem2ProcessorArchitecture",
-      "visibleRule": "method = create && addOptionalItem2 != none"
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle"
     },
     {
       "name": "optionalItem2URI",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem2URI",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem2URI",
-      "visibleRule": "method = create && addOptionalItem2 != none"
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle"
     },
     {
       "name": "addOptionalItem3",
@@ -270,9 +246,8 @@
       "label": "ms-resource:loc.input.label.addOptionalItem3",
       "defaultValue": "none",
       "required": false,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.addOptionalItem3",
-      "visibleRule": "method = create && addOptionalItem2 != none",
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle",
       "options": {
         "none": "No Optional Package/Bundle",
         "package": "Add Optional Package",
@@ -284,45 +259,40 @@
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem3Name",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem3Name",
-      "visibleRule": "method = create && addOptionalItem3 != none"
+      "visibleRule": "addOptionalItem3 == package || addOptionalItem3 == bundle"
     },
     {
       "name": "optionalItem3Publisher",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem3Publisher",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem3Publisher",
-      "visibleRule": "method = create && addOptionalItem3 != none"
+      "visibleRule": "addOptionalItem3 == package || addOptionalItem3 == bundle"
     },
     {
       "name": "optionalItem3Version",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem3Version",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem3Version",
-      "visibleRule": "method = create && addOptionalItem3 != none"
+      "visibleRule": "addOptionalItem3 == package || addOptionalItem3 == bundle"
     },
     {
       "name": "optionalItem3ProcessorArchitecture",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem3ProcessorArchitecture",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem3ProcessorArchitecture",
-      "visibleRule": "method = create && addOptionalItem3 != none"
+      "visibleRule": "addOptionalItem3 == package || addOptionalItem3 == bundle"
     },
     {
       "name": "optionalItem3URI",
       "type": "string",
       "label": "ms-resource:loc.input.label.optionalItem3URI",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "ms-resource:loc.input.help.optionalItem3URI",
-      "visibleRule": "method = create && addOptionalItem3 != none"
+      "visibleRule": "addOptionalItem3 == package || addOptionalItem3 == bundle"
     },
     {
       "name": "addDependency1",
@@ -330,7 +300,6 @@
       "label": "ms-resource:loc.input.label.addDependency1",
       "defaultValue": "none",
       "required": false,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.addDependency1",
       "visibleRule": "method = create",
       "options": {
@@ -344,45 +313,40 @@
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency1Name",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency1Name",
-      "visibleRule": "method = create && addDependency1 != none"
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle"
     },
     {
       "name": "dependency1Publisher",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency1Publisher",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency1Publisher",
-      "visibleRule": "method = create && addDependency1 != none"
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle"
     },
     {
       "name": "dependency1Version",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency1Version",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency1Version",
-      "visibleRule": "method = create && addDependency1 != none"
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle"
     },
     {
       "name": "dependency1ProcessorArchitecture",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency1ProcessorArchitecture",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency1ProcessorArchitecture",
-      "visibleRule": "method = create && addDependency1 != none"
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle"
     },
     {
       "name": "dependency1URI",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency1URI",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency1URI",
-      "visibleRule": "method = create && addDependency1 != none"
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle"
     },
     {
       "name": "addDependency2",
@@ -390,9 +354,8 @@
       "label": "ms-resource:loc.input.label.addDependency2",
       "defaultValue": "none",
       "required": false,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.addDependency2",
-      "visibleRule": "method = create && addDependency1 != none",
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle",
       "options": {
         "none": "No Dependency",
         "package": "Add Package Dependency",
@@ -404,45 +367,40 @@
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency2Name",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency2Name",
-      "visibleRule": "method = create && addDependency2 != none"
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle"
     },
     {
       "name": "dependency2Publisher",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency2Publisher",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency2Publisher",
-      "visibleRule": "method = create && addDependency2 != none"
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle"
     },
     {
       "name": "dependency2Version",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency2Version",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency2Version",
-      "visibleRule": "method = create && addDependency2 != none"
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle"
     },
     {
       "name": "dependency2ProcessorArchitecture",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency2ProcessorArchitecture",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency2ProcessorArchitecture",
-      "visibleRule": "method = create && addDependency2 != none"
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle"
     },
     {
       "name": "dependency2URI",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency2URI",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency2URI",
-      "visibleRule": "method = create && addDependency2 != none"
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle"
     },
     {
       "name": "addDependency3",
@@ -450,9 +408,8 @@
       "label": "ms-resource:loc.input.label.addDependency3",
       "defaultValue": "none",
       "required": false,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.addDependency3",
-      "visibleRule": "method = create && addDependency2 != none",
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle",
       "options": {
         "none": "No Dependency",
         "package": "Add Package Dependency",
@@ -464,45 +421,40 @@
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency3Name",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency3Name",
-      "visibleRule": "method = create && addDependency3 != none"
+      "visibleRule": "addDependency3 == package || addDependency3 == bundle"
     },
     {
       "name": "dependency3Publisher",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency3Publisher",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency3Publisher",
-      "visibleRule": "method = create && addDependency3 != none"
+      "visibleRule": "addDependency3 == package || addDependency3 == bundle"
     },
     {
       "name": "dependency3Version",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency3Version",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency3Version",
-      "visibleRule": "method = create && addDependency3 != none"
+      "visibleRule": "addDependency3 == package || addDependency3 == bundle"
     },
     {
       "name": "dependency3ProcessorArchitecture",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency3ProcessorArchitecture",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency3ProcessorArchitecture",
-      "visibleRule": "method = create && addDependency3 != none"
+      "visibleRule": "addDependency3 == package || addDependency3 == bundle"
     },
     {
       "name": "dependency3URI",
       "type": "string",
       "label": "ms-resource:loc.input.label.dependency3URI",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "ms-resource:loc.input.help.dependency3URI",
-      "visibleRule": "method = create && addDependency3 != none"
+      "visibleRule": "addDependency3 == package || addDependency3 == bundle"
     }
   ]
 }

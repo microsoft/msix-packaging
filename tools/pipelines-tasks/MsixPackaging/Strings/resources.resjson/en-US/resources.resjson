@@ -3,7 +3,6 @@
   "loc.helpMarkDown": "",
   "loc.description": "Build and package Windows apps using the MSIX package format",
   "loc.instanceNameFormat": "MSIX build and package",
-  "loc.group.displayName.msbuild": "Advanced Options for MSBuild",
   "loc.input.label.outputPath": "Output Path",
   "loc.input.help.outputPath": "Path of the generated package or bundle.",
   "loc.input.label.buildSolution": "Build Solution with MSBuild",

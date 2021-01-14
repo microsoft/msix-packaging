@@ -58,6 +58,10 @@ const readInputsForCreate = (): appInstallerFile.CreateParameters =>
         {
             optionalItems.push(readInputsForItem(optionalItemInputPrefix, /* isBundle */ true));
         }
+        else
+        {
+            break;
+        }
     }
 
     const dependencies: appInstallerFile.PackageOrBundle[] = [];
