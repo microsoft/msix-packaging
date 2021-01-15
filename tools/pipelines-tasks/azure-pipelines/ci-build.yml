@@ -13,7 +13,7 @@ pr:
     - release_v*
   paths:
     include:
-    - tools/pipelines-tasks/*
+    - tools/pipelines-tasks
 
 pool:
   vmImage: 'windows-latest'

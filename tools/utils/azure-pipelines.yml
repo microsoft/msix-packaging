@@ -11,7 +11,7 @@ pr:
     - release_v*
   paths:
     include:
-    - tools/utils/*
+    - tools/utils
 
 pool:
   vmImage: 'windows-latest'
