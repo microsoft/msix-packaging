@@ -57,12 +57,12 @@ function OnEachTask([string]$message, [scriptblock]$script)
 
 # Builds the common helpers and installs it to each task.
 # This needs to run after any changes to the common helpers.
-function BuildCommonHelpers([switch]$installDependencies)
+function BuildCommonHelpers([switch]$cleanBuild)
 {
-    OnDirectory "$PSScriptRoot\common" -arguments $installDependencies {
-        param($installDependencies)
+    OnDirectory "$PSScriptRoot\common" -arguments $cleanBuild {
+        param($cleanBuild)
 
-        if ($installDependencies)
+        if ($cleanBuild)
         {
             Write-Host "Installing dependencies"
             npm ci
@@ -108,8 +108,14 @@ function BuildCommonHelpers([switch]$installDependencies)
         # The helpers need to be installed to each task because each task is
         # installed independently to the agent, so only files on the task's
         # directory can be used.
-        OnEachTask "Installing common helpers" {
-            npm install common
+        # If we are doing a clean build, the package will be installed in a
+        # later step with `npm ci`.  Avoid `npm` install in that case as it
+        # may also update other packages.
+        if (-not $cleanBuild)
+        {
+            OnEachTask "Installing common helpers" {
+                npm install common
+            }
         }
     }
 }
@@ -136,7 +142,7 @@ function InstallAllDepenencies()
     # from package-lock.json and get the same results on any machine.
 
     # First build the common helpers as they are a dependency of everything else.
-    BuildCommonHelpers -installDependencies
+    BuildCommonHelpers -cleanBuild
 
     # Install dependencies for top level scripts.
     OnDirectory $PSScriptRoot {
