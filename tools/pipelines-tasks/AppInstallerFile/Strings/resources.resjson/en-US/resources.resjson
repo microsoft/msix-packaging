@@ -3,8 +3,6 @@
   "loc.helpMarkDown": "",
   "loc.description": "Create or update an App Installer file for MSIX apps",
   "loc.instanceNameFormat": "Create App Installer file",
-  "loc.group.displayName.optionalItems": "Optional Items",
-  "loc.group.displayName.dependencies": "Dependencies",
   "loc.input.label.package": "Package",
   "loc.input.help.package": "Path to the package or bundle.",
   "loc.input.label.outputPath": "Output File Path",

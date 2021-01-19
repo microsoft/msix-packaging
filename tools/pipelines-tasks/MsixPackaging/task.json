@@ -22,13 +22,6 @@
     "msbuild"
   ],
   "minimumAgentVersion": "1.95.0",
-  "groups": [
-    {
-      "name": "msbuild",
-      "displayName": "Advanced Options for MSBuild",
-      "isExpanded": false
-    }
-  ],
   "inputs": [
     {
       "name": "outputPath",
@@ -179,7 +172,6 @@
       "label": "MSBuild",
       "required": true,
       "defaultValue": "version",
-      "groupName": "msbuild",
       "options": {
         "version": "Version",
         "location": "Specify Location"
@@ -192,7 +184,6 @@
       "label": "MSBuild Version",
       "required": true,
       "defaultValue": "latest",
-      "groupName": "msbuild",
       "helpMarkDown": "If the preferred version cannot be found, the latest version found will be used instead.",
       "visibleRule": "buildSolution = true && msbuildLocationMethod = version",
       "options": {
@@ -210,7 +201,6 @@
       "label": "MSBuild Architecture",
       "defaultValue": "x86",
       "required": true,
-      "groupName": "msbuild",
       "helpMarkDown": "Optionally supply the architecture (x86, x64) of MSBuild to run.",
       "visibleRule": "buildSolution = true && msbuildLocationMethod = version",
       "options": {
@@ -223,7 +213,6 @@
       "type": "string",
       "label": "Path to MSBuild",
       "defaultValue": "",
-      "groupName": "msbuild",
       "required": true,
       "helpMarkDown": "Optionally supply the path to MSBuild.",
       "visibleRule": "buildSolution = true && msbuildLocationMethod = location"

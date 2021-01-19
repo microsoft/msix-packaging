@@ -19,18 +19,6 @@
     "Patch": 0
   },
   "minimumAgentVersion": "1.95.0",
-  "groups": [
-    {
-      "name": "optionalItems",
-      "displayName": "Optional Items",
-      "isExpanded": false
-    },
-    {
-      "name": "dependencies",
-      "displayName": "Dependencies",
-      "isExpanded": false
-    }
-  ],
   "inputs": [
     {
       "name": "package",
@@ -150,7 +138,6 @@
       "label": "Add an Optional Package/Bundle",
       "defaultValue": "none",
       "required": false,
-      "groupName": "optionalItems",
       "helpMarkDown": "Add an optional package or bundle",
       "visibleRule": "method = create",
       "options": {
@@ -164,45 +151,40 @@
       "type": "string",
       "label": "Optional Item 1: Name",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The package or bundle name of your first optional item to include.",
-      "visibleRule": "method = create && addOptionalItem1 != none"
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle"
     },
     {
       "name": "optionalItem1Publisher",
       "type": "string",
       "label": "Optional Item 1: Publisher",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The publisher name of the first optional item to include.",
-      "visibleRule": "method = create && addOptionalItem1 != none"
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle"
     },
     {
       "name": "optionalItem1Version",
       "type": "string",
       "label": "Optional Item 1: Version",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The version number of the first optional item to include.",
-      "visibleRule": "method = create && addOptionalItem1 != none"
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle"
     },
     {
       "name": "optionalItem1ProcessorArchitecture",
       "type": "string",
       "label": "Optional Item 1: Processor Architecture",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The processor architecture of the first optional item to include.",
-      "visibleRule": "method = create && addOptionalItem1 != none"
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle"
     },
     {
       "name": "optionalItem1URI",
       "type": "string",
       "label": "Optional Item 1: URI",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The URI of the first optional item to include.",
-      "visibleRule": "method = create && addOptionalItem1 != none"
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle"
     },
     {
       "name": "addOptionalItem2",
@@ -210,9 +192,8 @@
       "label": "Add a Second Optional Package/Bundle",
       "defaultValue": "none",
       "required": false,
-      "groupName": "optionalItems",
       "helpMarkDown": "Add a second optional package or bundle",
-      "visibleRule": "method = create && addOptionalItem1 != none",
+      "visibleRule": "addOptionalItem1 == package || addOptionalItem1 == bundle",
       "options": {
         "none": "No Optional Package/Bundle",
         "package": "Add Optional Package",
@@ -224,45 +205,40 @@
       "type": "string",
       "label": "Optional Item 2: Name",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The package or bundle name of your second optional item to include.",
-      "visibleRule": "method = create && addOptionalItem2 != none"
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle"
     },
     {
       "name": "optionalItem2Publisher",
       "type": "string",
       "label": "Optional Item 2: Publisher",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The publisher name of the second optional item to include.",
-      "visibleRule": "method = create && addOptionalItem2 != none"
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle"
     },
     {
       "name": "optionalItem2Version",
       "type": "string",
       "label": "Optional Item 2: Version",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The version number of the second optional item to include.",
-      "visibleRule": "method = create && addOptionalItem2 != none"
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle"
     },
     {
       "name": "optionalItem2ProcessorArchitecture",
       "type": "string",
       "label": "Optional Item 2: Processor Architecture",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The processor architecture of the second optional item to include.",
-      "visibleRule": "method = create && addOptionalItem2 != none"
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle"
     },
     {
       "name": "optionalItem2URI",
       "type": "string",
       "label": "Optional Item 2: URI",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The URI of the second optional item to include.",
-      "visibleRule": "method = create && addOptionalItem2 != none"
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle"
     },
     {
       "name": "addOptionalItem3",
@@ -270,9 +246,8 @@
       "label": "Add a Third Optional Package/Bundle",
       "defaultValue": "none",
       "required": false,
-      "groupName": "optionalItems",
       "helpMarkDown": "Add a third optional package or bundle",
-      "visibleRule": "method = create && addOptionalItem2 != none",
+      "visibleRule": "addOptionalItem2 == package || addOptionalItem2 == bundle",
       "options": {
         "none": "No Optional Package/Bundle",
         "package": "Add Optional Package",
@@ -284,45 +259,40 @@
       "type": "string",
       "label": "Optional Item 3: Name",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The package or bundle name of your third optional item to include.",
-      "visibleRule": "method = create && addOptionalItem3 != none"
+      "visibleRule": "addOptionalItem3 == package || addOptionalItem3 == bundle"
     },
     {
       "name": "optionalItem3Publisher",
       "type": "string",
       "label": "Optional Item 3: Publisher",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The publisher name of the third optional item to include.",
-      "visibleRule": "method = create && addOptionalItem3 != none"
+      "visibleRule": "addOptionalItem3 == package || addOptionalItem3 == bundle"
     },
     {
       "name": "optionalItem3Version",
       "type": "string",
       "label": "Optional Item 3: Version",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The version number of the third optional item to include.",
-      "visibleRule": "method = create && addOptionalItem3 != none"
+      "visibleRule": "addOptionalItem3 == package || addOptionalItem3 == bundle"
     },
     {
       "name": "optionalItem3ProcessorArchitecture",
       "type": "string",
       "label": "Optional Item 3: Processor Architecture",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The processor architecture of the third optional item to include.",
-      "visibleRule": "method = create && addOptionalItem3 != none"
+      "visibleRule": "addOptionalItem3 == package || addOptionalItem3 == bundle"
     },
     {
       "name": "optionalItem3URI",
       "type": "string",
       "label": "Optional Item 3: URI",
       "required": true,
-      "groupName": "optionalItems",
       "helpMarkDown": "The URI of the third optional item to include.",
-      "visibleRule": "method = create && addOptionalItem3 != none"
+      "visibleRule": "addOptionalItem3 == package || addOptionalItem3 == bundle"
     },
     {
       "name": "addDependency1",
@@ -330,7 +300,6 @@
       "label": "Add a Dependency",
       "defaultValue": "none",
       "required": false,
-      "groupName": "dependencies",
       "helpMarkDown": "Add a dependency.",
       "visibleRule": "method = create",
       "options": {
@@ -344,45 +313,40 @@
       "type": "string",
       "label": "Dependency 1: Name",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The name of the first dependency to include.",
-      "visibleRule": "method = create && addDependency1 != none"
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle"
     },
     {
       "name": "dependency1Publisher",
       "type": "string",
       "label": "Dependency 1: Publisher",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The publisher name of the first dependency to include.",
-      "visibleRule": "method = create && addDependency1 != none"
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle"
     },
     {
       "name": "dependency1Version",
       "type": "string",
       "label": "Dependency 1: Version",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The version number of the first dependency to include.",
-      "visibleRule": "method = create && addDependency1 != none"
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle"
     },
     {
       "name": "dependency1ProcessorArchitecture",
       "type": "string",
       "label": "Dependency 1: Processor Architecture",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The processor architecture of the first dependency to include.",
-      "visibleRule": "method = create && addDependency1 != none"
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle"
     },
     {
       "name": "dependency1URI",
       "type": "string",
       "label": "Dependency 1: URI",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The URI of the first dependency to include.",
-      "visibleRule": "method = create && addDependency1 != none"
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle"
     },
     {
       "name": "addDependency2",
@@ -390,9 +354,8 @@
       "label": "Add a Second Dependency",
       "defaultValue": "none",
       "required": false,
-      "groupName": "dependencies",
       "helpMarkDown": "Add a second dependency.",
-      "visibleRule": "method = create && addDependency1 != none",
+      "visibleRule": "addDependency1 == package || addDependency1 == bundle",
       "options": {
         "none": "No Dependency",
         "package": "Add Package Dependency",
@@ -404,45 +367,40 @@
       "type": "string",
       "label": "Dependency 2: Name",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The name of the second dependency to include.",
-      "visibleRule": "method = create && addDependency2 != none"
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle"
     },
     {
       "name": "dependency2Publisher",
       "type": "string",
       "label": "Dependency 2: Publisher",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The publisher name of the second dependency to include.",
-      "visibleRule": "method = create && addDependency2 != none"
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle"
     },
     {
       "name": "dependency2Version",
       "type": "string",
       "label": "Dependency 2: Version",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The version number of the second dependency to include.",
-      "visibleRule": "method = create && addDependency2 != none"
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle"
     },
     {
       "name": "dependency2ProcessorArchitecture",
       "type": "string",
       "label": "Dependency 2: Processor Architecture",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The processor architecture of the second dependency to include.",
-      "visibleRule": "method = create && addDependency2 != none"
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle"
     },
     {
       "name": "dependency2URI",
       "type": "string",
       "label": "Dependency 2: URI",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The URI of the second dependency to include.",
-      "visibleRule": "method = create && addDependency2 != none"
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle"
     },
     {
       "name": "addDependency3",
@@ -450,9 +408,8 @@
       "label": "Add a Third Dependency",
       "defaultValue": "none",
       "required": false,
-      "groupName": "dependencies",
       "helpMarkDown": "Add a third dependency.",
-      "visibleRule": "method = create && addDependency2 != none",
+      "visibleRule": "addDependency2 == package || addDependency2 == bundle",
       "options": {
         "none": "No Dependency",
         "package": "Add Package Dependency",
@@ -464,45 +421,40 @@
       "type": "string",
       "label": "Dependency 3: Name",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The name of the third dependency to include.",
-      "visibleRule": "method = create && addDependency3 != none"
+      "visibleRule": "addDependency3 == package || addDependency3 == bundle"
     },
     {
       "name": "dependency3Publisher",
       "type": "string",
       "label": "Dependency 3: Publisher",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The publisher name of the third dependency to include.",
-      "visibleRule": "method = create && addDependency3 != none"
+      "visibleRule": "addDependency3 == package || addDependency3 == bundle"
     },
     {
       "name": "dependency3Version",
       "type": "string",
       "label": "Dependency 3: Version",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The version number of the third dependency to include.",
-      "visibleRule": "method = create && addDependency3 != none"
+      "visibleRule": "addDependency3 == package || addDependency3 == bundle"
     },
     {
       "name": "dependency3ProcessorArchitecture",
       "type": "string",
       "label": "Dependency 3: Processor Architecture",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The processor architecture of the third dependency to include.",
-      "visibleRule": "method = create && addDependency3 != none"
+      "visibleRule": "addDependency3 == package || addDependency3 == bundle"
     },
     {
       "name": "dependency3URI",
       "type": "string",
       "label": "Dependency 3: URI",
       "required": true,
-      "groupName": "dependencies",
       "helpMarkDown": "The URI of the third dependency to include.",
-      "visibleRule": "method = create && addDependency3 != none"
+      "visibleRule": "addDependency3 == package || addDependency3 == bundle"
     }
   ]
 }
