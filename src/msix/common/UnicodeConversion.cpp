@@ -25,10 +25,10 @@ namespace MSIX {
     {
         if (utf8string.empty()) { return {}; }
         #ifdef WIN32
-        int size = MultiByteToWideChar(CP_ACP, 0, utf8string.data(), static_cast<int>(utf8string.size()), nullptr, 0);
+        int size = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8string.data(), static_cast<int>(utf8string.size()), nullptr, 0);
         ThrowLastErrorIf(size == 0, "Error converting to wstring");
         std::wstring result(size, 0);
-        MultiByteToWideChar(CP_ACP, 0, utf8string.data(), static_cast<int>(utf8string.size()), &result[0], size);
+        MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, utf8string.data(), static_cast<int>(utf8string.size()), &result[0], size);
         #else
         auto converted = utf8_to_utf16(utf8string);
         std::wstring result(converted.begin(), converted.end());
