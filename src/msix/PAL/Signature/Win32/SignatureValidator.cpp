@@ -428,29 +428,35 @@ namespace MSIX
 
     static bool GetPublisherDisplayName(/*in*/byte* signatureBuffer, /*in*/ ULONG cbSignatureBuffer, /*inout*/ std::string& publisher)
     {
+        //DebugBreak();
         unique_cert_context certificateContext(GetCertContext(signatureBuffer, cbSignatureBuffer, true));
 		if (certificateContext.get() == NULL)
 		{
 			return false;
 		}
-        int requiredLength = CertNameToStrA(
+        int requiredLength = CertNameToStrW(
             X509_ASN_ENCODING,
             &certificateContext.get()->pCertInfo->Subject,
             CERT_X500_NAME_STR | CERT_NAME_STR_REVERSE_FLAG,
             nullptr,
             0);
 
-        std::vector<char> publisherT;
+        std::vector<wchar_t> publisherT;
         publisherT.reserve(requiredLength + 1);
         
-        if (CertNameToStrA(
+        if (CertNameToStrW(
             X509_ASN_ENCODING,
             &certificateContext.get()->pCertInfo->Subject,
             CERT_X500_NAME_STR | CERT_NAME_STR_REVERSE_FLAG,
             publisherT.data(),
             requiredLength) > 0)
         {
-            publisher = std::string(publisherT.data());
+            std::wstring pub = publisherT.data();
+            auto converted = std::wstring_convert<std::codecvt_utf8<wchar_t>>{}.to_bytes(pub.data());
+            std::string result(converted.begin(), converted.end());
+            publisher = result;
+            //std::string strString(pub.begin(), pub.end());
+            //publisher = std::string(publisherT.data());
             return true;
         }
         return false;
