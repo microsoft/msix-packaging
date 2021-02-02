@@ -12,6 +12,8 @@
 #include <string>
 #include <sstream>
 #include <iostream>
+#include <thread>
+#include <mutex>
 
 #include <openssl/err.h>
 #include <openssl/bio.h>
@@ -84,6 +86,26 @@ namespace MSIX
             std::uint8_t content;
         };
     } Asn1Sequence;
+
+    // OpenSSL thread-safety callbacks
+    static void CryptoLockingCallback(std::int32_t mode, std::int32_t n, char const*, std::int32_t)
+    {
+        static std::mutex locks[CRYPTO_NUM_LOCKS];
+
+        if (mode & CRYPTO_LOCK)
+        {
+            locks[n].lock();
+        }
+        else
+        {
+            locks[n].unlock();
+        }
+    }
+
+    static void CryptoThreadIDCallback(CRYPTO_THREADID* id)
+    {
+        CRYPTO_THREADID_set_numeric(id, std::hash<std::thread::id>{}(std::this_thread::get_id()));
+    }
 
     // Best effort to determine whether the signature file is associated with a store cert
     static bool IsStoreOrigin(std::uint8_t* signatureBuffer, std::uint32_t cbSignatureBuffer)
@@ -331,7 +353,17 @@ namespace MSIX
         unique_PKCS7 p7(d2i_PKCS7_bio(bmem.get(), nullptr));
 
         // Tell OpenSSL to use all available algorithms when evaluating certs
-        OpenSSL_add_all_algorithms();
+        static std::once_flag sslInitializationFlag;
+        std::call_once(sslInitializationFlag, []
+        {
+            // Best effort to check if OpenSSL isn't initialized by the app or another library
+            if (CRYPTO_THREADID_get_callback() == nullptr)
+            {
+                OpenSSL_add_all_algorithms();
+                CRYPTO_THREADID_set_callback(CryptoThreadIDCallback);
+                CRYPTO_set_locking_callback(CryptoLockingCallback);
+            }
+        });
 
         // Create a trusted cert store
         unique_X509_STORE store(X509_STORE_new());
