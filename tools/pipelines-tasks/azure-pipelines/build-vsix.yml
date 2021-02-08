@@ -61,7 +61,6 @@ steps:
    }
   workingDirectory: 'tools/pipelines-tasks'
   displayName: 'Update tasks'' version'
-  enabled: false # May not actually be needed?
 
 # Build and sign the package
 - task: PackageAzureDevOpsExtension@3
@@ -72,7 +71,7 @@ steps:
     publisherId: 'MSIX'
     extensionVersion: '$(major).$(minor).$(patch)'
     extensionVisibility: public
-    updateTasksVersion: true
+    updateTasksVersion: false
 
 - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
@@ -122,5 +121,3 @@ steps:
     updateTasksVersion: false
     updateTasksId: true
     extensionVisibility: 'privatepreview'
-  enabled: false
-
