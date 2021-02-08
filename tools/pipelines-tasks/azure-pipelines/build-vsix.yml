@@ -12,6 +12,7 @@ pool:
   vmImage: 'windows-latest'
 
 variables:
+  tasksRoot: 'tools/pipelines-tasks'
   # Version number
   major: '1'
   minor: '0'
@@ -33,7 +34,7 @@ steps:
   displayName: 'Build the project'
   inputs:
     targetType: filePath
-    filePath: './tools/pipelines-tasks/build.ps1'
+    filePath: '$(tasksRoot)/build.ps1'
     arguments: BuildForProduction
 
 # Run the tests
@@ -66,7 +67,7 @@ steps:
 - task: PackageAzureDevOpsExtension@3
   displayName: 'Package Extension: tools/pipelines-tasks'
   inputs:
-    rootFolder: '$(Build.SourcesDirectory)\tools\pipelines-tasks'
+    rootFolder: '$(tasksRoot)'
     outputPath: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
     publisherId: 'MSIX'
     extensionVersion: '$(major).$(minor).$(patch)'
