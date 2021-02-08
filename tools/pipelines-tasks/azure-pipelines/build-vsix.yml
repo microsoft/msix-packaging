@@ -16,7 +16,7 @@ variables:
   major: '1'
   minor: '0'
   # Set to 0 on next change to minor. This grew while using a classic pipeline.
-  patch: '$[counter(variables['minor'], 7)]'
+  patch: $[counter(variables['minor'], 7)]
 
 steps:
 # Install the tools needed
