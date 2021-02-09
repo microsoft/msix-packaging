@@ -65,7 +65,7 @@ steps:
   displayName: 'Update tasks'' version'
   enabled: false
 
-# Build and sign the package
+# Package and sign the VSIX
 - task: PackageAzureDevOpsExtension@3
   displayName: 'Package Extension: tools/pipelines-tasks'
   inputs:
@@ -74,6 +74,7 @@ steps:
     publisherId: 'MSIX'
     extensionVersion: '$(major).$(minor).$(patch)'
     extensionVisibility: public
+    localizationRoot:
     updateTasksVersion: true
 
 - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
