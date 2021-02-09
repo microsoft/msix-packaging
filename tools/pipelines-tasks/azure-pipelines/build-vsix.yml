@@ -102,6 +102,8 @@ steps:
           "ToolVersion" : "1.0"
       }
      ]
+  # disabled for testing
+  enabled: false
 
 - task: PublishBuildArtifacts@1
   displayName: 'Publish Artifact: VSIX'
@@ -121,3 +123,5 @@ steps:
     updateTasksVersion: false
     updateTasksId: true
     extensionVisibility: 'privatepreview'
+  # disabled for testing
+  enabled: false
