@@ -42,7 +42,6 @@ steps:
   displayName: 'Restore NuGet packages for test project'
   inputs:
     restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
-  enabled: false
 
 - powershell: |
     npx mocha
@@ -50,9 +49,9 @@ steps:
   workingDirectory: '$(tasksRoot)'
   env:
     SYSTEM_CULTURE: 'en-US'
-  enabled: false
 
-#  Set the version for each task as the Package step does not update the task.loc.json
+# Set the version for each task as the Package step does not update the task.loc.json
+# See https://github.com/microsoft/azure-devops-extension-tasks/issues/184
 - powershell: |
    foreach ($path in $(Get-ChildItem -Depth 1 -Recurse -Include 'task.json','task.loc.json')) {
       $taskJson = Get-Content $path.FullName -Raw | ConvertFrom-Json
@@ -61,21 +60,20 @@ steps:
       $taskJson.version.Patch = $(patch)
       $taskJson | ConvertTo-Json -Depth 10 | Set-Content $path.FullName
    }
-  workingDirectory: 'tools/pipelines-tasks'
+  workingDirectory: '$(tasksRoot)'
   displayName: 'Update tasks'' version'
-  enabled: false
 
 # Package and sign the VSIX
 - task: PackageAzureDevOpsExtension@3
-  displayName: 'Package Extension: tools/pipelines-tasks'
+  displayName: 'Package Extension: $(tasksRoot)'
   inputs:
     rootFolder: '$(tasksRoot)'
+    patternManifest: 'vss-extension.json'
     outputPath: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
     publisherId: 'MSIX'
     extensionVersion: '$(major).$(minor).$(patch)'
     extensionVisibility: public
-    localizationRoot:
-    updateTasksVersion: true
+    updateTasksVersion: false
 
 - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
@@ -106,26 +104,47 @@ steps:
           "ToolVersion" : "1.0"
       }
      ]
-  # disabled for testing
-  enabled: false
 
-- task: PublishBuildArtifacts@1
-  displayName: 'Publish Artifact: VSIX'
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish VSIX artifact'
   inputs:
-    ArtifactName: VSIX
+    targetPath: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
+    artifact: 'VSIX'
+    publishLocation: 'pipeline'
 
 # Publish privately
-# Use different task IDs from public extension
+# Use different task IDs from public extension to prevent clashing.
+# We need to update the IDs manually because the task doesn't do it.
+# See https://github.com/microsoft/azure-devops-extension-tasks/issues/184
+- powershell: |
+    $newIds = (
+      @{ Id = "10d89817-fdc8-572b-9e70-5a3300a49491"; Name = "AppInstallerFile" },
+      @{ Id = "8d76d007-40aa-5704-abcd-fccba288ec3f"; Name = "MsixAppAttach" },
+      @{ Id = "e1431997-aad9-5eeb-a649-a945fa6fd7d7"; Name = "MsixPackaging" },
+      @{ Id = "bc2a3a10-c739-5277-acb1-32f8ffb6a382"; Name = "MsixSigning" }
+    )
+    foreach ($task in $newIds) {
+      foreach ($jsonName in ('task.json', 'task.loc.json')) {
+        $path = Join-Path $task.Name $jsonName
+        $taskJson = Get-Content $path -Raw | ConvertFrom-Json
+        $taskJson.id = $task.Id
+        $taskJson | ConvertTo-Json -Depth 10 | Set-Content $path
+      }
+    }
+  workingDirectory: $(tasksRoot)
+  displayName: 'Update tasks'' IDs for private'
+
 - task: PublishAzureDevOpsExtension@3
   displayName: 'Publish Extension'
   inputs:
     connectedServiceName: 'Visual Studio Marketplace - MSIX'
-    fileType: vsix
-    vsixFile: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
+    fileType: 'manifest'
+    rootFolder: '$(tasksRoot)'
+    patternManifest: 'vss-extension.json'
+    publisherId: 'MSIX'
     extensionId: 'msix-ci-automation-task-dev'
     extensionName: 'MSIX Packaging (Preview)'
+    extensionVersion: '$(major).$(minor).$(patch)'
     updateTasksVersion: false
-    updateTasksId: true
+    # updateTasksId: true
     extensionVisibility: 'privatepreview'
-  # disabled for testing
-  enabled: false
