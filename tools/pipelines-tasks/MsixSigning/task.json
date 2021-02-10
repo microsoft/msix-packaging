@@ -29,18 +29,39 @@
       "helpMarkDown": "Files to sign. Can be a package or a bundle. All matching files are signed."
     },
     {
+      "name": "certificateType",
+      "type": "radio",
+      "label": "Certificate File type",
+      "defaultValue": "secureFile",
+      "required": false,
+      "options": {
+        "secureFile": "Secure file",
+        "base64": "Base64 encoded (Azure Key Vault)"
+      }
+    },
+    {
+      "name": "encodedCertificate",
+      "type": "string",
+      "label": "Certificate",
+      "required": true,
+      "helpMarkDown": "Certificate encoded as a Base64 string.",
+      "visibleRule": "certificateType == base64"
+    },
+    {
       "name": "certificate",
       "type": "secureFile",
       "label": "Certificate File",
       "required": true,
-      "helpMarkDown": "The file name or GUID of the secure certificate to use for signing. The file will be deleted after the pipeline runs."
+      "helpMarkDown": "The file name or GUID of the secure certificate to use for signing. The file will be deleted after the pipeline runs.",
+      "visibleRule": "certificateType == secureFile"
     },
     {
       "name": "passwordVariable",
       "type": "string",
       "label": "Password Variable",
       "required": true,
-      "helpMarkDown": "The name of the variable which stores the password used to access the certificate file for signing. Note that this is NOT the password itself, but rather the variable name, which can be set under Library."
+      "helpMarkDown": "The name of the variable which stores the password used to access the certificate file for signing. Note that this is NOT the password itself, but rather the variable name, which can be set under Library.",
+      "visibleRule": "certificateType == secureFile"
     },
     {
       "name": "timeStampServer",

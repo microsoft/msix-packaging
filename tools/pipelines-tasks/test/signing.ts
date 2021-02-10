@@ -15,4 +15,11 @@ describe('MSIX signing task tests', function ()
         testHelpers.assertTestRunnerSucceeded(testRunner);
         done();
     });
+
+    it('Should succeed signing with base64 encoded certificate', function (done: Mocha.Done)
+    {
+        const testRunner = testHelpers.runMockTest('signing-with-base64-cert-success.js');
+        testHelpers.assertTestRunnerSucceeded(testRunner);
+        done();
+    });
 });
