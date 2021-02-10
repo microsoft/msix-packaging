@@ -50,19 +50,6 @@ steps:
   env:
     SYSTEM_CULTURE: 'en-US'
 
-# Set the version for each task as the Package step does not update the task.loc.json
-# See https://github.com/microsoft/azure-devops-extension-tasks/issues/184
-- powershell: |
-   foreach ($path in $(Get-ChildItem -Depth 1 -Recurse -Include 'task.json','task.loc.json')) {
-      $taskJson = Get-Content $path.FullName -Raw | ConvertFrom-Json
-      $taskJson.version.Major = $(major)
-      $taskJson.version.Minor = $(minor)
-      $taskJson.version.Patch = $(patch)
-      $taskJson | ConvertTo-Json -Depth 10 | Set-Content $path.FullName
-   }
-  workingDirectory: '$(tasksRoot)'
-  displayName: 'Update tasks'' version'
-
 # Package and sign the VSIX
 - task: PackageAzureDevOpsExtension@3
   displayName: 'Package Extension: $(tasksRoot)'
@@ -73,7 +60,7 @@ steps:
     publisherId: 'MSIX'
     extensionVersion: '$(major).$(minor).$(patch)'
     extensionVisibility: public
-    updateTasksVersion: false
+    updateTasksVersion: true
 
 - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
@@ -114,37 +101,13 @@ steps:
 
 # Publish privately
 # Use different task IDs from public extension to prevent clashing.
-# We need to update the IDs manually because the task doesn't do it.
-# See https://github.com/microsoft/azure-devops-extension-tasks/issues/184
-- powershell: |
-    $newIds = (
-      @{ Id = "10d89817-fdc8-572b-9e70-5a3300a49491"; Name = "AppInstallerFile" },
-      @{ Id = "8d76d007-40aa-5704-abcd-fccba288ec3f"; Name = "MsixAppAttach" },
-      @{ Id = "e1431997-aad9-5eeb-a649-a945fa6fd7d7"; Name = "MsixPackaging" },
-      @{ Id = "bc2a3a10-c739-5277-acb1-32f8ffb6a382"; Name = "MsixSigning" }
-    )
-    foreach ($task in $newIds) {
-      foreach ($jsonName in ('task.json', 'task.loc.json')) {
-        $path = Join-Path $task.Name $jsonName
-        $taskJson = Get-Content $path -Raw | ConvertFrom-Json
-        $taskJson.id = $task.Id
-        $taskJson | ConvertTo-Json -Depth 10 | Set-Content $path
-      }
-    }
-  workingDirectory: $(tasksRoot)
-  displayName: 'Update tasks'' IDs for private'
-
 - task: PublishAzureDevOpsExtension@3
   displayName: 'Publish Extension'
   inputs:
     connectedServiceName: 'Visual Studio Marketplace - MSIX'
-    fileType: 'manifest'
-    rootFolder: '$(tasksRoot)'
-    patternManifest: 'vss-extension.json'
-    publisherId: 'MSIX'
+    fileType: vsix
+    vsixFile: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
     extensionId: 'msix-ci-automation-task-dev'
     extensionName: 'MSIX Packaging (Preview)'
-    extensionVersion: '$(major).$(minor).$(patch)'
-    updateTasksVersion: false
-    # updateTasksId: true
+    updateTasksId: true
     extensionVisibility: 'privatepreview'
