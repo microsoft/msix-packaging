@@ -14,21 +14,60 @@
 
 #include <memory>
 #include <vector>
+#include <deque>
 
-struct unique_hash_handle_deleter {
-    void operator()(BCRYPT_HASH_HANDLE h) const {
-        BCryptDestroyHash(h);
+//////////////////////////////////////////////////////////////////////////////////////////////
+//                                       ScopeGuard                                         //
+//////////////////////////////////////////////////////////////////////////////////////////////
+// inspired by
+// https://channel9.msdn.com/Shows/Going+Deep/C-and-Beyond-2012-Andrei-Alexandrescu-Systematic-Error-Handling-in-C
+class ScopeGuard
+{
+    public:
+    enum class Policy
+    {
+        Always,
+        NoException,
+        Exception
     };
-};
 
-struct unique_alg_handle_deleter {
-    void operator()(BCRYPT_ALG_HANDLE h) const {
-        BCryptCloseAlgorithmProvider(h, 0);
-    };
-};
+    ScopeGuard(ScopeGuard&&) = default;
+    explicit ScopeGuard(Policy p = Policy::Always) : _policy(p) {}
 
-typedef std::unique_ptr<void, unique_alg_handle_deleter> unique_alg_handle;
-typedef std::unique_ptr<void, unique_hash_handle_deleter> unique_hash_handle;
+    template <class Lambda> ScopeGuard(Lambda&& func, Policy p = Policy::Always) : _policy(p)
+    {
+        this->operator+=<Lambda>(std::forward<Lambda>(func));
+    }
+
+    template <class Lambda> ScopeGuard& operator+=(Lambda&& func)
+    try
+    {
+        _handlers.emplace_front(std::forward<Lambda>(func));
+        return *this;
+    }
+    catch (...)
+    {
+        if (_policy != Policy::NoException) { func(); }
+        throw;
+    }
+
+    ~ScopeGuard()
+    {
+        if (_policy == Policy::Always || (std::uncaught_exception() == (_policy == Policy::Exception)))
+        {
+            for (const auto& f : _handlers) { f(); /* better not throw! */ }
+        }
+    }
+
+    void Dismiss() noexcept { _handlers.clear(); }
+
+    private:
+    ScopeGuard(const ScopeGuard&) = delete;
+    void operator=(const ScopeGuard&) = delete;
+
+    std::deque<std::function<void()>> _handlers;
+    Policy                            _policy = Policy::Always;
+};
 
 namespace MSIX {
 
@@ -62,23 +101,25 @@ namespace MSIX {
         "failed computing SHA256 hash");
 
         // Obtain the length of the hash
-        unique_alg_handle algHandle(algHandleT);
         ThrowStatusIfFailed(BCryptGetProperty(
-            algHandle.get(),            // Handle to a CNG object
-            BCRYPT_HASH_LENGTH,         // Property name (null terminated unicode string)
-            (PBYTE)&hashLength,         // Address of the output buffer which receives the property value
-            sizeof(hashLength),         // Size of the buffer in bytes
-            &resultLength,              // Number of bytes that were copied into the buffer
-            0),                         // Flags
+            algHandleT,            // Handle to a CNG object
+            BCRYPT_HASH_LENGTH,    // Property name (null terminated unicode string)
+            (PBYTE)&hashLength,    // Address of the output buffer which receives the property value
+            sizeof(hashLength),    // Size of the buffer in bytes
+            &resultLength,         // Number of bytes that were copied into the buffer
+            0),                    // Flags
         "failed computing SHA256 hash");
         ThrowErrorIf(Error::Unexpected, (resultLength != sizeof(hashLength)), "failed computing SHA256 hash");
+        ScopeGuard guard([&algHandleT](){
+            BCryptCloseAlgorithmProvider(algHandleT, 0);
+        });
 
         // Size the hash buffer appropriately
         hash.resize(hashLength);
 
         // Create a hash handle
         ThrowStatusIfFailed(BCryptCreateHash(
-            algHandle.get(),            // Handle to an algorithm provider                 
+            algHandleT,                 // Handle to an algorithm provider                 
             &hashHandleT,               // A pointer to a hash handle - can be a hash or hmac object
             nullptr,                    // Pointer to the buffer that receives the hash/hmac object
             0,                          // Size of the buffer in bytes
@@ -88,17 +129,17 @@ namespace MSIX {
         "failed computing SHA256 hash");
 
         // Hash the message(s)
-        unique_hash_handle hashHandle(hashHandleT);
         ThrowStatusIfFailed(BCryptHashData(
-            hashHandle.get(),           // Handle to the hash or MAC object
+            hashHandleT,                // Handle to the hash or MAC object
             (PBYTE)buffer,              // A pointer to a buffer that contains the data to hash
             cbBuffer,                   // Size of the buffer in bytes
             0),                         // Flags
         "failed computing SHA256 hash");
+        guard+= [&hashHandleT](){ BCryptDestroyHash(hashHandleT); };
 
         // Obtain the hash of the message(s) into the hash buffer
         ThrowStatusIfFailed(BCryptFinishHash(
-            hashHandle.get(),           // Handle to the hash or MAC object
+            hashHandleT,                // Handle to the hash or MAC object
             hash.data(),                // A pointer to a buffer that receives the hash or MAC value
             hashLength,                 // Size of the buffer in bytes
             0),                         // Flags
