@@ -22,13 +22,7 @@ const run = async () =>
 
     // The script requires the command path to be absolute.
     const fullVhdxPath: string = path.resolve(vhdxPath);
-
-    const powershellRunner: ToolRunner = tl.tool('powershell');
-    powershellRunner.arg('-NoLogo');
-    powershellRunner.arg('-NoProfile');
-    powershellRunner.arg('-NonInteractive');
-    powershellRunner.arg(['-ExecutionPolicy', 'Unrestricted']);
-    powershellRunner.arg(GENERATE_VHDX_SCRIPT_PATH);
+    const powershellRunner: ToolRunner = helpers.getPowershellRunner(GENERATE_VHDX_SCRIPT_PATH);
     powershellRunner.arg(['-vhdxPath', fullVhdxPath]);
     powershellRunner.arg(['-vhdxSize', vhdxSize]);
     powershellRunner.arg(['-msixPackagePath', packagePath]);

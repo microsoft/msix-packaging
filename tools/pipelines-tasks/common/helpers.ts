@@ -35,6 +35,25 @@ export const getInputWithErrorCheck = (variableName: string, errorMessage: strin
 }
 
 /**
+ * Gets a ToolRunner for running a Powershell script.
+ * Script arguments can be added later by the caller.
+ * @param scriptPath Script to run.
+ */
+export const getPowershellRunner = (scriptPath: string): ToolRunner =>
+{
+    const powershellRunner: ToolRunner = tl.tool('powershell')
+        .arg('-NoLogo')
+        .arg('-NoProfile')
+        .arg('-NonInteractive')
+        .arg(['-ExecutionPolicy', 'Unrestricted']);
+
+    // Quote the script path to allow for spaces.
+    // Existing quotes need to be escaped.
+    powershellRunner.arg(`& '${scriptPath.replace("'", "''")}'`);
+    return powershellRunner;
+}
+
+/**
  * Increment the current version given by the method specified. A version
  * is in the form of (major).(minor).(build).(revision). The incremental
  * method specifies which part of the version to increment. For example,
