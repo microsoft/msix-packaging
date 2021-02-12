@@ -6,7 +6,7 @@
 --------------
    The MSIX SDK project is an effort to enable developers on a variety of platforms to unpack 
    packages for the purposes of distribution from either the Microsoft Store, or their own content distribution networks.  
-    
+
    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
    documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).
 
