@@ -77,7 +77,7 @@ File->Open Folder->navigate to project root and select "CMakeLists.txt"
 See [cmake-support-vs](https://blogs.msdn.microsoft.com/vcblog/2016/10/05/cmake-support-in-visual-studio/) for details regarding how to configure your environment.
 
 ##### Xcode clients: 
-   
+
 open terminal, from project root:
 mkdir build && cd build && cmake -DMACOS=on -G"Xcode" ..
 open xcode
