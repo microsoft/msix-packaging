@@ -109,5 +109,6 @@ steps:
     vsixFile: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
     extensionId: 'msix-ci-automation-task-dev'
     extensionName: 'MSIX Packaging (Preview)'
+    extensionVersion: '$(major).$(minor).$(patch)'
     updateTasksId: true
     extensionVisibility: 'privatepreview'
