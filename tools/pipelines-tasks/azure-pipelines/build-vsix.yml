@@ -1,0 +1,114 @@
+# Pipeline to create extension VSIX
+
+trigger:
+  branches:
+    include:
+    - master
+  paths:
+    include:
+    - tools/pipelines-tasks
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  tasksRoot: 'tools/pipelines-tasks'
+  # Version number
+  major: '1'
+  minor: '0'
+  # Set to 0 on next change to minor. This grew while using a classic pipeline.
+  patch: $[counter(variables['minor'], 7)]
+
+steps:
+# Install the tools needed
+- task: NodeTool@0
+  displayName: 'Use Node 10.x'
+  inputs:
+    versionSpec: 10.x
+
+- task: TfxInstaller@3
+  displayName: 'Use Node CLI for Azure DevOps (tfx-cli): v0.7.x'
+
+# Build the project
+- task: PowerShell@2
+  displayName: 'Build the project'
+  inputs:
+    targetType: filePath
+    filePath: '$(tasksRoot)/build.ps1'
+    arguments: BuildForProduction
+
+# Run the tests
+- task: NuGetCommand@2
+  displayName: 'Restore NuGet packages for test project'
+  inputs:
+    restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
+
+- powershell: |
+    npx mocha
+  displayName: 'Run the tests'
+  workingDirectory: '$(tasksRoot)'
+  env:
+    SYSTEM_CULTURE: 'en-US'
+
+# Package and sign the VSIX
+- task: PackageAzureDevOpsExtension@3
+  displayName: 'Package Extension: $(tasksRoot)'
+  inputs:
+    rootFolder: '$(tasksRoot)'
+    patternManifest: 'vss-extension.json'
+    outputPath: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
+    publisherId: 'MSIX'
+    extensionVersion: '$(major).$(minor).$(patch)'
+    extensionVisibility: public
+    updateTasksVersion: true
+
+- task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+  displayName: 'Component Detection'
+
+- task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+  displayName: 'ESRP CodeSigning'
+  inputs:
+    ConnectedServiceName: 'ESRP CodeSigning'
+    FolderPath: '$(Build.ArtifactStagingDirectory)'
+    Pattern: MsixPackagingExtension.vsix
+    signConfigType: inlineSignParams
+    inlineOperation: |
+     [
+      {
+          "KeyCode" : "CP-233016",
+          "OperationCode" : "OpcSign",
+          "Parameters" : {
+              "FileDigest" : "/fd SHA256"
+          },
+          "ToolName" : "sign",
+          "ToolVersion" : "1.0"
+      },
+      {
+          "KeyCode" : "CP-233016",
+          "OperationCode" : "OpcVerify",
+          "Parameters" : {},
+          "ToolName" : "sign",
+          "ToolVersion" : "1.0"
+      }
+     ]
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish VSIX artifact'
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
+    artifact: 'VSIX'
+    publishLocation: 'pipeline'
+
+# Publish privately
+# Use different task IDs from public extension to prevent clashing.
+- task: PublishAzureDevOpsExtension@3
+  displayName: 'Publish Extension'
+  inputs:
+    connectedServiceName: 'Visual Studio Marketplace - MSIX'
+    fileType: vsix
+    vsixFile: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
+    extensionId: 'msix-ci-automation-task-dev'
+    extensionName: 'MSIX Packaging (Preview)'
+    extensionVersion: '$(major).$(minor).$(patch)'
+    updateTasksId: true
+    extensionVisibility: 'privatepreview'
