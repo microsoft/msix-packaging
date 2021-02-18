@@ -23,7 +23,6 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <!--TELEMETRYEVENTSOURCE_PUBLIC is used internally in TelemetryEventSource to make the class public-->
     <DefineConstants>TRACE;DEBUG;TELEMETRYEVENTSOURCE_USE_NUGET</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -33,7 +32,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;TELEMETRYEVENTSOURCE_USE_NUGET;TELEMETRYEVENTSOURCE_PUBLIC</DefineConstants>
+    <DefineConstants>TRACE;TELEMETRYEVENTSOURCE_USE_NUGET</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
