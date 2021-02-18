@@ -40,13 +40,7 @@ namespace Microsoft.Diagnostics.Telemetry
     /// of internal.
     /// </para>
     /// </summary>
-#if TELEMETRYEVENTSOURCE_PUBLIC
-    public
-#else
-    internal
-#endif
-        class TelemetryEventSource
-        : EventSource
+    internal class TelemetryEventSource : EventSource
     {
         /// <summary>
         /// Keyword 0x0000100000000000 is reserved for future definition. Do
