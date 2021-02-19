@@ -9,17 +9,36 @@ import download = require('./predownloadsecurefile');
 const SIGNTOOL_PATH = path.join(__dirname, 'lib', 'signtool');
 const IMPORT_CERT_SCRIPT_PATH = path.join(__dirname, 'ImportCert.ps1');
 
+/**
+ * Definition of how to sign with a kind of certificate (e.g. file or file encoded as string).
+ * Implementations of this should read the needed task inputs during construction.
+ */
 interface SigningType
 {
+    /**
+     * Prepares the certificate to use.
+     */
     prepareCert(): Promise<void>,
+    /**
+     * Does any cleanup needed for the certificate.
+     */
     cleanupCert(): void,
+    /**
+     * Adds the signtool.exe arguments that specify which certificate to use.
+     */
     addSignToolCertOptions(signtoolRunner: ToolRunner): void
 }
 
+/**
+ * Sign with a .pfx file downloaded from the pipeline's secure files.
+ */
 class SecureFileSigningType implements SigningType
 {
+    // ID of the secure .pfx file to download.
     secureFileId: string;
+    // Password to the .pfx.
     password?: string;
+    // Path to the downloaded file
     certFilePath?: string;
 
     constructor()
@@ -41,16 +60,19 @@ class SecureFileSigningType implements SigningType
         }
     }
 
+    // Download the pfx file
     async prepareCert(): Promise<void>
     {
         this.certFilePath = await download.downloadSecureFile(this.secureFileId);
     }
 
+    // Delete the downloaded file
     cleanupCert()
     {
         download.deleteSecureFile(this.secureFileId);
     }
 
+    // Pass the cert path and password to signtool
     addSignToolCertOptions(signtoolRunner: ToolRunner): void
     {
         signtoolRunner.arg(['/f', this.certFilePath!]);
@@ -61,9 +83,14 @@ class SecureFileSigningType implements SigningType
     }
 }
 
+/**
+ * Sign with a pfx encoded as a string, as downloaded from Azure Key Vault
+ */
 class Base64EncodedCertSigningType implements SigningType
 {
+    // Certificate encoded as a string
     base64String: string;
+    // Certificate hash/thumbprint for identification
     certThumbprint?: string;
 
     constructor()
@@ -71,6 +98,7 @@ class Base64EncodedCertSigningType implements SigningType
         this.base64String = tl.getInput('encodedCertificate', /* required */ true)!;
     }
 
+    // Import the certificate into the cert store and get its thumbprint
     async prepareCert(): Promise<void>
     {
         const powershellRunner = helpers.getPowershellRunner(IMPORT_CERT_SCRIPT_PATH);
@@ -86,14 +114,16 @@ class Base64EncodedCertSigningType implements SigningType
         tl.debug('cert thumbprint: ' + this.certThumbprint);
     }
 
+    // Remove the certificate from the cert store
     cleanupCert()
     {
         const powershellRunner = helpers.getPowershellRunner(IMPORT_CERT_SCRIPT_PATH);
         powershellRunner.arg(this.base64String);
         powershellRunner.arg('-remove');
-        powershellRunner.exec();
+        powershellRunner.execSync();
     }
 
+    // Pass the cert thumbprint to signtool
     addSignToolCertOptions(signtoolRunner: ToolRunner): void
     {
         signtoolRunner.arg(['/sha1', this.certThumbprint!]);
@@ -136,7 +166,7 @@ const run = async () =>
 
     const packagePathPattern: string = tl.getInput('package', /* required */ true)!;
 
-    // Get the certificate.
+    // Get the certificate info.
     const certificateType: string | undefined = tl.getInput('certificateType');
     var signingType: SigningType;
     if (certificateType == 'base64')
