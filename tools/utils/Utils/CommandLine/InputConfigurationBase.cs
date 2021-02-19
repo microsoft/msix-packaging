@@ -12,7 +12,7 @@ namespace Microsoft.Msix.Utils.CommandLine
 
     /// <summary>
     /// Base class wrapping around Microsoft.Extensions.CommandLineUtils.CommandOption and
-    /// Microsoft.Extensions.CommandLineUtils.CommandArgument containing additional information 
+    /// Microsoft.Extensions.CommandLineUtils.CommandArgument containing additional information
     /// for validation.
     /// </summary>
     public abstract class InputConfigurationBase

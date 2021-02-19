@@ -21,7 +21,7 @@ namespace Microsoft.Msix.Utils.ProcessRunner
         /// <param name="name">Name of the process executed.</param>
         /// <param name="exitCode">Exit code of the process.</param>
         /// <param name="logDirectory">The log directory ProcessRunner used, if any.</param>
-        public ProcessRunnerException(string name, int exitCode, string logDirectory) 
+        public ProcessRunnerException(string name, int exitCode, string logDirectory)
             : base(FormatExceptionMessage(name, exitCode, logDirectory))
         {
             this.Name = name;

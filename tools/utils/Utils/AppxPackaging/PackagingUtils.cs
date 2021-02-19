@@ -7,7 +7,7 @@
 namespace Microsoft.Msix.Utils.AppxPackaging
 {
     using System.Text.RegularExpressions;
-    using AppxPackagingInterop;
+    using Microsoft.Msix.Utils.AppxPackagingInterop;
 
     /// <summary>
     /// Class that contains packaging helper methods

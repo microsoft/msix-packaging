@@ -45,7 +45,7 @@ namespace Microsoft.Msix.Utils.Logger
 
         #region Events
         /// <summary>
-        /// Gets or sets the MessageLogged event handler. Used to subscribe to log events fired 
+        /// Gets or sets the MessageLogged event handler. Used to subscribe to log events fired
         /// anytime a message is logged, except for logs made within the Logger.RunWithoutLogEvents
         /// lambda argument.
         /// </summary>

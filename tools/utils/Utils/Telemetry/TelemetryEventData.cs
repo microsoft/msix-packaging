@@ -7,7 +7,7 @@
 namespace Microsoft.Msix.Utils.Telemetry
 {
     using System;
-    using Microsoft.Diagnostics.Tracing;
+    using System.Diagnostics.Tracing;
 
     /// <summary>
     /// A class containing the event data types

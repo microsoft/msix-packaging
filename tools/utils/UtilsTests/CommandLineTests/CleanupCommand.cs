@@ -8,7 +8,7 @@ namespace UtilsTests
 {
     using Microsoft.Extensions.CommandLineUtils;
     using Microsoft.Msix.Utils.CommandLine;
-    using WEX.Logging.Interop;
+    using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
     /// <summary>
     /// Example of command.
@@ -45,7 +45,7 @@ namespace UtilsTests
         /// <returns>The program exit code</returns>
         protected override int OnExecute(ConfiguredInputs configuredInputs)
         {
-            Log.Comment("Running OnExecute for command cleanup");
+            Logger.LogMessage("Running OnExecute for command cleanup");
             return 0;
         }
     }

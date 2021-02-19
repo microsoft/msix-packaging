@@ -8,7 +8,7 @@ namespace Microsoft.Msix.Utils.Logger
 {
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
-    using AppxPackagingInterop;
+    using Microsoft.Msix.Utils.AppxPackagingInterop;
 
     public class AppxPackagingEventSinkToLogger : IAppxPackagingDiagnosticEventSink
     {

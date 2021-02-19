@@ -100,7 +100,7 @@ namespace Microsoft.Msix.Utils.ProcessRunner
             this.ToolPath = Path.Combine(
                 Path.GetDirectoryName(
                     Assembly.GetExecutingAssembly().Location),
-                    this.ToolName + ".EXE");
+                this.ToolName + ".EXE");
 
             this.ValidateToolExistance();
         }

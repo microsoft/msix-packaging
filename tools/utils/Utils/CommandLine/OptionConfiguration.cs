@@ -105,7 +105,7 @@ namespace Microsoft.Msix.Utils.CommandLine
             if (validationRoutineMultipleValues != null && (this.Option.OptionType == CommandOptionType.NoValue || this.Option.OptionType == CommandOptionType.SingleValue))
             {
                 throw new InvalidOperationException(string.Format(
-                    "Validation routine for multiple values is not allowed with CommandOptionType.{0}.", 
+                    "Validation routine for multiple values is not allowed with CommandOptionType.{0}.",
                     this.Option.OptionType.ToString()));
             }
             else if (validationRoutineSingleValue != null && this.Option.OptionType == CommandOptionType.NoValue)

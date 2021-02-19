@@ -90,7 +90,7 @@ namespace Microsoft.Msix.Utils.CommandLine
                 this.CommandName,
                 (subCommandLineApplication) =>
                 {
-                    // This callback is called by the CommandLineUtils library to configure description/inputs, 
+                    // This callback is called by the CommandLineUtils library to configure description/inputs,
                     // and handle the exeuction logic
                     subCommandLineApplication.Description = this.CommandDescription;
                     CommandOption helpOption = subCommandLineApplication.Option(

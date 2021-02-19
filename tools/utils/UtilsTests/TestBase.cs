@@ -7,24 +7,16 @@
 namespace UtilsTests
 {
     using Microsoft.Msix.Utils.Logger;
-    using WEX.Logging.Interop;
-    using WEX.TestExecution.Markup;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using static Microsoft.VisualStudio.TestTools.UnitTesting.Logging.Logger;
 
     [TestClass]
     internal class TestBase
     {
-        // This property is needed to be able to work with runtime parameters from within the test
-        // TAEF will automatically set this property at runtime to the current TestContext object.
-        private TestContext testContext;
-
         /// <summary>
-        /// Gets or sets the test context; set by TAEF at runtime for each test.
+        /// Gets or sets the test context; set by the test framework at runtime for each test.
         /// </summary>
-        public TestContext TestContext
-        {
-            get { return this.testContext; }
-            set { this.testContext = value; }
-        }
+        public TestContext TestContext { get; set; }
 
         /// <summary>
         /// Class initialize method.
@@ -32,14 +24,14 @@ namespace UtilsTests
         [ClassInitialize]
         public static void ClassInitialize()
         {
-            Log.Comment("\n************************************************************");
-            Log.Comment("Class Initialize");
+            LogMessage("\n************************************************************");
+            LogMessage("Class Initialize");
 
-            LogUtils.SetupLogger("Peet Utils Tests", 2018, true);
-            Log.Comment("Log file is located under: " + ((FileLog)Logger.GetLogProvider(typeof(FileLog))).LogFilePath);
+            LogUtils.SetupLogger("MSIX Utils Tests", 2018, true);
+            LogMessage("Log file is located under: " + ((FileLog)Logger.GetLogProvider(typeof(FileLog))).LogFilePath);
 
-            Log.Comment("Ending Class Initialize");
-            Log.Comment("************************************************************\n");
+            LogMessage("Ending Class Initialize");
+            LogMessage("************************************************************\n");
         }
 
         /// <summary>
@@ -48,13 +40,13 @@ namespace UtilsTests
         [ClassCleanup]
         public static void ClassCleanup()
         {
-            Log.Comment("\n************************************************************");
-            Log.Comment("Test Base Class Cleanup");
+            LogMessage("\n************************************************************");
+            LogMessage("Test Base Class Cleanup");
 
             Logger.Deinit();
 
-            Log.Comment("Ending Test Base Class Cleanup");
-            Log.Comment("************************************************************\n");
+            LogMessage("Ending Test Base Class Cleanup");
+            LogMessage("************************************************************\n");
         }
 
         /// <summary>

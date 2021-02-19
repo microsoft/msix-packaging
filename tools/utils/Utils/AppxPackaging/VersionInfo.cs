@@ -41,7 +41,7 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         {
             // Use the System.Version class to convert the version into a UINT64 encoding
             Version versionWrapper = new Version(versionAsStr);
-            this.version = (((ulong)versionWrapper.Major) << 48) 
+            this.version = (((ulong)versionWrapper.Major) << 48)
                 + (((ulong)versionWrapper.Minor) << 32)
                 + ((ulong)versionWrapper.Build << 16)
                 + (ulong)versionWrapper.Revision;

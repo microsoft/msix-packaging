@@ -10,9 +10,8 @@ namespace UtilsTests
     using System.IO;
     using System.Threading;
     using Microsoft.Msix.Utils.ProcessRunner;
-    using WEX.Logging.Interop;
-    using WEX.TestExecution;
-    using WEX.TestExecution.Markup;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
     [TestClass]
     internal class ProcessRunnerTests : TestBase
@@ -33,7 +32,7 @@ namespace UtilsTests
         [TestInitialize]
         public new void TestInitialize()
         {
-            Log.Comment("Initializing ProcessRunner test.");
+            Logger.LogMessage("Initializing ProcessRunner test.");
 
             // Copy the tool to the current directory for testing.
             this.testDirectory = TestContext.TestDeploymentDir;
@@ -48,7 +47,7 @@ namespace UtilsTests
             }
             catch (Exception exception)
             {
-                Log.Comment("Error in Test Initialize." + exception.ToString());
+                Logger.LogMessage("Error in Test Initialize." + exception.ToString());
             }
         }
 
@@ -68,13 +67,13 @@ namespace UtilsTests
         [TestMethod]
         public void SDKToolProcessRunnerTest_IntializeFromCurrentPath_Success()
         {
-            Log.Comment("Testing SDKToolProcessRunner, SDKDetector, MakeAppxRunner");
-            Log.Comment("MakeAppxRunner looks for the tool next to current assembly." +
+            Logger.LogMessage("Testing SDKToolProcessRunner, SDKDetector, MakeAppxRunner");
+            Logger.LogMessage("MakeAppxRunner looks for the tool next to current assembly." +
                 "If not found, looks for it in SDK Installation folder.");
 
-            VerifyOperation verifyOperation = delegate { new MakeAppxRunner(); };
-            Verify.NoThrow(verifyOperation);
-            Log.Comment("MakeAppxRunner and SDKToolProcessRunner initialized successfully.");
+            // Verify success of initialization.
+            new MakeAppxRunner();
+            Logger.LogMessage("MakeAppxRunner and SDKToolProcessRunner initialized successfully.");
         }
 
         /// <summary>
@@ -94,15 +93,15 @@ namespace UtilsTests
             if (File.Exists(this.testDirectory + toolName))
             {
                 File.Delete(this.testDirectory + toolName);
-                Log.Comment("File Deleted in the test directory");
+                Logger.LogMessage("File Deleted in the test directory");
             }
 
             // If the tool doesn't exist in the tool path and SDK is NOT installled,
             // Argument exception should be thrown.
-            VerifyOperation verifyOperation = delegate { new MakeAppxRunner(); };
-            Verify.Throws<ArgumentException>(verifyOperation);
+            Action verifyOperation = () => { new MakeAppxRunner(); };
+            Assert.ThrowsException<ArgumentException>(verifyOperation);
 
-            Log.Comment("MakeAppxRunner and SDKToolProcessRunner throw exception as expected.");
+            Logger.LogMessage("MakeAppxRunner and SDKToolProcessRunner throw exception as expected.");
         }
 
         /// <summary>
@@ -112,19 +111,14 @@ namespace UtilsTests
         [TestMethod]
         public void SDKToolProcessRunnerTest_InitializeFromToolDirectory_GenerateAppxBundle_Success()
         {
-            MakeAppxRunner runner;
-
-            Log.Comment("Testing SDKToolProcessRunner, SDKDetector, MakeAppxRunner" +
+            Logger.LogMessage("Testing SDKToolProcessRunner, SDKDetector, MakeAppxRunner" +
                 " by passing the Tool Directory.");
 
-            VerifyOperation verifyOperation = delegate { runner = new MakeAppxRunner(this.testToolDirectory); };
-            Verify.NoThrow(verifyOperation);
-
-            runner = new MakeAppxRunner(this.testToolDirectory)
+            MakeAppxRunner runner = new MakeAppxRunner(this.testToolDirectory)
             {
-                OverwriteExistingFiles = true
+                OverwriteExistingFiles = true,
             };
-            Log.Comment("MakeAppxRunner and SDKToolProcessRunner initialized successfully.");
+            Logger.LogMessage("MakeAppxRunner and SDKToolProcessRunner initialized successfully.");
 
             // Call GenerateAppxBundleFromRootFolder to test it.
             runner.GenerateAppxBundleFromRootFolder(
@@ -134,8 +128,8 @@ namespace UtilsTests
 
             runner.Dispose();
 
-            Verify.AreEqual(true, File.Exists(this.testDirectory + "TestAppxBundle.AppxBundle"));
-            Log.Comment("Tested MakeAppx Runner.");
+            Assert.AreEqual(true, File.Exists(this.testDirectory + "TestAppxBundle.AppxBundle"));
+            Logger.LogMessage("Tested MakeAppx Runner.");
         }
 
         /// <summary>
@@ -144,7 +138,7 @@ namespace UtilsTests
         [TestMethod]
         public void ProcessRunnerTest_TerminateProcess_Success()
         {
-            Log.Comment("Testing Process Runner -> Terminate Process.");
+            Logger.LogMessage("Testing Process Runner -> Terminate Process.");
             string exePath = Path.Combine(this.testDataDirectory, "UtilsTestExe.exe");
 
             using (DesktopProcessRunner processRunner = new DesktopProcessRunner())
@@ -155,10 +149,10 @@ namespace UtilsTests
                 // This will run when we call TerminateProcessIfRunning (after the thread is finished execution)
                 threadStart += () =>
                 {
-                    Log.Comment($"Process exit code: {processRunner.ExitCode}");
+                    Logger.LogMessage($"Process exit code: {processRunner.ExitCode}");
 
                     string standardOutput = string.Join(string.Empty, processRunner.StandardOutput);
-                    Verify.IsFalse(standardOutput.Contains("Process Ending"), "Verifying process didn't print end message");
+                    Assert.IsFalse(standardOutput.Contains("Process Ending"), "Verifying process didn't print end message");
                 };
 
                 Thread thread = new Thread(threadStart);
@@ -167,7 +161,7 @@ namespace UtilsTests
                 // Give some time for the process to start and validate output
                 Thread.Sleep(2000);
                 string stdOut = string.Join(string.Empty, processRunner.StandardOutput);
-                Verify.IsTrue(stdOut.Contains("Process Starting"), "Verifying process start message");
+                Assert.IsTrue(stdOut.Contains("Process Starting"), "Verifying process start message");
 
                 processRunner.TerminateProcessIfRunning();
                 thread.Join();
@@ -180,7 +174,7 @@ namespace UtilsTests
         [TestMethod]
         public void ProcessRunnerTest_ValidateExitCode_Success()
         {
-            Log.Comment("Testing ProcessRunner ValidateExitCode");
+            Logger.LogMessage("Testing ProcessRunner ValidateExitCode");
             string exePath = Path.Combine(this.testDataDirectory, "UtilsTestExe.exe");
 
             using (DesktopProcessRunner processRunner = new DesktopProcessRunner())
@@ -191,7 +185,7 @@ namespace UtilsTests
                 // This will run when we call TerminateProcessIfRunning (after the thread is finished execution)
                 threadStart += () =>
                 {
-                    Log.Comment($"Process exit code: {processRunner.ExitCode}");
+                    Logger.LogMessage($"Process exit code: {processRunner.ExitCode}");
 
                     // Process should have exited with code -1.
                     bool invalid = false;
@@ -204,7 +198,7 @@ namespace UtilsTests
                         invalid = true;
                     }
 
-                    Verify.IsTrue(invalid, "Verifying exit code is invalid when we expect 0.");
+                    Assert.IsTrue(invalid, "Verifying exit code is invalid when we expect 0.");
 
                     // Make -1 a valid exit code.
                     invalid = false;
@@ -217,7 +211,7 @@ namespace UtilsTests
                         invalid = true;
                     }
 
-                    Verify.IsFalse(invalid, "Verifying exit code is valid when we specify -1 as a valid code.");
+                    Assert.IsFalse(invalid, "Verifying exit code is valid when we specify -1 as a valid code.");
 
                     // Make -1 an invalid exit code with a list of valid codes.
                     invalid = false;
@@ -230,7 +224,7 @@ namespace UtilsTests
                         invalid = true;
                     }
 
-                    Verify.IsTrue(invalid, "Verifying exit code is invalid when we specify 0 as a valid code.");
+                    Assert.IsTrue(invalid, "Verifying exit code is invalid when we specify 0 as a valid code.");
                 };
 
                 Thread thread = new Thread(threadStart);
@@ -239,7 +233,7 @@ namespace UtilsTests
                 // Give some time for the process to start and validate output
                 Thread.Sleep(2000);
                 string stdOut = string.Join(string.Empty, processRunner.StandardOutput);
-                Verify.IsTrue(stdOut.Contains("Process Starting"), "Verifying process start message");
+                Assert.IsTrue(stdOut.Contains("Process Starting"), "Verifying process start message");
 
                 processRunner.TerminateProcessIfRunning();
                 thread.Join();
@@ -267,7 +261,7 @@ namespace UtilsTests
             SDKDetector sdkDetector = SDKDetector.Instance;
 
             string latestVersion = sdkDetector.GetLastInstalledPlatformDirectory(rootPath);
-            Verify.AreEqual(subDir1, latestVersion);
+            Assert.AreEqual(subDir1, latestVersion);
         }
 
         /// <summary>
@@ -291,7 +285,7 @@ namespace UtilsTests
             SDKDetector sdkDetector = SDKDetector.Instance;
 
             string latestVersion = sdkDetector.GetLastInstalledPlatformDirectory(rootPath);
-            Verify.AreEqual(subDir3, latestVersion);
+            Assert.AreEqual(subDir3, latestVersion);
         }
     }
 }

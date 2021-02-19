@@ -106,8 +106,8 @@ namespace Microsoft.Msix.Utils.CommandLine
 
         /// <summary>
         /// Gets or sets the function that is used to translate an exception into an exit code, as desired.
-        /// Typically, consumers need to handle exceptions and translate them into error codes inside OnExecute 
-        /// method, so this handler is not needed. However if specific exit codes are needed for certain argument 
+        /// Typically, consumers need to handle exceptions and translate them into error codes inside OnExecute
+        /// method, so this handler is not needed. However if specific exit codes are needed for certain argument
         /// validation exceptions, this method can define the translation.
         /// </summary>
         public Func<Exception, int> OnInputValidationError { get; set; }
@@ -167,7 +167,7 @@ namespace Microsoft.Msix.Utils.CommandLine
                             }
                             else
                             {
-                                // This can happen if caller doesn't want to use OnInputValidationError - and so 
+                                // This can happen if caller doesn't want to use OnInputValidationError - and so
                                 // CLIApplication will default to just returning 1 as the exit code
                                 Console.Error.WriteLine("Error: {0}", exp.Message);
                                 exitCode = 1;

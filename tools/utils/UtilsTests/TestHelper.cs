@@ -8,7 +8,7 @@ namespace UtilsTests
 {
     using System;
     using System.IO;
-    using WEX.Logging.Interop;
+    using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
     internal class TestHelper : TestBase
     {
@@ -23,11 +23,11 @@ namespace UtilsTests
                 try
                 {
                     File.Delete(filePath);
-                    Log.Comment("{0} Tool deleted in the file directory", filePath);
+                    Logger.LogMessage("{0} Tool deleted in the file directory", filePath);
                 }
                 catch (Exception exception)
                 {
-                    Log.Comment("Exception caught while deleting file from test directory."
+                    Logger.LogMessage("Exception caught while deleting file from test directory."
                         + " File Path: " + filePath + " Exception:"
                         + exception.ToString());
                 }

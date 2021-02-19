@@ -45,7 +45,7 @@ namespace Microsoft.Msix.Utils.ProcessRunner
         public bool RunQuietly { get; set; } = false;
 
         /// <summary>
-        /// Gets or sets the directory path under which the output log from ComparePackage will be saved
+        /// Gets the directory path under which the output log from ComparePackage will be saved
         /// if empty, output will be redirected to console.
         /// </summary>
         protected override string ToolName

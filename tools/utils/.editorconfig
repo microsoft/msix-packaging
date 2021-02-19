@@ -1,0 +1,9 @@
+﻿[*.cs]
+
+# Many classes are for interop and not documented
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = none
+
+# Allow : to appear at the end of a line for 
+# SA1003: Symbols should be spaced correctly
+dotnet_diagnostic.SA1003.severity = none
