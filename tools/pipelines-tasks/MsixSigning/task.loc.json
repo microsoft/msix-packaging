@@ -7,6 +7,7 @@
   "description": "ms-resource:loc.description",
   "author": "Microsoft Corporation",
   "category": "Package",
+  "helpUrl": "https://aka.ms/msix-cicd",
   "helpMarkDown": "ms-resource:loc.helpMarkDown",
   "execution": {
     "Node10": {
@@ -34,9 +35,10 @@
       "label": "ms-resource:loc.input.label.certificateType",
       "defaultValue": "secureFile",
       "required": false,
+      "helpMarkDown": "ms-resource:loc.input.help.certificateType",
       "options": {
         "secureFile": "Secure file",
-        "base64": "Base64 encoded (Azure Key Vault)"
+        "base64": "String-encoded certificate"
       }
     },
     {

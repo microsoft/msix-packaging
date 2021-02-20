@@ -7,6 +7,7 @@
   "description": "ms-resource:loc.description",
   "author": "Microsoft Corporation",
   "category": "Package",
+  "helpUrl": "https://aka.ms/msix-cicd",
   "helpMarkDown": "ms-resource:loc.helpMarkDown",
   "execution": {
     "Node10": {

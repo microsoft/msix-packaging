@@ -7,7 +7,8 @@
   "description": "Create a VHD or VHDX package for MSIX app attach",
   "author": "Microsoft Corporation",
   "category": "Package",
-  "helpMarkDown": "",
+  "helpUrl": "https://aka.ms/msix-cicd",
+  "helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "execution": {
     "Node10": {
       "target": "index.js",

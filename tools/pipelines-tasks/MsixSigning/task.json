@@ -7,7 +7,8 @@
   "description": "Sign MSIX packages",
   "author": "Microsoft Corporation",
   "category": "Package",
-  "helpMarkDown": "",
+  "helpUrl": "https://aka.ms/msix-cicd",
+  "helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "execution": {
     "Node10": {
       "target": "index.js"
@@ -34,15 +35,16 @@
       "label": "Certificate File type",
       "defaultValue": "secureFile",
       "required": false,
+      "helpMarkDown": "Source of the certificate file to use. The certificate can come from the [Secure Files library](https://docs.microsoft.com/azure/devops/pipelines/library/secure-files), or be encoded as a string as if fetched with the [Azure Key Vault task](https://docs.microsoft.com/azure/devops/pipelines/tasks/deploy/azure-key-vault)",
       "options": {
         "secureFile": "Secure file",
-        "base64": "Base64 encoded (Azure Key Vault)"
+        "base64": "String-encoded certificate"
       }
     },
     {
       "name": "encodedCertificate",
       "type": "string",
-      "label": "Certificate",
+      "label": "Encoded Certificate File",
       "required": true,
       "helpMarkDown": "Certificate encoded as a Base64 string.",
       "visibleRule": "certificateType == base64"
