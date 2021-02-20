@@ -45,7 +45,7 @@ namespace MSIX {
         {
             ThrowErrorIfNot(Error::InflateRead,(self->m_compressionObject->GetAvailableSourceSize() == 0), "uninflated bytes overwritten");
             ULONG available = 0;
-            self->m_compressedBuffer = std::make_unique<std::vector<std::uint8_t>>(BufferSize);
+            self->m_compressedBuffer.swap(std::make_unique<std::vector<std::uint8_t>>(BufferSize));
             ThrowHrIfFailed(self->m_stream->Read(self->m_compressedBuffer->data(), static_cast<ULONG>(self->m_compressedBuffer->size()), &available));
             ThrowErrorIf(Error::FileRead, (available == 0), "Getting nothing back is unexpected here.");
             self->m_compressionObject->SetInput(self->m_compressedBuffer->data(), static_cast<size_t>(available));
@@ -55,7 +55,7 @@ namespace MSIX {
         // State::READY_TO_INFLATE
         InflateHandler([](InflateStream* self, void*, ULONG)
         {
-            self->m_inflateWindow = std::make_unique<std::vector<std::uint8_t>>(BufferSize);
+            self->m_inflateWindow.swap(std::make_unique<std::vector<std::uint8_t>>(BufferSize));
             self->m_inflateWindowPosition = 0;
             self->m_compressionObject->SetOutput(self->m_inflateWindow->data(), self->m_inflateWindow->size());
             self->m_compressionStatus = self->m_compressionObject->Inflate();
@@ -142,6 +142,8 @@ namespace MSIX {
 
     InflateStream::~InflateStream()
     {
+        m_compressedBuffer = nullptr;
+        m_inflateWindow = nullptr;
         Cleanup();
     }
 
