@@ -174,7 +174,7 @@ function InstallAllDepenencies()
 
     # Write it as a base64 string
     $certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx)
-    [System.Convert]::ToBase64String($certBytes) | Out-File $PSScriptRoot\test\assets\certificate.txt
+    [System.Convert]::ToBase64String($certBytes) | Out-File $PSScriptRoot\test\assets\certificate.txt -Encoding utf8
 
     # Remove the certificate from the cert store
     $certPath = "Cert:\CurrentUser\My\$($cert.Thumbprint)"

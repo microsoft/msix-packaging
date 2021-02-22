@@ -23,7 +23,7 @@ param (
 
 # Convert the base64 string to a certificate object.
 # We want to persist the private key to the cert store when we import it to be able to sign.
-$certBytes = [System.Convert]::FromBase64String($certBase64)
+$certBytes = [System.Convert]::FromBase64String($certBase64.Trim())
 $cert = New-Object -TypeName X509Certificate2 -ArgumentList ($certBytes, $null, [X509KeyStorageFlags]::PersistKeySet) -ErrorAction Stop
 
 # Open the default cert store. This is the current user's "My" (Personal) store.
