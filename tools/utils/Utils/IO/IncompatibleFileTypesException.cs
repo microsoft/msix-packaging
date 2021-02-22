@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="IncompatibleFileTypesException.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils
 {
@@ -14,7 +11,7 @@ namespace Microsoft.Msix.Utils
     public class IncompatibleFileTypesException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the IncompatibleFileTypesException class.
+        /// Initializes a new instance of the <see cref="IncompatibleFileTypesException"/> class.
         /// </summary>
         /// <param name="oldExtension">Extension of the older file</param>
         /// <param name="newExtension">Extension of the newer file</param>

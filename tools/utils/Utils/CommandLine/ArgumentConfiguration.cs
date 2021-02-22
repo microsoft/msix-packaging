@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="ArgumentConfiguration.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.CommandLine
 {
@@ -17,7 +14,7 @@ namespace Microsoft.Msix.Utils.CommandLine
     public class ArgumentConfiguration : InputConfigurationBase
     {
         /// <summary>
-        /// Initializes a new instance of the ArgumentConfiguration class for a non-required option (with single or multiple values).
+        /// Initializes a new instance of the <see cref="ArgumentConfiguration"/> class for a non-required option (with single or multiple values).
         /// </summary>
         /// <param name="argument">The CommandArgument object</param>
         /// <param name="isRequired">A flag indicating whether the argument is required</param>
@@ -39,7 +36,7 @@ namespace Microsoft.Msix.Utils.CommandLine
         }
 
         /// <summary>
-        /// Initializes a new instance of the ArgumentConfiguration class for a non-required option (with single or multiple values).
+        /// Initializes a new instance of the <see cref="ArgumentConfiguration"/> class for a non-required option (with single or multiple values).
         /// </summary>
         /// <param name="argument">The CommandArgument object</param>
         /// <param name="disallowedSwitches">A list of switches that are not allowed when this argument is specified</param>

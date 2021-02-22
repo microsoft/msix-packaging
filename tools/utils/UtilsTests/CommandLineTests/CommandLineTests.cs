@@ -1,8 +1,5 @@
-﻿//----------------------------------------------------------------------------------------------------------------------
-// <copyright file="CommandLineTests.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//----------------------------------------------------------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace UtilsTests
 {
@@ -15,7 +12,7 @@ namespace UtilsTests
     using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
     [TestClass]
-    internal class CommandLineTests : TestBase
+    public class CommandLineTests : TestBase
     {
         private static CLIApplication m_application;
         private static bool m_isCalled = false;

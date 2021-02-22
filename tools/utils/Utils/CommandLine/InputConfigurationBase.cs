@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="InputConfigurationBase.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.CommandLine
 {
@@ -18,7 +15,7 @@ namespace Microsoft.Msix.Utils.CommandLine
     public abstract class InputConfigurationBase
     {
         /// <summary>
-        /// Initializes a new instance of the InputConfigurationBase class.
+        /// Initializes a new instance of the <see cref="InputConfigurationBase"/> class.
         /// </summary>
         /// <param name="isRequired">A flag indicating whether the option is required</param>
         /// <param name="disallowedSwitches">A list of switches that are not allowed when this option is specified</param>

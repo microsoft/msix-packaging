@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="Block.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackaging
 {
@@ -16,7 +13,7 @@ namespace Microsoft.Msix.Utils.AppxPackaging
     public class Block
     {
         /// <summary>
-        /// Initializes a new instance of the Block class.
+        /// Initializes a new instance of the <see cref="Block"/> class.
         /// </summary>
         /// <param name="compressedSize">Compressed size of the block</param>
         /// <param name="hash">Block hash</param>

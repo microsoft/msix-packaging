@@ -1,8 +1,5 @@
-//-----------------------------------------------------------------------
-// <copyright file="VersionInfo.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackaging
 {
@@ -25,7 +22,7 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         private ulong? version;
 
         /// <summary>
-        /// Initializes a new instance of the VersionInfo class.
+        /// Initializes a new instance of the <see cref="VersionInfo"/> class.
         /// </summary>
         /// <param name="version">Version encoded as a UINT64</param>
         public VersionInfo(ulong? version)
@@ -34,7 +31,7 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         }
 
         /// <summary>
-        /// Initializes a new instance of the VersionInfo class.
+        /// Initializes a new instance of the <see cref="VersionInfo"/> class.
         /// </summary>
         /// <param name="versionAsStr">Version represented in a string</param>
         public VersionInfo(string versionAsStr)

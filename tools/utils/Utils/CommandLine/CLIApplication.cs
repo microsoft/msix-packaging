@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="CLIApplication.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.CommandLine
 {
@@ -23,7 +20,7 @@ namespace Microsoft.Msix.Utils.CommandLine
         private string m_versionString;
 
         /// <summary>
-        /// Initializes a new instance of the CLIApplication class.
+        /// Initializes a new instance of the <see cref="CLIApplication"/> class.
         /// </summary>
         /// <param name="applicationName">The name of the application</param>
         /// <param name="description">The description of the application</param>

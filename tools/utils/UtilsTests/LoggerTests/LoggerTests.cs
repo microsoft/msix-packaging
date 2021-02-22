@@ -1,8 +1,5 @@
-//----------------------------------------------------------------------------------------------------------------------
-// <copyright file="LoggerTests.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//----------------------------------------------------------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace UtilsTests
 {
@@ -13,7 +10,7 @@ namespace UtilsTests
     using static Microsoft.VisualStudio.TestTools.UnitTesting.Logging.Logger;
 
     [TestClass]
-    internal class LoggerTests : TestBase
+    public class LoggerTests : TestBase
     {
         private string fileName = "UtilsTestFileLogger.txt";
         private string fileDirectory = Environment.CurrentDirectory.ToString();

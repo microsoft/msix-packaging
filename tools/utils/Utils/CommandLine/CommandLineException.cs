@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="CommandLineException.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.CommandLine
 {
@@ -14,7 +11,7 @@ namespace Microsoft.Msix.Utils.CommandLine
     public class CommandLineException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the CommandLineException class.
+        /// Initializes a new instance of the <see cref="CommandLineException"/> class.
         /// </summary>
         /// <param name="argumentsSupplied">Whether command line arguments were supplied to the
         /// program.</param>
@@ -24,7 +21,7 @@ namespace Microsoft.Msix.Utils.CommandLine
         }
 
         /// <summary>
-        /// Initializes a new instance of the CommandLineException class with the given message.
+        /// Initializes a new instance of the <see cref="CommandLineException"/> class with the given message.
         /// </summary>
         /// <param name="message">Error message.</param>
         /// <param name="argumentsSupplied">Whether command line arguments were supplied to the
