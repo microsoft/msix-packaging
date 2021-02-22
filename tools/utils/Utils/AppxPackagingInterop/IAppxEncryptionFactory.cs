@@ -4,12 +4,9 @@
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Runtime.InteropServices.ComTypes;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "*", Justification = "Dummy type")]
     [Flags]
     public enum APPX_ENCRYPTED_PACKAGE_OPTIONS
     {
@@ -18,7 +15,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         APPX_ENCRYPTED_PACKAGE_OPTION_PAGE_HASHING = 0x2,
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Guid("80E8E04D-8C88-44AE-A011-7CADF6FB2E72"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxEncryptionFactory : IDisposable
     {
@@ -60,18 +56,14 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
     }
 
     // Empty declarations of unused types for building project
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public interface IAppxEncryptedPackageWriter
     {
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public interface IAppxEncryptedBundleWriter
     {
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "*", Justification = "Dummy type")]
     [StructLayout(LayoutKind.Sequential)]
     public struct APPX_ENCRYPTED_PACKAGE_SETTINGS2
     {
@@ -81,8 +73,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         public uint Options;
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "*", Justification = "Dummy type")]
     [StructLayout(LayoutKind.Sequential)]
     public struct APPX_KEY_INFO
     {
@@ -92,14 +82,10 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         public IntPtr KeyId;
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "*", Justification = "Dummy type")]
     public class APPX_ENCRYPTED_PACKAGE_SETTINGS
     {
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
-    [SuppressMessage("StyleCop.CSharp.MaintainabilityRules", "*", Justification = "Dummy type")]
     public class APPX_ENCRYPTED_EXEMPTIONS
     {
     }

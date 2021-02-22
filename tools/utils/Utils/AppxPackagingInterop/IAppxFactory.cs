@@ -4,17 +4,14 @@
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Runtime.InteropServices.ComTypes;
 
     // Empty declarations of unused types for building project
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public enum APPX_CAPABILITIES
     {
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public enum APPX_COMPRESSION_OPTION
     {
         APPX_COMPRESSION_OPTION_NONE = 0,
@@ -24,7 +21,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         APPX_COMPRESSION_OPTION_SUPERFAST = 4
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Flags]
     public enum STGM
     {
@@ -33,14 +29,12 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         STGM_READWRITE = 0x2
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public enum APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE
     {
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION = 0,
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE = 1
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public enum APPX_PACKAGE_ARCHITECTURE
     {
         APPX_PACKAGE_ARCHITECTURE_X86 = 0,
@@ -52,7 +46,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
     }
 
     // Note from idl: Must match APPX_PACKAGE_ARCHITECTURE
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public enum APPX_PACKAGE_ARCHITECTURE2
     {
         APPX_PACKAGE_ARCHITECTURE2_X86 = 0,
@@ -64,7 +57,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         APPX_PACKAGE_ARCHITECTURE2_UNKNOWN = 0xFFFF,
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public enum APPX_BUNDLE_FOOTPRINT_FILE_TYPE
     {
         APPX_BUNDLE_FOOTPRINT_FILE_TYPE_FIRST = 0,
@@ -74,7 +66,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         APPX_BUNDLE_FOOTPRINT_FILE_TYPE_LAST = 2
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public enum DX_FEATURE_LEVEL
     {
         DX_FEATURE_LEVEL_UNSPECIFIED = 0,
@@ -83,7 +74,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         DX_FEATURE_LEVEL_11 = 3
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public enum APPX_FOOTPRINT_FILE_TYPE
     {
         APPX_FOOTPRINT_FILE_TYPE_MANIFEST = 0,
@@ -93,7 +83,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         APPX_FOOTPRINT_FILE_TYPE_CONTENTGROUPMAP = 4
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public enum APPX_CAPABILITY_CLASS_TYPE
     {
         APPX_CAPABILITY_CLASS_DEFAULT = 0x00000000,
@@ -104,7 +93,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         APPX_CAPABILITY_CLASS_CUSTOM = 0x00000008
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Guid("beb94909-e451-438b-b5a7-d79e767b75d8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxFactory : IDisposable
     {
@@ -119,7 +107,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         IAppxBlockMapReader CreateValidatedBlockMapReader([In] IStream blockMapStream, [In] string signatureFileName);
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [StructLayout(LayoutKind.Sequential)]
     public struct APPX_PACKAGE_SETTINGS
     {

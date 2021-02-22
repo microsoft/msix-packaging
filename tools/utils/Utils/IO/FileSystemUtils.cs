@@ -4,7 +4,6 @@
 namespace Microsoft.Msix.Utils
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Globalization;
     using System.IO;
     using System.Reflection;
@@ -198,7 +197,6 @@ namespace Microsoft.Msix.Utils
             }
         }
 
-        [SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes", Justification = "Try pattern for delete")]
         public static bool TryDeleteFile(string filePath)
         {
             if (string.IsNullOrWhiteSpace(filePath))

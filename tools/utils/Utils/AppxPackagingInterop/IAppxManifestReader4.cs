@@ -4,13 +4,11 @@
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Runtime.InteropServices.ComTypes;
 
     // Note: The AppxPackaging.idl definition of this interface implements IAppxManifestReader3.
     // Therefore the functions in IAppxManifestReader, IAppxManifestReader2, and IAppxManifestReader3 should be re-declared here.
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Guid("4579BB7C-741D-4161-B5A1-47BD3B78AD9B"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxManifestReader4 : IDisposable
     {

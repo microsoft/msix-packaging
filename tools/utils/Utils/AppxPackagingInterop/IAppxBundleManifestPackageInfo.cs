@@ -4,11 +4,9 @@
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
 
     using System.Runtime.InteropServices;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Guid("54CD06C1-268F-40BB-8ED2-757A9EBAEC8D"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxBundleManifestPackageInfo : IDisposable
     {

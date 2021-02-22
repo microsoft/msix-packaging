@@ -5,7 +5,6 @@ namespace Microsoft.Msix.Utils.CommandLine
 {
     using System;
     using System.Collections.Generic;
-    using Microsoft.Extensions.CommandLineUtils;
 
     /// <summary>
     /// Base class wrapping around Microsoft.Extensions.CommandLineUtils.CommandOption and

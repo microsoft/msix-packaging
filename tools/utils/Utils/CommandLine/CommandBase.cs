@@ -95,7 +95,7 @@ namespace Microsoft.Msix.Utils.CommandLine
                         CLIApplication.HelpDescriptionText,
                         CommandOptionType.NoValue);
 
-                    ConfiguredInputs configuredInputs = SetupInputs(subCommandLineApplication);
+                    ConfiguredInputs configuredInputs = this.SetupInputs(subCommandLineApplication);
 
                     subCommandLineApplication.OnExecute(() =>
                     {
@@ -125,12 +125,12 @@ namespace Microsoft.Msix.Utils.CommandLine
                             }
 
                             // Execute the pre-execution routine if it is set
-                            if (m_onPreExecute != null)
+                            if (this.m_onPreExecute != null)
                             {
                                 this.m_onPreExecute();
                             }
 
-                            exitCode = OnExecute(configuredInputs);
+                            exitCode = this.OnExecute(configuredInputs);
                         }
                         catch (CommandParsingException exp)
                         {

@@ -114,7 +114,8 @@ namespace Microsoft.Msix.Utils.CommandLine
         /// </summary>
         /// <typeparam name="T">The concrete CommandBase type</typeparam>
         /// <returns>The concrete CommandBase object</returns>
-        public T ConfigureCommand<T>() where T : CommandBase, new()
+        public T ConfigureCommand<T>()
+            where T : CommandBase, new()
         {
             return CommandBase.Configure<T>(this.m_commandLineApplication, this.m_onCommandPreExecute);
         }
@@ -146,7 +147,7 @@ namespace Microsoft.Msix.Utils.CommandLine
                     }
                     else if (this.m_helpOption.HasValue())
                     {
-                        ShowHelp();
+                        this.ShowHelp();
                         return 0;
                     }
 
@@ -170,7 +171,7 @@ namespace Microsoft.Msix.Utils.CommandLine
                                 exitCode = 1;
                             }
 
-                            ShowHelp();
+                            this.ShowHelp();
                             return exitCode;
                         }
 
@@ -180,13 +181,13 @@ namespace Microsoft.Msix.Utils.CommandLine
                         }
                         else
                         {
-                            ShowHelp();
+                            this.ShowHelp();
                             return 1;
                         }
                     }
                     else
                     {
-                        ShowHelp();
+                        this.ShowHelp();
                         return 1;
                     }
                 });

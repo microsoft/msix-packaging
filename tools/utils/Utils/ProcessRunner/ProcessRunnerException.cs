@@ -12,7 +12,7 @@ namespace Microsoft.Msix.Utils.ProcessRunner
     public class ProcessRunnerException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the ProcessRunnerException class
+        /// Initializes a new instance of the <see cref="ProcessRunnerException"/> class.
         /// with the name of the process executed and its exit code.
         /// </summary>
         /// <param name="name">Name of the process executed.</param>

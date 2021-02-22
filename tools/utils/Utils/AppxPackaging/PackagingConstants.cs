@@ -105,9 +105,11 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         /// <summary>
         /// Common packaging error codes
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Values are self-explanatory")]
         public enum ErrorCode
         {
+            /// <summary>
+            /// The package's AppxBlockMap.xml file isn't valid.
+            /// </summary>
             APPX_E_INVALID_BLOCKMAP = unchecked((int)0x80080205)
         }
     }

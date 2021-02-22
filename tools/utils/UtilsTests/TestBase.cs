@@ -18,6 +18,7 @@ namespace UtilsTests
         /// <summary>
         /// Class initialize method.
         /// </summary>
+        /// <param name="testContext">Test context. Unused, required by ClassInitialize.</param>
         [ClassInitialize]
         public static void ClassInitialize(TestContext testContext)
         {

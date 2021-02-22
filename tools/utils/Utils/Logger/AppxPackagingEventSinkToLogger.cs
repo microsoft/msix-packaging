@@ -54,7 +54,7 @@ namespace Microsoft.Msix.Utils.Logger
         }
 
         #region IDisposable Support
-        // This code added to correctly implement the disposable pattern.
+        //// This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) below.

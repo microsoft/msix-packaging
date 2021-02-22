@@ -1,0 +1,20 @@
+# Everything in this folder is interop, so it is not documented and has a particular style.
+[*.cs]
+
+# SA1133: Do not combine attributes
+dotnet_diagnostic.SA1133.severity = none
+
+# SA1402: File may contain a single type
+dotnet_diagnostic.SA1402.severity = none
+
+# SA1413: Use trailing comma in multi-line initializers
+dotnet_diagnostic.SA1413.severity = none
+
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = none
+
+# SA1600: Elements should be documented
+dotnet_diagnostic.SA1600.severity = none
+
+# SA1602: Enumeration items should be documented
+dotnet_diagnostic.SA1602.severity = none

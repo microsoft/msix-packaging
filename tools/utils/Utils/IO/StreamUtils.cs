@@ -17,8 +17,6 @@ namespace Microsoft.Msix.Utils
     /// </summary>
     public class StreamUtils
     {
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Interop")]
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1602:EnumerationItemsMustBeDocumented", Justification = "Interop")]
         [Flags]
         private enum STGM
         {
@@ -280,7 +278,6 @@ namespace Microsoft.Msix.Utils
                 inputPath.StartsWith("https://", StringComparison.OrdinalIgnoreCase);
         }
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Interop")]
         [DllImport("shlwapi.dll", CharSet = CharSet.Unicode, PreserveSig = false)]
         private static extern IStream SHCreateStreamOnFileEx(
             [In] string fileName,
@@ -289,7 +286,6 @@ namespace Microsoft.Msix.Utils
             [In] bool create,
             [In] IStream template);
 
-        [SuppressMessage("StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Interop")]
         [DllImport("shlwapi.dll", PreserveSig = false)]
         private static extern void IStream_Reset([In] IStream stream);
     }

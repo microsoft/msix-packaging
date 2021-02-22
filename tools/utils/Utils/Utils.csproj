@@ -7,9 +7,8 @@
     <RootNamespace>Microsoft.Msix.Utils</RootNamespace>
     <AssemblyName>Microsoft.Msix.Utils</AssemblyName>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <FileAlignment>512</FileAlignment>
-    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">

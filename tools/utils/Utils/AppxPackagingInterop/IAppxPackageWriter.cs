@@ -3,11 +3,9 @@
 
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
     using System.Runtime.InteropServices.ComTypes;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Guid("9099e33b-246f-41e4-881a-008eb613f858"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxPackageWriter
     {

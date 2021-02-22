@@ -3,9 +3,6 @@
 
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
-    using System.Diagnostics.CodeAnalysis;
-
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public interface IAppxManifestDeviceCapabilitiesEnumerator
     {
     }

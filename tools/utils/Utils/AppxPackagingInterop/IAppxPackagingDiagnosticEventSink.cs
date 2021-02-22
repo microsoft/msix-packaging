@@ -4,10 +4,8 @@
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Flags]
     public enum APPX_PACKAGING_CONTEXT_CHANGE_TYPE
     {
@@ -17,7 +15,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         APPX_PACKAGING_CONTEXT_CHANGE_TYPE_END = 3
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Guid("17239D47-6ADB-45D2-80F6-F9CBC3BF059D"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxPackagingDiagnosticEventSink : IDisposable
     {

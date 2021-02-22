@@ -7,9 +7,6 @@ using Microsoft.Diagnostics.Tracing;
 using System.Diagnostics.Tracing;
 #endif
 using System;
-using SuppressMessageAttribute = System.Diagnostics.CodeAnalysis.SuppressMessageAttribute;
-
-#pragma warning disable 3021 // 'type' does not need a CLSCompliant attribute
 
 namespace Microsoft.Diagnostics.Telemetry
 {
@@ -162,7 +159,6 @@ namespace Microsoft.Diagnostics.Telemetry
         /// specified name. Sets the EtwSelfDescribingEventFormat option.
         /// </summary>
         /// <param name="eventSourceName">The name of the event source.</param>
-        [SuppressMessage("Microsoft.Performance", "CA1811", Justification = "Shared class with tiny helper methods - not all constructors/methods are used by all consumers")]
         public TelemetryEventSource(
             string eventSourceName)
             : base(
@@ -176,7 +172,6 @@ namespace Microsoft.Diagnostics.Telemetry
         /// For use by derived classes that set the eventSourceName via EventSourceAttribute.
         /// Sets the EtwSelfDescribingEventFormat option.
         /// </summary>
-        [SuppressMessage("Microsoft.Performance", "CA1811", Justification = "Shared class with tiny helper methods - not all constructors/methods are used by all consumers")]
         protected TelemetryEventSource()
             : base(
             EventSourceSettings.EtwSelfDescribingEventFormat)
@@ -190,8 +185,6 @@ namespace Microsoft.Diagnostics.Telemetry
         /// </summary>
         /// <param name="eventSourceName">The name of the event source.</param>
         /// <param name="telemetryGroup">The parameter is not used.</param>
-        [SuppressMessage("Microsoft.Performance", "CA1811", Justification = "Shared class with tiny helper methods - not all constructors/methods are used by all consumers")]
-        [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "API compatibility")]
         public TelemetryEventSource(
             string eventSourceName,
             TelemetryGroup telemetryGroup)
@@ -206,7 +199,6 @@ namespace Microsoft.Diagnostics.Telemetry
         /// Returns an instance of EventSourceOptions with the TelemetryKeyword set.
         /// </summary>
         /// <returns>Returns an instance of EventSourceOptions with the TelemetryKeyword set.</returns>
-        [SuppressMessage("Microsoft.Performance", "CA1811", Justification = "Shared class with tiny helper methods - not all constructors/methods are used by all consumers")]
         public static EventSourceOptions TelemetryOptions()
         {
             return new EventSourceOptions { Keywords = TelemetryKeyword };
@@ -216,7 +208,6 @@ namespace Microsoft.Diagnostics.Telemetry
         /// Returns an instance of EventSourceOptions with the MeasuresKeyword set.
         /// </summary>
         /// <returns>Returns an instance of EventSourceOptions with the MeasuresKeyword set.</returns>
-        [SuppressMessage("Microsoft.Performance", "CA1811", Justification = "Shared class with tiny helper methods - not all constructors/methods are used by all consumers")]
         public static EventSourceOptions MeasuresOptions()
         {
             return new EventSourceOptions { Keywords = MeasuresKeyword };
@@ -296,9 +287,7 @@ namespace Microsoft.Diagnostics.Telemetry
         WindowsCoreTelemetry
     }
 
-#pragma warning disable SA1403 // File may only contain a single namespace
     namespace Internal
-#pragma warning restore SA1403 // File may only contain a single namespace
     {
         /// <summary>
         /// The complete list of privacy tags supported for events.

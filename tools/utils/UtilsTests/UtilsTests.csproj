@@ -10,6 +10,7 @@
     <TargetFramework>net5.0</TargetFramework>
     <FileAlignment>512</FileAlignment>
     <PlatformTarget>x86</PlatformTarget>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
