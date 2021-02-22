@@ -1,6 +1,6 @@
 {
   "loc.friendlyName": "MSIX build and package",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "Build and package Windows apps using the MSIX package format",
   "loc.instanceNameFormat": "MSIX build and package",
   "loc.input.label.outputPath": "Output Path",

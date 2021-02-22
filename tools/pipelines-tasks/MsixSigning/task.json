@@ -7,7 +7,8 @@
   "description": "Sign MSIX packages",
   "author": "Microsoft Corporation",
   "category": "Package",
-  "helpMarkDown": "",
+  "helpUrl": "https://aka.ms/msix-cicd",
+  "helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "execution": {
     "Node10": {
       "target": "index.js"
@@ -29,18 +30,40 @@
       "helpMarkDown": "Files to sign. Can be a package or a bundle. All matching files are signed."
     },
     {
+      "name": "certificateType",
+      "type": "radio",
+      "label": "Certificate File type",
+      "defaultValue": "secureFile",
+      "required": false,
+      "helpMarkDown": "Source of the certificate file to use. The certificate can come from the [Secure Files library](https://docs.microsoft.com/azure/devops/pipelines/library/secure-files), or be encoded as a string as if fetched with the [Azure Key Vault task](https://docs.microsoft.com/azure/devops/pipelines/tasks/deploy/azure-key-vault)",
+      "options": {
+        "secureFile": "Secure file",
+        "base64": "String-encoded certificate"
+      }
+    },
+    {
+      "name": "encodedCertificate",
+      "type": "string",
+      "label": "Encoded Certificate File",
+      "required": true,
+      "helpMarkDown": "Certificate encoded as a Base64 string.",
+      "visibleRule": "certificateType == base64"
+    },
+    {
       "name": "certificate",
       "type": "secureFile",
       "label": "Certificate File",
       "required": true,
-      "helpMarkDown": "The file name or GUID of the secure certificate to use for signing. The file will be deleted after the pipeline runs."
+      "helpMarkDown": "The file name or GUID of the secure certificate to use for signing. The file will be deleted after the pipeline runs.",
+      "visibleRule": "certificateType == secureFile"
     },
     {
       "name": "passwordVariable",
       "type": "string",
       "label": "Password Variable",
       "required": true,
-      "helpMarkDown": "The name of the variable which stores the password used to access the certificate file for signing. Note that this is NOT the password itself, but rather the variable name, which can be set under Library."
+      "helpMarkDown": "The name of the variable which stores the password used to access the certificate file for signing. Note that this is NOT the password itself, but rather the variable name, which can be set under Library.",
+      "visibleRule": "certificateType == secureFile"
     },
     {
       "name": "timeStampServer",

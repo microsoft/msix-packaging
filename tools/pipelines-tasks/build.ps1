@@ -160,10 +160,24 @@ function InstallAllDepenencies()
 
     # Create a test certificate for local testing/debugging.
     # This creates the file expected by the tests and debug inputs.
-    $cert = New-SelfSignedCertificate -Type Custom -Subject "CN=HelloWorldPublisher" -KeyUsage DigitalSignature -FriendlyName "HelloWorldPublisher" -CertStoreLocation "Cert:\CurrentUser\My" -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
-    $certPath = "Cert:\CurrentUser\My\$($cert.Thumbprint)"
+    # Create the certificate
+    $cert = New-SelfSignedCertificate -Type Custom `
+        -Subject "CN=HelloWorldPublisher" `
+        -KeyUsage DigitalSignature `
+        -FriendlyName "HelloWorldPublisher" `
+        -CertStoreLocation "Cert:\CurrentUser\My" `
+        -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
+
+    # Export it as a .pfx
     $password = ConvertTo-SecureString -String password -Force -AsPlainText
     Export-PfxCertificate -Cert $cert -FilePath $PSScriptRoot\test\assets\certificate.pfx -Password $password
+
+    # Write it as a base64 string
+    $certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx)
+    [System.Convert]::ToBase64String($certBytes) | Out-File $PSScriptRoot\test\assets\certificate.txt -Encoding utf8
+
+    # Remove the certificate from the cert store
+    $certPath = "Cert:\CurrentUser\My\$($cert.Thumbprint)"
     Remove-Item $certPath
 }
 

@@ -7,6 +7,7 @@
   "description": "ms-resource:loc.description",
   "author": "Microsoft Corporation",
   "category": "Package",
+  "helpUrl": "https://aka.ms/msix-cicd",
   "helpMarkDown": "ms-resource:loc.helpMarkDown",
   "execution": {
     "Node10": {
@@ -29,18 +30,40 @@
       "helpMarkDown": "ms-resource:loc.input.help.package"
     },
     {
+      "name": "certificateType",
+      "type": "radio",
+      "label": "ms-resource:loc.input.label.certificateType",
+      "defaultValue": "secureFile",
+      "required": false,
+      "helpMarkDown": "ms-resource:loc.input.help.certificateType",
+      "options": {
+        "secureFile": "Secure file",
+        "base64": "String-encoded certificate"
+      }
+    },
+    {
+      "name": "encodedCertificate",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.encodedCertificate",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.encodedCertificate",
+      "visibleRule": "certificateType == base64"
+    },
+    {
       "name": "certificate",
       "type": "secureFile",
       "label": "ms-resource:loc.input.label.certificate",
       "required": true,
-      "helpMarkDown": "ms-resource:loc.input.help.certificate"
+      "helpMarkDown": "ms-resource:loc.input.help.certificate",
+      "visibleRule": "certificateType == secureFile"
     },
     {
       "name": "passwordVariable",
       "type": "string",
       "label": "ms-resource:loc.input.label.passwordVariable",
       "required": true,
-      "helpMarkDown": "ms-resource:loc.input.help.passwordVariable"
+      "helpMarkDown": "ms-resource:loc.input.help.passwordVariable",
+      "visibleRule": "certificateType == secureFile"
     },
     {
       "name": "timeStampServer",

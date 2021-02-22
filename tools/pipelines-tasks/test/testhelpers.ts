@@ -30,6 +30,10 @@ export const testBundle = path.join(assetsDirectory, 'existingBundle.msixbundle'
 // This is not tracked by git and is created by the build scripts.
 export const testCertificate = path.join(assetsDirectory, 'certificate.pfx');
 
+// Path to a test certificate encoded as a bas64 string.
+// This is not tracked by git and is created by the build scripts.
+export const testEncodedCertificate = path.join(assetsDirectory, 'certificate.txt');
+
 // Directory with the expected files to be created
 export const expectedResultsDirectory = path.join(assetsDirectory, 'expected');
 
@@ -89,7 +93,6 @@ export const setUpCertificateInputs = (taskMockRunner: tmrm.TaskMockRunner) =>
     // secret variable with the password.
     taskMockRunner.setInput('passwordVariable', 'helloworld');
     taskMockRunner.setVariableName('helloworld', 'password', /* isSecret */ true)
-    // process.env.helloworld = 'password';
 }
 
 export const setUpMSBuildLocationArguments = (taskMockRunner: tmrm.TaskMockRunner) =>

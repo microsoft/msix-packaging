@@ -12,6 +12,7 @@ _pkginfo.txt
 
 # Test Outputs
 .taskkey
+certificate.txt
 
 # Ignrore all compiled .js and .js.map mappings
 *.js
