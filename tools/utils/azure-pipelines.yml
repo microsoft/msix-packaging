@@ -38,11 +38,9 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: PowerShell@2
+- task: VSTest@2
   displayName: 'Run tests'
   inputs:
-    targetType: 'inline'
-    workingDirectory: '$(utilsRoot)'
-    script: |
-      $testBinariesRoot = "UtilsTests\bin\Release"
-      & $testBinariesRoot\te.exe $testBinariesRoot\UtilsTests.dll
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: 'UtilsTests\bin\Release\UtilsTests.dll'
+    searchFolder: '$(utilsRoot)'
