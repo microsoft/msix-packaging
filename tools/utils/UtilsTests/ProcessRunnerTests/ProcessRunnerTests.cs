@@ -11,7 +11,7 @@ namespace UtilsTests
     using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
     [TestClass]
-    internal class ProcessRunnerTests : TestBase
+    public class ProcessRunnerTests : TestBase
     {
         private static string toolName = "MakeAppx.exe";
         private static string appxBundle = "TestAppxBundle.appxbundle";

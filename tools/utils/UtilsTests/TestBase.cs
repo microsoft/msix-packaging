@@ -8,7 +8,7 @@ namespace UtilsTests
     using static Microsoft.VisualStudio.TestTools.UnitTesting.Logging.Logger;
 
     [TestClass]
-    internal class TestBase
+    public class TestBase
     {
         /// <summary>
         /// Gets or sets the test context; set by the test framework at runtime for each test.
@@ -19,7 +19,7 @@ namespace UtilsTests
         /// Class initialize method.
         /// </summary>
         [ClassInitialize]
-        public static void ClassInitialize()
+        public static void ClassInitialize(TestContext testContext)
         {
             LogMessage("\n************************************************************");
             LogMessage("Class Initialize");

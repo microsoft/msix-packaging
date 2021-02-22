@@ -9,7 +9,7 @@ namespace UtilsTests
     using static Microsoft.VisualStudio.TestTools.UnitTesting.Logging.Logger;
 
     [TestClass]
-    internal class LoggerCustomProviderTests : TestBase
+    public class LoggerCustomProviderTests : TestBase
     {
         /// <summary>
         /// Test Initialize.

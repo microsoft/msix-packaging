@@ -53,7 +53,7 @@ namespace UtilsTests
             {
                 Logger.Error("This is a malformed {0} string logged to the Console Logger", null);
             };
-            Assert.ThrowsException<Exception>(logStringOperation);
+            Assert.ThrowsException<ArgumentNullException>(logStringOperation);
 
             LogMessage("Deinitializing the Console Logger.");
             consoleLogProvider.DeinitLog();
@@ -86,7 +86,7 @@ namespace UtilsTests
             {
                 Logger.Critical("This is a malformed {0} string logged to the Console Logger", null);
             };
-            Assert.ThrowsException<Exception>(logStringOperation);
+            Assert.ThrowsException<ArgumentNullException>(logStringOperation);
 
             LogMessage("Deinitializing the Console Logger.");
             consoleLogProvider.DeinitLog();
