@@ -32,14 +32,14 @@ namespace UtilsTests
             Logger.LogMessage("Initializing ProcessRunner test.");
 
             // Copy the tool to the current directory for testing.
-            this.testDirectory = TestContext.TestDeploymentDir;
-            this.testDataDirectory = Environment.CurrentDirectory + "\\TestData\\";
-            this.testToolDirectory = this.testDataDirectory + "MakeAppx\\";
+            this.testDirectory = TestContext.TestRunDirectory;
+            this.testDataDirectory = Path.Combine(this.TestContext.TestDeploymentDir, "TestData");
+            this.testToolDirectory = Path.Combine(this.testDataDirectory, "MakeAppx");
             try
             {
-                if (!File.Exists(this.testDirectory + toolName))
+                if (!File.Exists(Path.Combine(this.testDirectory, toolName)))
                 {
-                    File.Copy(this.testToolDirectory + toolName, this.testDirectory + toolName);
+                    File.Copy(Path.Combine(this.testToolDirectory, toolName), Path.Combine(this.testDirectory, toolName));
                 }
             }
             catch (Exception exception)
@@ -54,8 +54,8 @@ namespace UtilsTests
         [TestCleanup]
         public new void TestCleanup()
         {
-            TestHelper.DeleteFileIfExists(this.testDirectory + toolName);
-            TestHelper.DeleteFileIfExists(this.testDirectory + appxBundle);
+            TestHelper.DeleteFileIfExists(Path.Combine(this.testDirectory, toolName));
+            TestHelper.DeleteFileIfExists(Path.Combine(this.testDirectory, appxBundle));
         }
 
         /// <summary>
@@ -80,16 +80,15 @@ namespace UtilsTests
         /// <remarks>
         /// This test only succeeds if the machine running it does not have an installed SDK.
         /// This is ignored by default as test machines are likely to have an installed SDK.
-        /// To run the test, pass the /runIgnoredTests flag to te.exe
         /// </remarks>
         [TestMethod]
         [Ignore]
         public void SDKToolProcessRunnerTest_InitializeFromToolPath_Failure()
         {
             // Delete the file from current path if it exists.
-            if (File.Exists(this.testDirectory + toolName))
+            if (File.Exists(Path.Combine(this.testDirectory, toolName)))
             {
-                File.Delete(this.testDirectory + toolName);
+                File.Delete(Path.Combine(this.testDirectory, toolName));
                 Logger.LogMessage("File Deleted in the test directory");
             }
 
@@ -120,12 +119,12 @@ namespace UtilsTests
             // Call GenerateAppxBundleFromRootFolder to test it.
             runner.GenerateAppxBundleFromRootFolder(
                 "1.0.0.0",
-                this.testDataDirectory + "AppxBundleTest",
-                this.testDirectory + appxBundle);
+                Path.Combine(this.testDataDirectory, "AppxBundleTest"),
+                Path.Combine(this.testDirectory, appxBundle));
 
             runner.Dispose();
 
-            Assert.AreEqual(true, File.Exists(this.testDirectory + "TestAppxBundle.AppxBundle"));
+            Assert.AreEqual(true, File.Exists(Path.Combine(this.testDirectory, "TestAppxBundle.AppxBundle")));
             Logger.LogMessage("Tested MakeAppx Runner.");
         }
 

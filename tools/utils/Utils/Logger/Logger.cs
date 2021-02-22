@@ -1171,6 +1171,7 @@ namespace Microsoft.Msix.Utils.Logger
         public static void Deinit()
         {
             RemoveProviders();
+            UnregisterFormatter();
         }
         #endregion
 
@@ -1333,6 +1334,17 @@ namespace Microsoft.Msix.Utils.Logger
                 {
                     jobLogInfo.FileLogProvider.DeinitLog();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Unregisters the log message formatter
+        /// </summary>
+        private static void UnregisterFormatter()
+        {
+            lock (SyncObject)
+            {
+                Formatter = null;
             }
         }
 
