@@ -38,9 +38,6 @@
   </ItemGroup>
 
   <!-- Copy built exe to test data folder -->
-  <PropertyGroup>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
-  </PropertyGroup>
   <ItemGroup>
     <ExeFiles Include="$(TargetDir)\**\*.*"/>
   </ItemGroup>
