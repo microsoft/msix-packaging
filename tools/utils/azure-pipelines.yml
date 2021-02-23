@@ -42,5 +42,5 @@ steps:
   displayName: 'Run tests'
   inputs:
     testSelector: 'testAssemblies'
-    testAssemblyVer2: 'UtilsTests\bin\Release\UtilsTests.dll'
+    testAssemblyVer2: '**\UtilsTests.dll'
     searchFolder: '$(utilsRoot)'
