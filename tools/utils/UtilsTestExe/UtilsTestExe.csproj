@@ -30,16 +30,21 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup>
-    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
-  </PropertyGroup>
   <ItemGroup>
     <None Include="..\.editorconfig">
       <Link>.editorconfig</Link>
     </None>
     <None Include="App.config" />
   </ItemGroup>
+
+  <!-- Copy built exe to test data folder -->
   <PropertyGroup>
-    <PostBuildEvent>xcopy /y $(TargetPath) $(Solutiondir)\UtilsTests\TestData</PostBuildEvent>
+    <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
   </PropertyGroup>
+  <ItemGroup>
+    <ExeFiles Include="$(TargetDir)\**\*.*"/>
+  </ItemGroup>
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Copy SourceFiles="@(ExeFiles)" DestinationFiles="@(ExeFiles->'$(SolutionDir)\UtilsTests\TestData\UtilsTestExe\%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
 </Project>

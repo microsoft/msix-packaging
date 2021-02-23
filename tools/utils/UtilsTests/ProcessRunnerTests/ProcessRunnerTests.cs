@@ -135,7 +135,7 @@ namespace UtilsTests
         public void ProcessRunnerTest_TerminateProcess_Success()
         {
             Logger.LogMessage("Testing Process Runner -> Terminate Process.");
-            string exePath = Path.Combine(this.testDataDirectory, "UtilsTestExe.exe");
+            string exePath = Path.Combine(this.testDataDirectory, "UtilsTestExe", "UtilsTestExe.exe");
 
             using (DesktopProcessRunner processRunner = new DesktopProcessRunner())
             {
@@ -171,7 +171,7 @@ namespace UtilsTests
         public void ProcessRunnerTest_ValidateExitCode_Success()
         {
             Logger.LogMessage("Testing ProcessRunner ValidateExitCode");
-            string exePath = Path.Combine(this.testDataDirectory, "UtilsTestExe.exe");
+            string exePath = Path.Combine(this.testDataDirectory, "UtilsTestExe", "UtilsTestExe.exe");
 
             using (DesktopProcessRunner processRunner = new DesktopProcessRunner())
             {

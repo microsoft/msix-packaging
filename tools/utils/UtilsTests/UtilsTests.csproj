@@ -92,7 +92,7 @@
     <None Update="TestData\MakeAppx\opcservices.dll">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="TestData\UtilsTestExe.exe">
+    <None Update="TestData\UtilsTestExe\**\*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
