@@ -5,8 +5,8 @@ published as a Nuget package and consumed by sources in other projects.
 ## Prerequisites
 
 * MSBuild
-* .NET Framework 4.6
-* .NET Core 2.0
+* .NET Standard 2.0
+* .NET 5.0 (for test project)
 This should be available in a standard installation of Visual Studio.
 
 ## Build
@@ -18,12 +18,12 @@ msbuild.exe msix-packaging/tools/utils/Utils.sln
 
 ## Testing
 
-TAEF is used as the testing framework. This is available through the Windows Driver Kit.
+MSTest is used as the testing framework and can be run through Visual Studio's Test Explorer.
 
-To run the tests, go to `msix-packaging/tools/utils/` and call `te.exe` on `UtilsTests.dll` produced by the build. E.g.
+To run the tests from the command line, go to `msix-packaging/tools/utils/` and call `vstest.console.exe` on `UtilsTests.dll` produced by the build. E.g.
 ```
 cd msix-packaging/tools/utils/
-te.exe UtilsTests/bin/Debug/UtilsTests.dll
+vstest.console.exe UtilsTests\bin\Debug\net5.0\UtilsTests.dll
 ```
 
 MakeAppx.exe and related binaries under `msix-packaging/tools/utils/TestData/MakeAppx` are taken from the redistributable binaries available in the [MSIX Toolkit](https://github.com/microsoft/msix-toolkit).

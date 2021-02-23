@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="AppxMetadata.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackaging
 {
@@ -19,7 +16,7 @@ namespace Microsoft.Msix.Utils.AppxPackaging
     public class AppxMetadata : PackageMetadata
     {
         /// <summary>
-        /// Initializes a new instance of the AppxMetadata class for an msix package.
+        /// Initializes a new instance of the <see cref="AppxMetadata"/> class for an msix package.
         /// </summary>
         /// <param name="filePath">the path to the msix file</param>
         public AppxMetadata(string filePath)
@@ -40,7 +37,7 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         }
 
         /// <summary>
-        /// Initializes a new instance of the AppxMetadata class for an msix package.
+        /// Initializes a new instance of the <see cref="AppxMetadata"/> class for an msix package.
         /// </summary>
         /// <param name="packageStream">the msix package stream.</param>
         public AppxMetadata(IStream packageStream)

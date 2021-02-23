@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="CommandBase.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.CommandLine
 {
@@ -90,7 +87,7 @@ namespace Microsoft.Msix.Utils.CommandLine
                 this.CommandName,
                 (subCommandLineApplication) =>
                 {
-                    // This callback is called by the CommandLineUtils library to configure description/inputs, 
+                    // This callback is called by the CommandLineUtils library to configure description/inputs,
                     // and handle the exeuction logic
                     subCommandLineApplication.Description = this.CommandDescription;
                     CommandOption helpOption = subCommandLineApplication.Option(
@@ -98,7 +95,7 @@ namespace Microsoft.Msix.Utils.CommandLine
                         CLIApplication.HelpDescriptionText,
                         CommandOptionType.NoValue);
 
-                    ConfiguredInputs configuredInputs = SetupInputs(subCommandLineApplication);
+                    ConfiguredInputs configuredInputs = this.SetupInputs(subCommandLineApplication);
 
                     subCommandLineApplication.OnExecute(() =>
                     {
@@ -128,12 +125,12 @@ namespace Microsoft.Msix.Utils.CommandLine
                             }
 
                             // Execute the pre-execution routine if it is set
-                            if (m_onPreExecute != null)
+                            if (this.m_onPreExecute != null)
                             {
                                 this.m_onPreExecute();
                             }
 
-                            exitCode = OnExecute(configuredInputs);
+                            exitCode = this.OnExecute(configuredInputs);
                         }
                         catch (CommandParsingException exp)
                         {

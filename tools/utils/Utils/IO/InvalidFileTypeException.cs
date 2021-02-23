@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="InvalidFileTypeException.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils
 {
@@ -14,7 +11,7 @@ namespace Microsoft.Msix.Utils
     public class InvalidFileTypeException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the InvalidFileTypeException class.
+        /// Initializes a new instance of the <see cref="InvalidFileTypeException"/> class.
         /// </summary>
         /// <param name="path">Path of file that caused the exception</param>
         public InvalidFileTypeException(string path) : base()

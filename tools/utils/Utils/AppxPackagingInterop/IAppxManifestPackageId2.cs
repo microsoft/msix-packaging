@@ -1,19 +1,14 @@
-//-----------------------------------------------------------------------
-// <copyright file="IAppxManifestPackageId2.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
 
     using System.Runtime.InteropServices;
 
     // Note: The AppxPackaging.idl definition of this interface implements IAppxManifestPackageId.
     // Therefore the functions in IAppxManifestPackageId should be re-declared here.
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Guid("2256999d-d617-42f1-880e-0ba4542319d5"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxManifestPackageId2 : IDisposable
     {

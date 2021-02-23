@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="ExternalPackageReference.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackaging
 {
@@ -17,7 +14,7 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         private Lazy<PackageMetadata> packageInfoFactory;
 
         /// <summary>
-        /// Initializes a new instance of the ExternalPackageReference class.
+        /// Initializes a new instance of the <see cref="ExternalPackageReference"/> class.
         /// </summary>
         /// <param name="parentBundle">The parent bundle in which this reference was found</param>
         /// <param name="packageFullName">The full name of the package</param>

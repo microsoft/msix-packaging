@@ -1,183 +1,50 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{94F4F0AD-548E-4FF2-AF95-9D5E7AA24C6F}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <NoStandardLibraries>false</NoStandardLibraries>
     <RootNamespace>Microsoft.Msix.Utils</RootNamespace>
     <AssemblyName>Microsoft.Msix.Utils</AssemblyName>
-    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
+    <TargetFramework>netstandard2.0</TargetFramework>
     <FileAlignment>512</FileAlignment>
-    <StyleCopTreatErrorsAsWarnings>false</StyleCopTreatErrorsAsWarnings>
-    <!--ulong is not a CLS-compliant type. We need ulong to represent version numbers.-->
-    <AssemblyAttributeCLSCompliant>false</AssemblyAttributeCLSCompliant>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
-    <TargetFrameworkProfile />
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;TELEMETRYEVENTSOURCE_USE_NUGET</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;TELEMETRYEVENTSOURCE_USE_NUGET</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
   <ItemGroup>
-    <Compile Include="AppxPackagingInterop\AppxBundleFactory.cs" />
-    <Compile Include="AppxPackagingInterop\AppxEncryptionFactory.cs" />
-    <Compile Include="AppxPackagingInterop\AppxFactory.cs" />
-    <Compile Include="AppxPackagingInterop\AppxPackageEditor.cs" />
-    <Compile Include="AppxPackagingInterop\AppxPackagingDiagnosticEventSinkManager.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBlockMapBlock.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBlockMapBlocksEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBlockMapFile.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBlockMapFilesEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBlockMapReader.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBundleFactory.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBundleManifestOptionalBundleInfo.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBundleManifestOptionalBundleInfoEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBundleManifestPackageInfo.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBundleManifestPackageInfoEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBundleManifestReader.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBundleManifestReader2.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBundleReader.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxBundleWriter.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxEncryptedBlockMapFile.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxEncryptionFactory.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxFactory.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxFile.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxFilesEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestApplication.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestApplicationsEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestDeviceCapabilitiesEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestPackageDependenciesEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestPackageDependencyInternal.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestPackageDependency2.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestPackageDependency.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestPackageId2.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestPackageId.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestOptionalPackageInfo.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestProperties.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestQualifiedResource.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestQualifiedResourcesEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestReader.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestCapabilitiesEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestReader4.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestTargetDeviceFamily.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestTargetDeviceFamiliesEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestReader3.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestReader2.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxManifestResourcesEnumerator.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxPackageEditor.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxPackageReader.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxPackageWriter.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxPackagingDiagnosticEventSink.cs" />
-    <Compile Include="AppxPackagingInterop\IAppxPackagingDiagnosticEventSinkManager.cs" />
-    <Compile Include="AppxPackagingInterop\IUri.cs" />
-    <Compile Include="AppxPackaging\AppxBundleMetadata.cs" />
-    <Compile Include="AppxPackaging\AppxMetadata.cs" />
-    <Compile Include="AppxPackaging\Block.cs" />
-    <Compile Include="AppxPackaging\ExternalPackageReference.cs" />
-    <Compile Include="AppxPackaging\FileExtensionHelper.cs" />
-    <Compile Include="AppxPackaging\PackageMetadata.cs" />
-    <Compile Include="AppxPackaging\PackagingConstants.cs" />
-    <Compile Include="AppxPackaging\PackagingUtils.cs" />
-    <Compile Include="AppxPackaging\VersionInfo.cs" />
-    <Compile Include="CommandLine\ArgumentConfiguration.cs" />
-    <Compile Include="CommandLine\CLIApplication.cs" />
-    <Compile Include="CommandLine\CommandBase.cs" />
-    <Compile Include="CommandLine\CommandLineException.cs" />
-    <Compile Include="CommandLine\ConfiguredInputs.cs" />
-    <Compile Include="CommandLine\InputConfigurationBase.cs" />
-    <Compile Include="CommandLine\OptionConfiguration.cs" />
-    <Compile Include="IO\EmbeddedResourcesUtils.cs" />
-    <Compile Include="IO\FileSystemUtils.cs" />
-    <Compile Include="IO\InvalidFileTypeException.cs" />
-    <Compile Include="IO\IncompatibleFileTypesException.cs" />
-    <Compile Include="Logger\ConsoleLog.cs" />
-    <Compile Include="Logger\ExpMessageArg.cs" />
-    <Compile Include="Logger\FileLog.cs" />
-    <Compile Include="Logger\ILogMessage.cs" />
-    <Compile Include="Logger\ILogMessageFormatter.cs" />
-    <Compile Include="Logger\ILogProvider.cs" />
-    <Compile Include="Logger\IMessageArg.cs" />
-    <Compile Include="Logger\Logger.cs" />
-    <Compile Include="Logger\LogMessage.cs" />
-    <Compile Include="Logger\LogMessageFormatter.cs" />
-    <Compile Include="Logger\LogProvider.cs" />
-    <Compile Include="Logger\LogUtils.cs" />
-    <Compile Include="Logger\AppxPackagingEventSinkToLogger.cs" />
-    <Compile Include="Logger\TraceLog.cs" />
-    <Compile Include="ProcessRunner\PackageEditorRunner.cs" />
-    <Compile Include="ProcessRunner\SDKDetector.cs" />
-    <Compile Include="ProcessRunner\SDKToolProcessRunnerBase.cs" />
-    <Compile Include="ProcessRunner\SDKToolProcessRunner.cs" />
-    <Compile Include="ProcessRunner\ComparePackageRunner.cs" />
-    <Compile Include="ProcessRunner\ProcessRunnerException.cs" />
-    <Compile Include="ProcessRunner\MakeAppxRunner.cs" />
-    <Compile Include="ProcessRunner\DesktopProcessRunner.cs" />
-    <Compile Include="ProcessRunner\IProcessRunner.cs" />
-    <Compile Include="ProcessRunner\ProcessRunnerBase.cs" />
-    <Compile Include="IO\StandardInputReader.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Telemetry\TelemetryEventSource.cs">
-      <ExcludeFromStyleCop>True</ExcludeFromStyleCop>
-    </Compile>
-    <Compile Include="Telemetry\Telemetry.cs" />
-    <Compile Include="IO\StreamUtils.cs" />
-    <Compile Include="Telemetry\TelemetryEventData.cs" />
+    <AdditionalFiles Include="..\stylecop.json" Link="stylecop.json" />
   </ItemGroup>
+
   <ItemGroup>
-    <None Include="packages.config">
-      <SubType>Designer</SubType>
-    </None>
+    <ApplicationDefinition Include="Utils.nuspec" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.Targets" />
+
   <ItemGroup>
-    <Reference Include="Microsoft.Diagnostics.Tracing.EventSource, Version=1.1.28.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>$(SolutionDir)\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.28\lib\net40\Microsoft.Diagnostics.Tracing.EventSource.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.CommandLineUtils, Version=1.1.1.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.CommandLineUtils.1.1.1\lib\net451\Microsoft.Extensions.CommandLineUtils.dll</HintPath>
-    </Reference>
-    <Reference Include="System">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(CLR_REF_PATH)\System.metadata_dll</HintPath>
-    </Reference>
-    <Reference Include="System.Core">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(CLR_REF_PATH)\System.Core.metadata_dll</HintPath>
-    </Reference>
-    <Reference Include="System.Linq">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(CLR_REF_PATH)\System.Linq.metadata_dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>$(CLR_REF_PATH)\System.Linq.metadata_dll</HintPath>
-    </Reference>
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils" Version="1.1.1" />
+    <PackageReference Include="Microsoft.Win32.Registry" Version="5.0.0" />
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(SolutionDir)\packages\StyleCop.MSBuild.5.0.0\build\StyleCop.MSBuild.Targets" Condition="Exists('$(SolutionDir)\packages\StyleCop.MSBuild.5.0.0\build\StyleCop.MSBuild.Targets')" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('$(SolutionDir)\packages\StyleCop.MSBuild.5.0.0\build\StyleCop.MSBuild.Targets')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\StyleCop.MSBuild.5.0.0\build\StyleCop.MSBuild.Targets'))" />
-    <Error Condition="!Exists('$(SolutionDir)\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.28\lib\net40\Microsoft.Diagnostics.Tracing.EventSource.dll')" Text="$([System.String]::Format('$(ErrorText)', '$(SolutionDir)\packages\Microsoft.Diagnostics.Tracing.EventSource.Redist.1.1.28\lib\net40\Microsoft.Diagnostics.Tracing.EventSource.dll'))" />
-  </Target>
 </Project>

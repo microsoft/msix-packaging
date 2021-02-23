@@ -1,19 +1,15 @@
-﻿//----------------------------------------------------------------------------------------------------------------------
-// <copyright file="LoggerCustomProviderTests.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//----------------------------------------------------------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace UtilsTests
 {
     using System;
     using Microsoft.Msix.Utils.Logger;
-    using WEX.Logging.Interop;
-    using WEX.TestExecution;
-    using WEX.TestExecution.Markup;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using static Microsoft.VisualStudio.TestTools.UnitTesting.Logging.Logger;
 
     [TestClass]
-    internal class LoggerCustomProviderTests : TestBase
+    public class LoggerCustomProviderTests : TestBase
     {
         /// <summary>
         /// Test Initialize.
@@ -21,7 +17,7 @@ namespace UtilsTests
         [TestInitialize]
         public new void TestInitialize()
         {
-            Log.Comment("Initializing LoggerProviderTests test.");
+            LogMessage("Initializing LoggerProviderTests test.");
         }
 
         /// <summary>
@@ -30,7 +26,7 @@ namespace UtilsTests
         [TestMethod]
         public void CustomProviderLoggerTest_NoFormatter()
         {
-            Log.Comment("Testing the AddLogProvider without formatter.");
+            LogMessage("Testing the AddLogProvider without formatter.");
 
             ConsoleLog consoleLog = new ConsoleLog
             {
@@ -41,7 +37,7 @@ namespace UtilsTests
             // Don't add a formatter.
             Logger.AddLogProvider(consoleLog);
 
-            Verify.Throws<ArgumentNullException>(() => { Logger.Error("Test logging"); });
+            Assert.ThrowsException<ArgumentNullException>(() => { Logger.Error("Test logging"); });
         }
 
         /// <summary>
@@ -50,7 +46,7 @@ namespace UtilsTests
         [TestMethod]
         public void CustomProviderLoggerTest()
         {
-            Log.Comment("Testing the AddLogProvider with formatter.");
+            LogMessage("Testing the AddLogProvider with formatter.");
 
             ConsoleLog consoleLog = new ConsoleLog
             {

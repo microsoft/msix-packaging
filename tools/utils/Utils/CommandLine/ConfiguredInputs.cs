@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="ConfiguredInputs.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.CommandLine
 {
@@ -80,7 +77,7 @@ namespace Microsoft.Msix.Utils.CommandLine
                     }
 
                     // Validate required switches are not keys to arguments
-                    // For now required argument switches is not allow. If the 
+                    // For now required argument switches is not allow. If the
                     // functionality is needed in the future could be added.
                     bool areRequiredArgumentSwitchesNotSpecified = entry.Value.RequiredSwitches
                         .Any(requiredSwitch => this.Map[requiredSwitch] is ArgumentConfiguration);

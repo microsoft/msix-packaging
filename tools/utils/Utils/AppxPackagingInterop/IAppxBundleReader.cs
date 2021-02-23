@@ -1,17 +1,12 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="IAppxBundleReader.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
 
     using System.Runtime.InteropServices;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Guid("DD75B8C0-BA76-43B0-AE0F-68656A1DC5C8"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxBundleReader : IDisposable
     {

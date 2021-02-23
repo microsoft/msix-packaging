@@ -1,18 +1,15 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="Telemetry.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.Telemetry
 {
     using System;
     using System.Collections.Generic;
     using System.Diagnostics;
+    using System.Diagnostics.Tracing;
     using System.Threading;
     using Microsoft.Diagnostics.Telemetry;
-    using Microsoft.Diagnostics.Tracing;
-    using Win32;
+    using Microsoft.Win32;
 
     /// <summary>
     /// Static class containing methods relevant to logging telemetry.

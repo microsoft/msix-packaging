@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="PackagingConstants.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackaging
 {
@@ -108,9 +105,11 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         /// <summary>
         /// Common packaging error codes
         /// </summary>
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Values are self-explanatory")]
         public enum ErrorCode
         {
+            /// <summary>
+            /// The package's AppxBlockMap.xml file isn't valid.
+            /// </summary>
             APPX_E_INVALID_BLOCKMAP = unchecked((int)0x80080205)
         }
     }

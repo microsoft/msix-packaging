@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="AppxBundleMetadata.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackaging
 {
@@ -20,7 +17,7 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         private IAppxBundleManifestReader manifestReader;
 
         /// <summary>
-        /// Initializes a new instance of the AppxBundleMetadata class.
+        /// Initializes a new instance of the <see cref="AppxBundleMetadata"/> class.
         /// </summary>
         /// <param name="filePath">the path to the appxbundle file</param>
         public AppxBundleMetadata(string filePath)
@@ -29,7 +26,7 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         }
 
         /// <summary>
-        /// Initializes a new instance of the AppxBundleMetadata class.
+        /// Initializes a new instance of the <see cref="AppxBundleMetadata"/> class.
         /// </summary>
         /// <param name="parentBundleInfo">the parent bundle from which this bundle is referenced</param>
         /// <param name="fileRelativePath">the relative path to the appxbundle file, as referenced

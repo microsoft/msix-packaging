@@ -1,16 +1,11 @@
-//-----------------------------------------------------------------------
-// <copyright file="IUri.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
     using System.Runtime.InteropServices;
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     public enum UriProperty
     {
         ABSOLUTE_URI = 0,
@@ -38,7 +33,6 @@ namespace Microsoft.Msix.Utils.AppxPackagingInterop
         DWORD_LAST = ZONE
     }
 
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [ComImport, Guid("A39EE748-6A27-4817-A6F2-13914BEF5890"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IUri
     {

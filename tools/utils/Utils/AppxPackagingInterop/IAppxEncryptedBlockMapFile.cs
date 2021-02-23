@@ -1,20 +1,15 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="IAppxEncryptedBlockMapFile.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackagingInterop
 {
     using System;
-    using System.Diagnostics.CodeAnalysis;
 
     using System.Runtime.InteropServices;
     using System.Runtime.InteropServices.ComTypes;
 
     // Note: The IDL definition of this interface implements IAppxBlockMapFile.
     // Therefore the functions in IAppxBlockMapFile should be re-declared here.
-    [SuppressMessage("StyleCop.CSharp.DocumentationRules", "*", Justification = "Interop")]
     [Guid("04D9AAB2-7957-41D3-8CFB-594525F37966"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IAppxEncryptedBlockMapFile : IDisposable
     {

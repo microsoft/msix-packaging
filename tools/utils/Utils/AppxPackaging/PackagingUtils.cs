@@ -1,13 +1,10 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="PackagingUtils.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.AppxPackaging
 {
     using System.Text.RegularExpressions;
-    using AppxPackagingInterop;
+    using Microsoft.Msix.Utils.AppxPackagingInterop;
 
     /// <summary>
     /// Class that contains packaging helper methods

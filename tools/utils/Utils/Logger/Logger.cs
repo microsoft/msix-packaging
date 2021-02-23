@@ -1,13 +1,10 @@
-// -----------------------------------------------------------------------
-//  <copyright file="Logger.cs" company="Microsoft">
-//      Copyright (c) Microsoft Corporation.  All rights reserved.
-//  </copyright>
-// -----------------------------------------------------------------------
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 namespace Microsoft.Msix.Utils.Logger
 {
     using System;
     using System.Collections.Generic;
-    using System.Diagnostics;
     using System.Globalization;
     using System.IO;
 
@@ -45,7 +42,7 @@ namespace Microsoft.Msix.Utils.Logger
 
         #region Events
         /// <summary>
-        /// Gets or sets the MessageLogged event handler. Used to subscribe to log events fired 
+        /// Gets or sets the MessageLogged event handler. Used to subscribe to log events fired
         /// anytime a message is logged, except for logs made within the Logger.RunWithoutLogEvents
         /// lambda argument.
         /// </summary>
@@ -1173,6 +1170,7 @@ namespace Microsoft.Msix.Utils.Logger
         public static void Deinit()
         {
             RemoveProviders();
+            UnregisterFormatter();
         }
         #endregion
 
@@ -1335,6 +1333,17 @@ namespace Microsoft.Msix.Utils.Logger
                 {
                     jobLogInfo.FileLogProvider.DeinitLog();
                 }
+            }
+        }
+
+        /// <summary>
+        /// Unregisters the log message formatter
+        /// </summary>
+        private static void UnregisterFormatter()
+        {
+            lock (SyncObject)
+            {
+                Formatter = null;
             }
         }
 

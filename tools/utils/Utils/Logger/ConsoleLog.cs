@@ -1,8 +1,6 @@
-﻿// -----------------------------------------------------------------------
-//  <copyright file="ConsoleLog.cs" company="Microsoft">
-//      Copyright (c) Microsoft Corporation.  All rights reserved.
-//  </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 namespace Microsoft.Msix.Utils.Logger
 {
     using System;
@@ -83,20 +81,20 @@ namespace Microsoft.Msix.Utils.Logger
         {
             ConsoleColor targetColor = ConsoleColor.White;
 
-                switch (level)
-                {
+            switch (level)
+            {
                 case Logger.LogLevels.Error:
                 case Logger.LogLevels.Exp:
                 case Logger.LogLevels.Critical:
                     targetColor = ConsoleColor.Red;
-                        break;
+                    break;
 
-                    case Logger.LogLevels.Warning:
-                        targetColor = ConsoleColor.Yellow;
-                        break;
-                }
+                case Logger.LogLevels.Warning:
+                    targetColor = ConsoleColor.Yellow;
+                    break;
+            }
 
-                this.consoleForegroundColor.SetValue(null, targetColor);
+            this.consoleForegroundColor.SetValue(null, targetColor);
         }
 
         /// <summary>

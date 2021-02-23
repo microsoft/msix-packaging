@@ -1,8 +1,5 @@
-﻿//----------------------------------------------------------------------------------------------------------------------
-// <copyright file="ThirdCommand.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//----------------------------------------------------------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace UtilsTests
 {
@@ -10,7 +7,7 @@ namespace UtilsTests
     using System.IO;
     using Microsoft.Extensions.CommandLineUtils;
     using Microsoft.Msix.Utils.CommandLine;
-    using WEX.Logging.Interop;
+    using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
     /// <summary>
     /// Second command.
@@ -46,7 +43,7 @@ namespace UtilsTests
         {
             ConfiguredInputs configuredInputs = new ConfiguredInputs();
 
-            // Setup --example option 
+            // Setup --example option
             CommandOption exampleOption = commandLineApplication.Option(
                 "--example",
                 "--example description",
@@ -95,7 +92,7 @@ namespace UtilsTests
         /// <returns>The program exit code</returns>
         protected override int OnExecute(ConfiguredInputs configuredInputs)
         {
-            Log.Comment("Running OnExecute for command second-command");
+            Logger.LogMessage("Running OnExecute for command second-command");
             return 0;
         }
     }

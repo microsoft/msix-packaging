@@ -1,8 +1,5 @@
-﻿//----------------------------------------------------------------------------------------------------------------------
-// <copyright file="CommandLineTests.cs" company="Microsoft">
-//     Copyright (c) Microsoft Corporation.  All rights reserved.
-// </copyright>
-//----------------------------------------------------------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace UtilsTests
 {
@@ -11,12 +8,11 @@ namespace UtilsTests
     using System.IO;
     using Microsoft.Extensions.CommandLineUtils;
     using Microsoft.Msix.Utils.CommandLine;
-    using WEX.Logging.Interop;
-    using WEX.TestExecution;
-    using WEX.TestExecution.Markup;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+    using Microsoft.VisualStudio.TestTools.UnitTesting.Logging;
 
     [TestClass]
-    internal class CommandLineTests : TestBase
+    public class CommandLineTests : TestBase
     {
         private static CLIApplication m_application;
         private static bool m_isCalled = false;
@@ -28,7 +24,7 @@ namespace UtilsTests
         [TestInitialize]
         public new void TestInitialize()
         {
-            Log.Comment("Initializing CommandLineTests test.");
+            Logger.LogMessage("Initializing CommandLineTests test.");
             CLIApplication.HelpDescriptionText = "Help description.";
             CLIApplication.VersionDescriptionText = "Version description";
             CLIApplication.HelpOptionSwitches = "-h";
@@ -107,7 +103,7 @@ namespace UtilsTests
 
                 Action<string> badOptionValidator = (string data) =>
                 {
-                    Log.Comment("Running bad command.");
+                    Logger.LogMessage("Running bad command.");
                     throw new FileNotFoundException(string.Format("File {0} not found", data));
                 };
 
@@ -124,7 +120,7 @@ namespace UtilsTests
 
                 Action<List<string>> multipleValueValidator = (List<string> values) =>
                 {
-                    Log.Comment("Running multipleValue.");
+                    Logger.LogMessage("Running multipleValue.");
                     foreach (string value in values)
                     {
                         m_numberOfElements++;
@@ -144,7 +140,7 @@ namespace UtilsTests
 
                 Action<string> multipleValue2Validator = (string values) =>
                 {
-                    Log.Comment("Running multipleValue.");
+                    Logger.LogMessage("Running multipleValue.");
                     m_numberOfElements++;
                 };
 
@@ -169,7 +165,7 @@ namespace UtilsTests
 
             m_application.OnExecute = (ConfiguredInputs configuredInputs) =>
             {
-                Log.Comment("Running on excecute for options.");
+                Logger.LogMessage("Running on excecute for options.");
 
                 return 0;
             };
@@ -183,7 +179,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Valid_Option_Valid_Command()
         {
-            Log.Comment("Testing valid option '-wa a -xa'");
+            Logger.LogMessage("Testing valid option '-wa a -xa'");
 
             // Validate option wa and xa command
             ValidateCommand(true, m_application, new string[] { "-wa", "a", "-xa" });
@@ -198,7 +194,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_No_Argument_WaOption()
         {
-            Log.Comment("Testing invalid option '-wa' with no argument");
+            Logger.LogMessage("Testing invalid option '-wa' with no argument");
 
             // Invalid option wa with no argument
             ValidateCommand(false, m_application, new string[] { "-wa" });
@@ -210,7 +206,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Invalid_Value_WaOption()
         {
-            Log.Comment("Testing invalid option '-wa invalid'");
+            Logger.LogMessage("Testing invalid option '-wa invalid'");
 
             // Invalid option wa with 'invalid' value
             ValidateCommand(false, m_application, new string[] { "-wa invalid" });
@@ -222,7 +218,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Valid_Wa_Option()
         {
-            Log.Comment("Testing valid option '-wa a'");
+            Logger.LogMessage("Testing valid option '-wa a'");
 
             // Validate option wa with value 'a'
             ValidateCommand(true, m_application, new string[] { "-wa", "a" });
@@ -234,7 +230,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Valid_Xa_Option()
         {
-            Log.Comment("Testing valid option '-xa'");
+            Logger.LogMessage("Testing valid option '-xa'");
 
             // Validate option xa
             ValidateCommand(true, m_application, new string[] { "-xa" });
@@ -246,7 +242,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Valid_Help_Option()
         {
-            Log.Comment("Testing valid option '-h'");
+            Logger.LogMessage("Testing valid option '-h'");
 
             // Validate option -h (help)
             ValidateCommand(true, m_application, new string[] { "-h" });
@@ -258,7 +254,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Valid_Help_Different_Switch_Option()
         {
-            Log.Comment("Testing valid option '-h'");
+            Logger.LogMessage("Testing valid option '-h'");
             CLIApplication.HelpOptionSwitches = "-help";
             m_application = new CLIApplication(
                 applicationName: "MyTool.exe",
@@ -277,7 +273,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Valid_Version_Option()
         {
-            Log.Comment("Testing valid option '-v'");
+            Logger.LogMessage("Testing valid option '-v'");
 
             // Validate option -v (version)
             ValidateCommand(true, m_application, new string[] { "-v" });
@@ -289,7 +285,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Valid_Version_Different_Switch_Option()
         {
-            Log.Comment("Testing valid option '-v'");
+            Logger.LogMessage("Testing valid option '-v'");
             CLIApplication.VersionOptionSwitch = "-version";
             m_application = new CLIApplication(
                 applicationName: "MyTool.exe",
@@ -308,7 +304,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_OnCommandPreExecute()
         {
-            Log.Comment("Testing valid option '-v'");
+            Logger.LogMessage("Testing valid option '-v'");
             m_isCalled = false;
             CLIApplication.VersionOptionSwitch = "-version";
             m_application = new CLIApplication(
@@ -322,11 +318,11 @@ namespace UtilsTests
                 });
             m_application.ConfigureCommand<CleanupCommand>();
 
-            Verify.IsFalse(m_isCalled, "isCalled should be false before the call is done.");
+            Assert.IsFalse(m_isCalled, "isCalled should be false before the call is done.");
 
             // Validate onCommandPreExecute is being executed
             ValidateCommand(true, m_application, new string[] { "cleanup" });
-            Verify.IsTrue(m_isCalled, "isCalled should be true after the call is done.");
+            Assert.IsTrue(m_isCalled, "isCalled should be true after the call is done.");
         }
 
         /// <summary>
@@ -335,7 +331,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_RequiredSwitches_With_SecondCommand_Valid()
         {
-            Log.Comment("Testing valid option 'second-command --together --example a'");
+            Logger.LogMessage("Testing valid option 'second-command --together --example a'");
             m_application.ConfigureCommand<SecondCommand>();
 
             // Validate RequiredSwitches is working with valid scenario
@@ -348,7 +344,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_RequiredSwitches_With_SecondCommand_Invalid()
         {
-            Log.Comment("Testing invalid option 'second-command --together'");
+            Logger.LogMessage("Testing invalid option 'second-command --together'");
             m_application.ConfigureCommand<SecondCommand>();
 
             // Validate RequiredSwitches is working with invalid scenario
@@ -361,7 +357,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_DisallowedSwitches_With_SecondCommand_Valid()
         {
-            Log.Comment("Testing valid option 'second-command --alone'");
+            Logger.LogMessage("Testing valid option 'second-command --alone'");
             m_application.ConfigureCommand<SecondCommand>();
 
             // Validate RequiredSwitches is working with valid scenario
@@ -374,7 +370,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_DisallowedSwitches_With_SecondCommand_Invalid()
         {
-            Log.Comment("Testing valid option 'second-command --alone'");
+            Logger.LogMessage("Testing valid option 'second-command --alone'");
             m_application.ConfigureCommand<SecondCommand>();
 
             // Validate RequiredSwitches is working with invalid scenario
@@ -387,7 +383,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_FirstArgument_Valid()
         {
-            Log.Comment("Testing valid argument 'firstArgument'");
+            Logger.LogMessage("Testing valid argument 'firstArgument'");
 
             // Validate first argument is working with valid scenario
             ValidateCommand(true, m_application, new string[] { "firstArgument" });
@@ -399,7 +395,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_FirstArgument_Invalid()
         {
-            Log.Comment("Testing invalid argument 'invalidFirstArgument'");
+            Logger.LogMessage("Testing invalid argument 'invalidFirstArgument'");
 
             // Validate first argument is working with invalid scenario
             ValidateCommand(false, m_application, new string[] { "invalidFirstArgument" });
@@ -411,7 +407,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_SecondArgument_Valid()
         {
-            Log.Comment("Testing valid argument 'firstArgument secondArgument'");
+            Logger.LogMessage("Testing valid argument 'firstArgument secondArgument'");
 
             // Validate second argument is working with valid scenario
             ValidateCommand(true, m_application, new string[] { "firstArgument", "secondArgument" });
@@ -423,7 +419,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_SecondArgument_Invalid()
         {
-            Log.Comment("Testing invalid argument 'firstArgument invalidSecondArgument'");
+            Logger.LogMessage("Testing invalid argument 'firstArgument invalidSecondArgument'");
 
             // Validate second argument is working with invalid scenario
             ValidateCommand(false, m_application, new string[] { "firstArgument", "invalidSecondArgument" });
@@ -435,7 +431,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_FirstArgument_XaOption_Valid()
         {
-            Log.Comment("Testing valid argument with option 'firstArgument -xa'");
+            Logger.LogMessage("Testing valid argument with option 'firstArgument -xa'");
 
             // Validate second argument is working with valid scenario
             ValidateCommand(true, m_application, new string[] { "firstArgument", "-xa" });
@@ -447,7 +443,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_FirstArgument_SecondArgument_XaOption_Valid()
         {
-            Log.Comment("Testing valid argument with option 'firstArgument secondArgument -xa'");
+            Logger.LogMessage("Testing valid argument with option 'firstArgument secondArgument -xa'");
 
             // Validate second argument is working with valid scenario
             ValidateCommand(true, m_application, new string[] { "firstArgument", "secondArgument", "-xa" });
@@ -459,7 +455,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_OnInputValidationError()
         {
-            Log.Comment("Testing the function OnInputValidationError is returning expected errors.");
+            Logger.LogMessage("Testing the function OnInputValidationError is returning expected errors.");
 
             bool onInputValidationErrorIsCalled = false;
             m_application.OnInputValidationError = (Exception ex) =>
@@ -469,8 +465,8 @@ namespace UtilsTests
             };
 
             // Validate bad option thrown the expected HResult.
-            Verify.AreEqual(m_application.Execute(new string[] { "-bad", "something.xml" }), -2147024894);
-            Verify.IsTrue(onInputValidationErrorIsCalled);
+            Assert.AreEqual(m_application.Execute(new string[] { "-bad", "something.xml" }), -2147024894);
+            Assert.IsTrue(onInputValidationErrorIsCalled);
         }
 
         /// <summary>
@@ -479,11 +475,11 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_CommandBase_OnInputValidationError()
         {
-            Log.Comment("Testing the function OnInputValidationError is returning expected errors for CommandBase command.");
+            Logger.LogMessage("Testing the function OnInputValidationError is returning expected errors for CommandBase command.");
             m_application.ConfigureCommand<ThirdCommand>();
 
             // Validate command base OnInputValidationError thrown the expected HResult.
-            Verify.AreEqual(m_application.Execute(new string[] { "third-command", "--example", "something.xml" }), -2147024894);
+            Assert.AreEqual(m_application.Execute(new string[] { "third-command", "--example", "something.xml" }), -2147024894);
         }
 
         /// <summary>
@@ -492,12 +488,12 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_CommandBase_TestValidateAllInputs()
         {
-            Log.Comment("Testing the property ValidateAllInputs to setup more custom validation rules");
+            Logger.LogMessage("Testing the property ValidateAllInputs to setup more custom validation rules");
             m_application.ConfigureCommand<ThirdCommand>();
 
             // Validate command base OnInputValidationError thrown the expected HResult (InvalidOperationException as defined in
             // the ValidateAllInputs in ThirdCommand.SetupInputs
-            Verify.AreEqual(m_application.Execute(new string[] { "third-command" }), -2146233079);
+            Assert.AreEqual(m_application.Execute(new string[] { "third-command" }), -2146233079);
         }
 
         /// <summary>
@@ -506,13 +502,13 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_Option_MultipleValue_MultipleValue_Validator_Valid()
         {
-            Log.Comment("Testing valid option with multiple value with multiple validator '-multipleValue something1 -multipleValue something2'");
+            Logger.LogMessage("Testing valid option with multiple value with multiple validator '-multipleValue something1 -multipleValue something2'");
 
             // Validate Option with multiple values is working with valid scenario with mutiple value validator
             m_numberOfElements = 0;
-            Verify.AreEqual(m_numberOfElements, 0);
+            Assert.AreEqual(m_numberOfElements, 0);
             ValidateCommand(true, m_application, new string[] { "-multipleValue", "something1", "-multipleValue", "something2" });
-            Verify.AreEqual(m_numberOfElements, 2);
+            Assert.AreEqual(m_numberOfElements, 2);
         }
 
         /// <summary>
@@ -521,13 +517,13 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_Option_MultipleValue_SingleValue_Validator_Valid()
         {
-            Log.Comment("Testing valid option with multiple value with single validator '-multipleValue2 something1 -multipleValue2 something2'");
+            Logger.LogMessage("Testing valid option with multiple value with single validator '-multipleValue2 something1 -multipleValue2 something2'");
 
             // Validate Option with multiple values is working with valid scenario with single value validator
             m_numberOfElements = 0;
-            Verify.AreEqual(m_numberOfElements, 0);
+            Assert.AreEqual(m_numberOfElements, 0);
             ValidateCommand(true, m_application, new string[] { "-multipleValue2", "something1", "-multipleValue2", "something2" });
-            Verify.AreEqual(m_numberOfElements, 2);
+            Assert.AreEqual(m_numberOfElements, 2);
         }
 
         /// <summary>
@@ -536,8 +532,8 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_Argument_MultipleValue_MultipleValue_Validator_Valid()
         {
-            Log.Comment("Testing valid argument with multiple value with multiple value validator 'argumentone argumenttwo'");
-            Log.Comment("Initializing CommandLineTests test.");
+            Logger.LogMessage("Testing valid argument with multiple value with multiple value validator 'argumentone argumenttwo'");
+            Logger.LogMessage("Initializing CommandLineTests test.");
 
             m_application.SetupInputs = (CommandLineApplication commandLineApplication) =>
             {
@@ -567,9 +563,9 @@ namespace UtilsTests
 
             // Validate argument with multiple values is working with valid scenario with mutiple value validator
             m_numberOfElements = 0;
-            Verify.AreEqual(m_numberOfElements, 0);
+            Assert.AreEqual(m_numberOfElements, 0);
             ValidateCommand(true, m_application, new string[] { "argumenone", "argumentwo" });
-            Verify.AreEqual(m_numberOfElements, 2);
+            Assert.AreEqual(m_numberOfElements, 2);
         }
 
         /// <summary>
@@ -578,7 +574,7 @@ namespace UtilsTests
         [TestMethod]
         public void CommandLine_Validate_MultipleValue_SingleValue_Validator_Valid()
         {
-            Log.Comment("Testing valid agument with multiple value with single value validator 'argumentone argumenttwo'");
+            Logger.LogMessage("Testing valid agument with multiple value with single value validator 'argumentone argumenttwo'");
 
             m_application.SetupInputs = (CommandLineApplication commandLineApplication) =>
             {
@@ -605,9 +601,9 @@ namespace UtilsTests
 
             // Validate Argument with multiple values is working with valid scenario with single value validator
             m_numberOfElements = 0;
-            Verify.AreEqual(m_numberOfElements, 0);
+            Assert.AreEqual(m_numberOfElements, 0);
             ValidateCommand(true, m_application, new string[] { "argumenone", "argumentwo" });
-            Verify.AreEqual(m_numberOfElements, 2);
+            Assert.AreEqual(m_numberOfElements, 2);
         }
 
         /// <summary>
@@ -616,7 +612,7 @@ namespace UtilsTests
         [TestCleanup]
         public new void TestCleanup()
         {
-            Log.Comment("Cleaning CommandLineTests test.");
+            Logger.LogMessage("Cleaning CommandLineTests test.");
             m_application = null;
         }
 
@@ -627,17 +623,17 @@ namespace UtilsTests
                 if (isValidScenario)
                 {
                     // the command should be valid
-                    Verify.AreEqual(application.Execute(args), 0);
+                    Assert.AreEqual(application.Execute(args), 0);
                 }
                 else
                 {
                     // the command should be invalid
-                    Verify.AreNotEqual(application.Execute(args), 0);
+                    Assert.AreNotEqual(application.Execute(args), 0);
                 }
             }
             catch (Exception e)
             {
-                Verify.Fail(e.Message);
+                Assert.Fail(e.Message);
             }
         }
     }

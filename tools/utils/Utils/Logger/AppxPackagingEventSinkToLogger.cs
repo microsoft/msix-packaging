@@ -1,14 +1,11 @@
-﻿// -----------------------------------------------------------------------
-//  <copyright file="AppxPackagingEventSinkToLogger.cs" company="Microsoft">
-//      Copyright (c) Microsoft Corporation.  All rights reserved.
-//  </copyright>
-// -----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.Logger
 {
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
-    using AppxPackagingInterop;
+    using Microsoft.Msix.Utils.AppxPackagingInterop;
 
     public class AppxPackagingEventSinkToLogger : IAppxPackagingDiagnosticEventSink
     {
@@ -57,7 +54,7 @@ namespace Microsoft.Msix.Utils.Logger
         }
 
         #region IDisposable Support
-        // This code added to correctly implement the disposable pattern.
+        //// This code added to correctly implement the disposable pattern.
         public void Dispose()
         {
             // Do not change this code. Put cleanup code in Dispose(bool disposing) below.

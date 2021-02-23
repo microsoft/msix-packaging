@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="SDKToolProcessRunner.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.ProcessRunner
 {
@@ -19,7 +16,7 @@ namespace Microsoft.Msix.Utils.ProcessRunner
         private DesktopProcessRunner runner = new DesktopProcessRunner();
 
         /// <summary>
-        ///  Initializes a new instance of the <see cref="SDKToolProcessRunner"/> class using either 
+        ///  Initializes a new instance of the <see cref="SDKToolProcessRunner"/> class using either
         ///  a side-by-side executable of the tool, or, if not found, the one from the latest installed SDK.
         /// </summary>
         public SDKToolProcessRunner()

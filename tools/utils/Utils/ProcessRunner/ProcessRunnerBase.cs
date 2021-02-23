@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="ProcessRunnerBase.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.ProcessRunner
 {
@@ -119,7 +116,7 @@ namespace Microsoft.Msix.Utils.ProcessRunner
         public bool SupportsStandardErrorRedirection { get; protected set; }
 
         /// <summary>
-        /// Gets or sets the path under which the output log from the process 
+        /// Gets or sets the path under which the output log from the process
         /// will be saved. If empty, output will be redirected to console.
         /// </summary>
         public string OutputLogDirectory { get; set; }

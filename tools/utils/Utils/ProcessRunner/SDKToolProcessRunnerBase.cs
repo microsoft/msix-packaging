@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="SDKToolProcessRunnerBase.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.ProcessRunner
 {
@@ -100,7 +97,7 @@ namespace Microsoft.Msix.Utils.ProcessRunner
             this.ToolPath = Path.Combine(
                 Path.GetDirectoryName(
                     Assembly.GetExecutingAssembly().Location),
-                    this.ToolName + ".EXE");
+                this.ToolName + ".EXE");
 
             this.ValidateToolExistance();
         }

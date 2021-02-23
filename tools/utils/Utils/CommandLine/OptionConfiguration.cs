@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="OptionConfiguration.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.CommandLine
 {
@@ -17,7 +14,7 @@ namespace Microsoft.Msix.Utils.CommandLine
     public class OptionConfiguration : InputConfigurationBase
     {
         /// <summary>
-        /// Initializes a new instance of the OptionConfiguration class (with no value or single or multiple values).
+        /// Initializes a new instance of the <see cref="OptionConfiguration"/> class (with no value or single or multiple values).
         /// </summary>
         /// <param name="option">The CommandOption object</param>
         /// <param name="isRequired">A flag indicating whether the option is required</param>
@@ -39,7 +36,7 @@ namespace Microsoft.Msix.Utils.CommandLine
         }
 
         /// <summary>
-        /// Initializes a new instance of the OptionConfiguration class for a non-required option (with no value or single or multiple values).
+        /// Initializes a new instance of the <see cref="OptionConfiguration"/> class for a non-required option (with no value or single or multiple values).
         /// </summary>
         /// <param name="option">The CommandOption object</param>
         /// <param name="disallowedSwitches">A list of switches that are not allowed when this option is specified</param>
@@ -105,7 +102,7 @@ namespace Microsoft.Msix.Utils.CommandLine
             if (validationRoutineMultipleValues != null && (this.Option.OptionType == CommandOptionType.NoValue || this.Option.OptionType == CommandOptionType.SingleValue))
             {
                 throw new InvalidOperationException(string.Format(
-                    "Validation routine for multiple values is not allowed with CommandOptionType.{0}.", 
+                    "Validation routine for multiple values is not allowed with CommandOptionType.{0}.",
                     this.Option.OptionType.ToString()));
             }
             else if (validationRoutineSingleValue != null && this.Option.OptionType == CommandOptionType.NoValue)

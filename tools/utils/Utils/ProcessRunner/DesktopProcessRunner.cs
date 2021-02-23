@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="DesktopProcessRunner.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.ProcessRunner
 {
@@ -101,7 +98,7 @@ namespace Microsoft.Msix.Utils.ProcessRunner
             {
                 // Process.Kill may fail in a few cases.
                 Logger.Log(this.LogProviders, "Process kill failed: " + ex.Message);
-                
+
                 throw;
             }
         }

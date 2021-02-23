@@ -1,8 +1,5 @@
-﻿//-----------------------------------------------------------------------
-// <copyright file="ProcessRunnerException.cs" company="Microsoft">
-//     Copyright (c) Microsoft. All rights reserved.
-// </copyright>
-//-----------------------------------------------------------------------
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
 namespace Microsoft.Msix.Utils.ProcessRunner
 {
@@ -15,13 +12,13 @@ namespace Microsoft.Msix.Utils.ProcessRunner
     public class ProcessRunnerException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the ProcessRunnerException class
+        /// Initializes a new instance of the <see cref="ProcessRunnerException"/> class.
         /// with the name of the process executed and its exit code.
         /// </summary>
         /// <param name="name">Name of the process executed.</param>
         /// <param name="exitCode">Exit code of the process.</param>
         /// <param name="logDirectory">The log directory ProcessRunner used, if any.</param>
-        public ProcessRunnerException(string name, int exitCode, string logDirectory) 
+        public ProcessRunnerException(string name, int exitCode, string logDirectory)
             : base(FormatExceptionMessage(name, exitCode, logDirectory))
         {
             this.Name = name;
