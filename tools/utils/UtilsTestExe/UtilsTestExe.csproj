@@ -41,7 +41,7 @@
   <ItemGroup>
     <ExeFiles Include="$(TargetDir)\**\*.*"/>
   </ItemGroup>
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+  <Target Name="CopyToTestData" AfterTargets="Build">
     <Copy SourceFiles="@(ExeFiles)" DestinationFiles="@(ExeFiles->'$(SolutionDir)\UtilsTests\TestData\UtilsTestExe\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 </Project>
