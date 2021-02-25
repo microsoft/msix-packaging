@@ -1,9 +1,8 @@
 {
   "loc.friendlyName": "MSIX ビルドとパッケージ",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "MSIX パッケージ形式を使用して Windows アプリのビルドとパッケージ化を行う",
   "loc.instanceNameFormat": "MSIX ビルドとパッケージ",
-  "loc.group.displayName.msbuild": "MSBuild の詳細オプション",
   "loc.input.label.outputPath": "出力パス",
   "loc.input.help.outputPath": "生成されたパッケージまたはバンドルのパスです。",
   "loc.input.label.buildSolution": "MSBuild を使用したビルド ソリューション",

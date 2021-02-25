@@ -1,9 +1,8 @@
 {
   "loc.friendlyName": "MSIX 組建與套件",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "使用 MSIX 套件格式建置並封裝 Windows 應用程式",
   "loc.instanceNameFormat": "MSIX 組建與套件",
-  "loc.group.displayName.msbuild": "MSBuild 的進階選項",
   "loc.input.label.outputPath": "輸出路徑",
   "loc.input.help.outputPath": "所產生套件或套件組合的路徑。",
   "loc.input.label.buildSolution": "使用 MSBuild 建置方案",

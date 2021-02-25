@@ -1,9 +1,8 @@
 {
   "loc.friendlyName": "MSIX 构建和程序包",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "使用 MSIX 程序包格式构建和打包 Windows 应用",
   "loc.instanceNameFormat": "MSIX 构建和程序包",
-  "loc.group.displayName.msbuild": "MSBuild 的高级选项",
   "loc.input.label.outputPath": "输出路径",
   "loc.input.help.outputPath": "所生成程序包或捆绑包的路径。",
   "loc.input.label.buildSolution": "使用 MSBuild 生成解决方案",

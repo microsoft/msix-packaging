@@ -1,6 +1,6 @@
 {
   "loc.friendlyName": "Créer un package pour l’attachement de l’application MSIX",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "Créer un package VHD ou VHDX pour une connexion d’application MSIX",
   "loc.instanceNameFormat": "Créer un package pour l’attachement de l’application MSIX",
   "loc.input.label.package": "Chemin d'accès du package",

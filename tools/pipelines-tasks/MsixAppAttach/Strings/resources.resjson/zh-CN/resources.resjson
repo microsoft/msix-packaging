@@ -1,6 +1,6 @@
 {
   "loc.friendlyName": "创建 MSIX 应用附加程序包",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "为 MSIX 应用附加创建 VHD 或 VHDX 程序包",
   "loc.instanceNameFormat": "创建 MSIX 应用附加程序包",
   "loc.input.label.package": "程序包路径",

@@ -1,9 +1,8 @@
 {
   "loc.friendlyName": "MSIX-Build und -Paket",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "Erstellen und Verpacken von Windows-Apps mithilfe des MSIX-Paketformats",
   "loc.instanceNameFormat": "MSIX-Build und -Paket",
-  "loc.group.displayName.msbuild": "Erweiterte Optionen für MSBuild",
   "loc.input.label.outputPath": "Ausgabepfad",
   "loc.input.help.outputPath": "Pfad des generierten Pakets oder Bundles",
   "loc.input.label.buildSolution": "Erstellen von Lösungen mit MSBuild",

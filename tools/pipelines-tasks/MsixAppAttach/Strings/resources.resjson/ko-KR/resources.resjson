@@ -1,6 +1,6 @@
 {
   "loc.friendlyName": "MSIX 앱 연결용 패키지 만들기",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "MSIX 앱 연결을 위한 VHD 또는 VHDX 패키지 만들기",
   "loc.instanceNameFormat": "MSIX 앱 연결용 패키지 만들기",
   "loc.input.label.package": "패키지 경로",

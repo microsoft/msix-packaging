@@ -1,9 +1,8 @@
 {
   "loc.friendlyName": "MSIX 빌드 및 패키지",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "MSIX 패키지 형식을 사용하여 Windows 앱 빌드 및 패키지",
   "loc.instanceNameFormat": "MSIX 빌드 및 패키지",
-  "loc.group.displayName.msbuild": "MSBuild용 고급 옵션",
   "loc.input.label.outputPath": "출력 경로",
   "loc.input.help.outputPath": "생성 된 패키지 또는 번들의 경로입니다.",
   "loc.input.label.buildSolution": "MSBuild를 사용하여 솔루션 빌드",

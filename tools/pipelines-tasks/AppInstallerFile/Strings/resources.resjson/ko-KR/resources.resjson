@@ -1,10 +1,8 @@
 {
   "loc.friendlyName": "MSIX용 앱 설치 관리자 파일",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "MSIX 앱용 앱 설치 관리자 파일 만들기 또는 업데이트",
   "loc.instanceNameFormat": "앱 설치 관리자 파일 만들기",
-  "loc.group.displayName.optionalItems": "선택 항목",
-  "loc.group.displayName.dependencies": "종속성",
   "loc.input.label.package": "패키지",
   "loc.input.help.package": "패키지 또는 번들의 경로입니다.",
   "loc.input.label.outputPath": "출력 파일 경로",

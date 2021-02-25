@@ -1,10 +1,8 @@
 {
   "loc.friendlyName": "適用於 MSIX 的應用程式安裝程式檔案",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "建立或更新 MSIX 應用程式的應用程式安裝程式檔案",
   "loc.instanceNameFormat": "建立應用程式安裝程式檔案",
-  "loc.group.displayName.optionalItems": "選擇性項目",
-  "loc.group.displayName.dependencies": "相依性",
   "loc.input.label.package": "套件",
   "loc.input.help.package": "套件或套件組合的路徑。",
   "loc.input.label.outputPath": "輸出檔案路徑",

@@ -1,10 +1,8 @@
 {
   "loc.friendlyName": "MSIX 的应用安装程序文件",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "创建或更新 MSIX 应用的应用安装程序文件",
   "loc.instanceNameFormat": "创建应用安装程序文件",
-  "loc.group.displayName.optionalItems": "可选项目",
-  "loc.group.displayName.dependencies": "依赖项",
   "loc.input.label.package": "程序包",
   "loc.input.help.package": "程序包或捆绑包的路径。",
   "loc.input.label.outputPath": "输出文件路径",
