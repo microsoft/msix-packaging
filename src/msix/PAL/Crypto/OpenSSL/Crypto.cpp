@@ -9,7 +9,38 @@
 #include "openssl/evp.h"
 
 namespace MSIX {
-    bool SHA256::ComputeHash(std::uint8_t *buffer, std::uint32_t cbBuffer, std::vector<uint8_t>& hash)
+    SHA256::SHA256()
+    {
+        std::unique_ptr<SHA256_CTX> hashContext(new SHA256_CTX);
+        m_hashContext = hashContext.release();
+        Reset();
+    }
+
+    SHA256::~SHA256()
+    {
+        if (m_hashContext != nullptr)
+        {
+            delete m_hashContext;
+        }
+    }
+
+    void SHA256::Reset()
+    {
+        ThrowErrorIfNot(Error::Unexpected, ::SHA256_Init((SHA256_CTX*)m_hashContext), "SHA256_Init failed");
+    }
+
+    void SHA256::HashData(const std::uint8_t* buffer, std::uint32_t cbBuffer)
+    {
+        ThrowErrorIfNot(Error::Unexpected, ::SHA256_Update((SHA256_CTX*)m_hashContext, buffer, cbBuffer), "SHA256_Update failed");
+    }
+
+    void SHA256::FinalizeAndGetHashValue(std::vector<uint8_t>& hash)
+    {
+        hash.resize(SHA256_DIGEST_LENGTH);
+        ThrowErrorIfNot(Error::Unexpected, ::SHA256_Final(hash.data(), (SHA256_CTX*)m_hashContext), "SHA256_Final failed");
+    }
+
+    bool SHA256::ComputeHash(const std::uint8_t *buffer, std::uint32_t cbBuffer, std::vector<uint8_t>& hash)
     {
         hash.resize(SHA256_DIGEST_LENGTH);
         ::SHA256(buffer, cbBuffer, hash.data());
