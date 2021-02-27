@@ -11,8 +11,7 @@
 namespace MSIX {
     SHA256::SHA256()
     {
-        std::unique_ptr<SHA256_CTX> hashContext(new SHA256_CTX);
-        m_hashContext = hashContext.release();
+        m_hashContext = new SHA256_CTX;
         Reset();
     }
 
@@ -20,7 +19,8 @@ namespace MSIX {
     {
         if (m_hashContext != nullptr)
         {
-            delete m_hashContext;
+            // Linux, aosp (Android) and iOS compilers do not allow delete a void pointer, hence the casting.
+            delete (SHA256_CTX*)m_hashContext;
         }
     }
 
