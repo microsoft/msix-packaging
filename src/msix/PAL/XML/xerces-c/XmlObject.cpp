@@ -390,7 +390,7 @@ public:
         std::vector<std::pair<std::string, ComPtr<IStream>>> schemas;
         if (footPrintType == XmlContentType::AppxBlockMapXml)
         {
-            schemas = GetResources(m_factory, Resource::Type::BlockMap);
+            // Block map xml does not need schema validation.
         }
         else if (footPrintType == XmlContentType::AppxManifestXml)
         {
