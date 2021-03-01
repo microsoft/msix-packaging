@@ -82,7 +82,7 @@ namespace MsixTest { namespace Pack {
     {
         static const std::map<std::string, std::uint64_t> files = 
         {
-            { "AppxBlockMap.xml", 1871 },
+            { "AppxBlockMap.xml", 2021 },
             { "AppxManifest.xml", 3203 }, // This file is marked as LF for git. If you see size = 3251, then it changed to CRLF.
             { "resources.pri", 3760 },
             { "TestAppxPackage.exe", 186368 },

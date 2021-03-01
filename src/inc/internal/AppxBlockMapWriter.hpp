@@ -4,6 +4,7 @@
 // 
 #pragma once
 
+#include "Crypto.hpp"
 #include "XmlWriter.hpp"
 #include "ComHelper.hpp"
 
@@ -26,5 +27,9 @@ namespace MSIX {
 
     protected:
         XmlWriter m_xmlWriter;
+
+    private:
+        MSIX::SHA256 m_fileHashEngine;
+        bool m_addFileHash = false;
     };
 }
