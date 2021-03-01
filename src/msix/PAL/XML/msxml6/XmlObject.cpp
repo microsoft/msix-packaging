@@ -584,7 +584,7 @@ public:
         return ComPtr<IXmlDom>::Make<MSXMLDom>(
             stream,
             #if VALIDATING
-                // No need to validate block map xml schema as it is CPU intensive, especially for large packages with large block map xml, whihc is  
+                // No need to validate block map xml schema as it is CPU intensive, especially for large packages with large block map xml, which is  
                 // about 0.1% of the uncompressed payload size. We have semantic validation at consumption to catch mal-formatted xml. 
                 // We consume what we know and ignore what we don't know for future proof.
                 (XmlContentType::AppxBlockMapXml == footPrintType) ? emptyManager : s_xmlNamespaces[static_cast<std::uint8_t>(footPrintType)],
