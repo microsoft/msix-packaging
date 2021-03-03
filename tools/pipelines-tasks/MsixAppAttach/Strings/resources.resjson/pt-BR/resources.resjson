@@ -1,6 +1,6 @@
 {
   "loc.friendlyName": "Criar pacote para anexação de aplicativo MSIX",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "Criar um pacote VHD ou VHDX para anexar MSIX app",
   "loc.instanceNameFormat": "Criar pacote para anexação de aplicativo MSIX",
   "loc.input.label.package": "Caminho do Pacote",

@@ -1,10 +1,8 @@
 {
   "loc.friendlyName": "Arquivo do Instalador de Aplicativo para MSIX",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "Criar ou atualizar um arquivo do Instalador de Aplicativo para os aplicativos do MSIX",
   "loc.instanceNameFormat": "Método para Criar o arquivo do Instalador de Aplicativo",
-  "loc.group.displayName.optionalItems": "Itens Opcionais",
-  "loc.group.displayName.dependencies": "Dependências",
   "loc.input.label.package": "Pacote",
   "loc.input.help.package": "Caminho para o pacote ou lote.",
   "loc.input.label.outputPath": "Nome do Arquivo de Saída",

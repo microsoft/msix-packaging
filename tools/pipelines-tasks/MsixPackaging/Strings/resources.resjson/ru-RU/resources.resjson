@@ -1,9 +1,8 @@
 {
   "loc.friendlyName": "Сборка и пакет MSIX",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "Собирайте и упаковывайте приложения Windows с помощью формата пакетов MSIX",
   "loc.instanceNameFormat": "Сборка и пакет MSIX",
-  "loc.group.displayName.msbuild": "Расширенные настройки MSBuild",
   "loc.input.label.outputPath": "Путь вывода",
   "loc.input.help.outputPath": "Путь к созданному пакету или набору.",
   "loc.input.label.buildSolution": "Создание решения с помощью MSBuild",

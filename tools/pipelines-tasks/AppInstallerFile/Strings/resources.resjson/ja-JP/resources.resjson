@@ -1,10 +1,8 @@
 {
   "loc.friendlyName": "MSIX 用アプリ インストーラー ファイル",
-  "loc.helpMarkDown": "",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "loc.description": "MSIX アプリのアプリ インストーラー ファイルを作成または更新する",
   "loc.instanceNameFormat": "アプリ インストーラー ファイルの作成",
-  "loc.group.displayName.optionalItems": "オプションのアイテム",
-  "loc.group.displayName.dependencies": "依存関係",
   "loc.input.label.package": "パッケージ",
   "loc.input.help.package": "パッケージまたはバンドルのパスです。",
   "loc.input.label.outputPath": "出力ファイルのパス",
