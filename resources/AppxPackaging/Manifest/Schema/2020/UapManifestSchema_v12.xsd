@@ -1,24 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- @@BEGIN_SDKSPLIT
 
-  RS1 RESTRICTED CAPABILITIES MANIFEST SCHEMA
+  Iron UAP V12 MANIFEST SCHEMA
 
-  This is the Schema that defines elements and attributes for the Universal App
-  Platform features in Thresold.  These types are imported into the Foundation
-  schema and included in products that support UAP.
+  This schema extends the elements that are available in the Iron UAP schema.
 
   !!!WARNING!!!
 
   Don't make any changes to this schema.  Changes will affect a wide range of
   partners and can potentially break product and test code, as well as existing
-  .appx packages and manifests.  Please contact 'manifest' alias if you need to
-  request any addition or modification.
+  .appx packages and manifests. Please follow https://microsoft.sharepoint.com/teams/appxmanifest/SitePages/Home.aspx
+  if you need to request any addition or modification.
 
 @@END_SDKSPLIT -->
 <xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
            xmlns:xs="http://www.w3.org/2001/XMLSchema"
-           targetNamespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/2"
-           xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities/2"
+           targetNamespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/12"
+           xmlns="http://schemas.microsoft.com/appx/manifest/uap/windows10/12"
            xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
            xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
            xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
@@ -27,16 +25,30 @@
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
-  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/11"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"/>
 
-  <xs:element name="Extension" substitutionGroup="f:ApplicationExtensionChoice">
+  <xs:element name="Extension" substitutionGroup="f:ExtensionChoice">
     <xs:complexType>
-      <xs:attribute name="Category" type="t:ST_ApplicationExtensionCategory_Restricted2" use="required"/>
+      <xs:attribute name="Category" type="t:ST_ExtensionCategory_Uap12" use="required"/>
       <xs:attributeGroup ref="t:ExtensionBaseAttributes"/>
       <xs:attributeGroup ref="uap10:TrustLevelGroup"/>
       <xs:attributeGroup ref="uap11:ManganeseExtensionAttributesGroup"/>
     </xs:complexType>
   </xs:element>
 
+  <xs:element name="Host">
+    <xs:complexType>
+      <xs:attribute name="Name" type="t:ST_DomainNameWithStarSubDomain"/>
+      <xs:attribute ref="uap11:Path" use="optional"/>
+      <xs:attribute name="Uri" type="ST_DomainNameAndSubdomainWithStar"/>
+    </xs:complexType>
+  </xs:element>
+
+  <xs:simpleType name="ST_DomainNameAndSubdomainWithStar">
+    <xs:restriction base="t:ST_URI">
+      <xs:pattern value="((\*\.)?[0-9a-zA-Z]+(-[0-9a-zA-Z]+)*\.)+[a-zA-Z]{1,63}(/([0-9a-zA-Z]+))*(\*|/\*)?"/>
+    </xs:restriction>
+  </xs:simpleType>
+        
 </xs:schema>

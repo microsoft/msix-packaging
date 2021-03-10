@@ -117,10 +117,18 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
             "http://schemas.microsoft.com/appx/manifest/desktop/windows10/5"                           "desktop5"           "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v5.xsd")
         list(APPEND MANIFEST_DESK6
             "http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"                           "desktop6"           "AppxPackaging/Manifest/Schema/2018/DesktopManifestSchema_v6.xsd")
+        list(APPEND MANIFEST_DESK7
+            "http://schemas.microsoft.com/appx/manifest/desktop/windows10/7"                           "desktop7"           "AppxPackaging/Manifest/Schema/2020/DesktopManifestSchema_v7.xsd")
+        list(APPEND MANIFEST_DESK8
+            "http://schemas.microsoft.com/appx/manifest/desktop/windows10/8"                           "desktop8"           "AppxPackaging/Manifest/Schema/2021/DesktopManifestSchema_v8.xsd")
         list(APPEND MANIFEST_COM
             "http://schemas.microsoft.com/appx/manifest/com/windows10"                                 "com"                "AppxPackaging/Manifest/Schema/2015/ComManifestSchema.xsd")
         list(APPEND MANIFEST_COM2
             "http://schemas.microsoft.com/appx/manifest/com/windows10/2"                               "com2"               "AppxPackaging/Manifest/Schema/2017/ComManifestSchema_v2.xsd")
+        list(APPEND MANIFEST_COM3
+            "http://schemas.microsoft.com/appx/manifest/com/windows10/3"                               "com3"               "AppxPackaging/Manifest/Schema/2019/ComManifestSchema_v3.xsd")
+        list(APPEND MANIFEST_COM4
+            "http://schemas.microsoft.com/appx/manifest/com/windows10/4"                               "com4"               "AppxPackaging/Manifest/Schema/2020/ComManifestSchema_v4.xsd")
         list(APPEND MANIFEST_UAP5
             "http://schemas.microsoft.com/appx/manifest/uap/windows10/5"                               "uap5"               "AppxPackaging/Manifest/Schema/2017/UapManifestSchema_v5.xsd")
         list(APPEND MANIFEST_UAP6
@@ -129,12 +137,25 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
             "http://schemas.microsoft.com/appx/manifest/uap/windows10/7"                               "uap7"               "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v7.xsd")
         list(APPEND MANIFEST_UAP8
             "http://schemas.microsoft.com/appx/manifest/uap/windows10/8"                               "uap8"               "AppxPackaging/Manifest/Schema/2018/UapManifestSchema_v8.xsd")
-        list(APPEND MANIFEST_COM3
-            "http://schemas.microsoft.com/appx/manifest/com/windows10/3"                               "com3"               "AppxPackaging/Manifest/Schema/2019/ComManifestSchema_v3.xsd")
-        list(APPEND MANIFEST_PREVIEWAPPCOMPAT
-            "http://schemas.microsoft.com/appx/manifest/preview/windows10/msixappcompatsupport"        "previewappcompat"   "AppxPackaging/Manifest/Schema/2019/PreviewManifestSchema_MsixAppCompatSupport.xsd")
         list(APPEND MANIFEST_UAP10
             "http://schemas.microsoft.com/appx/manifest/uap/windows10/10"                              "uap10"              "AppxPackaging/Manifest/Schema/2019/UapManifestSchema_v10.xsd" )
+        list(APPEND MANIFEST_UAP11
+            "http://schemas.microsoft.com/appx/manifest/uap/windows10/11"                              "uap11"              "AppxPackaging/Manifest/Schema/2019/UapManifestSchema_v11.xsd" )
+        list(APPEND MANIFEST_UAP12
+            "http://schemas.microsoft.com/appx/manifest/uap/windows10/12"                              "uap12"              "AppxPackaging/Manifest/Schema/2020/UapManifestSchema_v12.xsd" )
+        list(APPEND MANIFEST_UAP13
+            "http://schemas.microsoft.com/appx/manifest/uap/windows10/13"                              "uap13"              "AppxPackaging/Manifest/Schema/2021/UapManifestSchema_v13.xsd" )
+        list(APPEND MANIFEST_CLOUDFILES
+            "http://schemas.microsoft.com/appx/manifest/cloudfiles/windows10"                          "cloudfiles"         "AppxPackaging/Manifest/Schema/2019/CloudFilesManifestSchema.xsd")
+        list(APPEND MANIFEST_PREVIEWAPPCOMPAT
+            "http://schemas.microsoft.com/appx/manifest/preview/windows10/msixappcompatsupport"        "previewappcompat"   "AppxPackaging/Manifest/Schema/2019/PreviewManifestSchema_MsixAppCompatSupport.xsd")
+        list(APPEND MANIFEST_PREVIEWAPPCOMPAT3
+            "http://schemas.microsoft.com/appx/manifest/preview/windows10/msixappcompatsupport/3"      "previewappcompat3"  "AppxPackaging/Manifest/Schema/2020/PreviewManifestSchema_MsixAppCompatSupport_v3.xsd")
+        list(APPEND MANIFEST_DEPLOYMENT
+            "http://schemas.microsoft.com/appx/manifest/deployment/windows10"                          "deployment"         "AppxPackaging/Manifest/Schema/2020/DeploymentManifestSchema.xsd")
+        list(APPEND MANIFEST_VIRTUALIZATION
+            "http://schemas.microsoft.com/appx/manifest/virtualization/windows10"                      "virtualization"     "AppxPackaging/Manifest/Schema/2020/VirtualizationManifestSchema.xsd")
+
         list(APPEND RESOURCES_APPXMANIFEST
             MANIFEST_FOUNDATION
             MANIFEST_UAP
@@ -163,15 +184,25 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
             MANIFEST_DESK4
             MANIFEST_DESK5
             MANIFEST_DESK6
+            MANIFEST_DESK7
+            MANIFEST_DESK8
             MANIFEST_COM
             MANIFEST_COM2
+            MANIFEST_COM3
+            MANIFEST_COM4
             MANIFEST_UAP5
             MANIFEST_UAP6
             MANIFEST_UAP7
             MANIFEST_UAP8
-            MANIFEST_COM3
+            MANIFEST_UAP10
+            MANIFEST_UAP11
+            MANIFEST_UAP12
+            MANIFEST_UAP13
+            MANIFEST_CLOUDFILES
             MANIFEST_PREVIEWAPPCOMPAT
-            MANIFEST_UAP10)
+            MANIFEST_PREVIEWAPPCOMPAT3
+            MANIFEST_DEPLOYMENT
+            MANIFEST_VIRTUALIZATION)
 
         # Bundle manifest
         list(APPEND BUNDLE_2014
@@ -240,6 +271,13 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
                 [[/]]
                 APPTYPES_TEXT "${APPTYPES_TEXT}")
 
+            # Ilegal escaped characters
+            # ST_MutableDirectoryTarget
+            string(REGEX REPLACE
+                [[\\\$]]
+                [[$]]
+                APPTYPES_TEXT "${APPTYPES_TEXT}")
+
             # Negative lookahead. I am not sure if we can do something here... maybe a semantic check?
             # ST_Parameters
             string(REGEX REPLACE
@@ -260,6 +298,17 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
                 DESK6_TEXT "${DESK6_TEXT}")
 
             file(WRITE "${RESOURCES_DIR}/${DESK6_FILE}" "${DESK6_TEXT}")
+
+            # DesktopManifestSchema_v7.xsd
+            list(GET MANIFEST_DESK7 2 DESK7_FILE)
+            file(READ "${RESOURCES_DIR}/${DESK7_FILE}" DESK7_TEXT)
+
+            string(REGEX REPLACE 
+                [[\\x01-\\x1f]]
+                [[\\t\\n\\r]]
+                DESK7_TEXT "${DESK7_TEXT}")
+
+            file(WRITE "${RESOURCES_DIR}/${DESK7_FILE}" "${DESK7_TEXT}")
 
         endif()
 
