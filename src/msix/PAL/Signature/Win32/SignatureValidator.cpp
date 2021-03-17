@@ -1,7 +1,7 @@
 //
 //  Copyright (C) 2017 Microsoft.  All rights reserved.
 //  See LICENSE file in the project root for full license information.
-// 
+//
 #include <windows.h>
 #include <wincrypt.h>
 #include <wintrust.h>
@@ -18,7 +18,7 @@ namespace MSIX
     struct unique_local_alloc_deleter {
         void operator()(HLOCAL h) const { LocalFree(h); };
     };
-    
+
     struct unique_cert_context_deleter {
         void operator()(PCCERT_CONTEXT p) const { CertFreeCertificateContext(p); };
     };
@@ -115,7 +115,7 @@ namespace MSIX
         ThrowErrorIfNot(Error::SignatureInvalid, (
             CryptMsgGetParam(signedMessage.get(), CMSG_SIGNER_INFO_PARAM, 0, signerInfo, &signerInfoSize)
             ), "CryptMsgGetParam failed");
-        
+
         // Get the signing certificate from the certificate store based on the issuer and serial number of the signer info
         CERT_INFO certInfo;
         certInfo.Issuer = signerInfo->Issuer;
@@ -127,8 +127,8 @@ namespace MSIX
         ThrowErrorIf(Error::SignatureInvalid, (signingCertContext.get() == NULL), "failed to get signing cert context.");
 
         // Get the signing certificate chain context.  Do not connect online for URL 
-        // retrievals.  Note that this check does not respect the lifetime signing 
-        // EKU on the signing certificate.  
+        // retrievals. If CertVerifyCertificateChainPolicy fail to validate the certificates
+        //  we call WinVerifyTrust, if return ERROR_SUCCESS or "0" the signature is valid.
         CERT_CHAIN_PARA certChainParameters = { 0 };
         certChainParameters.cbSize = sizeof(CERT_CHAIN_PARA);
         certChainParameters.RequestedUsage.dwType = USAGE_MATCH_TYPE_AND;
@@ -150,7 +150,7 @@ namespace MSIX
     }
 
     static bool GetEnhancedKeyUsage(PCCERT_CONTEXT pCertContext, std::vector<std::string>& values)
-    {                   
+    {
         //get OIDS from the extension or property
 		if (pCertContext == NULL) 
 		{
@@ -258,6 +258,39 @@ namespace MSIX
         return chainsToTrustedRoot;
     }
 
+    static bool ValidateCertWithWinVerifyTrust(std::vector<std::uint8_t>& buffer)
+    {
+        // Set up the structures needed for the WinVerifyTrust call
+        WINTRUST_BLOB_INFO signatureBlobInfo = { 0 };
+        signatureBlobInfo.cbStruct = sizeof(WINTRUST_BLOB_INFO);
+        // This is exposed here because the consumption API stack requires this information to invoke the P7x SIP.
+        signatureBlobInfo.gSubject = { 0x5598cff1, 0x68db, 0x4340,{ 0xb5, 0x7f, 0x1c, 0xac, 0xf8, 0x8c, 0x9a, 0x51 } };
+        // Set the file Datasize and buffer to validate signature.
+        signatureBlobInfo.cbMemObject = static_cast<DWORD>(buffer.size());
+        signatureBlobInfo.pbMemObject = buffer.data();
+
+        WINTRUST_DATA trustData = { 0 };
+        trustData.cbStruct = sizeof(WINTRUST_DATA);
+        trustData.dwUIChoice = WTD_UI_NONE;
+        trustData.fdwRevocationChecks = WTD_REVOKE_NONE;
+        trustData.dwUnionChoice = WTD_CHOICE_BLOB;
+        trustData.dwStateAction = WTD_STATEACTION_VERIFY;
+        trustData.dwProvFlags = WTD_CACHE_ONLY_URL_RETRIEVAL | WTD_REVOCATION_CHECK_NONE;
+        trustData.pBlob = &signatureBlobInfo;
+
+        // Verify a file or object using the Authenticode policy provider.
+        GUID actionId = WINTRUST_ACTION_GENERIC_VERIFY_V2;
+        HRESULT hr = WinVerifyTrust(static_cast<HWND>(INVALID_HANDLE_VALUE), &actionId, &trustData);
+
+        // If return value is S_OK the file is trusted.
+        if (hr == S_OK)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     static bool IsAuthenticodeTrustedChain(_In_ PCCERT_CHAIN_CONTEXT certChainContext)
     {
         CERT_CHAIN_POLICY_PARA policyParameters = { 0 };
@@ -277,7 +310,7 @@ namespace MSIX
         bool isAuthenticode = (ERROR_SUCCESS == policyStatus.dwError);
 
         policyParameters = { 0 };
-        policyParameters.cbSize = sizeof(CERT_CHAIN_POLICY_PARA);            
+        policyParameters.cbSize = sizeof(CERT_CHAIN_POLICY_PARA);
         policyStatus = {0};
         policyStatus.cbSize = sizeof(CERT_CHAIN_POLICY_STATUS);
         ThrowErrorIfNot(Error::SignatureInvalid, 
@@ -287,7 +320,7 @@ namespace MSIX
                 &policyParameters,
                 &policyStatus),
             "CertVerifyCertificateChainPolicy failed");
-        
+
         bool chainsToTrustedRoot = (ERROR_SUCCESS == policyStatus.dwError);
         return isAuthenticode && chainsToTrustedRoot;
     }
@@ -300,7 +333,7 @@ namespace MSIX
             pCertContext->pCertInfo->rgExtension);
 
         CERT_BASIC_CONSTRAINTS2_INFO *basicConstraintsT = NULL;
-        DWORD cbDecoded = 0;            
+        DWORD cbDecoded = 0;
         if (certExtension && CryptDecodeObjectEx(
                 X509_ASN_ENCODING,
                 X509_BASIC_CONSTRAINTS2,
@@ -370,7 +403,7 @@ namespace MSIX
         {   //pkcs7 -- get the end entity
             PCCERT_CONTEXT pCertContext = NULL;
             while (NULL != (pCertContext = CertEnumCertificatesInStore(certStoreHandle.get(), pCertContext)))
-            {    
+            {
                 if (IsCertificateSelfSigned(pCertContext, pCertContext->dwCertEncodingType, 0))
                 {
                     if (allowSelfSignedCert)
@@ -389,7 +422,7 @@ namespace MSIX
             return NULL;
         }
     }
-    
+
     static bool DoesSignatureCertContainStoreEKU(_In_ byte* rawSignatureBuffer, _In_ ULONG dataSize)
     {
         unique_cert_context certificateContext(GetCertContext(rawSignatureBuffer, dataSize, false));
@@ -442,7 +475,7 @@ namespace MSIX
 
         std::vector<wchar_t> publisherT;
         publisherT.reserve(requiredLength + 1);
-        
+
         if (CertNameToStrW(
             X509_ASN_ENCODING,
             &certificateContext.get()->pCertInfo->Subject,
@@ -469,9 +502,9 @@ namespace MSIX
     {
         // If the caller wants to skip signature validation altogether, just bug out early; we will not read the digests
         if (option & MSIX_VALIDATION_OPTION_SKIPSIGNATURE) { return false; }
-        
+
         ThrowErrorIf(Error::MissingAppxSignatureP7X, (nullptr == stream.Get()), "AppxSignature.p7x missing");
-        
+
         LARGE_INTEGER li = {0};
         ULARGE_INTEGER uli = {0};
         ThrowHrIfFailed(stream->Seek(li, StreamBase::Reference::END, &uli));
@@ -525,7 +558,7 @@ namespace MSIX
 
         // This first call to CryptMsgGetParam is expected to fail because we don't know
         // how big of a buffer that it needs to store the inner content 
-        DWORD innerContentTypeSize = 0;        
+        DWORD innerContentTypeSize = 0;
         ULONG readBytes = 0;
         ThrowErrorIf(Error::SignatureInvalid, (
             !CryptMsgGetParam(
@@ -536,7 +569,7 @@ namespace MSIX
                 &innerContentTypeSize) &&
             HRESULT_FROM_WIN32(GetLastError()) != HRESULT_FROM_WIN32(ERROR_MORE_DATA)
         ), "CryptMsgGetParam failed");
-        
+
         // Allocate a temporary buffer
         std::vector<std::uint8_t> innerContentType(innerContentTypeSize);
         ThrowErrorIfNot(Error::SignatureInvalid, (
@@ -575,7 +608,7 @@ namespace MSIX
                 innerContent.data(),
                 &innerContentSize)
         ), "CryptMsgGetParam failed");
-        
+
         // Parse the ASN.1 to the the indirect data structure
         SPC_INDIRECT_DATA_CONTENT* indirectContent = NULL;
         DWORD indirectContentSize = 0;
@@ -598,11 +631,22 @@ namespace MSIX
         );
 
         origin = MSIX::SignatureOrigin::Unknown;
-        if (IsStoreOrigin(p7s, p7sSize)) { origin = MSIX::SignatureOrigin::Store; }
-        else if (IsAuthenticodeOrigin(p7s, p7sSize)) { origin = MSIX::SignatureOrigin::LOB; }
+        if (IsStoreOrigin(p7s, p7sSize))
+        {
+            origin = MSIX::SignatureOrigin::Store;
+        }
+        else if (IsAuthenticodeOrigin(p7s, p7sSize))
+        {
+            origin = MSIX::SignatureOrigin::LOB;
+        }
+        // WinVerifyTrust is called to validate the certificate signature.
+        else if (ValidateCertWithWinVerifyTrust(p7x))
+        {
+            origin = MSIX::SignatureOrigin::LOB;
+        }
 
         bool signatureOriginUnknownAllowed = (option & MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN) == MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
-        
+
         ThrowErrorIf(Error::CertNotTrusted, 
             ((MSIX::SignatureOrigin::Unknown == origin) && !signatureOriginUnknownAllowed),
             "Unknown signature origin");
@@ -610,7 +654,7 @@ namespace MSIX
         ThrowErrorIfNot(Error::SignatureInvalid,
             GetPublisherDisplayName(p7s, p7sSize, publisher) == true,
             "Could not retrieve publisher name");
-                
+
         return true;
     }
 } // namespace MSIX
