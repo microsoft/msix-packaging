@@ -373,3 +373,16 @@ TEST_CASE("Unpack_To_Absolute_Path", "[unpack]")
     // Clean directory
     CHECK(MsixTest::Directory::CleanDirectory(outputDir));
 }
+
+#ifdef WIN32
+// TODO: verify timestamp in non-windows platforms.
+TEST_CASE("Unpack_Validate_Timestamp", "[unpack]")
+{
+    HRESULT expected                  = S_OK;
+    std::string package               = "ValidateTimestamp.appx";
+    MSIX_VALIDATION_OPTION validation = MSIX_VALIDATION_OPTION_FULL;
+    MSIX_PACKUNPACK_OPTION packUnpack = MSIX_PACKUNPACK_OPTION_NONE;
+
+    RunUnpackTest(expected, package, validation, packUnpack);
+}
+#endif
