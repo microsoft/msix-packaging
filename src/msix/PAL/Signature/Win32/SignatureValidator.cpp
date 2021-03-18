@@ -126,9 +126,10 @@ namespace MSIX
             &certInfo));
         ThrowErrorIf(Error::SignatureInvalid, (signingCertContext.get() == NULL), "failed to get signing cert context.");
 
-        // Get the signing certificate chain context.  Do not connect online for URL 
-        // retrievals. If CertVerifyCertificateChainPolicy fail to validate the certificates
-        //  we call WinVerifyTrust, if return ERROR_SUCCESS or "0" the signature is valid.
+        // Get the signing certificate chain context.  Do not connect online for URL
+        // retrievals. If CertVerifyCertificateChainPolicy fails to validate the certificates
+        //  we call WinVerifyTrust, which also checks if a package was timestamped while the cert was valid.
+        // If it returns ERROR_SUCCESS or "0" the signature is valid.
         CERT_CHAIN_PARA certChainParameters = { 0 };
         certChainParameters.cbSize = sizeof(CERT_CHAIN_PARA);
         certChainParameters.RequestedUsage.dwType = USAGE_MATCH_TYPE_AND;
@@ -635,11 +636,12 @@ namespace MSIX
         {
             origin = MSIX::SignatureOrigin::Store;
         }
+        // Determine whether the signature file is associated with a store cert.
         else if (IsAuthenticodeOrigin(p7s, p7sSize))
         {
             origin = MSIX::SignatureOrigin::LOB;
         }
-        // WinVerifyTrust is called to validate the certificate signature.
+        // WinVerifyTrust is called to validate the certificate signature and the timestamp.
         else if (ValidateCertWithWinVerifyTrust(p7x))
         {
             origin = MSIX::SignatureOrigin::LOB;
