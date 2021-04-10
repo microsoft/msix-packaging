@@ -86,26 +86,44 @@ MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeapAndOptions(
+    COTASKMEMALLOC* memalloc,
+    COTASKMEMFREE* memfree,
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_FACTORY_OPTIONS factoryOptions,
+    IAppxFactory** appxFactory) noexcept try
+{
+    *appxFactory = MSIX::ComPtr<IAppxFactory>::Make<MSIX::AppxFactory>(validationOption, MSIX_APPLICABILITY_OPTION_FULL, factoryOptions, memalloc, memfree).Detach();
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     MSIX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory) noexcept try
 {
-    *appxFactory = MSIX::ComPtr<IAppxFactory>::Make<MSIX::AppxFactory>(validationOption, MSIX_APPLICABILITY_OPTION_FULL, memalloc, memfree).Detach();
-    return static_cast<HRESULT>(MSIX::Error::OK);
+    return CoCreateAppxFactoryWithHeapAndOptions(memalloc, memfree, validationOption, MSIX_FACTORY_OPTION_NONE, appxFactory);
 } CATCH_RETURN();
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithOptions(
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_FACTORY_OPTIONS factoryOptions,
+    IAppxFactory** appxFactory) noexcept
+{
+    #ifdef WIN32
+        return CoCreateAppxFactoryWithHeapAndOptions(CoTaskMemAlloc, CoTaskMemFree, validationOption, factoryOptions, appxFactory);
+    #else
+        return static_cast<HRESULT>(MSIX::Error::NotSupported);
+    #endif
+}
+
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     MSIX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory) noexcept
 {
-    #ifdef WIN32
-        return CoCreateAppxFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);
-    #else
-        return static_cast<HRESULT>(MSIX::Error::NotSupported);
-    #endif
+    return CoCreateAppxFactoryWithOptions(validationOption, MSIX_FACTORY_OPTION_NONE, appxFactory);
 }
 
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
@@ -116,7 +134,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
     IAppxBundleFactory** appxBundleFactory) noexcept try
 {
     THROW_IF_BUNDLE_NOT_ENABLED
-    *appxBundleFactory = MSIX::ComPtr<IAppxBundleFactory>::Make<MSIX::AppxFactory>(validationOption, applicabilityOptions, memalloc, memfree).Detach();
+    *appxBundleFactory = MSIX::ComPtr<IAppxBundleFactory>::Make<MSIX::AppxFactory>(validationOption, applicabilityOptions, MSIX_FACTORY_OPTION_NONE, memalloc, memfree).Detach();
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 

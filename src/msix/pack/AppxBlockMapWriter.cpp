@@ -42,16 +42,24 @@ namespace MSIX {
     static const char* blockElement = "Block";
     static const char* hashAttribute = "Hash";
 
-    // <BlockMap HashMethod="http://www.w3.org/2001/04/xmlenc#sha256" xmlns="http://schemas.microsoft.com/appx/2010/blockmap" 
-    //   xmlns:b4 = "http://schemas.microsoft.com/appx/2021/blockmap" IgnorableNamespaces = "b4">
+    // <BlockMap HashMethod="http://www.w3.org/2001/04/xmlenc#sha256" xmlns="http://schemas.microsoft.com/appx/2010/blockmap">
     BlockMapWriter::BlockMapWriter() : m_xmlWriter(XmlWriter(blockMapElement))
     {
         m_xmlWriter.AddAttribute(xmlnsAttribute, blockMapNamespace);
-        m_xmlWriter.AddAttribute(xmlnsAttributeV4, blockMapNamespaceV4);
-        m_xmlWriter.AddAttribute(ignorableNsAttribute, v4NamespacePrefix);
 
         // For now, we always use SHA256.
         m_xmlWriter.AddAttribute(hashMethodAttribute, hashMethodAttributeValue);
+    }
+
+    // Enable full file hash computation and create <b4:FileHash> element to the xml for files larger than DefaultBlockSize (64KB).
+    // Must be called before first AddFile() is called to added the extra namesapce attribute to the <BlockMap> element so the resulted xml will be:
+    // <BlockMap HashMethod="http://www.w3.org/2001/04/xmlenc#sha256" xmlns="http://schemas.microsoft.com/appx/2010/blockmap" 
+    //   xmlns:b4 = "http://schemas.microsoft.com/appx/2021/blockmap" IgnorableNamespaces = "b4">
+    void BlockMapWriter::EnableFileHash()
+    {
+        m_enableFileHash = true;
+        m_xmlWriter.AddAttribute(xmlnsAttributeV4, blockMapNamespaceV4);
+        m_xmlWriter.AddAttribute(ignorableNsAttribute, v4NamespacePrefix);
     }
 
     // <File Size="18944" Name="App1.exe" LfhSize="38">
@@ -64,7 +72,7 @@ namespace MSIX {
         m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(uncompressedSize));
         m_xmlWriter.AddAttribute(lfhSizeAttribute, std::to_string(lfh));
 
-        if (uncompressedSize > DefaultBlockSize)
+        if (m_enableFileHash && (uncompressedSize > DefaultBlockSize))
         {
             // If the file size is more than a block (64KB), we will add <FileHash> element after all the <Block> elements.
             // Otherwise, file hash is the same as the block hash, as there is only 1 block in the file.

@@ -23,8 +23,12 @@
 
 namespace MSIX {
 
-    AppxPackageWriter::AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip) : m_factory(factory), m_zipWriter(zip)
+    AppxPackageWriter::AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip, bool enableFileHash) : m_factory(factory), m_zipWriter(zip)
     {
+        if (enableFileHash)
+        {
+            m_blockMapWriter.EnableFileHash();
+        }
         m_state = WriterState::Open;
     }
 
