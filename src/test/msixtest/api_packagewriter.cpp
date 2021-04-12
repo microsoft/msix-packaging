@@ -35,7 +35,7 @@ void InitializePackageWriter(IStream* outputStream, IAppxPackageWriter** package
     return;
 }
 
-void TestAppxPackageWriter_good(PCSTR outputFileName, bool enableFileHash)
+void TestAppxPackageWriter_good(LPCSTR outputFileName, bool enableFileHash)
 {
     auto outputStream = MsixTest::StreamFile(outputFileName, false, true);
 
