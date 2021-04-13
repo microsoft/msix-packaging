@@ -1199,6 +1199,7 @@ interface IMsixElementEnumerator;
 interface IMsixFactoryOverrides;
 interface IMsixStreamFactory;
 interface IMsixApplicabilityLanguagesEnumerator;
+interface IMsixPackageWriterFactory;
 
 #ifndef __IMsixDocumentElement_INTERFACE_DEFINED__
 #define __IMsixDocumentElement_INTERFACE_DEFINED__
@@ -1705,6 +1706,13 @@ enum MSIX_BUNDLE_OPTIONS
         MSIX_BUNDLE_OPTION_BUNDLEMANIFESTONLY = 0x20,
     }   MSIX_BUNDLE_OPTIONS;
 
+typedef /* [v1_enum] */
+enum MSIX_FACTORY_OPTIONS
+{
+    MSIX_FACTORY_OPTION_NONE = 0x0,
+    MSIX_FACTORY_OPTION_WRITER_ENABLE_FILE_HASH = 0x1,  // The package writer will compute full file hash and add <FileHash> element in block map xml
+}   MSIX_FACTORY_OPTIONS;
+
 #define MSIX_PLATFORM_ALL MSIX_PLATFORM_WINDOWS10      | \
                           MSIX_PLATFORM_WINDOWS10      | \
                           MSIX_PLATFORM_WINDOWS8       | \
@@ -1803,10 +1811,22 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     MSIX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory) noexcept;
 
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithOptions(
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_FACTORY_OPTIONS factoryOptions,
+    IAppxFactory** appxFactory) noexcept;
+
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     MSIX_VALIDATION_OPTION validationOption,
+    IAppxFactory** appxFactory) noexcept;
+
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeapAndOptions(
+    COTASKMEMALLOC* memalloc,
+    COTASKMEMFREE* memfree,
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_FACTORY_OPTIONS factoryOptions,
     IAppxFactory** appxFactory) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(

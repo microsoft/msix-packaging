@@ -26,6 +26,8 @@ endif()
 list(APPEND MSIX_EXPORTS
     "CoCreateAppxFactory"
     "CoCreateAppxFactoryWithHeap"
+    "CoCreateAppxFactoryWithOptions"
+    "CoCreateAppxFactoryWithHeapAndOptions"
     "CreateStreamOnFile"
     "CreateStreamOnFileUTF16"
     "MsixGetLogTextUTF8"

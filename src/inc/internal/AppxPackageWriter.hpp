@@ -36,7 +36,7 @@ namespace MSIX {
         IAppxPackageWriterUtf8, IAppxPackageWriter3, IAppxPackageWriter3Utf8>
     {
     public:
-        AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip);
+        AppxPackageWriter(IMsixFactory* factory, const ComPtr<IZipWriter>& zip, bool enableFileHash);
         ~AppxPackageWriter() {};
 
         // IPackageWriter

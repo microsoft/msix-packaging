@@ -42,8 +42,9 @@ namespace MSIX {
     class AppxFactory final : public ComClass<AppxFactory, IMsixFactory, IAppxFactory, IXmlFactory, IAppxBundleFactory, IMsixFactoryOverrides, IAppxFactoryUtf8>
     {
     public:
-        AppxFactory(MSIX_VALIDATION_OPTION validationOptions, MSIX_APPLICABILITY_OPTIONS applicability, COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) : 
-            m_validationOptions(validationOptions), m_applicabilityFlags(applicability), m_memalloc(memalloc), m_memfree(memfree)
+        AppxFactory(MSIX_VALIDATION_OPTION validationOptions, MSIX_APPLICABILITY_OPTIONS applicability, MSIX_FACTORY_OPTIONS factoryOptions, 
+            COTASKMEMALLOC* memalloc, COTASKMEMFREE* memfree ) :
+            m_validationOptions(validationOptions), m_applicabilityFlags(applicability), m_factoryOptions(factoryOptions), m_memalloc(memalloc), m_memfree(memfree)
         {
             ThrowErrorIf(Error::InvalidParameter, (m_memalloc == nullptr || m_memfree == nullptr), "allocator/deallocator pair not specified.")
             ComPtr<IMsixFactory> self;
@@ -90,6 +91,7 @@ namespace MSIX {
         COTASKMEMALLOC* m_memalloc;
         COTASKMEMFREE*  m_memfree;
         MSIX_VALIDATION_OPTION m_validationOptions;
+        MSIX_FACTORY_OPTIONS m_factoryOptions;
         ComPtr<IStorageObject> m_resourcezip;
         std::vector<std::uint8_t> m_resourcesVector;
         MSIX_APPLICABILITY_OPTIONS m_applicabilityFlags;

@@ -33,7 +33,8 @@ namespace MSIX {
         ComPtr<IMsixFactory> self;
         ThrowHrIfFailed(QueryInterface(UuidOfImpl<IMsixFactory>::iid, reinterpret_cast<void**>(&self)));
         auto zip = ComPtr<IZipWriter>::Make<ZipObjectWriter>(outputStream);
-        auto result = ComPtr<IAppxPackageWriter>::Make<AppxPackageWriter>(self.Get(), zip);
+        bool enableFileHash = m_factoryOptions & MSIX_FACTORY_OPTION_WRITER_ENABLE_FILE_HASH;
+        auto result = ComPtr<IAppxPackageWriter>::Make<AppxPackageWriter>(self.Get(), zip, enableFileHash);
         *packageWriter = result.Detach();
         #endif
         return static_cast<HRESULT>(Error::OK);

@@ -19,6 +19,7 @@ namespace MSIX {
     public:
         BlockMapWriter();
 
+        void EnableFileHash();
         void AddFile(const std::string& name, std::uint64_t uncompressedSize, std::uint32_t lfh);
         void AddBlock(const std::vector<std::uint8_t>& block, ULONG size, bool isCompressed);
         void CloseFile();
@@ -30,6 +31,7 @@ namespace MSIX {
 
     private:
         MSIX::SHA256 m_fileHashEngine;
+        bool m_enableFileHash = false;
         bool m_addFileHash = false;
     };
 }
