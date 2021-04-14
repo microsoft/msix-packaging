@@ -1,5 +1,5 @@
 # Test timeout in milliseconds
-timeout: 100000
+timeout: 300000
 
 # Test duration to flag as slow
 slow: 40000
