@@ -97,12 +97,10 @@ namespace Microsoft.Msix.Utils.AppxPackaging
             this.Version = new VersionInfo(packageId.GetVersion());
 
             IAppxManifestProperties packageProperties = appxManifestReader.GetProperties();
-            string displayName;
-            packageProperties.GetStringValue("DisplayName", out displayName);
+            packageProperties.GetStringValue("DisplayName", out string displayName);
             this.DisplayName = displayName;
 
-            string publisherDisplayName;
-            packageProperties.GetStringValue("PublisherDisplayName", out publisherDisplayName);
+            packageProperties.GetStringValue("PublisherDisplayName", out string publisherDisplayName);
             this.PublisherDisplayName = publisherDisplayName;
 
             // Get the min versions
