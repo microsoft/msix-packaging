@@ -137,10 +137,11 @@ namespace Microsoft.Msix.Utils.AppxPackaging
                 else
                 {
                     var childPackageMetadata = new ChildPackageMetadata(
+                        this,
+                        subPackageId.GetPackageFullName(),
                         filePath,
                         subPackageInfo.GetPackageType(),
                         subPackageInfo.GetSize(),
-                        subPackageId.GetPackageFullName(),
                         subPackageId.GetVersion(),
                         subPackageId.GetResourceId());
 

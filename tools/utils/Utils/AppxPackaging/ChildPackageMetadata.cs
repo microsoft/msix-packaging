@@ -26,21 +26,27 @@ namespace Microsoft.Msix.Utils.AppxPackaging
     /// </summary>
     public class ChildPackageMetadata
     {
-        public ChildPackageMetadata(string filePath, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, ulong packageSize, string packageFullName, ulong packageVersion, string packageResourceId)
+        public ChildPackageMetadata(AppxBundleMetadata parentBundle, string packageFullName, string relativePath, APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE packageType, ulong packageSize, ulong packageVersion, string packageResourceId)
         {
-            this.FilePath = filePath;
+            this.ParentBundle = parentBundle;
+            this.RelativeFilePath = relativePath;
             this.PackageType = (PackageType)packageType;
-            this.PackageSize = packageSize;
+            this.Size = packageSize;
             this.PackageFullName = packageFullName;
-            this.PackageArchitecture = PackagingUtils.GetPackageArchitectureFromFullName(packageFullName);
-            this.PackageVersion = new VersionInfo(packageVersion);
-            this.PackageResourceId = packageResourceId;
+            this.Architecture = PackagingUtils.GetPackageArchitectureFromFullName(packageFullName);
+            this.Version = new VersionInfo(packageVersion);
+            this.ResourceId = packageResourceId;
         }
 
         /// <summary>
-        /// Gets the path the package.
+        /// Gets the information of the parent bundle which contains this reference
         /// </summary>
-        public string FilePath { get; }
+        public AppxBundleMetadata ParentBundle { get; private set; }
+
+        /// <summary>
+        /// Gets the relative path the package.
+        /// </summary>
+        public string RelativeFilePath { get; }
 
         /// <summary>
         /// Gets the package type.
@@ -50,12 +56,12 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         /// <summary>
         /// Gets the package architecure.
         /// </summary>
-        public string PackageArchitecture { get; }
+        public string Architecture { get; }
 
         /// <summary>
         /// Gets the package size in bytes.
         /// </summary>
-        public ulong PackageSize { get; }
+        public ulong Size { get; }
 
         /// <summary>
         /// Gets the package full name.
@@ -65,11 +71,11 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         /// <summary>
         /// Gets the package version.
         /// </summary>
-        public VersionInfo PackageVersion { get; }
+        public VersionInfo Version { get; }
 
         /// <summary>
         /// Gets the package ResourceId, if any.
         /// </summary>
-        public string PackageResourceId { get; }
+        public string ResourceId { get; }
     }
 }
