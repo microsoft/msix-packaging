@@ -57,7 +57,13 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         /// <summary>
         /// Gets the list of all the internal msix packages bundled in this bundle
         /// </summary>
+        [Obsolete]
         public IList<string> InternalAppxPackagesRelativePaths { get; private set; } = new List<string>();
+
+        /// <summary>
+        /// Gets the list of all the internal msix packages bundled in this bundle
+        /// </summary>
+        public IList<ChildPackageMetadata> ChildAppxPackages { get; private set; } = new List<ChildPackageMetadata>();
 
         /// <summary>
         /// Gets the list of all the physical optional msix packages referenced by this bundle, which don't belong to
@@ -114,6 +120,8 @@ namespace Microsoft.Msix.Utils.AppxPackaging
             while (subPackagesEnumerator.GetHasCurrent())
             {
                 IAppxBundleManifestPackageInfo subPackageInfo = subPackagesEnumerator.GetCurrent();
+                IAppxManifestPackageId subPackageId = subPackageInfo.GetPackageId();
+                string filePath = subPackageInfo.GetFileName();
 
                 // If the package is not contained within the bundle, the corresponding package element in the bundle manifest
                 // would not have an offset field. In such a case and only in that case, the AppxPackaging APIs would return 0
@@ -122,13 +130,26 @@ namespace Microsoft.Msix.Utils.AppxPackaging
                 {
                     this.ExternalAppxPackages.Add(new ExternalPackageReference(
                         this,
-                        subPackageInfo.GetPackageId().GetPackageFullName(),
-                        subPackageInfo.GetFileName(),
+                        subPackageId.GetPackageFullName(),
+                        filePath,
                         isOptional: false));
                 }
                 else
                 {
-                    this.InternalAppxPackagesRelativePaths.Add(subPackageInfo.GetFileName());
+                    var childPackageMetadata = new ChildPackageMetadata(
+                        this,
+                        subPackageId.GetPackageFullName(),
+                        filePath,
+                        subPackageInfo.GetPackageType(),
+                        subPackageInfo.GetSize(),
+                        subPackageId.GetVersion(),
+                        subPackageId.GetResourceId());
+
+                    this.ChildAppxPackages.Add(childPackageMetadata);
+
+#pragma warning disable CS0612 // Type or member is obsolete
+                    this.InternalAppxPackagesRelativePaths.Add(filePath);
+#pragma warning restore CS0612 // Type or member is obsolete
                 }
 
                 subPackagesEnumerator.MoveNext();
