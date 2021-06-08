@@ -130,11 +130,12 @@ namespace MSIX
                         {
                             M_ASN1_OCTET_STRING_print(extbio.get(), ext->value);
                         }
+
                         BUF_MEM *bptr = nullptr;
                         BIO_get_mem_ptr(extbio.get(), &bptr);
-                        
+
                         if (bptr && bptr->data && 
-                            std::string((char*)bptr->data).find(OID::WindowsStore()) != std::string::npos)
+                            std::string((char*)bptr->data, bptr->length).find(OID::WindowsStore()) != std::string::npos)
                         {
                             return true;
                         }
