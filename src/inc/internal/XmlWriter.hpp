@@ -14,6 +14,7 @@ namespace MSIX {
 
     // common attribute names
     static const char* xmlnsAttribute = "xmlns";
+    static const char* xmlNamespaceDelimiter = ":";
 
     // This is a super light xml writer that doesn't use any xml libraries and 
     // just writes to a stream the basics of an xml file.

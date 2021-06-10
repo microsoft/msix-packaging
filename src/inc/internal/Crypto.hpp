@@ -3,58 +3,57 @@
 //  See LICENSE file in the project root for full license information.
 // 
 #pragma once
-#include "Exceptions.hpp"
 
-#include <memory>
-#include <string>
 #include <vector>
+
+#ifndef SHA256_DIGEST_LENGTH
+#define SHA256_DIGEST_LENGTH    32
+#endif
 
 namespace MSIX {
 
-    // Forward declaration of type defined within PAL
-    struct SHA256Context;
-
-    // Class used to compute SHA256 hashes over various sets of data.
-    // Create one and Add data to it if the data is not all available,
-    // or simply call ComputeHash if the data is all in memory.
     class SHA256
     {
     public:
-        using HashBuffer = std::vector<uint8_t>;
+        static bool ComputeHash(const std::uint8_t *buffer, std::uint32_t cbBuffer, std::vector<uint8_t>& hash);
 
+        /// <summary>
+        /// Construct and initialize the hash engine so it can be used to compute hash of input data.
+        /// </summary>
         SHA256();
+        ~SHA256();
 
-        // Adds the next chunk of data to the hash.
-        void Add(const uint8_t* buffer, size_t cbBuffer);
+        /// <summary>
+        /// Reset the internal state of the hash engine so it can be used again to hash data.
+        /// </summary>
+        void Reset();
 
-        inline void Add(const std::vector<std::uint8_t>& buffer)
-        {
-            Add(buffer.data(), buffer.size());
+        /// <summary>
+        /// Hash data. Can be called repeatedly to hash a stream of data. Call FinalizeAndGetHashValue to finalize the hash engine
+        /// and get the hash value of all the input data.
+        /// </summary>
+        /// <param name="buffer">Buffer containing data</param>
+        /// <param name="cbBuffer">Size of the data in bytes</param>
+        void HashData(const std::uint8_t* buffer, std::uint32_t cbBuffer);
+
+        /// <summary>
+        /// Hash data. Can be called repeatedly to hash a stream of data. Call FinalizeAndGetHashValue to finalize the hash engine
+        /// and get the hash value of all the input data.
+        /// </summary>
+        /// <param name="buffer">Buffer containing data</param>
+        inline void HashData(const std::vector<std::uint8_t>& buffer) {
+            HashData(buffer.data(), static_cast<uint32_t>(buffer.size()));
         }
 
-        // Gets the hash of the data. This is a destructive action; the accumulated hash
-        // value will be returned and the object can no longer be used.
-        void Get(HashBuffer& hash);
-
-        inline HashBuffer Get()
-        {
-            HashBuffer result{};
-            Get(result);
-            return result;
-        }
-
-        // Computes the hash of the given buffer immediately.
-        static bool ComputeHash(uint8_t *buffer, std::uint32_t cbBuffer, HashBuffer& hash);
+        /// <summary>
+        /// Finalize the hash engine and get the computed hash value of all the input data from HashData calls.
+        /// After this call, the hash engine cannot be used again until Reset is called to reset its state.
+        /// </summary>
+        /// <param name="hash">Output bufer to receive the computed hash value.</param>
+        void FinalizeAndGetHashValue(std::vector<uint8_t>& hash);
 
     private:
-        void EnsureNotFinished() const { ThrowErrorIfNot(Error::InvalidState, context, "The hash is already finished"); }
-
-        struct SHA256ContextDeleter
-        {
-            void operator()(SHA256Context* context);
-        };
-
-        std::unique_ptr<SHA256Context, SHA256ContextDeleter> context;
+        void* m_hashContext = nullptr;
     };
 
     class Base64

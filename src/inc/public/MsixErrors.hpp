@@ -27,6 +27,10 @@ namespace MSIX {
         InvalidParameter            = 0x80070057,
         Stg_E_Invalidpointer        = 0x80030009,
         InvalidState                = 0x804d0003,
+        BadFormat                   = 0x8007000b,
+        InvalidData                 = 0x8007000d,
+        OutOfBounds                 = 0x8000000b,
+        PackagingErrorInternal      = 0x80080200,
 
         //
         // msix specific error codes

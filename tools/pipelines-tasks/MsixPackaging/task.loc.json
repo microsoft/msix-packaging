@@ -1,0 +1,222 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "e8789f65-a0e2-472b-98ca-8cfd83ccc3c3",
+  "name": "MsixPackaging",
+  "friendlyName": "ms-resource:loc.friendlyName",
+  "instanceNameFormat": "ms-resource:loc.instanceNameFormat",
+  "description": "ms-resource:loc.description",
+  "author": "Microsoft Corporation",
+  "category": "Package",
+  "helpUrl": "https://aka.ms/msix-cicd",
+  "helpMarkDown": "ms-resource:loc.helpMarkDown",
+  "execution": {
+    "Node10": {
+      "target": "index.js"
+    }
+  },
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "demands": [
+    "msbuild"
+  ],
+  "minimumAgentVersion": "1.95.0",
+  "inputs": [
+    {
+      "name": "outputPath",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.outputPath",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.outputPath"
+    },
+    {
+      "name": "buildSolution",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.buildSolution",
+      "defaultValue": "true",
+      "helpMarkDown": "ms-resource:loc.input.help.buildSolution"
+    },
+    {
+      "name": "inputDirectory",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.inputDirectory",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.inputDirectory",
+      "visibleRule": "buildSolution = false"
+    },
+    {
+      "name": "solution",
+      "type": "filePath",
+      "label": "ms-resource:loc.input.label.solution",
+      "defaultValue": "**/*.sln",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.solution",
+      "visibleRule": "buildSolution = true"
+    },
+    {
+      "name": "clean",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.clean",
+      "defaultValue": false,
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.clean",
+      "visibleRule": "buildSolution = true"
+    },
+    {
+      "name": "generateBundle",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.generateBundle",
+      "defaultValue": false,
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.generateBundle"
+    },
+    {
+      "name": "buildConfiguration",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.buildConfiguration",
+      "defaultValue": "debug",
+      "helpMarkDown": "ms-resource:loc.input.help.buildConfiguration",
+      "required": true,
+      "options": {
+        "debug": "Debug",
+        "release": "Release"
+      },
+      "visibleRule": "buildSolution = true"
+    },
+    {
+      "name": "buildPlatform",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.buildPlatform",
+      "defaultValue": "",
+      "helpMarkDown": "ms-resource:loc.input.help.buildPlatform",
+      "required": true,
+      "visibleRule": "buildSolution = true && generateBundle = false"
+    },
+    {
+      "name": "buildForX86",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.buildForX86",
+      "defaultValue": true,
+      "helpMarkDown": "ms-resource:loc.input.help.buildForX86",
+      "visibleRule": "buildSolution = true && generateBundle = true"
+    },
+    {
+      "name": "buildForX64",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.buildForX64",
+      "defaultValue": true,
+      "helpMarkDown": "ms-resource:loc.input.help.buildForX64",
+      "visibleRule": "buildSolution = true && generateBundle = true"
+    },
+    {
+      "name": "buildForArm",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.buildForArm",
+      "defaultValue": false,
+      "helpMarkDown": "ms-resource:loc.input.help.buildForArm",
+      "visibleRule": "buildSolution = true && generateBundle = true"
+    },
+    {
+      "name": "buildForAnyCpu",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.buildForAnyCpu",
+      "defaultValue": false,
+      "helpMarkDown": "ms-resource:loc.input.help.buildForAnyCpu",
+      "visibleRule": "buildSolution = true && generateBundle = true"
+    },
+    {
+      "name": "updateAppVersion",
+      "type": "boolean",
+      "label": "ms-resource:loc.input.label.updateAppVersion",
+      "defaultValue": false,
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.updateAppVersion"
+    },
+    {
+      "name": "manifestFile",
+      "type": "filePath",
+      "label": "ms-resource:loc.input.label.manifestFile",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.manifestFile",
+      "visibleRule": "updateAppVersion = true"
+    },
+    {
+      "name": "appVersion",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.appVersion",
+      "defaultValue": "1.0.0.0",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.appVersion",
+      "visibleRule": "updateAppVersion = true"
+    },
+    {
+      "name": "appPackageDistributionMode",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.appPackageDistributionMode",
+      "defaultValue": "StoreAndSideload",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.appPackageDistributionMode",
+      "options": {
+        "SideloadOnly": "Create an application package (.msix) or bundle (.msixbundle) for non-Store app",
+        "StoreOnly": "Create an application package upload file (.msixupload) for Store app",
+        "StoreAndSideload": "Both"
+      },
+      "visibleRule": "buildSolution = true"
+    },
+    {
+      "name": "msbuildLocationMethod",
+      "type": "radio",
+      "label": "ms-resource:loc.input.label.msbuildLocationMethod",
+      "required": true,
+      "defaultValue": "version",
+      "options": {
+        "version": "Version",
+        "location": "Specify Location"
+      },
+      "visibleRule": "buildSolution = true"
+    },
+    {
+      "name": "msbuildVersion",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.msbuildVersion",
+      "required": true,
+      "defaultValue": "latest",
+      "helpMarkDown": "ms-resource:loc.input.help.msbuildVersion",
+      "visibleRule": "buildSolution = true && msbuildLocationMethod = version",
+      "options": {
+        "latest": "Latest",
+        "16.0": "MSBuild 16.0",
+        "15.0": "MSBuild 15.0",
+        "14.0": "MSBuild 14.0",
+        "12.0": "MSBuild 12.0",
+        "4.0": "MSBuild 4.0"
+      }
+    },
+    {
+      "name": "msbuildArchitecture",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.msbuildArchitecture",
+      "defaultValue": "x86",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.msbuildArchitecture",
+      "visibleRule": "buildSolution = true && msbuildLocationMethod = version",
+      "options": {
+        "x86": "MSBuild x86",
+        "x64": "MSBuild x64"
+      }
+    },
+    {
+      "name": "msbuildLocation",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.msbuildLocation",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.msbuildLocation",
+      "visibleRule": "buildSolution = true && msbuildLocationMethod = location"
+    }
+  ]
+}

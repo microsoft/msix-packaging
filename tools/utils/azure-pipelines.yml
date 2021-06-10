@@ -1,0 +1,46 @@
+# Branches that trigger a build on commit
+trigger:
+- master
+- release_v*
+
+# Branches that trigger builds on PR
+pr:
+  branches:
+    include:
+    - master
+    - release_v*
+  paths:
+    include:
+    - tools/utils
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  utilsRoot: 'tools/utils'
+  solution: '$(utilsRoot)/Utils.sln'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'restore'
+    restoreSolution: '$(solution)'
+    feedsToUse: 'config'
+    nugetConfigPath: '$(utilsRoot)\.nuget\NuGet.config'
+
+- task: VSBuild@1
+  inputs:
+    solution: '$(solution)'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: VSTest@2
+  displayName: 'Run tests'
+  inputs:
+    testSelector: 'testAssemblies'
+    testAssemblyVer2: 'UtilsTests\bin\Release\net5.0\UtilsTests.dll'
+    searchFolder: '$(utilsRoot)'

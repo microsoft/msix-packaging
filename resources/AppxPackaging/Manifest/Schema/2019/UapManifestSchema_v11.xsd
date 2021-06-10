@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- @@BEGIN_SDKSPLIT
+
+  Manganese UAP V10 MANIFEST SCHEMA
+
+  This schema extends the elements that are available in the Manganese UAP schema.
+
+  !!!WARNING!!!
+
+  Don't make any changes to this schema.  Changes will affect a wide range of
+  partners and can potentially break product and test code, as well as existing
+  .appx packages and manifests. Please follow https://microsoft.sharepoint.com/teams/appxmanifest/SitePages/Home.aspx
+  if you need to request any addition or modification.
+
+@@END_SDKSPLIT -->
+<xs:schema attributeFormDefault="unqualified" elementFormDefault="qualified"
+           xmlns:xs="http://www.w3.org/2001/XMLSchema"
+           targetNamespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/11"
+           xmlns="http://schemas.microsoft.com/appx/manifest/uap/windows10/11"
+           xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
+           xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+           xmlns:uap11="http://schemas.microsoft.com/appx/manifest/uap/windows10/11"
+           xmlns:desktop7="http://schemas.microsoft.com/appx/manifest/desktop/windows10/7"
+           >
+
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/7"/>
+
+  <xs:attributeGroup name="ManganeseExtensionAttributesGroup">
+    <xs:attribute name="Id" type="ST_ExtensionId" use="optional" form="qualified"/>
+    <xs:attribute name="Subsystem" type="t:ST_Subsystem" use="optional" form="qualified"/>
+    <xs:attribute name="SupportsMultipleInstances" type="xs:boolean" use="optional" form="qualified"/>
+    <xs:attribute name="ResourceGroup" type="t:ST_AsciiWindowsId" use="optional" form="qualified"/>
+    <xs:attribute ref="uap11:CurrentDirectoryPath" use="optional" />
+    <xs:attribute ref="uap11:Parameters" use="optional" />
+    <xs:attribute ref="desktop7:CompatMode" use="optional" />
+    <xs:attribute ref="desktop7:Scope" use="optional" />
+  </xs:attributeGroup>
+
+  <xs:simpleType name="ST_ExtensionId">
+    <xs:restriction base="t:ST_NonEmptyString">
+      <xs:maxLength value="255"/>
+    </xs:restriction>
+  </xs:simpleType>
+
+  <xs:attribute name="CurrentDirectoryPath" type="t:ST_FileNameFullPath" />
+
+  <xs:attribute name="UserConfigurable" type="xs:boolean" />
+
+  <xs:attribute name="Path">
+    <xs:simpleType>
+      <xs:restriction base="t:ST_URI">
+        <xs:pattern value="/[^/\\]+(/[^/\\]+)*" />
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+
+  <xs:attribute name="Parameters" type="t:ST_NonEmptyString"/>
+
+  <xs:attribute name="DataFormat">
+    <xs:simpleType>
+      <xs:restriction base="xs:string">
+        <xs:enumeration value="xps"/>
+        <xs:enumeration value="pdf"/>
+      </xs:restriction>
+    </xs:simpleType>
+  </xs:attribute>
+
+  <xs:element name="Capability" substitutionGroup="f:CapabilityChoice">
+    <xs:complexType>
+      <xs:attribute name="Name" type="t:ST_Capability_Uap_11" use="required"/>
+    </xs:complexType>
+  </xs:element>
+
+</xs:schema>

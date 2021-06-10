@@ -11,7 +11,17 @@ enum OperationType
     Remove = 2,
     FindPackage = 3,
     Unpack = 5,
-    ApplyACLs = 6
+    ApplyACLs = 6,
+    MountImage = 7,
+    UnmountImage = 8
+};
+
+enum WVDFileType
+{
+    NotSpecified = 0,
+    VHD = 1,
+    VHDX = 2,
+    CIM = 3
 };
 
 class CommandLineInterface;
@@ -79,13 +89,21 @@ public:
     /// Displays contextual formatted help to the user used for command line tool
     void DisplayHelp();
     HRESULT Init();
+    void SetWVDFileType(std::wstring fileType);
     bool IsQuietMode() { return m_quietMode; }
     bool IsApplyACLs() { return m_applyACLs; }
     bool IsValidateSignature() { return m_validateSignature; }
+    bool IsCreate() { return m_create; }
+    bool isMountReadOnly() { return m_readOnly; }
     std::wstring GetPackageFilePathToInstall() { return m_packageFilePath; }
     std::wstring GetPackageFullName() { return m_packageFullName; }
     std::wstring GetUnpackDestination() { return m_unpackDestination; }
+    std::wstring GetRootDirectory() { return m_rootDirectory; }
+    std::wstring GetMountImagePath() { return m_mountImagePath; }
+    std::wstring GetVolumeId() { return m_volumeId; }
+    WVDFileType GetFileType() { return m_fileType; }
     OperationType GetOperationType() { return m_operationType; }
+    ULONGLONG GetVHDSize() { return m_vhdSize; }
 private:
     int m_argc = 0;
     char ** m_argv = nullptr;
@@ -96,9 +114,16 @@ private:
     std::wstring m_packageFilePath;
     std::wstring m_packageFullName;
     std::wstring m_unpackDestination;
+    std::wstring m_rootDirectory;
+    std::wstring m_mountImagePath;
+    std::wstring m_volumeId;
     bool m_quietMode;
     bool m_applyACLs;
     bool m_validateSignature;
+    bool m_create = false;
+    bool m_readOnly = true;
+    WVDFileType m_fileType = WVDFileType::NotSpecified;
+    ULONGLONG m_vhdSize = 0;
 
     OperationType m_operationType = OperationType::Undefined;
 

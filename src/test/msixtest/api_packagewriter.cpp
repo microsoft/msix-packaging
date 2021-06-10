@@ -16,15 +16,62 @@ using namespace MsixTest::Pack;
 
 constexpr std::uint32_t DefaultBlockSize = 65536;
 
-void InitializePackageWriter(IStream* outputStream, IAppxPackageWriter** packageWriter)
+void InitializePackageWriter(IStream* outputStream, IAppxPackageWriter** packageWriter, bool enableFileHash = false)
 {
     *packageWriter = nullptr;
 
     MsixTest::ComPtr<IAppxFactory> appxFactory;
-    REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(MsixTest::Allocators::Allocate, MsixTest::Allocators::Free,
-        MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &appxFactory));
+    if (enableFileHash)
+    {
+        REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeapAndOptions(MsixTest::Allocators::Allocate, MsixTest::Allocators::Free,
+            MSIX_VALIDATION_OPTION_SKIPSIGNATURE, MSIX_FACTORY_OPTION_WRITER_ENABLE_FILE_HASH, &appxFactory));
+    }
+    else
+    {
+        REQUIRE_SUCCEEDED(CoCreateAppxFactoryWithHeap(MsixTest::Allocators::Allocate, MsixTest::Allocators::Free,
+            MSIX_VALIDATION_OPTION_SKIPSIGNATURE, &appxFactory));
+    }
     REQUIRE_SUCCEEDED(appxFactory->CreatePackageWriter(outputStream, nullptr, packageWriter));
     return;
+}
+
+void TestAppxPackageWriter_good(LPCSTR outputFileName, bool enableFileHash)
+{
+    auto outputStream = MsixTest::StreamFile(outputFileName, false, true);
+
+    MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
+    InitializePackageWriter(outputStream.Get(), &packageWriter, enableFileHash);
+
+    // These values are set so that the files added to the package have increasingly
+    // larger sizes, with the first file having a small size < DefaultBlockSize, and
+    // the last file having a large size > 10x DefaultBlockSize.
+    const std::uint32_t contentSizeIncrement = DefaultBlockSize * 10 / static_cast<uint32_t>(TestConstants::GoodFileNames.size()) + 1;
+    std::uint32_t contentSize = 10;
+
+    for (const auto& fileName : TestConstants::GoodFileNames)
+    {
+        // Create file and write random data to it
+        auto fileStream = MsixTest::StreamFile(fileName.first, false, true);
+        WriteContentToStream(contentSize, fileStream.Get());
+        REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
+            fileName.second.c_str(),
+            TestConstants::ContentType.c_str(),
+            APPX_COMPRESSION_OPTION_NORMAL,
+            fileStream.Get()));
+        contentSize += contentSizeIncrement;
+    }
+
+    // Finalize package, create manifest stream
+    MsixTest::ComPtr<IStream> manifestStream;
+    MakeManifestStream(&manifestStream);
+    REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
+
+    // Reopen the package, validates that the written package is readable
+    // return to the beginning
+    LARGE_INTEGER zero = { 0 };
+    REQUIRE_SUCCEEDED(outputStream.Get()->Seek(zero, STREAM_SEEK_SET, nullptr));
+    MsixTest::ComPtr<IAppxPackageReader> packageReader;
+    MsixTest::InitializePackageReader(outputStream.Get(), &packageReader);
 }
 
 // Test creating instances of package writer
@@ -50,41 +97,13 @@ TEST_CASE("Api_AppxPackageWriter_create", "[api]")
 // Test creating a valid msix package via IAppxPackageWriter with different file sizes
 TEST_CASE("Api_AppxPackageWriter_good", "[api]")
 {
-    auto outputStream = MsixTest::StreamFile("test_package.msix", false, true);
+    TestAppxPackageWriter_good("test_package.msix", false /* enableFileHash */);
+}
 
-    MsixTest::ComPtr<IAppxPackageWriter> packageWriter;
-    InitializePackageWriter(outputStream.Get(), &packageWriter);
-
-    // These values are set so that the files added to the package have increasingly
-    // larger sizes, with the first file having a small size < DefaultBlockSize, and
-    // the last file having a large size > 10x DefaultBlockSize.
-    const std::uint32_t contentSizeIncrement = DefaultBlockSize * 10 / static_cast<uint32_t>(TestConstants::GoodFileNames.size()) + 1;
-    std::uint32_t contentSize = 10;
-
-    for(const auto& fileName : TestConstants::GoodFileNames)
-    {
-        // Create file and write random data to it
-        auto fileStream = MsixTest::StreamFile(fileName.first, false, true);
-        WriteContentToStream(contentSize, fileStream.Get());
-        REQUIRE_SUCCEEDED(packageWriter->AddPayloadFile(
-            fileName.second.c_str(),
-            TestConstants::ContentType.c_str(),
-            APPX_COMPRESSION_OPTION_NORMAL,
-            fileStream.Get()));
-        contentSize += contentSizeIncrement;
-    }
-
-    // Finalize package, create manifest stream
-    MsixTest::ComPtr<IStream> manifestStream;
-    MakeManifestStream(&manifestStream);
-    REQUIRE_SUCCEEDED(packageWriter->Close(manifestStream.Get()));
-
-    // Reopen the package, validates that the written package is readable
-    // return to the beginning
-    LARGE_INTEGER zero = { 0 };
-    REQUIRE_SUCCEEDED(outputStream.Get()->Seek(zero, STREAM_SEEK_SET, nullptr));
-    MsixTest::ComPtr<IAppxPackageReader> packageReader;
-    MsixTest::InitializePackageReader(outputStream.Get(), &packageReader);
+// Test creating a valid msix package with file hash enabled in block map via IAppxPackageWriter with different file sizes
+TEST_CASE("Api_AppxPackageWriter_FileHashEnabled_good", "[api]")
+{
+    TestAppxPackageWriter_good("test_package_with_filehash.msix", true /* enableFileHash */);
 }
 
 // Test creating a valid msix package via IAppxPackageWriter.

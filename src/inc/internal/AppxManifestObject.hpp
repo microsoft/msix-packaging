@@ -32,9 +32,53 @@ public:
 };
 MSIX_INTERFACE(IAppxManifestObject, 0xeff6d561,0xa236,0x4058,0x9f,0x1d,0x8f,0x93,0x63,0x3f,0xba,0x4b);
 
+// {daf72e2b-6252-4ed3-a476-5fb656aa0e2c}
+#ifndef WIN32
+interface IAppxManifestTargetDeviceFamilyInternal : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IAppxManifestTargetDeviceFamilyInternal : public IUnknown
+#endif
+{
+public:
+    virtual const std::string& GetName() = 0;
+};
+MSIX_INTERFACE(IAppxManifestTargetDeviceFamilyInternal, 0xdaf72e2b,0x6252,0x4ed3,0xa4,0x76,0x5f,0xb6,0x56,0xaa,0x0e,0x2c);
+
+// {9e2fb304-cec6-4ef0-8df3-10bb2ce714a3}
+#ifndef WIN32
+interface IAppxManifestQualifiedResourceInternal : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IAppxManifestQualifiedResourceInternal : public IUnknown
+#endif
+{
+public:
+    virtual const std::string& GetLanguage() = 0;
+};
+MSIX_INTERFACE(IAppxManifestQualifiedResourceInternal, 0x9e2fb304,0xcec6,0x4ef0,0x8d,0xf3,0x10,0xbb,0x2c,0xe7,0x14,0xa3);
+
+// {6c37be69-b1e0-4764-b892-12a3c5e094a4}
+#ifndef WIN32
+interface IAppxManifestMainPackageDependencyInternal : public IUnknown
+#else
+#include "Unknwn.h"
+#include "Objidl.h"
+class IAppxManifestMainPackageDependencyInternal : public IUnknown
+#endif
+{
+public:
+    virtual const std::string& GetName() = 0;
+    virtual const std::string& GetPublisher() = 0;
+    virtual const std::string& GetPackageFamilyName() = 0;
+};
+MSIX_INTERFACE(IAppxManifestMainPackageDependencyInternal, 0x6c37be69,0xb1e0,0x4764,0xb8,0x92,0x12,0xa3,0xc5,0xe0,0x94,0xa4);
+
 namespace MSIX {
 
-    class AppxManifestTargetDeviceFamily final : public ComClass<AppxManifestTargetDeviceFamily, IAppxManifestTargetDeviceFamily, IAppxManifestTargetDeviceFamilyUtf8>
+    class AppxManifestTargetDeviceFamily final : public ComClass<AppxManifestTargetDeviceFamily, IAppxManifestTargetDeviceFamily, IAppxManifestTargetDeviceFamilyUtf8, IAppxManifestTargetDeviceFamilyInternal>
     {
     public:
         AppxManifestTargetDeviceFamily(IMsixFactory* factory, std::string& name, std::string& minVersion, std::string& maxVersion) :
@@ -69,6 +113,12 @@ namespace MSIX {
         {
             return m_factory->MarshalOutStringUtf8(m_name, name);
         } CATCH_RETURN();
+
+        //IAppxManifestTargetDeviceFamilyInternal
+        const std::string& GetName() override
+        {
+            return m_name;
+        }
 
     protected:
         ComPtr<IMsixFactory> m_factory;
@@ -247,7 +297,7 @@ namespace MSIX {
         std::string m_mainPackageName;
     };
 
-    class AppxManifestMainPackageDependency final : public ComClass<AppxManifestMainPackageDependency, IAppxManifestMainPackageDependency, IAppxManifestMainPackageDependencyUtf8>
+    class AppxManifestMainPackageDependency final : public ComClass<AppxManifestMainPackageDependency, IAppxManifestMainPackageDependency, IAppxManifestMainPackageDependencyUtf8, IAppxManifestMainPackageDependencyInternal>
     {
     public:
         AppxManifestMainPackageDependency(IMsixFactory* factory, const std::string& name, const std::string& publisher, const std::string& packageFamilyName) :
@@ -292,11 +342,72 @@ namespace MSIX {
             return m_factory->MarshalOutStringUtf8(m_packageFamilyName, packageFamilyName);
         } CATCH_RETURN();
 
+        //IAppxManifestMainPackageDependencyInternal
+        const std::string& GetName() override
+        {
+            return m_name;
+        }
+
+        const std::string& GetPublisher() override
+        {
+            return m_publisher;
+        }
+
+        const std::string& GetPackageFamilyName() override
+        {
+            return m_packageFamilyName;
+        }
+
     protected:
         ComPtr<IMsixFactory> m_factory;
         std::string m_name;
         std::string m_publisher;
         std::string m_packageFamilyName;
+    };
+
+    class AppxManifestQualifiedResource final : public ComClass<AppxManifestQualifiedResource, IAppxManifestQualifiedResource, IAppxManifestQualifiedResourceUtf8, IAppxManifestQualifiedResourceInternal>
+    {
+    public:
+        AppxManifestQualifiedResource(IMsixFactory* factory, std::string& language, std::string& scale, std::string& DXFeatureLevel) :
+            m_factory(factory), m_language(language)
+        {
+            //TODO: Process and assign scale and DXFeatureLevel
+        }
+
+        // IAppxManifestQualifiedResource
+        HRESULT STDMETHODCALLTYPE GetLanguage(LPWSTR *language) noexcept override try
+        {
+            ThrowErrorIf(Error::InvalidParameter, (language == nullptr || *language != nullptr), "bad pointer");
+            return m_factory->MarshalOutString(m_language, language);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetScale(UINT32 *scale) noexcept override try
+        {
+            return static_cast<HRESULT>(Error::NotImplemented);
+        } CATCH_RETURN();
+
+        HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL *dxFeatureLevel) noexcept override try
+        {
+            return static_cast<HRESULT>(Error::NotImplemented);
+        } CATCH_RETURN();
+
+        // IAppxManifestQualifiedResourceUtf8
+        HRESULT STDMETHODCALLTYPE GetLanguage(LPSTR *language) noexcept override try
+        {
+            return m_factory->MarshalOutStringUtf8(m_language, language);
+        } CATCH_RETURN();
+
+        // IAppxManifestQualifiedResourceInternal
+        const std::string& GetLanguage() override
+        {
+            return m_language;
+        }
+
+    protected:
+        ComPtr<IMsixFactory> m_factory;
+        std::string m_language;
+        std::uint32_t m_scale;
+        DX_FEATURE_LEVEL m_DXFeatureLevel;
     };
 
     // Object backed by AppxManifest.xml
@@ -319,7 +430,7 @@ namespace MSIX {
 
         // IAppxManifestReader2
         HRESULT STDMETHODCALLTYPE GetQualifiedResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept override;
-
+                
         // IAppxManifestReader3
         HRESULT STDMETHODCALLTYPE GetCapabilitiesByCapabilityClass(
             APPX_CAPABILITY_CLASS_TYPE capabilityClass,

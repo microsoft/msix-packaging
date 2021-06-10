@@ -108,6 +108,9 @@ namespace MsixCoreLib
     /// @param isUnversioned - whether the file does not have a version
     HRESULT GetFileVersion(std::wstring file, _Out_ UINT64& version, _Out_ bool& isUnversioned);
 
+    /// Creates GUID string
+    HRESULT CreateGUIDString(std::wstring* guidString);
+
     //
     // Stripped down ComPtr class provided for those platforms that do not already have a ComPtr class.
     //

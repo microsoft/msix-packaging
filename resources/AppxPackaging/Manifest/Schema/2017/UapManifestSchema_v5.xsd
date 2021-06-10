@@ -23,6 +23,8 @@
            xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
            xmlns:uap6="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"
            xmlns:uap8="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"
+           xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+           xmlns:uap11="http://schemas.microsoft.com/appx/manifest/uap/windows10/11"
            xmlns:wincap3="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"
            xmlns:desktop4="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"
            xmlns:iot2="http://schemas.microsoft.com/appx/manifest/iot/windows10/2"
@@ -33,6 +35,8 @@
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/4"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/6"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/8"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/11"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10/windowscapabilities/3"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/iot/windows10/2"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/4"/>
@@ -49,6 +53,8 @@
       </xs:choice>
       <xs:attribute name="Category" type="t:ST_ApplicationExtensionCategory_Uap5" use="required"/>
       <xs:attributeGroup ref="t:ExtensionBaseAttributes"/>
+      <xs:attributeGroup ref="uap10:TrustLevelGroup"/>
+      <xs:attributeGroup ref="uap11:ManganeseExtensionAttributesGroup"/>
     </xs:complexType>
   </xs:element>
 
@@ -76,6 +82,7 @@
   <xs:element name="Host">
     <xs:complexType>
       <xs:attribute name="Name" type="t:ST_DomainNameWithStarSubDomain" use="required"/>
+      <xs:attribute ref="uap11:Path" use="optional"/>
     </xs:complexType>
   </xs:element>
 
@@ -172,6 +179,7 @@
     <xs:attribute name="TaskId" type="t:ST_NonEmptyString" use="required"/>
     <xs:attribute name="Enabled" type="xs:boolean" use="optional"/>
     <xs:attribute name="DisplayName" type="t:ST_DisplayName" use="optional"/>
+    <xs:attribute ref="uap11:UserConfigurable" use="optional"/>
   </xs:complexType>
 
   <xs:complexType name="CT_AppExecutionAlias">
@@ -186,6 +194,7 @@
     </xs:sequence>
     <xs:attribute ref="desktop4:Subsystem" use="optional"/>
     <xs:attribute ref="iot2:Subsystem" use="optional"/>
+    <xs:attribute ref="uap10:Subsystem" use="optional"/>
   </xs:complexType>
 
   <xs:element name="DriverDependency">

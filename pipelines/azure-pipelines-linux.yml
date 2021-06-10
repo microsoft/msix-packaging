@@ -86,6 +86,8 @@ jobs:
         src/msix/AppxPackaging.hpp
         src/msix/MSIXWindows.hpp
         src/msix/MsixErrors.hpp
+        Package.nuspec
+        build/**
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
     condition: succeededOrFailed()
 
