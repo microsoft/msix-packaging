@@ -16,6 +16,12 @@ namespace Microsoft.Msix.Utils.AppxPackaging
     {
         private IAppxBundleManifestReader manifestReader;
 
+        // Optional packages are populated lazily instead of during construction.
+        // This ensures that the metadata object can constructed on OS versions
+        // where IAppxBundleManifestReader2 was not yet available.
+        private IList<ExternalPackageReference> optionalAppxPackages = null;
+        private IList<ExternalPackageReference> optionalAppxBundles = null;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AppxBundleMetadata"/> class.
         /// </summary>
@@ -69,12 +75,34 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         /// Gets the list of all the physical optional msix packages referenced by this bundle, which don't belong to
         /// a physical optional bundle file.
         /// </summary>
-        public IList<ExternalPackageReference> OptionalAppxPackages { get; private set; } = new List<ExternalPackageReference>();
+        public IList<ExternalPackageReference> OptionalAppxPackages
+        {
+            get
+            {
+                if (this.optionalAppxPackages == null)
+                {
+                    this.PopulateOptionalAppxPackagesAndBundles();
+                }
+
+                return this.optionalAppxPackages;
+            }
+        }
 
         /// <summary>
         /// Gets the list of all the physical optional bundles referenced by this bundle.
         /// </summary>
-        public IList<ExternalPackageReference> OptionalAppxBundles { get; private set; } = new List<ExternalPackageReference>();
+        public IList<ExternalPackageReference> OptionalAppxBundles
+        {
+            get
+            {
+                if (this.optionalAppxBundles == null)
+                {
+                    this.PopulateOptionalAppxPackagesAndBundles();
+                }
+
+                return this.optionalAppxBundles;
+            }
+        }
 
         private void Initialize(string filePath)
         {
@@ -108,7 +136,6 @@ namespace Microsoft.Msix.Utils.AppxPackaging
             this.PopulateCommonFields();
 
             this.PopulateChildAppxPackages();
-            this.PopulateOptionalAppxPackagesAndBundles();
         }
 
         /// <summary>
@@ -157,10 +184,13 @@ namespace Microsoft.Msix.Utils.AppxPackaging
         }
 
         /// <summary>
-        /// Reads the manifest and populates the OptionalAppxBundlesRelativePaths and OptionalAppxPackagesRelativePaths lists.
+        /// Reads the manifest and populates the OptionalAppxBundles and OptionalAppxPackages lists.
         /// </summary>
         private void PopulateOptionalAppxPackagesAndBundles()
         {
+            this.optionalAppxPackages = new List<ExternalPackageReference>();
+            this.optionalAppxBundles = new List<ExternalPackageReference>();
+
             IAppxBundleManifestReader2 bundleManifestReader2 = (IAppxBundleManifestReader2)this.manifestReader;
 
             // Iterate over all OptionalBundle elements in the manifest

@@ -155,7 +155,7 @@ namespace UtilsTests
                 thread.Start();
 
                 // Give some time for the process to start and validate output
-                Thread.Sleep(2000);
+                Thread.Sleep(4000);
                 string stdOut = string.Join(string.Empty, processRunner.StandardOutput);
                 Assert.IsTrue(stdOut.Contains("Process Starting"), "Verifying process start message");
 
@@ -227,7 +227,7 @@ namespace UtilsTests
                 thread.Start();
 
                 // Give some time for the process to start and validate output
-                Thread.Sleep(2000);
+                Thread.Sleep(4000);
                 string stdOut = string.Join(string.Empty, processRunner.StandardOutput);
                 Assert.IsTrue(stdOut.Contains("Process Starting"), "Verifying process start message");
 
