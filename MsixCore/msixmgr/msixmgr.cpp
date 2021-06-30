@@ -334,10 +334,11 @@ int main(int argc, char * argv[])
                 }
 
                 // Create a temporary directory to unpack package(s) since we cannot unpack to the CIM directly.
+                // Append long path prefix to temporary directory path to handle paths that exceed the maximum path length limit
                 std::wstring currentDirectory = std::filesystem::current_path();
                 std::wstring uniqueIdString;
                 RETURN_IF_FAILED(CreateGUIDString(&uniqueIdString));
-                std::wstring tempDirPathString = currentDirectory + L"\\" + uniqueIdString;
+                std::wstring tempDirPathString = L"\\\\?\\" + currentDirectory + L"\\" + uniqueIdString;
                 std::filesystem::path tempDirPath(tempDirPathString);
 
                 std::error_code createDirectoryErrorCode;
