@@ -531,10 +531,15 @@ Command CreateUnbundleCommand()
             Option{ "-pfn", "Unpacks all files to a subdirectory under the output path, named after the package full name." },
             Option{ "-ac", "Allows any certificate. By default the signature origin must be known." },
             Option{ "-ss", "Skips enforcement of signed packages. By default packages must be signed." },
-            Option{ "-sl", "Skips matching packages with the language of the system. By default unpacked resources packages will match the system languages." },
-            Option{ "-sp", "Skips matching packages with of the same system. By default unpacked application packages will only match the platform." },
+            Option{ "-sl", "Skips matching packages with the language of the system. "
+                           "By default unpacked resources packages will match the system languages." },
+            Option{ "-sp", "Skips matching packages with of the same system. "
+                           "By default unpacked application packages will only match the platform." },
             Option{ "-extract-all", "Extracts all packages from the bundle." },
-            Option{ "-pfn-flat", "Unpacks bundle's files to a subdirectory under the specified output path, named after the package full name. Unpacks packages to subdirectories also under the specified output path, named after the package full name. By default unpacked packages will be nested inside the bundle folder." },
+            Option{ "-pfn-flat", "Unpacks bundle's files to a subdirectory under the specified output path, "
+                                 "named after the package full name. Unpacks packages to subdirectories also "
+                                 "under the specified output path, named after the package full name. "
+                                 "By default unpacked packages will be nested inside the bundle folder." },
             Option{ TOOL_HELP_COMMAND_STRING, "Displays this help text." },
         }
     };
