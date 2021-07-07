@@ -38,7 +38,7 @@ Depending on the platform for which the MSIX shared library (MSIX.DLL | libmsix.
 more of the following dependencies may be statically linked into the binary:
 
 * [ZLib Tag v1.2.11 Commit cacf7f1d4e3d44d871b605da3b647f07d718623f](https://github.com/madler/zlib/releases/tag/v1.2.11)
-* [Xerces-C Tag Xerces-C_3_2_0 Commit dffc3028df8ea44985c92f2df28115860e39e344](https://github.com/apache/xerces-c/releases/tag/Xerces-C_3_2_0)
+* [Xerces-C Tag v3.2.1 Commit 9ac2984508eff312585b86b2a89850a439b5650b](https://github.com/apache/xerces-c/releases/tag/v3.2.1)
 * [OpenSSL Tag OpenSSL_1_0_2q Commit 5707219a6aae8052cb98aa361d115be01b8fd894](https://github.com/openssl/openssl/releases/tag/OpenSSL_1_0_2q)
 * [Android NDK](https://developer.android.com/ndk)
 
