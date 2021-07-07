@@ -1,0 +1,56 @@
+#!c:/cygwin64/bin/bash
+
+set -e
+set -x
+
+PATH="/cygdrive/c/cygwin64/bin:$PATH"
+
+download_file()
+(
+    url="$1"
+    file="$2"
+    hash="$3"
+    hash_output="${hash} *$file"
+
+  if [ ! -f "$file" ]; then
+    echo "Downloading $file"
+  else
+    if [ "$(sha512sum "$file")" != "$hash_output" ]; then
+      echo "$file sha512sum mismatch"
+    fi
+  fi
+
+  if [ ! -f "$file" ] || [ "$(sha512sum "$file")" != "$hash_output" ]; then
+    rm -f "$file"
+    curl -L -o "$file" "$url"
+  fi
+  [ "$(sha512sum "$file")" = "$hash_output" ]
+)
+
+icu_source=icu4c-60_2-src.zip
+icu_url="http://download.icu-project.org/files/icu4c/60.2/${icu_source}"
+icu_hash="63232d6c15f725a60c14465b0479995b488b51288517e522abebdf5996fac7f214c424520bdbedb4c0801ea85ea7ad35de13e00512a25c1399cb827b0aca4744"
+
+ninja_binary="ninja-win.zip"
+ninja_url="https://github.com/ninja-build/ninja/releases/download/v1.8.2/${ninja_binary}"
+ninja_hash="9b9ce248240665fcd6404b989f3b3c27ed9682838225e6dc9b67b551774f251e4ff8a207504f941e7c811e7a8be1945e7bcb94472a335ef15e23a0200a32e6d5"
+
+
+if [ "$msgloader" = "icu" ] || [ "$transcoder" = icu ]; then
+    cd "$AV_XERCES_CYG_DOWNLOAD"
+    download_file "$icu_url" "$icu_source" "$icu_hash"
+fi
+
+if [ "$msgloader" = "icu" ] || [ "$transcoder" = icu ]; then
+    cd "$AV_PROJECTS"
+    rm -rf icu
+    7z x "${AV_XERCES_DOWNLOAD}\\$icu_source"
+fi
+
+if [ "$generator" = "Ninja" ]; then
+    cd "$AV_XERCES_CYG_DOWNLOAD"
+    download_file "$ninja_url" "$ninja_binary" "$ninja_hash"
+    cd "$AV_XERCES_CYG_TOOLS"
+    rm -f ninja
+    7z e "${AV_XERCES_DOWNLOAD}\\$ninja_binary"
+fi
