@@ -619,13 +619,9 @@ Command CreateBundleCommand()
 
     result.SetDescription({
         "Creates an app bundle at <output bundle name> by adding all files from",
-        "either <content directory>(including subfolders) or a list of files within"
-        "<mapping file>.If either source contains a bundle manifest, it will be"
-        "ignored."
-
-        "Using / p will result in the bundle being unencrypted, while using / ep will"
-        "result in the bundle being encrypted.If you use / ep you must specify"
-        "either / kt or /kf.",
+        "either <content directory>(including subfolders) or a list of files within",
+        "<mapping file>.If either source contains a bundle manifest, it will be",
+        "ignored.",
         });
 
     result.SetInvocationFunc([](const Invocation& invocation)
