@@ -78,11 +78,12 @@ endif()
 
 check_include_file_cxx(wchar.h HAVE_WCHAR_H)
 check_function_exists(mblen HAVE_MBLEN)
+check_function_exists(mbrlen HAVE_MBRLEN)
 check_function_exists(wcstombs HAVE_WCSTOMBS)
 check_function_exists(mbstowcs HAVE_MBSTOWCS)
 
 set(iconv_available 0)
-if(HAVE_WCHAR_H AND HAVE_MBLEN AND HAVE_WCSTOMBS AND HAVE_MBSTOWCS)
+if(HAVE_WCHAR_H AND (HAVE_MBLEN OR HAVE_MBRLEN) AND HAVE_WCSTOMBS AND HAVE_MBSTOWCS)
   set(iconv_available 1)
   list(APPEND transcoders iconv)
 endif()
