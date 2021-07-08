@@ -135,38 +135,22 @@ int _wcsicmp(LPCWSTR comp1, LPCWSTR comp2)
 
 static inline void xmlch_wcsupr(XMLCh* str)
 {
-#ifdef XERCES_USE_CHAR16_T
     _wcsupr(reinterpret_cast<LPWSTR>(str));
-#else
-    _wcsupr(str);
-#endif
 }
 
 static inline int xmlch_wcsicmp(const XMLCh* comp1, const XMLCh* comp2)
 {
-#ifdef XERCES_USE_CHAR16_T
     return _wcsicmp(reinterpret_cast<LPCWSTR>(comp1), reinterpret_cast<LPCWSTR>(comp2));
-#else
-    return _wcsicmp(comp1, comp2);
-#endif
 }
 
 static inline int xmlch_wcsnicmp(const XMLCh* comp1, const XMLCh* comp2, const XMLSize_t maxChars)
 {
-#ifdef XERCES_USE_CHAR16_T
     return _wcsnicmp(reinterpret_cast<LPCWSTR>(comp1), reinterpret_cast<LPCWSTR>(comp2), maxChars);
-#else
-    return _wcsnicmp(comp1, comp2, maxChars);
-#endif
 }
 
 static inline void xmlch_wcslwr(XMLCh* str)
 {
-#ifdef XERCES_USE_CHAR16_T
     _wcslwr(reinterpret_cast<LPWSTR>(str));
-#else
-    _wcslwr(str);
-#endif
 }
 
 

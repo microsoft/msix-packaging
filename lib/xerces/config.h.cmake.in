@@ -481,9 +481,6 @@
 /* Define to use the Windows transcoder */
 #cmakedefine XERCES_USE_TRANSCODER_WINDOWS 1
 
-/* Define to use the Windows transcode */
-#cmakedefine XERCES_USE_CHAR16_T 1
-
 /* Define to the 16 bit type used to represent Xerces UTF-16 characters */
 #define XERCES_XMLCH_T @XERCES_XMLCH_T@
 

@@ -108,9 +108,11 @@ add_test_executable(NetAccessorTest
 #  src/ParserTest/ParserTest_Parser.hpp
 #)
 
-add_test_executable(ThreadTest
-  src/ThreadTest/ThreadTest.cpp
-)
+if(NOT XERCES_USE_MUTEXMGR_NOTHREAD)
+  add_test_executable(ThreadTest
+    src/ThreadTest/ThreadTest.cpp
+  )
+endif()
 
 # Fails to compile under gcc 4 (ambiguous calls to NullPointerException)
 # dcargill says this is obsolete and we can delete it.
@@ -182,22 +184,24 @@ add_xerces_test(InitTermTest1    COMMAND InitTermTest personal.xml)
 add_xerces_test(InitTermTest2    COMMAND InitTermTest -n -s personal-schema.xml)
 add_xerces_test(InitTermTest3    COMMAND InitTermTest -n -s -f personal-schema.xml)
 
-add_xerces_test(ThreadTest       COMMAND ThreadTest EXPECT_FAIL)
-add_xerces_test(ThreadTest1      COMMAND ThreadTest -parser=sax               -v=never  -quiet -threads 10 -time 20 personal.xml)
-add_xerces_test(ThreadTest2      COMMAND ThreadTest -parser=dom               -v=never  -quiet -threads 10 -time 20 personal.xml)
-add_xerces_test(ThreadTest3      COMMAND ThreadTest -parser=sax2              -v=never  -quiet -threads 10 -time 20 personal.xml)
-add_xerces_test(ThreadTest4      COMMAND ThreadTest -parser=sax               -v=always -quiet -threads 10 -time 20 personal.xml)
-add_xerces_test(ThreadTest5      COMMAND ThreadTest -parser=dom               -v=always -quiet -threads 10 -time 20 personal.xml)
-add_xerces_test(ThreadTest6      COMMAND ThreadTest -parser=sax2              -v=always -quiet -threads 10 -time 20 personal.xml)
-add_xerces_test(ThreadTest7      COMMAND ThreadTest -parser=sax  -gc          -v=always -quiet -threads 10 -time 20 personal.xml)
-add_xerces_test(ThreadTest8      COMMAND ThreadTest -parser=dom  -gc          -v=always -quiet -threads 10 -time 20 personal.xml)
-add_xerces_test(ThreadTest9      COMMAND ThreadTest -parser=sax2 -gc          -v=always -quiet -threads 10 -time 20 personal.xml)
-add_xerces_test(ThreadTest10     COMMAND ThreadTest -parser=sax  -n -s -f     -v=always -quiet -threads 10 -time 20 personal-schema.xml)
-add_xerces_test(ThreadTest11     COMMAND ThreadTest -parser=dom  -n -s -f     -v=always -quiet -threads 10 -time 20 personal-schema.xml)
-add_xerces_test(ThreadTest12     COMMAND ThreadTest -parser=sax2 -n -s -f     -v=always -quiet -threads 10 -time 20 personal-schema.xml)
-add_xerces_test(ThreadTest13     COMMAND ThreadTest -parser=sax  -gc -n -s -f -v=always -quiet -threads 10 -time 20 personal-schema.xml)
-add_xerces_test(ThreadTest14     COMMAND ThreadTest -parser=dom  -gc -n -s -f -v=always -quiet -threads 10 -time 20 personal-schema.xml)
-add_xerces_test(ThreadTest15     COMMAND ThreadTest -parser=sax2 -gc -n -s -f -v=always -quiet -threads 10 -time 20 personal-schema.xml)
+if(NOT XERCES_USE_MUTEXMGR_NOTHREAD)
+  add_xerces_test(ThreadTest       COMMAND ThreadTest EXPECT_FAIL)
+  add_xerces_test(ThreadTest1      COMMAND ThreadTest -parser=sax               -v=never  -quiet -threads 10 -time 20 personal.xml)
+  add_xerces_test(ThreadTest2      COMMAND ThreadTest -parser=dom               -v=never  -quiet -threads 10 -time 20 personal.xml)
+  add_xerces_test(ThreadTest3      COMMAND ThreadTest -parser=sax2              -v=never  -quiet -threads 10 -time 20 personal.xml)
+  add_xerces_test(ThreadTest4      COMMAND ThreadTest -parser=sax               -v=always -quiet -threads 10 -time 20 personal.xml)
+  add_xerces_test(ThreadTest5      COMMAND ThreadTest -parser=dom               -v=always -quiet -threads 10 -time 20 personal.xml)
+  add_xerces_test(ThreadTest6      COMMAND ThreadTest -parser=sax2              -v=always -quiet -threads 10 -time 20 personal.xml)
+  add_xerces_test(ThreadTest7      COMMAND ThreadTest -parser=sax  -gc          -v=always -quiet -threads 10 -time 20 personal.xml)
+  add_xerces_test(ThreadTest8      COMMAND ThreadTest -parser=dom  -gc          -v=always -quiet -threads 10 -time 20 personal.xml)
+  add_xerces_test(ThreadTest9      COMMAND ThreadTest -parser=sax2 -gc          -v=always -quiet -threads 10 -time 20 personal.xml)
+  add_xerces_test(ThreadTest10     COMMAND ThreadTest -parser=sax  -n -s -f     -v=always -quiet -threads 10 -time 20 personal-schema.xml)
+  add_xerces_test(ThreadTest11     COMMAND ThreadTest -parser=dom  -n -s -f     -v=always -quiet -threads 10 -time 20 personal-schema.xml)
+  add_xerces_test(ThreadTest12     COMMAND ThreadTest -parser=sax2 -n -s -f     -v=always -quiet -threads 10 -time 20 personal-schema.xml)
+  add_xerces_test(ThreadTest13     COMMAND ThreadTest -parser=sax  -gc -n -s -f -v=always -quiet -threads 10 -time 20 personal-schema.xml)
+  add_xerces_test(ThreadTest14     COMMAND ThreadTest -parser=dom  -gc -n -s -f -v=always -quiet -threads 10 -time 20 personal-schema.xml)
+  add_xerces_test(ThreadTest15     COMMAND ThreadTest -parser=sax2 -gc -n -s -f -v=always -quiet -threads 10 -time 20 personal-schema.xml)
+endif()
 
 add_xerces_test(MemHandlerTest   COMMAND MemHandlerTest EXPECT_FAIL)
 add_xerces_test(MemHandlerTest1  COMMAND MemHandlerTest -v=always -n -r=2 personal.xml)

@@ -1466,7 +1466,7 @@ const XMLCh XMLUni::fgDOMDisallowDoctype[] =
 {
         chLatin_d, chLatin_i, chLatin_s, chLatin_a, chLatin_l, chLatin_l, chLatin_o
     ,   chLatin_w, chDash, chLatin_d, chLatin_o, chLatin_c, chLatin_t, chLatin_y
-    ,   chLatin_e, chNull
+    ,   chLatin_p, chLatin_e, chNull
 };
 
 const XMLCh XMLUni::fgDOMElementContentWhitespace[] =

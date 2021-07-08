@@ -4,4 +4,4 @@ set -e
 
 . ../scripts/run-test
 
-run_test ThreadTest1 pass "" tests/ThreadTest -parser=dom  -gc -v=always -quiet -threads 10 -time 20 personal.xml
+run_test ThreadTest9 pass "" tests/ThreadTest -parser=dom  -gc -v=always -quiet -threads 10 -time 20 personal.xml

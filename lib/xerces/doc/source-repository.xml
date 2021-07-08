@@ -50,10 +50,10 @@ svn co https://svn.apache.org/repos/asf/xerces/c/trunk
 svn co https://svn.apache.org/repos/asf/xerces/c/branches/xerces-3.1
 </source>
 
-    <p>To check out the code for the 3.2.0 release, execute:</p>
+    <p>To check out the code for the &XercesC3Version; release, execute:</p>
 
 <source>
-svn co https://svn.apache.org/repos/asf/xerces/c/tags/Xerces-C_3_2_0
+svn co https://svn.apache.org/repos/asf/xerces/c/tags/Xerces-C_&XercesC3UVersion;
 </source>
 
     <p>You can also browse the repository and examine individual

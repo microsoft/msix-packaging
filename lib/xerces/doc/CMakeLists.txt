@@ -17,10 +17,15 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Install docs
+# Install docs.  Install from source tree if pre-generated, then the
+# build tree if generated during the build.
+file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html")
 install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/html"
   DESTINATION "${CMAKE_INSTALL_DOCDIR}"
   COMPONENT "development")
+install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/html"
+  DESTINATION "${CMAKE_INSTALL_DOCDIR}"
+    COMPONENT "development")
 
 # Add createdocs target (if Java is available, plus the needed jars)
 find_package(Java COMPONENTS Runtime)
@@ -34,14 +39,20 @@ if(Java_FOUND
     set(cpsep ";")
   endif()
   set(classpath "${PROJECT_SOURCE_DIR}/tools/jars/stylebook-1.0-b2.jar${cpsep}${PROJECT_SOURCE_DIR}/tools/jars/xalan.jar${cpsep}${PROJECT_SOURCE_DIR}/tools/jars/xerces.jar")
+  file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/doc/style/dtd}")
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/style/dtd/entities.ent.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/style/dtd/entities.ent @ONLY)
   add_custom_target(createdocs
+    COMMAND "${CMAKE_COMMAND}" -E copy_directory
+      ${CMAKE_CURRENT_SOURCE_DIR}/style
+      ${CMAKE_CURRENT_BINARY_DIR}/style
     COMMAND "${Java_JAVA_EXECUTABLE}" -Djava.awt.headless=true
     -classpath "${classpath}"
     org.apache.stylebook.StyleBook
-    "targetDirectory=${CMAKE_CURRENT_SOURCE_DIR}/html"
+    "targetDirectory=${CMAKE_CURRENT_BINARY_DIR}/html"
     ${CMAKE_CURRENT_SOURCE_DIR}/xerces-c_book.xml
-    ${CMAKE_CURRENT_SOURCE_DIR}/style
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    ${CMAKE_CURRENT_BINARY_DIR}/style
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
     )
   set_target_properties(createdocs PROPERTIES FOLDER "Documentation")
 endif()
@@ -49,9 +60,14 @@ endif()
 # Add createapidocs target (if doxygen is available)
 find_program(DOXYGEN_EXECUTABLE doxygen)
 if(DOXYGEN_EXECUTABLE)
+  set(VERSION "${PROJECT_VERSION}")
+  set(abs_top_srcdir "${PROJECT_SOURCE_DIR}")
+  set(abs_top_builddir "${PROJECT_BINARY_DIR}")
+  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/Doxyfile.in
+                 ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile @ONLY)
   add_custom_target(createapidocs
     COMMAND "${DOXYGEN_EXECUTABLE}" Doxyfile
-    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
     )
   set_target_properties(createapidocs PROPERTIES FOLDER "Documentation")
 endif()

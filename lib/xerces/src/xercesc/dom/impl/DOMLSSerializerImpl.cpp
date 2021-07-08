@@ -1737,13 +1737,29 @@ bool DOMLSSerializerImpl::isNamespaceBindingActive(const XMLCh* prefix, const XM
 void DOMLSSerializerImpl::ensureValidString(const DOMNode* nodeToWrite, const XMLCh* string)
 {
     // XERCESC-1854: prevent illegal characters from being written
+    // XERCESC-2130: allow surrogates
     if(string==0)
         return;
     const XMLCh* cursor=string;
     while(*cursor!=0)
     {
         if((fIsXml11 && !XMLChar1_1::isXMLChar(*cursor)) || (!fIsXml11 && !XMLChar1_0::isXMLChar(*cursor)))
-            reportError(nodeToWrite, DOMError::DOM_SEVERITY_FATAL_ERROR, XMLDOMMsg::INVALID_CHARACTER_ERR);
+        {
+            if((*cursor >= 0xD800) && (*cursor <= 0xDBFF))
+            {
+                XMLCh leadingSurrogate = *cursor;
+                cursor++;
+                if(0==*cursor || (fIsXml11 && !XMLChar1_1::isXMLChar(leadingSurrogate, *cursor)) || (!fIsXml11 && !XMLChar1_0::isXMLChar(leadingSurrogate, *cursor)))
+                {
+                    reportError(nodeToWrite, DOMError::DOM_SEVERITY_FATAL_ERROR, XMLDOMMsg::INVALID_CHARACTER_ERR);
+                    return; // leave if reportError does not throw
+                }
+            }
+            else
+            {
+                reportError(nodeToWrite, DOMError::DOM_SEVERITY_FATAL_ERROR, XMLDOMMsg::INVALID_CHARACTER_ERR);
+            }
+        }
         cursor++;
     }
 }

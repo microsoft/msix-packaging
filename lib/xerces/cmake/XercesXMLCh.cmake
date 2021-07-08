@@ -26,10 +26,6 @@ include(CheckCXXSourceCompiles)
 include(CheckTypeSize)
 include(XercesIntTypes)
 
-set(XERCES_XMLCH_T ${XERCES_U16BIT_INT})
-set(XERCES_USE_CHAR16_T 0)
-set(XERCES_INCLUDE_WCHAR_H 0)
-
 check_cxx_source_compiles("
 int main() {
   const char16_t *unicode = u\"Test ünícodè → ©\";
@@ -41,19 +37,16 @@ if(HAVE_STD_char16_t)
   check_type_size("wchar_t" SIZEOF_WCHAR_T LANGUAGE CXX)
 
   if(NOT SIZEOF_CHAR16_T EQUAL 2)
-    message(FATAL_ERROR "char16_t is not a 16-bit type")
+    message(WARNING "char16_t is not a 16-bit type")
+  elseif(WIN32 AND NOT SIZEOF_WCHAR_T EQUAL 2)
+    message(WARNING "wchar_t is not a 16-bit type, and size differs from char16_t")
+  else()
+    list(APPEND xmlch_types char16_t)
   endif()
-  if(WIN32)
-    if(NOT SIZEOF_WCHAR_T EQUAL 2)
-      message(FATAL_ERROR "wchar_t is not a 16-bit type, and size differs from char16_t")
-    endif()
-  endif()
+endif()
 
-  set(XERCES_XMLCH_T char16_t)
-  set(XERCES_USE_CHAR16_T 1)
-else()
-  if(WIN32)
-    check_cxx_source_compiles("
+if(WIN32)
+  check_cxx_source_compiles("
 #include <windows.h>
 
 wchar_t file[] = L\"dummy.file\";
@@ -64,9 +57,30 @@ int main() {
 }"
       WINDOWS_wchar)
 
-    if(WINDOWS_wchar)
-      set(XERCES_XMLCH_T wchar_t)
-      set(XERCES_INCLUDE_WCHAR_H 1)
-    endif()
+  if(WINDOWS_wchar)
+    list(APPEND xmlch_types wchar_t)
   endif()
+endif()
+
+list(APPEND xmlch_types uint16_t)
+
+string(REPLACE ";" "|" xmlch_type_help "${xmlch_types}")
+list(GET xmlch_types 0 xerces_xmlch_type_default)
+set(xmlch-type "${xerces_xmlch_type_default}" CACHE STRING "XMLCh type (${xmlch_type_help})")
+set(xmlch_type "${xmlch-type}")
+
+list(FIND xmlch_types "${xmlch_type}" xmlch_type_found)
+if(xmlch_type_found EQUAL -1)
+  message(FATAL_ERROR "${xmlch_type} xmlch_type unavailable")
+endif()
+
+set(XERCES_XMLCH_T ${XERCES_U16BIT_INT})
+set(XERCES_USE_CHAR16_T 0)
+set(XERCES_INCLUDE_WCHAR_H 0)
+if(xmlch_type STREQUAL "char16_t")
+  set(XERCES_XMLCH_T char16_t)
+  set(XERCES_USE_CHAR16_T 1)
+elseif(xmlch_type STREQUAL "wchar_t")
+set(XERCES_XMLCH_T wchar_t)
+set(XERCES_INCLUDE_WCHAR_H 1)
 endif()

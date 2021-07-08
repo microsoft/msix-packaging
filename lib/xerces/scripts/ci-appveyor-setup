@@ -27,13 +27,13 @@ download_file()
   [ "$(sha512sum "$file")" = "$hash_output" ]
 )
 
-icu_source=icu4c-59_1-src.zip
-icu_url="http://download.icu-project.org/files/icu4c/59.1/${icu_source}"
-icu_hash="1d3b39678e7cc4e9794e724982886a4918642231048eb76b9f683aad5a19e0b7c52b3b9c7107cb1a3879464682c4a3a97b58ab012d082bd9e5a80c67adf8ce8b"
+icu_source=icu4c-60_2-src.zip
+icu_url="http://download.icu-project.org/files/icu4c/60.2/${icu_source}"
+icu_hash="63232d6c15f725a60c14465b0479995b488b51288517e522abebdf5996fac7f214c424520bdbedb4c0801ea85ea7ad35de13e00512a25c1399cb827b0aca4744"
 
 ninja_binary="ninja-win.zip"
-ninja_url="https://github.com/ninja-build/ninja/releases/download/v1.7.2/${ninja_binary}"
-ninja_hash="cccab9281b274c564f9ad77a2115be1f19be67d7b2ee14a55d1db1b27f3b68db8e76076e4f804b61eb8e573e26a8ecc9985675a8dcf03fd7a77b7f57234f1393"
+ninja_url="https://github.com/ninja-build/ninja/releases/download/v1.8.2/${ninja_binary}"
+ninja_hash="9b9ce248240665fcd6404b989f3b3c27ed9682838225e6dc9b67b551774f251e4ff8a207504f941e7c811e7a8be1945e7bcb94472a335ef15e23a0200a32e6d5"
 
 
 if [ "$msgloader" = "icu" ] || [ "$transcoder" = icu ]; then

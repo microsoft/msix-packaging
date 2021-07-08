@@ -43,6 +43,7 @@ environment:
       netaccessor: curl
       msgloader: inmemory
       transcoder: iconv
+      xmlch: uint16_t
     - compiler: cygwin
       configuration: Debug
       generator: Unix Makefiles
@@ -51,6 +52,7 @@ environment:
       netaccessor:
       msgloader:
       transcoder:
+      xmlch: char16_t
     - compiler: mingw
       configuration: Release
       generator: Ninja
@@ -59,6 +61,7 @@ environment:
       netaccessor:
       msgloader:
       transcoder: windows
+      xmlch: wchar_t
     - compiler: mingw
       configuration: Debug
       generator: Ninja
@@ -67,6 +70,7 @@ environment:
       netaccessor:
       msgloader:
       transcoder: iconv
+      xmlch: uint16_t
     - compiler: vc14
       configuration: Release
       generator: Visual Studio 14 2015 Win64
@@ -75,6 +79,8 @@ environment:
       netaccessor:
       msgloader: icu
       transcoder: windows
+      xmlch: wchar_t
+      mfc: ON
     - compiler: vc14
       configuration: Debug
       generator: Visual Studio 14 2015 Win64
@@ -83,6 +89,8 @@ environment:
       netaccessor: winsock
       msgloader: inmemory
       transcoder: icu
+      xmlch: char16_t
+      mfc: OFF
 
 cache:
   - 'c:\projects\download -> scripts/ci-appveyor-setup'
@@ -99,6 +107,8 @@ platform: x64
 
 init:
   - git config --global core.autocrlf input
+
+before_build:
   - 'FOR /F "tokens=* USEBACKQ" %%F IN (`C:\cygwin64\bin\cygpath -u %AV_XERCES_DOWNLOAD%`) DO SET AV_XERCES_CYG_DOWNLOAD=%%F'
   - 'FOR /F "tokens=* USEBACKQ" %%F IN (`C:\cygwin64\bin\cygpath -u %AV_XERCES_TOOLS%`) DO SET AV_XERCES_CYG_TOOLS=%%F'
   - 'FOR /F "tokens=* USEBACKQ" %%F IN (`C:\cygwin64\bin\cygpath -u %AV_XERCES_SOURCE%`) DO SET AV_XERCES_CYG_SOURCE=%%F'
@@ -108,7 +118,7 @@ init:
   - 'if %compiler%==cygwin C:\Cygwin64\setup-x86_64 -q -R C:\Cygwin64 -s http://cygwin.mirror.constant.com -l %AV_XERCES_DOWNLOAD%\cygwin -P libcurl-devel,cmake'
   - if [%msgloader%] == [icu] set AV_ICU_BUILD=true
   - if [%transcoder%] == [icu] set AV_ICU_BUILD=true
-  - 'if EXIST "%AV_PROJECTS%\icu" AV_ICU_BUILD=false'
+  - 'if EXIST "%AV_PROJECTS%\icu" set AV_ICU_BUILD=false'
   - 'set "PATH=C:\Program Files (x86)\cmake\bin;%AV_XERCES_TOOLS%;%PATH%"'
   - 'if %compiler%==cygwin set "PATH=C:\Cygwin64\bin;%PATH%"'
   - 'if %compiler%==mingw set "PATH=C:\mingw-w64\x86_64-6.3.0-posix-seh-rt_v5-rev1\mingw64\bin;%PATH%"'
@@ -117,12 +127,12 @@ init:
   - if NOT [%netaccessor%] == [] set "AV_CMAKE_ARGS=%AV_CMAKE_ARGS% -Dnetwork-accessor=%netaccessor%"
   - if NOT [%msgloader%] == [] set "AV_CMAKE_ARGS=%AV_CMAKE_ARGS% -Dmessage-loader=%msgloader%"
   - if NOT [%transcoder%] == [] set "AV_CMAKE_ARGS=%AV_CMAKE_ARGS% -Dtranscoder=%transcoder%"
+  - if NOT [%xmlch%] == [] set "AV_CMAKE_ARGS=%AV_CMAKE_ARGS% -Dxmlch-type=%xmlch%"
+  - if NOT [%mfc%] == [] set "AV_CMAKE_ARGS=%AV_CMAKE_ARGS% -Dmfc-debug=%mfc%"
   - set "AV_XERCES_CMAKE_SOURCE=%AV_XERCES_SOURCE%"
   - set "AV_XERCES_CMAKE_INSTALL=%AV_XERCES_INSTALL%"
   - 'if %compiler%==cygwin set "AV_XERCES_CMAKE_SOURCE=%AV_XERCES_CYG_SOURCE%'
   - 'if %compiler%==cygwin set "AV_XERCES_CMAKE_INSTALL=%AV_XERCES_CYG_INSTALL%'
-
-before_build:
   - 'C:\cygwin64\bin\bash %AV_XERCES_CYG_SOURCE%/scripts/ci-appveyor-setup'
   - set ICU_PLATFORM=x64
   - if [%platform%] == [x86] set ICU_PLATFORM=Win32
@@ -150,7 +160,3 @@ after_build:
 before_test:
   - cd %AV_XERCES_BUILD%
   - ctest -V -C %configuration%
-
-artifacts:
-  - path: xerces-c.zip
-    name: xerces-c.zip

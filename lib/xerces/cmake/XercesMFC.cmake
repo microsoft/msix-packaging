@@ -17,29 +17,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# Option for selection of shared or static libraries, exported as
-# cache variable
-
-set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared libraries")
-
-# Add a d postfix to Debug libraries on Windows
+# MFC Support
 
 if(MSVC)
-  set(CMAKE_DEBUG_POSTFIX "d")
-endif()
+  option(mfc-debug "MFC debug support" ON)
 
-# DLL export and import macros
-
-set(XERCES_PLATFORM_EXPORT)
-set(XERCES_PLATFORM_IMPORT)
-set(XERCES_DLL_EXPORT)
-set(XERCES_STATIC_LIBRARY)
-if(NOT BUILD_SHARED_LIBS)
-  set(XERCES_STATIC_LIBRARY 1)
-else()
-  if(WIN32)
-    set(XERCES_PLATFORM_EXPORT "__declspec(dllexport)")
-    set(XERCES_PLATFORM_IMPORT "__declspec(dllimport)")
-    set(XERCES_DLL_EXPORT 1)
-  endif()
+  set(XERCES_MFC_SUPPORT ${mfc-debug})
 endif()

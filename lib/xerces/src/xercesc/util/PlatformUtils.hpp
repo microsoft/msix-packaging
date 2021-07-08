@@ -804,9 +804,9 @@ XMLPlatformUtils::alignPointerForNewBlockAllocation(XMLSize_t ptrSize)
     //    per-architecture basis. In the absense of that we
     //    take an educated guess.
 #ifdef XML_PLATFORM_NEW_BLOCK_ALIGNMENT
-    static const XMLSize_t alignment = XML_PLATFORM_NEW_BLOCK_ALIGNMENT;
+    const XMLSize_t alignment = XML_PLATFORM_NEW_BLOCK_ALIGNMENT;
 #else
-    static const XMLSize_t alignment = (sizeof(void*) >= sizeof(double)) ? sizeof(void*) : sizeof(double);
+    const XMLSize_t alignment = (sizeof(void*) >= sizeof(double)) ? sizeof(void*) : sizeof(double);
 #endif
 
     //    Calculate current alignment of pointer

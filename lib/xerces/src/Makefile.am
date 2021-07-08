@@ -19,8 +19,6 @@
 # $Id$
 #
 
-include ${top_srcdir}/version.incl
-
 DEFS += -DXERCES_BUILDING_LIBRARY
 
 #
@@ -32,7 +30,7 @@ lib_LTLIBRARIES = libxerces-c.la
 #
 AM_CPPFLAGS =
 
-libxerces_c_la_LDFLAGS = -release ${INTERFACE_VER_D}
+libxerces_c_la_LDFLAGS = -release @INTERFACE_VERSION_D@
 
 # This sets {install}/include as target for the headers
 libxerces_c_ladir = ${includedir}
@@ -47,11 +45,13 @@ ${domimpl_headers} ${framework_headers} ${internal_headers} \
 ${parsers_headers} ${sax_headers} ${sax2_headers} ${validators_headers} \
 ${xinclude_headers}
 
-# Make sure autoconf-generated Xerces_autoconf_config.hpp ends up in a
-# proper place when installed.
+# Make sure autoconf-generated Xerces_autoconf_config.hpp and
+# XercesVersion.hpp end up in a proper place when installed.
 #
 autoconfheadersdir = $(includedir)/xercesc/util
-nodist_autoconfheaders_HEADERS = ${top_builddir}/src/xercesc/util/Xerces_autoconf_config.hpp
+nodist_autoconfheaders_HEADERS = \
+	${top_builddir}/src/xercesc/util/Xerces_autoconf_config.hpp \
+	${top_builddir}/src/xercesc/util/XercesVersion.hpp
 
 # Compatibility library.
 #
@@ -60,7 +60,7 @@ EXTRA_DIST = CMakeLists.txt \
         stricmp.h strnicmp.h towlower.h towupper.h \
         xercesc/NLS \
         xercesc/util/Xerces_autoconf_config.hpp.cmake.in \
-	xercesc/util/MsgLoaders/Win32 \
+        xercesc/util/XercesVersion.hpp.cmake.in \
         xercesc/util/MsgLoaders/ICU/resources
 
 libxerces_c_la_LIBADD = ${LTLIBOBJS}
@@ -132,7 +132,7 @@ nobase_libxerces_c_la_HEADERS += ${msgicu_headers}
 AM_CPPFLAGS += ${ICU_FLAGS}
 
 # Resource shortname
-PKGNAME=xercesc_messages_${INTERFACE_VER_U}
+PKGNAME=xercesc_messages_@INTERFACE_VERSION_U@
 
 CLEANFILES = xercesc_messages.c root_res.c root.res
 BUILT_SOURCES = xercesc_messages.c root_res.c
@@ -694,7 +694,6 @@ util_headers = \
 	xercesc/util/ValueVectorOf.hpp \
 	xercesc/util/ValueVectorOf.c \
 	xercesc/util/XercesDefs.hpp \
-	xercesc/util/XercesVersion.hpp \
 	xercesc/util/XMemory.hpp \
 	xercesc/util/XML256TableTranscoder.hpp \
 	xercesc/util/XML88591Transcoder.hpp \

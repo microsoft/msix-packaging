@@ -1,7 +1,6 @@
-SUBDIRS = src tests samples
+SUBDIRS = doc src tests samples
 
-EXTRA_DIST = version.incl \
-             CMakeLists.txt \
+EXTRA_DIST = CMakeLists.txt \
              cmake \
              config.h.cmake.in \
              xerces-c.spec \
@@ -13,7 +12,6 @@ EXTRA_DIST = version.incl \
              NOTICE \
              README \
              config/pretty-make \
-             doc \
              reconf \
              scripts/createBindingsFormatFromHPP.pl \
              scripts/makeStringDefinition.pl \

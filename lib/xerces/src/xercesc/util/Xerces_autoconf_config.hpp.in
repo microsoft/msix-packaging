@@ -48,6 +48,7 @@
 // ---------------------------------------------------------------------------
 //  These defines are set by configure as appropriate for the platform.
 // ---------------------------------------------------------------------------
+
 #undef XERCES_AUTOCONF
 #undef XERCES_HAVE_CSTDINT
 #undef XERCES_HAVE_STDINT_H

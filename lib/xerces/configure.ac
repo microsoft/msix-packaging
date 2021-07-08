@@ -24,16 +24,50 @@
 #
 
 AC_PREREQ(2.60)
-AC_INIT([xerces-c],[3.2.0])
+AC_INIT([xerces-c],[3.2.1])
+INTERFACE_VERSION=3.2
+GRAMMAR_SERIALIZATION_LEVEL=7
+
+XERCES_VERSION_MAJOR=$(echo $PACKAGE_VERSION | cut -d. -f1)
+XERCES_VERSION_MINOR=$(echo $PACKAGE_VERSION | cut -d. -f2)
+XERCES_VERSION_REVISION=$(echo $PACKAGE_VERSION | cut -d. -f3)
+
+INTERFACE_VERSION_MAJOR=$(echo $INTERFACE_VERSION | cut -d. -f1)
+INTERFACE_VERSION_MINOR=$(echo $INTERFACE_VERSION | cut -d. -f2)
+
+INTERFACE_VERSION_D="${INTERFACE_VERSION_MAJOR}.${INTERFACE_VERSION_MINOR}"
+INTERFACE_VERSION_U="${INTERFACE_VERSION_MAJOR}_${INTERFACE_VERSION_MINOR}"
+
+AC_SUBST([XERCES_VERSION_MAJOR])
+AC_SUBST([XERCES_VERSION_MINOR])
+AC_SUBST([XERCES_VERSION_REVISION])
+AC_SUBST([INTERFACE_VERSION_MAJOR])
+AC_SUBST([INTERFACE_VERSION_MINOR])
+AC_SUBST([INTERFACE_VERSION_D])
+AC_SUBST([INTERFACE_VERSION_U])
+
+AC_DEFINE_UNQUOTED([XERCES_VERSION_MAJOR], $XERCES_VERSION_MAJOR, [Definition of Xerces major version])
+AC_DEFINE_UNQUOTED([XERCES_VERSION_MINOR], $XERCES_VERSION_MINOR, [Definition of Xerces minor version])
+AC_DEFINE_UNQUOTED([XERCES_VERSION_REVISION], $XERCES_VERSION_REVISION, [Definition of Xerces patch version])
+
+AC_DEFINE_UNQUOTED([INTERFACE_VERSION_MAJOR], $INTERFACE_VERSION_MAJOR, [Definition of Xerces interface major version])
+AC_DEFINE_UNQUOTED([INTERFACE_VERSION_MINOR], $INTERFACE_VERSION_MINOR, [Definition of Xerces interface minor version])
+
+AC_DEFINE_UNQUOTED([XERCES_GRAMMAR_SERIALIZATION_LEVEL], $GRAMMAR_SERIALIZATION_LEVEL, [Definition of Xerces grammar serialization level])
+
 AC_CONFIG_SRCDIR([src/Makefile.am])
 AC_CONFIG_LIBOBJ_DIR([src])
 AC_CONFIG_AUX_DIR([config])
 AC_CONFIG_MACRO_DIR([m4])
 AC_CONFIG_HEADERS([config.h src/xercesc/util/Xerces_autoconf_config.hpp])
-AC_CONFIG_FILES([Makefile \
-                 src/Makefile \
-                 tests/Makefile \
-                 samples/Makefile \
+AC_CONFIG_HEADER([src/xercesc/util/XercesVersion.hpp])
+AC_CONFIG_FILES([Makefile
+                 doc/Makefile
+                 doc/Doxyfile
+                 doc/style/dtd/entities.ent
+                 src/Makefile
+                 tests/Makefile
+                 samples/Makefile
 		 xerces-c.pc
                  scripts/run-test])
 
@@ -329,46 +363,7 @@ AC_DEFINE_UNQUOTED([XERCES_PLATFORM_IMPORT], [$platform_import], [Define as the 
 AS_IF([test ! $ac_cv_cxx_have_bool],
 	AC_DEFINE([XERCES_NO_NATIVE_BOOL], 1, [Define if there is no native bool support in this environment]))
 
-AS_IF([test $ac_cv_cxx_have_lstring],
-	AC_DEFINE([XERCES_LSTRSUPPORT], 1, [Define if there is support for L"widestring"]))
-
-AC_MSG_CHECKING([whether C++11 char16_t is available])
-AC_COMPILE_IFELSE(  [AC_LANG_PROGRAM([[]],
-                                     [[const char16_t *unicode = u"Test ünícodè → ©";]])],
-                    [
-                      xerces_cv_type_xmlch=char16_t
-                      AC_DEFINE_UNQUOTED([XERCES_USE_CHAR16_T], [1], [Define if the C++11 char16_t type is to be used])
-                      AC_MSG_RESULT([yes])
-                    ],
-                    [
-                      xerces_cv_type_xmlch=$xerces_cv_type_u16bit_int
-                      AC_MSG_RESULT([no])
-                    ]
-                 )
-AM_CONDITIONAL([XERCES_USE_CHAR16], [test "x$xerces_cv_type_xmlch" = "xchar16_t"])
-
-if test "$xerces_cv_type_xmlch" != "char16_t"; then
-# fallback to check if the Windows API is defined as using wchar_t or
-# unsigned short; if it's wchar_t, we need to map XMLCh to be wchar_t
-# (this is safe because on Windows wchar_t is used to store UTF-16
-# codepoints, while it is not true on Unix)
-        AC_MSG_CHECKING([whether the Windows SDK is available and using wchar_t as wide string])
-        AC_COMPILE_IFELSE(  [AC_LANG_PROGRAM([[#include <windows.h>
-                                                wchar_t file[] = L"dummy.file";]],
-                                             [[DeleteFileW(file);]])],
-                            [
-                              xerces_cv_type_xmlch=wchar_t
-                              AC_MSG_RESULT([yes])
-                              AC_DEFINE_UNQUOTED([XERCES_INCLUDE_WCHAR_H], 1, [Define to have Xerces_autoconf_config.hpp include wchar.h])
-                            ],
-                            [
-                              xerces_cv_type_xmlch=$xerces_cv_type_u16bit_int
-                              AC_MSG_RESULT([no])
-                            ]
-                         )
-fi
-
-AC_DEFINE_UNQUOTED([XERCES_XMLCH_T], [$xerces_cv_type_xmlch], [Define to the 16 bit type used to represent Xerces UTF-16 characters])
+XERCES_XMLCH_SELECTION
 
 AC_MSG_CHECKING([whether the compiler chokes on a placement operator delete])
 AC_COMPILE_IFELSE(  [AC_LANG_PROGRAM([[#include <stdlib.h>
@@ -544,3 +539,4 @@ AC_MSG_NOTICE([  Mutex Manager: $mutexmgr])
 AC_MSG_NOTICE([  Transcoder: $transcoder])
 AC_MSG_NOTICE([  NetAccessor: $netaccessor])
 AC_MSG_NOTICE([  Message Loader: $msgloader])
+AC_MSG_NOTICE([  XMLCh Type: $xmlch])

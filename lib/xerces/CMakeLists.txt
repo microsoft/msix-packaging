@@ -50,6 +50,18 @@ foreach(line IN LISTS configure)
   string(REGEX REPLACE "^AC_INIT\\(\\[xerces-c\\],\\[(.*)\\]\\)" "\\1" xerces_c_version "${line}")
   break()
 endforeach()
+file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/configure.ac" configure
+     REGEX "^INTERFACE_VERSION=.*")
+foreach(line IN LISTS configure)
+  string(REGEX REPLACE "^INTERFACE_VERSION=(.*)" "\\1" xerces_c_interface_version "${line}")
+  break()
+endforeach()
+file(STRINGS "${CMAKE_CURRENT_LIST_DIR}/configure.ac" configure
+     REGEX "^GRAMMAR_SERIALIZATION_LEVEL=.*")
+foreach(line IN LISTS configure)
+  string(REGEX REPLACE "^GRAMMAR_SERIALIZATION_LEVEL=(.*)" "\\1" xerces_c_grammar_serialization_level "${line}")
+  break()
+endforeach()
 
 message(STATUS "Configuring Apache Xerces-C++ version ${xerces_c_version}")
 
@@ -68,8 +80,20 @@ set(PACKAGE_STRING "${PACKAGE_NAME} ${PACKAGE_VERSION}")
 set(PACKAGE_BUGREPORT "c-dev@xerces.apache.org")
 set(PACKAGE_URL "https://xerces.apache.org/xerces-c/")
 
+set(VERSION "${PROJECT_VERSION}")
+set(XERCES_VERSION_MAJOR "${PROJECT_VERSION_MAJOR}")
+set(XERCES_VERSION_MINOR "${PROJECT_VERSION_MINOR}")
+set(XERCES_VERSION_REVISION "${PROJECT_VERSION_PATCH}")
+string(REPLACE "." ";" interface_version_parts "${xerces_c_interface_version}")
+list(GET interface_version_parts 0 INTERFACE_VERSION_MAJOR)
+list(GET interface_version_parts 1 INTERFACE_VERSION_MINOR)
+
+set(INTERFACE_VERSION_D "${INTERFACE_VERSION_MAJOR}.${INTERFACE_VERSION_MINOR}")
+set(INTERFACE_VERSION_U "${INTERFACE_VERSION_MAJOR}_${INTERFACE_VERSION_MINOR}")
+
+set(XERCES_GRAMMAR_SERIALIZATION_LEVEL "${xerces_c_grammar_serialization_level}")
+
 set(EXTRA_DIST
-  version.incl
   xerces-c.spec
   xerces-c.pc.in
   CREDITS
@@ -107,6 +131,7 @@ include(XercesConst)
 include(XercesInline)
 include(XercesVolatile)
 include(XercesLString)
+include(XercesMFC)
 include(XercesNamespaces)
 include(XercesStdLibs)
 include(XercesStdNamespace)
@@ -124,6 +149,14 @@ configure_file(
 configure_file(
   ${CMAKE_CURRENT_SOURCE_DIR}/src/xercesc/util/Xerces_autoconf_config.hpp.cmake.in
   ${CMAKE_CURRENT_BINARY_DIR}/src/xercesc/util/Xerces_autoconf_config.hpp
+  @ONLY)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/src/xercesc/util/XercesVersion.hpp.cmake.in
+  ${CMAKE_CURRENT_BINARY_DIR}/src/xercesc/util/XercesVersion.hpp
+  @ONLY)
+configure_file(
+  ${CMAKE_CURRENT_SOURCE_DIR}/doc/style/dtd/entities.ent.in
+  ${CMAKE_CURRENT_BINARY_DIR}/doc/style/dtd/entities.ent
   @ONLY)
 
 # Generate pkg-config file
@@ -154,19 +187,18 @@ message(STATUS "")
 message(STATUS "Xerces-C++ configuration summary")
 message(STATUS "--------------------------------")
 message(STATUS "")
-message(STATUS "  Version:                     ${xerces-c_VERSION}")
-message(STATUS "  Library version:             ${LIB_VER}")
-message(STATUS "  Library interface version D: ${LIB_INTERFACE_VER_D}")
-message(STATUS "  Library interface version U: ${LIB_INTERFACE_VER_U}")
+message(STATUS "  Version:                   ${xerces-c_VERSION}")
+message(STATUS "  Library interface version: ${xerces_c_interface_version}")
 message(STATUS "")
-message(STATUS "  Installation directory:      ${prefix}")
-message(STATUS "  C compiler:                  ${CMAKE_C_COMPILER}")
-message(STATUS "  C++ compiler:                ${CMAKE_CXX_COMPILER}")
+message(STATUS "  Installation directory:    ${prefix}")
+message(STATUS "  C compiler:                ${CMAKE_C_COMPILER}")
+message(STATUS "  C++ compiler:              ${CMAKE_CXX_COMPILER}")
 message(STATUS "")
-message(STATUS "  Build shared libraries:      ${BUILD_SHARED_LIBS}")
-message(STATUS "  Path delimiters:             \"${path_delims}\"")
-message(STATUS "  File Manager:                ${filemgr}")
-message(STATUS "  Mutex Manager:               ${mutexmgr}")
-message(STATUS "  Transcoder:                  ${transcoder}")
-message(STATUS "  NetAccessor:                 ${netaccessor}")
-message(STATUS "  Message Loader:              ${msgloader}")
+message(STATUS "  Build shared libraries:    ${BUILD_SHARED_LIBS}")
+message(STATUS "  Path delimiters:           \"${path_delims}\"")
+message(STATUS "  File Manager:              ${filemgr}")
+message(STATUS "  Mutex Manager:             ${mutexmgr}")
+message(STATUS "  Transcoder:                ${transcoder}")
+message(STATUS "  NetAccessor:               ${netaccessor}")
+message(STATUS "  Message Loader:            ${msgloader}")
+message(STATUS "  XMLCh type:                ${xmlch_type}")

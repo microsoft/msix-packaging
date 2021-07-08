@@ -19,7 +19,7 @@ run_test() {
 
     builddir=$(pwd)
     if [ ! -d observed ]; then
-        mkdir observed
+        mkdir -p observed
     fi
     output="${builddir}/observed/${name}.log"
 

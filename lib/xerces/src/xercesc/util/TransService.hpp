@@ -461,6 +461,9 @@ private :
     XMLLCPTranscoder& operator=(const XMLLCPTranscoder&);
 };
 
+template class XMLUTIL_EXPORT ArrayJanitor<XMLByte>;
+template class XMLUTIL_EXPORT ArrayJanitor<XMLCh>;
+
 //
 // This class can be used to transcode to a target encoding. It manages the
 // memory allocated for the transcode in an exception safe manner, automatically

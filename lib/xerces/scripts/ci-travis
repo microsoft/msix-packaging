@@ -40,6 +40,12 @@ autoconf_build()
         windows) opts="$opts --enable-transcoder-windows" ;;
     esac
 
+    # msgloader
+    case "$7" in
+        char16_t) opts="$opts --enable-xmlch-char16_t" ;;
+        uint16_t) opts="$opts --enable-xmlch-uint16_t" ;;
+    esac
+
     autoreconf -ivf
 
     mkdir autoconf-build
@@ -117,6 +123,9 @@ cmake_build()
     fi
     if [ -n "$6" ]; then
         opts="$opts -Dtranscoder=$6"
+    fi
+    if [ -n "$7" ]; then
+        opts="$opts -Dxmlch-type=$7"
     fi
 
     PATH="$(pwd)/tools/bin:$PATH"

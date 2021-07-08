@@ -31,29 +31,29 @@ os:
 
 env:
   matrix:
-    - BUILD=autoconf TYPE=Release NETWORK=ON NETACCESSOR=curl MSGLOADER=inmemory TRANSCODER=iconv
-    - BUILD=cmake TOOL="Unix Makefiles" TYPE=Debug NETWORK=ON NETACCESSOR=curl MSGLOADER=icu TRANSCODER=iconv
-    - BUILD=cmake TOOL="Ninja" TYPE=Release NETWORK=ON NETACCESSOR=socket MSGLOADER=inmemory TRANSCODER=icu
-    - BUILD=autoconf TYPE=Debug NETWORK=ON MSGLOADER=iconv
+    - BUILD=autoconf TYPE=Release NETWORK=ON NETACCESSOR=curl MSGLOADER=inmemory TRANSCODER=iconv XMLCH=char16_t
+    - BUILD=cmake TOOL="Unix Makefiles" TYPE=Debug NETWORK=ON NETACCESSOR=curl MSGLOADER=icu TRANSCODER=iconv XMLCH=uint16_t
+    - BUILD=cmake TOOL="Ninja" TYPE=Release NETWORK=ON NETACCESSOR=socket MSGLOADER=inmemory TRANSCODER=icu XMLCH=char16_t
+    - BUILD=autoconf TYPE=Debug NETWORK=ON MSGLOADER=iconv XMLCH=uint16_t
     - BUILD=cmake TOOL="Unix Makefiles" TYPE=Release NETWORK=ON
     - BUILD=cmake TOOL="Ninja" TYPE=Debug
-    - BUILD=cmake TOOL="Ninja" TYPE=Debug NETACCESSOR=cfurl TRANSCODER=macosunicodeconverter
+    - BUILD=cmake TOOL="Ninja" TYPE=Debug NETACCESSOR=cfurl TRANSCODER=macosunicodeconverter XMLCH=uint16_t
 
 matrix:
   fast_finish: true
   exclude:
     - os: linux
-      env: BUILD=cmake TOOL="Ninja" TYPE=Debug NETACCESSOR=cfurl TRANSCODER=macosunicodeconverter
+      env: BUILD=cmake TOOL="Ninja" TYPE=Debug NETACCESSOR=cfurl TRANSCODER=macosunicodeconverter XMLCH=uint16_t
     - os: osx
-      env: BUILD=cmake TOOL="Unix Makefiles" TYPE=Debug NETWORK=ON NETACCESSOR=curl MSGLOADER=icu TRANSCODER=iconv
+      env: BUILD=cmake TOOL="Unix Makefiles" TYPE=Debug NETWORK=ON NETACCESSOR=curl MSGLOADER=icu TRANSCODER=iconv XMLCH=uint16_t
     - os: osx
-      env: BUILD=cmake TOOL="Ninja" TYPE=Release NETWORK=ON NETACCESSOR=socket MSGLOADER=inmemory TRANSCODER=icu
+      env: BUILD=cmake TOOL="Ninja" TYPE=Release NETWORK=ON NETACCESSOR=socket MSGLOADER=inmemory TRANSCODER=icu XMLCH=char16_t
     - os: osx
-      env: BUILD=autoconf TYPE=Debug NETWORK=ON MSGLOADER=iconv
+      env: BUILD=autoconf TYPE=Debug NETWORK=ON MSGLOADER=iconv XMLCH=uint16_t
     - os: osx
       env: BUILD=cmake TOOL="Unix Makefiles" TYPE=Release NETWORK=ON
     - os: osx
       env: BUILD=cmake TOOL="Ninja" TYPE=Debug
 
 script:
-  - ./scripts/ci-travis "$BUILD" "$TOOL" "$TYPE" "$NETWORK" "$NETACCESSOR" "$MSGLOADER" "$TRANSCODER"
+  - ./scripts/ci-travis "$BUILD" "$TOOL" "$TYPE" "$NETWORK" "$NETACCESSOR" "$MSGLOADER" "$TRANSCODER" "$XMLCH"
