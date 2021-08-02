@@ -1,0 +1,12 @@
+{
+  "loc.friendlyName": "创建 MSIX 应用附加程序包",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
+  "loc.description": "为 MSIX 应用附加创建 VHD 或 VHDX 程序包",
+  "loc.instanceNameFormat": "创建 MSIX 应用附加程序包",
+  "loc.input.label.package": "程序包路径",
+  "loc.input.help.package": "程序包的路径。",
+  "loc.input.label.vhdxOutputPath": "VHDX 输出路径",
+  "loc.input.help.vhdxOutputPath": "将由任务创建的 VHDX 文件的名称。",
+  "loc.input.label.vhdxSize": "VHDX 大小 (MB)",
+  "loc.input.help.vhdxSize": "VHDX的最大大小（以 MB 为单位）。"
+}

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "501a9528-7fa4-4cb5-b8da-79ded62b74eb",
+  "name": "MsixSigning",
+  "friendlyName": "ms-resource:loc.friendlyName",
+  "instanceNameFormat": "ms-resource:loc.instanceNameFormat",
+  "description": "ms-resource:loc.description",
+  "author": "Microsoft Corporation",
+  "category": "Package",
+  "helpUrl": "https://aka.ms/msix-cicd",
+  "helpMarkDown": "ms-resource:loc.helpMarkDown",
+  "execution": {
+    "Node10": {
+      "target": "index.js"
+    }
+  },
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "minimumAgentVersion": "1.95.0",
+  "inputs": [
+    {
+      "name": "package",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.package",
+      "defaultValue": "$(Build.ArtifactStagingDirectory)\\**\\*.msix*",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.package"
+    },
+    {
+      "name": "certificateType",
+      "type": "radio",
+      "label": "ms-resource:loc.input.label.certificateType",
+      "defaultValue": "secureFile",
+      "required": false,
+      "helpMarkDown": "ms-resource:loc.input.help.certificateType",
+      "options": {
+        "secureFile": "Secure file",
+        "base64": "String-encoded certificate"
+      }
+    },
+    {
+      "name": "encodedCertificate",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.encodedCertificate",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.encodedCertificate",
+      "visibleRule": "certificateType == base64"
+    },
+    {
+      "name": "certificate",
+      "type": "secureFile",
+      "label": "ms-resource:loc.input.label.certificate",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.certificate",
+      "visibleRule": "certificateType == secureFile"
+    },
+    {
+      "name": "passwordVariable",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.passwordVariable",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.passwordVariable",
+      "visibleRule": "certificateType == secureFile"
+    },
+    {
+      "name": "timeStampServer",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.timeStampServer",
+      "required": false,
+      "helpMarkDown": "ms-resource:loc.input.help.timeStampServer"
+    }
+  ]
+}

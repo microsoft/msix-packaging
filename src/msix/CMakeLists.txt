@@ -19,6 +19,7 @@ list(APPEND MSIX_UNPACK_EXPORTS
 if(MSIX_PACK)
     list(APPEND MSIX_PACK_EXPORTS
         "PackPackage"
+        "PackBundle"
         "SignPackage"
     )
 endif()
@@ -26,9 +27,11 @@ endif()
 list(APPEND MSIX_EXPORTS
     "CoCreateAppxFactory"
     "CoCreateAppxFactoryWithHeap"
+    "CoCreateAppxFactoryWithOptions"
+    "CoCreateAppxFactoryWithHeapAndOptions"
     "CreateStreamOnFile"
     "CreateStreamOnFileUTF16"
-    "GetLogTextUTF8"
+    "MsixGetLogTextUTF8"
     "CoCreateAppxBundleFactory"
     "CoCreateAppxBundleFactoryWithHeap"
     ${MSIX_UNPACK_EXPORTS}
@@ -131,6 +134,12 @@ if(MSIX_PACK)
         pack/ContentType.cpp
         pack/DeflateStream.cpp
         pack/ZipObjectWriter.cpp
+        pack/BundleManifestWriter.cpp
+        pack/BundleWriterHelper.cpp
+        pack/AppxBundleWriter.cpp
+        pack/VersionHelpers.cpp
+        pack/MappingFileParser.cpp
+        pack/BundleValidationHelper.cpp
         pack/Signing.cpp
     )
 endif()
@@ -238,7 +247,7 @@ endforeach()
 add_library(${PROJECT_NAME} SHARED 
     msix.cpp
     ${MsixSrc}
-)
+ )
 
 # Adding dependency to the third party libs directory
 add_dependencies(${PROJECT_NAME} LIBS)
@@ -274,7 +283,7 @@ if(WIN32)
             "/DELAYLOAD:api-ms-win-core-winrt-l1-1-0.dll")
     string(REPLACE ";" " " DELAYFLAGS "${DELAYFLAGS}")
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "${DELAYFLAGS} /LTCG")
-    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /DEF:windowsexports.def")
+    set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /DEF:${CMAKE_CURRENT_BINARY_DIR}/windowsexports.def")
     if(USE_STATIC_MSVC)
         if(CMAKE_BUILD_TYPE MATCHES Debug)
             set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB:MSVCRTD")

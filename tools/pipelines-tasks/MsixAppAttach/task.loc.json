@@ -1,0 +1,50 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "5acdf104-665e-4e06-a565-9f0a88e7de2b",
+  "name": "MsixAppAttach",
+  "friendlyName": "ms-resource:loc.friendlyName",
+  "instanceNameFormat": "ms-resource:loc.instanceNameFormat",
+  "description": "ms-resource:loc.description",
+  "author": "Microsoft Corporation",
+  "category": "Package",
+  "helpUrl": "https://aka.ms/msix-cicd",
+  "helpMarkDown": "ms-resource:loc.helpMarkDown",
+  "execution": {
+    "Node10": {
+      "target": "index.js",
+      "platforms": [
+        "windows"
+      ]
+    }
+  },
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "minimumAgentVersion": "1.95.0",
+  "inputs": [
+    {
+      "name": "package",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.package",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.package"
+    },
+    {
+      "name": "vhdxOutputPath",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.vhdxOutputPath",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.vhdxOutputPath"
+    },
+    {
+      "name": "vhdxSize",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.vhdxSize",
+      "defaultValue": "100",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.vhdxSize"
+    }
+  ]
+}

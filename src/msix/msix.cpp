@@ -6,6 +6,7 @@
 #include <memory>
 #include <cstdlib>
 #include <functional>
+#include <map>
 
 #include "Exceptions.hpp"
 #include "FileStream.hpp"
@@ -17,7 +18,12 @@
 #include "AppxPackageObject.hpp"
 #include "MsixFeatureSelector.hpp"
 #include "AppxPackageWriter.hpp"
+#include "AppxBundleWriter.hpp"
 #include "ScopeExit.hpp"
+#include "VersionHelpers.hpp"
+#include "MappingFileParser.hpp"
+#include "FileStream.hpp"
+#include "MemoryStream.hpp"
 #include "Signing.hpp"
 
 #ifndef WIN32
@@ -42,7 +48,7 @@ static void finalizer(void) {
 LPVOID STDMETHODCALLTYPE InternalAllocate(SIZE_T cb)  { return std::malloc(cb); }
 void STDMETHODCALLTYPE InternalFree(LPVOID pv)        { std::free(pv); }
 
-MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept try
+MSIX_API HRESULT STDMETHODCALLTYPE MsixGetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept try
 {
     ThrowErrorIf(MSIX::Error::InvalidParameter, (logText == nullptr || *logText != nullptr), "bad pointer" );
     std::size_t countBytes = sizeof(char)*(MSIX::Global::Log::Text().size()+1);
@@ -81,26 +87,44 @@ MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeapAndOptions(
+    COTASKMEMALLOC* memalloc,
+    COTASKMEMFREE* memfree,
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_FACTORY_OPTIONS factoryOptions,
+    IAppxFactory** appxFactory) noexcept try
+{
+    *appxFactory = MSIX::ComPtr<IAppxFactory>::Make<MSIX::AppxFactory>(validationOption, MSIX_APPLICABILITY_OPTION_FULL, factoryOptions, memalloc, memfree).Detach();
+    return static_cast<HRESULT>(MSIX::Error::OK);
+} CATCH_RETURN();
+
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     MSIX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory) noexcept try
 {
-    *appxFactory = MSIX::ComPtr<IAppxFactory>::Make<MSIX::AppxFactory>(validationOption, MSIX_APPLICABILITY_OPTION_FULL, memalloc, memfree).Detach();
-    return static_cast<HRESULT>(MSIX::Error::OK);
+    return CoCreateAppxFactoryWithHeapAndOptions(memalloc, memfree, validationOption, MSIX_FACTORY_OPTION_NONE, appxFactory);
 } CATCH_RETURN();
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithOptions(
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_FACTORY_OPTIONS factoryOptions,
+    IAppxFactory** appxFactory) noexcept
+{
+    #ifdef WIN32
+        return CoCreateAppxFactoryWithHeapAndOptions(CoTaskMemAlloc, CoTaskMemFree, validationOption, factoryOptions, appxFactory);
+    #else
+        return static_cast<HRESULT>(MSIX::Error::NotSupported);
+    #endif
+}
+
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     MSIX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory) noexcept
 {
-    #ifdef WIN32
-        return CoCreateAppxFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, appxFactory);
-    #else
-        return static_cast<HRESULT>(MSIX::Error::NotSupported);
-    #endif
+    return CoCreateAppxFactoryWithOptions(validationOption, MSIX_FACTORY_OPTION_NONE, appxFactory);
 }
 
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
@@ -111,7 +135,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactoryWithHeap(
     IAppxBundleFactory** appxBundleFactory) noexcept try
 {
     THROW_IF_BUNDLE_NOT_ENABLED
-    *appxBundleFactory = MSIX::ComPtr<IAppxBundleFactory>::Make<MSIX::AppxFactory>(validationOption, applicabilityOptions, memalloc, memfree).Detach();
+    *appxBundleFactory = MSIX::ComPtr<IAppxBundleFactory>::Make<MSIX::AppxFactory>(validationOption, applicabilityOptions, MSIX_FACTORY_OPTION_NONE, memalloc, memfree).Detach();
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
@@ -289,6 +313,206 @@ MSIX_API HRESULT STDMETHODCALLTYPE PackPackage(
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
+MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
+    MSIX_BUNDLE_OPTIONS bundleOptions,
+    char* directoryPath,
+    char* outputBundle,
+    char* mappingFile,
+    char* version
+) noexcept try
+{
+    std::uint64_t bundleVersion = 0;
+    bool flatBundle = false;
+    bool overWrite = false;
+    bool manifestOnly = false;
+
+    //Process Common Options
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERSION)
+    {
+        bundleVersion = MSIX::ConvertVersionStringToUint64(version);
+    }
+
+    if ((bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_OVERWRITE) && (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NOOVERWRITE))
+    {
+        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You can't specify options -o and -no at the same time.");
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_OVERWRITE)
+    {
+        overWrite = true;
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NOOVERWRITE)
+    {
+        overWrite = false;
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_FLATBUNDLE)
+    {
+        flatBundle = true;
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_BUNDLE_OPTION_BUNDLEMANIFESTONLY)
+    {
+        manifestOnly = true;
+    }
+
+    if (bundleOptions & MSIX_BUNDLE_OPTIONS::MSIX_OPTION_VERBOSE)
+    {
+        //TODO: Process option for verbose
+    }
+
+    //TODO: Error if outputBundle is an existing directory
+
+    //Process Input options
+    if(directoryPath == nullptr && mappingFile == nullptr)
+    {
+        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You must specify either a content directory (-d) or a mapping file (-f).");
+    }
+    else if(directoryPath != nullptr && mappingFile != nullptr)
+    {
+        ThrowErrorAndLog(MSIX::Error::InvalidParameter, "You can't specify both a content directory (-d) and a mapping file (-f).");
+    }
+    //TODO:: Error if directoryPath is a file
+
+    MSIX::MappingFileParser mappingFileParser;
+    if(mappingFile != nullptr && outputBundle != nullptr)
+    {
+        mappingFileParser.ParseMappingFile(mappingFile);
+        if(!mappingFileParser.IsSectionFound(MSIX::SectionID::FilesSection))
+        {
+            std::ostringstream errorBuilder;
+            errorBuilder << "The mapping file " << mappingFile << " is missing a [Files] section.";
+            ThrowErrorAndLog(MSIX::Error::BadFormat, errorBuilder.str().c_str());
+        }
+    }
+
+    auto deleteFile = MSIX::scope_exit([&outputBundle]
+    {
+        remove(outputBundle);
+    });
+
+    MSIX::ComPtr<IStream> stream;
+    std::vector<std::uint8_t> streamVector;
+
+    if(manifestOnly)
+    {
+        stream = MSIX::ComPtr<IStream>::Make<MSIX::MemoryStream>(&streamVector);
+    }
+    else
+    {
+        ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &stream));
+    }
+
+    MSIX::ComPtr<IAppxBundleFactory> factory;
+    MSIX_VALIDATION_OPTION validationOptions = MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_FULL;
+    validationOptions = static_cast<MSIX_VALIDATION_OPTION>(validationOptions | MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE);
+
+    ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
+        validationOptions,
+        MSIX_APPLICABILITY_OPTIONS::MSIX_APPLICABILITY_OPTION_FULL,
+        &factory));
+
+    MSIX::ComPtr<IAppxBundleWriter> bundleWriter;
+    MSIX::ComPtr<IAppxBundleWriter4> bundleWriter4;
+
+    ThrowHrIfFailed(factory->CreateBundleWriter(stream.Get(), bundleVersion, &bundleWriter));
+    bundleWriter4 = bundleWriter.As<IAppxBundleWriter4>();
+
+    if(manifestOnly)
+    {
+        MSIX::ComPtr<IAppxFactory> appxFactory;
+        ThrowHrIfFailed(CoCreateAppxFactoryWithHeap(InternalAllocate, InternalFree, 
+            MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE, 
+            &appxFactory));
+
+        std::map<std::string, std::string> fileList = mappingFileParser.GetFileList();
+        std::map<std::string, std::string>::iterator fileListIterator;
+        for (fileListIterator = fileList.begin(); fileListIterator != fileList.end(); fileListIterator++)
+        {
+            std::string inputPath = fileListIterator->second;
+            std::string outputPath = fileListIterator->first;
+
+            std::vector<std::uint8_t> tempPackageVector;
+            auto tempPackageStream = MSIX::ComPtr<IStream>::Make<MSIX::MemoryStream>(&tempPackageVector);                
+
+            auto manifestStream = MSIX::ComPtr<IStream>::Make<MSIX::FileStream>(inputPath, MSIX::FileStream::Mode::READ);
+
+            MSIX::ComPtr<IAppxPackageWriter> tempPackageWriter;
+            ThrowHrIfFailed(appxFactory->CreatePackageWriter(tempPackageStream.Get(), nullptr, &tempPackageWriter));
+            ThrowHrIfFailed(tempPackageWriter->Close(manifestStream.Get()));
+
+            LARGE_INTEGER li{0};    
+            ThrowHrIfFailed(tempPackageStream->Seek(li, MSIX::StreamBase::Reference::START, nullptr));
+
+            if (flatBundle)
+            {
+                ThrowHrIfFailed(bundleWriter4->AddPackageReference(MSIX::utf8_to_wstring(outputPath).c_str(), tempPackageStream.Get(), false));
+            }
+            else
+            {
+                ThrowHrIfFailed(bundleWriter4->AddPayloadPackage(MSIX::utf8_to_wstring(outputPath).c_str(), tempPackageStream.Get(), false));
+            }
+        }
+    }
+    else
+    {
+        if(directoryPath != nullptr && outputBundle != nullptr)
+        {
+            auto from = MSIX::ComPtr<IDirectoryObject>::Make<MSIX::DirectoryObject>(directoryPath);
+            bundleWriter4.As<IBundleWriter>()->ProcessBundlePayload(from, flatBundle);
+        }
+        else if(mappingFile != nullptr && outputBundle != nullptr)
+        {
+            bundleWriter4.As<IBundleWriter>()->ProcessBundlePayloadFromMappingFile(mappingFileParser.GetFileList(), flatBundle);
+        }
+    }
+
+    if(!mappingFileParser.GetExternalPackagesList().empty())
+    {
+        bundleWriter4.As<IBundleWriter>()->ProcessExternalPackages(mappingFileParser.GetExternalPackagesList());
+    }
+
+    ThrowHrIfFailed(bundleWriter->Close());
+
+    if(manifestOnly)
+    {
+        LARGE_INTEGER li{0};    
+        ThrowHrIfFailed(stream->Seek(li, MSIX::StreamBase::Reference::START, nullptr));
+
+        MSIX_VALIDATION_OPTION validationOption = static_cast<MSIX_VALIDATION_OPTION>(MSIX_VALIDATION_OPTION_SKIPSIGNATURE | MSIX_VALIDATION_OPTION_SKIPPACKAGEVALIDATION);
+        MSIX_APPLICABILITY_OPTIONS applicabilityOption = static_cast<MSIX_APPLICABILITY_OPTIONS>(MSIX_APPLICABILITY_NONE);
+        
+        MSIX::ComPtr<IAppxBundleFactory> appxBundleFactory;
+        ThrowHrIfFailed(CoCreateAppxBundleFactoryWithHeap(InternalAllocate, InternalFree, 
+            validationOption, 
+            applicabilityOption,
+            &appxBundleFactory));
+
+        MSIX::ComPtr<IAppxBundleReader> bundleReader;
+        ThrowHrIfFailed(appxBundleFactory->CreateBundleReader(stream.Get(), &bundleReader));
+
+        MSIX::ComPtr<IAppxBundleManifestReader> bundleManifestReader;
+        ThrowHrIfFailed(bundleReader->GetManifest(&bundleManifestReader));
+        
+        MSIX::ComPtr<IStream> bundleManifestStream;
+        ThrowHrIfFailed(bundleManifestReader->GetStream(&bundleManifestStream));
+
+        MSIX::ComPtr<IStream> bundleManifestOutputStream;
+        ThrowHrIfFailed(CreateStreamOnFile(outputBundle, false, &bundleManifestOutputStream));
+
+        ULARGE_INTEGER maxSize = { 0 };
+        maxSize.QuadPart = UINT64_MAX;
+        ULARGE_INTEGER sizeRead = { 0 };
+        ULARGE_INTEGER sizeWritten = { 0 };
+        bundleManifestStream->CopyTo(bundleManifestOutputStream.Get(), maxSize, &sizeRead, &sizeWritten);
+    }
+
+    deleteFile.release();
+    return static_cast<HRESULT>(MSIX::Error::OK);
+
+} CATCH_RETURN();
+
 MSIX_API HRESULT STDMETHODCALLTYPE SignPackage(
     MSIX_SIGNING_OPTIONS signingOptions,
     LPCSTR package,
@@ -338,3 +562,4 @@ MSIX_API HRESULT STDMETHODCALLTYPE SignPackage(
 } CATCH_RETURN();
 
 #endif // MSIX_PACK
+

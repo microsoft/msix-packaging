@@ -8,8 +8,6 @@
    The MSIX Packaging APIs that a client app would use to interact with .msix/.appx packages are a subset of those
    documented [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx).
 
-   An example of such a client app is the [MSIX Core project](MsixCore/README.md), which installs .msix/.appx packages on Windows 7 SP1 and later versions of Windows.
-
 ## Overview
 The MSIX SDK project includes cross platform API support for packing and unpacking of .msix/.appx packages
 
@@ -17,6 +15,7 @@ The MSIX SDK project includes cross platform API support for packing and unpacki
 |--------------------------------------|---------------------------------|
 | **msix**      | A shared library (DLL on Win32, dylib on macOS, SO on Linux and Android) that exports a subset of the functionality contained within appxpackaging.dll on Windows. See [here](https://msdn.microsoft.com/en-us/library/windows/desktop/hh446766(v=vs.85).aspx) for additional details.<br />On all platforms instead of CoCreating IAppxFactory, a C-style export: CoCreateAppxFactory is provided. Similarly, the CoCreateAppxBundleFactory export is equivalent as CoCreating IAppxBundleFactory.<br /><br /> The 'UnpackPackage' and 'UnpackBundle' exports that provide a simplified unpackage implementation. Similarly, PackPackage provides a simplified package implementation. See the [samples directory](sample) for usage of the SDK.|
 | **makemsix**  | A command line wrapper over the MSIX library entrypoints. makemsix supports pack and unpack. Use the -? to get information about the options supported.|
+| **MSIX Core** | A client app that uses installs .msix/.appx packages on Windows 7 SP1 and later versions of Windows. Go to the [MSIX Core project](MsixCore/README.md) page, to get more details.|
 
 Guidance on how to package your app contents and construct your app manifest such that it can take advantage of the cross platform support of this SDK is [here](tdf-guidance.md).
 
@@ -153,7 +152,7 @@ The following native platforms are in development now:
 **Release x32 With Pack and OpenSSL**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&jobName=Windows&configuration=Windows%20release_32_sign)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
 **Release x64 With Pack and OpenSSL**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Windows%20CI?branchName=master&jobName=Windows&configuration=Windows%20release_64_sign)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=64&branchName=master)|
 
-Built in the Azure Pipelines Hosted VS2017 pool. See specifications [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/win/Vs2017-Server2016-Readme.md)
+Built in the Azure Pipelines windows-latest pool. See specifications [here](https://github.com/actions/virtual-environments/blob/main/images/win/Windows2019-Readme.md)
 
 ### macOS
 ||master|
@@ -163,8 +162,16 @@ Built in the Azure Pipelines Hosted VS2017 pool. See specifications [here](https
 **Release Without Bundle support**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release_nobundle)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
 **Debug With Pack**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20debug_pack)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
 **Release With Pack**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release_pack)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Debug arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20debug_nopack_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release_nopack_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release Without Bundle support arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release_nobundle_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Debug With Pack arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20debug_pack_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release With Pack arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS%20release_pack_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release Universal**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS_universal_nopack)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release Without Bundle support Universal**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macOS_universal_nobundle)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
+**Release With Pack Universal**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20macOS%20CI?branchName=master&jobName=macOS&configuration=macO_universal_pack)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=69&branchName=master)|
 
-Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-10.14-Readme.md)
+Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.15-Readme.md)
 
 ### iOS
 ||master|
@@ -209,6 +216,12 @@ The MSIX SDK minimum supported for Android is API Level 19.
 We also produce msix-jni.jar which acts as a helper to get the languages from the Android device. Because of it, we expect either a -DANDROID_SDK and -DANDROID_SDK_VERSION on the cmake command and, if not present, we default to $ANDROID_HOME and 24 respectively.
 The default level for the SDK level is 24 because we use the [Configuration class](https://developer.android.com/reference/android/content/res/Configuration) and, depending on the version of the device, we either use the locale attribute (deprecated as of API level 24) or getLocales.
 We recommend using the [makeaosp](makeaosp) script to build for Android on non-Windows devices.
+
+## Apple Silicon
+To enable building the MSIX SDK to run on Apple Silicon do the following:
+1. Install Xcode beta 12 (https://developer.apple.com/download/)
+2. Change active developer directory `sudo xcode-select -switch /Applications/Xcode-beta.app/Contents/Developer`
+3. Build using makemac.sh `./makemac.sh -arch arm64 --skip-tests`
 
 ## Testing
 msixtest uses Catch2 as testing framework. msixtest is either an executable or a shared library, depending on the platform. It has a single entrypoint msixtest_main that takes argc and argv, as main, plus the path were the test packages are located. The shared library is used for our mobile test apps, while non-mobile just forwards the arguments to msixtest_main. It requires msix.dll to be build with "Release" or "RelWithDebInfo" CMake switch. 

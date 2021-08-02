@@ -141,12 +141,12 @@ ComPtr<AppxSignatureObject> SignatureAccumulator::GetSignatureObject(IZipWriter*
     // This leaves only the full package hash and the central directory hash.
 
     // Simply copy the zip hash over
-    result->GetFileRecordsDigest() = GetZipHasher().Get();
+    GetZipHasher().FinalizeAndGetHashValue(result->GetFileRecordsDigest());
 
     // Create the central directory as it currently exists and hash it
     ComPtr<SHA256HashStream> cdHash = ComPtr<SHA256HashStream>::Make<SHA256HashStream>();
     zipWriter->WriteCentralDirectoryToStream(cdHash.Get());
-    result->GetCentralDirectoryDigest() = cdHash->GetHash();
+    cdHash->FinalizeAndGetHashValue(result->GetCentralDirectoryDigest());
 
     return result;
 }
@@ -182,11 +182,11 @@ SignatureAccumulator::FileAccumulator::~FileAccumulator()
 {
     if (isBlockmap)
     {
-        signatureAccumulator.GetSignatureObject()->GetAppxBlockMapDigest() = GetRawHasher().Get();
+        GetRawHasher().FinalizeAndGetHashValue(signatureAccumulator.GetSignatureObject()->GetAppxBlockMapDigest());
     }
     else if (isContentTypes)
     {
-        signatureAccumulator.GetSignatureObject()->GetContentTypesDigest() = GetRawHasher().Get();
+        GetRawHasher().FinalizeAndGetHashValue(signatureAccumulator.GetSignatureObject()->GetContentTypesDigest());
     }
     else
     {
@@ -205,7 +205,7 @@ bool SignatureAccumulator::FileAccumulator::AccumulateRaw(IStream* stream)
 
             for (const auto& bytes : Helper::StreamProcessor{ stream, 1 << 20 })
             {
-                hasher.Add(bytes);
+                hasher.HashData(bytes);
             }
         }
         else
@@ -226,7 +226,7 @@ bool SignatureAccumulator::FileAccumulator::AccumulateRaw(const std::vector<std:
         // These just need their entire contents hashed
         if (isBlockmap || isContentTypes)
         {
-            GetRawHasher().Add(data);
+            GetRawHasher().HashData(data);
         }
         else
         {
@@ -269,7 +269,7 @@ bool SignatureAccumulator::FileAccumulator::AccumulateZip(IStream* stream)
 
         for (const auto& bytes : Helper::StreamProcessor{ stream, 1 << 20 })
         {
-            hasher.Add(bytes);
+            hasher.HashData(bytes);
 
 #if MSIX_DEBUG_PACKAGE_CONTENT_HASH
             ThrowHrIfFailed(contentsOutput->Write(static_cast<const void*>(bytes.data()), static_cast<ULONG>(bytes.size()), nullptr));

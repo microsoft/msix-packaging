@@ -1,0 +1,18 @@
+{
+  "loc.friendlyName": "Assinatura de pacote MSIX",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
+  "loc.description": "Assinar pacotes do MSIX",
+  "loc.instanceNameFormat": "Assinar pacote do MSIX",
+  "loc.input.label.package": "Pacote para assinar",
+  "loc.input.help.package": "Arquivos a assinar. Pode ser um pacote ou um lote. Todos os arquivos correspondentes são assinados.",
+  "loc.input.label.certificateType": "Tipo de Arquivo de certificado",
+  "loc.input.help.certificateType": "Origem do arquivo de certificado a ser usado. O certificado pode vir de [Secure Files library] (https://docs.microsoft.com/azure/devops/pipelines/library/secure-files), ou ser codificado como uma cadeia de caracteres como se fosse buscado em [Azure Key Vault task] (https://docs.microsoft.com/azure/devops/pipelines/tasks/deploy/azure-key-vault)",
+  "loc.input.label.encodedCertificate": "Arquivo de certificado codificado",
+  "loc.input.help.encodedCertificate": "Certificado codificado como uma sequência Base64.",
+  "loc.input.label.certificate": "Arquivo de Certificado",
+  "loc.input.help.certificate": "O nome de arquivo ou GUID do certificado seguro a ser usado na assinatura. O arquivo será excluído após a execução do pipeline.",
+  "loc.input.label.passwordVariable": "Variável de senha",
+  "loc.input.help.passwordVariable": "O nome da variável que armazena a senha usada para acessar o arquivo de certificado para assinatura. Observe que essa NÃO é a senha em si, mas o nome da variável, que pode ser definido em Biblioteca.",
+  "loc.input.label.timeStampServer": "Servidor de Carimbo de Data/Hora",
+  "loc.input.help.timeStampServer": "Uma URL que especifica o endereço de um servidor de carimbo de data/hora."
+}

@@ -1,0 +1,12 @@
+{
+  "loc.friendlyName": "MSIX アプリ アタッチのパッケージを作成する",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
+  "loc.description": "MSIX アプリ アタッチの VHD パッケージまたは VHDX パッケージを作成する",
+  "loc.instanceNameFormat": "MSIX アプリ アタッチのパッケージを作成する",
+  "loc.input.label.package": "パッケージのパス",
+  "loc.input.help.package": "パッケージへのパスです。",
+  "loc.input.label.vhdxOutputPath": "VHDX 出力パス",
+  "loc.input.help.vhdxOutputPath": "タスクによって作成される VHDX ファイルの名前です。",
+  "loc.input.label.vhdxSize": "VHDX のサイズ (MB 単位)",
+  "loc.input.help.vhdxSize": "VHDX の最大サイズ (MB 単位) です。"
+}

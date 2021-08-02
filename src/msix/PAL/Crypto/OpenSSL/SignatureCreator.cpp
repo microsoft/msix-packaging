@@ -222,6 +222,7 @@ namespace MSIX
         IStream* signingCertificate,
         IStream* privateKey)
     {
+        // TODO: likely needs init thread safety as in SignatureValidator::Validate
         OpenSSL_add_all_algorithms();
         CustomOpenSSLObjects customObjects{};
 

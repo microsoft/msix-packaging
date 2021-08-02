@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AppInstaller xmlns="http://schemas.microsoft.com/appx/appinstaller/2018" Version="1.0.0.1" Uri="existingInstaller.appinstaller">
+  <MainPackage Name="7fa9aa49-c12e-4977-8a29-14b25a006dc7" Publisher="CN=HelloWorldPublisher" Version="1.0.0.0" ProcessorArchitecture="x86" Uri="existingPackage.msix"/>
+  <UpdateSettings>
+    <OnLaunch HoursBetweenUpdateChecks="3" UpdateBlocksActivation="false" ShowPrompt="true"/>
+  </UpdateSettings>
+</AppInstaller>

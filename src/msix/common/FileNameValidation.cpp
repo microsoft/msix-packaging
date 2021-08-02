@@ -288,10 +288,20 @@ namespace MSIX {
         return !IsProhibitedFileName(lowSegment) && !HasProhibitedPrefix(lowSegment) && !HasProhibitedSuffix(lowSegment);
     }
 
-    bool FileNameValidation::IsFootPrintFile(const std::string& fileName)
+    bool FileNameValidation::IsFootPrintFile(const std::string& fileName, bool isBundle)
     {
+        bool result = false;
         std::string lowIdent = Helper::tolower(fileName);
-        return ((lowIdent == "appxmanifest.xml") ||
+        if (isBundle)
+        {
+            result = lowIdent == "appxmetadata/appxbundlemanifest.xml";
+        }
+        else
+        {
+            result = lowIdent == "appxmanifest.xml";
+        }
+
+        return (result ||
                 (lowIdent == "appxsignature.p7x") ||
                 (lowIdent == "appxblockmap.xml") ||
                 (lowIdent == "[content_types].xml"));

@@ -1,0 +1,31 @@
+# Windows Store app package directories and files
+AppPackages/
+BundleArtifacts/
+Package.StoreAssociation.xml
+_pkginfo.txt
+*.appx
+*.appxbundle
+*.appxupload
+
+# VSIX packaged extension
+*.vsix
+
+# Test Outputs
+.taskkey
+certificate.txt
+
+# Ignrore all compiled .js and .js.map mappings
+*.js
+*.js.map
+
+# Packaged node modules
+*.tgz
+
+# PAT for publishing
+pat.txt
+
+# Powershell modules
+ps_modules/
+
+# Don't exclude VS Code configuration for this project as it contains debug configuration
+!.vscode/

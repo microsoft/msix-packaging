@@ -44,92 +44,92 @@ namespace MSIX {
         {   MSIX::RaiseException<MSIX::NtStatusException>(__LINE__, __FILE__, m, _status); \
         }                                                                                  \
     }
-
-    struct SHA256Context
+    
+    SHA256::SHA256()
     {
-        unique_alg_handle algHandle;
-        unique_hash_handle hashHandle;
-        DWORD hashLength = 0;
-    };
+        Reset();
+    }
 
-    SHA256::SHA256() : context(new SHA256Context{})
+    SHA256::~SHA256()
     {
+        if (m_hashContext != nullptr)
+        {
+            (void)BCryptDestroyHash(m_hashContext);
+        }
+    }
+
+    void SHA256::Reset()
+    {
+        if (m_hashContext != nullptr)
+        {
+            (void)BCryptDestroyHash(m_hashContext);
+            m_hashContext = nullptr;
+        }
+
         BCRYPT_HASH_HANDLE hashHandleT;
-        DWORD hashLength = 0;
-        DWORD resultLength = 0;
+        BCRYPT_ALG_HANDLE algHandleT;
 
         // Open an algorithm handle
-        BCRYPT_ALG_HANDLE algHandleT{};
+        // This code passes BCRYPT_HASH_REUSABLE_FLAG with BCryptAlgorithmProvider(...) to load a provider which supports reusable hash
         ThrowStatusIfFailed(BCryptOpenAlgorithmProvider(
-            &algHandleT,                // Alg Handle pointer
+            &algHandleT,                 // Alg Handle pointer
             BCRYPT_SHA256_ALGORITHM,    // Cryptographic Algorithm name (null terminated unicode string)
             nullptr,                    // Provider name; if null, the default provider is loaded
-            0),                         // Flags
-            "failed opening SHA256 algorithm provider");
-        context->algHandle.reset(algHandleT);
-
-        // Obtain the length of the hash
-        ThrowStatusIfFailed(BCryptGetProperty(
-            context->algHandle.get(),       // Handle to a CNG object
-            BCRYPT_HASH_LENGTH,             // Property name (null terminated unicode string)
-            (PBYTE)&(context->hashLength),  // Address of the output buffer which receives the property value
-            sizeof(context->hashLength),    // Size of the buffer in bytes
-            &resultLength,                  // Number of bytes that were copied into the buffer
-            0),                             // Flags
-            "failed getting SHA256 hash length");
-        ThrowErrorIf(Error::Unexpected, (resultLength != sizeof(context->hashLength)), "failed getting SHA256 hash length");
+            0),                         // Flags; Loads a provider which supports reusable hash
+            "failed computing SHA256 hash");
+        unique_alg_handle algHandle(algHandleT);
 
         // Create a hash handle
         ThrowStatusIfFailed(BCryptCreateHash(
-            context->algHandle.get(),   // Handle to an algorithm provider
+            algHandle.get(),            // Handle to an algorithm provider                 
             &hashHandleT,               // A pointer to a hash handle - can be a hash or hmac object
             nullptr,                    // Pointer to the buffer that receives the hash/hmac object
             0,                          // Size of the buffer in bytes
             nullptr,                    // A pointer to a key to use for the hash or MAC
             0,                          // Size of the key in bytes
             0),                         // Flags
-            "failed creating SHA256 hash object");
-        context->hashHandle.reset(hashHandleT);
+            "failed computing SHA256 hash");
+
+        m_hashContext = hashHandleT;
+    }
+    
+    void SHA256::HashData(const std::uint8_t* buffer, std::uint32_t cbBuffer)
+    {
+        ThrowErrorIf(Error::InvalidState, m_hashContext == nullptr, "HashData is called before hash context is initialized.");
+
+        ThrowStatusIfFailed(BCryptHashData(
+            m_hashContext,              // Handle to the hash or MAC object
+            (PBYTE)buffer,              // A pointer to a buffer that contains the data to hash
+            cbBuffer,                   // Size of the buffer in bytes
+            0),                         // Flags
+            "failed computing SHA256 hash");
     }
 
-    void SHA256::Add(const uint8_t* buffer, size_t cbBuffer)
+    void SHA256::FinalizeAndGetHashValue(std::vector<uint8_t>& hash)
     {
-        EnsureNotFinished();
-
-        // Add the data
-        ThrowStatusIfFailed(BCryptHashData(context->hashHandle.get(), const_cast<PUCHAR>(buffer), static_cast<ULONG>(cbBuffer), 0), "failed adding SHA256 data");
-    }
-
-    void SHA256::Get(HashBuffer& hash)
-    {
-        EnsureNotFinished();
+        ThrowErrorIf(Error::InvalidState, m_hashContext == nullptr, "HashData is called before hash context is initialized.");
 
         // Size the hash buffer appropriately
-        hash.resize(context->hashLength);
+        hash.resize(SHA256_DIGEST_LENGTH);
 
         // Obtain the hash of the message(s) into the hash buffer
         ThrowStatusIfFailed(BCryptFinishHash(
-            context->hashHandle.get(),  // Handle to the hash or MAC object
+            m_hashContext,              // Handle to the hash or MAC object
             hash.data(),                // A pointer to a buffer that receives the hash or MAC value
-            context->hashLength,        // Size of the buffer in bytes
+            static_cast<ULONG>(hash.size()),   // Size of the buffer in bytes
             0),                         // Flags
-            "failed getting SHA256 hash");
+            "failed computing SHA256 hash");
 
-        context.reset();
+        (void)BCryptDestroyHash(m_hashContext);
+        m_hashContext = nullptr;
     }
 
-    bool SHA256::ComputeHash(std::uint8_t* buffer, std::uint32_t cbBuffer, HashBuffer& hash)
+    bool SHA256::ComputeHash(const std::uint8_t* buffer, std::uint32_t cbBuffer, std::vector<uint8_t>& hash)
     {
-        SHA256 hasher;
-        hasher.Add(buffer, cbBuffer);
-        hasher.Get(hash);
-
+        SHA256 hashEngine;
+        hashEngine.HashData(buffer, cbBuffer);
+        hashEngine.FinalizeAndGetHashValue(hash);
         return true;
-    }
-
-    void SHA256::SHA256ContextDeleter::operator()(SHA256Context* context)
-    {
-        delete context;
     }
 
     std::string Base64::ComputeBase64(const std::vector<std::uint8_t>& buffer)

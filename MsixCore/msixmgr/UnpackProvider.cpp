@@ -9,12 +9,129 @@
 #include <CommCtrl.h>
 #include <map>
 #include <iostream>
+#include <filesystem>
+#include "MsixErrors.hpp"
 
 using namespace MsixCoreLib;
 using namespace std;
 
 namespace MsixCoreLib
 {
+
+    // Purpose:
+    // - Unpacks either a single package/bundle or multiple packages/bundles from a specified
+    //   source directory.
+    //
+    // Notes:
+    //  - skippedFiles will be populated with the file paths of file objects in a specified
+    //    source directory that are not packages or bundles. If all file objects in the directory
+    //    are packages OR the given source path is for a single package/bundle, we expect that
+    //    skippedFiles will be empty. 
+    //  - This function swallows errors from unpacking individual packages and bundles and adds
+    //    the file paths of these packages/bundles to the failedPackages vector and adds the
+    //    error code to the failedPackagesErrors vectors
+    HRESULT Unpack(
+        _In_ std::wstring source,
+        _In_ std::wstring destination,
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature,
+        _Inout_ std::vector<std::wstring> &skippedFiles,
+        _Inout_ std::vector<std::wstring> &failedPackages,
+        _Inout_ std::vector<HRESULT> &failedPackagesErrors)
+    {
+        filesystem::path sourcePath(source);
+        bool isDirectory = filesystem::is_directory(sourcePath);
+        if (isDirectory)
+        {
+            RETURN_IF_FAILED(UnpackPackagesFromDirectory(
+                source,
+                destination,
+                isApplyACLs,
+                validateSignature,
+                skippedFiles,
+                failedPackages,
+                failedPackagesErrors));
+        }
+        else
+        {
+            HRESULT hrUnpack = UnpackPackageOrBundle(source, destination, isApplyACLs, validateSignature);
+            if (FAILED(hrUnpack))
+            {
+                failedPackages.push_back(source);
+                failedPackagesErrors.push_back(hrUnpack);
+            }
+        }
+
+        return S_OK;
+    }
+
+    // Purpose:
+    // - Unpacks the packages in the specified source directory to the given destination.
+    //
+    // Notes:
+    // - Files in the source directory that are not packages will be ignored and their file
+    //   path will be added to the vector of skipped packages
+    // - Packages and bundles that fail to get unpacked will have their file path added to the vector
+    //   of failedPackages and the associated error code will be added to the failedPackagesErrors
+    //   vector at the corresponding index. 
+    // - This function swallows errors from failing to unpack individual packages and should return
+    //   S_OK in almost all cases, except when the given source path is not the path to a directory
+    HRESULT UnpackPackagesFromDirectory(
+        _In_ std::wstring source,
+        _In_ std::wstring destination,
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature,
+        _Inout_ std::vector<std::wstring> &skippedFiles,
+        _Inout_ std::vector<std::wstring> &failedPackages,
+        _Inout_ std::vector<HRESULT> &failedPackagesErrors)
+    {
+        if (!filesystem::is_directory(filesystem::path(source)))
+        {
+            return E_INVALIDARG;
+        }
+
+        for (const auto& entry : filesystem::directory_iterator(source))
+        {
+            auto fullFilePath = entry.path().wstring();
+            if (entry.is_regular_file())
+            {
+                // Swallow the error and add to list of failed packages and their associated errors
+                HRESULT hrUnpack = UnpackPackageOrBundle(fullFilePath, destination, isApplyACLs, validateSignature);
+                if (FAILED(hrUnpack))
+                {
+                    failedPackages.push_back(fullFilePath);
+                    failedPackagesErrors.push_back(hrUnpack);
+                }
+            }
+            else
+            {
+                skippedFiles.push_back(fullFilePath);
+            }
+        }
+        return S_OK;
+    }
+
+    HRESULT UnpackPackageOrBundle(
+        _In_ std::wstring source,
+        _In_ std::wstring destination,
+        _In_ bool isApplyACLs,
+        _In_ bool validateSignature)
+    {
+        HRESULT hr = S_OK;
+        if (IsPackageFile(source))
+        {
+            hr = MsixCoreLib::UnpackPackage(source, destination, isApplyACLs, validateSignature);
+        }
+        else if (IsBundleFile(source))
+        {
+            hr = MsixCoreLib::UnpackBundle(source, destination, isApplyACLs, validateSignature);
+        }
+        else
+        {
+            return E_INVALIDARG;
+        }
+        return hr;
+    }
 
     HRESULT UnpackPackage(
         _In_ std::wstring packageFilePath,

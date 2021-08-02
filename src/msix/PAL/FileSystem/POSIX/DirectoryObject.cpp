@@ -13,38 +13,58 @@
 #include <dirent.h>
 #include <map>
 
-namespace MSIX {
-
-    template<class Lambda>
-    void WalkDirectory(const std::string& root, Lambda& visitor)
+namespace MSIX
+{
+    namespace
     {
-        static std::string dot(".");
-        static std::string dotdot("..");
-
-        std::unique_ptr<DIR, decltype(&closedir)> dir(opendir(root.c_str()), closedir);
-        ThrowErrorIf(Error::FileNotFound, dir.get() == nullptr, "Invalid directory");
-        struct dirent* dp;
-        // TODO: handle junction loops
-        while((dp = readdir(dir.get())) != nullptr)
+        template<class Lambda>
+        void WalkDirectory(const std::string& root, Lambda& visitor)
         {
-            std::string fileName = std::string(dp->d_name);
-            std::string child = root + "/" + fileName;
-            if (dp->d_type == DT_DIR)
+            static std::string dot(".");
+            static std::string dotdot("..");
+
+            std::unique_ptr<DIR, decltype(&closedir)> dir(opendir(root.c_str()), closedir);
+            ThrowErrorIf(Error::FileNotFound, dir.get() == nullptr, "Invalid directory");
+            struct dirent* dp;
+            // TODO: handle junction loops
+            while((dp = readdir(dir.get())) != nullptr)
             {
-                if ((fileName != dot) && (fileName != dotdot))
+                std::string fileName = std::string(dp->d_name);
+                std::string child = root + "/" + fileName;
+                if (dp->d_type == DT_DIR)
                 {
-                    WalkDirectory(child, visitor);
+                    if ((fileName != dot) && (fileName != dotdot))
+                    {
+                        WalkDirectory(child, visitor);
+                    }
+                }
+                else
+                {
+                    // TODO: ignore .DS_STORE for mac?
+                    struct stat sb;
+                    ThrowErrorIf(Error::Unexpected, stat(child.c_str(), &sb) == -1, std::string("stat call failed " + std::to_string(errno)).c_str());
+                    if (!visitor(root, std::move(fileName), static_cast<std::uint64_t>(sb.st_mtime)))
+                    {
+                        break;
+                    }
                 }
             }
-            else
+        }
+
+        #define DEFAULT_MODE S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
+        void mkdirp(std::string& path, size_t startPos = 0, mode_t mode = DEFAULT_MODE)
+        {
+            char* p = &path[startPos];
+            if (*p == '/') { p++; }
+            while (*p != '\0')
             {
-                // TODO: ignore .DS_STORE for mac?
-                struct stat sb;
-                ThrowErrorIf(Error::Unexpected, stat(child.c_str(), &sb) == -1, std::string("stat call failed " + std::to_string(errno)).c_str());
-                if (!visitor(root, std::move(fileName), static_cast<std::uint64_t>(sb.st_mtime)))
-                {
-                    break;
-                }
+                while (*p != '\0' && *p != '/') { p++; }
+
+                char v = *p;
+                *p = '\0';
+                ThrowErrorIfNot(Error::FileCreateDirectory,(mkdir(path.c_str(), mode) != -1 || errno == EEXIST), path.c_str());
+                *p = v;
+                if (*p != '\0') {p++;}
             }
         }
     }
@@ -55,27 +75,15 @@ namespace MSIX {
         NOTIMPLEMENTED;
     }
 
-    #define DEFAULT_MODE S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH
-    void mkdirp(std::string& path, size_t startPos = 0, mode_t mode = DEFAULT_MODE)
-    {
-        char* p = &path[startPos];
-        if (*p == '/') { p++; }
-        while (*p != '\0')
-        {
-            while (*p != '\0' && *p != '/') { p++; }
-
-            char v = *p;
-            *p = '\0';
-            ThrowErrorIfNot(Error::FileCreateDirectory,(mkdir(path.c_str(), mode) != -1 || errno == EEXIST), path.c_str());
-            *p = v;
-            if (*p != '\0') {p++;}
-        }
-    }
-
-    const char* DirectoryObject::GetPathSeparator() { return "/"; }
+    char DirectoryObject::GetPathSeparator() const { return '/'; }
 
     DirectoryObject::DirectoryObject(const std::string& root, bool createRootIfNecessary) : m_root(root)
     {
+        if (!m_root.empty() && m_root.back() == GetPathSeparator())
+        {
+            m_root = m_root.substr(0, m_root.length() - 1);
+        }
+
         if (createRootIfNecessary)
         {
             mkdirp(m_root);

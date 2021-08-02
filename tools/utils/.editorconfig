@@ -1,0 +1,33 @@
+﻿# Suppress style warnings caused by the existing style in the code base.
+[*.cs]
+
+# SA1003: Symbols should be spaced correctly
+dotnet_diagnostic.SA1003.severity = none
+
+# SA1124: Do not use regions
+dotnet_diagnostic.SA1124.severity = none
+
+# SA1128: Put constructor initializers on their own line
+dotnet_diagnostic.SA1128.severity = none
+
+# SA1308: Variable names should not be prefixed
+dotnet_diagnostic.SA1308.severity = none
+
+# SA1413: Use trailing comma in multi-line initializers
+dotnet_diagnostic.SA1413.severity = none
+
+# SA1514: Element documentation header should be preceded by blank line
+dotnet_diagnostic.SA1514.severity = none
+
+# CS1591: Missing XML comment for publicly visible type or member
+dotnet_diagnostic.CS1591.severity = none
+
+# SA1600: Elements should be documented
+dotnet_diagnostic.SA1600.severity = none
+
+# SA1629: Documentation text should end with a period
+dotnet_diagnostic.SA1629.severity = none
+
+# This file is external and does not need to be analyzed
+[TelemetryEventSource.cs]
+dotnet_analyzer_diagnostic.severity = none

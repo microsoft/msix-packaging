@@ -1,0 +1,46 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{2EEB7D9F-FE3F-484E-A2B2-E4A50BFDA6AB}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>UtilsTestExe</RootNamespace>
+    <AssemblyName>UtilsTestExe</AssemblyName>
+    <TargetFramework>net5.0</TargetFramework>
+    <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Include="..\.editorconfig">
+      <Link>.editorconfig</Link>
+    </None>
+    <None Include="App.config" />
+  </ItemGroup>
+
+  <!-- Copy built exe to test data folder -->
+  <Target Name="CopyToTestData" AfterTargets="Build">
+    <!-- $(TargetDir) ends with a \, which trips xcopy arg parsing.
+         Ending with a period prevents that while pointing to the same location. -->
+    <Exec Command="xcopy /y &quot;$(TargetDir).&quot; $(SolutionDir)\UtilsTests\TestData\UtilsTestExe\" />
+  </Target>
+</Project>

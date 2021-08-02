@@ -127,6 +127,71 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                     commandLineInterface->m_validateSignature = true;
                     return S_OK;
                 }),
+            },
+            {
+                L"-create",
+                Option(false, IDS_STRING_HELP_OPTION_UNPACK_CREATE,
+                    [&](CommandLineInterface* commandLineInterface, const std::string&)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_create = true;
+                    return S_OK;
+                }),
+            },
+            {
+                L"-rootDirectory",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_ROOTDIRECTORY,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& rootDirectory)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_rootDirectory = utf8_to_utf16(rootDirectory);
+                    return S_OK;
+                }),
+            },
+            {
+                L"-fileType",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_FILETYPE,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& fileType)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->SetWVDFileType(utf8_to_utf16(fileType));
+
+                    return S_OK;
+                }),
+            },
+            {
+                L"-vhdSize",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_VHDSIZE,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& vhdSize)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    
+                    ULONGLONG maxVhdSizeMB = 2040000ull; // MAX SIZE: 2040 GB --> 2040000 MB
+                    errno = 0;
+                    ULONGLONG vhdSizeUll = strtoull(vhdSize.c_str(), NULL, 10 /*base*/);
+                    if ((vhdSizeUll == ULLONG_MAX && errno == ERANGE) ||
+                        vhdSizeUll > maxVhdSizeMB ||
+                        vhdSizeUll < 5ull)
+                    {
+                        std::wcout << "\nInvalid VHD size. Specified value must be at least 5 MB and at most 2040000 MB\n" << std::endl;
+                        return E_INVALIDARG;
+                    }
+  
+                    commandLineInterface->m_vhdSize = vhdSizeUll;
+                    return S_OK;
+                }),
             }
         })
     },
@@ -153,6 +218,125 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                         return E_INVALIDARG;
                     }
                     commandLineInterface->m_packageFilePath = utf8_to_utf16(packagePath);
+                    return S_OK;
+                }),
+            }
+        })
+    },
+    {
+        L"-MountImage",
+        Options(false, IDS_STRING_HELP_OPTION_MOUNTIMAGE,
+        [&](CommandLineInterface* commandLineInterface, const std::string&)
+        {
+            if (commandLineInterface->m_operationType != OperationType::Undefined)
+            {
+                return E_INVALIDARG;
+            }
+            commandLineInterface->m_operationType = OperationType::MountImage;
+            return S_OK;
+        },
+        {
+            {
+                L"-imagePath",
+                Option(true, IDS_STRING_HELP_OPTION_MOUNTIMAGE_IMAGEPATH,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& imagePath)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::MountImage)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_mountImagePath = utf8_to_utf16(imagePath);
+                    return S_OK;
+                }),
+            },
+            {
+                L"-fileType",
+                Option(true, IDS_STRING_HELP_OPTION_MOUNT_FILETYPE,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& fileType)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::MountImage)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->SetWVDFileType(utf8_to_utf16(fileType));
+                    return S_OK;
+                }),
+            },
+            {
+                L"-readOnly",
+                Option(true, IDS_STRING_HELP_OPTION_MOUNT_READONLY,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& readOnly)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::MountImage)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    if (CaseInsensitiveEquals(utf8_to_utf16(readOnly), std::wstring(L"true")))
+                    {
+                        commandLineInterface->m_readOnly = true;
+                    }
+                    else if (CaseInsensitiveEquals(utf8_to_utf16(readOnly), std::wstring(L"false")))
+                    {
+                        commandLineInterface->m_readOnly = false;
+                    }
+                    else
+                    {
+                        return E_INVALIDARG;
+                    }
+                    return S_OK;
+                }),
+            }
+        })
+    },
+    {
+        L"-UnmountImage",
+        Options(false, IDS_STRING_HELP_OPTION_UNMOUNTIMAGE,
+        [&](CommandLineInterface* commandLineInterface, const std::string&)
+        {
+            if (commandLineInterface->m_operationType != OperationType::Undefined)
+            {
+                return E_INVALIDARG;
+            }
+            commandLineInterface->m_operationType = OperationType::UnmountImage;
+            return S_OK;
+        },
+        {
+            {
+                L"-imagePath",
+                Option(true, IDS_STRING_HELP_OPTION_MOUNTIMAGE_IMAGEPATH,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& imagePath)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::UnmountImage)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_mountImagePath = utf8_to_utf16(imagePath);
+                    return S_OK;
+                }),
+            },
+            {
+                L"-volumeId",
+                Option(true, IDS_STRING_HELP_OPTION_UNMOUNTIMAGE_VOLUMEID,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& volumeId)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::UnmountImage)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_volumeId = utf8_to_utf16(volumeId);
+                    return S_OK;
+                }),
+            },
+            {
+                L"-fileType",
+                Option(true, IDS_STRING_HELP_OPTION_MOUNT_FILETYPE,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& fileType)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::UnmountImage)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->SetWVDFileType(utf8_to_utf16(fileType));
                     return S_OK;
                 }),
             }
@@ -275,4 +459,24 @@ HRESULT CommandLineInterface::Init()
     }
 
     return S_OK;
+}
+
+void CommandLineInterface::SetWVDFileType(std::wstring fileType)
+{
+    if (CaseInsensitiveEquals(fileType, L"VHD"))
+    {
+        this->m_fileType = WVDFileType::VHD;
+    }
+    else if (CaseInsensitiveEquals(fileType, L"VHDX"))
+    {
+        this->m_fileType = WVDFileType::VHDX;
+    }
+    else if (CaseInsensitiveEquals(fileType, L"CIM"))
+    {
+        this->m_fileType = WVDFileType::CIM;
+    }
+    else
+    {
+        this->m_fileType = WVDFileType::NotSpecified;
+    }
 }

@@ -1,0 +1,12 @@
+{
+  "loc.friendlyName": "Crea pacchetto per MSIX App Attach",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
+  "loc.description": "Creare un pacchetto VHD o VHDX per l'app MSIX",
+  "loc.instanceNameFormat": "Crea pacchetto per MSIX App Attach",
+  "loc.input.label.package": "Percorso pacchetto",
+  "loc.input.help.package": "Percorso del pacchetto.",
+  "loc.input.label.vhdxOutputPath": "Percorso di output VHDX",
+  "loc.input.help.vhdxOutputPath": "Il nome del file VHDX che sarà creato dall'attività.",
+  "loc.input.label.vhdxSize": "Dimensione VHDX (in MB)",
+  "loc.input.help.vhdxSize": "Dimensioni massime in MB del VHDX."
+}

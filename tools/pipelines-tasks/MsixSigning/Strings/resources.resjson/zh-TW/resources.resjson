@@ -1,0 +1,18 @@
+{
+  "loc.friendlyName": "MSIX 套件簽署",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
+  "loc.description": "簽署 MSIX 套件",
+  "loc.instanceNameFormat": "簽署 MSIX 套件",
+  "loc.input.label.package": "要簽署的套件",
+  "loc.input.help.package": "要簽署的檔案。可以是套件或套件組合。已簽署所有相符的檔案。",
+  "loc.input.label.certificateType": "憑證檔案類型",
+  "loc.input.help.certificateType": "要使用的憑證檔案來源。憑證可以來自 [Secure Files library](https://docs.microsoft.com/azure/devops/pipelines/library/secure-files)，或以字串形式編碼，就如同使用 [Azure Key Vault task](https://docs.microsoft.com/azure/devops/pipelines/tasks/deploy/azure-key-vault) 擷取。",
+  "loc.input.label.encodedCertificate": "已編碼憑證檔案",
+  "loc.input.help.encodedCertificate": "已將憑證編碼為 Base64 字串。",
+  "loc.input.label.certificate": "憑證檔案",
+  "loc.input.help.certificate": "用於簽署的安全憑證檔案名稱或 GUID。該檔案會在管道執行之後刪除。",
+  "loc.input.label.passwordVariable": "密碼變數",
+  "loc.input.help.passwordVariable": "儲存用來存取憑證檔案以進行簽署之密碼的變數名稱。請注意，這不是密碼本身，而是可以在文件庫下設定的變數名稱。",
+  "loc.input.label.timeStampServer": "時間戳記伺服器",
+  "loc.input.help.timeStampServer": "指定時間戳記伺服器位址的 URL。"
+}

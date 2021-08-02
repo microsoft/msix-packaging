@@ -406,3 +406,5 @@ src/msix/common/MSIXResource.cpp
 src/test/MacOS-Linux/testApiResults.txt
 src/test/mobile/iOSBVT/iOSBVT.xcodeproj/project.xcworkspace/
 src/test/mobile/TEST-MsixSDK-AOSP.xml
+
+Thumbs.db

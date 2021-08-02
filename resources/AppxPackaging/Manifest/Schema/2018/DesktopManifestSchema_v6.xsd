@@ -21,10 +21,16 @@
            xmlns="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
            xmlns:t="http://schemas.microsoft.com/appx/manifest/types"
            xmlns:f="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
+           xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
+           xmlns:uap11="http://schemas.microsoft.com/appx/manifest/uap/windows10/11"
+           xmlns:desktop8="http://schemas.microsoft.com/appx/manifest/desktop/windows10/8"
            >
 
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/types"/>
   <xs:import namespace="http://schemas.microsoft.com/appx/manifest/foundation/windows10"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/uap/windows10/11"/>
+  <xs:import namespace="http://schemas.microsoft.com/appx/manifest/desktop/windows10/8"/>
 
   <xs:element name="Extension" substitutionGroup="f:ExtensionChoice">
     <xs:complexType>
@@ -35,6 +41,8 @@
       </xs:choice>
       <xs:attribute name="Category" type="t:ST_ExtensionCategory_Desktop6" use="required"/>
       <xs:attributeGroup ref="t:ExtensionBaseAttributes"/>
+      <xs:attributeGroup ref="uap10:TrustLevelGroup"/>
+      <xs:attributeGroup ref="uap11:ManganeseExtensionAttributesGroup"/>
     </xs:complexType>
   </xs:element>
 
@@ -43,20 +51,27 @@
       <xs:element name="Dependencies" type="CT_Dependencies" minOccurs="0"/>
       <xs:element name="TriggerEvents" type="CT_TriggerEvents" minOccurs="0"/>
     </xs:all>
-    <xs:attribute name="Name" type="t:ST_NonEmptyString" use="required"/>
+    <xs:attribute name="Name" type="ST_ServiceName" use="required"/>
     <xs:attribute name="StartupType" type="ST_StartupType" use="required"/>
     <xs:attribute name="StartAccount" type="ST_StartAccount" use="required"/>
     <xs:attribute name="Arguments" type="t:ST_NonEmptyString"/>
   </xs:complexType>
 
+  <xs:simpleType name="ST_ServiceName">
+    <xs:restriction base="t:ST_NonEmptyString">
+      <xs:pattern value="[^/\\\x01-\x1f]+"/>
+      <xs:maxLength value="256"/>
+    </xs:restriction>
+  </xs:simpleType>
+
   <xs:complexType name="CT_Dependencies">
-    <xs:sequence minOccurs="0" maxOccurs="10000">
+    <xs:sequence minOccurs="1" maxOccurs="10000">
       <xs:element name="DependentService" type="CT_DependentService"/>
     </xs:sequence>
   </xs:complexType>
 
   <xs:complexType name="CT_DependentService">
-    <xs:attribute name="Name" type="t:ST_NonEmptyString" use="required"/>
+    <xs:attribute name="Name" type="ST_ServiceName" use="required"/>
   </xs:complexType>
 
   <xs:simpleType name="ST_StartAccount">
@@ -171,6 +186,7 @@
 
     </xs:all>
     <xs:attribute name="Folder" type="t:ST_FileName" use="required" />
+    <xs:attribute ref="desktop8:RunAsUser" use="optional"/>
   </xs:complexType>
 
    <xs:complexType name="CT_CustomInstallAction">

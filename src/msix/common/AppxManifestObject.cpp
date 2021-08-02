@@ -354,10 +354,34 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    // IAppxManifestReader2
+    // IAppxManifestReader2 
     HRESULT STDMETHODCALLTYPE AppxManifestObject::GetQualifiedResources(IAppxManifestQualifiedResourcesEnumerator **resources) noexcept
     {
-        return static_cast<HRESULT>(Error::NotImplemented);
+        ThrowErrorIf(Error::InvalidParameter, (resources == nullptr || *resources != nullptr), "bad pointer");
+
+        std::vector<ComPtr<IAppxManifestQualifiedResource>> qualifiedResources;
+        struct _context
+        {
+            AppxManifestObject* self;
+            std::vector<ComPtr<IAppxManifestQualifiedResource>>* qualifiedResources;
+        };
+        _context context = { this, &qualifiedResources};
+
+        // Parse Resource elements
+        XmlVisitor visitorResource(static_cast<void*>(&context), [](void* c, const ComPtr<IXmlElement>& resourceNode)->bool
+        {
+            _context* context = reinterpret_cast<_context*>(c);
+            auto language = resourceNode->GetAttributeValue(XmlAttributeName::Language);
+            auto scale = resourceNode->GetAttributeValue(XmlAttributeName::Scale);
+            auto dxFeatureLevel = resourceNode->GetAttributeValue(XmlAttributeName::DXFeatureLevel);
+            auto resource = ComPtr<IAppxManifestQualifiedResource>::Make<AppxManifestQualifiedResource>(context->self->m_factory.Get(), language, scale, dxFeatureLevel);
+            context->qualifiedResources->push_back(std::move(resource));
+            return true;
+        });
+        m_dom->ForEachElementIn(m_dom->GetDocument(), XmlQueryName::Package_Resources_Resource, visitorResource);
+        *resources = ComPtr<IAppxManifestQualifiedResourcesEnumerator>::
+            Make<EnumeratorCom<IAppxManifestQualifiedResourcesEnumerator,IAppxManifestQualifiedResource>>(qualifiedResources).Detach();
+        return static_cast<HRESULT>(Error::OK);
     }
 
     // IAppxManifestReader3

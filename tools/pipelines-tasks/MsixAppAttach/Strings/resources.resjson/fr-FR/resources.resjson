@@ -1,0 +1,12 @@
+{
+  "loc.friendlyName": "Créer un package pour l’attachement de l’application MSIX",
+  "loc.helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
+  "loc.description": "Créer un package VHD ou VHDX pour une connexion d’application MSIX",
+  "loc.instanceNameFormat": "Créer un package pour l’attachement de l’application MSIX",
+  "loc.input.label.package": "Chemin d'accès du package",
+  "loc.input.help.package": "Chemin d’accès du package.",
+  "loc.input.label.vhdxOutputPath": "Chemin d’accès de sortie de VHDX",
+  "loc.input.help.vhdxOutputPath": "Nom du fichier VHDX qui sera créé par la tâche.",
+  "loc.input.label.vhdxSize": "Taille de VHDX (en Mo)",
+  "loc.input.help.vhdxSize": "Taille maximale en mégaoctets du VHDX."
+}

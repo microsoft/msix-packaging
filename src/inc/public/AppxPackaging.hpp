@@ -78,6 +78,7 @@ SpecializeUuidOfImpl(IAppxManifestQualifiedResourcesEnumerator);
 SpecializeUuidOfImpl(IAppxManifestQualifiedResource);
 SpecializeUuidOfImpl(IAppxBundleFactory);
 SpecializeUuidOfImpl(IAppxBundleWriter);
+SpecializeUuidOfImpl(IAppxBundleWriter4);
 SpecializeUuidOfImpl(IAppxBundleReader);
 SpecializeUuidOfImpl(IAppxBundleManifestReader);
 SpecializeUuidOfImpl(IAppxBundleManifestPackageInfoEnumerator);
@@ -124,6 +125,7 @@ interface IAppxManifestQualifiedResourcesEnumerator;
 interface IAppxManifestQualifiedResource;
 interface IAppxBundleFactory;
 interface IAppxBundleWriter;
+interface IAppxBundleWriter4;
 interface IAppxBundleReader;
 interface IAppxBundleManifestReader;
 interface IAppxBundleManifestPackageInfoEnumerator;
@@ -970,6 +972,31 @@ enum tagLOCKTYPE
     };
 #endif 	/* __IAppxBundleWriter_INTERFACE_DEFINED__ */
 
+#ifndef __IAppxBundleWriter4_INTERFACE_DEFINED__
+#define __IAppxBundleWriter4_INTERFACE_DEFINED__
+
+    // {9CD9D523-5009-4C01-9882-DC029FBD47A3}
+    MSIX_INTERFACE(IAppxBundleWriter4,0x9cd9d523,0x5009,0x4c01,0x98,0x82,0xdc,0x02,0x9f,0xbd,0x47,0xa3);
+    interface IAppxBundleWriter4 : public IUnknown
+    {
+    public:
+        virtual HRESULT STDMETHODCALLTYPE AddPayloadPackage(
+            /* [string][in] */  LPCWSTR   fileName,
+            /* [in] */  IStream*  packageStream,
+            /* [in] */  BOOL      isDefaultApplicablePackage)  noexcept = 0;
+
+        virtual HRESULT AddPackageReference(
+            /* [string][in] */  LPCWSTR   fileName,
+            /* [in] */  IStream*  inputStream,
+            /* [in] */  BOOL      isDefaultApplicablePackage) noexcept = 0;
+
+        virtual HRESULT AddExternalPackageReference(
+            /* [string][in] */  LPCWSTR   fileName,
+            /* [in] */  IStream*  inputStream,
+            /* [in] */  BOOL      isDefaultApplicablePackage) noexcept = 0;
+    };
+#endif 	/* __IAppxBundleWriter4_INTERFACE_DEFINED__ */
+
 #ifndef __IAppxBundleReader_INTERFACE_DEFINED__
 #define __IAppxBundleReader_INTERFACE_DEFINED__
 
@@ -1172,6 +1199,7 @@ interface IMsixElementEnumerator;
 interface IMsixFactoryOverrides;
 interface IMsixStreamFactory;
 interface IMsixApplicabilityLanguagesEnumerator;
+interface IMsixPackageWriterFactory;
 
 #ifndef __IMsixDocumentElement_INTERFACE_DEFINED__
 #define __IMsixDocumentElement_INTERFACE_DEFINED__
@@ -1632,6 +1660,7 @@ enum MSIX_VALIDATION_OPTION
                                                                   // If the SDK is compiled without USE_VALIDATION_PARSER,
                                                                   // no schema validation is done, but it needs to be
                                                                   // valid xml.
+        MSIX_VALIDATION_OPTION_SKIPPACKAGEVALIDATION       = 0x8,
     }   MSIX_VALIDATION_OPTION;
 
 typedef /* [v1_enum] */
@@ -1665,10 +1694,28 @@ enum MSIX_APPLICABILITY_OPTIONS
         MSIX_APPLICABILITY_OPTION_SKIPLANGUAGE = 0x2,
     }   MSIX_APPLICABILITY_OPTIONS;
 
+typedef /* [v1_enum] */
+enum MSIX_BUNDLE_OPTIONS
+    {
+        MSIX_OPTION_NONE = 0x0,
+        MSIX_OPTION_VERBOSE = 0x1,
+        MSIX_OPTION_OVERWRITE = 0x2,
+        MSIX_OPTION_NOOVERWRITE = 0x4,
+        MSIX_OPTION_VERSION = 0x8,
+        MSIX_BUNDLE_OPTION_FLATBUNDLE = 0x10,
+        MSIX_BUNDLE_OPTION_BUNDLEMANIFESTONLY = 0x20,
+    }   MSIX_BUNDLE_OPTIONS;
+
+typedef /* [v1_enum] */
+enum MSIX_FACTORY_OPTIONS
+{
+    MSIX_FACTORY_OPTION_NONE = 0x0,
+    MSIX_FACTORY_OPTION_WRITER_ENABLE_FILE_HASH = 0x1,  // The package writer will compute full file hash and add <FileHash> element in block map xml
+}   MSIX_FACTORY_OPTIONS;
+
 #define MSIX_VALIDATION_NONE static_cast<MSIX_VALIDATION_OPTION>(           \
                                 MSIX_VALIDATION_OPTION_SKIPSIGNATURE        \
                              )
-
 
 #define MSIX_PLATFORM_ALL MSIX_PLATFORM_WINDOWS10      | \
                           MSIX_PLATFORM_WINDOWS10      | \
@@ -1757,6 +1804,14 @@ MSIX_API HRESULT STDMETHODCALLTYPE SignPackage(
     LPCSTR privateKey
 ) noexcept;
 
+MSIX_API HRESULT STDMETHODCALLTYPE PackBundle(
+    MSIX_BUNDLE_OPTIONS bundleOptions,
+    char* directoryPath,
+    char* outputBundle,
+    char* mappingFile,
+    char* version
+) noexcept;
+
 #endif // MSIX_PACK
 
 // A call to called CoCreateAppxFactory is required before start using the factory on non-windows platforms specifying
@@ -1764,17 +1819,39 @@ MSIX_API HRESULT STDMETHODCALLTYPE SignPackage(
 typedef LPVOID STDMETHODCALLTYPE COTASKMEMALLOC(SIZE_T cb);
 typedef void STDMETHODCALLTYPE COTASKMEMFREE(LPVOID pv);
 
-MSIX_API HRESULT STDMETHODCALLTYPE GetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept;
+MSIX_API HRESULT STDMETHODCALLTYPE MsixGetLogTextUTF8(COTASKMEMALLOC* memalloc, char** logText) noexcept;
+
+#ifndef MSIX_DEFINE_GetLogTextUTF8_BACKCOMPAT
+#define MSIX_DEFINE_GetLogTextUTF8_BACKCOMPAT 1
+#endif
+
+#if MSIX_DEFINE_GetLogTextUTF8_BACKCOMPAT
+#ifndef GetLogTextUTF8
+#define GetLogTextUTF8(memalloc, logText) MsixGetLogTextUTF8(memalloc, logText)
+#endif
+#endif
 
 // Call specific for Windows. Default to call CoTaskMemAlloc and CoTaskMemFree
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactory(
     MSIX_VALIDATION_OPTION validationOption,
     IAppxFactory** appxFactory) noexcept;
 
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithOptions(
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_FACTORY_OPTIONS factoryOptions,
+    IAppxFactory** appxFactory) noexcept;
+
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeap(
     COTASKMEMALLOC* memalloc,
     COTASKMEMFREE* memfree,
     MSIX_VALIDATION_OPTION validationOption,
+    IAppxFactory** appxFactory) noexcept;
+
+MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxFactoryWithHeapAndOptions(
+    COTASKMEMALLOC* memalloc,
+    COTASKMEMFREE* memfree,
+    MSIX_VALIDATION_OPTION validationOption,
+    MSIX_FACTORY_OPTIONS factoryOptions,
     IAppxFactory** appxFactory) noexcept;
 
 MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
