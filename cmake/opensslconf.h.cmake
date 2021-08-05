@@ -39,9 +39,6 @@ extern "C" {
 #ifndef OPENSSL_NO_EC_NISTP_64_GCC_128
 # define OPENSSL_NO_EC_NISTP_64_GCC_128
 #endif
-#ifndef OPENSSL_NO_EGD
-# define OPENSSL_NO_EGD
-#endif
 #ifndef OPENSSL_NO_EXTERNAL_TESTS
 # define OPENSSL_NO_EXTERNAL_TESTS
 #endif
