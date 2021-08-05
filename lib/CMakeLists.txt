@@ -49,7 +49,7 @@ if(CRYPTO_LIB MATCHES openssl)
     set(OpenSLL_BINARY_PATH  "${CMAKE_CURRENT_BINARY_DIR}" )
     set(OpenSLL_INCLUDE_PATH "${CMAKE_CURRENT_BINARY_DIR}" )
 
-    set(OpenSLL_VERSION "1.0.2")
+    set(OpenSLL_VERSION "1.1.1")
 
     set(OpenSSL_COMPILER_DEFINES OPENSSL_NO_ASM)
     # we include which means you need to use "OpenSSL_X_PATH" for your paths.

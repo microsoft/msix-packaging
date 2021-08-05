@@ -22,10 +22,19 @@
 #include <openssl/x509v3.h>
 #include <openssl/pkcs7.h>
 #include <openssl/pem.h>
+#include <openssl/x509.h>
+#include <crypto/x509.h>
 #include <openssl/crypto.h>
 
 namespace MSIX
 {
+    // This constant use to live in openssl/crypto/crypto.h of OpenSSL version 1.0.2u
+    // but same has been removed/taken out of support in the latest version. 
+    // Additionally, MSIX SDK code appears to consume with std::lock constructs i.e not
+    // using Crypto lock functionality (which is out support), so defining this macro
+    // as part of MSIX SDK code.
+    #define CRYPTO_NUM_LOCKS 41
+
     const char* SPC_INDIRECT_DATA_OBJID = {"1.3.6.1.4.1.311.2.1.4"};
 
     struct unique_BIO_deleter {
@@ -117,7 +126,7 @@ namespace MSIX
         for (int i = 0; i < sk_X509_num(certStack); i++)
         {
             X509* cert = sk_X509_value(certStack, i);
-            STACK_OF(X509_EXTENSION) *exts = cert->cert_info->extensions;
+            STACK_OF(X509_EXTENSION) *exts = cert->cert_info.extensions;
             for (int i = 0; i < sk_X509_EXTENSION_num(exts); i++) 
             {
                 X509_EXTENSION *ext = sk_X509_EXTENSION_value(exts, i);
@@ -128,7 +137,8 @@ namespace MSIX
                         unique_BIO extbio(BIO_new(BIO_s_mem()));
                         if (!X509V3_EXT_print(extbio.get(), ext, 0, 0)) 
                         {
-                            M_ASN1_OCTET_STRING_print(extbio.get(), ext->value);
+                            // The following construct has been removed from the latest OpenSSL, so it is commented out
+                            //M_ASN1_OCTET_STRING_print(extbio.get(), ext->value);
                         }
 
                         BUF_MEM *bptr = nullptr;
@@ -356,7 +366,7 @@ namespace MSIX
         std::call_once(sslInitializationFlag, []
         {
             // Best effort to check if OpenSSL isn't initialized by the app or another library
-            if (CRYPTO_THREADID_get_callback() == nullptr)
+            if (CRYPTO_THREADID_get_callback() == NULL)
             {
                 OpenSSL_add_all_algorithms();
                 CRYPTO_THREADID_set_callback(CryptoThreadIDCallback);
