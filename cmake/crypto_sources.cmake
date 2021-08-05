@@ -102,7 +102,6 @@ list(APPEND XSRC
     ${CRYPTO}/async/async.c
     ${CRYPTO}/async/async_err.c
     ${CRYPTO}/async/async_wait.c
-    ${CRYPTO}/async/arch/async_null.c  
 
     ${CRYPTO}/bio/b_dump.c
     ${CRYPTO}/bio/b_print.c
