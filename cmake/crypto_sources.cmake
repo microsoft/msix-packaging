@@ -184,7 +184,7 @@ list(APPEND XSRC
     ${CRYPTO}/ct/ct_x509v3.c
 
     #${CRYPTO}/dso/dso_beos.c
-    ${CRYPTO}/dso/dso_dl.c
+    #${CRYPTO}/dso/dso_dl.c  DSO_NONE
     ${CRYPTO}/dso/dso_dlfcn.c
     ${CRYPTO}/dso/dso_err.c
     ${CRYPTO}/dso/dso_lib.c
