@@ -99,9 +99,6 @@ list(APPEND XSRC
     ${CRYPTO}/asn1/x_spki.c
     ${CRYPTO}/asn1/x_val.c
 
-    ${CRYPTO}/async/async.c
-    ${CRYPTO}/async/async_err.c
-    ${CRYPTO}/async/async_wait.c
 
     ${CRYPTO}/bio/b_dump.c
     ${CRYPTO}/bio/b_print.c
@@ -185,7 +182,7 @@ list(APPEND XSRC
 
     #${CRYPTO}/dso/dso_beos.c
     #${CRYPTO}/dso/dso_dl.c  DSO_NONE
-    ${CRYPTO}/dso/dso_dlfcn.c
+    #${CRYPTO}/dso/dso_dlfcn.c  DSO_NONE
     ${CRYPTO}/dso/dso_err.c
     ${CRYPTO}/dso/dso_lib.c
     ${CRYPTO}/dso/dso_openssl.c
@@ -480,7 +477,13 @@ else()
     ${CRYPTO}/async/arch/async_posix.c
     ${CRYPTO}/rand/rand_unix.c
     )
-endif()  
+endif() 
+
+list(APPEND XSRC
+    ${CRYPTO}/async/async.c
+    ${CRYPTO}/async/async_err.c
+    ${CRYPTO}/async/async_wait.c
+    )
 
 set( CMAKE_THREAD_PREFER_PTHREAD TRUE )
 find_package ( Threads )
