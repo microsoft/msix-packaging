@@ -28,7 +28,7 @@
 
 namespace MSIX
 {
-    // This constant use to live in openssl/crypto/crypto.h of OpenSSL version 1.0.2u
+    // This constant use to live in openssl/crypto/crypto.h of OpenSSL version 1.0.2q
     // but same has been removed/taken out of support in the latest version. 
     // Additionally, MSIX SDK code appears to consume with std::lock constructs i.e not
     // using Crypto lock functionality (which is out support), so defining this macro
