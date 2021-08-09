@@ -83,7 +83,7 @@ else()
 endif()
 
 # Begin configure public headers
-file( READ "${MSIX_PROJECT_ROOT}/cmake/opensslconf.h.cmake" CONF )
+file( READ "${MSIX_PROJECT_ROOT}/cmake/openssl/opensslconf.h.cmake" CONF )
 set( CONF "
 #define OPENSSL_NO_GMP
 #define OPENSSL_NO_JPAKE
@@ -130,10 +130,10 @@ file( WRITE "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h.cmake" "${CONF}" )
 configure_file( "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h.cmake"
  "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h" )
 
-configure_file( "${MSIX_PROJECT_ROOT}/cmake/bn_conf.h.cmake"
+configure_file( "${MSIX_PROJECT_ROOT}/cmake/openssl/crypto/bn_conf.h.cmake"
  "${OpenSLL_INCLUDE_PATH}/openssl/crypto/bn_conf.h" )
 
- configure_file( "${MSIX_PROJECT_ROOT}/cmake/dso_conf.h.cmake"
+ configure_file( "${MSIX_PROJECT_ROOT}/cmake/openssl/crypto/dso_conf.h.cmake"
  "${OpenSLL_INCLUDE_PATH}/openssl/crypto/dso_conf.h" )
 # End configure public headers
 
