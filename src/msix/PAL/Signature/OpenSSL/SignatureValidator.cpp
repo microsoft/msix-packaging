@@ -137,8 +137,7 @@ namespace MSIX
                         unique_BIO extbio(BIO_new(BIO_s_mem()));
                         if (!X509V3_EXT_print(extbio.get(), ext, 0, 0)) 
                         {
-                            // The following construct has been removed from the latest OpenSSL, so it is commented out
-                            //M_ASN1_OCTET_STRING_print(extbio.get(), ext->value);
+                            ASN1_STRING_print(extbio.get(), X509_EXTENSION_get_data(ext));
                         }
 
                         BUF_MEM *bptr = nullptr;
