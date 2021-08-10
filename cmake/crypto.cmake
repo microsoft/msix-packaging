@@ -18,7 +18,7 @@ set( TARGET_SOURCES "" )
 
 # Because OpenSSL does silly things we have to create a proper include dir to build everything
 file( COPY ${OpenSSL_SOURCE_PATH}/e_os.h DESTINATION ${OpenSLL_INCLUDE_PATH}/ )
-file( COPY ${OpenSSL_SOURCE_PATH}/e_os2.h DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl/ )
+file( COPY ${OpenSSL_SOURCE_PATH}/include/openssl/e_os2.h DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl/ )
 
 # we hold the sources (.c) under XSRC and headers (.h) under XINC
 # we do this as we need to copy headers else the lib will not build.
@@ -29,8 +29,10 @@ set( XSRC_SHARED "")
 # OpenSSL Has a lot of source files so we separated it.
 include( crypto_sources )
 
-file( COPY ${XINC} DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl FILES_MATCHING REGEX "\.h$" )
-file( COPY ${TARGET_SOURCE_DIR_TRUE}/opensslconf.h.in DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl )
+file( COPY ${OpenSSL_SOURCE_PATH}/include/openssl/opensslconf.h.in DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl )
+file( COPY ${OpenSSL_SOURCE_PATH}/include/internal DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl/ )
+file( COPY ${OpenSSL_SOURCE_PATH}/include/crypto DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl/ )
+file( COPY ${OpenSSL_SOURCE_PATH}/include/openssl DESTINATION ${OpenSLL_INCLUDE_PATH}/openssl/ )
 
 if(WIN32)
     # TODO: Replicate build flags for cl
@@ -41,7 +43,47 @@ else()
         -fno-math-errno -fno-unroll-loops -fmerge-all-constants)
 endif()
 
-file( READ "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h.in" CONF )
+if( MSVC )
+  include( MSVCRuntime )
+  # configure_msvc_runtime()
+  set( OPENSSLDIR "C:/ssl" )
+  set( ENGINESDIR "C:/engines-1.1" )
+else()
+  set( OPENSSLDIR "/usr/local/ssl" )
+  set( ENGINESDIR "/usr/local/engines-1.1" )
+endif()
+add_definitions( "-DOPENSSLDIR=\"${OPENSSLDIR}\"" )
+add_definitions( "-DENGINESDIR=\"${ENGINESDIR}\"" )
+
+# This was a default option during OpenSSL 1.0.2u and is the option that MSIX SDK 
+# uses although it compiles set of DSO source code. With the latest version
+# of OpenSSL 1.1.1j we need this to be set explicitly (it appears we don't have default)
+set( DSO_NONE ON )
+
+if( APPLE )
+  set( DSO_EXTENSION ".dylib" )
+elseif( WIN32 AND NOT CYGWIN )
+  set( DSO_EXTENSION ".dll" )
+elseif( CYGWIN )
+  set( DSO_EXTENSION ".dll" )
+else()
+  set( DSO_EXTENSION ".so" )
+endif()
+
+include( CheckTypeSize )
+check_type_size( "long" LONG_INT )
+check_type_size( "long long" LONG_LONG_INT )
+check_type_size( "int" INT )
+if( HAVE_LONG_INT AND (${LONG_INT} EQUAL 8) )
+  set( SIXTY_FOUR_BIT_LONG ON )
+elseif( HAVE_LONG_LONG_INT AND (${LONG_LONG_INT} EQUAL 8) )
+  set( SIXTY_FOUR_BIT ON )
+else()
+  set( THIRTY_TWO_BIT ON )
+endif()
+
+# Begin configure public headers
+file( READ "${MSIX_PROJECT_ROOT}/cmake/openssl/opensslconf.h.cmake" CONF )
 set( CONF "
 #define OPENSSL_NO_GMP
 #define OPENSSL_NO_JPAKE
@@ -80,10 +122,20 @@ set( CONF "
 #define OPENSSL_NO_BF
 #define OPENSSL_NO_MD4
 #define OPENSSL_NO_CMS
-#define OPENSSL_NO_OCSP
 #define OPENSSL_NO_SRP
+#define OPENSSL_NO_SM2
 ${CONF}" )
-file( WRITE "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h" "${CONF}" )
+file( WRITE "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h.cmake" "${CONF}" )
+
+configure_file( "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h.cmake"
+ "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h" )
+
+configure_file( "${MSIX_PROJECT_ROOT}/cmake/openssl/crypto/bn_conf.h.cmake"
+ "${OpenSLL_INCLUDE_PATH}/openssl/crypto/bn_conf.h" )
+
+ configure_file( "${MSIX_PROJECT_ROOT}/cmake/openssl/crypto/dso_conf.h.cmake"
+ "${OpenSLL_INCLUDE_PATH}/openssl/crypto/dso_conf.h" )
+# End configure public headers
 
 set( BuildInfH " 
 #ifndef MK1MF_BUILD
@@ -91,6 +143,7 @@ set( BuildInfH "
   #define CFLAGS \"\"
   #define PLATFORM \"${CMAKE_SYSTEM_NAME}\"
   #define DATE \"\"
+  static const char *compiler_flags = CFLAGS;
 #endif
 " )
 file( WRITE ${OpenSLL_INCLUDE_PATH}/buildinf.h "${BuildInfH}" )
