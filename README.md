@@ -79,7 +79,7 @@ mkdir build && cd build && cmake -DMACOS=on -G"Xcode" ..
 open xcode
 File->Open->navigate to project root/build and select "Project.xcodeproj"
 
-See [cmake-Xcode-integration](https://www.johnlamp.net/cmake-tutorial-2-ide-integration.html#section-Xcode) for additional details
+See [cmake-Xcode-integration](https://www.johnlamp.net/?p=16#section-Xcode) for additional details
 
 ## Build
 ### On Windows using Visual Studio nmake:
@@ -177,7 +177,7 @@ Built in the Azure Pipelines macOS pool. See specification [here](https://github
 **Release Emulator Without Bundle support**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&jobName=iOS&configuration=iOS%20release_x86_nobundle)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)
 **Release arm64**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20iOS%20CI?branchName=master&jobName=iOS&configuration=iOS%20release_arm64)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=74&branchName=master)
 
-Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-10.14-Readme.md)
+Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.14-Readme.md)
 
 ### Android
 ||master|
@@ -188,7 +188,7 @@ Built in the Azure Pipelines macOS pool. See specification [here](https://github
 **Release arm**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20aosp%20CI?branchName=master&jobName=AOSP&configuration=AOSP%20release_arm)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=76&branchName=master)|
 **Release arm Without Bundle support**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20aosp%20CI?branchName=master&jobName=AOSP&configuration=AOSP%20release_arm_nobundle)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=76&branchName=master)|
 
-Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/macos/macos-10.14-Readme.md)
+Built in the Azure Pipelines macOS pool. See specification [here](https://github.com/actions/virtual-environments/blob/main/images/macos/macos-10.14-Readme.md)
 
 ### Linux
 ||master|
@@ -200,7 +200,7 @@ Built in the Azure Pipelines macOS pool. See specification [here](https://github
 **Debug With Pack**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&jobName=Linux&configuration=Linux%20debug_pack)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
 **Release With Pack**|[![Build Status](https://dev.azure.com/ms/msix-packaging/_apis/build/status/msix-packaging%20Linux%20CI?branchName=master&jobName=Linux&configuration=Linux%20release_pack)](https://dev.azure.com/ms/msix-packaging/_build/latest?definitionId=72&branchName=master)|
 
-Built in the Azure Pipelines Hosted Ubuntu 1604. See specification [here](https://github.com/Microsoft/azure-pipelines-image-generation/blob/master/images/linux/Ubuntu1604-README.md)
+Built in the Azure Pipelines Hosted Ubuntu 1604. See specification [here](https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu1604-README.md)
 
 ## Windows 7 support
 The MSIX SDK is fully supported and tested on Windows 7. However, an Application Manifest **_MUST_**  be included to any executable that is expected to run on Windows 7 and uses msix.dll. Specifically, the Application Manifest **_MUST_**  include the supportedOS flags for Windows 7. The manifest is not included on msix.dll because the compat manifest doesn't matter on DLLs.
@@ -211,7 +211,7 @@ The MSIX SDK minimum supported for Android is API Level 19.
 
 We also produce msix-jni.jar which acts as a helper to get the languages from the Android device. Because of it, we expect either a -DANDROID_SDK and -DANDROID_SDK_VERSION on the cmake command and, if not present, we default to $ANDROID_HOME and 24 respectively.
 The default level for the SDK level is 24 because we use the [Configuration class](https://developer.android.com/reference/android/content/res/Configuration) and, depending on the version of the device, we either use the locale attribute (deprecated as of API level 24) or getLocales.
-We recommend using the [makeaosp](makeaosp) script to build for Android on non-Windows devices.
+We recommend using the [makeaosp](makeaosp.sh) script to build for Android on non-Windows devices.
 
 ## Apple Silicon
 To enable building the MSIX SDK to run on Apple Silicon do the following:
