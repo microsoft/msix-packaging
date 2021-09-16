@@ -176,31 +176,6 @@ MSIX_INTERFACE(IAppxPackageWriter3, 0xa83aacd3,0x41c0,0x4501,0xb8,0xa3,0x74,0x16
 MSIX_INTERFACE(IAppxManifestOptionalPackageInfo, 0x2634847d, 0x5b5d, 0x4fe5, 0xa2, 0x43, 0x00, 0x2f, 0xf9, 0x5e, 0xdc, 0x7e);
 MSIX_INTERFACE(IAppxManifestMainPackageDependenciesEnumerator, 0xa99c4f00, 0x51d2, 0x4f0f, 0xba, 0x46, 0x7e, 0xd5, 0x25, 0x5e, 0xbd, 0xff);
 MSIX_INTERFACE(IAppxManifestMainPackageDependency, 0x05d0611c, 0xbc29, 0x46d5, 0x97, 0xe2, 0x84, 0xb9, 0xc7, 0x9b, 0xd8, 0xae);
-MSIX_INTERFACE(IMsixDocumentElement,0xe8900e0e,0x1dfd,0x4728,0x83,0x52,0xaa,0xda,0xeb,0xbf,0x00,0x65);
-MSIX_INTERFACE(IMsixElement,0x5b6786ff,0x6145,0x4f0e,0xb8,0xc9,0x8e,0x03,0xaa,0xcb,0x60,0xd0);
-MSIX_INTERFACE(IMsixElementEnumerator,0x7e7ea105,0xa4f9,0x4c12,0x9e,0xfa,0x98,0xef,0x18,0x95,0x41,0x8a);
-MSIX_INTERFACE(IMsixFactoryOverrides,0x0acedbdb,0x57cd,0x4aca,0x8c,0xee,0x33,0xfa,0x52,0x39,0x43,0x16);
-MSIX_INTERFACE(IMsixStreamFactory,0xc74f4821,0x3b82,0x4ad5,0x98,0xea,0x3d,0x52,0x68,0x1a,0xff,0x56);
-MSIX_INTERFACE(IMsixApplicabilityLanguagesEnumerator,0xbfc4655a,0xbe7a,0x456a,0xbc,0x4e,0x2a,0xf9,0x48,0x1e,0x84,0x32);
-MSIX_INTERFACE(IAppxBlockMapFileUtf8,0x52023973,0x05fd,0x46ca,0x8a,0xc5,0xbb,0x0a,0xa4,0x31,0xfe,0xd6);
-MSIX_INTERFACE(IAppxBlockMapReaderUtf8,0x1a02d8b4,0x477a,0x487e,0x98,0x15,0x31,0x7c,0xc0,0x9a,0xcc,0x22);
-MSIX_INTERFACE(IAppxBundleManifestPackageInfoUtf8,0xf1ae9284,0xf7ee,0x431c,0x9a,0x85,0x03,0x63,0x0a,0xda,0x28,0x5b);
-MSIX_INTERFACE(IAppxBundleReaderUtf8, 0x90f4a4fc,0xf655,0x43b6,0xb0,0x33,0x35,0xa8,0xdf,0xc9,0x2c,0xbf)
-MSIX_INTERFACE(IAppxFactoryUtf8,0x16c3c3f5,0x6d63,0x47af,0x8a,0x68,0xdc,0xc3,0xae,0xb0,0xce,0xbb);
-MSIX_INTERFACE(IAppxFileUtf8,0x73d14f3f,0x4c55,0x4b6d,0x93,0x11,0xa0,0x2b,0xb3,0x53,0x8b,0xb6);
-MSIX_INTERFACE(IAppxManifestApplicationUtf8,0x3fb53200,0xbd86,0x4971,0xa8,0xad,0x2e,0x18,0xc3,0xc0,0x2a,0xae);
-MSIX_INTERFACE(IAppxManifestPackageDependencyUtf8,0x7ff7ba87,0xd29e,0x447a,0xb2,0xe6,0x31,0xdd,0xc8,0x8b,0x94,0xe9);
-MSIX_INTERFACE(IAppxManifestPackageIdUtf8,0xa1f79b28,0x37f3,0x4b58,0x91,0x00,0x7a,0xf8,0x98,0xd1,0x1f,0x65);
-MSIX_INTERFACE(IAppxManifestPropertiesUtf8,0x1c3fe108,0x9115,0x4623,0xbe,0x85,0xf0,0xfe,0xc9,0x9e,0xc5,0x16);
-MSIX_INTERFACE(IAppxManifestQualifiedResourceUtf8,0x2fac530d,0x87e4,0x4dd5,0x99,0xd3,0x29,0x0b,0xb1,0x92,0x36,0x3e);
-MSIX_INTERFACE(IAppxManifestCapabilitiesEnumeratorUtf8,0xcc422f8e,0xa4d9,0x4f2e,0xbb,0x49,0xac,0x3a,0x5c,0xe2,0xa2,0xf0);
-MSIX_INTERFACE(IAppxManifestResourcesEnumeratorUtf8,0x194cfd4a,0x55db,0x4832,0xb1,0xaf,0x0d,0x68,0x05,0xa4,0x53,0x2a);
-MSIX_INTERFACE(IAppxManifestTargetDeviceFamilyUtf8,0x70adc4fb,0x33f5,0x4ed3,0xaa,0xaf,0xe5,0xad,0x74,0x99,0x16,0x69);
-MSIX_INTERFACE(IAppxPackageReaderUtf8,0x842ffe95,0xcf7a,0x4707,0x97,0x3a,0x0a,0x2e,0x9f,0xfc,0x3a,0x85);
-MSIX_INTERFACE(IAppxPackageWriterUtf8, 0x578ee26e,0x642a,0x4b03,0xae,0xda,0x8a,0x37,0x4f,0xf7,0x1b,0x5b);
-MSIX_INTERFACE(IAppxPackageWriter3Utf8, 0xfc8f7fd6,0x3a35,0x49cc,0xb6,0x2f,0xea,0x0e,0xe8,0x39,0xe2,0x5e);
-MSIX_INTERFACE(IAppxManifestOptionalPackageInfoUtf8, 0x1c781d5a, 0x90df, 0x4202, 0xaf, 0xf3, 0x13, 0x2b, 0xd0, 0xa8, 0x92, 0x33);
-MSIX_INTERFACE(IAppxManifestMainPackageDependencyUtf8, 0x080e7850, 0x8e9c, 0x4162, 0x85, 0xe2, 0x97, 0x98, 0x3e, 0x49, 0x3c, 0x0f);
 
 extern "C"{
 
@@ -330,7 +305,7 @@ enum tagLOCKTYPE
     {
         BOOL forceZip32;
         IUri *hashMethod;
-    } 	APPX_PACKAGE_SETTINGS;
+    } APPX_PACKAGE_SETTINGS;
 
     typedef
         enum APPX_COMPRESSION_OPTION
@@ -340,7 +315,7 @@ enum tagLOCKTYPE
         APPX_COMPRESSION_OPTION_MAXIMUM = 2,
         APPX_COMPRESSION_OPTION_FAST = 3,
         APPX_COMPRESSION_OPTION_SUPERFAST = 4
-    } 	APPX_COMPRESSION_OPTION;
+    } APPX_COMPRESSION_OPTION;
 
     typedef
         enum APPX_FOOTPRINT_FILE_TYPE
@@ -350,7 +325,7 @@ enum tagLOCKTYPE
         APPX_FOOTPRINT_FILE_TYPE_SIGNATURE = 2,
         APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY = 3,
         APPX_FOOTPRINT_FILE_TYPE_CONTENTGROUPMAP = 4
-    } 	APPX_FOOTPRINT_FILE_TYPE;
+    } APPX_FOOTPRINT_FILE_TYPE;
 
     typedef
         enum APPX_BUNDLE_FOOTPRINT_FILE_TYPE
@@ -360,7 +335,7 @@ enum tagLOCKTYPE
         APPX_BUNDLE_FOOTPRINT_FILE_TYPE_BLOCKMAP = 1,
         APPX_BUNDLE_FOOTPRINT_FILE_TYPE_SIGNATURE = 2,
         APPX_BUNDLE_FOOTPRINT_FILE_TYPE_LAST = 2
-    } 	APPX_BUNDLE_FOOTPRINT_FILE_TYPE;
+    } APPX_BUNDLE_FOOTPRINT_FILE_TYPE;
 
     typedef
         enum APPX_CAPABILITIES
@@ -377,7 +352,7 @@ enum tagLOCKTYPE
         APPX_CAPABILITY_REMOVABLE_STORAGE = 0x200,
         APPX_CAPABILITY_APPOINTMENTS = 0x400,
         APPX_CAPABILITY_CONTACTS = 0x800
-    } 	APPX_CAPABILITIES;
+    } APPX_CAPABILITIES;
 
     typedef
         enum APPX_PACKAGE_ARCHITECTURE
@@ -387,7 +362,7 @@ enum tagLOCKTYPE
         APPX_PACKAGE_ARCHITECTURE_X64 = 9,
         APPX_PACKAGE_ARCHITECTURE_NEUTRAL = 11,
         APPX_PACKAGE_ARCHITECTURE_ARM64 = 12
-    } 	APPX_PACKAGE_ARCHITECTURE;
+    } APPX_PACKAGE_ARCHITECTURE;
 
     typedef
         enum APPX_PACKAGE_ARCHITECTURE2
@@ -399,14 +374,14 @@ enum tagLOCKTYPE
         APPX_PACKAGE_ARCHITECTURE2_ARM64 = 12,
         APPX_PACKAGE_ARCHITECTURE2_X86_ON_ARM64 = 14,
         APPX_PACKAGE_ARCHITECTURE2_UNKNOWN = 0xffff
-    } 	APPX_PACKAGE_ARCHITECTURE2;
+    } APPX_PACKAGE_ARCHITECTURE2;
 
     typedef
         enum APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE
     {
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_APPLICATION = 0,
         APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE_RESOURCE = 1
-    } 	APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE;
+    } APPX_BUNDLE_PAYLOAD_PACKAGE_TYPE;
 
     typedef
         enum DX_FEATURE_LEVEL
@@ -415,7 +390,7 @@ enum tagLOCKTYPE
         DX_FEATURE_LEVEL_9 = 1,
         DX_FEATURE_LEVEL_10 = 2,
         DX_FEATURE_LEVEL_11 = 3
-    } 	DX_FEATURE_LEVEL;
+    } DX_FEATURE_LEVEL;
 
     typedef
         enum APPX_CAPABILITY_CLASS_TYPE
@@ -426,7 +401,7 @@ enum tagLOCKTYPE
         APPX_CAPABILITY_CLASS_WINDOWS = 0x4,
         APPX_CAPABILITY_CLASS_ALL = 0x7,
         APPX_CAPABILITY_CLASS_CUSTOM = 0x8
-    } 	APPX_CAPABILITY_CLASS_TYPE;
+    } APPX_CAPABILITY_CLASS_TYPE;
 
     // {beb94909-e451-438b-b5a7-d79e767b75d8}
     interface IAppxFactory : public IUnknown
@@ -480,7 +455,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetManifest(
             /* [retval][out] */  IAppxManifestReader **manifestReader) noexcept = 0;
     };
-#endif 	/* __IAppxPackageReader_INTERFACE_DEFINED__ */
+#endif /* __IAppxPackageReader_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxPackageWriter_INTERFACE_DEFINED__
 #define __IAppxPackageWriter_INTERFACE_DEFINED__
@@ -499,7 +474,7 @@ enum tagLOCKTYPE
             /* [in] */  IStream *manifest) noexcept = 0;
 
     };
-#endif 	/* __IAppxPackageWriter_INTERFACE_DEFINED__ */
+#endif /* __IAppxPackageWriter_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxFile_INTERFACE_DEFINED__
 #define __IAppxFile_INTERFACE_DEFINED__
@@ -523,7 +498,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetStream(
             /* [retval][out] */  IStream **stream) noexcept = 0;
     };
-#endif 	/* __IAppxFile_INTERFACE_DEFINED__ */
+#endif /* __IAppxFile_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxFilesEnumerator_INTERFACE_DEFINED__
 #define __IAppxFilesEnumerator_INTERFACE_DEFINED__
@@ -542,7 +517,7 @@ enum tagLOCKTYPE
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
 
     };
-#endif 	/* __IAppxFilesEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxFilesEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBlockMapReader_INTERFACE_DEFINED__
 #define __IAppxBlockMapReader_INTERFACE_DEFINED__
@@ -564,7 +539,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetStream(
             /* [retval][out] */  IStream **blockMapStream) noexcept = 0;
     };
-#endif 	/* __IAppxBlockMapReader_INTERFACE_DEFINED__ */
+#endif /* __IAppxBlockMapReader_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBlockMapFile_INTERFACE_DEFINED__
 #define __IAppxBlockMapFile_INTERFACE_DEFINED__
@@ -590,7 +565,7 @@ enum tagLOCKTYPE
             /* [retval][out] */  BOOL *isValid) noexcept = 0;
 
     };
-#endif 	/* __IAppxBlockMapFile_INTERFACE_DEFINED__ */
+#endif /* __IAppxBlockMapFile_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBlockMapFilesEnumerator_INTERFACE_DEFINED__
 #define __IAppxBlockMapFilesEnumerator_INTERFACE_DEFINED__
@@ -608,7 +583,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
             /* [retval][out] */  BOOL *hasCurrent) noexcept = 0;
     };
-#endif 	/* __IAppxBlockMapFilesEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxBlockMapFilesEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBlockMapBlock_INTERFACE_DEFINED__
 #define __IAppxBlockMapBlock_INTERFACE_DEFINED__
@@ -624,7 +599,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetCompressedSize(
             /* [retval][out] */  UINT32 *size)  noexcept = 0;
     };
-#endif 	/* __IAppxBlockMapBlock_INTERFACE_DEFINED__ */
+#endif /* __IAppxBlockMapBlock_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBlockMapBlocksEnumerator_INTERFACE_DEFINED__
 #define __IAppxBlockMapBlocksEnumerator_INTERFACE_DEFINED__
@@ -642,7 +617,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
     };
-#endif 	/* __IAppxBlockMapBlocksEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxBlockMapBlocksEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestReader_INTERFACE_DEFINED__
 #define __IAppxManifestReader_INTERFACE_DEFINED__
@@ -679,7 +654,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetStream(
             /* [retval][out] */  IStream **manifestStream) noexcept = 0;
     };
-#endif 	/* __IAppxManifestReader_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestReader_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestReader2_INTERFACE_DEFINED__
 #define __IAppxManifestReader2_INTERFACE_DEFINED__
@@ -692,7 +667,7 @@ enum tagLOCKTYPE
             /* [retval][out] */  IAppxManifestQualifiedResourcesEnumerator **resources) noexcept = 0;
 
     };
-#endif 	/* __IAppxManifestReader2_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestReader2_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestReader3_INTERFACE_DEFINED__
 #define __IAppxManifestReader3_INTERFACE_DEFINED__
@@ -708,7 +683,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetTargetDeviceFamilies(
             /* [retval][out] */  IAppxManifestTargetDeviceFamiliesEnumerator **targetDeviceFamilies) noexcept = 0;
     };
-#endif 	/* __IAppxManifestReader3_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestReader3_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestReader4_INTERFACE_DEFINED__
 #define __IAppxManifestReader4_INTERFACE_DEFINED__
@@ -720,7 +695,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetOptionalPackageInfo(
             /* [retval][out] */  IAppxManifestOptionalPackageInfo **optionalPackageInfo) noexcept = 0;
     };
-#endif 	/* __IAppxManifestReader4_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestReader4_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestReader5_INTERFACE_DEFINED__
 #define __IAppxManifestReader5_INTERFACE_DEFINED__
@@ -732,7 +707,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetMainPackageDependencies(
             /* [retval][out] */  IAppxManifestMainPackageDependenciesEnumerator **mainPackageDependencies) noexcept = 0;
     };
-#endif 	/* __IAppxManifestReader5_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestReader5_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestPackageId_INTERFACE_DEFINED__
 #define __IAppxManifestPackageId_INTERFACE_DEFINED__
@@ -766,7 +741,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetPackageFamilyName(
             /* [retval][string][out] */ LPWSTR *packageFamilyName) noexcept = 0;
     };
-#endif 	/* __IAppxManifestPackageId_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestPackageId_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestProperties_INTERFACE_DEFINED__
 #define __IAppxManifestProperties_INTERFACE_DEFINED__
@@ -783,7 +758,7 @@ enum tagLOCKTYPE
             /* [string][in] */  LPCWSTR name,
             /* [retval][string][out] */ LPWSTR *value) noexcept = 0;
     };
-#endif 	/* __IAppxManifestProperties_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestProperties_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestTargetDeviceFamiliesEnumerator_INTERFACE_DEFINED__
 #define __IAppxManifestTargetDeviceFamiliesEnumerator_INTERFACE_DEFINED__
@@ -801,7 +776,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
     };
-#endif 	/* __IAppxManifestTargetDeviceFamiliesEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestTargetDeviceFamiliesEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestTargetDeviceFamily_INTERFACE_DEFINED__
 #define __IAppxManifestTargetDeviceFamily_INTERFACE_DEFINED__
@@ -820,7 +795,7 @@ enum tagLOCKTYPE
             /* [retval][out] */  UINT64 *maxVersionTested) noexcept = 0;
 
     };
-#endif 	/* __IAppxManifestTargetDeviceFamily_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestTargetDeviceFamily_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestPackageDependenciesEnumerator_INTERFACE_DEFINED__
 #define __IAppxManifestPackageDependenciesEnumerator_INTERFACE_DEFINED__
@@ -838,7 +813,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
     };
-#endif 	/* __IAppxManifestPackageDependenciesEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestPackageDependenciesEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestResourcesEnumerator_INTERFACE_DEFINED__
 #define __IAppxManifestResourcesEnumerator_INTERFACE_DEFINED__
@@ -856,7 +831,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
     };
-#endif 	/* __IAppxManifestResourcesEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestResourcesEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestDeviceCapabilitiesEnumerator_INTERFACE_DEFINED__
 #define __IAppxManifestDeviceCapabilitiesEnumerator_INTERFACE_DEFINED__
@@ -875,7 +850,7 @@ enum tagLOCKTYPE
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
 
     };
-#endif 	/* __IAppxManifestDeviceCapabilitiesEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestDeviceCapabilitiesEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestCapabilitiesEnumerator_INTERFACE_DEFINED__
 #define __IAppxManifestCapabilitiesEnumerator_INTERFACE_DEFINED__
@@ -894,7 +869,7 @@ enum tagLOCKTYPE
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
 
     };
-#endif 	/* __IAppxManifestCapabilitiesEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestCapabilitiesEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestApplicationsEnumerator_INTERFACE_DEFINED__
 #define __IAppxManifestApplicationsEnumerator_INTERFACE_DEFINED__
@@ -913,7 +888,7 @@ enum tagLOCKTYPE
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
 
     };
-#endif 	/* __IAppxManifestApplicationsEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestApplicationsEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestApplication_INTERFACE_DEFINED__
 #define __IAppxManifestApplication_INTERFACE_DEFINED__
@@ -929,7 +904,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetAppUserModelId(
             /* [retval][string][out] */  LPWSTR *appUserModelId) noexcept = 0;
     };
-#endif 	/* __IAppxManifestApplication_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestApplication_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestQualifiedResourcesEnumerator_INTERFACE_DEFINED__
 #define __IAppxManifestQualifiedResourcesEnumerator_INTERFACE_DEFINED__
@@ -947,7 +922,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
     };
-#endif 	/* __IAppxManifestQualifiedResourcesEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestQualifiedResourcesEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestQualifiedResource_INTERFACE_DEFINED__
 #define __IAppxManifestQualifiedResource_INTERFACE_DEFINED__
@@ -966,7 +941,7 @@ enum tagLOCKTYPE
             /* [retval][out] */  DX_FEATURE_LEVEL *dxFeatureLevel) noexcept = 0;
 
     };
-#endif 	/* __IAppxManifestQualifiedResource_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestQualifiedResource_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBundleFactory_INTERFACE_DEFINED__
 #define __IAppxBundleFactory_INTERFACE_DEFINED__
@@ -989,7 +964,7 @@ enum tagLOCKTYPE
             /* [retval][out] */  IAppxBundleManifestReader **manifestReader) noexcept = 0;
 
     };
-#endif 	/* __IAppxBundleFactory_INTERFACE_DEFINED__ */
+#endif /* __IAppxBundleFactory_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBundleWriter_INTERFACE_DEFINED__
 #define __IAppxBundleWriter_INTERFACE_DEFINED__
@@ -1005,7 +980,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE Close(void) noexcept = 0;
 
     };
-#endif 	/* __IAppxBundleWriter_INTERFACE_DEFINED__ */
+#endif /* __IAppxBundleWriter_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBundleWriter4_INTERFACE_DEFINED__
 #define __IAppxBundleWriter4_INTERFACE_DEFINED__
@@ -1029,7 +1004,7 @@ enum tagLOCKTYPE
             /* [in] */  IStream*  inputStream,
             /* [in] */  BOOL      isDefaultApplicablePackage) noexcept = 0;
     };
-#endif 	/* __IAppxBundleWriter4_INTERFACE_DEFINED__ */
+#endif /* __IAppxBundleWriter4_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBundleReader_INTERFACE_DEFINED__
 #define __IAppxBundleReader_INTERFACE_DEFINED__
@@ -1055,7 +1030,7 @@ enum tagLOCKTYPE
             /* [string][in] */  LPCWSTR fileName,
             /* [retval][out] */  IAppxFile **payloadPackage) noexcept = 0;
     };
-#endif 	/* __IAppxBundleReader_INTERFACE_DEFINED__ */
+#endif /* __IAppxBundleReader_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBundleManifestReader_INTERFACE_DEFINED__
 #define __IAppxBundleManifestReader_INTERFACE_DEFINED__
@@ -1073,7 +1048,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetStream(
             /* [retval][out] */  IStream **manifestStream) noexcept = 0;
     };
-#endif 	/* __IAppxBundleManifestReader_INTERFACE_DEFINED__ */
+#endif /* __IAppxBundleManifestReader_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestPackageDependency_INTERFACE_DEFINED__
 #define __IAppxManifestPackageDependency_INTERFACE_DEFINED__
@@ -1091,7 +1066,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetMinVersion(
             /* [retval][out] */  UINT64 *minVersion) noexcept = 0;
     };
-#endif 	/* __IAppxManifestPackageDependency_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestPackageDependency_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBundleManifestPackageInfoEnumerator_INTERFACE_DEFINED__
 #define __IAppxBundleManifestPackageInfoEnumerator_INTERFACE_DEFINED__
@@ -1109,7 +1084,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
     };
-#endif 	/* __IAppxBundleManifestPackageInfoEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxBundleManifestPackageInfoEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBundleManifestPackageInfo_INTERFACE_DEFINED__
 #define __IAppxBundleManifestPackageInfo_INTERFACE_DEFINED__
@@ -1136,7 +1111,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetResources(
             /* [retval][out] */  IAppxManifestQualifiedResourcesEnumerator **resources) noexcept = 0;
     };
-#endif 	/* __IAppxBundleManifestPackageInfo_INTERFACE_DEFINED__ */
+#endif /* __IAppxBundleManifestPackageInfo_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxPackageWriter3_INTERFACE_DEFINED__
 #define __IAppxPackageWriter3_INTERFACE_DEFINED__
@@ -1147,7 +1122,7 @@ enum tagLOCKTYPE
         LPCWSTR fileName;
         LPCWSTR contentType;
         APPX_COMPRESSION_OPTION compressionOption;
-    } 	APPX_PACKAGE_WRITER_PAYLOAD_STREAM;
+    } APPX_PACKAGE_WRITER_PAYLOAD_STREAM;
 
     // {a83aacd3-41c0-4501-b8a3-74164f50b2fd}
     interface IAppxPackageWriter3 : public IUnknown
@@ -1158,7 +1133,7 @@ enum tagLOCKTYPE
             /* [size_is][in] */ APPX_PACKAGE_WRITER_PAYLOAD_STREAM* payloadFiles,
             /* [in] */ UINT64 memoryLimit) = 0;
     };
-#endif 	/* __IAppxPackageWriter3_INTERFACE_DEFINED__ */
+#endif /* __IAppxPackageWriter3_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
 #define __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__
@@ -1173,7 +1148,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetMainPackageName(
             /* [retval][string][out] */  LPWSTR *mainPackageName) noexcept = 0;
     };
-#endif 	/* __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestOptionalPackageInfo_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestMainPackageDependenciesEnumerator_INTERFACE_DEFINED__
 #define __IAppxManifestMainPackageDependenciesEnumerator_INTERFACE_DEFINED__
@@ -1191,7 +1166,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE MoveNext(
             /* [retval][out] */  BOOL *hasNext) noexcept = 0;
     };
-#endif 	/* __IAppxManifestMainPackageDependenciesEnumerator_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestMainPackageDependenciesEnumerator_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestMainPackageDependency_INTERFACE_DEFINED__
 #define __IAppxManifestMainPackageDependency_INTERFACE_DEFINED__
@@ -1209,8 +1184,7 @@ enum tagLOCKTYPE
         virtual HRESULT STDMETHODCALLTYPE GetPackageFamilyName(
             /* [retval][string][out] */  LPWSTR *packageFamilyName) noexcept = 0;
     };
-#endif 	/* __IAppxManifestMainPackageDependency_INTERFACE_DEFINED__ */
-
+#endif  /* __IAppxManifestMainPackageDependency_INTERFACE_DEFINED__ */
 
 } // extern "C"
 #endif // #ifdef WIN32
@@ -1222,9 +1196,17 @@ interface IMsixDocumentElement;
 interface IMsixElement;
 interface IMsixElementEnumerator;
 interface IMsixFactoryOverrides;
-interface IMsixStreamFactory;
+interface IMsixStreamFactory;   
 interface IMsixApplicabilityLanguagesEnumerator;
-interface IMsixPackageWriterFactory;
+
+MSIX_INTERFACE(IMsixDocumentElement,0xe8900e0e,0x1dfd,0x4728,0x83,0x52,0xaa,0xda,0xeb,0xbf,0x00,0x65);
+MSIX_INTERFACE(IMsixElement,0x5b6786ff,0x6145,0x4f0e,0xb8,0xc9,0x8e,0x03,0xaa,0xcb,0x60,0xd0);
+MSIX_INTERFACE(IMsixElementEnumerator,0x7e7ea105,0xa4f9,0x4c12,0x9e,0xfa,0x98,0xef,0x18,0x95,0x41,0x8a);
+MSIX_INTERFACE(IMsixFactoryOverrides,0x0acedbdb,0x57cd,0x4aca,0x8c,0xee,0x33,0xfa,0x52,0x39,0x43,0x16);
+MSIX_INTERFACE(IMsixStreamFactory,0xc74f4821,0x3b82,0x4ad5,0x98,0xea,0x3d,0x52,0x68,0x1a,0xff,0x56);
+MSIX_INTERFACE(IMsixApplicabilityLanguagesEnumerator,0xbfc4655a,0xbe7a,0x456a,0xbc,0x4e,0x2a,0xf9,0x48,0x1e,0x84,0x32);
+
+extern "C"{
 
 #ifndef __IMsixDocumentElement_INTERFACE_DEFINED__
 #define __IMsixDocumentElement_INTERFACE_DEFINED__
@@ -1295,7 +1277,7 @@ interface IMsixPackageWriterFactory;
     {
         MSIX_FACTORY_EXTENSION_STREAM_FACTORY = 0x1,
         MSIX_FACTORY_EXTENSION_APPLICABILITY_LANGUAGES = 0x2,
-    } 	MSIX_FACTORY_EXTENSION;
+    } MSIX_FACTORY_EXTENSION;
 
     // {0acedbdb-57cd-4aca-8cee-33fa52394316}
     interface IMsixFactoryOverrides : public IUnknown
@@ -1345,6 +1327,8 @@ interface IMsixPackageWriterFactory;
     };
 #endif  /* __IMsixApplicabilityLanguagesEnumerator_INTERFACE_DEFINED__ */
 
+} // extern "C"
+
 // Specific to MSIX SDK. UTF8 variant of AppxPackaging interfaces
 interface IAppxBlockMapFileUtf8;
 interface IAppxBlockMapReaderUtf8;
@@ -1366,6 +1350,28 @@ interface IAppxPackageWriter3Utf8;
 interface IAppxManifestOptionalPackageInfoUtf8;
 interface IAppxManifestMainPackageDependencyUtf8;
 
+MSIX_INTERFACE(IAppxBlockMapFileUtf8,0x52023973,0x05fd,0x46ca,0x8a,0xc5,0xbb,0x0a,0xa4,0x31,0xfe,0xd6);
+MSIX_INTERFACE(IAppxBlockMapReaderUtf8,0x1a02d8b4,0x477a,0x487e,0x98,0x15,0x31,0x7c,0xc0,0x9a,0xcc,0x22);
+MSIX_INTERFACE(IAppxBundleManifestPackageInfoUtf8,0xf1ae9284,0xf7ee,0x431c,0x9a,0x85,0x03,0x63,0x0a,0xda,0x28,0x5b);
+MSIX_INTERFACE(IAppxBundleReaderUtf8, 0x90f4a4fc,0xf655,0x43b6,0xb0,0x33,0x35,0xa8,0xdf,0xc9,0x2c,0xbf)
+MSIX_INTERFACE(IAppxFactoryUtf8,0x16c3c3f5,0x6d63,0x47af,0x8a,0x68,0xdc,0xc3,0xae,0xb0,0xce,0xbb);
+MSIX_INTERFACE(IAppxFileUtf8,0x73d14f3f,0x4c55,0x4b6d,0x93,0x11,0xa0,0x2b,0xb3,0x53,0x8b,0xb6);
+MSIX_INTERFACE(IAppxManifestApplicationUtf8,0x3fb53200,0xbd86,0x4971,0xa8,0xad,0x2e,0x18,0xc3,0xc0,0x2a,0xae);
+MSIX_INTERFACE(IAppxManifestPackageDependencyUtf8,0x7ff7ba87,0xd29e,0x447a,0xb2,0xe6,0x31,0xdd,0xc8,0x8b,0x94,0xe9);
+MSIX_INTERFACE(IAppxManifestPackageIdUtf8,0xa1f79b28,0x37f3,0x4b58,0x91,0x00,0x7a,0xf8,0x98,0xd1,0x1f,0x65);
+MSIX_INTERFACE(IAppxManifestPropertiesUtf8,0x1c3fe108,0x9115,0x4623,0xbe,0x85,0xf0,0xfe,0xc9,0x9e,0xc5,0x16);
+MSIX_INTERFACE(IAppxManifestQualifiedResourceUtf8,0x2fac530d,0x87e4,0x4dd5,0x99,0xd3,0x29,0x0b,0xb1,0x92,0x36,0x3e);
+MSIX_INTERFACE(IAppxManifestCapabilitiesEnumeratorUtf8,0xcc422f8e,0xa4d9,0x4f2e,0xbb,0x49,0xac,0x3a,0x5c,0xe2,0xa2,0xf0);
+MSIX_INTERFACE(IAppxManifestResourcesEnumeratorUtf8,0x194cfd4a,0x55db,0x4832,0xb1,0xaf,0x0d,0x68,0x05,0xa4,0x53,0x2a);
+MSIX_INTERFACE(IAppxManifestTargetDeviceFamilyUtf8,0x70adc4fb,0x33f5,0x4ed3,0xaa,0xaf,0xe5,0xad,0x74,0x99,0x16,0x69);
+MSIX_INTERFACE(IAppxPackageReaderUtf8,0x842ffe95,0xcf7a,0x4707,0x97,0x3a,0x0a,0x2e,0x9f,0xfc,0x3a,0x85);
+MSIX_INTERFACE(IAppxPackageWriterUtf8, 0x578ee26e,0x642a,0x4b03,0xae,0xda,0x8a,0x37,0x4f,0xf7,0x1b,0x5b);
+MSIX_INTERFACE(IAppxPackageWriter3Utf8, 0xfc8f7fd6,0x3a35,0x49cc,0xb6,0x2f,0xea,0x0e,0xe8,0x39,0xe2,0x5e);
+MSIX_INTERFACE(IAppxManifestOptionalPackageInfoUtf8, 0x1c781d5a, 0x90df, 0x4202, 0xaf, 0xf3, 0x13, 0x2b, 0xd0, 0xa8, 0x92, 0x33);
+MSIX_INTERFACE(IAppxManifestMainPackageDependencyUtf8, 0x080e7850, 0x8e9c, 0x4162, 0x85, 0xe2, 0x97, 0x98, 0x3e, 0x49, 0x3c, 0x0f);
+
+extern "C"{
+
 #ifndef __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__
 #define __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__
 
@@ -1376,7 +1382,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetName(
             /* [retval][string][out] */ LPSTR *name) noexcept = 0;
     };
-#endif 	/* __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxBlockMapFileUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBlockMapReaderUtf8_INTERFACE_DEFINED__
 #define __IAppxBlockMapReaderUtf8_INTERFACE_DEFINED__
@@ -1389,7 +1395,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
             /* [string][in] */  LPCSTR filename,
             /* [retval][out] */  IAppxBlockMapFile **file) noexcept = 0;
     };
-#endif 	/* __IAppxBlockMapReaderUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxBlockMapReaderUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBundleManifestPackageInfoUtf8_INTERFACE_DEFINED__
 #define __IAppxBundleManifestPackageInfoUtf8_INTERFACE_DEFINED__
@@ -1402,7 +1408,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
             /* [retval][string][out] */  LPSTR *fileName) noexcept = 0;
 
     };
-#endif 	/* __IAppxBundleManifestPackageInfoUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxBundleManifestPackageInfoUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxBundleReaderUtf8_INTERFACE_DEFINED__
 #define __IAppxBundleReaderUtf8_INTERFACE_DEFINED__
@@ -1415,7 +1421,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
             /* [string][in] */  LPCSTR fileName,
             /* [retval][out] */  IAppxFile **payloadPackage) noexcept = 0;
     };
-#endif 	/* __IAppxBundleReaderUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxBundleReaderUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxFactoryUtf8_INTERFACE_DEFINED__
 #define __IAppxFactoryUtf8_INTERFACE_DEFINED__
@@ -1444,7 +1450,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetName(
             /* [retval][string][out] */ LPSTR *fileName) noexcept = 0;
     };
-#endif 	/* __IAppxFileUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxFileUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestApplicationUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestApplicationUtf8_INTERFACE_DEFINED__
@@ -1460,7 +1466,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetAppUserModelId(
             /* [retval][string][out] */  LPSTR *appUserModelId) noexcept = 0;
     };
-#endif 	/* __IAppxManifestApplicationUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestApplicationUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestPackageDependencyUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestPackageDependencyUtf8_INTERFACE_DEFINED__
@@ -1475,7 +1481,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetPublisher(
             /* [retval][string][out] */ LPSTR *publisher) noexcept = 0;
     };
-#endif 	/* __IAppxManifestPackageDependencyUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestPackageDependencyUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestPackageIdUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestPackageIdUtf8_INTERFACE_DEFINED__
@@ -1503,7 +1509,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetPackageFamilyName(
             /* [retval][string][out] */ LPSTR *packageFamilyName) noexcept = 0;
     };
-#endif 	/* __IAppxManifestPackageIdUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestPackageIdUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestPropertiesUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestPropertiesUtf8_INTERFACE_DEFINED__
@@ -1520,7 +1526,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
             /* [string][in] */  LPCSTR name,
             /* [retval][string][out] */ LPSTR *value) noexcept = 0;
     };
-#endif 	/* __IAppxManifestPropertiesUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestPropertiesUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestQualifiedResourceUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestQualifiedResourceUtf8_INTERFACE_DEFINED__
@@ -1532,7 +1538,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetLanguage(
             /* [retval][string][out] */  LPSTR *language) noexcept = 0;
     };
-#endif 	/* __IAppxManifestQualifiedResourceUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestQualifiedResourceUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__
@@ -1544,7 +1550,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetCurrent(
             /* [retval][string][out] */ LPSTR *resource) noexcept = 0;
     };
-#endif 	/* __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestCapabilitiesEnumeratorUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestResourcesEnumeratorUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestResourcesEnumeratorUtf8_INTERFACE_DEFINED__
@@ -1556,7 +1562,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetCurrent(
             /* [retval][string][out] */ LPSTR *resource) noexcept = 0;
     };
-#endif 	/* __IAppxManifestResourcesEnumeratorUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestResourcesEnumeratorUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestTargetDeviceFamilyUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestTargetDeviceFamilyUtf8_INTERFACE_DEFINED__
@@ -1568,7 +1574,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetName(
             /* [retval][string][out] */ LPSTR *name) noexcept = 0;
     };
-#endif 	/* __IAppxManifestTargetDeviceFamilyUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestTargetDeviceFamilyUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxPackageReaderUtf8_INTERFACE_DEFINED__
 #define __IAppxPackageReaderUtf8_INTERFACE_DEFINED__
@@ -1581,7 +1587,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
             /* [string][in] */  LPCSTR fileName,
             /* [retval][out] */  IAppxFile **file) noexcept = 0;
     };
-#endif 	/* __IAppxPackageReaderUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxPackageReaderUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxPackageWriterUtf8_INTERFACE_DEFINED__
 #define __IAppxPackageWriterUtf8_INTERFACE_DEFINED__
@@ -1596,7 +1602,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
             /* [in] */ APPX_COMPRESSION_OPTION compressionOption,
             /* [in] */ IStream* inputStream) noexcept = 0;
     };
-#endif 	/* __IAppxPackageWriterUtf8_INTERFACE_DEFINED__ */
+#endif  /* __IAppxPackageWriterUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxPackageWriter3Utf8_INTERFACE_DEFINED__
 #define __IAppxPackageWriter3Utf8_INTERFACE_DEFINED__
@@ -1607,7 +1613,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         LPCSTR fileName;
         LPCSTR contentType;
         APPX_COMPRESSION_OPTION compressionOption;
-    } 	APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8;
+    } APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8;
 
     // {fc8f7fd6-3a35-49cc-b62f-ea0ee839e25e}
     interface IAppxPackageWriter3Utf8 : public IUnknown
@@ -1618,7 +1624,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
             /* [size_is][in] */ APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8* payloadFiles,
             /* [in] */ UINT64 memoryLimit) = 0;
     };
-#endif 	/* __IAppxPackageWriter3Utf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxPackageWriter3Utf8_INTERFACE_DEFINED__ */
 #ifndef __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__
 
@@ -1629,7 +1635,7 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetMainPackageName(
             /* [retval][string][out] */  LPSTR *mainPackageName) noexcept = 0;
     };
-#endif 	/* __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestOptionalPackageInfoUtf8_INTERFACE_DEFINED__ */
 
 #ifndef __IAppxManifestMainPackageDependencyUtf8_INTERFACE_DEFINED__
 #define __IAppxManifestMainPackageDependencyUtf8_INTERFACE_DEFINED__
@@ -1647,7 +1653,9 @@ interface IAppxManifestMainPackageDependencyUtf8;
         virtual HRESULT STDMETHODCALLTYPE GetPackageFamilyName(
             /* [retval][string][out] */  LPSTR *packageFamilyName) noexcept = 0;
     };
-#endif 	/* __IAppxManifestMainPackageDependencyUtf8_INTERFACE_DEFINED__ */
+#endif /* __IAppxManifestMainPackageDependencyUtf8_INTERFACE_DEFINED__ */
+
+} // extern "C"
 
 extern "C++" {
 typedef /* [v1_enum] */
