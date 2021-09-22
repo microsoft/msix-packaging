@@ -430,7 +430,8 @@ public:
             // Disable DTD and prevent XXE attacks.  See https://www.owasp.org/index.php/XML_External_Entity_(XXE)_Prevention_Cheat_Sheet#libxerces-c for additional details.
             m_parser->setIgnoreCachedDTD(true);
             m_parser->setSkipDTDValidation(true);
-            m_parser->setCreateEntityReferenceNodes(false);
+            m_parser->setCreateEntityReferenceNodes(true);
+            m_parser->setDisableDefaultEntityResolution(true);
 
             for(const auto& schema : schemas)
             {
