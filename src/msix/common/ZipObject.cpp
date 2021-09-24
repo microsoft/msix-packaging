@@ -9,12 +9,14 @@
 #include "ZipObject.hpp"
 #include "VectorStream.hpp"
 #include "MsixFeatureSelector.hpp"
+#include "TimeHelpers.hpp"
 
 #include <memory>
 #include <string>
 #include <limits>
 #include <functional>
 #include <algorithm>
+
 namespace MSIX {
 /* Zip File Structure
 [LocalFileHeader 1]
@@ -59,14 +61,6 @@ enum class HeaderIDs : std::uint16_t
     IBMS390           = 0x0065, // IBM S/390 (Z390), AS/400 (I400) attributes - uncompressed
     IBM_Reserved      = 0x0066, // Reserved for IBM S/390 (Z390), AS/400 (I400) attributes - compressed
     RESERVED_3        = 0x4690, // POSZIP 4690 (reserved) 
-};
-
-// Hat tip to the people at Facebook.  Timestamp for files in ZIP archive 
-// format held constant to make pack/unpack deterministic
-enum class MagicNumbers : std::uint16_t
-{
-    FileTime = 0x6B60,  // kudos to those know this
-    FileDate = 0xA2B1,  // :)
 };
 
 // if any of these are set, then fail.
@@ -136,8 +130,11 @@ CentralDirectoryFileHeader::CentralDirectoryFileHeader()
     SetVersionMadeBy(static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension));
     SetVersionNeededToExtract(static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion));
     SetGeneralPurposeBitFlags(0);
-    SetLastModFileDate(static_cast<std::uint16_t>(MagicNumbers::FileDate)); // TODO: figure out how to convert to msdos time
-    SetLastModFileTime(static_cast<std::uint16_t>(MagicNumbers::FileTime));
+
+    auto msDosDateAndTime = new MsDosDateAndTime();
+    SetLastModFileDate(msDosDateAndTime->GetDosDate());
+    SetLastModFileTime(msDosDateAndTime->GetDosTime());
+
     SetCompressedSize(0);
     SetUncompressedSize(0);
     SetExtraFieldLength(0);
@@ -251,8 +248,11 @@ LocalFileHeader::LocalFileHeader()
     SetSignature(static_cast<std::uint32_t>(Signatures::LocalFileHeader));
     SetVersionNeededToExtract(static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)); // deafult to zip64
     SetGeneralPurposeBitFlags(static_cast<std::uint16_t>(GeneralPurposeBitFlags::DataDescriptor));
-    SetLastModFileTime(static_cast<std::uint16_t>(MagicNumbers::FileTime)); // TODO: figure out how to convert to msdos time
-    SetLastModFileDate(static_cast<std::uint16_t>(MagicNumbers::FileDate));
+
+    auto msDosDateAndTime = new MsDosDateAndTime();
+    SetLastModFileDate(msDosDateAndTime->GetDosDate());
+    SetLastModFileTime(msDosDateAndTime->GetDosTime());
+
     SetCrc(0);
     SetCompressedSize(0);
     SetUncompressedSize(0);

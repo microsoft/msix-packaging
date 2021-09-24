@@ -111,6 +111,7 @@ list(APPEND MsixSrc
     common/FileNameValidation.cpp
     common/AppxManifestValidation.cpp
     common/IXml.cpp
+    common/TimeHelpers.cpp
 )
 
 # Unpack. Always add
