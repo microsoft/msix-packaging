@@ -20,6 +20,7 @@ add_definitions(-DMSIX_TEST=1)
 
 set(MsixTestFiles)
 
+# Functional tests
 list(APPEND MsixTestFiles
     msixtest.cpp
     unpack.cpp
@@ -70,6 +71,15 @@ else()
     )
 endif()
 
+# Unit tests
+list(APPEND MsixTestFiles
+    TimeHelpers_ut.cpp
+)
+
+list(APPEND MsixTestFiles
+    ${MSIX_PROJECT_ROOT}/src/msix/common/TimeHelpers.cpp
+)
+
 # For mobile, we create a shared library that will be added to the apps to be
 # tested. For non-mobile we create a msixtest executable and we provide our own main
 if (AOSP OR IOS)
@@ -85,7 +95,12 @@ else()
         )
 endif()
 
-target_include_directories(${PROJECT_NAME} PRIVATE ${MSIX_PROJECT_ROOT}/src/inc/public ${MSIX_PROJECT_ROOT}/lib/catch2 ${CMAKE_CURRENT_SOURCE_DIR}/inc ${MSIX_PROJECT_ROOT}/src/inc/shared)
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${MSIX_PROJECT_ROOT}/src/inc/public
+    ${MSIX_PROJECT_ROOT}/lib/catch2
+    ${CMAKE_CURRENT_SOURCE_DIR}/inc
+    ${MSIX_PROJECT_ROOT}/src/inc/shared
+    ${MSIX_PROJECT_ROOT}/src/inc/common)
 
 # Output test binaries into a test directory
 set_target_properties(${PROJECT_NAME} PROPERTIES
