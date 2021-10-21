@@ -1540,6 +1540,8 @@ MSIX_API HRESULT STDMETHODCALLTYPE CreateStreamOnFileUTF16(
     bool forRead,
     IStream** stream) noexcept;
 
+MSIX_API HRESULT STDMETHODCALLTYPE CleanupMsixSdk() noexcept;
+
 } // extern "C++"
 
 #endif //__appxpackaging_hpp__

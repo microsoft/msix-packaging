@@ -1252,6 +1252,8 @@ int RunApiTestInternal(char* input, char* target, char* packageRootPath)
         std::cout << "\t"  << result << std::endl;
     }
 
+    CleanupMsixSdk();
+
     return g_testResult;
 }
 
