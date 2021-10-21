@@ -248,7 +248,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
     #endif
 }
 
-MSIX_API HRESULT STDMETHODCALLTYPE CleanupMsixSdk()
+MSIX_API HRESULT STDMETHODCALLTYPE CleanupMsixSdk() noexcept
 {
     #ifndef WIN32
     EVP_cleanup();
