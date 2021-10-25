@@ -37,6 +37,11 @@ static void finalizer(void) {
 //    printf("[%s] finalizer()\n", __FILE__);
 }
 
+// Used for deinit openssl.
+#include <openssl/evp.h>
+#include <openssl/crypto.h>
+#include <openssl/err.h>
+
 #endif
 
 LPVOID STDMETHODCALLTYPE InternalAllocate(SIZE_T cb)  { return std::malloc(cb); }
@@ -67,6 +72,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackage(
 
     auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+    CleanupMsixSdk();
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
@@ -91,6 +97,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackPackageFromStream(
 
     auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+    CleanupMsixSdk();
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
 
@@ -120,6 +127,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundle(
 
     auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+    CleanupMsixSdk();
     return static_cast<HRESULT>(MSIX::Error::OK);
 #else
     return static_cast<HRESULT>(MSIX::Error::NotSupported);
@@ -149,6 +157,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE UnpackBundleFromStream(
 
     auto to = MSIX::ComPtr<IStorageObject>::Make<MSIX::DirectoryObject>(utf8Destination);
     reader.As<IPackage>()->Unpack(packUnpackOptions, to.Get());
+    CleanupMsixSdk();
     return static_cast<HRESULT>(MSIX::Error::OK);
 #else
     return static_cast<HRESULT>(MSIX::Error::NotSupported);
@@ -237,4 +246,15 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
     #else
         return static_cast<HRESULT>(MSIX::Error::NotSupported);
     #endif
+}
+
+MSIX_API HRESULT STDMETHODCALLTYPE CleanupMsixSdk() noexcept
+{
+    #ifndef WIN32
+    EVP_cleanup();
+    CRYPTO_cleanup_all_ex_data();
+    ERR_remove_thread_state(NULL);
+    ERR_free_strings();
+    #endif
+    return static_cast<HRESULT>(MSIX::Error::OK);
 }

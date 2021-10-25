@@ -623,5 +623,7 @@ int main(int argc, char* argv[])
         }
     }
 
+    CleanupMsixSdk();
+
     return 0;
 }

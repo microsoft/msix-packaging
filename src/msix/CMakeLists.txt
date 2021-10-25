@@ -63,6 +63,7 @@ else()
         "UnpackBundleFromStream"
         "CoCreateAppxBundleFactory"
         "CoCreateAppxBundleFactoryWithHeap"
+        "CleanupMsixSdk"
     )
     if((IOS) OR (MACOS))
         # on Apple platforms you can explicitly define which symbols are exported

@@ -643,5 +643,7 @@ int main(int argc, char* argv[])
         {   std::cout << "UNABLE TO GET LOG WITH HR=" << std::hex << logResult << std::endl;
         }
     }
+
+    CleanupMsixSdk();
     return result;
 }
