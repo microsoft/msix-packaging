@@ -17,7 +17,7 @@
   "dependencies": {
     "azure-devops-node-api": "^10.2.2",
     "azure-pipelines-task-lib": "^2.12.2",
-    "shelljs": "^0.8.4"
+    "shelljs": "^0.8.5"
   },
   "devDependencies": {
     "@types/mocha": "^7.0.2",
