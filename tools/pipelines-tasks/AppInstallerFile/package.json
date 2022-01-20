@@ -4,7 +4,7 @@
   "description": "Task to create or update an App Installer file",
   "repository": {
     "type": "git",
-    "url": "git+github.com/microsoft/msix-ado-tasks-extension.git"
+    "url": "git+github.com/microsoft/msix-packaging.git"
   },
   "scripts": {},
   "author": "Microsoft Coporation",
