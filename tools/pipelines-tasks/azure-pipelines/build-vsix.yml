@@ -19,6 +19,7 @@ variables:
   major: '1'
   minor: '1'
   patch: $[counter(variables['minor'], 0)]
+  buildOutRoot: $(Build.ArtifactStagingDirectory)\buildOutput
 
 steps:
 # Install the tools needed
@@ -57,7 +58,7 @@ steps:
   inputs:
     rootFolder: '$(tasksRoot)'
     patternManifest: 'vss-extension.json'
-    outputPath: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
+    outputPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
     publisherId: 'MSIX'
     extensionVersion: '$(major).$(minor).$(patch)'
     extensionVisibility: public
@@ -69,12 +70,12 @@ steps:
 - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
   displayName: 'Generate Software Bill of Material (SBoM)'
   inputs:
-      BuildDropPath: $(Build.ArtifactStagingDirectory)
+      BuildDropPath: $(buildOutRoot)
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish SBoM'
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)\_manifest'
+    targetPath: '$(buildOutRoot)\_manifest'
     artifact: 'SBoM'
     publishLocation: 'pipeline'
 
@@ -82,7 +83,7 @@ steps:
   displayName: 'ESRP CodeSigning'
   inputs:
     ConnectedServiceName: 'ESRP CodeSigning'
-    FolderPath: '$(Build.ArtifactStagingDirectory)'
+    FolderPath: '$(buildOutRoot)'
     Pattern: MsixPackagingExtension.vsix
     signConfigType: inlineSignParams
     inlineOperation: |
@@ -104,11 +105,12 @@ steps:
           "ToolVersion" : "1.0"
       }
      ]
+  enabled: false
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish VSIX artifact'
   inputs:
-    targetPath: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
+    targetPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
     artifact: 'VSIX'
     publishLocation: 'pipeline'
 
@@ -119,9 +121,10 @@ steps:
   inputs:
     connectedServiceName: 'Visual Studio Marketplace - MSIX'
     fileType: vsix
-    vsixFile: '$(Build.ArtifactStagingDirectory)\MsixPackagingExtension.vsix'
+    vsixFile: '$(buildOutRoot)\MsixPackagingExtension.vsix'
     extensionId: 'msix-ci-automation-task-dev'
     extensionName: 'MSIX Packaging (Preview)'
     extensionVersion: '$(major).$(minor).$(patch)'
     updateTasksId: true
     extensionVisibility: 'privatepreview'
+  enabled: false
