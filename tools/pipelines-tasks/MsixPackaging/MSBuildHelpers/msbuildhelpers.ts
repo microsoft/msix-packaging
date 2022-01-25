@@ -4,14 +4,14 @@ import tl = require('azure-pipelines-task-lib/task');
  * Finds the tool path for msbuild/xbuild based on specified msbuild version on Mac or Linux agent
  * @param version 
  */
-export async function getMSBuildPath(version) {
-    let toolPath: string;
+export async function getMSBuildPath(version: string) {
+    let toolPath: string | undefined;
 
     if (version === '15.0' || version === 'latest') {
         let msbuildPath: string = tl.which('msbuild', false);
         if (msbuildPath) {
             // msbuild found on the agent, check version
-            let msbuildVersion: number;
+            let msbuildVersion: number | undefined;
 
             let msbuildVersionCheckTool = tl.tool(msbuildPath);
             msbuildVersionCheckTool.arg(['/version', '/nologo']);
