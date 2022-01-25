@@ -66,6 +66,18 @@ steps:
 - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
 
+- task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+  displayName: 'Generate Software Bill of Material (SBoM)'
+  inputs:
+      BuildDropPath: $(Build.ArtifactStagingDirectory)
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish SBoM'
+  inputs:
+    targetPath: '$(Build.ArtifactStagingDirectory)\_manifest'
+    artifact: 'SBoM'
+    publishLocation: 'pipeline'
+
 - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
   displayName: 'ESRP CodeSigning'
   inputs:
