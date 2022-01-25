@@ -44,6 +44,7 @@ steps:
   displayName: 'Restore NuGet packages for test project'
   inputs:
     restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
+  enabled: false
 
 - powershell: |
     npx mocha
@@ -51,6 +52,7 @@ steps:
   workingDirectory: '$(tasksRoot)'
   env:
     SYSTEM_CULTURE: 'en-US'
+  enabled: false
 
 # Package and sign the VSIX
 - task: PackageAzureDevOpsExtension@3
@@ -66,11 +68,14 @@ steps:
 
 - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
+  enabled: false
 
 - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
   displayName: 'Generate Software Bill of Material (SBoM)'
   inputs:
       BuildDropPath: $(buildOutRoot)
+      PackageName: 'MSIX Packaging Extension'
+      PackageVersion: '$(major).$(minor).$(patch)'
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish SBoM'
