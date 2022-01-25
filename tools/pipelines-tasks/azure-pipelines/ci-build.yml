@@ -47,3 +47,9 @@ steps:
   workingDirectory: '$(tasksRoot)'
   env:
     SYSTEM_CULTURE: 'en-US'
+
+- task: ComponentGovernanceComponentDetection@0
+  inputs:
+    scanType: 'Register'
+    verbosity: 'Verbose'
+    alertWarningLevel: 'High'

@@ -44,3 +44,9 @@ steps:
     testSelector: 'testAssemblies'
     testAssemblyVer2: 'UtilsTests\bin\Release\net5.0\UtilsTests.dll'
     searchFolder: '$(utilsRoot)'
+
+- task: ComponentGovernanceComponentDetection@0
+  inputs:
+    scanType: 'Register'
+    verbosity: 'Verbose'
+    alertWarningLevel: 'High'
