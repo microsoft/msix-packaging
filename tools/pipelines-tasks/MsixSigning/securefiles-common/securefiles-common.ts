@@ -90,7 +90,7 @@ export class SecureFileHelpers {
      * @param secureFileId
      */
     getSecureFileTempDownloadPath(secureFileId: string): string {
-        const fileName: string = tl.getSecureFileName(secureFileId);
+        const fileName: string | undefined = tl.getSecureFileName(secureFileId);
         return tl.resolve(tl.getVariable('Agent.TempDirectory'), fileName);
     }
 }

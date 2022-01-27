@@ -4,14 +4,14 @@
   "description": "Task to create VHDX files for MSIX app attach",
   "repository": {
     "type": "git",
-    "url": "git+github.com/microsoft/msix-ado-tasks-extension.git"
+    "url": "git+github.com/microsoft/msix-packaging.git"
   },
   "scripts": {},
   "author": "Microsoft Coporation",
   "license": "MIT",
   "dependencies": {
     "azure-devops-node-api": "^10.2.2",
-    "azure-pipelines-task-lib": "^2.12.2",
+    "azure-pipelines-task-lib": "^3.1.10",
     "common": "file:../common/msix-tasks-helpers-1.0.0.tgz"
   },
   "devDependencies": {
