@@ -64,7 +64,7 @@ steps:
     extensionVisibility: public
     updateTasksVersion: true
 
-# Tasks required by compliance
+# Tasks required by policy
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
   displayName: 'Run CredScan'
   inputs:
@@ -72,6 +72,9 @@ steps:
 
 - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
+
+- task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
+  displayName: 'Publish Security Analysis Logs'
 
 - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
   displayName: 'Generate Software Bill of Material (SBoM)'
@@ -87,6 +90,7 @@ steps:
     artifact: 'SBoM'
     publishLocation: 'pipeline'
 
+# Sign the package
 - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
   displayName: 'ESRP CodeSigning'
   inputs:
