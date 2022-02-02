@@ -20,6 +20,8 @@ variables:
   minor: '1'
   patch: $[counter(variables['minor'], 0)]
   buildOutRoot: $(Build.ArtifactStagingDirectory)\buildOutput
+  # Upload results of Semmle analysis
+  LGTM.UploadSnapshot: true
 
 steps:
 # Install the tools needed
@@ -64,7 +66,20 @@ steps:
     extensionVisibility: public
     updateTasksVersion: true
 
-# Tasks required by policy
+# Code analysis tasks required by policy
+# Note that CodeQL is a heavy task that is recommended to run in a separate pipeline
+# and only weekly. We include it here as the project is small enough as to not
+# make much of a difference, but we may need to separate it in the future.
+- task: Semmle@1
+  displayName: 'Run CodeQL (Semmle) scan'
+  inputs:
+    sourceCodeDirectory: '$(tasksRoot)'
+    language: 'tsandjs'
+    querySuite: 'Recommended'
+    timeout: '1800'
+    ram: '16384'
+    addProjectDirToScanningExclusionList: true
+
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
   displayName: 'Run CredScan'
   inputs:
