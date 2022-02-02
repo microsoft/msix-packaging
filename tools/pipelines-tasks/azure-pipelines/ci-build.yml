@@ -16,7 +16,7 @@ pr:
     - tools/pipelines-tasks
 
 pool:
-  vmImage: 'windows-latest'
+  name: 'msix-packaging-pool'
 
 variables:
   tasksRoot: 'tools/pipelines-tasks'

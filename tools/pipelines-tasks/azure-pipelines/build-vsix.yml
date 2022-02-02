@@ -11,7 +11,7 @@ trigger:
 pr: none
 
 pool:
-  vmImage: 'windows-latest'
+  name: 'msix-packaging-pool'
 
 variables:
   tasksRoot: 'tools/pipelines-tasks'
