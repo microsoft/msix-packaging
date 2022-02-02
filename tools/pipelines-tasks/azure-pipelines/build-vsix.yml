@@ -53,6 +53,7 @@ steps:
   workingDirectory: '$(tasksRoot)'
   env:
     SYSTEM_CULTURE: 'en-US'
+  enabled: false
 
 # Package and sign the VSIX
 - task: PackageAzureDevOpsExtension@3
@@ -79,6 +80,9 @@ steps:
     timeout: '1800'
     ram: '16384'
     addProjectDirToScanningExclusionList: true
+  env:
+    # Required to publish the result
+    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
 - task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
   displayName: 'Run CredScan'
@@ -132,6 +136,7 @@ steps:
           "ToolVersion" : "1.0"
       }
      ]
+  enabled: false
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish VSIX artifact'
