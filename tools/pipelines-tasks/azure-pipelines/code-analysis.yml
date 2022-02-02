@@ -1,0 +1,30 @@
+# This pipeline runs CodeQL (Semmle) analysis on the code.
+# It is a time-consuming task, so it is on its own task and is configured
+# to run once a week.
+
+trigger: none
+pr: none
+
+pool:
+  name: 'msix-packaging-pool'
+
+# Schedule nightly build
+# Cron syntax: "mm HH DD MM DW" = minutes, hours, days, months, day of week (UTC time)
+schedules:
+# "0 8" = 8AM UTC = 12AM PST
+- cron: "0 8 * * Mon"
+  displayName: Weekly build
+  branches:
+    include:
+    - master
+  always: true
+
+steps:
+- task: Semmle@1
+  inputs:
+    sourceCodeDirectory: '$(Build.SourcesDirectory)'
+    language: 'tsandjs'
+    querySuite: 'Recommended'
+    timeout: '1800'
+    ram: '16384'
+    addProjectDirToScanningExclusionList: true
