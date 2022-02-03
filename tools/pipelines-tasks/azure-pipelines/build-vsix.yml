@@ -82,7 +82,6 @@ steps:
           "ToolVersion" : "1.0"
       }
      ]
-  enabled: false
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish VSIX artifact'
@@ -90,7 +89,6 @@ steps:
     targetPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
     artifact: 'VSIX'
     publishLocation: 'pipeline'
-  enabled: false
 
 # Publish privately
 # Use different task IDs from public extension to prevent clashing.
@@ -105,4 +103,3 @@ steps:
     extensionVersion: '$(major).$(minor).$(patch)'
     updateTasksId: true
     extensionVisibility: 'privatepreview'
-  enabled: false
