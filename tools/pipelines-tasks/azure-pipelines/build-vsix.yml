@@ -11,46 +11,23 @@ trigger:
 pr: none
 
 pool:
-  vmImage: 'windows-latest'
+  name: 'msix-packaging-pool'
 
 variables:
   tasksRoot: 'tools/pipelines-tasks'
+  buildOutRoot: '$(Build.ArtifactStagingDirectory)/buildOutput'
   # Version number
   major: '1'
   minor: '1'
   patch: $[counter(variables['minor'], 0)]
-  buildOutRoot: $(Build.ArtifactStagingDirectory)\buildOutput
+  # Upload results of Semmle analysis
+  LGTM.UploadSnapshot: true
 
 steps:
-# Install the tools needed
-- task: NodeTool@0
-  displayName: 'Use Node 10.x'
-  inputs:
-    versionSpec: 10.x
+- template: templates/build-steps.yml
 
 - task: TfxInstaller@3
   displayName: 'Use Node CLI for Azure DevOps (tfx-cli): v0.7.x'
-
-# Build the project
-- task: PowerShell@2
-  displayName: 'Build the project'
-  inputs:
-    targetType: filePath
-    filePath: '$(tasksRoot)/build.ps1'
-    arguments: BuildForProduction
-
-# Run the tests
-- task: NuGetCommand@2
-  displayName: 'Restore NuGet packages for test project'
-  inputs:
-    restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
-
-- powershell: |
-    npx mocha
-  displayName: 'Run the tests'
-  workingDirectory: '$(tasksRoot)'
-  env:
-    SYSTEM_CULTURE: 'en-US'
 
 # Package and sign the VSIX
 - task: PackageAzureDevOpsExtension@3
@@ -63,9 +40,6 @@ steps:
     extensionVersion: '$(major).$(minor).$(patch)'
     extensionVisibility: public
     updateTasksVersion: true
-
-- task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
 
 - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
   displayName: 'Generate Software Bill of Material (SBoM)'
@@ -81,6 +55,7 @@ steps:
     artifact: 'SBoM'
     publishLocation: 'pipeline'
 
+# Sign the package
 - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
   displayName: 'ESRP CodeSigning'
   inputs:
