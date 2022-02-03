@@ -18,44 +18,10 @@ pr:
 pool:
   name: 'msix-packaging-pool'
 
+
 variables:
   tasksRoot: 'tools/pipelines-tasks'
+  buildOutRoot: '$(Build.ArtifactStagingDirectory)/buildOutput'
 
 steps:
-
-- task: NodeTool@0
-  displayName: 'Use Node 10.x'
-  inputs:
-    versionSpec: 10.x
-
-# Build the project
-- task: PowerShell@2
-  displayName: 'Build the project'
-  inputs:
-    filePath: '$(tasksRoot)/build.ps1'
-    arguments: 'BuildForProduction'
-
-# Run the tests
-- task: NuGetCommand@2
-  displayName: 'Restore NuGet packages for test project'
-  inputs:
-    restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
-
-- powershell: |
-    npx mocha
-  displayName: 'Run the tests'
-  workingDirectory: '$(tasksRoot)'
-  env:
-    SYSTEM_CULTURE: 'en-US'
-
-# Tasks required by policy
-- task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
-  displayName: 'Run CredScan'
-  inputs:
-    toolMajorVersion: V2
-
-- task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
-
-- task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
-  displayName: 'Publish Security Analysis Logs'
+- template: templates/build-steps.yml

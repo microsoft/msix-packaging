@@ -15,45 +15,19 @@ pool:
 
 variables:
   tasksRoot: 'tools/pipelines-tasks'
+  buildOutRoot: '$(Build.ArtifactStagingDirectory)/buildOutput'
   # Version number
   major: '1'
   minor: '1'
   patch: $[counter(variables['minor'], 0)]
-  buildOutRoot: $(Build.ArtifactStagingDirectory)\buildOutput
   # Upload results of Semmle analysis
   LGTM.UploadSnapshot: true
 
 steps:
-# Install the tools needed
-- task: NodeTool@0
-  displayName: 'Use Node 10.x'
-  inputs:
-    versionSpec: 10.x
+- template: templates/build-steps.yml
 
 - task: TfxInstaller@3
   displayName: 'Use Node CLI for Azure DevOps (tfx-cli): v0.7.x'
-
-# Build the project
-- task: PowerShell@2
-  displayName: 'Build the project'
-  inputs:
-    targetType: filePath
-    filePath: '$(tasksRoot)/build.ps1'
-    arguments: BuildForProduction
-
-# Run the tests
-- task: NuGetCommand@2
-  displayName: 'Restore NuGet packages for test project'
-  inputs:
-    restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
-
-- powershell: |
-    npx mocha
-  displayName: 'Run the tests'
-  workingDirectory: '$(tasksRoot)'
-  env:
-    SYSTEM_CULTURE: 'en-US'
-  enabled: false
 
 # Package and sign the VSIX
 - task: PackageAzureDevOpsExtension@3
@@ -66,34 +40,6 @@ steps:
     extensionVersion: '$(major).$(minor).$(patch)'
     extensionVisibility: public
     updateTasksVersion: true
-
-# Code analysis tasks required by policy
-# Note that CodeQL is a heavy task that is recommended to run in a separate pipeline
-# and only weekly. We include it here as the project is small enough as to not
-# make much of a difference, but we may need to separate it in the future.
-- task: Semmle@1
-  displayName: 'Run CodeQL (Semmle) scan'
-  inputs:
-    sourceCodeDirectory: '$(tasksRoot)'
-    language: 'tsandjs'
-    querySuite: 'Recommended'
-    timeout: '1800'
-    ram: '16384'
-    addProjectDirToScanningExclusionList: true
-  env:
-    # Required to publish the result
-    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
-- task: securedevelopmentteam.vss-secure-development-tools.build-task-credscan.CredScan@2
-  displayName: 'Run CredScan'
-  inputs:
-    toolMajorVersion: V2
-
-- task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
-  displayName: 'Component Detection'
-
-- task: securedevelopmentteam.vss-secure-development-tools.build-task-publishsecurityanalysislogs.PublishSecurityAnalysisLogs@2
-  displayName: 'Publish Security Analysis Logs'
 
 - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
   displayName: 'Generate Software Bill of Material (SBoM)'
