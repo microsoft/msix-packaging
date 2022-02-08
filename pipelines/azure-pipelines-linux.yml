@@ -29,7 +29,8 @@ pr:
 jobs:
 - job: Linux
   pool:
-    name: ubuntu-latest
+    name: Azure Pipelines
+    vmImage: ubuntu-latest
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:

@@ -28,8 +28,8 @@ pr:
 jobs:
 - job: Windows
   pool:
+    name: Azure Pipelines
     vmImage: 'windows-latest'
-    demands: Cmd
   strategy:
     # TODO: add debug for validation parser and xerces if needed.
     matrix:
