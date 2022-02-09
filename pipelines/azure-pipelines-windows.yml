@@ -29,7 +29,7 @@ jobs:
 - job: Windows
   pool:
     name: Azure Pipelines
-    vmImage: 'windows-latest'
+    vmImage: 'windows-2019'
   strategy:
     # TODO: add debug for validation parser and xerces if needed.
     matrix:
