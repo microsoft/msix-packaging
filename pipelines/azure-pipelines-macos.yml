@@ -30,7 +30,7 @@ jobs:
 - job: macOS
   pool:
     name: Azure Pipelines
-    vmImage: macOS-latest
+    vmImage:  macOS-10.15
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:
