@@ -29,7 +29,6 @@ pr:
 jobs:
 - job: Linux
   pool:
-    name: Azure Pipelines
     vmImage: ubuntu-18.04
   strategy:
     # TODO: add builds using xerces if needed.

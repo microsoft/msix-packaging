@@ -29,7 +29,6 @@ pr:
 jobs:
 - job: AOSP
   pool:
-    name: Azure Pipelines
     vmImage: macOS-10.15
   strategy:
     # TODO: add builds using xerces if needed.
