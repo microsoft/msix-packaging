@@ -1,0 +1,125 @@
+jobs:
+- job: macOS
+  pool:
+    vmImage:  macOS-10.15
+  strategy:
+    # TODO: add builds using xerces if needed.
+    matrix:
+      debug_nopack:
+        _arguments: -b Debug
+        _artifact: MACOSchk
+      release_nopack:
+        _arguments: -b MinSizeRel
+        _artifact: MACOS
+      release_nobundle:
+        _arguments: -b MinSizeRel -sb
+        _artifact: MACOS-nobundle
+      release_pack:
+        _arguments: -b MinSizeRel --pack
+        _artifact: MACOS-pack
+      debug_pack:
+        _arguments: -b Debug --pack
+        _artifact: MACOSchk-pack
+      # arm64
+      debug_nopack_arm64:
+        _arguments: -b Debug -arch arm64 --skip-tests
+        _artifact: MACOSarm64chk
+      release_nopack_arm64:
+        _arguments: -b MinSizeRel -arch arm64 --skip-tests
+        _artifact: MACOSarm64
+      release_nobundle_arm64:
+        _arguments: -b MinSizeRel -sb -arch arm64 --skip-tests
+        _artifact: MACOSarm64-nobundle
+      release_pack_arm64:
+        _arguments: -b MinSizeRel --pack -arch arm64 --skip-tests
+        _artifact: MACOSarm64-pack
+      debug_pack_arm64:
+        _arguments: -b Debug --pack -arch arm64 --skip-tests
+        _artifact: MACOSarm64chk-pack
+  steps:
+
+  - task: Bash@3
+    displayName: Build
+    inputs:
+      targetType: filePath
+      filePath: ./makemac.sh
+      arguments: $(_arguments)
+      # failOnStderr: true Turn on when https://github.com/Microsoft/azure-pipelines-image-generation/issues/758 is resolved.
+    condition: succeeded()
+
+    # Because of the azure pipeline issue we won't fail compiling the code, but 
+    # we will fail doing the test because there are no binaries
+    # Note: We skip BVTs in Debug mode because of assert()
+  - script: 'msixtest/msixtest -s -r junit -o TEST-MsixSDK-$(_artifact).xml'
+    workingDirectory: .vs
+    displayName: 'macOS BVTs'
+    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'), not(contains(variables['Agent.JobName'], 'arm64')))
+  
+  - task: PublishTestResults@2
+    displayName: 'Publish $(_artifact) Test Results'
+    inputs:
+      failTaskOnFailedTests: true
+      testRunTitle: $(_artifact)
+    condition: and(succeededOrFailed(), contains(variables['Agent.JobName'], 'release'), not(contains(variables['Agent.JobName'], 'arm64')))
+
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+    inputs:
+      SourceFolder: .vs
+      Contents: |
+        bin/makemsix
+        bin/makemsix.dSYM/**
+        lib/libmsix*
+        lib/libmsix*/**
+        src/msix/AppxPackaging.hpp
+        src/msix/MSIXWindows.hpp
+        src/msix/MsixErrors.hpp
+        Package.nuspec
+        build/**
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    condition: succeededOrFailed()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact $(_artifact)'
+    inputs:
+      ArtifactName: $(_artifact)
+    condition: succeededOrFailed()
+
+- job: macOS_universal_nopack
+  dependsOn:
+    - 'macOS'
+  pool:
+    name: Azure Pipelines
+    vmImage: macOS-latest
+  steps:
+    - template: macos-universal.yml
+      parameters:
+        artifact_output: MACOS-Universal
+        artifact_x86: MACOS
+        artifact_arm64: MACOSarm64
+
+- job: macOS_universal_nobundle
+  dependsOn:
+    - 'macOS'
+  pool:
+    name: Azure Pipelines
+    vmImage: macOS-latest
+  steps:
+    - template: macos-universal.yml
+      parameters:
+        artifact_output: MACOS-nobundle-Universal
+        artifact_x86: MACOS-nobundle
+        artifact_arm64: MACOSarm64-nobundle
+
+- job: macOS_universal_pack
+  dependsOn:
+    - 'macOS'
+  pool:
+    name: Azure Pipelines
+    vmImage: macOS-latest
+  steps:
+    - template: macos-universal.yml
+      parameters:
+        artifact_output: MACOS-pack-Universal
+        artifact_x86: MACOS-pack
+        artifact_arm64: MACOSarm64-pack

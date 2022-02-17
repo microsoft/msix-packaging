@@ -1,0 +1,93 @@
+jobs:
+- job: Windows
+  pool:
+    vmImage: 'windows-2022'
+  strategy:
+    # TODO: add debug for validation parser and xerces if needed.
+    matrix:
+      debug_32_nopack:
+        _arguments: x86 -d
+        _artifact: WIN32chk
+      debug_64_nopack:
+        _arguments: x64 -d
+        _artifact: WIN32-x64chk
+      release_32_nopack:
+        _arguments: x86
+        _artifact: WIN32
+      release_64_nopack:
+        _arguments: x64
+        _artifact: WIN32-x64
+      release_32_validation_parser:
+        _arguments: x86 --validation-parser
+        _artifact: WIN32ValidationParser
+      release_64_validation_parser:
+        _arguments: x64 --validation-parser
+        _artifact: WIN32-x64ValidationParser
+      release_32_xerces:
+        _arguments: x86 --parser-xerces --pack
+        _artifact: WIN32Xerces
+      release_64_xerces:
+        _arguments: x64 --parser-xerces --pack
+        _artifact: WIN32-x64Xerces
+      release_32_nobundle:
+        _arguments: x86 -sb
+        _artifact: WIN32-nobundle
+      release_64_nobundle:
+        _arguments: x64 -sb
+        _artifact: WIN32-x64-nobundle
+      release_32_pack:
+        _arguments: x86 --pack
+        _artifact: WIN32-pack
+      release_64_pack:
+        _arguments: x64 --pack
+        _artifact: WIN32-x64-pack
+      debug_32_pack:
+        _arguments: x86 -d --pack
+        _artifact: WIN32chk-pack
+      debug_64_pack:
+        _arguments: x64 -d --pack
+        _artifact: WIN32-x64chk-pack
+
+  steps:
+  - task: BatchScript@1
+    displayName: Build $(_artifact)
+    inputs:
+      filename: makewin.cmd
+      arguments: $(_arguments)
+      failOnStandardError: true
+    condition: always()
+
+  # Note: We skip BVTs in Debug mode because of assert()
+  - script: 'msixtest\msixtest.exe -s -r junit -o TEST-MsixSDK-$(_artifact).xml'
+    workingDirectory: .vs
+    displayName: 'Windows BVTs'
+    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'))
+  
+  - task: PublishTestResults@2
+    displayName: 'Publish $(_artifact) Test Results'
+    inputs:
+      failTaskOnFailedTests: true
+      testRunTitle: $(_artifact)
+    condition: and(succeededOrFailed(), contains(variables['Agent.JobName'], 'release'))
+
+  - task: CopyFiles@2
+    displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
+    inputs:
+      SourceFolder: .vs
+      Contents: |
+        src\msix\AppxPackaging.hpp
+        src\msix\MSIXWindows.hpp
+        src\msix\MsixErrors.hpp
+        bin\makemsix.*
+        bin\*.dll
+        lib\msix.lib
+        Package.nuspec
+        build\**
+      TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    condition: succeededOrFailed()
+
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact $(_artifact)'
+    inputs:
+      ArtifactName: $(_artifact)
+    condition: succeededOrFailed()
