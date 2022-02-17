@@ -63,8 +63,9 @@ jobs:
       TargetFolder: '$(Build.ArtifactStagingDirectory)'
     condition: succeededOrFailed()
 
-  - task: PublishBuildArtifacts@1
+  - task: PublishPipelineArtifact@1
     displayName: 'Publish Artifact $(_artifact)'
     inputs:
-      ArtifactName: $(_artifact)
+      targetPath: '$(Build.ArtifactStagingDirectory)'
+      artifact: $(_artifact)
     condition: succeededOrFailed()
