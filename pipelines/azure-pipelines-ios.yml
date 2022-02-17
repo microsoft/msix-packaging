@@ -99,10 +99,3 @@ jobs:
     inputs:
       ArtifactName: $(_artifact)
     condition: succeededOrFailed()
-
-  - task: PublishBuildArtifacts@1
-    displayName: 'Test publish .vs'
-    inputs:
-      pathToPublish: .vs
-      ArtifactName: $(_artifact).vs
-    condition: succeededOrFailed()
