@@ -1,0 +1,355 @@
+# This pipeline builds the MSIX SDK and creates nuget packages from it.
+# The nuget packages are only published as pipeline artifacts.
+
+# Only run manually
+trigger: none
+
+stages:
+- stage: BuildStage
+  jobs:
+  - template: templates/build-aosp.yml
+  - template: templates/build-ios.yml
+  - template: templates/build-linux.yml
+  - template: templates/build-macos.yml
+  - template: templates/build-windows.yml
+
+- stage: PackagingStage
+  jobs:
+  - job: PackagingJob
+
+    variables:
+      BuiltArtifactsFolder: $(Pipeline.Workspace)\built
+      NuGetsFolder: $(Build.StagingDirectory)\nuget
+      MacOSSigned: $(Pipeline.Workspace)\Signed_Extracted
+
+    # A separate NuGet package is created for each platform.
+    # On every platform we follow the pattern:
+    #   - Download nuspec file from one of the artifacts
+    #   - Prepare files (copy to the appropriate location)
+    #   - Create NuGet package
+    # At the end we publish all packages at once
+    steps:
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download build artifacts'
+      inputs:
+        itemPattern: >
+          **
+          !Package.nuspec
+          */!build/**
+        targetPath: $(BuiltArtifactsFolder)\
+
+    # AOSP
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download AOSP nuspec and license'
+      inputs:
+        artifactName: AOSP-arm
+        itemPattern: |
+          Package.nuspec
+          build/**
+        targetPath: 'package_aosp/'
+
+    - script: |
+        xcopy /E $(BuildArtifactsFolder)\AOSP-arm          package_asop\build\native\AOSP-arm\
+        xcopy /E $(BuildArtifactsFolder)\AOSP-arm-nobundle package_asop\build\native\AOSP-arm-nobundle\
+        xcopy /E $(BuildArtifactsFolder)\AOSP-x86          package_asop\build\native\AOSP-x86\
+        xcopy /E $(BuildArtifactsFolder)\AOSP-x86-nobundle package_asop\build\native\AOSP-x86-nobundle\
+        xcopy /E $(BuildArtifactsFolder)\AOSP-x86chk       package_asop\build\native\AOSP-x86chk\
+      displayName: 'Prepare AOSP'
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet pack AOSP'
+      inputs:
+        command: pack
+        packagesToPack: 'package_asop\Package.nuspec'
+        packDestination: '$(NuGetsFolder)\aosp'
+
+    # iOS
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download iOS nuspec and license'
+      inputs:
+        artifactName: iOS-arm64
+        itemPattern: |
+          Package.nuspec
+          build/**
+        targetPath: 'package_ios/'
+
+    - script: |
+        xcopy /E $(BuildArtifactsFolder)\iOS-arm64          package_ios\build\native\iOS-arm64\
+        xcopy /E $(BuildArtifactsFolder)\iOS-arm64-nobundle package_ios\build\native\iOS-arm64-nobundle\
+        xcopy /E $(BuildArtifactsFolder)\iOS-x86            package_ios\build\native\iOS-x86\
+        xcopy /E $(BuildArtifactsFolder)\iOS-x86-nobundle   package_ios\build\native\iOS-x86-nobundle\
+        xcopy /E $(BuildArtifactsFolder)\iOS-x86chk         package_ios\build\native\iOS-x86chk\
+      displayName: 'Prepare iOS'
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet pack iOS'
+      inputs:
+        command: pack
+        packagesToPack: 'package_ios\Package.nuspec'
+        packDestination: '$(NuGetsFolder)\ios'
+
+    # Linux
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Linux nuspec and license'
+      inputs:
+        artifactName: LINUX
+        itemPattern: |
+          Package.nuspec
+          build/**
+        targetPath: 'package_linux/'
+
+    - script: |
+        xcopy /E $(BuildArtifactsFolder)\LINUX                  package_linux\build\native\LINUX\
+        xcopy /E $(BuildArtifactsFolder)\LINUX-nobundle         package_linux\build\native\LINUX-nobundle\
+        xcopy /E $(BuildArtifactsFolder)\LINUX-pack             package_linux\build\native\LINUX-pack\
+        xcopy /E $(BuildArtifactsFolder)\LINUX-ValidationParser package_linux\build\native\LINUX-ValidationParser\
+        xcopy /E $(BuildArtifactsFolder)\LINUXchk               package_linux\build\native\LINUXchk\
+        xcopy /E $(BuildArtifactsFolder)\LINUXchk-pack          package_linux\build\native\LINUXchk-pack\
+      displayName: 'Prepare Linux'
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet pack Linux'
+      inputs:
+        command: pack
+        packagesToPack: 'package_linux\Package.nuspec'
+        packDestination: '$(NuGetsFolder)\linux'
+      enabled: false
+
+    # MacOS
+    # For macOS we first sign the libraries
+    - script: |
+        copy $(BuildArtifactsFolder)\MACOS\lib\libmsix.dylib                    ToSign\MACOS\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOS-nobundle\lib\libmsix.dylib           ToSign\MACOS-nobundle\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOS-nobundle-Universal\lib\libmsix.dylib ToSign\MACOS-nobundle-Universal\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOS-pack\lib\libmsix.dylib               ToSign\MACOS-pack\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOS-pack-Universal\lib\libmsix.dylib     ToSign\MACOS-pack-Universal\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOS-Universal\lib\libmsix.dylib          ToSign\MACOS-Universal\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOSarm64\lib\libmsix.dylib               ToSign\MACOSarm64\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOSarm64-nobundle\lib\libmsix.dylib      ToSign\MACOSarm64-nobundle\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOSarm64-pack\lib\libmsix.dylib          ToSign\MACOSarm64-pack\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOSarm64chk\lib\libmsix.dylib            ToSign\MACOSarm64chk\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOSarm64chk-pack\lib\libmsix.dylib       ToSign\MACOSarm64chk-pack\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOSchk\lib\libmsix.dylib                 ToSign\MACOSchk\libmsix.dylib
+        copy $(BuildArtifactsFolder)\MACOSchk-pack\lib\libmsix.dylib            ToSign\MACOSchk-pack\libmsix.dylib
+      displayName: 'Prepare to Sign macOS'
+
+    - task: ArchiveFiles@2
+      displayName: 'Archive files to sign'
+      inputs:
+        rootFolderOrFile: ToSign
+        includeRootFolder: false
+        archiveFile: 'Signed\artifacts.zip'
+
+    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+      displayName: 'ESRP CodeSigning macOS dylibs'
+      inputs:
+        ConnectedServiceName: 'ESRP Connection MsixSDK 2'
+        FolderPath: Signed
+        Pattern: artifacts.zip
+        signConfigType: inlineSignParams
+        inlineOperation: |
+          [
+            {
+              "KeyCode" : "CP-401337-Apple",
+              "OperationCode" : "MacAppDeveloperSign",
+              "Parameters" : {
+                "Hardening": "--options=runtime" // this parameter enables the hardening flag during signing.
+              },
+              "ToolName" : "sign",
+              "ToolVersion" : "1.0"
+            }
+          ]
+
+    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+      displayName: 'ESRP CodeSigning Notarize macOS dylibs'
+      inputs:
+        ConnectedServiceName: 'ESRP Connection MsixSDK 2'
+        FolderPath: Signed
+        Pattern: artifacts.zip
+        signConfigType: inlineSignParams
+        inlineOperation: |
+          [
+            {
+              "KeyCode" : "CP-401337-Apple",
+              "OperationCode" : "MacAppDeveloperSign",
+              "Parameters" : {
+                "BundleId": "com.microsoft.msixsdk"
+              },
+              "ToolName" : "sign",
+              "ToolVersion" : "1.0"
+            }
+          ]
+
+    - task: ExtractFiles@1
+      displayName: 'Extract signed files'
+      inputs:
+        archiveFilePatterns: 'Signed\artifacts.zip'
+        destinationFolder: '$(MacOSSigned)'
+
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download macOS nuspec and license'
+      inputs:
+        artifactName: MACOS
+        itemPattern: |
+          Package.nuspec
+          build/**
+        targetPath: 'package_macos/'
+
+    - script: |
+        xcopy /E $(BuildArtifactsFolder)\MACOS                        package_mac\build\native\MACOS\
+        copy /Y $(MacOSSigned)\MACOS\libmsix.dylib                    package_mac\build\native\MACOS\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOS-nobundle               package_mac\build\native\MACOS-nobundle\
+        copy /Y $(MacOSSigned)\MACOS-nobundle\libmsix.dylib           package_mac\build\native\MACOS-nobundle\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOS-nobundle-Universal     package_mac\build\native\MACOS-nobundle-Universal\
+        copy /Y $(MacOSSigned)\MACOS-nobundle-Universal\libmsix.dylib package_mac\build\native\MACOS-nobundle-Universal\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOS-pack                   package_mac\build\native\MACOS-pack\
+        copy /Y $(MacOSSigned)\MACOS-pack\libmsix.dylib               package_mac\build\native\MACOS-pack\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOS-pack-Universal         package_mac\build\native\MACOS-pack-Universal\
+        copy /Y $(MacOSSigned)\MACOS-pack-Universal\libmsix.dylib     package_mac\build\native\MACOS-pack-Universal\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOS-Universal              package_mac\build\native\MACOS-Universal\
+        copy /Y $(MacOSSigned)\MACOS-Universal\libmsix.dylib          package_mac\build\native\MACOS-Universal\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOSarm64                   package_mac\build\native\MACOSarm64\
+        copy /Y $(MacOSSigned)\MACOSarm64\libmsix.dylib               package_mac\build\native\MACOSarm64\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOSarm64-nobundle          package_mac\build\native\MACOSarm64-nobundle\
+        copy /Y $(MacOSSigned)\MACOSarm64-nobundle\libmsix.dylib      package_mac\build\native\MACOSarm64-nobundle\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOSarm64-pack              package_mac\build\native\MACOSarm64-pack\
+        copy /Y $(MacOSSigned)\MACOSarm64-pack\libmsix.dylib          package_mac\build\native\MACOSarm64-pack\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOSarm64chk                package_mac\build\native\MACOSarm64chk\
+        copy /Y $(MacOSSigned)\MACOSarm64chk\libmsix.dylib            package_mac\build\native\MACOSarm64chk\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOSarm64-pack              package_mac\build\native\MACOSarm64chk-pack\
+        copy /Y $(MacOSSigned)\MACOSarm64chk-pack\libmsix.dylib       package_mac\build\native\MACOSarm64chk-pack\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOSchk                     package_mac\build\native\MACOSchk\
+        copy /Y $(MacOSSigned)\MACOSchk\libmsix.dylib                 package_mac\build\native\MACOSchk\lib\libmsix.dylib
+
+        xcopy /E $(BuildArtifactsFolder)\MACOSchk-pack                package_mac\build\native\MACOSchk-pack\
+        copy /Y $(MacOSSigned)\MACOSchk-pack\libmsix.dylib            package_mac\build\native\MACOSchk-pack\lib\libmsix.dylib
+      displayName: 'Prepare macOS'
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet pack macOS'
+      inputs:
+        command: pack
+        packagesToPack: 'package_mac\Package.nuspec'
+        packDestination: '$(NuGetsFolder)\macos'
+
+    # Windows
+    - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+      displayName: 'ESRP CodeSigning Windows'
+      inputs:
+        ConnectedServiceName: 'ESRP CodeSigning connection 4 windows'
+        FolderPath: '$(BuildArtifactsFolder)'
+        Pattern: 'msix.dll,makemsix.exe'
+        signConfigType: inlineSignParams
+        inlineOperation: |
+          [
+            {
+              "keyCode": "CP-230012",
+              "operationSetCode": "SigntoolSign",
+              "parameters": [
+                {
+                  "parameterName": "OpusName",
+                  "parameterValue": "Microsoft"
+                },
+                {
+                  "parameterName": "OpusInfo",
+                  "parameterValue": "http://www.microsoft.com"
+                },
+                {
+                  "parameterName": "FileDigest",
+                  "parameterValue": "/fd \"SHA256\""
+                },
+                {
+                  "parameterName": "PageHash",
+                  "parameterValue": "/NPH"
+                },
+                {
+                  "parameterName": "TimeStamp",
+                  "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+                }
+              ],
+              "toolName": "sign",
+              "toolVersion": "1.0"
+            },
+            {
+              "keyCode": "CP-230012",
+              "operationSetCode": "SigntoolVerify",
+              "parameters": [ ],
+              "toolName": "sign",
+              "toolVersion": "1.0"
+            }
+          ]
+
+    - task: DownloadPipelineArtifact@2
+      displayName: 'Download Windows nuspec and license'
+      inputs:
+        artifactName: WIN32
+        itemPattern: |
+          Package.nuspec
+          build/**
+        targetPath: 'package_windows/'
+
+    - script: |
+        xcopy /E $(BuildArtifactsFolder)\WIN32 package_win\build\native\WIN32\
+        xcopy /E $(BuildArtifactsFolder)\WIN32-nobundle package_win\build\native\WIN32-nobundle\
+        xcopy /E $(BuildArtifactsFolder)\WIN32-pack package_win\build\native\WIN32-pack\
+        xcopy /E $(BuildArtifactsFolder)\WIN32-x64 package_win\build\native\WIN32-x64\
+        xcopy /E $(BuildArtifactsFolder)\WIN32-x64-pack package_win\build\native\WIN32-x64-pack\
+        xcopy /E $(BuildArtifactsFolder)\WIN32-x64-nobundle package_win\build\native\WIN32-x64-nobundle\
+        xcopy /E $(BuildArtifactsFolder)\WIN32-x64chk package_win\build\native\WIN32-x64chk\
+        xcopy /E $(BuildArtifactsFolder)\WIN32-x64chk-pack package_win\build\native\WIN32-x64chk-pack\
+        xcopy /E $(BuildArtifactsFolder)\WIN32-x64ValidationParser package_win\build\native\WIN32-x64ValidationParser\
+        xcopy /E $(BuildArtifactsFolder)\WIN32-x64Xerces package_win\build\native\WIN32-x64Xerces\
+        xcopy /E $(BuildArtifactsFolder)\WIN32chk package_win\build\native\WIN32chk\
+        xcopy /E $(BuildArtifactsFolder)\WIN32chk-pack package_win\build\native\WIN32chk-pack\
+        xcopy /E $(BuildArtifactsFolder)\WIN32ValidationParser package_win\build\native\WIN32ValidationParser\
+        xcopy /E $(BuildArtifactsFolder)\WIN32Xerces package_win\build\native\WIN32Xerces\
+      displayName: 'Prepare Windows'
+
+    - task: NuGetCommand@2
+      displayName: 'NuGet pack Windows'
+      inputs:
+        command: pack
+        packagesToPack: 'package_win\Package.nuspec'
+        packDestination: '$(NuGetsFolder)\windows'
+
+    # Global tasks
+    - powershell: |
+        $files = Get-ChildItem -Recurse *.nupkg
+        if ($files.Count -ne 5)
+        {
+            Write-Error "Expected 5 nupkgs files. Got: $($files.Count)"
+        }
+        $versions = @()
+        Write-Host 'Found packages'
+        foreach ($f in $files) {
+            Write-Host ($f.BaseName | Select-String -Pattern '\d.\d.\d')
+            $versions += $f.BaseName -replace '\D+(\d.\d.\d+)', '$1'
+        }
+        $uniques = $versions | Select-Object -Unique
+        if ($uniques.Count -ne 1)
+        {
+            Write-Error "Packages are not the same versions."
+        }
+      displayName: 'Validate is same version'
+
+    - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+      displayName: 'Generate SBoM Manifest'
+      inputs:
+        BuildDropPath: '$(NuGetsFolder)'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish NuGet packages to pipeline'
+      inputs:
+        targetPath: '$(NuGetsFolder)'
+        artifact: nuget
