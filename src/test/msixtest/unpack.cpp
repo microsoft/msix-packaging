@@ -158,7 +158,7 @@ TEST_CASE("Unpack_IntlPackage", "[unpack]")
     RunUnpackTest(expected, package, validation, packUnpack);
 }
 
-TEST_CASE("Unpack_SignatureNotLastPart-ERROR_BAD_FORMAT", "[unpack]")
+TEST_CASE("Unpack_SignatureNotLastPart-ERROR_BAD_FORMAT", "[unpack][!hide]")
 {
     HRESULT expected                  = static_cast<HRESULT>(MSIX::Error::CertNotTrusted);
     std::string package               = "SignatureNotLastPart-ERROR_BAD_FORMAT.appx";
@@ -168,7 +168,7 @@ TEST_CASE("Unpack_SignatureNotLastPart-ERROR_BAD_FORMAT", "[unpack]")
     RunUnpackTest(expected, package, validation, packUnpack);
 }
 
-TEST_CASE("Unpack_SignedTamperedBlockMap-TRUST_E_BAD_DIGEST", "[unpack]")
+TEST_CASE("Unpack_SignedTamperedBlockMap-TRUST_E_BAD_DIGEST", "[unpack][!hide]")
 {
     HRESULT expected                  = static_cast<HRESULT>(MSIX::Error::CertNotTrusted);
     std::string package               = "SignedTamperedBlockMap-TRUST_E_BAD_DIGEST.appx";
@@ -196,7 +196,7 @@ TEST_CASE("Unpack_SignedTamperedBlockMap-TRUST_E_BAD_DIGEST_sv", "[unpack][!hide
     RunUnpackTest(expected, package, validation, packUnpack);
 }
 
-TEST_CASE("Unpack_SignedTamperedCD-TRUST_E_BAD_DIGEST", "[unpack]")
+TEST_CASE("Unpack_SignedTamperedCD-TRUST_E_BAD_DIGEST", "[unpack][!hide]")
 {
     HRESULT expected                  = static_cast<HRESULT>(MSIX::Error::CertNotTrusted);
     std::string package               = "SignedTamperedCD-TRUST_E_BAD_DIGEST.appx";

@@ -29,7 +29,7 @@ pr:
 jobs:
 - job: iOS
   pool:
-    name: Hosted macOS
+    vmImage: macOS-10.15
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:

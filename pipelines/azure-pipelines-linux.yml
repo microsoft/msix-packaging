@@ -29,7 +29,7 @@ pr:
 jobs:
 - job: Linux
   pool:
-    name: Hosted Ubuntu 1604
+    vmImage: ubuntu-18.04
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:
