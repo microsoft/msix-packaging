@@ -18,20 +18,13 @@ steps:
     path: $(System.ArtifactsDirectory)
 
 - script: |
-    ls /Applications
-    ls /Applications/Xcode_12_beta.app
-    ls /Applications/Xcode_12_beta.app/Contents
-
-    sudo xcode-select -switch /Applications/Xcode_12_beta.app/Contents/Developer
-  
     cp -R $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }} $(System.ArtifactsDirectory)/Universal
     rm $(System.ArtifactsDirectory)/Universal/lib/libmsix.dylib
     rm $(System.ArtifactsDirectory)/Universal/bin/makemsix
-  
-    lipo -create -output $(System.ArtifactsDirectory)/Universal/lib/libmsix.dylib $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}/lib/libmsix.dylib $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}/lib/libmsix.dylib
-  
-    lipo -create -output $(System.ArtifactsDirectory)/Universal/bin/makemsix $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}/bin/makemsix $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}/bin/makemsix
 
+    lipo -create -output $(System.ArtifactsDirectory)/Universal/lib/libmsix.dylib $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}/lib/libmsix.dylib $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}/lib/libmsix.dylib
+
+    lipo -create -output $(System.ArtifactsDirectory)/Universal/bin/makemsix $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}/bin/makemsix $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}/bin/makemsix
   displayName: 'Command Line Script'
 
 - task: PublishBuildArtifacts@1
