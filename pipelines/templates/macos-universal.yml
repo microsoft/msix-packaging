@@ -5,15 +5,17 @@ parameters:
   artifact_arm64: ''
 
 steps:
-- task: DownloadBuildArtifacts@0
+- task: DownloadPipelineArtifact@2
   displayName: 'Download ${{ parameters.artifact_x86 }}'
   inputs:
-    artifactName: ${{ parameters.artifact_x86 }}
+    artifact: ${{ parameters.artifact_x86 }}
+    path: $(System.ArtifactsDirectory)
 
-- task: DownloadBuildArtifacts@0
+- task: DownloadPipelineArtifact@2
   displayName: 'Download ${{ parameters.artifact_arm64 }}'
   inputs:
-    artifactName: ${{ parameters.artifact_arm64 }}
+    artifact: ${{ parameters.artifact_arm64 }}
+    path: $(System.ArtifactsDirectory)
 
 - script: |
     sudo xcode-select -switch /Applications/Xcode_12_beta.app/Contents/Developer

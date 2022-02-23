@@ -39,7 +39,7 @@ jobs:
     workingDirectory: .vs
     displayName: 'Linux BVTs'
     condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'))
-  
+
   - task: PublishTestResults@2
     displayName: 'Publish $(_artifact) Test Results'
     inputs:

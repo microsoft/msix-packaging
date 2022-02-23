@@ -47,14 +47,14 @@ jobs:
       # failOnStderr: true Turn on when https://github.com/Microsoft/azure-pipelines-image-generation/issues/758 is resolved.
     condition: succeeded()
 
-    # Because of the azure pipeline issue we won't fail compiling the code, but 
+    # Because of the azure pipeline issue we won't fail compiling the code, but
     # we will fail doing the test because there are no binaries
     # Note: We skip BVTs in Debug mode because of assert()
   - script: 'msixtest/msixtest -s -r junit -o TEST-MsixSDK-$(_artifact).xml'
     workingDirectory: .vs
     displayName: 'macOS BVTs'
     condition: and(succeeded(), contains(variables['Agent.JobName'], 'release'), not(contains(variables['Agent.JobName'], 'arm64')))
-  
+
   - task: PublishTestResults@2
     displayName: 'Publish $(_artifact) Test Results'
     inputs:

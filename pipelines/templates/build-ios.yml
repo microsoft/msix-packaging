@@ -41,7 +41,7 @@ jobs:
       workingDirectory: './src/test/mobile/'
       failOnStderr: true
     condition: and(succeeded(), contains(variables['Agent.JobName'], 'release_x86'))
-  
+
   - task: PublishTestResults@2
     displayName: 'Publish $(_artifact) Test Results'
     inputs:
