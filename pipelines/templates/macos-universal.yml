@@ -18,6 +18,10 @@ steps:
     path: $(System.ArtifactsDirectory)
 
 - script: |
+    ls /Applications
+    ls /Applications/Xcode_12_beta.app
+    ls /Applications/Xcode_12_beta.app/Contents
+
     sudo xcode-select -switch /Applications/Xcode_12_beta.app/Contents/Developer
   
     cp -R $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }} $(System.ArtifactsDirectory)/Universal
