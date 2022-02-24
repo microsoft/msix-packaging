@@ -17,7 +17,12 @@ steps:
     artifact: ${{ parameters.artifact_arm64 }}
     path: $(System.ArtifactsDirectory)
 
+- powershell: ls -Recurse $(System.ArtifactsDirectory)
+  displayName: list download
+
 - script: |
+    sudo xcode-select -switch /Applications/Xcode_12.4.app/Contents/Developer
+
     cp -R $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }} $(System.ArtifactsDirectory)/Universal
     rm $(System.ArtifactsDirectory)/Universal/lib/libmsix.dylib
     rm $(System.ArtifactsDirectory)/Universal/bin/makemsix
