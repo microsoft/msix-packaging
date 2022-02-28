@@ -41,8 +41,6 @@ stages:
         buildId: 45751407
         itemPattern: >
           **
-          !Package.nuspec
-          */!build/**
         targetPath: $(ArtifactsFolder)\
 
     # AOSP
@@ -56,8 +54,8 @@ stages:
         buildId: 45751407
         artifactName: AOSP-arm
         itemPattern: |
-          Package.nuspec
-          build/**
+          */Package.nuspec
+          */build/**
         targetPath: 'package_aosp/'
 
     - script: |
