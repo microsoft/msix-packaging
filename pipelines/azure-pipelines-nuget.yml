@@ -16,6 +16,8 @@ stages:
 - stage: PackagingStage
   jobs:
   - job: PackagingJob
+    pool:
+      vmImage: 'windows-2022'
 
     variables:
       ArtifactsFolder: $(Pipeline.Workspace)\built
