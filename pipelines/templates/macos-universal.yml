@@ -17,9 +17,6 @@ steps:
     artifact: ${{ parameters.artifact_arm64 }}
     path: $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}
 
-- powershell: ls -Recurse $(System.ArtifactsDirectory)
-  displayName: list download
-
 - script: |
     sudo xcode-select -switch /Applications/Xcode_12.4.app/Contents/Developer
 

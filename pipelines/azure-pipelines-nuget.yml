@@ -18,7 +18,7 @@ stages:
   - job: PackagingJob
 
     variables:
-      BuiltArtifactsFolder: $(Pipeline.Workspace)\built
+      ArtifactsFolder: $(Pipeline.Workspace)\built
       NuGetsFolder: $(Build.StagingDirectory)\nuget
       MacOSSigned: $(Pipeline.Workspace)\Signed_Extracted
 
@@ -36,7 +36,7 @@ stages:
           **
           !Package.nuspec
           */!build/**
-        targetPath: $(BuiltArtifactsFolder)\
+        targetPath: $(ArtifactsFolder)\
 
     # AOSP
     - task: DownloadPipelineArtifact@2
@@ -49,11 +49,11 @@ stages:
         targetPath: 'package_aosp/'
 
     - script: |
-        xcopy /E $(BuildArtifactsFolder)\AOSP-arm          package_asop\build\native\AOSP-arm\
-        xcopy /E $(BuildArtifactsFolder)\AOSP-arm-nobundle package_asop\build\native\AOSP-arm-nobundle\
-        xcopy /E $(BuildArtifactsFolder)\AOSP-x86          package_asop\build\native\AOSP-x86\
-        xcopy /E $(BuildArtifactsFolder)\AOSP-x86-nobundle package_asop\build\native\AOSP-x86-nobundle\
-        xcopy /E $(BuildArtifactsFolder)\AOSP-x86chk       package_asop\build\native\AOSP-x86chk\
+        xcopy /E $(ArtifactsFolder)\AOSP-arm          package_asop\build\native\AOSP-arm\
+        xcopy /E $(ArtifactsFolder)\AOSP-arm-nobundle package_asop\build\native\AOSP-arm-nobundle\
+        xcopy /E $(ArtifactsFolder)\AOSP-x86          package_asop\build\native\AOSP-x86\
+        xcopy /E $(ArtifactsFolder)\AOSP-x86-nobundle package_asop\build\native\AOSP-x86-nobundle\
+        xcopy /E $(ArtifactsFolder)\AOSP-x86chk       package_asop\build\native\AOSP-x86chk\
       displayName: 'Prepare AOSP'
 
     - task: NuGetCommand@2
@@ -74,11 +74,11 @@ stages:
         targetPath: 'package_ios/'
 
     - script: |
-        xcopy /E $(BuildArtifactsFolder)\iOS-arm64          package_ios\build\native\iOS-arm64\
-        xcopy /E $(BuildArtifactsFolder)\iOS-arm64-nobundle package_ios\build\native\iOS-arm64-nobundle\
-        xcopy /E $(BuildArtifactsFolder)\iOS-x86            package_ios\build\native\iOS-x86\
-        xcopy /E $(BuildArtifactsFolder)\iOS-x86-nobundle   package_ios\build\native\iOS-x86-nobundle\
-        xcopy /E $(BuildArtifactsFolder)\iOS-x86chk         package_ios\build\native\iOS-x86chk\
+        xcopy /E $(ArtifactsFolder)\iOS-arm64          package_ios\build\native\iOS-arm64\
+        xcopy /E $(ArtifactsFolder)\iOS-arm64-nobundle package_ios\build\native\iOS-arm64-nobundle\
+        xcopy /E $(ArtifactsFolder)\iOS-x86            package_ios\build\native\iOS-x86\
+        xcopy /E $(ArtifactsFolder)\iOS-x86-nobundle   package_ios\build\native\iOS-x86-nobundle\
+        xcopy /E $(ArtifactsFolder)\iOS-x86chk         package_ios\build\native\iOS-x86chk\
       displayName: 'Prepare iOS'
 
     - task: NuGetCommand@2
@@ -99,12 +99,12 @@ stages:
         targetPath: 'package_linux/'
 
     - script: |
-        xcopy /E $(BuildArtifactsFolder)\LINUX                  package_linux\build\native\LINUX\
-        xcopy /E $(BuildArtifactsFolder)\LINUX-nobundle         package_linux\build\native\LINUX-nobundle\
-        xcopy /E $(BuildArtifactsFolder)\LINUX-pack             package_linux\build\native\LINUX-pack\
-        xcopy /E $(BuildArtifactsFolder)\LINUX-ValidationParser package_linux\build\native\LINUX-ValidationParser\
-        xcopy /E $(BuildArtifactsFolder)\LINUXchk               package_linux\build\native\LINUXchk\
-        xcopy /E $(BuildArtifactsFolder)\LINUXchk-pack          package_linux\build\native\LINUXchk-pack\
+        xcopy /E $(ArtifactsFolder)\LINUX                  package_linux\build\native\LINUX\
+        xcopy /E $(ArtifactsFolder)\LINUX-nobundle         package_linux\build\native\LINUX-nobundle\
+        xcopy /E $(ArtifactsFolder)\LINUX-pack             package_linux\build\native\LINUX-pack\
+        xcopy /E $(ArtifactsFolder)\LINUX-ValidationParser package_linux\build\native\LINUX-ValidationParser\
+        xcopy /E $(ArtifactsFolder)\LINUXchk               package_linux\build\native\LINUXchk\
+        xcopy /E $(ArtifactsFolder)\LINUXchk-pack          package_linux\build\native\LINUXchk-pack\
       displayName: 'Prepare Linux'
 
     - task: NuGetCommand@2
@@ -118,19 +118,19 @@ stages:
     # MacOS
     # For macOS we first sign the libraries
     - script: |
-        copy $(BuildArtifactsFolder)\MACOS\lib\libmsix.dylib                    ToSign\MACOS\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOS-nobundle\lib\libmsix.dylib           ToSign\MACOS-nobundle\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOS-nobundle-Universal\lib\libmsix.dylib ToSign\MACOS-nobundle-Universal\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOS-pack\lib\libmsix.dylib               ToSign\MACOS-pack\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOS-pack-Universal\lib\libmsix.dylib     ToSign\MACOS-pack-Universal\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOS-Universal\lib\libmsix.dylib          ToSign\MACOS-Universal\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOSarm64\lib\libmsix.dylib               ToSign\MACOSarm64\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOSarm64-nobundle\lib\libmsix.dylib      ToSign\MACOSarm64-nobundle\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOSarm64-pack\lib\libmsix.dylib          ToSign\MACOSarm64-pack\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOSarm64chk\lib\libmsix.dylib            ToSign\MACOSarm64chk\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOSarm64chk-pack\lib\libmsix.dylib       ToSign\MACOSarm64chk-pack\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOSchk\lib\libmsix.dylib                 ToSign\MACOSchk\libmsix.dylib
-        copy $(BuildArtifactsFolder)\MACOSchk-pack\lib\libmsix.dylib            ToSign\MACOSchk-pack\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS\lib\libmsix.dylib                    ToSign\MACOS\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS-nobundle\lib\libmsix.dylib           ToSign\MACOS-nobundle\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS-nobundle-Universal\lib\libmsix.dylib ToSign\MACOS-nobundle-Universal\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS-pack\lib\libmsix.dylib               ToSign\MACOS-pack\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS-pack-Universal\lib\libmsix.dylib     ToSign\MACOS-pack-Universal\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS-Universal\lib\libmsix.dylib          ToSign\MACOS-Universal\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSarm64\lib\libmsix.dylib               ToSign\MACOSarm64\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSarm64-nobundle\lib\libmsix.dylib      ToSign\MACOSarm64-nobundle\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSarm64-pack\lib\libmsix.dylib          ToSign\MACOSarm64-pack\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSarm64chk\lib\libmsix.dylib            ToSign\MACOSarm64chk\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSarm64chk-pack\lib\libmsix.dylib       ToSign\MACOSarm64chk-pack\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSchk\lib\libmsix.dylib                 ToSign\MACOSchk\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSchk-pack\lib\libmsix.dylib            ToSign\MACOSchk-pack\libmsix.dylib
       displayName: 'Prepare to Sign macOS'
 
     - task: ArchiveFiles@2
@@ -196,43 +196,43 @@ stages:
         targetPath: 'package_macos/'
 
     - script: |
-        xcopy /E $(BuildArtifactsFolder)\MACOS                        package_mac\build\native\MACOS\
+        xcopy /E $(ArtifactsFolder)\MACOS                             package_mac\build\native\MACOS\
         copy /Y $(MacOSSigned)\MACOS\libmsix.dylib                    package_mac\build\native\MACOS\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOS-nobundle               package_mac\build\native\MACOS-nobundle\
+        xcopy /E $(ArtifactsFolder)\MACOS-nobundle                    package_mac\build\native\MACOS-nobundle\
         copy /Y $(MacOSSigned)\MACOS-nobundle\libmsix.dylib           package_mac\build\native\MACOS-nobundle\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOS-nobundle-Universal     package_mac\build\native\MACOS-nobundle-Universal\
+        xcopy /E $(ArtifactsFolder)\MACOS-nobundle-Universal          package_mac\build\native\MACOS-nobundle-Universal\
         copy /Y $(MacOSSigned)\MACOS-nobundle-Universal\libmsix.dylib package_mac\build\native\MACOS-nobundle-Universal\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOS-pack                   package_mac\build\native\MACOS-pack\
+        xcopy /E $(ArtifactsFolder)\MACOS-pack                        package_mac\build\native\MACOS-pack\
         copy /Y $(MacOSSigned)\MACOS-pack\libmsix.dylib               package_mac\build\native\MACOS-pack\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOS-pack-Universal         package_mac\build\native\MACOS-pack-Universal\
+        xcopy /E $(ArtifactsFolder)\MACOS-pack-Universal              package_mac\build\native\MACOS-pack-Universal\
         copy /Y $(MacOSSigned)\MACOS-pack-Universal\libmsix.dylib     package_mac\build\native\MACOS-pack-Universal\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOS-Universal              package_mac\build\native\MACOS-Universal\
+        xcopy /E $(ArtifactsFolder)\MACOS-Universal                   package_mac\build\native\MACOS-Universal\
         copy /Y $(MacOSSigned)\MACOS-Universal\libmsix.dylib          package_mac\build\native\MACOS-Universal\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOSarm64                   package_mac\build\native\MACOSarm64\
+        xcopy /E $(ArtifactsFolder)\MACOSarm64                        package_mac\build\native\MACOSarm64\
         copy /Y $(MacOSSigned)\MACOSarm64\libmsix.dylib               package_mac\build\native\MACOSarm64\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOSarm64-nobundle          package_mac\build\native\MACOSarm64-nobundle\
+        xcopy /E $(ArtifactsFolder)\MACOSarm64-nobundle               package_mac\build\native\MACOSarm64-nobundle\
         copy /Y $(MacOSSigned)\MACOSarm64-nobundle\libmsix.dylib      package_mac\build\native\MACOSarm64-nobundle\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOSarm64-pack              package_mac\build\native\MACOSarm64-pack\
+        xcopy /E $(ArtifactsFolder)\MACOSarm64-pack                   package_mac\build\native\MACOSarm64-pack\
         copy /Y $(MacOSSigned)\MACOSarm64-pack\libmsix.dylib          package_mac\build\native\MACOSarm64-pack\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOSarm64chk                package_mac\build\native\MACOSarm64chk\
+        xcopy /E $(ArtifactsFolder)\MACOSarm64chk                     package_mac\build\native\MACOSarm64chk\
         copy /Y $(MacOSSigned)\MACOSarm64chk\libmsix.dylib            package_mac\build\native\MACOSarm64chk\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOSarm64-pack              package_mac\build\native\MACOSarm64chk-pack\
+        xcopy /E $(ArtifactsFolder)\MACOSarm64-pack                   package_mac\build\native\MACOSarm64chk-pack\
         copy /Y $(MacOSSigned)\MACOSarm64chk-pack\libmsix.dylib       package_mac\build\native\MACOSarm64chk-pack\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOSchk                     package_mac\build\native\MACOSchk\
+        xcopy /E $(ArtifactsFolder)\MACOSchk                          package_mac\build\native\MACOSchk\
         copy /Y $(MacOSSigned)\MACOSchk\libmsix.dylib                 package_mac\build\native\MACOSchk\lib\libmsix.dylib
 
-        xcopy /E $(BuildArtifactsFolder)\MACOSchk-pack                package_mac\build\native\MACOSchk-pack\
+        xcopy /E $(ArtifactsFolder)\MACOSchk-pack                     package_mac\build\native\MACOSchk-pack\
         copy /Y $(MacOSSigned)\MACOSchk-pack\libmsix.dylib            package_mac\build\native\MACOSchk-pack\lib\libmsix.dylib
       displayName: 'Prepare macOS'
 
@@ -248,7 +248,7 @@ stages:
       displayName: 'ESRP CodeSigning Windows'
       inputs:
         ConnectedServiceName: 'ESRP CodeSigning connection 4 windows'
-        FolderPath: '$(BuildArtifactsFolder)'
+        FolderPath: '$(ArtifactsFolder)'
         Pattern: 'msix.dll,makemsix.exe'
         signConfigType: inlineSignParams
         inlineOperation: |
@@ -300,20 +300,20 @@ stages:
         targetPath: 'package_windows/'
 
     - script: |
-        xcopy /E $(BuildArtifactsFolder)\WIN32 package_win\build\native\WIN32\
-        xcopy /E $(BuildArtifactsFolder)\WIN32-nobundle package_win\build\native\WIN32-nobundle\
-        xcopy /E $(BuildArtifactsFolder)\WIN32-pack package_win\build\native\WIN32-pack\
-        xcopy /E $(BuildArtifactsFolder)\WIN32-x64 package_win\build\native\WIN32-x64\
-        xcopy /E $(BuildArtifactsFolder)\WIN32-x64-pack package_win\build\native\WIN32-x64-pack\
-        xcopy /E $(BuildArtifactsFolder)\WIN32-x64-nobundle package_win\build\native\WIN32-x64-nobundle\
-        xcopy /E $(BuildArtifactsFolder)\WIN32-x64chk package_win\build\native\WIN32-x64chk\
-        xcopy /E $(BuildArtifactsFolder)\WIN32-x64chk-pack package_win\build\native\WIN32-x64chk-pack\
-        xcopy /E $(BuildArtifactsFolder)\WIN32-x64ValidationParser package_win\build\native\WIN32-x64ValidationParser\
-        xcopy /E $(BuildArtifactsFolder)\WIN32-x64Xerces package_win\build\native\WIN32-x64Xerces\
-        xcopy /E $(BuildArtifactsFolder)\WIN32chk package_win\build\native\WIN32chk\
-        xcopy /E $(BuildArtifactsFolder)\WIN32chk-pack package_win\build\native\WIN32chk-pack\
-        xcopy /E $(BuildArtifactsFolder)\WIN32ValidationParser package_win\build\native\WIN32ValidationParser\
-        xcopy /E $(BuildArtifactsFolder)\WIN32Xerces package_win\build\native\WIN32Xerces\
+        xcopy /E $(ArtifactsFolder)\WIN32 package_win\build\native\WIN32\
+        xcopy /E $(ArtifactsFolder)\WIN32-nobundle package_win\build\native\WIN32-nobundle\
+        xcopy /E $(ArtifactsFolder)\WIN32-pack package_win\build\native\WIN32-pack\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64 package_win\build\native\WIN32-x64\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64-pack package_win\build\native\WIN32-x64-pack\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64-nobundle package_win\build\native\WIN32-x64-nobundle\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64chk package_win\build\native\WIN32-x64chk\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64chk-pack package_win\build\native\WIN32-x64chk-pack\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64ValidationParser package_win\build\native\WIN32-x64ValidationParser\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64Xerces package_win\build\native\WIN32-x64Xerces\
+        xcopy /E $(ArtifactsFolder)\WIN32chk package_win\build\native\WIN32chk\
+        xcopy /E $(ArtifactsFolder)\WIN32chk-pack package_win\build\native\WIN32chk-pack\
+        xcopy /E $(ArtifactsFolder)\WIN32ValidationParser package_win\build\native\WIN32ValidationParser\
+        xcopy /E $(ArtifactsFolder)\WIN32Xerces package_win\build\native\WIN32Xerces\
       displayName: 'Prepare Windows'
 
     - task: NuGetCommand@2
