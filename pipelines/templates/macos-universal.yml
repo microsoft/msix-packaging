@@ -9,13 +9,13 @@ steps:
   displayName: 'Download ${{ parameters.artifact_x86 }}'
   inputs:
     artifact: ${{ parameters.artifact_x86 }}
-    path: $(System.ArtifactsDirectory)
+    path: $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}
 
 - task: DownloadPipelineArtifact@2
   displayName: 'Download ${{ parameters.artifact_arm64 }}'
   inputs:
     artifact: ${{ parameters.artifact_arm64 }}
-    path: $(System.ArtifactsDirectory)
+    path: $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}
 
 - powershell: ls -Recurse $(System.ArtifactsDirectory)
   displayName: list download
