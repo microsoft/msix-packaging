@@ -34,7 +34,10 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download build artifacts'
       inputs:
-        source: specific
+        buildType: 'specific'
+        project: '65a7f9af-fe23-41b6-9aa7-71b0bb348bec'
+        definition: '79975'
+        buildVersionToDownload: 'specific'
         buildId: 45751407
         itemPattern: >
           **
@@ -46,7 +49,10 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download AOSP nuspec and license'
       inputs:
-        source: specific
+        buildType: 'specific'
+        project: '65a7f9af-fe23-41b6-9aa7-71b0bb348bec'
+        definition: '79975'
+        buildVersionToDownload: 'specific'
         buildId: 45751407
         artifactName: AOSP-arm
         itemPattern: |
