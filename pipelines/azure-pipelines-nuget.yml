@@ -34,6 +34,7 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download build artifacts'
       inputs:
+        source: specific
         buildId: 45751407
         itemPattern: >
           **
@@ -45,6 +46,7 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download AOSP nuspec and license'
       inputs:
+        source: specific
         buildId: 45751407
         artifactName: AOSP-arm
         itemPattern: |
@@ -71,6 +73,7 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download iOS nuspec and license'
       inputs:
+        source: specific
         buildId: 45751407
         artifactName: iOS-arm64
         itemPattern: |
@@ -97,6 +100,7 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download Linux nuspec and license'
       inputs:
+        source: specific
         buildId: 45751407
         artifactName: LINUX
         itemPattern: |
@@ -116,6 +120,7 @@ stages:
     - task: NuGetCommand@2
       displayName: 'NuGet pack Linux'
       inputs:
+        source: specific
         buildId: 45751407
         command: pack
         packagesToPack: 'package_linux\Package.nuspec'
@@ -196,6 +201,7 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download macOS nuspec and license'
       inputs:
+        source: specific
         buildId: 45751407
         artifactName: MACOS
         itemPattern: |
@@ -301,6 +307,7 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download Windows nuspec and license'
       inputs:
+        source: specific
         buildId: 45751407
         artifactName: WIN32
         itemPattern: |
