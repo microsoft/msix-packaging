@@ -15,7 +15,7 @@ steps:
   displayName: 'Download ${{ parameters.artifact_arm64 }}'
   inputs:
     artifact: ${{ parameters.artifact_arm64 }}
-    path: $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}
+    path: $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}
 
 - powershell: ls -Recurse $(System.ArtifactsDirectory)
   displayName: list download
