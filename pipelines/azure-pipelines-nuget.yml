@@ -19,9 +19,6 @@ stages:
     pool:
       vmImage: 'windows-2022'
 
-    # This stage only consumes the artifacts; it does not use the source code
-    checkout: none
-
     variables:
       ArtifactsFolder: $(Pipeline.Workspace)\built
       NuGetsFolder: $(Build.StagingDirectory)\nuget
@@ -34,6 +31,9 @@ stages:
     #   - Create NuGet package
     # At the end we publish all packages at once
     steps:
+    # This stage only consumes the artifacts; it does not use the source code
+    - checkout: none
+
     - task: DownloadPipelineArtifact@2
       displayName: 'Download build artifacts'
       inputs:
