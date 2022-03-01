@@ -56,8 +56,13 @@ stages:
         artifactName: AOSP-arm
         itemPattern: |
           Package.nuspec
+          build/**
         targetPath: 'package_aosp/'
 
+    - powershell: ls -Recurse package_aosp/
+      displayName: list download
+    - powershell: ls -Recurse $(ArtifactsFolder)
+      displayName: list download
     - script: |
         xcopy /E $(ArtifactsFolder)\AOSP-arm          package_asop\build\native\AOSP-arm\
         xcopy /E $(ArtifactsFolder)\AOSP-arm-nobundle package_asop\build\native\AOSP-arm-nobundle\
