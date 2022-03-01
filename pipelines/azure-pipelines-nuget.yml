@@ -58,18 +58,18 @@ stages:
         targetPath: 'package_aosp/'
 
     - script: |
-        xcopy /E $(ArtifactsFolder)\AOSP-arm          package_asop\build\native\AOSP-arm\
-        xcopy /E $(ArtifactsFolder)\AOSP-arm-nobundle package_asop\build\native\AOSP-arm-nobundle\
-        xcopy /E $(ArtifactsFolder)\AOSP-x86          package_asop\build\native\AOSP-x86\
-        xcopy /E $(ArtifactsFolder)\AOSP-x86-nobundle package_asop\build\native\AOSP-x86-nobundle\
-        xcopy /E $(ArtifactsFolder)\AOSP-x86chk       package_asop\build\native\AOSP-x86chk\
+        xcopy /E $(ArtifactsFolder)\AOSP-arm          package_aosp\build\native\AOSP-arm\
+        xcopy /E $(ArtifactsFolder)\AOSP-arm-nobundle package_aosp\build\native\AOSP-arm-nobundle\
+        xcopy /E $(ArtifactsFolder)\AOSP-x86          package_aosp\build\native\AOSP-x86\
+        xcopy /E $(ArtifactsFolder)\AOSP-x86-nobundle package_aosp\build\native\AOSP-x86-nobundle\
+        xcopy /E $(ArtifactsFolder)\AOSP-x86chk       package_aosp\build\native\AOSP-x86chk\
       displayName: 'Prepare AOSP'
 
     - task: NuGetCommand@2
       displayName: 'NuGet pack AOSP'
       inputs:
         command: pack
-        packagesToPack: 'package_asop\Package.nuspec'
+        packagesToPack: 'package_aosp\Package.nuspec'
         packDestination: '$(NuGetsFolder)\aosp'
 
     # iOS
@@ -122,7 +122,6 @@ stages:
         command: pack
         packagesToPack: 'package_linux\Package.nuspec'
         packDestination: '$(NuGetsFolder)\linux'
-      enabled: false
 
     # MacOS
     # For macOS we first sign the libraries
@@ -217,7 +216,7 @@ stages:
         itemPattern: |
           Package.nuspec
           build/**
-        targetPath: 'package_macos/'
+        targetPath: 'package_mac/'
 
     - script: |
         xcopy /E $(ArtifactsFolder)\MACOS                             package_mac\build\native\MACOS\
@@ -321,23 +320,23 @@ stages:
         itemPattern: |
           Package.nuspec
           build/**
-        targetPath: 'package_windows/'
+        targetPath: 'package_win/'
 
     - script: |
-        xcopy /E $(ArtifactsFolder)\WIN32 package_win\build\native\WIN32\
-        xcopy /E $(ArtifactsFolder)\WIN32-nobundle package_win\build\native\WIN32-nobundle\
-        xcopy /E $(ArtifactsFolder)\WIN32-pack package_win\build\native\WIN32-pack\
-        xcopy /E $(ArtifactsFolder)\WIN32-x64 package_win\build\native\WIN32-x64\
-        xcopy /E $(ArtifactsFolder)\WIN32-x64-pack package_win\build\native\WIN32-x64-pack\
-        xcopy /E $(ArtifactsFolder)\WIN32-x64-nobundle package_win\build\native\WIN32-x64-nobundle\
-        xcopy /E $(ArtifactsFolder)\WIN32-x64chk package_win\build\native\WIN32-x64chk\
-        xcopy /E $(ArtifactsFolder)\WIN32-x64chk-pack package_win\build\native\WIN32-x64chk-pack\
+        xcopy /E $(ArtifactsFolder)\WIN32                     package_win\build\native\WIN32\
+        xcopy /E $(ArtifactsFolder)\WIN32-nobundle            package_win\build\native\WIN32-nobundle\
+        xcopy /E $(ArtifactsFolder)\WIN32-pack                package_win\build\native\WIN32-pack\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64                 package_win\build\native\WIN32-x64\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64-pack            package_win\build\native\WIN32-x64-pack\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64-nobundle        package_win\build\native\WIN32-x64-nobundle\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64chk              package_win\build\native\WIN32-x64chk\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64chk-pack         package_win\build\native\WIN32-x64chk-pack\
         xcopy /E $(ArtifactsFolder)\WIN32-x64ValidationParser package_win\build\native\WIN32-x64ValidationParser\
-        xcopy /E $(ArtifactsFolder)\WIN32-x64Xerces package_win\build\native\WIN32-x64Xerces\
-        xcopy /E $(ArtifactsFolder)\WIN32chk package_win\build\native\WIN32chk\
-        xcopy /E $(ArtifactsFolder)\WIN32chk-pack package_win\build\native\WIN32chk-pack\
-        xcopy /E $(ArtifactsFolder)\WIN32ValidationParser package_win\build\native\WIN32ValidationParser\
-        xcopy /E $(ArtifactsFolder)\WIN32Xerces package_win\build\native\WIN32Xerces\
+        xcopy /E $(ArtifactsFolder)\WIN32-x64Xerces           package_win\build\native\WIN32-x64Xerces\
+        xcopy /E $(ArtifactsFolder)\WIN32chk                  package_win\build\native\WIN32chk\
+        xcopy /E $(ArtifactsFolder)\WIN32chk-pack             package_win\build\native\WIN32chk-pack\
+        xcopy /E $(ArtifactsFolder)\WIN32ValidationParser     package_win\build\native\WIN32ValidationParser\
+        xcopy /E $(ArtifactsFolder)\WIN32Xerces               package_win\build\native\WIN32Xerces\
       displayName: 'Prepare Windows'
 
     - task: NuGetCommand@2
@@ -366,6 +365,7 @@ stages:
             Write-Error "Packages are not the same versions."
         }
       displayName: 'Validate is same version'
+      continueOnError: true
 
     - task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
       displayName: 'Generate SBoM Manifest'
