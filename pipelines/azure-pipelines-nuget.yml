@@ -127,19 +127,34 @@ stages:
     # MacOS
     # For macOS we first sign the libraries
     - script: |
-        xcopy $(ArtifactsFolder)\MACOS\lib\libmsix.dylib                    ToSign\MACOS\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOS-nobundle\lib\libmsix.dylib           ToSign\MACOS-nobundle\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOS-nobundle-Universal\lib\libmsix.dylib ToSign\MACOS-nobundle-Universal\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOS-pack\lib\libmsix.dylib               ToSign\MACOS-pack\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOS-pack-Universal\lib\libmsix.dylib     ToSign\MACOS-pack-Universal\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOS-Universal\lib\libmsix.dylib          ToSign\MACOS-Universal\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOSarm64\lib\libmsix.dylib               ToSign\MACOSarm64\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOSarm64-nobundle\lib\libmsix.dylib      ToSign\MACOSarm64-nobundle\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOSarm64-pack\lib\libmsix.dylib          ToSign\MACOSarm64-pack\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOSarm64chk\lib\libmsix.dylib            ToSign\MACOSarm64chk\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOSarm64chk-pack\lib\libmsix.dylib       ToSign\MACOSarm64chk-pack\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOSchk\lib\libmsix.dylib                 ToSign\MACOSchk\libmsix.dylib
-        xcopy $(ArtifactsFolder)\MACOSchk-pack\lib\libmsix.dylib            ToSign\MACOSchk-pack\libmsix.dylib
+        mkdir ToSign
+        mkdir ToSign\MACOS
+        mkdir ToSign\MACOS-nobundle
+        mkdir ToSign\MACOS-nobundle-Universal
+        mkdir ToSign\MACOS-pack
+        mkdir ToSign\MACOS-pack-Universal
+        mkdir ToSign\MACOS-Universal
+        mkdir ToSign\MACOSarm64
+        mkdir ToSign\MACOSarm64-nobundle
+        mkdir ToSign\MACOSarm64-pack
+        mkdir ToSign\MACOSarm64chk
+        mkdir ToSign\MACOSarm64chk-pack
+        mkdir ToSign\MACOSchk
+        mkdir ToSign\MACOSchk-pack
+
+        copy $(ArtifactsFolder)\MACOS\lib\libmsix.dylib                    ToSign\MACOS\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS-nobundle\lib\libmsix.dylib           ToSign\MACOS-nobundle\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS-nobundle-Universal\lib\libmsix.dylib ToSign\MACOS-nobundle-Universal\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS-pack\lib\libmsix.dylib               ToSign\MACOS-pack\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS-pack-Universal\lib\libmsix.dylib     ToSign\MACOS-pack-Universal\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOS-Universal\lib\libmsix.dylib          ToSign\MACOS-Universal\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSarm64\lib\libmsix.dylib               ToSign\MACOSarm64\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSarm64-nobundle\lib\libmsix.dylib      ToSign\MACOSarm64-nobundle\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSarm64-pack\lib\libmsix.dylib          ToSign\MACOSarm64-pack\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSarm64chk\lib\libmsix.dylib            ToSign\MACOSarm64chk\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSarm64chk-pack\lib\libmsix.dylib       ToSign\MACOSarm64chk-pack\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSchk\lib\libmsix.dylib                 ToSign\MACOSchk\libmsix.dylib
+        copy $(ArtifactsFolder)\MACOSchk-pack\lib\libmsix.dylib            ToSign\MACOSchk-pack\libmsix.dylib
       displayName: 'Prepare to Sign macOS'
 
     - task: ArchiveFiles@2
@@ -205,44 +220,44 @@ stages:
         targetPath: 'package_macos/'
 
     - script: |
-        xcopy /E $(ArtifactsFolder)\MACOS                              package_mac\build\native\MACOS\
-        xcopy /Y $(MacOSSigned)\MACOS\libmsix.dylib                    package_mac\build\native\MACOS\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOS                             package_mac\build\native\MACOS\
+        copy /Y $(MacOSSigned)\MACOS\libmsix.dylib                    package_mac\build\native\MACOS\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOS-nobundle                     package_mac\build\native\MACOS-nobundle\
-        xcopy /Y $(MacOSSigned)\MACOS-nobundle\libmsix.dylib           package_mac\build\native\MACOS-nobundle\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOS-nobundle                    package_mac\build\native\MACOS-nobundle\
+        copy /Y $(MacOSSigned)\MACOS-nobundle\libmsix.dylib           package_mac\build\native\MACOS-nobundle\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOS-nobundle-Universal           package_mac\build\native\MACOS-nobundle-Universal\
-        xcopy /Y $(MacOSSigned)\MACOS-nobundle-Universal\libmsix.dylib package_mac\build\native\MACOS-nobundle-Universal\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOS-nobundle-Universal          package_mac\build\native\MACOS-nobundle-Universal\
+        copy /Y $(MacOSSigned)\MACOS-nobundle-Universal\libmsix.dylib package_mac\build\native\MACOS-nobundle-Universal\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOS-pack                         package_mac\build\native\MACOS-pack\
-        xcopy /Y $(MacOSSigned)\MACOS-pack\libmsix.dylib               package_mac\build\native\MACOS-pack\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOS-pack                        package_mac\build\native\MACOS-pack\
+        copy /Y $(MacOSSigned)\MACOS-pack\libmsix.dylib               package_mac\build\native\MACOS-pack\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOS-pack-Universal               package_mac\build\native\MACOS-pack-Universal\
-        xcopy /Y $(MacOSSigned)\MACOS-pack-Universal\libmsix.dylib     package_mac\build\native\MACOS-pack-Universal\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOS-pack-Universal              package_mac\build\native\MACOS-pack-Universal\
+        copy /Y $(MacOSSigned)\MACOS-pack-Universal\libmsix.dylib     package_mac\build\native\MACOS-pack-Universal\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOS-Universal                    package_mac\build\native\MACOS-Universal\
-        xcopy /Y $(MacOSSigned)\MACOS-Universal\libmsix.dylib          package_mac\build\native\MACOS-Universal\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOS-Universal                   package_mac\build\native\MACOS-Universal\
+        copy /Y $(MacOSSigned)\MACOS-Universal\libmsix.dylib          package_mac\build\native\MACOS-Universal\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOSarm64                         package_mac\build\native\MACOSarm64\
-        xcopy /Y $(MacOSSigned)\MACOSarm64\libmsix.dylib               package_mac\build\native\MACOSarm64\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOSarm64                        package_mac\build\native\MACOSarm64\
+        copy /Y $(MacOSSigned)\MACOSarm64\libmsix.dylib               package_mac\build\native\MACOSarm64\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOSarm64-nobundle                package_mac\build\native\MACOSarm64-nobundle\
-        xcopy /Y $(MacOSSigned)\MACOSarm64-nobundle\libmsix.dylib      package_mac\build\native\MACOSarm64-nobundle\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOSarm64-nobundle               package_mac\build\native\MACOSarm64-nobundle\
+        copy /Y $(MacOSSigned)\MACOSarm64-nobundle\libmsix.dylib      package_mac\build\native\MACOSarm64-nobundle\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOSarm64-pack                    package_mac\build\native\MACOSarm64-pack\
-        xcopy /Y $(MacOSSigned)\MACOSarm64-pack\libmsix.dylib          package_mac\build\native\MACOSarm64-pack\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOSarm64-pack                   package_mac\build\native\MACOSarm64-pack\
+        copy /Y $(MacOSSigned)\MACOSarm64-pack\libmsix.dylib          package_mac\build\native\MACOSarm64-pack\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOSarm64chk                      package_mac\build\native\MACOSarm64chk\
-        xcopy /Y $(MacOSSigned)\MACOSarm64chk\libmsix.dylib            package_mac\build\native\MACOSarm64chk\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOSarm64chk                     package_mac\build\native\MACOSarm64chk\
+        copy /Y $(MacOSSigned)\MACOSarm64chk\libmsix.dylib            package_mac\build\native\MACOSarm64chk\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOSarm64-pack                    package_mac\build\native\MACOSarm64chk-pack\
-        xcopy /Y $(MacOSSigned)\MACOSarm64chk-pack\libmsix.dylib       package_mac\build\native\MACOSarm64chk-pack\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOSarm64-pack                   package_mac\build\native\MACOSarm64chk-pack\
+        copy /Y $(MacOSSigned)\MACOSarm64chk-pack\libmsix.dylib       package_mac\build\native\MACOSarm64chk-pack\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOSchk                           package_mac\build\native\MACOSchk\
-        xcopy /Y $(MacOSSigned)\MACOSchk\libmsix.dylib                 package_mac\build\native\MACOSchk\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOSchk                          package_mac\build\native\MACOSchk\
+        copy /Y $(MacOSSigned)\MACOSchk\libmsix.dylib                 package_mac\build\native\MACOSchk\lib\libmsix.dylib
 
-        xcopy /E $(ArtifactsFolder)\MACOSchk-pack                      package_mac\build\native\MACOSchk-pack\
-        xcopy /Y $(MacOSSigned)\MACOSchk-pack\libmsix.dylib            package_mac\build\native\MACOSchk-pack\lib\libmsix.dylib
+        xcopy /E $(ArtifactsFolder)\MACOSchk-pack                     package_mac\build\native\MACOSchk-pack\
+        copy /Y $(MacOSSigned)\MACOSchk-pack\libmsix.dylib            package_mac\build\native\MACOSchk-pack\lib\libmsix.dylib
       displayName: 'Prepare macOS'
 
     - task: NuGetCommand@2
