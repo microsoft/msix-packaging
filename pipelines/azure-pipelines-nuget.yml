@@ -19,6 +19,9 @@ stages:
     pool:
       vmImage: 'windows-2022'
 
+    # This stage only consumes the artifacts; it does not use the source code
+    checkout: none
+
     variables:
       ArtifactsFolder: $(Pipeline.Workspace)\built
       NuGetsFolder: $(Build.StagingDirectory)\nuget
@@ -353,17 +356,21 @@ stages:
         {
             Write-Error "Expected 5 nupkgs files. Got: $($files.Count)"
         }
+
         $versions = @()
         Write-Host 'Found packages'
         foreach ($f in $files) {
             Write-Host ($f.BaseName | Select-String -Pattern '\d.\d.\d')
             $versions += $f.BaseName -replace '\D+(\d.\d.\d+)', '$1'
         }
+
         $uniques = $versions | Select-Object -Unique
         if ($uniques.Count -ne 1)
         {
             Write-Error "Packages are not the same versions."
         }
+
+        Write-Host "##vso[task.setvariable variable=NuGetVersion;]$uniques[0]"
       displayName: 'Validate is same version'
       continueOnError: true
 
@@ -371,6 +378,8 @@ stages:
       displayName: 'Generate SBoM Manifest'
       inputs:
         BuildDropPath: '$(NuGetsFolder)'
+        PackageName: 'Microsoft.MSIX.Packaging'
+        PackageVersion: $(NuGetVersion)
 
     - task: PublishPipelineArtifact@1
       displayName: 'Publish NuGet packages to pipeline'
