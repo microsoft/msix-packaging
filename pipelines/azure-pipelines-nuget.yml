@@ -25,9 +25,9 @@ stages:
       MacOSSigned: $(Pipeline.Workspace)\Signed_Extracted
 
     # A separate NuGet package is created for each platform.
-    # On every platform we follow the pattern:
-    #   - Download nuspec file from one of the artifacts
-    #   - Prepare files (copy to the appropriate location)
+    # We first download all built artifacts. Then, on every platform we:
+    #   - Download nuspec file and other metadata from one of the artifacts
+    #   - Prepare files for packaging (copy to the appropriate location)
     #   - Create NuGet package
     # At the end we publish all packages at once
     steps:
@@ -39,10 +39,18 @@ stages:
         definition: '79975'
         buildVersionToDownload: 'specific'
         buildId: 45751407
-        itemPattern: >
-          **
-          !Package.nuspec
         targetPath: $(ArtifactsFolder)\
+
+    # Remove the nuspec file and build/ folder from each artifact.
+    # For each platform, we will include only one of these in the NuGet,
+    # which we will download later.
+    #
+    # TODO: It should be possible to filter the files in the download task
+    #       with a pattern, but it didn't seem to work.
+    - powershell: |
+        Remove-Item $(ArtifactsFolder)/*/Package.nuspec
+        Remove-Item $(ArtifactsFolder)/*/build/ -Recurse
+      displayName: Delete unneeded files
 
     # AOSP
     - task: DownloadPipelineArtifact@2
@@ -59,10 +67,6 @@ stages:
           build/**
         targetPath: 'package_aosp/'
 
-    - powershell: ls -Recurse package_aosp/
-      displayName: list download
-    - powershell: ls -Recurse $(ArtifactsFolder)
-      displayName: list download
     - script: |
         xcopy /E $(ArtifactsFolder)\AOSP-arm          package_asop\build\native\AOSP-arm\
         xcopy /E $(ArtifactsFolder)\AOSP-arm-nobundle package_asop\build\native\AOSP-arm-nobundle\
