@@ -127,6 +127,10 @@ stages:
     # MacOS
     # For macOS we first sign the libraries
     - script: |
+        mkdir ToSign
+        dir $(ArtifactsFolder)\
+        dir $(ArtifactsFolder)\MACOS\
+        dir $(ArtifactsFolder)\MACOS\lib\
         copy $(ArtifactsFolder)\MACOS\lib\libmsix.dylib                    ToSign\MACOS\libmsix.dylib
         copy $(ArtifactsFolder)\MACOS-nobundle\lib\libmsix.dylib           ToSign\MACOS-nobundle\libmsix.dylib
         copy $(ArtifactsFolder)\MACOS-nobundle-Universal\lib\libmsix.dylib ToSign\MACOS-nobundle-Universal\libmsix.dylib
