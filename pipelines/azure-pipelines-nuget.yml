@@ -370,7 +370,7 @@ stages:
             Write-Error "Packages are not the same versions."
         }
 
-        Write-Host "##vso[task.setvariable variable=NuGetVersion;]$uniques[0]"
+        Write-Host "##vso[task.setvariable variable=NuGetVersion;]$uniques"
       displayName: 'Validate is same version'
       continueOnError: true
 
