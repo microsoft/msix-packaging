@@ -5,13 +5,13 @@
 trigger: none
 
 stages:
-# - stage: BuildStage
-#   jobs:
-#   - template: templates/build-aosp.yml
-#   - template: templates/build-ios.yml
-#   - template: templates/build-linux.yml
-#   - template: templates/build-macos.yml
-#   - template: templates/build-windows.yml
+- stage: BuildStage
+  jobs:
+  - template: templates/build-aosp.yml
+  - template: templates/build-ios.yml
+  - template: templates/build-linux.yml
+  - template: templates/build-macos.yml
+  - template: templates/build-windows.yml
 
 - stage: PackagingStage
   jobs:
@@ -34,11 +34,6 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download build artifacts'
       inputs:
-        buildType: 'specific'
-        project: '65a7f9af-fe23-41b6-9aa7-71b0bb348bec'
-        definition: '79975'
-        buildVersionToDownload: 'specific'
-        buildId: 45751407
         targetPath: $(ArtifactsFolder)\
 
     # Remove the nuspec file and build/ folder from each artifact.
@@ -56,11 +51,6 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download AOSP nuspec and license'
       inputs:
-        buildType: 'specific'
-        project: '65a7f9af-fe23-41b6-9aa7-71b0bb348bec'
-        definition: '79975'
-        buildVersionToDownload: 'specific'
-        buildId: 45751407
         artifactName: AOSP-arm
         itemPattern: |
           Package.nuspec
@@ -86,8 +76,6 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download iOS nuspec and license'
       inputs:
-        source: specific
-        buildId: 45751407
         artifactName: iOS-arm64
         itemPattern: |
           Package.nuspec
@@ -113,8 +101,6 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download Linux nuspec and license'
       inputs:
-        source: specific
-        buildId: 45751407
         artifactName: LINUX
         itemPattern: |
           Package.nuspec
@@ -133,8 +119,6 @@ stages:
     - task: NuGetCommand@2
       displayName: 'NuGet pack Linux'
       inputs:
-        source: specific
-        buildId: 45751407
         command: pack
         packagesToPack: 'package_linux\Package.nuspec'
         packDestination: '$(NuGetsFolder)\linux'
@@ -214,8 +198,6 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download macOS nuspec and license'
       inputs:
-        source: specific
-        buildId: 45751407
         artifactName: MACOS
         itemPattern: |
           Package.nuspec
@@ -320,8 +302,6 @@ stages:
     - task: DownloadPipelineArtifact@2
       displayName: 'Download Windows nuspec and license'
       inputs:
-        source: specific
-        buildId: 45751407
         artifactName: WIN32
         itemPattern: |
           Package.nuspec
