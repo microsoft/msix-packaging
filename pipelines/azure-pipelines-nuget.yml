@@ -349,7 +349,7 @@ stages:
 
     # Global tasks
     - powershell: |
-        $files = Get-ChildItem -Recurse *.nupkg
+        $files = Get-ChildItem -Recurse $(NuGetsFolder) -Filter *.nupkg
         if ($files.Count -ne 5)
         {
             Write-Error "Expected 5 nupkgs files. Got: $($files.Count)"
