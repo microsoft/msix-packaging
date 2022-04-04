@@ -349,7 +349,9 @@ stages:
         packagesToPack: 'package_win\Package.nuspec'
         packDestination: '$(NuGetsFolder)\windows'
 
-    # Global tasks
+    # Global tasks for all platforms
+
+    # Make sure that all artifacts came from the same build
     - powershell: |
         $files = Get-ChildItem -Recurse $(NuGetsFolder) -Filter *.nupkg
         if ($files.Count -ne 5)
