@@ -5,27 +5,28 @@ parameters:
   artifact_arm64: ''
 
 steps:
-- task: DownloadBuildArtifacts@0
+- task: DownloadPipelineArtifact@2
   displayName: 'Download ${{ parameters.artifact_x86 }}'
   inputs:
-    artifactName: ${{ parameters.artifact_x86 }}
+    artifact: ${{ parameters.artifact_x86 }}
+    path: $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}
 
-- task: DownloadBuildArtifacts@0
+- task: DownloadPipelineArtifact@2
   displayName: 'Download ${{ parameters.artifact_arm64 }}'
   inputs:
-    artifactName: ${{ parameters.artifact_arm64 }}
+    artifact: ${{ parameters.artifact_arm64 }}
+    path: $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}
 
 - script: |
-    sudo xcode-select -switch /Applications/Xcode_12_beta.app/Contents/Developer
-  
+    sudo xcode-select -switch /Applications/Xcode_12.4.app/Contents/Developer
+
     cp -R $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }} $(System.ArtifactsDirectory)/Universal
     rm $(System.ArtifactsDirectory)/Universal/lib/libmsix.dylib
     rm $(System.ArtifactsDirectory)/Universal/bin/makemsix
-  
-    lipo -create -output $(System.ArtifactsDirectory)/Universal/lib/libmsix.dylib $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}/lib/libmsix.dylib $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}/lib/libmsix.dylib
-  
-    lipo -create -output $(System.ArtifactsDirectory)/Universal/bin/makemsix $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}/bin/makemsix $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}/bin/makemsix
 
+    lipo -create -output $(System.ArtifactsDirectory)/Universal/lib/libmsix.dylib $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}/lib/libmsix.dylib $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}/lib/libmsix.dylib
+
+    lipo -create -output $(System.ArtifactsDirectory)/Universal/bin/makemsix $(System.ArtifactsDirectory)/${{ parameters.artifact_x86 }}/bin/makemsix $(System.ArtifactsDirectory)/${{ parameters.artifact_arm64 }}/bin/makemsix
   displayName: 'Command Line Script'
 
 - task: PublishBuildArtifacts@1
