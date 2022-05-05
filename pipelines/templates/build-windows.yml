@@ -49,6 +49,10 @@ jobs:
         _artifact: WIN32-x64chk-pack
 
   steps:
+  - task: ComponentGovernanceComponentDetection@0
+    inputs:
+      sourceScanPath: $(Build.SourcesDirectory)
+
   - task: BatchScript@1
     displayName: Build $(_artifact)
     inputs:
