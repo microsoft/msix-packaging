@@ -15,9 +15,19 @@ pr:
     include:
     - tools/pipelines-tasks
 
+# Schedule weekly build
+# Cron syntax: "mm HH DD MM DW" = minutes, hours, days, months, day of week (UTC time)
+schedules:
+# "0 8" = 8AM UTC = 12AM PST
+- cron: "0 8 * * Sun"
+  displayName: Weekly build
+  branches:
+    include:
+    - master
+  always: true
+
 pool:
   name: 'msix-packaging-pool'
-
 
 variables:
   tasksRoot: 'tools/pipelines-tasks'
