@@ -3,7 +3,7 @@ set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS ON)
 
 project(zlib C)
 
-set(VERSION "1.2.11")
+set(VERSION "1.2.12")
 
 option(ASM686 "Enable building i686 assembly implementation")
 option(AMD64 "Enable building amd64 assembly implementation")
@@ -83,7 +83,7 @@ configure_file( ${CMAKE_CURRENT_SOURCE_DIR}/zlib.pc.cmakein
 		${ZLIB_PC} @ONLY)
 configure_file(	${CMAKE_CURRENT_SOURCE_DIR}/zconf.h.cmakein
 		${CMAKE_CURRENT_BINARY_DIR}/zconf.h @ONLY)
-include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_SOURCE_DIR})
+include_directories(${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_SOURCE_DIR})
 
 
 #============================================================================
@@ -183,14 +183,12 @@ if(MINGW)
     set(ZLIB_DLL_SRCS ${CMAKE_CURRENT_BINARY_DIR}/zlib1rc.obj)
 endif(MINGW)
 
-if(BUILD_SHARED_LIBS)
-    add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
-    set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
-    set_target_properties(zlib PROPERTIES SOVERSION 1)
-endif()
+add_library(zlib SHARED ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_DLL_SRCS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
 add_library(zlibstatic STATIC ${ZLIB_SRCS} ${ZLIB_ASMS} ${ZLIB_PUBLIC_HDRS} ${ZLIB_PRIVATE_HDRS})
+set_target_properties(zlib PROPERTIES DEFINE_SYMBOL ZLIB_DLL)
+set_target_properties(zlib PROPERTIES SOVERSION 1)
 
-if((NOT CYGWIN) AND BUILD_SHARED_LIBS)
+if(NOT CYGWIN)
     # This property causes shared libraries on Linux to have the full version
     # encoded into their final filename.  We disable this on Cygwin because
     # it causes cygz-${ZLIB_FULL_VERSION}.dll to be created when cygz.dll
@@ -203,24 +201,16 @@ endif()
 
 if(UNIX)
     # On unix-like platforms the library is almost always called libz
-    if(BUILD_SHARED_LIBS)
-        set_target_properties(zlib PROPERTIES OUTPUT_NAME z)
-    endif()
-    set_target_properties(zlibstatic PROPERTIES OUTPUT_NAME z)
-    if((NOT APPLE) AND BUILD_SHARED_LIBS)
-        set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib.map\"")
-    endif()
+   set_target_properties(zlib zlibstatic PROPERTIES OUTPUT_NAME z)
+   if(NOT APPLE)
+     set_target_properties(zlib PROPERTIES LINK_FLAGS "-Wl,--version-script,\"${CMAKE_CURRENT_SOURCE_DIR}/zlib.map\"")
+   endif()
 elseif(BUILD_SHARED_LIBS AND WIN32)
     # Creates zlib1.dll when building shared library version
     set_target_properties(zlib PROPERTIES SUFFIX "1.dll")
 endif()
 
-if(SKIP_INSTALL_SHARED AND NOT SKIP_INSTALL_ALL)
-    install(TARGETS zlibstatic
-        RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
-        ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
-        LIBRARY DESTINATION "${INSTALL_LIB_DIR}" )
-elseif(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
+if(NOT SKIP_INSTALL_LIBRARIES AND NOT SKIP_INSTALL_ALL )
     install(TARGETS zlib zlibstatic
         RUNTIME DESTINATION "${INSTALL_BIN_DIR}"
         ARCHIVE DESTINATION "${INSTALL_LIB_DIR}"
@@ -240,22 +230,20 @@ endif()
 # Example binaries
 #============================================================================
 
-if(ZLIB_TESTS)
-    add_executable(example test/example.c)
-    target_link_libraries(example zlib)
-    add_test(example example)
+add_executable(example test/example.c)
+target_link_libraries(example zlib)
+add_test(example example)
 
-    add_executable(minigzip test/minigzip.c)
-    target_link_libraries(minigzip zlib)
+add_executable(minigzip test/minigzip.c)
+target_link_libraries(minigzip zlib)
 
-    if(HAVE_OFF64_T)
-        add_executable(example64 test/example.c)
-        target_link_libraries(example64 zlib)
-        set_target_properties(example64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
-        add_test(example64 example64)
+if(HAVE_OFF64_T)
+    add_executable(example64 test/example.c)
+    target_link_libraries(example64 zlib)
+    set_target_properties(example64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
+    add_test(example64 example64)
 
-        add_executable(minigzip64 test/minigzip.c)
-        target_link_libraries(minigzip64 zlib)
-        set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
-    endif()
+    add_executable(minigzip64 test/minigzip.c)
+    target_link_libraries(minigzip64 zlib)
+    set_target_properties(minigzip64 PROPERTIES COMPILE_FLAGS "-D_FILE_OFFSET_BITS=64")
 endif()
