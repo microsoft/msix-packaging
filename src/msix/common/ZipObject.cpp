@@ -131,9 +131,9 @@ CentralDirectoryFileHeader::CentralDirectoryFileHeader()
     SetVersionNeededToExtract(static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion));
     SetGeneralPurposeBitFlags(0);
 
-    auto msDosDateAndTime = new MsDosDateAndTime();
-    SetLastModFileDate(msDosDateAndTime->GetDosDate());
-    SetLastModFileTime(msDosDateAndTime->GetDosTime());
+    MsDosDateAndTime msDosDateAndTime;
+    SetLastModFileDate(msDosDateAndTime.GetDosDate());
+    SetLastModFileTime(msDosDateAndTime.GetDosTime());
 
     SetCompressedSize(0);
     SetUncompressedSize(0);
@@ -249,9 +249,9 @@ LocalFileHeader::LocalFileHeader()
     SetVersionNeededToExtract(static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension)); // deafult to zip64
     SetGeneralPurposeBitFlags(static_cast<std::uint16_t>(GeneralPurposeBitFlags::DataDescriptor));
 
-    auto msDosDateAndTime = new MsDosDateAndTime();
-    SetLastModFileDate(msDosDateAndTime->GetDosDate());
-    SetLastModFileTime(msDosDateAndTime->GetDosTime());
+    MsDosDateAndTime msDosDateAndTime;
+    SetLastModFileDate(msDosDateAndTime.GetDosDate());
+    SetLastModFileTime(msDosDateAndTime.GetDosTime());
 
     SetCrc(0);
     SetCompressedSize(0);
