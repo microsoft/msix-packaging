@@ -31,21 +31,21 @@ jobs:
     condition: succeeded()
 
     # Note: We only test for release_emulator
-  - task: Bash@3
-    displayName: AOSP BVTs
-    inputs:
-      targetType: filePath
-      filePath: './src/test/mobile/testaosponmac.sh'
-      arguments: '-c "system-images;android-26;google_apis;x86" -i -o TEST-MsixSDK-$(_artifact).xml'
-      workingDirectory: './src/test/mobile/'
-    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release_emulator'))
-
-  - task: PublishTestResults@2
-    displayName: 'Publish $(_artifact) Test Results'
-    inputs:
-      failTaskOnFailedTests: true
-      testRunTitle: $(_artifact)
-    condition: and(succeededOrFailed(), contains(variables['Agent.JobName'], 'release_emulator'))
+#  - task: Bash@3
+#    displayName: AOSP BVTs
+#    inputs:
+#      targetType: filePath
+#      filePath: './src/test/mobile/testaosponmac.sh'
+#      arguments: '-c "system-images;android-26;google_apis;x86" -i -o TEST-MsixSDK-$(_artifact).xml'
+#      workingDirectory: './src/test/mobile/'
+#    condition: and(succeeded(), contains(variables['Agent.JobName'], 'release_emulator'))
+#
+#  - task: PublishTestResults@2
+#    displayName: 'Publish $(_artifact) Test Results'
+#    inputs:
+#      failTaskOnFailedTests: true
+#      testRunTitle: $(_artifact)
+#    condition: and(succeededOrFailed(), contains(variables['Agent.JobName'], 'release_emulator'))
 
   - task: CopyFiles@2
     displayName: 'Copy Files to: $(Build.ArtifactStagingDirectory)'
