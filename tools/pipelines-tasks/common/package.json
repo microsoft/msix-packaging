@@ -13,7 +13,7 @@
     "@types/xml2js": "^0.4.8",
     "adm-zip": "^0.5.5",
     "azure-devops-node-api": "^10.2.2",
-    "azure-pipelines-task-lib": "^3.1.10",
+    "azure-pipelines-task-lib": "^3.3.1",
     "xml2js": "^0.4.23"
   },
   "devDependencies": {
