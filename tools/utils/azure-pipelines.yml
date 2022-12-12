@@ -34,6 +34,10 @@ variables:
   buildConfiguration: 'Release'
 
 steps:
+- task: UseDotNet@2
+  inputs:
+    version: 5.x
+
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
