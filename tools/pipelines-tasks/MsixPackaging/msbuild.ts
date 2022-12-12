@@ -1,11 +1,11 @@
 import os = require('os');
 import path = require('path');
 import tl = require('azure-pipelines-task-lib/task');
+import msbuildHelpers = require('azure-pipelines-tasks-msbuildhelpers');
 import { ToolRunner } from 'azure-pipelines-task-lib/toolrunner';
 
 import helpers = require('common/helpers');
 
-import msbuildHelpers = require('./MSBuildHelpers/msbuildhelpers');
 
 const MSBUILD_PATH_HELPER_SCRIPT = path.join(__dirname, 'GetMSBuildPath.ps1');
 
