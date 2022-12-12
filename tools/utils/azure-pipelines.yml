@@ -53,7 +53,7 @@ steps:
   displayName: 'Run tests'
   inputs:
     testSelector: 'testAssemblies'
-    testAssemblyVer2: 'UtilsTests\bin\Release\net5.0\UtilsTests.dll'
+    testAssemblyVer2: 'UtilsTests\bin\Release\net6.0\UtilsTests.dll'
     searchFolder: '$(utilsRoot)'
 
 - task: ComponentGovernanceComponentDetection@0
