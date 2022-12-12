@@ -3,9 +3,9 @@
 
 steps:
 - task: NodeTool@0
-  displayName: 'Use Node 10.x'
+  displayName: 'Use Node 16.x'
   inputs:
-    versionSpec: 10.x
+    versionSpec: 16.x
 
 # Build the project
 - task: PowerShell@2
