@@ -5,7 +5,7 @@
 /MsixCore/ @wcheng-msft @jyvenugo @sarjanas-msft
 
 # Utils library
-/tools/utils/ @ranm-msft @msftrubengu @johnmcpms @lechacon @jamespik
+/tools/utils/ @ranm-msft @msftrubengu @johnmcpms @florelis
 
 # Azure Pipelines tasks
-/tools/pipelines-tasks @ranm-msft @msftrubengu @johnmcpms @lechacon
+/tools/pipelines-tasks @ranm-msft @msftrubengu @johnmcpms @florelis
