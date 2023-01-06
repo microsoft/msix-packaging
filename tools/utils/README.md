@@ -23,7 +23,7 @@ MSTest is used as the testing framework and can be run through Visual Studio's T
 To run the tests from the command line, go to `msix-packaging/tools/utils/` and call `vstest.console.exe` on `UtilsTests.dll` produced by the build. E.g.
 ```
 cd msix-packaging/tools/utils/
-vstest.console.exe UtilsTests\bin\Debug\net5.0\UtilsTests.dll
+vstest.console.exe UtilsTests\bin\Debug\net6.0\UtilsTests.dll
 ```
 
 MakeAppx.exe and related binaries under `msix-packaging/tools/utils/TestData/MakeAppx` are taken from the redistributable binaries available in the [MSIX Toolkit](https://github.com/microsoft/msix-toolkit).
