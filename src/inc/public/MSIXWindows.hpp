@@ -140,8 +140,8 @@
     typedef int BOOL;
     #endif
 
-    #ifndef _SIZE_T_DEFINED
-    #define _SIZE_T_DEFINED
+    #ifndef _WINSIZE_T_DEFINED
+    #define _WINSIZE_T_DEFINED
     typedef size_t SIZE_T;
     #endif
 
