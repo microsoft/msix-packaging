@@ -77,7 +77,7 @@ namespace MSIX {
             {
                 _resourcesContext* resourcesContext = reinterpret_cast<_resourcesContext*>(c);
                 const auto& language = resourceNode->GetAttributeValue(XmlAttributeName::Language);
-                if (!language.empty()) { resourcesContext->languages.push_back(Bcp47Tag(language)); }
+                if (!language.empty()) { resourcesContext->languages.push_back(Bcp47Tag(language, true)); }
 
                 const auto& scale = resourceNode->GetAttributeValue(XmlAttributeName::Scale);
                 if (!scale.empty()) 
