@@ -16,6 +16,7 @@ usage()
     echo $'\t' "--pack                  Include packaging features. Sets validation parser on."
     echo $'\t' "--skip-samples          Skip building samples."
     echo $'\t' "--skip-tests            Skip building tests."
+    echo $'\t' "--extra                 Extra flags to CMake."
 }
 
 printsetup()
@@ -27,6 +28,8 @@ printsetup()
     echo "Build samples:" $samples
     echo "Build tests:" $tests
 }
+
+extraArgs=""
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -48,6 +51,9 @@ while [ "$1" != "" ]; do
         --skip-samples ) samples=off
                 ;;
         --skip-tests ) tests=off
+                ;;
+        --extra )   shift
+                extraArgs="$extraArgs $1"
                 ;;
         * )     usage
                 exit 1
@@ -71,5 +77,6 @@ cmake -DCMAKE_BUILD_TYPE=$build \
       -DMSIX_PACK=$pack \
       -DMSIX_SAMPLES=$samples \
       -DMSIX_TESTS=$tests \
-      -DLINUX=on ..
+      -DLINUX=on .. \
+      $extraArgs
 make

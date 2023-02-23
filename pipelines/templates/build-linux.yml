@@ -1,7 +1,7 @@
 jobs:
 - job: Linux
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-20.04
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:
@@ -23,6 +23,8 @@ jobs:
       debug_pack:
         _arguments: -b Debug --pack
         _artifact: LINUXchk-pack
+      debug_pack_cxx20:
+        _arguments: -b Debug --pack --extra -DCMAKE_CXX_STANDARD=20
 
   steps:
   - task: Bash@3
