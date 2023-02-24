@@ -16,7 +16,7 @@ usage()
     echo $'\t' "--pack                  Include packaging features. Sets validation parser on."
     echo $'\t' "--skip-samples          Skip building samples."
     echo $'\t' "--skip-tests            Skip building tests."
-    echo $'\t' "--extra                 Extra flags to CMake."
+    echo $'\t' "--cxxstd (14|17|20)     c++ standard to use (default 14)."
 }
 
 printsetup()
@@ -29,7 +29,7 @@ printsetup()
     echo "Build tests:" $tests
 }
 
-extraArgs=""
+cxxstd="14"
 
 while [ "$1" != "" ]; do
     case $1 in
@@ -52,8 +52,8 @@ while [ "$1" != "" ]; do
                 ;;
         --skip-tests ) tests=off
                 ;;
-        --extra )   shift
-                extraArgs="$extraArgs $1"
+        --cxxstd )   shift
+                cxxstd=$1
                 ;;
         * )     usage
                 exit 1
@@ -78,5 +78,5 @@ cmake -DCMAKE_BUILD_TYPE=$build \
       -DMSIX_SAMPLES=$samples \
       -DMSIX_TESTS=$tests \
       -DLINUX=on .. \
-      $extraArgs
+      -DCMAKE_CXX_STANDARD=$cxxstd
 make
