@@ -109,8 +109,18 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${MSIX_TEST_OUTPUT_DIRECTORY}"
 )
 
+set(MsixTestLibs)
+
+list(APPEND MsixTestLibs msix)
+
+if (AOSP)
+    # Catch2 depends on the Android logging library, so we need to make it
+    # available at link-time to avoid unresolved symbol errors
+    list(APPEND MsixTestLibs log)
+endif()
+
 add_dependencies(${PROJECT_NAME} msix)
-target_link_libraries(${PROJECT_NAME} msix)
+target_link_libraries(${PROJECT_NAME} ${MsixTestLibs})
 
 # For windows copy the library
 if(WIN32)
