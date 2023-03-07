@@ -102,7 +102,9 @@ public:
     std::wstring GetMountImagePath() { return m_mountImagePath; }
     std::wstring GetVolumeId() { return m_volumeId; }
     WVDFileType GetFileType() { return m_fileType; }
+    std::wstring GetFileTypeAsString();
     OperationType GetOperationType() { return m_operationType; }
+    std::wstring GetOperationTypeAsString();
     ULONGLONG GetVHDSize() { return m_vhdSize; }
 private:
     int m_argc = 0;

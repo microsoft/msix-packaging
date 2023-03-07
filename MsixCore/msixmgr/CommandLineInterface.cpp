@@ -480,3 +480,29 @@ void CommandLineInterface::SetWVDFileType(std::wstring fileType)
         this->m_fileType = WVDFileType::NotSpecified;
     }
 }
+
+std::wstring CommandLineInterface::GetFileTypeAsString()
+{
+    switch (this->m_fileType)
+    {
+        case WVDFileType::CIM: return L"CIM";
+        case WVDFileType::VHD: return L"VHD";
+        case WVDFileType::VHDX: return L"VHDX";
+        case WVDFileType::NotSpecified: return L"NotSpecified";
+    }
+}
+
+std::wstring CommandLineInterface::GetOperationTypeAsString()
+{
+    switch (this->m_operationType)
+    {
+    case OperationType::Add: return L"Add";
+    case OperationType::Remove: return L"Remove";
+    case OperationType::FindPackage: return L"Find";
+    case OperationType::Unpack: return L"Unpack";
+    case OperationType::ApplyACLs: return L"ApplyACLs";
+    case OperationType::MountImage: return L"Mount";
+    case OperationType::UnmountImage: return L"Unmount";
+    case OperationType::Undefined: return L"Undefined";
+    }
+}
