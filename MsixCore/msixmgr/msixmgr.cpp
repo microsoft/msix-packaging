@@ -423,7 +423,7 @@ int main(int argc, char * argv[])
                         {
                             std::uintmax_t size = std::filesystem::file_size(packageSourcePath);
                             size = size / (1024 * 1024); //converting bytes into MBs
-                            vhdSize = size * 4; //assuming minimum VHD size to be 4x of source package size
+                            vhdSize = size * 4; //assuming minimum VHD size to be 4x of source package size in MB
                         }
 
                         std::wstring driveLetter;
