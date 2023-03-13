@@ -11,13 +11,14 @@ TRACELOGGING_DECLARE_PROVIDER(g_MsixMgrTelemetryProvider);
 
 namespace msixmgr
 {
-    inline void TraceLogSession(const wchar_t* WorkflowID, const wchar_t* SourceApplicationID)
+    inline void TraceLogSession(const wchar_t* WorkflowID, const wchar_t* SourceApplicationID, const wchar_t* CorrelationID)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
             "Session",
             TraceLoggingWideString(WorkflowID, "WorkflowID"),
             TraceLoggingWideString(SourceApplicationID, "SourceApplicationID"),
+            TraceLoggingWideString(CorrelationID, "CorrelationID"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
@@ -38,47 +39,47 @@ namespace msixmgr
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogAddWorkflow(const wchar_t* WorkflowID, const wchar_t* PackageFilePathToInstall)
+    inline void TraceLogAddWorkflow(const wchar_t* WorkflowID, const wchar_t* PackageName)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
             "AddWorkflow",
             TraceLoggingWideString(WorkflowID, "WorkflowID"),
-            TraceLoggingWideString(PackageFilePathToInstall, "PackageFilePathToInstall"),
+            TraceLoggingWideString(PackageName, "PackageName"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogRemoveWorkflow(const wchar_t* WorkflowID, const wchar_t* PackageFullName)
+    inline void TraceLogRemoveWorkflow(const wchar_t* WorkflowID, const wchar_t* PackageName)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
             "RemoveWorkflow",
             TraceLoggingWideString(WorkflowID, "WorkflowID"),
-            TraceLoggingWideString(PackageFullName, "PackageFullName"),
+            TraceLoggingWideString(PackageName, "PackageName"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogFindWorkflow(const wchar_t* WorkflowID, const wchar_t* PackageFullName)
+    inline void TraceLogFindWorkflow(const wchar_t* WorkflowID, const wchar_t* PackageName)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
             "FindWorkflow",
             TraceLoggingWideString(WorkflowID, "WorkflowID"),
-            TraceLoggingWideString(PackageFullName, "PackageFullName"),
+            TraceLoggingWideString(PackageName, "PackageName"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogUnpackWorkflow(const wchar_t* WorkflowID, const wchar_t* AppName, const wchar_t* OutputImageType,
+    inline void TraceLogUnpackWorkflow(const wchar_t* WorkflowID, const wchar_t* PackageName, const wchar_t* OutputImageType,
         const bool IsCreate, const bool IsApplyACLs)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
             "UnpackWorkflow",
             TraceLoggingWideString(WorkflowID, "WorkflowID"),
-            TraceLoggingWideString(AppName, "AppName"),
+            TraceLoggingWideString(PackageName, "PackageName"),
             TraceLoggingWideString(OutputImageType, "OutputImageType"),
             TraceLoggingBool(IsCreate, "IsCreate"),
             TraceLoggingBool(IsApplyACLs, "IsApplyACLs"),
@@ -86,41 +87,35 @@ namespace msixmgr
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogApplyACLsWorkflow(const wchar_t* WorkflowID, const wchar_t* PackageFilePathToInstall)
+    inline void TraceLogApplyACLsWorkflow(const wchar_t* WorkflowID, const wchar_t* PackageName)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
             "ApplyACLsWorkflow",
             TraceLoggingWideString(WorkflowID, "WorkflowID"),
-            TraceLoggingWideString(PackageFilePathToInstall, "PackageFilePathToInstall"),
+            TraceLoggingWideString(PackageName, "PackageName"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogMountWorkflow(const wchar_t* WorkflowID, const wchar_t* MountImageType,
-        const wchar_t* MountImagePath, const bool IsMountReadonly)
+    inline void TraceLogMountWorkflow(const wchar_t* WorkflowID, const wchar_t* MountImageType)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
             "MountWorkflow",
             TraceLoggingWideString(WorkflowID, "WorkflowID"),
             TraceLoggingWideString(MountImageType, "MountImageType"),
-            TraceLoggingWideString(MountImagePath, "MountImagePath"),
-            TraceLoggingBool(IsMountReadonly, "IsMountReadOnly"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogUnmountWorkflow(const wchar_t* WorkflowID, const wchar_t* MountImageType,
-        const wchar_t* MountImagePath, const wchar_t* VolumeID)
+    inline void TraceLogUnmountWorkflow(const wchar_t* WorkflowID, const wchar_t* UnmountImageType)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
             "UnmountWorkflow",
             TraceLoggingWideString(WorkflowID, "WorkflowID"),
-            TraceLoggingWideString(MountImageType, "MountImageType"),
-            TraceLoggingWideString(MountImagePath, "MountImagePath"),
-            TraceLoggingWideString(VolumeID, "VolumeID"),
+            TraceLoggingWideString(UnmountImageType, "UnmountImageType"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
@@ -152,5 +147,22 @@ namespace msixmgr
         double WorkflowElapsedTime = (MsixMgrLoad_EndCounter.QuadPart - MsixMgrLoad_StartCounter.QuadPart) / (double)MsixMgrLoad_Frequency.QuadPart;
 
         return WorkflowElapsedTime;
+    }
+
+    inline std::wstring GetErrorCodeFromHRESULT(HRESULT hr)
+    {
+        std::stringstream ErrorCodeStream;
+        ErrorCodeStream << "0x" << std::hex << hr;
+        std::wstring ErrorCode = utf8_to_utf16(ErrorCodeStream.str());
+
+        return ErrorCode;
+    }
+
+    inline std::wstring ExtractPackageNameFromFilePath(std::wstring FilePath)
+    {
+        size_t pos = FilePath.find_last_of('\\');
+        std::wstring PackageNameExtracted = FilePath.substr(pos + 1);
+
+        return PackageNameExtracted;
     }
 }

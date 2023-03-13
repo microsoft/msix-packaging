@@ -197,17 +197,18 @@ int main(int argc, char * argv[])
     const HRESULT hrCreateRequest = cli.Init();
 
     // Initializing all the variables for Telemetry
-    std::wstring WorkflowId, SourceApplicationId, ErrorCode = L"", ErrorDesc = L"";
+    std::wstring WorkflowId, SourceApplicationId, CorrelationId, ErrorCode = L"", ErrorDesc = L"";
     double WorkflowElapsedTime;
     LARGE_INTEGER MsixMgrLoad_StartCounter, MsixMgrLoad_EndCounter, MsixMgrLoad_Frequency;
     QueryPerformanceFrequency(&MsixMgrLoad_Frequency);
 
     // Creating WorkflowId for tracking the Workflows
     WorkflowId = msixmgr::CreateWorkflowId();
-    SourceApplicationId = L"SELF";
+    SourceApplicationId = cli.GetSourceApplicationId();
+    CorrelationId = cli.GetCorrelationId();
 
     // Telemetry : Session Log
-    msixmgr::TraceLogSession(WorkflowId.c_str(), SourceApplicationId.c_str());
+    msixmgr::TraceLogSession(WorkflowId.c_str(), SourceApplicationId.c_str(), CorrelationId.c_str());
 
     QueryPerformanceCounter(&MsixMgrLoad_StartCounter);
 
@@ -218,7 +219,7 @@ int main(int argc, char * argv[])
         case OperationType::Add:
         {
             // Telemetry : Add Workflow Log
-            msixmgr::TraceLogAddWorkflow(WorkflowId.c_str(), cli.GetPackageFilePathToInstall().c_str());
+            msixmgr::TraceLogAddWorkflow(WorkflowId.c_str(), msixmgr::ExtractPackageNameFromFilePath(cli.GetPackageFilePathToInstall()).c_str());
 
             HRESULT hr;
 
@@ -350,7 +351,7 @@ int main(int argc, char * argv[])
         case OperationType::Remove:
         {
             // Telemetry : Remove Workflow Log
-            msixmgr::TraceLogRemoveWorkflow(WorkflowId.c_str(), cli.GetPackageFullName().c_str());
+            msixmgr::TraceLogRemoveWorkflow(WorkflowId.c_str(), msixmgr::ExtractPackageNameFromFilePath(cli.GetPackageFullName()).c_str());
 
             HRESULT hr;
 
@@ -411,7 +412,7 @@ int main(int argc, char * argv[])
         case OperationType::FindPackage:
         {
             // Telemetry : Find Workflow Log
-            msixmgr::TraceLogFindWorkflow(WorkflowId.c_str(), cli.GetPackageFullName().c_str());
+            msixmgr::TraceLogFindWorkflow(WorkflowId.c_str(), msixmgr::ExtractPackageNameFromFilePath(cli.GetPackageFullName()).c_str());
 
             HRESULT hr;
             AutoPtr<IPackageManager> packageManager;
@@ -473,7 +474,7 @@ int main(int argc, char * argv[])
         case OperationType::Unpack:
         {
             // Telemetry : Unpack Workflow Log
-            msixmgr::TraceLogUnpackWorkflow(WorkflowId.c_str(), msixmgr::ExtractAppNameFromFilePath(cli.GetPackageFilePathToInstall()).c_str(),
+            msixmgr::TraceLogUnpackWorkflow(WorkflowId.c_str(), msixmgr::ExtractPackageNameFromFilePath(cli.GetPackageFilePathToInstall()).c_str(),
                 cli.GetFileTypeAsString().c_str(), cli.IsCreate(), cli.IsApplyACLs());
 
             HRESULT hr = S_OK;
@@ -822,7 +823,7 @@ int main(int argc, char * argv[])
         case OperationType::ApplyACLs:
         {
             // Telemetry : ApplyACLs Workflow Log
-            msixmgr::TraceLogApplyACLsWorkflow(WorkflowId.c_str(), cli.GetPackageFilePathToInstall().c_str());
+            msixmgr::TraceLogApplyACLsWorkflow(WorkflowId.c_str(), msixmgr::ExtractPackageNameFromFilePath(cli.GetPackageFilePathToInstall()).c_str());
 
             HRESULT hr;
 
@@ -853,7 +854,7 @@ int main(int argc, char * argv[])
         case OperationType::MountImage:
         {
             // Telemetry : Mount Workflow Log
-            msixmgr::TraceLogMountWorkflow(WorkflowId.c_str(), cli.GetFileTypeAsString().c_str(), cli.GetMountImagePath().c_str(), cli.isMountReadOnly());
+            msixmgr::TraceLogMountWorkflow(WorkflowId.c_str(), cli.GetFileTypeAsString().c_str());
 
             WVDFileType fileType = cli.GetFileType();
 
@@ -968,7 +969,7 @@ int main(int argc, char * argv[])
         case OperationType::UnmountImage:
         {
             // Telemetry : Unmount Workflow Log
-            msixmgr::TraceLogUnmountWorkflow(WorkflowId.c_str(), cli.GetFileTypeAsString().c_str(), cli.GetMountImagePath().c_str(), cli.GetVolumeId().c_str());
+            msixmgr::TraceLogUnmountWorkflow(WorkflowId.c_str(), cli.GetFileTypeAsString().c_str());
 
             WVDFileType fileType = cli.GetFileType();
             if (fileType == WVDFileType::CIM)

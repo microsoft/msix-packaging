@@ -96,6 +96,8 @@ public:
     bool IsCreate() { return m_create; }
     bool isMountReadOnly() { return m_readOnly; }
     std::wstring GetPackageFilePathToInstall() { return m_packageFilePath; }
+    std::wstring GetSourceApplicationId() { return m_sourceApplicationId; }
+    std::wstring GetCorrelationId() { return m_correlationId; }
     std::wstring GetPackageFullName() { return m_packageFullName; }
     std::wstring GetUnpackDestination() { return m_unpackDestination; }
     std::wstring GetRootDirectory() { return m_rootDirectory; }
@@ -119,6 +121,8 @@ private:
     std::wstring m_rootDirectory;
     std::wstring m_mountImagePath;
     std::wstring m_volumeId;
+    std::wstring m_sourceApplicationId = L"MSIX_MGR";
+    std::wstring m_correlationId = L"";
     bool m_quietMode;
     bool m_applyACLs;
     bool m_validateSignature;
