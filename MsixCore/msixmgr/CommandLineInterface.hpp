@@ -121,8 +121,8 @@ private:
     std::wstring m_rootDirectory;
     std::wstring m_mountImagePath;
     std::wstring m_volumeId;
-    std::wstring m_sourceApplicationId = L"MSIX_MGR";
-    std::wstring m_correlationId = L"";
+    std::wstring m_sourceApplicationId = L"MSIX_MGR";    // m_sourceApplicationId indicates which application is executing the MSIXMGR commands. Useful during integration of MSIXMGR with other Tools.
+    std::wstring m_correlationId = L"";    // m_correlationId can be used to establish a correlation between MSIXMGR's Workflow and the parent application's Workflow, when MSIXMGR is being used in integration with any other Tool.
     bool m_quietMode;
     bool m_applyACLs;
     bool m_validateSignature;

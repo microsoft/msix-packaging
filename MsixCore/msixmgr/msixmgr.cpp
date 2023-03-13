@@ -204,8 +204,8 @@ int main(int argc, char * argv[])
 
     // Creating WorkflowId for tracking the Workflows
     WorkflowId = msixmgr::CreateWorkflowId();
-    SourceApplicationId = cli.GetSourceApplicationId();
-    CorrelationId = cli.GetCorrelationId();
+    SourceApplicationId = cli.GetSourceApplicationId();    // SourceApplicationId indicates which application is executing the MSIXMGR commands. Useful during integration of MSIXMGR with other Tools.
+    CorrelationId = cli.GetCorrelationId();    // CorrelationId can be used to establish a correlation between MSIXMGR's Workflow and the parent application's Workflow, when MSIXMGR is being used in integration with any other Tool.
 
     // Telemetry : Session Log
     msixmgr::TraceLogSession(WorkflowId.c_str(), SourceApplicationId.c_str(), CorrelationId.c_str());
