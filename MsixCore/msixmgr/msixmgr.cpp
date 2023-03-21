@@ -418,16 +418,16 @@ int main(int argc, char * argv[])
                     }
                     else
                     {
-                        if (cli.GetVHDSize() == 0)
+                        ULONGLONG vhdSize = cli.GetVHDSize();
+                        if (vhdSize == 0)
                         {
-                            std::wcout << std::endl;
-                            std::wcout << "VHD size was not specified. Please provide a vhd size in MB using the -vhdSize option" << std::endl;
-                            std::wcout << std::endl;
-                            return E_INVALIDARG;
+                            std::uintmax_t size = std::filesystem::file_size(packageSourcePath);
+                            size = size / (1024 * 1024); //converting bytes into MBs
+                            vhdSize = size * 4; //assuming minimum VHD size to be 4x of source package size in MB
                         }
 
                         std::wstring driveLetter;
-                        HRESULT hrCreateVHD = MsixCoreLib::CreateAndMountVHD(unpackDestination, cli.GetVHDSize(), fileType == WVDFileType::VHD,  driveLetter);
+                        HRESULT hrCreateVHD = MsixCoreLib::CreateAndMountVHD(unpackDestination, vhdSize, fileType == WVDFileType::VHD,  driveLetter);
                         if (FAILED(hrCreateVHD))
                         {
                             std::wcout << std::endl;
