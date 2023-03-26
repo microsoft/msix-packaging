@@ -475,7 +475,7 @@ int main(int argc, char * argv[])
         {
             // Telemetry : Unpack Workflow Log
             msixmgr::TraceLogUnpackWorkflow(WorkflowId.c_str(), msixmgr::ExtractPackageNameFromFilePath(cli.GetPackageFilePathToInstall()).c_str(),
-                cli.GetFileTypeAsString().c_str(), cli.IsCreate(), cli.IsApplyACLs());
+                cli.GetFileTypeAsString().c_str(), cli.GetVHDSize(), cli.IsCreate(), cli.IsApplyACLs());
 
             HRESULT hr = S_OK;
 
