@@ -30,10 +30,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::Add)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
                     return S_OK;
                 }),
@@ -43,10 +39,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::Add)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
                     return S_OK;
                 }),
@@ -72,10 +64,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::Remove)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
                     return S_OK;
                 }),
@@ -85,10 +73,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::Remove)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
                     return S_OK;
                 }),
@@ -123,10 +107,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::FindPackage)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
                     return S_OK;
                 }),
@@ -136,10 +116,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::FindPackage)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
                     return S_OK;
                 }),
@@ -282,10 +258,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::Unpack)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
                     return S_OK;
                 }),
@@ -295,10 +267,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::Unpack)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
                     return S_OK;
                 }),
@@ -336,10 +304,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::ApplyACLs)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
                     return S_OK;
                 }),
@@ -349,10 +313,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::ApplyACLs)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
                     return S_OK;
                 }),
@@ -427,10 +387,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::MountImage)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
                     return S_OK;
                 }),
@@ -440,10 +396,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::MountImage)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
                     return S_OK;
                 }),
@@ -507,10 +459,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::UnmountImage)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
                     return S_OK;
                 }),
@@ -520,10 +468,6 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
                     [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
                 {
-                    if (commandLineInterface->m_operationType != OperationType::UnmountImage)
-                    {
-                        return E_INVALIDARG;
-                    }
                     commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
                     return S_OK;
                 }),
@@ -684,13 +628,13 @@ std::wstring CommandLineInterface::GetOperationTypeAsString()
 {
     switch (this->m_operationType)
     {
-    case OperationType::Add: return L"Add";
-    case OperationType::Remove: return L"Remove";
-    case OperationType::FindPackage: return L"Find";
+    case OperationType::Add: return L"AddPackage";
+    case OperationType::Remove: return L"RemovePackage";
+    case OperationType::FindPackage: return L"FindPackage";
     case OperationType::Unpack: return L"Unpack";
     case OperationType::ApplyACLs: return L"ApplyACLs";
-    case OperationType::MountImage: return L"Mount";
-    case OperationType::UnmountImage: return L"Unmount";
+    case OperationType::MountImage: return L"MountImage";
+    case OperationType::UnmountImage: return L"UnmountImage";
     case OperationType::Undefined: return L"Undefined";
     }
 }
