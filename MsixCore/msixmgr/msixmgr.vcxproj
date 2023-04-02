@@ -232,7 +232,7 @@ del "$(OutDir)msixmgr_LN.exe"
     <ClInclude Include="CommandLineInterface.hpp" />
     <ClInclude Include="InstallUI.hpp" />
     <ClInclude Include="msixmgrTelemetry.hpp" />
-    <ClInclude Include="msixmgr_tracelogging.h" />
+    <ClInclude Include="msixmgrTraceLogging.hpp" />
     <ClInclude Include="resource.h" />
     <ClInclude Include="UnpackProvider.hpp" />
     <ClInclude Include="Util.hpp" />
@@ -245,6 +245,7 @@ del "$(OutDir)msixmgr_LN.exe"
     <ClCompile Include="InstallUI.cpp" />
     <ClCompile Include="CommandLineInterface.cpp" />
     <ClCompile Include="msixmgrTelemetry.cpp" />
+    <ClCompile Include="msixmgrTraceLogging.cpp" />
     <ClCompile Include="UnpackProvider.cpp" />
     <ClCompile Include="Util.cpp" />
     <ClCompile Include="msixmgr.cpp" />

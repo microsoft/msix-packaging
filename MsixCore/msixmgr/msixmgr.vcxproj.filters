@@ -45,7 +45,7 @@
     <ClInclude Include="msixmgrTelemetry.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="msixmgr_tracelogging.h">
+    <ClInclude Include="msixmgrTraceLogging.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -78,6 +78,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="msixmgrTelemetry.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="msixmgrTraceLogging.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

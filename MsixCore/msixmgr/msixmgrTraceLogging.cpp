@@ -5,13 +5,16 @@
 #include "msixmgrTelemetry.hpp"
 #include <string>
 #include "..\msixmgrLib\GeneralUtil.hpp"
+#include "msixmgrTraceLogging.hpp"
+#include <sstream>
+using namespace msixmgrTraceLogging;
 using namespace MsixCoreLib;
 
 TRACELOGGING_DECLARE_PROVIDER(g_MsixMgrTelemetryProvider);
 
-namespace msixmgr
+namespace msixmgrTraceLogging
 {
-    inline void TraceLogSession(const wchar_t* workflowID, const wchar_t* sourceApplicationID, const wchar_t* correlationID)
+    void TraceLogSession(const wchar_t* workflowID, const wchar_t* sourceApplicationID, const wchar_t* correlationID)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
@@ -23,7 +26,7 @@ namespace msixmgr
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogWorkflow(const wchar_t* workflowID, const wchar_t* workflowType,
+    void TraceLogWorkflow(const wchar_t* workflowID, const wchar_t* workflowType,
         const bool isSuccessful, const double executionTime, const wchar_t* errorCode, const wchar_t* errorDesc)
     {
         TraceLoggingWrite(
@@ -39,7 +42,7 @@ namespace msixmgr
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogAddWorkflow(const wchar_t* workflowID, const wchar_t* packageName)
+    void TraceLogAddWorkflow(const wchar_t* workflowID, const wchar_t* packageName)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
@@ -50,7 +53,7 @@ namespace msixmgr
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogRemoveWorkflow(const wchar_t* workflowID, const wchar_t* packageName)
+    void TraceLogRemoveWorkflow(const wchar_t* workflowID, const wchar_t* packageName)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
@@ -61,7 +64,7 @@ namespace msixmgr
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogFindWorkflow(const wchar_t* workflowID, const wchar_t* packageName)
+    void TraceLogFindWorkflow(const wchar_t* workflowID, const wchar_t* packageName)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
@@ -72,8 +75,8 @@ namespace msixmgr
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogUnpackWorkflow(const wchar_t* workflowID, const wchar_t* packageName, const wchar_t* outputImageType,
-        const ULONGLONG outputImageSize,const bool isCreate, const bool isApplyACLs)
+    void TraceLogUnpackWorkflow(const wchar_t* workflowID, const wchar_t* packageName, const wchar_t* outputImageType,
+        const ULONGLONG outputImageSize, const bool isCreate, const bool isApplyACLs)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
@@ -81,14 +84,14 @@ namespace msixmgr
             TraceLoggingWideString(workflowID, "WorkflowID"),
             TraceLoggingWideString(packageName, "PackageName"),
             TraceLoggingWideString(outputImageType, "OutputImageType"),
-            TraceLoggingInt64(outputImageSize,"OutputImageSize"),
+            TraceLoggingInt64(outputImageSize, "OutputImageSize"),
             TraceLoggingBool(isCreate, "IsCreate"),
             TraceLoggingBool(isApplyACLs, "IsApplyACLs"),
             TelemetryPrivacyDataTag(PDT_ProductAndServiceUsage),
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogApplyACLsWorkflow(const wchar_t* workflowID, const wchar_t* packageName)
+    void TraceLogApplyACLsWorkflow(const wchar_t* workflowID, const wchar_t* packageName)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
@@ -99,7 +102,7 @@ namespace msixmgr
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogMountWorkflow(const wchar_t* workflowID, const wchar_t* mountImageType)
+    void TraceLogMountWorkflow(const wchar_t* workflowID, const wchar_t* mountImageType)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
@@ -110,7 +113,7 @@ namespace msixmgr
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline void TraceLogUnmountWorkflow(const wchar_t* workflowID, const wchar_t* unmountImageType)
+    void TraceLogUnmountWorkflow(const wchar_t* workflowID, const wchar_t* unmountImageType)
     {
         TraceLoggingWrite(
             g_MsixMgrTelemetryProvider,
@@ -121,7 +124,7 @@ namespace msixmgr
             TraceLoggingKeyword(MICROSOFT_KEYWORD_CRITICAL_DATA));
     }
 
-    inline std::string GuidToString(GUID* guid) {
+    std::string GuidToString(GUID* guid) {
         char guid_string[37];
         snprintf(
             guid_string, sizeof(guid_string),
@@ -133,7 +136,7 @@ namespace msixmgr
         return guid_string;
     }
 
-    inline std::wstring CreateWorkflowId() {
+    std::wstring CreateWorkflowId() {
         GUID guid;
         HRESULT hr = CoCreateGuid(&guid);
 
@@ -142,7 +145,7 @@ namespace msixmgr
         return workflowId;
     }
 
-    inline double CalcWorkflowElapsedTime(LARGE_INTEGER msixMgrLoad_StartCounter,
+    double CalcWorkflowElapsedTime(LARGE_INTEGER msixMgrLoad_StartCounter,
         LARGE_INTEGER msixMgrLoad_EndCounter, LARGE_INTEGER msixMgrLoad_Frequency)
     {
         double workflowElapsedTime = (msixMgrLoad_EndCounter.QuadPart - msixMgrLoad_StartCounter.QuadPart) / (double)msixMgrLoad_Frequency.QuadPart;
@@ -150,7 +153,7 @@ namespace msixmgr
         return workflowElapsedTime;
     }
 
-    inline std::wstring GetErrorCodeFromHRESULT(HRESULT hr)
+    std::wstring GetErrorCodeFromHRESULT(HRESULT hr)
     {
         std::stringstream errorCodeStream;
         errorCodeStream << "0x" << std::hex << hr;
@@ -159,7 +162,7 @@ namespace msixmgr
         return errorCode;
     }
 
-    inline std::wstring ExtractPackageNameFromFilePath(std::wstring filePath)
+    std::wstring ExtractPackageNameFromFilePath(std::wstring filePath)
     {
         size_t pos = filePath.find_last_of('\\');
         std::wstring packageNameExtracted = filePath.substr(pos + 1);
