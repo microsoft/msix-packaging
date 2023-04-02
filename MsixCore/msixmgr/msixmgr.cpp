@@ -787,7 +787,7 @@ int main(int argc, char * argv[])
                     if (FAILED(hrUnpackToFolder))
                     {
                         errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnpackToFolder);
-                        errorDesc = L"Failed unpack to the given destination. HRESULT " + errorCode + L".";
+                        errorDesc = L"Failed unpack to the given folder or given VHD(X). HRESULT " + errorCode + L".";
 
                         // Telemetry : Workflow Log
                         QueryPerformanceCounter(&msixMgrLoad_EndCounter);
