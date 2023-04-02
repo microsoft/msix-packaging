@@ -677,21 +677,12 @@ int main(int argc, char * argv[])
                     }
                     else
                     {
-                        if (cli.GetVHDSize() == 0)
+                        ULONGLONG vhdSize = cli.GetVHDSize();
+                        if (vhdSize == 0)
                         {
-                            errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
-                            errorDesc = L"VHD size was not specified. Please provide a vhd size in MB using the -vhdSize option. HRESULT " + errorCode + L".";
-
-                            std::wcout << std::endl;
-                            std::wcout << "VHD size was not specified. Please provide a vhd size in MB using the -vhdSize option" << std::endl;
-                            std::wcout << std::endl;
-
-                            // Telemetry : Workflow Log
-                            QueryPerformanceCounter(&msixMgrLoad_EndCounter);
-                            workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
-                            msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
-
-                            return E_INVALIDARG;
+                            std::uintmax_t size = std::filesystem::file_size(packageSourcePath);
+                            size = size / (1024 * 1024); //converting bytes into MBs
+                            vhdSize = size * 4; //assuming minimum VHD size to be 4x of source package size in MB
                         }
 
                         std::wstring driveLetter;
