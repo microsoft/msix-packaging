@@ -201,6 +201,7 @@ namespace MSIX {
         static uint32_t Get(const std::string&)
         {
             static_assert(False<T>::value, "An appropriate specialization must be specified");
+            return 0;   // silence GCC warnings
         }
     };
 

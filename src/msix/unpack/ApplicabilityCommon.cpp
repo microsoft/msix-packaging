@@ -32,7 +32,7 @@ namespace MSIX {
         Bcp47Entry(u8"zh-tw", u8"zh-Hant-TW"),
     };
 
-    Bcp47Tag::Bcp47Tag(const std::string& fullTag)
+    Bcp47Tag::Bcp47Tag(const std::string& fullTag, bool allowPseudoLocale)
     {
         std::string fullTagLower;
         fullTagLower.resize(fullTag.size());
@@ -57,7 +57,8 @@ namespace MSIX {
             auto position = found+1;
             found = bcp47Tag.find(delimiter, position);
             auto tag = bcp47Tag.substr(position, found - position);
-            ThrowErrorIf(Error::Unexpected, (tag.size() < 2 || tag.size() > 4), "Malformed Bcp47 tag");
+            auto maxTagLength = allowPseudoLocale ? 5 : 4;
+            ThrowErrorIf(Error::Unexpected, (tag.size() < 2 || tag.size() > maxTagLength), "Malformed Bcp47 tag");
             if (tag.size() == 4)
             {   // Script tag size is always 4
                 m_script = tag;

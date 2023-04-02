@@ -6,6 +6,7 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <memory>
 #include <queue>
 
 #ifndef WIN32

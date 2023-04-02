@@ -155,11 +155,67 @@ namespace MSIX
         return false;
     }
 
-    // Best effort to determine whether the signature file is associated with a store cert
+    // Best effort to determine whether the signature comes from Microsoft
+    static bool IsWindowsOrigin(STACK_OF(X509) *certStack)
+    {
+        if (!sk_X509_num(certStack))
+        {
+            return false;
+        }
+
+        // Ensure that cert used for signing has "Code Signing" capability
+        X509 *signingCert = sk_X509_value(certStack, 0);
+        if (!signingCert)
+        {
+            return false;
+        }
+
+        STACK_OF(X509_EXTENSION) *exts = signingCert->cert_info.extensions;
+        int pos = X509v3_get_ext_by_NID(exts, NID_ext_key_usage, -1);
+        if (pos == -1)
+        {
+            return false;
+        }
+
+        X509_EXTENSION *ext = sk_X509_EXTENSION_value(exts, pos);
+        if (!ext || !X509_EXTENSION_get_object(ext))
+        {
+            return false;
+        }
+
+        unique_BIO extbio(BIO_new(BIO_s_mem()));
+        if (!X509V3_EXT_print(extbio.get(), ext, 0, 0))
+        {
+            ASN1_STRING_print(extbio.get(), X509_EXTENSION_get_data(ext));
+        }
+        BUF_MEM *bptr = nullptr;
+        BIO_get_mem_ptr(extbio.get(), &bptr);
+
+        if (!bptr || !bptr->data ||
+            std::string((char*)bptr->data, bptr->length).find("Code Signing") == std::string::npos)
+        {
+            return false;
+        }
+
+        // Ensure that trust chain originates from Microsoft Root CA
+        X509 *rootCert = sk_X509_value(certStack, sk_X509_num(certStack) - 1);
+        if (!rootCert)
+        {
+            return false;
+        }
+        unique_OPENSSL_string issuer(X509_NAME_oneline(X509_get_issuer_name(rootCert), NULL, 0));
+        if (!issuer || std::string(issuer.get()).find("/C=US/ST=Washington/L=Redmond/O=Microsoft Corporation/CN=Microsoft Root Certificate Authority") != 0)
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    // Authenticate signing verification is not implemented
     static bool IsAuthenticodeOrigin(std::uint8_t* signatureBuffer, std::uint32_t cbSignatureBuffer)
     {
-        bool retValue = false;
-        return retValue;
+        return false;
     }
 
     void ReadDigestHashes(PKCS7* p7, AppxSignatureObject* signatureObject, unique_BIO& signatureDigest)
@@ -381,7 +437,7 @@ namespace MSIX
         X509_STORE_set_purpose(store.get(), X509_PURPOSE_ANY);
         
         // Loop through our trusted PEM certs, create X509 objects from them, and add to trusted store
-        unique_STACK_X509 trustedChain(sk_X509_new_null());
+        unique_STACK_X509 trustedStack(sk_X509_new_null());
         
         // Get certificates from our resources
         auto appxCerts = GetResources(factory, Resource::Certificates);
@@ -399,12 +455,14 @@ namespace MSIX
                 X509_STORE_add_cert(store.get(), cert.get()) == 1, 
                 "Could not add cert to keychain");
             
-            sk_X509_push(trustedChain.get(), cert.get());
+            sk_X509_push(trustedStack.get(), cert.get());
         }
 
         unique_BIO signatureDigest(nullptr);
         ReadDigestHashes(p7.get(), signatureObject, signatureDigest);
-        
+
+        unique_STACK_X509 trustedChain;
+
         // Loop through the untrusted certs and verify them if we're going to treat
         if (MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN != (option & MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN))
         {
@@ -416,25 +474,32 @@ namespace MSIX
                 X509_STORE_CTX_init(context.get(), store.get(), nullptr, nullptr);
 
                 X509_STORE_CTX_set_chain(context.get(), untrustedCerts);
-                X509_STORE_CTX_trusted_stack(context.get(), trustedChain.get());
+                X509_STORE_CTX_trusted_stack(context.get(), trustedStack.get());
                 X509_STORE_CTX_set_cert(context.get(), cert);
 
                 X509_VERIFY_PARAM* param = X509_STORE_CTX_get0_param(context.get());
                 X509_VERIFY_PARAM_set_flags(param, 
                     X509_V_FLAG_CB_ISSUER_CHECK | X509_V_FLAG_TRUSTED_FIRST | X509_V_FLAG_IGNORE_CRITICAL);
 
-                    ThrowErrorIfNot(Error::CertNotTrusted, 
-                        X509_verify_cert(context.get()) == 1, 
-                        "Could not verify cert");
+                ThrowErrorIfNot(Error::CertNotTrusted, 
+                    X509_verify_cert(context.get()) == 1, 
+                    "Could not verify cert");
+
+                if (i == 0)
+                {
+                    // Export the full trusted chain, including the root cert, beginning with the signing cert itself
+                    trustedChain.reset(X509_STORE_CTX_get1_chain(context.get()));
+                }
             }
 
             ThrowErrorIfNot(Error::SignatureInvalid, 
-                PKCS7_verify(p7.get(), trustedChain.get(), store.get(), signatureDigest.get(), nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
+                PKCS7_verify(p7.get(), trustedStack.get(), store.get(), signatureDigest.get(), nullptr/*out*/, PKCS7_NOCRL/*flags*/) == 1, 
                 "Could not verify package signature");
         }
 
         origin = MSIX::SignatureOrigin::Unknown;
         if (IsStoreOrigin(p7s.data(), p7s.size())) { origin = MSIX::SignatureOrigin::Store; }
+        else if (trustedChain && IsWindowsOrigin(trustedChain.get())) { origin = MSIX::SignatureOrigin::Windows; }
         else if (IsAuthenticodeOrigin(p7s.data(), p7s.size())) { origin = MSIX::SignatureOrigin::LOB; }
 
         bool SignatureOriginUnknownAllowed = (option & MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN) == MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN;
@@ -443,6 +508,7 @@ namespace MSIX
             "Unknown signature origin");
 
         ThrowErrorIfNot(Error::SignatureInvalid, (
+            MSIX::SignatureOrigin::Windows == origin ||
             MSIX::SignatureOrigin::Store == origin ||
             MSIX::SignatureOrigin::LOB == origin ||
             SignatureOriginUnknownAllowed

@@ -30,7 +30,7 @@ namespace MSIX {
     class Bcp47Tag final
     {
     public:
-        Bcp47Tag(const std::string& fullTag);
+        Bcp47Tag(const std::string& fullTag, bool allowPseudoLocale = false);
         Bcp47Tag(const std::string& language, const std::string& script, const std::string& region) : 
             m_language(language), m_script(script), m_region(region) {} 
 
