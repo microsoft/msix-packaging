@@ -553,7 +553,7 @@ int main(int argc, char * argv[])
                 if (!createTempDirResult)
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_UNEXPECTED);
-                    errorDesc = L"Failed to create temp directory for CIM flow. This may occur when the directory path already exists. Need to try again. HRESULT " + errorCode + L".";
+                    errorDesc = L"Failed to create temp directory. This may occur when the directory path already exists. Please try again. HRESULT " + errorCode + L".";
 
                     std::wcout << std::endl;
                     std::wcout << "Failed to create temp directory " << tempDirPathString << std::endl;
@@ -570,7 +570,7 @@ int main(int argc, char * argv[])
                 if (createDirectoryErrorCode.value() != 0)
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_UNEXPECTED);
-                    errorDesc = L"Failed to create temp directory for CIM flow with Error Message: " + utf8_to_utf16(createDirectoryErrorCode.message()) + L". Need to try again. HRESULT " + errorCode + L".";
+                    errorDesc = L"Creation of temp directory failed with error: " + std::to_wstring(createDirectoryErrorCode.value()) + L". Error Message: " + utf8_to_utf16(createDirectoryErrorCode.message()) + L". Please try again. HRESULT " + errorCode + L".";
 
                     // Again, we expect that the creation of the temp directory will fail very rarely. Output the exception
                     // and have the user try again.
@@ -626,7 +626,7 @@ int main(int argc, char * argv[])
                 if (FAILED(hrCreateCIM))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreateCIM);
-                    errorDesc = L"Failed creation of CIM file. HRESULT " + errorCode + L".";
+                    errorDesc = L"Creating the CIM file failed. HRESULT " + errorCode + L".";
 
                     std::wcout << std::endl;
                     std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateCIM << std::endl;
@@ -712,12 +712,12 @@ int main(int argc, char * argv[])
                                     MsixCoreLib::UnmountVHD(unpackDestination);
                                     if (_wremove(unpackDestination.c_str()) != 0)
                                     {
-                                        errorDesc += L"Failed best-effort attempt to delete the incomplete VHD(X) file.";
+                                        errorDesc += L"Failed best-effort attempt to delete the incomplete VHD(X) file. Please do not use this file.";
                                         std::wcout << "Failed best-effort attempt to delete the incomplete VHD(X) file: " << unpackDestination << " Please do not use this file." << std::endl;
                                     }
                                     else
                                     {
-                                        errorDesc += L"Succeeded best-effort attempt to delete the incomplete VHD(X) file.";
+                                        errorDesc += L"Best-effort attempt to delete the incomplete VHD(X) file succeeded.";
                                         std::wcout << "Best-effort attempt to delete the incomplete VHD(X) file " << unpackDestination << " succeeded." << std::endl;
                                     }
                                 }
@@ -762,7 +762,7 @@ int main(int argc, char * argv[])
                         if (FAILED(hrUnmount))
                         {
                             errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnmount);
-                            errorDesc = L"Successful Unpack to mounted vhd(x). But, unmounting the vhd(x) failed. HRESULT " + errorCode + L".";
+                            errorDesc = L"Successful Unpack to mounted vhd(x). Unmounting the VHD failed. Ignoring as non-fatal error. HRESULT " + errorCode + L".";
 
                             std::wcout << std::endl;
                             std::wcout << "Unmounting the VHD  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
@@ -861,7 +861,7 @@ int main(int argc, char * argv[])
             if (cli.GetMountImagePath().empty())
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
-                errorDesc = L"Mount Image Path Argument not given. HRESULT " + errorCode + L".";
+                errorDesc = L"Please provide the path to the image you would like to mount. HRESULT " + errorCode + L".";
 
                 std::wcout << std::endl;
                 std::wcout << "Please provide the path to the image you would like to mount." << std::endl;
@@ -882,7 +882,7 @@ int main(int argc, char * argv[])
                 if (FAILED(hrMountCIM))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrMountCIM);
-                    errorDesc = L"Failed Mounting the CIM file. HRESULT " + errorCode + L".";
+                    errorDesc = L"Mounting the CIM file failed. HRESULT " + errorCode + L".";
 
                     std::wcout << std::endl;
                     std::wcout << "Mounting the CIM file  " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrMountCIM << std::endl;
@@ -920,7 +920,7 @@ int main(int argc, char * argv[])
                 if (FAILED(hrMountVHD))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrMountVHD);
-                    errorDesc = L"Failed Mounting the VHD(X) file. HRESULT " + errorCode + L".";
+                    errorDesc = L"Mounting the VHD(X) file failed. HRESULT " + errorCode + L".";
 
                     std::wcout << std::endl;
                     std::wcout << "Mounting the VHD(X) file  " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrMountVHD << std::endl;
@@ -951,7 +951,7 @@ int main(int argc, char * argv[])
             else
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(ERROR_NOT_SUPPORTED);
-                errorDesc = L"Invalid FileType given for Mount Operation. HRESULT " + errorCode + L".";
+                errorDesc = L"Please specify one of the following supported file types for the -MountImage command: {VHD, VHDX, CIM}. HRESULT " + errorCode + L".";
 
                 std::wcout << std::endl;
                 std::wcout << "Please specify one of the following supported file types for the -MountImage command: {VHD, VHDX, CIM}" << std::endl;
@@ -977,7 +977,7 @@ int main(int argc, char * argv[])
                 if (cli.GetVolumeId().empty() && cli.GetMountImagePath().empty())
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
-                    errorDesc = L"Neither CIM file path Argument given nor VolumeId of the image to be unmounted given. HRESULT " + errorCode + L".";
+                    errorDesc = L"To unmount an CIM image, please provide either the CIM file path or the volume the image was mounted to. HRESULT " + errorCode + L".";
 
                     std::wcout << std::endl;
                     std::wcout << "To unmount an CIM image, please provide either the CIM file path or the volume the image was mounted to." << std::endl;
@@ -998,7 +998,7 @@ int main(int argc, char * argv[])
                 if (FAILED(hrUnmountCIM))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnmountCIM);
-                    errorDesc = L"Failed Unmounting the CIM file. HRESULT " + errorCode + L".";
+                    errorDesc = L"Unmounting the CIM file failed. HRESULT " + errorCode + L".";
 
                     std::wcout << std::endl;
                     std::wcout << "Unmounting the CIM " << " failed with HRESULT 0x" << std::hex << hrUnmountCIM << std::endl;
@@ -1007,7 +1007,7 @@ int main(int argc, char * argv[])
                     // and msixmgr was unable to find the volume id associated with a given image path.
                     if (hrUnmountCIM == HRESULT_FROM_WIN32(ERROR_NOT_FOUND) && cli.GetVolumeId().empty())
                     {
-                        errorDesc += L"Failure while finding the VolumeId associated with the given image path. Can be retried directly using the VolumeId option";
+                        errorDesc += L"The error ERROR_NOT_FOUND may indicate a failure to find the volume id associated with a given image path. Please try unmounting using the -volumeId option.";
 
                         std::wcout << "The error ERROR_NOT_FOUND may indicate a failure to find the volume id associated with a given image path."<< std::endl;
                         std::wcout << "Please try unmounting using the -volumeId option." << std::endl;
@@ -1054,7 +1054,7 @@ int main(int argc, char * argv[])
                 if (cli.GetMountImagePath().empty())
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
-                    errorDesc = L"Path of the VHD(X) image to be unmounted not given. HRESULT " + errorCode + L".";
+                    errorDesc = L"Please provide the path to the image you would like to unmount. HRESULT " + errorCode + L".";
 
                     std::wcout << std::endl;
                     std::wcout << "Please provide the path to the image you would like to unmount." << std::endl;
@@ -1073,7 +1073,7 @@ int main(int argc, char * argv[])
                 if (FAILED(hrUnmountVHD))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnmountVHD);
-                    errorDesc = L"Failed Unmounting the VHD(X) file. HRESULT " + errorCode + L".";
+                    errorDesc = L"Unmounting the VHD file failed. HRESULT " + errorCode + L".";
 
                     std::wcout << std::endl;
                     std::wcout << "Unmounting the VHD " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrUnmountVHD << std::endl;
@@ -1101,7 +1101,7 @@ int main(int argc, char * argv[])
             else
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(ERROR_NOT_SUPPORTED);
-                errorDesc = L"Invalid FileType given for Unmount Operation. HRESULT " + errorCode + L".";
+                errorDesc = L"Please specify one of the following supported file types for the -UnmountImage command: {VHD, VHDX, CIM}. HRESULT " + errorCode + L".";
 
                 std::wcout << std::endl;
                 std::wcout << "Please specify one of the following supported file types for the -UnmountImage command: {VHD, VHDX, CIM}" << std::endl;
