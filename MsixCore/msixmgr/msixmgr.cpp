@@ -686,7 +686,7 @@ int main(int argc, char * argv[])
                         }
 
                         std::wstring driveLetter;
-                        HRESULT hrCreateVHD = MsixCoreLib::CreateAndMountVHD(unpackDestination, cli.GetVHDSize(), fileType == WVDFileType::VHD,  driveLetter);
+                        HRESULT hrCreateVHD = MsixCoreLib::CreateAndMountVHD(unpackDestination, vhdSize, fileType == WVDFileType::VHD,  driveLetter);
                         if (FAILED(hrCreateVHD))
                         {
                             errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreateVHD);

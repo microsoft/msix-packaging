@@ -6,7 +6,7 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>UtilsTestExe</RootNamespace>
     <AssemblyName>UtilsTestExe</AssemblyName>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>
