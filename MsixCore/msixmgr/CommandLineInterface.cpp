@@ -23,6 +23,26 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             commandLineInterface->m_operationType = OperationType::Add;
             commandLineInterface->m_packageFilePath = utf8_to_utf16(path);
             return S_OK;
+        },
+        {
+            {
+                L"-sourceApplicationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
+                {
+                    commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
+                    return S_OK;
+                }),
+             },
+             {
+                L"-correlationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
+                {
+                    commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
+                    return S_OK;
+                }),
+             }
         })
     },
     {
@@ -37,6 +57,26 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             commandLineInterface->m_operationType = OperationType::Remove;
             commandLineInterface->m_packageFullName = utf8_to_utf16(packageFullName);
             return S_OK;
+        },
+        {
+             {
+                L"-sourceApplicationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
+                {
+                    commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
+                    return S_OK;
+                }),
+             },
+             {
+                L"-correlationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
+                {
+                    commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
+                    return S_OK;
+                }),
+             }
         })
     },
     {
@@ -60,6 +100,26 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
             commandLineInterface->m_operationType = OperationType::FindPackage;
             commandLineInterface->m_packageFullName = utf8_to_utf16(packageFullName);
             return S_OK;
+        },
+        {
+             {
+                L"-sourceApplicationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
+                {
+                    commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
+                    return S_OK;
+                }),
+             },
+             {
+                L"-correlationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
+                {
+                    commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
+                    return S_OK;
+                }),
+             }
         })
     },
     {
@@ -192,7 +252,25 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                     commandLineInterface->m_vhdSize = vhdSizeUll;
                     return S_OK;
                 }),
-            }
+             },
+             {
+                L"-sourceApplicationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
+                {
+                    commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
+                    return S_OK;
+                }),
+             },
+             {
+                L"-correlationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
+                {
+                    commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
+                    return S_OK;
+                }),
+             }
         })
     },
     {
@@ -220,7 +298,25 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                     commandLineInterface->m_packageFilePath = utf8_to_utf16(packagePath);
                     return S_OK;
                 }),
-            }
+            },
+            {
+                L"-sourceApplicationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
+                {
+                    commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
+                    return S_OK;
+                }),
+             },
+             {
+                L"-correlationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
+                {
+                    commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
+                    return S_OK;
+                }),
+             }
         })
     },
     {
@@ -285,7 +381,25 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                     }
                     return S_OK;
                 }),
-            }
+            },
+            {
+                L"-sourceApplicationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
+                {
+                    commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
+                    return S_OK;
+                }),
+             },
+             {
+                L"-correlationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
+                {
+                    commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
+                    return S_OK;
+                }),
+             }
         })
     },
     {
@@ -339,7 +453,25 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                     commandLineInterface->SetWVDFileType(utf8_to_utf16(fileType));
                     return S_OK;
                 }),
-            }
+            },
+            {
+                L"-sourceApplicationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& sourceApplicationId)
+                {
+                    commandLineInterface->m_sourceApplicationId = utf8_to_utf16(sourceApplicationId);
+                    return S_OK;
+                }),
+             },
+             {
+                L"-correlationId",
+                Option(true, IDS_STRING_HELP_OPTION_UNPACK_DESTINATION,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& correlationId)
+                {
+                    commandLineInterface->m_correlationId = utf8_to_utf16(correlationId);
+                    return S_OK;
+                }),
+             }
         })
     },
     {
@@ -478,5 +610,31 @@ void CommandLineInterface::SetWVDFileType(std::wstring fileType)
     else
     {
         this->m_fileType = WVDFileType::NotSpecified;
+    }
+}
+
+std::wstring CommandLineInterface::GetFileTypeAsString()
+{
+    switch (this->m_fileType)
+    {
+        case WVDFileType::CIM: return L"CIM";
+        case WVDFileType::VHD: return L"VHD";
+        case WVDFileType::VHDX: return L"VHDX";
+        case WVDFileType::NotSpecified: return L"NotSpecified";
+    }
+}
+
+std::wstring CommandLineInterface::GetOperationTypeAsString()
+{
+    switch (this->m_operationType)
+    {
+    case OperationType::Add: return L"AddPackage";
+    case OperationType::Remove: return L"RemovePackage";
+    case OperationType::FindPackage: return L"FindPackage";
+    case OperationType::Unpack: return L"Unpack";
+    case OperationType::ApplyACLs: return L"ApplyACLs";
+    case OperationType::MountImage: return L"MountImage";
+    case OperationType::UnmountImage: return L"UnmountImage";
+    case OperationType::Undefined: return L"Undefined";
     }
 }
