@@ -5,7 +5,7 @@
 TRACELOGGING_DECLARE_PROVIDER(g_MsixMgrTelemetryProvider);
 
 #define TraceLoggingOptionMicrosoftTelemetry() \
-    TraceLoggingOptionGroup(0x4f50731a, 0x89cf, 0x4782, 0xb3, 0xe0, 0xdc, 0xe8, 0xc9, 0x4, 0x76, 0xba)
+    TraceLoggingOptionGroup(0000000000, 00000, 00000, 0000, 0000, 0000, 0000, 0000, 000, 0000, 0000)
 
 #define TelemetryPrivacyDataTag(tag) TraceLoggingUInt64((tag), "PartA_PrivTags")
 
