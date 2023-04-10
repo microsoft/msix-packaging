@@ -2,7 +2,7 @@
 * @msftrubengu @ranm-msft @johnmcpms 
 
 # MsixCoreInstaller owners
-/MsixCore/ @wcheng-msft @jyvenugo @sarjanas-msft
+/MsixCore/ @wcheng-msft @jyvenugo @sarjanas-msft @microsoft/MSIX-ENG-IDC
 
 # Utils library
 /tools/utils/ @ranm-msft @msftrubengu @johnmcpms @florelis
