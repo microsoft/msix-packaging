@@ -12,6 +12,12 @@ using namespace MsixCoreLib;
 
 TRACELOGGING_DECLARE_PROVIDER(g_MsixMgrTelemetryProvider);
 
+// Purpose:
+// - This file contains all the TraceLogging statements which will perform the task for
+//   actual telemetry logging. All the TraceLogging Functions are being called from msixmgr.cpp file.
+// - It also contains Helper Functions for Creating WorkflowID, Calculating Workflow Elapsed Time,
+//   Getting Error Code from HRESULT, Extracting PackageName from Filepath, etc.
+
 namespace msixmgrTraceLogging
 {
     void TraceLogSession(const wchar_t* workflowID, const wchar_t* sourceApplicationID, const wchar_t* correlationID)
