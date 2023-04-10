@@ -61,3 +61,18 @@ steps:
     scanType: 'Register'
     verbosity: 'Verbose'
     alertWarningLevel: 'High'
+
+- task: PublishPipelineArtifact@1
+  displayName: 'Publish artifacts'
+  inputs:
+    artifactName: 'utils'
+    targetPath: '$(utilsRoot)/bin/$(buildConfiguration)/net6.0'
+    publishLocation: 'pipeline'
+    publishPipeline: 'Build & Test'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish build artifacts'
+  inputs:
+    artifactName: 'build'
+    pathToPublish: '$(System.DefaultWorkingDirectory)'
+    publishLocation: 'Container'
