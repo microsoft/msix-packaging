@@ -2,6 +2,10 @@
 #include <windows.h>
 #include <TraceLoggingProvider.h>
 
+// Declares the Provider to be used for Telemetry Logging for MsixMgr Tool Telemetry
+// Defines the Provider Option Group to which the the telemetry will be logged
+// Defines the Privacy Tags and Data tags
+
 TRACELOGGING_DECLARE_PROVIDER(g_MsixMgrTelemetryProvider);
 
 #define TraceLoggingOptionMicrosoftTelemetry() \

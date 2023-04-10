@@ -1,12 +1,7 @@
 #include "msixmgrTelemetry.hpp"
-// Define the GUID to use in TraceLoggingProviderRegister 
-// {db5b779e-2dcf-41bc-ab0e-40a6e02f1438}
-// One way to enable:
-// logman create trace <nameoftrace> -p "{db5b779e-2dcf-41bc-ab0e-40a6e02f1438}" -o <filename>
-// i.e. logman create trace MsixTrace -p "{db5b779e-2dcf-41bc-ab0e-40a6e02f1438}" -o c:\msixtrace.etl
-// logman start MsixTrace
-// logman stop MsixTrace
-// tracerpt.exe, Windows Performance Analyzer or other tools can be used to view the etl file.
+
+// Defines the Provider to be used for Telemetry Logging for MsixMgr Tool Dashboard
+
 TRACELOGGING_DEFINE_PROVIDER(
     g_MsixMgrTelemetryProvider,
     "Microsoft.Windows.MsixMgr",
