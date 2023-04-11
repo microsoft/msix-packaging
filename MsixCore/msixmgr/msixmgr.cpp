@@ -13,6 +13,7 @@
 #include "InstallUI.hpp"
 #include "CommandLineInterface.hpp"
 #include "msixmgrLogger.hpp"
+#include "msixmgrTelemetry.hpp"
 #include "Util.hpp"
 #include "..\msixmgrLib\GeneralUtil.hpp"
 #include "resource.h"
@@ -23,6 +24,7 @@
 #include "CIMProvider.hpp"
 #include "MsixErrors.hpp"
 #include <filesystem>
+#include "msixmgrTraceLogging.hpp"
 
 #include <msixmgrActions.hpp>
 using namespace std;
@@ -176,6 +178,7 @@ int main(int argc, char * argv[])
     // Register the providers
     TraceLoggingRegister(g_MsixUITraceLoggingProvider);
     TraceLoggingRegister(g_MsixTraceLoggingProvider);
+    TraceLoggingRegister(g_MsixMgrTelemetryProvider);
 
     // Determine if running as admin up front to log the result in all codepaths
     bool isAdmin = IsAdmin();
@@ -192,26 +195,79 @@ int main(int argc, char * argv[])
     CommandLineInterface cli(argc, argv);
 
     const HRESULT hrCreateRequest = cli.Init();
+
+    // Initializing all the variables for Telemetry
+    std::wstring workflowId, sourceApplicationId, correlationId, errorCode = L"", errorDesc = L"";
+    double workflowElapsedTime;
+    LARGE_INTEGER msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency;
+    QueryPerformanceFrequency(&msixMgrLoad_Frequency);
+
+    // Creating workflowId for tracking the Workflows
+    workflowId = msixmgrTraceLogging::CreateWorkflowId();
+    sourceApplicationId = cli.GetSourceApplicationId();    // SourceApplicationId indicates which application is executing the MSIXMGR commands. Useful during integration of MSIXMGR with other Tools.
+    correlationId = cli.GetCorrelationId();    // CorrelationId can be used to establish a correlation between MSIXMGR's Workflow and the parent application's Workflow, when MSIXMGR is being used in integration with any other Tool.
+
+    // Telemetry : Session Log
+    msixmgrTraceLogging::TraceLogSession(workflowId.c_str(), sourceApplicationId.c_str(), correlationId.c_str());
+
+    QueryPerformanceCounter(&msixMgrLoad_StartCounter);
+
     if (SUCCEEDED(hrCreateRequest))
     {
         switch (cli.GetOperationType())
         {
         case OperationType::Add:
         {
+            // Telemetry : Add Workflow Log
+            msixmgrTraceLogging::TraceLogAddWorkflow(workflowId.c_str(), msixmgrTraceLogging::ExtractPackageNameFromFilePath(cli.GetPackageFilePathToInstall()).c_str());
+
+            HRESULT hrCreatePackageManager;
+
             AutoPtr<IPackageManager> packageManager;
-            RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
+            hrCreatePackageManager = MsixCoreLib_CreatePackageManager(&packageManager);
+
+            if (FAILED(hrCreatePackageManager))
+            {
+                errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreatePackageManager);
+                errorDesc = L"Failed creation of Package Manager Object. HRESULT " + errorCode + L".";
+
+
+                // Telemetry : Workflow Log
+                QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                RETURN_IF_FAILED(hrCreatePackageManager);
+            }
 
             if (cli.IsQuietMode())
             {
                 if (!isAdmin)
                 {
+                    errorCode = L"";
+                    errorDesc = L"Relaunching as Admin.";
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     RelaunchAsAdmin(argc, argv);
                     return 0;
                 }
                 HRESULT hrAddPackage = packageManager->AddPackage(cli.GetPackageFilePathToInstall(), DeploymentOptions::None);
                 if (FAILED(hrAddPackage))
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrAddPackage);
+                    errorDesc = L"Failed Add Package Operation. HRESULT " + errorCode + L".";
+
                     std::wcout << GetStringResource(IDS_STRING_FAILED_REQUEST) << " " << std::hex << hrAddPackage << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return hrAddPackage;
                 }
             }
@@ -235,7 +291,18 @@ int main(int argc, char * argv[])
                         wchar_t path[bufSize];
                         if (!GetFullPathNameW(cli.GetPackageFilePathToInstall().c_str(), bufSize, path, nullptr))
                         {
-                            return HRESULT_FROM_WIN32(GetLastError());
+                            HRESULT hrHRESULTFromWin32;
+                            hrHRESULTFromWin32 = HRESULT_FROM_WIN32(GetLastError());
+
+                            errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrHRESULTFromWin32);
+                            errorDesc = L"Failed Add Package Operation. HRESULT " + errorCode + L".";
+
+                            // Telemetry : Workflow Log
+                            QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                            workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                            msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                            return hrHRESULTFromWin32;
                         }
 
                         protocol.append(path);
@@ -244,44 +311,143 @@ int main(int argc, char * argv[])
                 }
                 else
                 {
-                if (!isAdmin)
-                {
-                    RelaunchAsAdmin(argc, argv);
-                    return 0;
-                }
-                auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
-                ui->ShowUI();
+                    if (!isAdmin)
+                    {
+                        errorCode = L"";
+                        errorDesc = L"Relaunching as Admin.";
+
+                        // Telemetry : Workflow Log
+                        QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                        workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                        msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                        RelaunchAsAdmin(argc, argv);
+                        return 0;
+                    }
+                    auto ui = new UI(packageManager, cli.GetPackageFilePathToInstall(), UIType::InstallUIAdd);
+                    HRESULT hrShowUI;
+                    hrShowUI = ui->ShowUI();
+
+                    if (FAILED(hrShowUI))
+                    {
+                        errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrShowUI);
+                        errorDesc = L"Failed Show UI Operation for Add Package Operation. HRESULT " + errorCode + L".";
+
+                        // Telemetry : Workflow Log
+                        QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                        workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                        msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                        RETURN_IF_FAILED(hrShowUI);
+                    }
                 }
             }
+
+            // Telemetry : Workflow Log
+            QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+            workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+            msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
+
             break;
         }
         case OperationType::Remove:
         {
+            // Telemetry : Remove Workflow Log
+            msixmgrTraceLogging::TraceLogRemoveWorkflow(workflowId.c_str(), msixmgrTraceLogging::ExtractPackageNameFromFilePath(cli.GetPackageFullName()).c_str());
+
             if (!isAdmin)
             {
+                errorCode = L"";
+                errorDesc = L"Relaunching as Admin.";
+
+                // Telemetry : Workflow Log
+                QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                 RelaunchAsAdmin(argc, argv);
                 return 0;
             }
             FreeConsole();
             AutoPtr<IPackageManager> packageManager;
-            RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
+            HRESULT hrCreatePackageManager;
+            hrCreatePackageManager = MsixCoreLib_CreatePackageManager(&packageManager);
+
+            if (FAILED(hrCreatePackageManager))
+            {
+                errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreatePackageManager);
+                errorDesc = L"Failed creation of Package Manager Object. HRESULT " + errorCode + L".";
+
+                // Telemetry : Workflow Log
+                QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                RETURN_IF_FAILED(hrCreatePackageManager);
+            }
 
             auto packageFullName = cli.GetPackageFullName();
             HRESULT hrRemovePackage = packageManager->RemovePackage(packageFullName);
             if (FAILED(hrRemovePackage))
             {
+                errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrRemovePackage);
+                errorDesc = L"Failed Remove Package Operation. HRESULT " + errorCode + L".";
+
                 std::wcout << GetStringResource(IDS_STRING_FAILED_REQUEST) << " " << std::hex << hrRemovePackage << std::endl;
+
+                // Telemetry : Workflow Log
+                QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                 return hrRemovePackage;
             }
+
+            // Telemetry : Workflow Log
+            QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+            workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+            msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
+
             break;
         }
         case OperationType::FindPackage:
         {
+            // Telemetry : Find Workflow Log
+            msixmgrTraceLogging::TraceLogFindWorkflow(workflowId.c_str(), msixmgrTraceLogging::ExtractPackageNameFromFilePath(cli.GetPackageFullName()).c_str());
+
+            HRESULT hrCreatePackageManager;
             AutoPtr<IPackageManager> packageManager;
-            RETURN_IF_FAILED(MsixCoreLib_CreatePackageManager(&packageManager));
+            hrCreatePackageManager = MsixCoreLib_CreatePackageManager(&packageManager);
+
+            if (FAILED(hrCreatePackageManager))
+            {
+                errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreatePackageManager);
+                errorDesc = L"Failed creation of Package Manager Object. HRESULT " + errorCode + L".";
+
+                // Telemetry : Workflow Log
+                QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                RETURN_IF_FAILED(hrCreatePackageManager);
+            }
 
             std::unique_ptr<std::vector<std::shared_ptr<IInstalledPackage>>> packages;
-            RETURN_IF_FAILED(packageManager->FindPackages(cli.GetPackageFullName(), packages));
+            HRESULT hrFindPackage;
+            hrFindPackage = packageManager->FindPackages(cli.GetPackageFullName(), packages);
+
+            if (FAILED(hrFindPackage))
+            {
+                errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrFindPackage);
+                errorDesc = L"Failed Find Package Operation. HRESULT " + errorCode + L".";
+
+                // Telemetry : Workflow Log
+                QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                RETURN_IF_FAILED(hrFindPackage);
+            }
 
             if (packages != nullptr)
             {
@@ -300,11 +466,18 @@ int main(int argc, char * argv[])
                 std::cout << numPackages << " Package(s) found" << std::endl;
             }
 
+            // Telemetry : Workflow Log
+            QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+            workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+            msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
+
             return S_OK;
         }
         case OperationType::Unpack:
         {
-            HRESULT hr = S_OK;
+            // Telemetry : Unpack Workflow Log
+            msixmgrTraceLogging::TraceLogUnpackWorkflow(workflowId.c_str(), msixmgrTraceLogging::ExtractPackageNameFromFilePath(cli.GetPackageFilePathToInstall()).c_str(),
+                cli.GetFileTypeAsString().c_str(), cli.GetVHDSize(), cli.IsCreate(), cli.IsApplyACLs());
 
             auto packageSourcePath = cli.GetPackageFilePathToInstall();
             auto unpackDestination = cli.GetUnpackDestination();
@@ -320,16 +493,34 @@ int main(int argc, char * argv[])
             {
                 if (rootDirectory.empty() || fileType == WVDFileType::NotSpecified)
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
+                    errorDesc = L"Creating a file with the -create option requires both a -rootDirectory and -fileType. HRESULT " + errorCode + L".";
+
                     std::wcout << std::endl;
                     std::wcout << "Creating a file with the -create option requires both a -rootDirectory and -fileType" << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return E_INVALIDARG;
                 }
                 if (!EndsWith(unpackDestination, L".cim"))
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
+                    errorDesc = L"Invalid CIM file name. File name must have .cim file extension. HRESULT " + errorCode + L".";
+
                     std::wcout << std::endl;
                     std::wcout << "Invalid CIM file name. File name must have .cim file extension" << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return E_INVALIDARG;
                 }
 
@@ -337,7 +528,21 @@ int main(int argc, char * argv[])
                 // Append long path prefix to temporary directory path to handle paths that exceed the maximum path length limit
                 std::wstring currentDirectory = std::filesystem::current_path();
                 std::wstring uniqueIdString;
-                RETURN_IF_FAILED(CreateGUIDString(&uniqueIdString));
+                HRESULT hrCreateGUIDString = CreateGUIDString(&uniqueIdString);
+
+                if (FAILED(hrCreateGUIDString))
+                {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreateGUIDString);
+                    errorDesc = L"Failed UniqueGuid creation for tempDirPathString for CIM file. HRESULT " + errorCode + L".";
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                    RETURN_IF_FAILED(hrCreateGUIDString);
+                }
+
                 std::wstring tempDirPathString = L"\\\\?\\" + currentDirectory + L"\\" + uniqueIdString;
                 std::filesystem::path tempDirPath(tempDirPathString);
 
@@ -347,14 +552,26 @@ int main(int argc, char * argv[])
                 // Since we're using a GUID, this should almost never happen
                 if (!createTempDirResult)
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_UNEXPECTED);
+                    errorDesc = L"Failed to create temp directory. This may occur when the directory path already exists. Please try again. HRESULT " + errorCode + L".";
+
                     std::wcout << std::endl;
                     std::wcout << "Failed to create temp directory " << tempDirPathString << std::endl;
                     std::wcout << "This may occur when the directory path already exists. Please try again."  << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return E_UNEXPECTED;
                 }
                 if (createDirectoryErrorCode.value() != 0)
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_UNEXPECTED);
+                    errorDesc = L"Creation of temp directory failed with error: " + std::to_wstring(createDirectoryErrorCode.value()) + L". Error Message: " + utf8_to_utf16(createDirectoryErrorCode.message()) + L". Please try again. HRESULT " + errorCode + L".";
+
                     // Again, we expect that the creation of the temp directory will fail very rarely. Output the exception
                     // and have the user try again.
                     std::wcout << std::endl;
@@ -362,17 +579,36 @@ int main(int argc, char * argv[])
                     std::cout << "Error message: " << createDirectoryErrorCode.message() << std::endl;
                     std::wcout << "Please try again." << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return E_UNEXPECTED;
                 }
 
-                RETURN_IF_FAILED(MsixCoreLib::Unpack(
+                HRESULT hrUnpackToTempDir = MsixCoreLib::Unpack(
                     packageSourcePath,
                     tempDirPathString,
                     cli.IsApplyACLs(),
                     cli.IsValidateSignature(),
                     skippedFiles,
                     failedPackages,
-                    failedPackagesErrors));
+                    failedPackagesErrors);
+
+                if (FAILED(hrUnpackToTempDir))
+                {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnpackToTempDir);
+                    errorDesc = L"Failed to Unpack in Temp Directory for CIM flow. HRESULT " + errorCode + L".";
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                    RETURN_IF_FAILED(hrUnpackToTempDir);
+                }
 
                 HRESULT hrCreateCIM = MsixCoreLib::CreateAndAddToCIM(unpackDestination, tempDirPathString, rootDirectory);
 
@@ -389,9 +625,18 @@ int main(int argc, char * argv[])
 
                 if (FAILED(hrCreateCIM))
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreateCIM);
+                    errorDesc = L"Creating the CIM file failed. HRESULT " + errorCode + L".";
+
                     std::wcout << std::endl;
                     std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateCIM << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return hrCreateCIM;
                 }
                 else
@@ -401,6 +646,11 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
 
                     OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
                 }
                  
             }
@@ -411,9 +661,18 @@ int main(int argc, char * argv[])
                 {
                     if (!(EndsWith(unpackDestination, L".vhd") || (EndsWith(unpackDestination, L".vhdx"))))
                     {
+                        errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
+                        errorDesc = L"Invalid VHD file name. File name must have .vhd or .vhdx file extension. HRESULT " + errorCode + L".";
+
                         std::wcout << std::endl;
                         std::wcout << "Invalid VHD file name. File name must have .vhd or .vhdx file extension" << std::endl;
                         std::wcout << std::endl;
+
+                        // Telemetry : Workflow Log
+                        QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                        workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                        msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                         return E_INVALIDARG;
                     }
                     else
@@ -430,6 +689,9 @@ int main(int argc, char * argv[])
                         HRESULT hrCreateVHD = MsixCoreLib::CreateAndMountVHD(unpackDestination, vhdSize, fileType == WVDFileType::VHD,  driveLetter);
                         if (FAILED(hrCreateVHD))
                         {
+                            errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreateVHD);
+                            errorDesc = L"Creation of VHD(X) file failed. HRESULT " + errorCode + L".";
+
                             std::wcout << std::endl;
                             std::wcout << "Creating the VHD(X) file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
 
@@ -441,10 +703,12 @@ int main(int argc, char * argv[])
                                     MsixCoreLib::UnmountVHD(unpackDestination);
                                     if (_wremove(unpackDestination.c_str()) != 0)
                                     {
+                                        errorDesc += L"Failed best-effort attempt to delete the incomplete VHD(X) file. Please do not use this file.";
                                         std::wcout << "Failed best-effort attempt to delete the incomplete VHD(X) file: " << unpackDestination << " Please do not use this file." << std::endl;
                                     }
                                     else
                                     {
+                                        errorDesc += L"Best-effort attempt to delete the incomplete VHD(X) file succeeded.";
                                         std::wcout << "Best-effort attempt to delete the incomplete VHD(X) file " << unpackDestination << " succeeded." << std::endl;
                                     }
                                 }
@@ -452,12 +716,17 @@ int main(int argc, char * argv[])
 
                             std::wcout << std::endl;
 
+                            // Telemetry : Workflow Log
+                            QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                            workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                            msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                             return hrCreateVHD;
                         }
 
                         // Unpack to the mounted VHD
                         std::wstring mountedUnpackDest = driveLetter + L":\\" + cli.GetRootDirectory();
-                        RETURN_IF_FAILED(MsixCoreLib::Unpack(
+                        HRESULT hrUnpackToVHD = MsixCoreLib::Unpack(
                             packageSourcePath,
                             mountedUnpackDest,
                             cli.IsApplyACLs(),
@@ -465,11 +734,27 @@ int main(int argc, char * argv[])
                             skippedFiles,
                             failedPackages,
                             failedPackagesErrors
-                        ));
+                        );
+
+                        if (FAILED(hrUnpackToVHD))
+                        {
+                            errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnpackToVHD);
+                            errorDesc = L"Failed unpack to the mounted vhd(x). HRESULT " + errorCode + L".";
+
+                            // Telemetry : Workflow Log
+                            QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                            workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                            msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                            RETURN_IF_FAILED(hrUnpackToVHD);
+                        }
 
                         HRESULT hrUnmount = MsixCoreLib::UnmountVHD(unpackDestination);
                         if (FAILED(hrUnmount))
                         {
+                            errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnmount);
+                            errorDesc = L"Successful Unpack to mounted vhd(x). Unmounting the VHD failed. Ignoring as non-fatal error. HRESULT " + errorCode + L".";
+
                             std::wcout << std::endl;
                             std::wcout << "Unmounting the VHD  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
                             std::wcout << "Ignoring as non-fatal error.." << std::endl;
@@ -481,44 +766,103 @@ int main(int argc, char * argv[])
                         std::wcout << std::endl;
                         std::wcout << "Finished unpacking packages to: " << unpackDestination << std::endl;
                         std::wcout << std::endl;
+
+                        // Telemetry : Workflow Log
+                        QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                        workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                        msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
                     }
                 }
                 else
                 {
-                    RETURN_IF_FAILED(MsixCoreLib::Unpack(
+                    HRESULT hrUnpackToFolder = MsixCoreLib::Unpack(
                         packageSourcePath,
                         unpackDestination,
                         cli.IsApplyACLs(),
                         cli.IsValidateSignature(),
                         skippedFiles,
                         failedPackages,
-                        failedPackagesErrors));
+                        failedPackagesErrors);
+
+                    if (FAILED(hrUnpackToFolder))
+                    {
+                        errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnpackToFolder);
+                        errorDesc = L"Failed unpack to the given folder or given VHD(X). HRESULT " + errorCode + L".";
+
+                        // Telemetry : Workflow Log
+                        QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                        workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                        msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                        RETURN_IF_FAILED(hrUnpackToFolder);
+                    }
 
                     std::wcout << std::endl;
                     std::wcout << "Finished unpacking packages to: " << unpackDestination << std::endl;
                     std::wcout << std::endl;
 
                     OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
                 }
             }
-            return hr;
+            return S_OK;
         }
         case OperationType::ApplyACLs:
         {
+            // Telemetry : ApplyACLs Workflow Log
+            msixmgrTraceLogging::TraceLogApplyACLsWorkflow(workflowId.c_str(), msixmgrTraceLogging::ExtractPackageNameFromFilePath(cli.GetPackageFilePathToInstall()).c_str());
+
+            HRESULT hrApplyACLs;
+
             std::vector<std::wstring> packageFolders;
             packageFolders.push_back(cli.GetPackageFilePathToInstall()); // we're not actually installing anything. The API just returns the file path name we need.
-            RETURN_IF_FAILED(MsixCoreLib::ApplyACLs(packageFolders));
+            hrApplyACLs = MsixCoreLib::ApplyACLs(packageFolders);
+
+            if (FAILED(hrApplyACLs))
+            {
+                errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrApplyACLs);
+                errorDesc = L"Failed ApplyACLs Operation. HRESULT " + errorCode + L".";
+
+                // Telemetry : Workflow Log
+                QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                RETURN_IF_FAILED(hrApplyACLs);
+            }
+
+            // Telemetry : Workflow Log
+            QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+            workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+            msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
+
             return S_OK;
         }
         case OperationType::MountImage:
         {
+            // Telemetry : Mount Workflow Log
+            msixmgrTraceLogging::TraceLogMountWorkflow(workflowId.c_str(), cli.GetFileTypeAsString().c_str());
+
             WVDFileType fileType = cli.GetFileType();
 
             if (cli.GetMountImagePath().empty())
             {
+                errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
+                errorDesc = L"Please provide the path to the image you would like to mount. HRESULT " + errorCode + L".";
+
                 std::wcout << std::endl;
                 std::wcout << "Please provide the path to the image you would like to mount." << std::endl;
                 std::wcout << std::endl;
+
+                // Telemetry : Workflow Log
+                QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                 return E_INVALIDARG;
             }
 
@@ -528,9 +872,18 @@ int main(int argc, char * argv[])
                 HRESULT hrMountCIM = MsixCoreLib::MountCIM(cli.GetMountImagePath(), volumeId);
                 if (FAILED(hrMountCIM))
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrMountCIM);
+                    errorDesc = L"Mounting the CIM file failed. HRESULT " + errorCode + L".";
+
                     std::wcout << std::endl;
                     std::wcout << "Mounting the CIM file  " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrMountCIM << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return hrMountCIM;
                 }
                 else
@@ -544,6 +897,11 @@ int main(int argc, char * argv[])
                     std::wcout << "msixmgr.exe -unmountimage -imagePath " << cli.GetMountImagePath() << " -filetype CIM" << std::endl;
                     std::wcout << "msixmgr.exe -unmountimage -volumeid " << volumeId << " -filetype CIM" << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
                 }
             }
             else if (fileType == WVDFileType::VHD || fileType == WVDFileType::VHDX)
@@ -552,9 +910,18 @@ int main(int argc, char * argv[])
                 HRESULT hrMountVHD = MsixCoreLib::MountVHD(cli.GetMountImagePath(), cli.isMountReadOnly(), driveLetter);
                 if (FAILED(hrMountVHD))
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrMountVHD);
+                    errorDesc = L"Mounting the VHD(X) file failed. HRESULT " + errorCode + L".";
+
                     std::wcout << std::endl;
                     std::wcout << "Mounting the VHD(X) file  " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrMountVHD << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return hrMountVHD;
                 }
                 else
@@ -565,29 +932,55 @@ int main(int argc, char * argv[])
                     std::wcout << "To unmount, run the following command: " << std::endl;
                     std::wcout << "msixmgr.exe -unmountimage -imagePath " << cli.GetMountImagePath() << " -filetype VHD" << (isVHD ? "" : "X") << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
                 }
             }
             else
             {
+                errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(ERROR_NOT_SUPPORTED);
+                errorDesc = L"Please specify one of the following supported file types for the -MountImage command: {VHD, VHDX, CIM}. HRESULT " + errorCode + L".";
+
                 std::wcout << std::endl;
                 std::wcout << "Please specify one of the following supported file types for the -MountImage command: {VHD, VHDX, CIM}" << std::endl;
                 std::wcout << std::endl;
+
+                // Telemetry : Workflow Log
+                QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                 return ERROR_NOT_SUPPORTED;
             }
             return S_OK;
         }
         case OperationType::UnmountImage:
         {
+            // Telemetry : Unmount Workflow Log
+            msixmgrTraceLogging::TraceLogUnmountWorkflow(workflowId.c_str(), cli.GetFileTypeAsString().c_str());
+
             WVDFileType fileType = cli.GetFileType();
             if (fileType == WVDFileType::CIM)
             {
                 if (cli.GetVolumeId().empty() && cli.GetMountImagePath().empty())
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
+                    errorDesc = L"To unmount an CIM image, please provide either the CIM file path or the volume the image was mounted to. HRESULT " + errorCode + L".";
+
                     std::wcout << std::endl;
                     std::wcout << "To unmount an CIM image, please provide either the CIM file path or the volume the image was mounted to." << std::endl;
                     std::wcout << "The CIM file path can be specified using the -imagepath option." << std::endl;
                     std::wcout << "The volume can be specified using the -volumeId option." << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return E_INVALIDARG;
                 }
 
@@ -595,6 +988,9 @@ int main(int argc, char * argv[])
 
                 if (FAILED(hrUnmountCIM))
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnmountCIM);
+                    errorDesc = L"Unmounting the CIM file failed. HRESULT " + errorCode + L".";
+
                     std::wcout << std::endl;
                     std::wcout << "Unmounting the CIM " << " failed with HRESULT 0x" << std::hex << hrUnmountCIM << std::endl;
 
@@ -602,9 +998,24 @@ int main(int argc, char * argv[])
                     // and msixmgr was unable to find the volume id associated with a given image path.
                     if (hrUnmountCIM == HRESULT_FROM_WIN32(ERROR_NOT_FOUND) && cli.GetVolumeId().empty())
                     {
+                        errorDesc += L"The error ERROR_NOT_FOUND may indicate a failure to find the volume id associated with a given image path. Please try unmounting using the -volumeId option.";
+
                         std::wcout << "The error ERROR_NOT_FOUND may indicate a failure to find the volume id associated with a given image path."<< std::endl;
                         std::wcout << "Please try unmounting using the -volumeId option." << std::endl;
+
+                        // Telemetry : Workflow Log
+                        QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                        workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                        msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                        std::wcout << std::endl;
+                        return hrUnmountCIM;
                     }
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
 
                     std::wcout << std::endl;
                     return hrUnmountCIM;
@@ -621,6 +1032,11 @@ int main(int argc, char * argv[])
                         std::wcout << "Successfully unmounted the CIM with volume id: " << cli.GetVolumeId() << std::endl;
                     }
 
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
+
                     std::wcout << std::endl;
                 }
             }
@@ -628,9 +1044,18 @@ int main(int argc, char * argv[])
             {
                 if (cli.GetMountImagePath().empty())
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
+                    errorDesc = L"Please provide the path to the image you would like to unmount. HRESULT " + errorCode + L".";
+
                     std::wcout << std::endl;
                     std::wcout << "Please provide the path to the image you would like to unmount." << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return E_INVALIDARG;
                 }
 
@@ -638,9 +1063,18 @@ int main(int argc, char * argv[])
 
                 if (FAILED(hrUnmountVHD))
                 {
+                    errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnmountVHD);
+                    errorDesc = L"Unmounting the VHD file failed. HRESULT " + errorCode + L".";
+
                     std::wcout << std::endl;
                     std::wcout << "Unmounting the VHD " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrUnmountVHD << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                     return hrUnmountVHD;
                 }
                 else
@@ -648,13 +1082,27 @@ int main(int argc, char * argv[])
                     std::wcout << std::endl;
                     std::wcout << "Successfully unmounted the VHD " << cli.GetMountImagePath() << std::endl;
                     std::wcout << std::endl;
+
+                    // Telemetry : Workflow Log
+                    QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                    workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
                 }
             }
             else
             {
+                errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(ERROR_NOT_SUPPORTED);
+                errorDesc = L"Please specify one of the following supported file types for the -UnmountImage command: {VHD, VHDX, CIM}. HRESULT " + errorCode + L".";
+
                 std::wcout << std::endl;
                 std::wcout << "Please specify one of the following supported file types for the -UnmountImage command: {VHD, VHDX, CIM}" << std::endl;
                 std::wcout << std::endl;
+
+                // Telemetry : Workflow Log
+                QueryPerformanceCounter(&msixMgrLoad_EndCounter);
+                workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
+                msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), false, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
                 return ERROR_NOT_SUPPORTED;
             }
             return S_OK;
@@ -671,6 +1119,7 @@ int main(int argc, char * argv[])
     // Stop TraceLogging and unregister the providers
     TraceLoggingUnregister(g_MsixUITraceLoggingProvider);
     TraceLoggingUnregister(g_MsixTraceLoggingProvider);
+    TraceLoggingUnregister(g_MsixMgrTelemetryProvider);
 
     return 0;
 }
