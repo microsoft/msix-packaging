@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2020 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2023 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the OpenSSL license (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -621,7 +621,7 @@ int PEM_write_bio(BIO *bp, const char *name, const char *header,
         (BIO_write(bp, "-----\n", 6) != 6))
         goto err;
 
-    i = strlen(header);
+    i = header != NULL ? strlen(header) : 0;
     if (i > 0) {
         if ((BIO_write(bp, header, i) != i) || (BIO_write(bp, "\n", 1) != 1))
             goto err;
@@ -791,7 +791,7 @@ static int get_header_and_data(BIO *bp, BIO **header, BIO **data, char *name,
 {
     BIO *tmp = *header;
     char *linebuf, *p;
-    int len, line, ret = 0, end = 0, prev_partial_line_read = 0, partial_line_read = 0;
+    int len, ret = 0, end = 0, prev_partial_line_read = 0, partial_line_read = 0;
     /* 0 if not seen (yet), 1 if reading header, 2 if finished header */
     enum header_status got_header = MAYBE_HEADER;
     unsigned int flags_mask;
@@ -805,7 +805,7 @@ static int get_header_and_data(BIO *bp, BIO **header, BIO **data, char *name,
         return 0;
     }
 
-    for (line = 0; ; line++) {
+    for (;;) {
         flags_mask = ~0u;
         len = BIO_gets(bp, linebuf, LINESIZE);
         if (len <= 0) {
@@ -899,17 +899,12 @@ err:
 int PEM_read_bio_ex(BIO *bp, char **name_out, char **header,
                     unsigned char **data, long *len_out, unsigned int flags)
 {
-    EVP_ENCODE_CTX *ctx = EVP_ENCODE_CTX_new();
+    EVP_ENCODE_CTX *ctx = NULL;
     const BIO_METHOD *bmeth;
     BIO *headerB = NULL, *dataB = NULL;
     char *name = NULL;
     int len, taillen, headerlen, ret = 0;
     BUF_MEM * buf_mem;
-
-    if (ctx == NULL) {
-        PEMerr(PEM_F_PEM_READ_BIO_EX, ERR_R_MALLOC_FAILURE);
-        return 0;
-    }
 
     *len_out = 0;
     *name_out = *header = NULL;
@@ -933,9 +928,20 @@ int PEM_read_bio_ex(BIO *bp, char **name_out, char **header,
     if (!get_header_and_data(bp, &headerB, &dataB, name, flags))
         goto end;
 
-    EVP_DecodeInit(ctx);
     BIO_get_mem_ptr(dataB, &buf_mem);
     len = buf_mem->length;
+
+    /* There was no data in the PEM file */
+    if (len == 0)
+        goto end;
+
+    ctx = EVP_ENCODE_CTX_new();
+    if (ctx == NULL) {
+        PEMerr(PEM_F_PEM_READ_BIO_EX, ERR_R_MALLOC_FAILURE);
+        goto end;
+    }
+
+    EVP_DecodeInit(ctx);
     if (EVP_DecodeUpdate(ctx, (unsigned char*)buf_mem->data, &len,
                          (unsigned char*)buf_mem->data, len) < 0
             || EVP_DecodeFinal(ctx, (unsigned char*)&(buf_mem->data[len]),
@@ -946,15 +952,14 @@ int PEM_read_bio_ex(BIO *bp, char **name_out, char **header,
     len += taillen;
     buf_mem->length = len;
 
-    /* There was no data in the PEM file; avoid malloc(0). */
-    if (len == 0)
-        goto end;
     headerlen = BIO_get_mem_data(headerB, NULL);
     *header = pem_malloc(headerlen + 1, flags);
     *data = pem_malloc(len, flags);
     if (*header == NULL || *data == NULL) {
         pem_free(*header, flags, 0);
+        *header = NULL;
         pem_free(*data, flags, 0);
+        *data = NULL;
         goto end;
     }
     BIO_read(headerB, *header, headerlen);
