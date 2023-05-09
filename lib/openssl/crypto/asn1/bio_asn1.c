@@ -1,5 +1,5 @@
 /*
- * Copyright 2006-2018 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 2006-2021 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the OpenSSL license (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -138,6 +138,11 @@ static int asn1_bio_free(BIO *b)
     if (ctx == NULL)
         return 0;
 
+    if (ctx->prefix_free != NULL)
+        ctx->prefix_free(b, &ctx->ex_buf, &ctx->ex_len, &ctx->ex_arg);
+    if (ctx->suffix_free != NULL)
+        ctx->suffix_free(b, &ctx->ex_buf, &ctx->ex_len, &ctx->ex_arg);
+
     OPENSSL_free(ctx->buf);
     OPENSSL_free(ctx);
     BIO_set_data(b, NULL);
@@ -167,7 +172,7 @@ static int asn1_bio_write(BIO *b, const char *in, int inl)
         case ASN1_STATE_START:
             if (!asn1_bio_setup_ex(b, ctx, ctx->prefix,
                                    ASN1_STATE_PRE_COPY, ASN1_STATE_HEADER))
-                return 0;
+                return -1;
             break;
 
             /* Copy any pre data first */
@@ -184,7 +189,7 @@ static int asn1_bio_write(BIO *b, const char *in, int inl)
         case ASN1_STATE_HEADER:
             ctx->buflen = ASN1_object_size(0, inl, ctx->asn1_tag) - inl;
             if (!ossl_assert(ctx->buflen <= ctx->bufsize))
-                return 0;
+                return -1;
             p = ctx->buf;
             ASN1_put_object(&p, 0, inl, ctx->asn1_tag, ctx->asn1_class);
             ctx->copylen = inl;

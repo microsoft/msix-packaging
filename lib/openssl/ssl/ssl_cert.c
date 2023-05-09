@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2019 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2022 The OpenSSL Project Authors. All Rights Reserved.
  * Copyright (c) 2002, Oracle and/or its affiliates. All rights reserved
  *
  * Licensed under the OpenSSL license (the "License").  You may not use
@@ -876,18 +876,42 @@ int ssl_cert_set_cert_store(CERT *c, X509_STORE *store, int chain, int ref)
     return 1;
 }
 
-static int ssl_security_default_callback(const SSL *s, const SSL_CTX *ctx,
-                                         int op, int bits, int nid, void *other,
-                                         void *ex)
+int ssl_cert_get_cert_store(CERT *c, X509_STORE **pstore, int chain)
 {
-    int level, minbits;
-    static const int minbits_table[5] = { 80, 112, 128, 192, 256 };
-    if (ctx)
+    *pstore = (chain ? c->chain_store : c->verify_store);
+    return 1;
+}
+
+int ssl_get_security_level_bits(const SSL *s, const SSL_CTX *ctx, int *levelp)
+{
+    int level;
+    static const int minbits_table[5 + 1] = { 0, 80, 112, 128, 192, 256 };
+
+    if (ctx != NULL)
         level = SSL_CTX_get_security_level(ctx);
     else
         level = SSL_get_security_level(s);
 
-    if (level <= 0) {
+    if (level > 5)
+        level = 5;
+    else if (level < 0)
+        level = 0;
+
+    if (levelp != NULL)
+        *levelp = level;
+
+    return minbits_table[level];
+}
+
+static int ssl_security_default_callback(const SSL *s, const SSL_CTX *ctx,
+                                         int op, int bits, int nid, void *other,
+                                         void *ex)
+{
+    int level, minbits, pfs_mask;
+
+    minbits = ssl_get_security_level_bits(s, ctx, &level);
+
+    if (level == 0) {
         /*
          * No EDH keys weaker than 1024-bits even at level 0, otherwise,
          * anything goes.
@@ -896,9 +920,6 @@ static int ssl_security_default_callback(const SSL *s, const SSL_CTX *ctx,
             return 0;
         return 1;
     }
-    if (level > 5)
-        level = 5;
-    minbits = minbits_table[level - 1];
     switch (op) {
     case SSL_SECOP_CIPHER_SUPPORTED:
     case SSL_SECOP_CIPHER_SHARED:
@@ -921,8 +942,9 @@ static int ssl_security_default_callback(const SSL *s, const SSL_CTX *ctx,
             if (level >= 2 && c->algorithm_enc == SSL_RC4)
                 return 0;
             /* Level 3: forward secure ciphersuites only */
+            pfs_mask = SSL_kDHE | SSL_kECDHE | SSL_kDHEPSK | SSL_kECDHEPSK;
             if (level >= 3 && c->min_tls != TLS1_3_VERSION &&
-                               !(c->algorithm_mkey & (SSL_kEDH | SSL_kEECDH)))
+                               !(c->algorithm_mkey & pfs_mask))
                 return 0;
             break;
         }

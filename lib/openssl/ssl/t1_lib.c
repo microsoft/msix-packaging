@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2020 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2022 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the OpenSSL license (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -2369,22 +2369,20 @@ int tls1_check_chain(SSL *s, X509 *x, EVP_PKEY *pk, STACK_OF(X509) *chain,
 
         ca_dn = s->s3->tmp.peer_ca_names;
 
-        if (!sk_X509_NAME_num(ca_dn))
+        if (ca_dn == NULL
+            || sk_X509_NAME_num(ca_dn) == 0
+            || ssl_check_ca_name(ca_dn, x))
             rv |= CERT_PKEY_ISSUER_NAME;
-
-        if (!(rv & CERT_PKEY_ISSUER_NAME)) {
-            if (ssl_check_ca_name(ca_dn, x))
-                rv |= CERT_PKEY_ISSUER_NAME;
-        }
-        if (!(rv & CERT_PKEY_ISSUER_NAME)) {
+        else
             for (i = 0; i < sk_X509_num(chain); i++) {
                 X509 *xtmp = sk_X509_value(chain, i);
+
                 if (ssl_check_ca_name(ca_dn, xtmp)) {
                     rv |= CERT_PKEY_ISSUER_NAME;
                     break;
                 }
             }
-        }
+
         if (!check_flags && !(rv & CERT_PKEY_ISSUER_NAME))
             goto end;
     } else
@@ -2441,7 +2439,8 @@ DH *ssl_get_auto_dh(SSL *s)
 {
     DH *dhp = NULL;
     BIGNUM *p = NULL, *g = NULL;
-    int dh_secbits = 80;
+    int dh_secbits = 80, sec_level_bits;
+
     if (s->cert->dh_tmp_auto != 2) {
         if (s->s3->tmp.new_cipher->algorithm_auth & (SSL_aNULL | SSL_aPSK)) {
             if (s->s3->tmp.new_cipher->strength_bits == 256)
@@ -2464,6 +2463,12 @@ DH *ssl_get_auto_dh(SSL *s)
         BN_free(g);
         return NULL;
     }
+
+    /* Do not pick a prime that is too weak for the current security level */
+    sec_level_bits = ssl_get_security_level_bits(s, NULL, NULL);
+    if (dh_secbits < sec_level_bits)
+        dh_secbits = sec_level_bits;
+
     if (dh_secbits >= 192)
         p = BN_get_rfc3526_prime_8192(NULL);
     else if (dh_secbits >= 152)
@@ -2548,6 +2553,8 @@ int ssl_security_cert_chain(SSL *s, STACK_OF(X509) *sk, X509 *x, int vfy)
     int rv, start_idx, i;
     if (x == NULL) {
         x = sk_X509_value(sk, 0);
+        if (x == NULL)
+            return ERR_R_INTERNAL_ERROR;
         start_idx = 1;
     } else
         start_idx = 0;

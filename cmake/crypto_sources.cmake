@@ -153,6 +153,7 @@ list(APPEND XSRC
     ${CRYPTO}/bn/bn_sqr.c
     ${CRYPTO}/bn/bn_sqrt.c
     ${CRYPTO}/bn/bn_word.c
+    ${CRYPTO}/bn/rsa_sup_mul.c
 
     ${CRYPTO}/buffer/buf_err.c
     ${CRYPTO}/buffer/buffer.c
