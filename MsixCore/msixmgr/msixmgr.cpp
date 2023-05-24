@@ -173,13 +173,18 @@ void OutputUnpackFailures(
             {
                 if ((cli.GetFileType() == WVDFileType::VHD || cli.GetFileType() == WVDFileType::VHDX) && cli.GetVHDSize() == 0)
                 {
-                    std::wcout << L"The tool encountered a file write error. Since VHDSize parameter was not specified, the tool tried with default VHDSize of 4 times the size of the package and operation got failed. Please try again by specifying the Size of the VHD (larger than 4 times) using the -vhdSize parameter, as file write errors may be caused by insufficient disk space." << std::endl;
-                    errorDesc += L" The tool encountered a file write error. Since VHDSize parameter was not specified, the tool tried with default VHDSize of 4 times the size of the package and operation got failed. Please try again by specifying the Size of the VHD (larger than 4 times) using the -vhdSize parameter, as file write errors may be caused by insufficient disk space.";
+                    std::wcout << L"File write error encountered. This may be caused by insufficient disk space. The tool tried with 4 times package size as VHD(X) size. Please try again with -vhdSize parameter greater than 4 times the package size in MB." << std::endl;
+                    errorDesc += L" File write error encountered. This may be caused by insufficient disk space. The tool tried with 4 times package size as VHD(X) size. Please try again with -vhdSize parameter greater than 4 times the package size in MB.";
+                }
+                else if (cli.GetFileType() == WVDFileType::VHD || cli.GetFileType() == WVDFileType::VHDX)
+                {
+                    std::wcout << L"File write error encountered. This may be caused by insufficient disk space. Please try again with a larger VHD(X) size." << std::endl;
+                    errorDesc += L" File write error encountered. This may be caused by insufficient disk space. Please try again with a larger VHD(X) size.";
                 }
                 else
                 {
-                    std::wcout << L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space." << std::endl;
-                    errorDesc += L" The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space.";
+                    std::wcout << L"File write error encountered." << std::endl;
+                    errorDesc += L" File write error encountered.";
                 }
             }
             else if (hr == E_INVALIDARG)
