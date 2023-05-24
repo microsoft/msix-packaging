@@ -153,14 +153,14 @@ void OutputUnpackFailures(
         std::wcout << "[WARNING] The following packages from " << packageSource << " failed to get unpacked. Please try again: " << std::endl;
         std::wcout << std::endl;
 
-        errorDesc += std::to_wstring(failedPackages.size()) + L" Packages Failed.";
+        errorDesc += L" " + std::to_wstring(failedPackages.size()) + L" Packages Failed.";
 
         for (int i = 0; i < failedPackages.size(); i++)
         {
             HRESULT hr = failedPackagesErrors.at(i);
 
             std::wstring errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hr);
-            errorDesc += L" (" + std::to_wstring(i) + L") " + L"HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hr);
+            errorDesc += L" (" + std::to_wstring(i+1) + L") " + L"HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hr);
 
             std::wcout << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << failedPackages.at(i) << std::endl;
 
