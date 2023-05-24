@@ -687,8 +687,6 @@ int main(int argc, char * argv[])
                     QueryPerformanceCounter(&msixMgrLoad_EndCounter);
                     workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
                     msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", errorDesc.c_str());
-
-                    return failedPackagesErrors.empty() ? S_OK : failedPackagesErrors.back();
                 }
                  
             }
@@ -816,8 +814,6 @@ int main(int argc, char * argv[])
                         QueryPerformanceCounter(&msixMgrLoad_EndCounter);
                         workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
                         msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", errorDesc.c_str());
-
-                        return failedPackagesErrors.empty() ? S_OK : failedPackagesErrors.back();
                     }
                 }
                 else
@@ -854,8 +850,6 @@ int main(int argc, char * argv[])
                     QueryPerformanceCounter(&msixMgrLoad_EndCounter);
                     workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
                     msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", errorDesc.c_str());
-
-                    return failedPackagesErrors.empty() ? S_OK : failedPackagesErrors.back();
                 }
             }
             return S_OK;
