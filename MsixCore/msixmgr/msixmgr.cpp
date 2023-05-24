@@ -153,37 +153,39 @@ void OutputUnpackFailures(
         std::wcout << "[WARNING] The following packages from " << packageSource << " failed to get unpacked. Please try again: " << std::endl;
         std::wcout << std::endl;
 
+        errorDesc += std::to_wstring(failedPackages.size()) + L" Packages Failed.";
+
         for (int i = 0; i < failedPackages.size(); i++)
         {
             HRESULT hr = failedPackagesErrors.at(i);
 
             std::wstring errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hr);
-            errorDesc += L"HRESULT " + errorCode + L".HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hr);
+            errorDesc += L" (" + std::to_wstring(i) + L") " + L"HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hr);
 
             std::wcout << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << failedPackages.at(i) << std::endl;
 
             if (hr == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
             {
                 std::wcout << L"Please confirm that the certificate has been installed for this package" << std::endl;
-                errorDesc += L"Please confirm that the certificate has been installed for this package.";
+                errorDesc += L" Please confirm that the certificate has been installed for this package.";
             }
             else if (hr == static_cast<HRESULT>(MSIX::Error::FileWrite))
             {
                 if ((cli.GetFileType() == WVDFileType::VHD || cli.GetFileType() == WVDFileType::VHDX) && cli.GetVHDSize() == 0)
                 {
                     std::wcout << L"The tool encountered a file write error. Since VHDSize parameter was not specified, the tool tried with default VHDSize of 4 times the size of the package and operation got failed. Please try again by specifying the VHDSize (larger than 4 times), as file write errors may be caused by insufficient disk space." << std::endl;
-                    errorDesc += L"The tool encountered a file write error. Since VHDSize parameter was not specified, the tool tried with default VHDSize of 4 times the size of the package and operation got failed. Please try again by specifying the VHDSize (larger than 4 times), as file write errors may be caused by insufficient disk space.";
+                    errorDesc += L" The tool encountered a file write error. Since VHDSize parameter was not specified, the tool tried with default VHDSize of 4 times the size of the package and operation got failed. Please try again by specifying the VHDSize (larger than 4 times), as file write errors may be caused by insufficient disk space.";
                 }
                 else
                 {
                     std::wcout << L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space." << std::endl;
-                    errorDesc += L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space.";
+                    errorDesc += L" The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space.";
                 }
             }
             else if (hr == E_INVALIDARG)
             {
                 std::wcout << "Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
-                errorDesc += L"Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file.";
+                errorDesc += L" Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file.";
             }
 
             std::wcout << std::endl;
