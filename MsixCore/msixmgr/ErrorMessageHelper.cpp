@@ -4,6 +4,10 @@
 #include <afx.h>
 #include <string>
 
+// Purpose:
+// - This file contains the helper function for extracting the Error Description corresponding to
+//   the HRESULT code being thrown during a particular Workflow execution in MSIXMGR
+
 namespace ErrorMessageHelper
 {
     std::wstring GetErrorMessageFromHRESULT(
