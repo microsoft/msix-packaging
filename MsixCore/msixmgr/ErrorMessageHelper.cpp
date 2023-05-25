@@ -13,7 +13,6 @@ namespace ErrorMessageHelper
         std::wstring errorMessage;
         try
         {
-            throw ExceptionCollidedUnwind;
             // use FormatMessage to get a system-defined error message
             LPTSTR lpMsgBuf = NULL;
             DWORD dw = FormatMessage(
