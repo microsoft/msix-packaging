@@ -10,23 +10,10 @@ namespace ErrorMessageHelper
         HRESULT hresult)
     {
         CString strMessage;
-        WORD facility = HRESULT_FACILITY(hresult);
-        CComPtr<IErrorInfo> iei;
-        if (S_OK == GetErrorInfo(0, &iei) && iei) {
-            // get the error description from the IErrorInfo
-            BSTR bstr = NULL;
-            if (SUCCEEDED(iei->GetDescription(&bstr))) {
-                // append the description to our label
-                strMessage.Append(bstr);
-                // done with BSTR, do manual cleanup
-                SysFreeString(bstr);
-            }
-        }
-        else if (facility == FACILITY_ITF) {
-            // interface specific - no standard mapping available
-            strMessage.Append(_T("FACILITY_ITF - This error is interface specific."));
-        }
-        else {
+        std::wstring errorMessage;
+        try
+        {
+            throw ExceptionCollidedUnwind;
             // use FormatMessage to get a system-defined error message
             LPTSTR lpMsgBuf = NULL;
             DWORD dw = FormatMessage(
@@ -43,9 +30,13 @@ namespace ErrorMessageHelper
                 strMessage.Append(lpMsgBuf);
                 LocalFree(lpMsgBuf);
             }
+            errorMessage = strMessage.GetString();
+        }
+        catch (...)
+        {
+            errorMessage = L"Error Description could not be found";
         }
 
-        std::wstring errorMessage = strMessage.GetString();
         return errorMessage;
     }
 
