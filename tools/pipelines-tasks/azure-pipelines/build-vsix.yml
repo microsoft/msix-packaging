@@ -41,12 +41,22 @@ steps:
     extensionVisibility: public
     updateTasksVersion: true
 
-- task: AzureArtifacts.manifest-generator-task.manifest-generator-task.ManifestGeneratorTask@0
+# Generate and publish SBoM file
+# It is placed under a _manifest folder by default
+- task: ManifestGeneratorTask@0
   displayName: 'Generate Software Bill of Material (SBoM)'
   inputs:
       BuildDropPath: $(buildOutRoot)
+      BuildComponentPath: '$(tasksRoot)'
+      AdditionalComponentDetectorArgs: '--DirectoryExclusionList $(tasksRoot)\test'
       PackageName: 'MSIX Packaging Extension'
       PackageVersion: '$(major).$(minor).$(patch)'
+
+- task: DropValidatorTask@0
+  inputs:
+    BuildDropPath: $(buildOutRoot)
+    OutputPath: $(buildOutRoot)/_manifest/sbom_validation.json
+    ValidateSignature: true
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish SBoM'
