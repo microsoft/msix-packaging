@@ -10,12 +10,12 @@
   "author": "Microsoft Corporation",
   "license": "MIT",
   "dependencies": {
-    "azure-devops-node-api": "^10.2.2",
-    "azure-pipelines-task-lib": "^3.3.1",
+    "azure-devops-node-api": "^12.0.0",
+    "azure-pipelines-task-lib": "^4.3.1",
     "azure-pipelines-tasks-msbuildhelpers": "^3.210.1",
     "common": "file:../common/msix-tasks-helpers-1.0.0.tgz"
   },
   "devDependencies": {
-    "@types/node": "^14.14.39"
+    "@types/node": "^20.2.5"
   }
 }
