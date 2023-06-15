@@ -1,0 +1,73 @@
+id: 
+name: GitOps.PullRequestIssueManagement
+description: GitOps.PullRequestIssueManagement primitive
+owner: 
+resource: repository
+disabled: false
+where: 
+configuration:
+  resourceManagementConfiguration:
+    scheduledSearches:
+    - description: 
+      frequencies:
+      - hourly:
+          hour: 12
+      filters:
+      - isIssue
+      - isOpen
+      - hasLabel:
+          label: Needs-Author Feedback
+      - noActivitySince:
+          days: 7
+      - isNotLabeledWith:
+          label: No Recent Activity
+      actions:
+      - addLabel:
+          label: No Recent Activity
+    eventResponderTasks:
+    - if:
+      - payloadType: Issues
+      - or:
+        - isAction:
+            action: Opened
+        - isAction:
+            action: Reopened
+      then:
+      - addLabel:
+          label: Needs-Triage
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - isAction:
+          action: Created
+      - isActivitySender:
+          issueAuthor: True
+      - hasLabel:
+          label: Needs-Author Feedback
+      then:
+      - addLabel:
+          label: Needs-Attention
+      - removeLabel:
+          label: Needs-Author Feedback
+      description: 
+    - if:
+      - payloadType: Issue_Comment
+      - hasLabel:
+          label: No Recent Activity
+      then:
+      - removeLabel:
+          label: No Recent Activity
+      description: 
+    - if:
+      - payloadType: Issues
+      - not:
+          isAction:
+            action: Closed
+      - hasLabel:
+          label: No Recent Activity
+      then:
+      - removeLabel:
+          label: No Recent Activity
+      description: 
+onFailure: 
+onSuccess: 
