@@ -42,8 +42,9 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
@@ -230,6 +231,7 @@ del "$(OutDir)msixmgr_LN.exe"
     <ClInclude Include="ApplyACLsProvider.hpp" />
     <ClInclude Include="CIMProvider.hpp" />
     <ClInclude Include="CommandLineInterface.hpp" />
+    <ClInclude Include="ErrorMessageHelper.hpp" />
     <ClInclude Include="InstallUI.hpp" />
     <ClInclude Include="msixmgrTelemetry.hpp" />
     <ClInclude Include="msixmgrTraceLogging.hpp" />
@@ -242,6 +244,7 @@ del "$(OutDir)msixmgr_LN.exe"
   <ItemGroup>
     <ClCompile Include="ApplyACLsProvider.cpp" />
     <ClCompile Include="CIMProvider.cpp" />
+    <ClCompile Include="ErrorMessageHelper.cpp" />
     <ClCompile Include="InstallUI.cpp" />
     <ClCompile Include="CommandLineInterface.cpp" />
     <ClCompile Include="msixmgrTelemetry.cpp" />
