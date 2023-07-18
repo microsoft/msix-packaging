@@ -12,13 +12,13 @@
   "dependencies": {
     "@types/xml2js": "^0.4.8",
     "adm-zip": "^0.5.5",
-    "azure-devops-node-api": "^10.2.2",
-    "azure-pipelines-task-lib": "^3.3.1",
-    "xml2js": "^0.4.23"
+    "azure-devops-node-api": "^12.0.0",
+    "azure-pipelines-task-lib": "^4.3.1",
+    "xml2js": "^0.6.0"
   },
   "devDependencies": {
-    "@types/mocha": "^7.0.2",
-    "@types/node": "^14.14.39",
+    "@types/mocha": "^10.0.1",
+    "@types/node": "^20.2.5",
     "@types/q": "^1.5.4",
     "sync-request": "^6.1.0"
   }

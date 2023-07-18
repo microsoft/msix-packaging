@@ -1,5 +1,5 @@
 /*
- * Copyright 1995-2020 The OpenSSL Project Authors. All Rights Reserved.
+ * Copyright 1995-2022 The OpenSSL Project Authors. All Rights Reserved.
  *
  * Licensed under the OpenSSL license (the "License").  You may not use
  * this file except in compliance with the License.  You can obtain a copy
@@ -405,7 +405,7 @@ int ssl3_get_record(SSL *s)
             more = thisrr->length;
         }
         if (more > 0) {
-            /* now s->packet_length == SSL3_RT_HEADER_LENGTH */
+            /* now s->rlayer.packet_length == SSL3_RT_HEADER_LENGTH */
 
             rret = ssl3_read_n(s, more, more, 1, 0, &n);
             if (rret <= 0)
@@ -416,9 +416,9 @@ int ssl3_get_record(SSL *s)
         RECORD_LAYER_set_rstate(&s->rlayer, SSL_ST_READ_HEADER);
 
         /*
-         * At this point, s->packet_length == SSL3_RT_HEADER_LENGTH
-         * + thisrr->length, or s->packet_length == SSL2_RT_HEADER_LENGTH
-         * + thisrr->length and we have that many bytes in s->packet
+         * At this point, s->rlayer.packet_length == SSL3_RT_HEADER_LENGTH
+         * + thisrr->length, or s->rlayer.packet_length == SSL2_RT_HEADER_LENGTH
+         * + thisrr->length and we have that many bytes in s->rlayer.packet
          */
         if (thisrr->rec_version == SSL2_VERSION) {
             thisrr->input =
@@ -429,11 +429,11 @@ int ssl3_get_record(SSL *s)
         }
 
         /*
-         * ok, we can now read from 's->packet' data into 'thisrr' thisrr->input
-         * points at thisrr->length bytes, which need to be copied into
-         * thisrr->data by either the decryption or by the decompression When
-         * the data is 'copied' into the thisrr->data buffer, thisrr->input will
-         * be pointed at the new buffer
+         * ok, we can now read from 's->rlayer.packet' data into 'thisrr'.
+         * thisrr->input points at thisrr->length bytes, which need to be copied
+         * into thisrr->data by either the decryption or by the decompression.
+         * When the data is 'copied' into the thisrr->data buffer,
+         * thisrr->input will be updated to point at the new buffer
          */
 
         /*
@@ -1039,7 +1039,7 @@ int tls1_enc(SSL *s, SSL3_RECORD *recs, size_t n_recs, int sending)
 
                 if (SSL_IS_DTLS(s)) {
                     /* DTLS does not support pipelining */
-                    unsigned char dtlsseq[9], *p = dtlsseq;
+                    unsigned char dtlsseq[8], *p = dtlsseq;
 
                     s2n(sending ? DTLS_RECORD_LAYER_get_w_epoch(&s->rlayer) :
                         DTLS_RECORD_LAYER_get_r_epoch(&s->rlayer), p);
@@ -1532,6 +1532,7 @@ int ssl3_cbc_copy_mac(unsigned char *out,
 #if defined(CBC_MAC_ROTATE_IN_PLACE)
     unsigned char rotated_mac_buf[64 + EVP_MAX_MD_SIZE];
     unsigned char *rotated_mac;
+    char aux1, aux2, aux3, mask;
 #else
     unsigned char rotated_mac[EVP_MAX_MD_SIZE];
 #endif
@@ -1581,9 +1582,16 @@ int ssl3_cbc_copy_mac(unsigned char *out,
 #if defined(CBC_MAC_ROTATE_IN_PLACE)
     j = 0;
     for (i = 0; i < md_size; i++) {
-        /* in case cache-line is 32 bytes, touch second line */
-        ((volatile unsigned char *)rotated_mac)[rotate_offset ^ 32];
-        out[j++] = rotated_mac[rotate_offset++];
+        /*
+         * in case cache-line is 32 bytes,
+         * load from both lines and select appropriately
+         */
+        aux1 = rotated_mac[rotate_offset & ~32];
+        aux2 = rotated_mac[rotate_offset | 32];
+        mask = constant_time_eq_8(rotate_offset & ~32, rotate_offset);
+        aux3 = constant_time_select_8(mask, aux1, aux2);
+        out[j++] = aux3;
+        rotate_offset++;
         rotate_offset &= constant_time_lt_s(rotate_offset, md_size);
     }
 #else
@@ -1616,16 +1624,16 @@ int dtls1_process_record(SSL *s, DTLS1_BITMAP *bitmap)
     sess = s->session;
 
     /*
-     * At this point, s->packet_length == SSL3_RT_HEADER_LNGTH + rr->length,
-     * and we have that many bytes in s->packet
+     * At this point, s->rlayer.packet_length == SSL3_RT_HEADER_LNGTH + rr->length,
+     * and we have that many bytes in s->rlayer.packet
      */
     rr->input = &(RECORD_LAYER_get_packet(&s->rlayer)[DTLS1_RT_HEADER_LENGTH]);
 
     /*
-     * ok, we can now read from 's->packet' data into 'rr' rr->input points
-     * at rr->length bytes, which need to be copied into rr->data by either
-     * the decryption or by the decompression When the data is 'copied' into
-     * the rr->data buffer, rr->input will be pointed at the new buffer
+     * ok, we can now read from 's->rlayer.packet' data into 'rr'. rr->input
+     * points at rr->length bytes, which need to be copied into rr->data by
+     * either the decryption or by the decompression. When the data is 'copied'
+     * into the rr->data buffer, rr->input will be pointed at the new buffer
      */
 
     /*
@@ -1947,7 +1955,7 @@ int dtls1_get_record(SSL *s)
 
     if (rr->length >
         RECORD_LAYER_get_packet_length(&s->rlayer) - DTLS1_RT_HEADER_LENGTH) {
-        /* now s->packet_length == DTLS1_RT_HEADER_LENGTH */
+        /* now s->rlayer.packet_length == DTLS1_RT_HEADER_LENGTH */
         more = rr->length;
         rret = ssl3_read_n(s, more, more, 1, 1, &n);
         /* this packet contained a partial record, dump it */
@@ -1963,7 +1971,7 @@ int dtls1_get_record(SSL *s)
         }
 
         /*
-         * now n == rr->length, and s->packet_length ==
+         * now n == rr->length, and s->rlayer.packet_length ==
          * DTLS1_RT_HEADER_LENGTH + rr->length
          */
     }
