@@ -25,6 +25,7 @@
 #include "MsixErrors.hpp"
 #include <filesystem>
 #include "msixmgrTraceLogging.hpp"
+#include "ErrorMessageHelper.hpp"
 
 #include <msixmgrActions.hpp>
 using namespace std;
@@ -128,7 +129,9 @@ void OutputUnpackFailures(
     _In_ std::wstring packageSource,
     _In_ std::vector<std::wstring> skippedFiles,
     _In_ std::vector<std::wstring> failedPackages,
-    _In_ std::vector<HRESULT> failedPackagesErrors)
+    _In_ std::vector<HRESULT> failedPackagesErrors,
+    _In_ CommandLineInterface cli,
+    _In_ std::wstring &errorDesc)
 {
     if (!skippedFiles.empty())
     {
@@ -150,22 +153,44 @@ void OutputUnpackFailures(
         std::wcout << "[WARNING] The following packages from " << packageSource << " failed to get unpacked. Please try again: " << std::endl;
         std::wcout << std::endl;
 
+        errorDesc += L" " + std::to_wstring(failedPackages.size()) + L" Packages Failed.";
+
         for (int i = 0; i < failedPackages.size(); i++)
         {
             HRESULT hr = failedPackagesErrors.at(i);
 
+            std::wstring errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hr);
+            errorDesc += L" (" + std::to_wstring(i+1) + L") " + L"HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hr);
+
             std::wcout << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << failedPackages.at(i) << std::endl;
+
             if (hr == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
             {
                 std::wcout << L"Please confirm that the certificate has been installed for this package" << std::endl;
+                errorDesc += L" Please confirm that the certificate has been installed for this package.";
             }
             else if (hr == static_cast<HRESULT>(MSIX::Error::FileWrite))
             {
-                std::wcout << L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space." << std::endl;
+                if ((cli.GetFileType() == WVDFileType::VHD || cli.GetFileType() == WVDFileType::VHDX) && cli.GetVHDSize() == 0)
+                {
+                    std::wcout << L"File write error encountered. This may be caused by insufficient disk space. The tool tried with 4 times package size as VHD(X) size. Please try again with -vhdSize parameter greater than 4 times the package size in MB." << std::endl;
+                    errorDesc += L" File write error encountered. This may be caused by insufficient disk space. The tool tried with 4 times package size as VHD(X) size. Please try again with -vhdSize parameter greater than 4 times the package size in MB.";
+                }
+                else if (cli.GetFileType() == WVDFileType::VHD || cli.GetFileType() == WVDFileType::VHDX)
+                {
+                    std::wcout << L"File write error encountered. This may be caused by insufficient disk space. Please try again with a larger VHD(X) size." << std::endl;
+                    errorDesc += L" File write error encountered. This may be caused by insufficient disk space. Please try again with a larger VHD(X) size.";
+                }
+                else
+                {
+                    std::wcout << L"File write error encountered." << std::endl;
+                    errorDesc += L" File write error encountered.";
+                }
             }
             else if (hr == E_INVALIDARG)
             {
                 std::wcout << "Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
+                errorDesc += L" Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file.";
             }
 
             std::wcout << std::endl;
@@ -229,7 +254,7 @@ int main(int argc, char * argv[])
             if (FAILED(hrCreatePackageManager))
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreatePackageManager);
-                errorDesc = L"Failed creation of Package Manager Object. HRESULT " + errorCode + L".";
+                errorDesc = L"Failed creation of Package Manager Object. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrCreatePackageManager);
 
 
                 // Telemetry : Workflow Log
@@ -259,9 +284,12 @@ int main(int argc, char * argv[])
                 if (FAILED(hrAddPackage))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrAddPackage);
-                    errorDesc = L"Failed Add Package Operation. HRESULT " + errorCode + L".";
+                    errorDesc = L"Failed Add Package Operation. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrAddPackage);
 
                     std::wcout << GetStringResource(IDS_STRING_FAILED_REQUEST) << " " << std::hex << hrAddPackage << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(hrAddPackage);
+                    std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
                     QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -295,7 +323,7 @@ int main(int argc, char * argv[])
                             hrHRESULTFromWin32 = HRESULT_FROM_WIN32(GetLastError());
 
                             errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrHRESULTFromWin32);
-                            errorDesc = L"Failed Add Package Operation. HRESULT " + errorCode + L".";
+                            errorDesc = L"Failed Add Package Operation. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrHRESULTFromWin32);
 
                             // Telemetry : Workflow Log
                             QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -331,7 +359,7 @@ int main(int argc, char * argv[])
                     if (FAILED(hrShowUI))
                     {
                         errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrShowUI);
-                        errorDesc = L"Failed Show UI Operation for Add Package Operation. HRESULT " + errorCode + L".";
+                        errorDesc = L"Failed Show UI Operation for Add Package Operation. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrShowUI);
 
                         // Telemetry : Workflow Log
                         QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -376,7 +404,7 @@ int main(int argc, char * argv[])
             if (FAILED(hrCreatePackageManager))
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreatePackageManager);
-                errorDesc = L"Failed creation of Package Manager Object. HRESULT " + errorCode + L".";
+                errorDesc = L"Failed creation of Package Manager Object. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrCreatePackageManager);
 
                 // Telemetry : Workflow Log
                 QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -391,9 +419,12 @@ int main(int argc, char * argv[])
             if (FAILED(hrRemovePackage))
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrRemovePackage);
-                errorDesc = L"Failed Remove Package Operation. HRESULT " + errorCode + L".";
+                errorDesc = L"Failed Remove Package Operation. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrRemovePackage);
 
                 std::wcout << GetStringResource(IDS_STRING_FAILED_REQUEST) << " " << std::hex << hrRemovePackage << std::endl;
+                std::wcout << std::endl;
+                std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(hrRemovePackage);
+                std::wcout << std::endl;
 
                 // Telemetry : Workflow Log
                 QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -422,7 +453,7 @@ int main(int argc, char * argv[])
             if (FAILED(hrCreatePackageManager))
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreatePackageManager);
-                errorDesc = L"Failed creation of Package Manager Object. HRESULT " + errorCode + L".";
+                errorDesc = L"Failed creation of Package Manager Object. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrCreatePackageManager);
 
                 // Telemetry : Workflow Log
                 QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -439,7 +470,7 @@ int main(int argc, char * argv[])
             if (FAILED(hrFindPackage))
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrFindPackage);
-                errorDesc = L"Failed Find Package Operation. HRESULT " + errorCode + L".";
+                errorDesc = L"Failed Find Package Operation. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrFindPackage);
 
                 // Telemetry : Workflow Log
                 QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -494,10 +525,12 @@ int main(int argc, char * argv[])
                 if (rootDirectory.empty() || fileType == WVDFileType::NotSpecified)
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
-                    errorDesc = L"Creating a file with the -create option requires both a -rootDirectory and -fileType. HRESULT " + errorCode + L".";
+                    errorDesc = L"Creating a file with the -create option requires both a -rootDirectory and -fileType. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
 
                     std::wcout << std::endl;
-                    std::wcout << "Creating a file with the -create option requires both a -rootDirectory and -fileType" << std::endl;
+                    std::wcout << "Creating a file with the -create option requires both a -rootDirectory and -fileType." << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
                     std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
@@ -510,10 +543,12 @@ int main(int argc, char * argv[])
                 if (!EndsWith(unpackDestination, L".cim"))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
-                    errorDesc = L"Invalid CIM file name. File name must have .cim file extension. HRESULT " + errorCode + L".";
+                    errorDesc = L"Invalid CIM file name. File name must have .cim file extension. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
 
                     std::wcout << std::endl;
-                    std::wcout << "Invalid CIM file name. File name must have .cim file extension" << std::endl;
+                    std::wcout << "Invalid CIM file name. File name must have .cim file extension." << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
                     std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
@@ -533,7 +568,7 @@ int main(int argc, char * argv[])
                 if (FAILED(hrCreateGUIDString))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreateGUIDString);
-                    errorDesc = L"Failed UniqueGuid creation for tempDirPathString for CIM file. HRESULT " + errorCode + L".";
+                    errorDesc = L"Failed UniqueGuid creation for tempDirPathString for CIM file. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrCreateGUIDString);
 
                     // Telemetry : Workflow Log
                     QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -553,11 +588,13 @@ int main(int argc, char * argv[])
                 if (!createTempDirResult)
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_UNEXPECTED);
-                    errorDesc = L"Failed to create temp directory. This may occur when the directory path already exists. Please try again. HRESULT " + errorCode + L".";
+                    errorDesc = L"Failed to create temp directory. This may occur when the directory path already exists. Please try again. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(E_UNEXPECTED);
 
                     std::wcout << std::endl;
                     std::wcout << "Failed to create temp directory " << tempDirPathString << std::endl;
                     std::wcout << "This may occur when the directory path already exists. Please try again."  << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(E_UNEXPECTED);
                     std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
@@ -570,7 +607,7 @@ int main(int argc, char * argv[])
                 if (createDirectoryErrorCode.value() != 0)
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_UNEXPECTED);
-                    errorDesc = L"Creation of temp directory failed with error: " + std::to_wstring(createDirectoryErrorCode.value()) + L". Error Message: " + utf8_to_utf16(createDirectoryErrorCode.message()) + L". Please try again. HRESULT " + errorCode + L".";
+                    errorDesc = L"Creation of temp directory failed with error: " + std::to_wstring(createDirectoryErrorCode.value()) + L". Error Message: " + utf8_to_utf16(createDirectoryErrorCode.message()) + L". Please try again. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(E_UNEXPECTED);
 
                     // Again, we expect that the creation of the temp directory will fail very rarely. Output the exception
                     // and have the user try again.
@@ -578,6 +615,8 @@ int main(int argc, char * argv[])
                     std::wcout << "Creation of temp directory " << tempDirPathString << " failed with error: " << createDirectoryErrorCode.value() << std::endl;
                     std::cout << "Error message: " << createDirectoryErrorCode.message() << std::endl;
                     std::wcout << "Please try again." << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(E_UNEXPECTED);
                     std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
@@ -600,7 +639,7 @@ int main(int argc, char * argv[])
                 if (FAILED(hrUnpackToTempDir))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnpackToTempDir);
-                    errorDesc = L"Failed to Unpack in Temp Directory for CIM flow. HRESULT " + errorCode + L".";
+                    errorDesc = L"Failed to Unpack in Temp Directory for CIM flow. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrUnpackToTempDir);
 
                     // Telemetry : Workflow Log
                     QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -626,10 +665,12 @@ int main(int argc, char * argv[])
                 if (FAILED(hrCreateCIM))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreateCIM);
-                    errorDesc = L"Creating the CIM file failed. HRESULT " + errorCode + L".";
+                    errorDesc = L"Creating the CIM file failed. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrCreateCIM);
 
                     std::wcout << std::endl;
                     std::wcout << "Creating the CIM file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateCIM << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(hrCreateCIM);
                     std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
@@ -645,13 +686,14 @@ int main(int argc, char * argv[])
                     std::wcout << "Successfully created the CIM file: " << unpackDestination << std::endl;
                     std::wcout << std::endl;
 
-                    OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                    OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors, cli, errorDesc);
 
                     // Telemetry : Workflow Log
                     QueryPerformanceCounter(&msixMgrLoad_EndCounter);
                     workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
-                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
 
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", errorDesc.c_str());
+                  
                     return failedPackagesErrors.size() != 0 ? failedPackagesErrors.back() : S_OK;
                 }
                  
@@ -664,10 +706,12 @@ int main(int argc, char * argv[])
                     if (!(EndsWith(unpackDestination, L".vhd") || (EndsWith(unpackDestination, L".vhdx"))))
                     {
                         errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
-                        errorDesc = L"Invalid VHD file name. File name must have .vhd or .vhdx file extension. HRESULT " + errorCode + L".";
+                        errorDesc = L"Invalid VHD file name. File name must have .vhd or .vhdx file extension. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
 
                         std::wcout << std::endl;
-                        std::wcout << "Invalid VHD file name. File name must have .vhd or .vhdx file extension" << std::endl;
+                        std::wcout << "Invalid VHD file name. File name must have .vhd or .vhdx file extension." << std::endl;
+                        std::wcout << std::endl;
+                        std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
                         std::wcout << std::endl;
 
                         // Telemetry : Workflow Log
@@ -692,10 +736,13 @@ int main(int argc, char * argv[])
                         if (FAILED(hrCreateVHD))
                         {
                             errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrCreateVHD);
-                            errorDesc = L"Creation of VHD(X) file failed. HRESULT " + errorCode + L".";
+                            errorDesc = L"Creation of VHD(X) file failed. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrCreateVHD);
 
                             std::wcout << std::endl;
                             std::wcout << "Creating the VHD(X) file  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
+                            std::wcout << std::endl;
+                            std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(hrCreateVHD);
+                            std::wcout << std::endl;
 
                             if (hrCreateVHD != HRESULT_FROM_WIN32(ERROR_FILE_EXISTS))
                             {
@@ -741,7 +788,7 @@ int main(int argc, char * argv[])
                         if (FAILED(hrUnpackToVHD))
                         {
                             errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnpackToVHD);
-                            errorDesc = L"Failed unpack to the mounted vhd(x). HRESULT " + errorCode + L".";
+                            errorDesc = L"Failed unpack to the mounted vhd(x). HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrUnpackToVHD);
 
                             // Telemetry : Workflow Log
                             QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -755,15 +802,17 @@ int main(int argc, char * argv[])
                         if (FAILED(hrUnmount))
                         {
                             errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnmount);
-                            errorDesc = L"Successful Unpack to mounted vhd(x). Unmounting the VHD failed. Ignoring as non-fatal error. HRESULT " + errorCode + L".";
+                            errorDesc = L"Successful Unpack to mounted vhd(x). Unmounting the VHD failed. Ignoring as non-fatal error. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrUnmount);
 
                             std::wcout << std::endl;
                             std::wcout << "Unmounting the VHD  " << unpackDestination << " failed with HRESULT 0x" << std::hex << hrCreateVHD << std::endl;
                             std::wcout << "Ignoring as non-fatal error.." << std::endl;
                             std::wcout << std::endl;
+                            std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(hrUnmount);
+                            std::wcout << std::endl;
                         }
 
-                        OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                        OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors, cli, errorDesc);
 
                         std::wcout << std::endl;
                         std::wcout << "Finished unpacking packages to: " << unpackDestination << std::endl;
@@ -772,7 +821,8 @@ int main(int argc, char * argv[])
                         // Telemetry : Workflow Log
                         QueryPerformanceCounter(&msixMgrLoad_EndCounter);
                         workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
-                        msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, errorCode.c_str(), errorDesc.c_str());
+
+                        msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", errorDesc.c_str());
 
                         return failedPackagesErrors.size() != 0 ? failedPackagesErrors.back() : S_OK;
                     }
@@ -791,7 +841,7 @@ int main(int argc, char * argv[])
                     if (FAILED(hrUnpackToFolder))
                     {
                         errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnpackToFolder);
-                        errorDesc = L"Failed unpack to the given folder or given VHD(X). HRESULT " + errorCode + L".";
+                        errorDesc = L"Failed unpack to the given folder or given VHD(X). HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrUnpackToFolder);
 
                         // Telemetry : Workflow Log
                         QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -805,12 +855,13 @@ int main(int argc, char * argv[])
                     std::wcout << "Finished unpacking packages to: " << unpackDestination << std::endl;
                     std::wcout << std::endl;
 
-                    OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                    OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors, cli, errorDesc);
 
                     // Telemetry : Workflow Log
                     QueryPerformanceCounter(&msixMgrLoad_EndCounter);
                     workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
-                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", L"");
+
+                    msixmgrTraceLogging::TraceLogWorkflow(workflowId.c_str(), cli.GetOperationTypeAsString().c_str(), true, workflowElapsedTime, L"", errorDesc.c_str());
 
                     return failedPackagesErrors.size() != 0 ? failedPackagesErrors.back() : S_OK;
                 }
@@ -831,7 +882,7 @@ int main(int argc, char * argv[])
             if (FAILED(hrApplyACLs))
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrApplyACLs);
-                errorDesc = L"Failed ApplyACLs Operation. HRESULT " + errorCode + L".";
+                errorDesc = L"Failed ApplyACLs Operation. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrApplyACLs);
 
                 // Telemetry : Workflow Log
                 QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -858,10 +909,12 @@ int main(int argc, char * argv[])
             if (cli.GetMountImagePath().empty())
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
-                errorDesc = L"Please provide the path to the image you would like to mount. HRESULT " + errorCode + L".";
+                errorDesc = L"Please provide the path to the image you would like to mount. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
 
                 std::wcout << std::endl;
                 std::wcout << "Please provide the path to the image you would like to mount." << std::endl;
+                std::wcout << std::endl;
+                std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
                 std::wcout << std::endl;
 
                 // Telemetry : Workflow Log
@@ -879,10 +932,12 @@ int main(int argc, char * argv[])
                 if (FAILED(hrMountCIM))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrMountCIM);
-                    errorDesc = L"Mounting the CIM file failed. HRESULT " + errorCode + L".";
+                    errorDesc = L"Mounting the CIM file failed. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrMountCIM);
 
                     std::wcout << std::endl;
                     std::wcout << "Mounting the CIM file  " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrMountCIM << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(hrMountCIM);
                     std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
@@ -917,10 +972,12 @@ int main(int argc, char * argv[])
                 if (FAILED(hrMountVHD))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrMountVHD);
-                    errorDesc = L"Mounting the VHD(X) file failed. HRESULT " + errorCode + L".";
+                    errorDesc = L"Mounting the VHD(X) file failed. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrMountVHD);
 
                     std::wcout << std::endl;
                     std::wcout << "Mounting the VHD(X) file  " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrMountVHD << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(hrMountVHD);
                     std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
@@ -948,10 +1005,12 @@ int main(int argc, char * argv[])
             else
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(ERROR_NOT_SUPPORTED);
-                errorDesc = L"Please specify one of the following supported file types for the -MountImage command: {VHD, VHDX, CIM}. HRESULT " + errorCode + L".";
+                errorDesc = L"Please specify one of the following supported file types for the -MountImage command: {VHD, VHDX, CIM}. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(ERROR_NOT_SUPPORTED);
 
                 std::wcout << std::endl;
                 std::wcout << "Please specify one of the following supported file types for the -MountImage command: {VHD, VHDX, CIM}" << std::endl;
+                std::wcout << std::endl;
+                std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(ERROR_NOT_SUPPORTED);
                 std::wcout << std::endl;
 
                 // Telemetry : Workflow Log
@@ -974,12 +1033,14 @@ int main(int argc, char * argv[])
                 if (cli.GetVolumeId().empty() && cli.GetMountImagePath().empty())
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
-                    errorDesc = L"To unmount an CIM image, please provide either the CIM file path or the volume the image was mounted to. HRESULT " + errorCode + L".";
+                    errorDesc = L"To unmount an CIM image, please provide either the CIM file path or the volume the image was mounted to. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
 
                     std::wcout << std::endl;
                     std::wcout << "To unmount an CIM image, please provide either the CIM file path or the volume the image was mounted to." << std::endl;
                     std::wcout << "The CIM file path can be specified using the -imagepath option." << std::endl;
                     std::wcout << "The volume can be specified using the -volumeId option." << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
                     std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
@@ -995,10 +1056,13 @@ int main(int argc, char * argv[])
                 if (FAILED(hrUnmountCIM))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnmountCIM);
-                    errorDesc = L"Unmounting the CIM file failed. HRESULT " + errorCode + L".";
+                    errorDesc = L"Unmounting the CIM file failed. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrUnmountCIM);
 
                     std::wcout << std::endl;
                     std::wcout << "Unmounting the CIM " << " failed with HRESULT 0x" << std::hex << hrUnmountCIM << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(hrUnmountCIM);
+                    std::wcout << std::endl;
 
                     // ERROR_NOT_FOUND may be returned if only the mount image path but not the volume id was provided
                     // and msixmgr was unable to find the volume id associated with a given image path.
@@ -1051,10 +1115,12 @@ int main(int argc, char * argv[])
                 if (cli.GetMountImagePath().empty())
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(E_INVALIDARG);
-                    errorDesc = L"Please provide the path to the image you would like to unmount. HRESULT " + errorCode + L".";
+                    errorDesc = L"Please provide the path to the image you would like to unmount. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
 
                     std::wcout << std::endl;
                     std::wcout << "Please provide the path to the image you would like to unmount." << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(E_INVALIDARG);
                     std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
@@ -1070,10 +1136,12 @@ int main(int argc, char * argv[])
                 if (FAILED(hrUnmountVHD))
                 {
                     errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(hrUnmountVHD);
-                    errorDesc = L"Unmounting the VHD file failed. HRESULT " + errorCode + L".";
+                    errorDesc = L"Unmounting the VHD file failed. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(hrUnmountVHD);
 
                     std::wcout << std::endl;
                     std::wcout << "Unmounting the VHD " << cli.GetMountImagePath() << " failed with HRESULT 0x" << std::hex << hrUnmountVHD << std::endl;
+                    std::wcout << std::endl;
+                    std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(hrUnmountVHD);
                     std::wcout << std::endl;
 
                     // Telemetry : Workflow Log
@@ -1098,10 +1166,12 @@ int main(int argc, char * argv[])
             else
             {
                 errorCode = msixmgrTraceLogging::GetErrorCodeFromHRESULT(ERROR_NOT_SUPPORTED);
-                errorDesc = L"Please specify one of the following supported file types for the -UnmountImage command: {VHD, VHDX, CIM}. HRESULT " + errorCode + L".";
+                errorDesc = L"Please specify one of the following supported file types for the -UnmountImage command: {VHD, VHDX, CIM}. HRESULT " + errorCode + L". HRESULT Desc - " + ErrorMessageHelper::GetErrorMessageFromHRESULT(ERROR_NOT_SUPPORTED);
 
                 std::wcout << std::endl;
                 std::wcout << "Please specify one of the following supported file types for the -UnmountImage command: {VHD, VHDX, CIM}" << std::endl;
+                std::wcout << std::endl;
+                std::wcout << "HRESULT - " << errorCode << ". HRESULT Desc - " << ErrorMessageHelper::GetErrorMessageFromHRESULT(ERROR_NOT_SUPPORTED);
                 std::wcout << std::endl;
 
                 // Telemetry : Workflow Log
