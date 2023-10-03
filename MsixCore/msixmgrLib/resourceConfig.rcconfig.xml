@@ -3,6 +3,7 @@
         <resources>
             <win32Resources fileType="Application">
                 <neutralResources>
+                    <resourceType typeNameId="#6"/>			
                 </neutralResources>
                 <localizedResources>
                     <resourceType typeNameId="#6"/>

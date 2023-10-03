@@ -173,6 +173,60 @@ void OutputUnpackFailures(
     }
 }
 
+void OutputUnpackFailuresToFile(
+    _In_ std::wstring packageSource,
+    _In_ std::vector<std::wstring> skippedFiles,
+    _In_ std::vector<std::wstring> failedPackages,
+    _In_ std::vector<HRESULT> failedPackagesErrors,
+    _In_ std::wstring outfilePath)
+{
+    std::wofstream  outfile;
+    outfile.open(outfilePath);
+
+    if (!skippedFiles.empty())
+    {
+        outfile << std::endl;
+        outfile << "[WARNING] The following items from " << packageSource << " were ignored because they are not packages or bundles " << std::endl;
+        outfile << std::endl;
+
+        for (int i = 0; i < skippedFiles.size(); i++)
+        {
+            outfile << skippedFiles.at(i) << std::endl;
+        }
+
+        outfile << std::endl;
+    }
+
+    if (!failedPackages.empty())
+    {
+        outfile << std::endl;
+        outfile << "[WARNING] The following packages from " << packageSource << " failed to get unpacked. Please try again: " << std::endl;
+        outfile << std::endl;
+
+        for (int i = 0; i < failedPackages.size(); i++)
+        {
+            HRESULT hr = failedPackagesErrors.at(i);
+
+            outfile << L"Failed with HRESULT 0x" << std::hex << hr << L" when trying to unpack " << failedPackages.at(i) << std::endl;
+            if (hr == static_cast<HRESULT>(MSIX::Error::CertNotTrusted))
+            {
+                outfile << L"Please confirm that the certificate has been installed for this package" << std::endl;
+            }
+            else if (hr == static_cast<HRESULT>(MSIX::Error::FileWrite))
+            {
+                outfile << L"The tool encountered a file write error. If you are unpacking to a VHD, please try again with a larger VHD, as file write errors may be caused by insufficient disk space." << std::endl;
+            }
+            else if (hr == E_INVALIDARG)
+            {
+                outfile << "Please confirm the given package path is an .appx, .appxbundle, .msix, or .msixbundle file" << std::endl;
+            }
+
+            outfile << std::endl;
+        }
+    }
+    outfile.close();
+}
+
 int main(int argc, char * argv[])
 {
     // Register the providers
@@ -478,7 +532,7 @@ int main(int argc, char * argv[])
             // Telemetry : Unpack Workflow Log
             msixmgrTraceLogging::TraceLogUnpackWorkflow(workflowId.c_str(), msixmgrTraceLogging::ExtractPackageNameFromFilePath(cli.GetPackageFilePathToInstall()).c_str(),
                 cli.GetFileTypeAsString().c_str(), cli.GetVHDSize(), cli.IsCreate(), cli.IsApplyACLs());
-
+            auto outputFilePath = cli.GetOutputPath();
             auto packageSourcePath = cli.GetPackageFilePathToInstall();
             auto unpackDestination = cli.GetUnpackDestination();
             auto rootDirectory = cli.GetRootDirectory();
@@ -645,8 +699,15 @@ int main(int argc, char * argv[])
                     std::wcout << "Successfully created the CIM file: " << unpackDestination << std::endl;
                     std::wcout << std::endl;
 
-                    OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
-
+                    if (outputFilePath.empty())
+                    {
+                        OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                    }
+                    else
+                    {
+                        OutputUnpackFailuresToFile(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors, outputFilePath);
+                        wcout << "Written error output to file: " << outputFilePath;
+                    }
                     // Telemetry : Workflow Log
                     QueryPerformanceCounter(&msixMgrLoad_EndCounter);
                     workflowElapsedTime = msixmgrTraceLogging::CalcWorkflowElapsedTime(msixMgrLoad_StartCounter, msixMgrLoad_EndCounter, msixMgrLoad_Frequency);
@@ -761,7 +822,15 @@ int main(int argc, char * argv[])
                             std::wcout << std::endl;
                         }
 
-                        OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                        if (outputFilePath.empty())
+                        {
+                            OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                        }
+                        else
+                        {
+                            OutputUnpackFailuresToFile(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors, outputFilePath);
+                            wcout << "Written error output to file: " << outputFilePath;
+                        }
 
                         std::wcout << std::endl;
                         std::wcout << "Finished unpacking packages to: " << unpackDestination << std::endl;
@@ -801,7 +870,15 @@ int main(int argc, char * argv[])
                     std::wcout << "Finished unpacking packages to: " << unpackDestination << std::endl;
                     std::wcout << std::endl;
 
-                    OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                    if (outputFilePath.empty())
+                    {
+                        OutputUnpackFailures(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors);
+                    }
+                    else
+                    {
+                        OutputUnpackFailuresToFile(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors, outputFilePath);
+                        wcout << "Written error output to file: " << outputFilePath;
+                    }
 
                     // Telemetry : Workflow Log
                     QueryPerformanceCounter(&msixMgrLoad_EndCounter);

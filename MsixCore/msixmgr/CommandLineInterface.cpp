@@ -176,6 +176,19 @@ std::map<std::wstring, Options, CaseInsensitiveLess> CommandLineInterface::s_opt
                 }),
             },
             {
+                L"-output",
+                Option(true, IDS_STRING_HELP_OPTION_OUTPUT,
+                    [&](CommandLineInterface* commandLineInterface, const std::string& outPath)
+                {
+                    if (commandLineInterface->m_operationType != OperationType::Unpack)
+                    {
+                        return E_INVALIDARG;
+                    }
+                    commandLineInterface->m_outputPath = utf8_to_utf16(outPath);
+                    return S_OK;
+                }),
+            },
+            {
                 L"-validateSignature",
                 Option(false, IDS_STRING_HELP_OPTION_UNPACK_VALIDATESIGNATURE,
                     [&](CommandLineInterface* commandLineInterface, const std::string&)
