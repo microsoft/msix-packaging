@@ -17,6 +17,7 @@
 #include "Util.hpp"
 #include "..\msixmgrLib\GeneralUtil.hpp"
 #include "resource.h"
+#include <fstream>
 #include <VersionHelpers.h>
 #include "UnpackProvider.hpp"
 #include "ApplyACLsProvider.hpp"
