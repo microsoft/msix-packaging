@@ -7,11 +7,8 @@ trigger:
   paths:
     include:
     - tools/pipelines-tasks
-
-pr: none
-
-pool:
-  name: 'msix-packaging-pool'
+pr:
+  enabled: false
 
 variables:
   tasksRoot: 'tools/pipelines-tasks'
@@ -23,93 +20,114 @@ variables:
   # Upload results of Semmle analysis
   LGTM.UploadSnapshot: true
 
-steps:
-- template: templates/build-steps.yml
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
 
-- task: TfxInstaller@3
-  displayName: 'Use Node CLI for Azure DevOps (tfx-cli): v0.7.x'
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  parameters:
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: windows-2022
+      os: windows
 
-# Package and sign the VSIX
-- task: PackageAzureDevOpsExtension@3
-  displayName: 'Package Extension: $(tasksRoot)'
-  inputs:
-    rootFolder: '$(tasksRoot)'
-    patternManifest: 'vss-extension.json'
-    outputPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
-    publisherId: 'MSIX'
-    extensionVersion: '$(major).$(minor).$(patch)'
-    extensionVisibility: public
-    updateTasksVersion: true
+    customBuildTags:
+    - ES365AIMigrationTooling
 
-# Generate and publish SBoM file
-# It is placed under a _manifest folder by default
-- task: ManifestGeneratorTask@0
-  displayName: 'Generate Software Bill of Material (SBoM)'
-  inputs:
-      BuildDropPath: $(buildOutRoot)
-      BuildComponentPath: '$(tasksRoot)'
-      AdditionalComponentDetectorArgs: '--DirectoryExclusionList $(tasksRoot)\test'
-      PackageName: 'MSIX Packaging Extension'
-      PackageVersion: '$(major).$(minor).$(patch)'
+    stages:
+    - stage: BuildVSIX
+      jobs:
+      - job: Build
+        steps:
+        - template: templates/build-steps.yml@self
 
-- task: DropValidatorTask@0
-  inputs:
-    BuildDropPath: $(buildOutRoot)
-    OutputPath: $(buildOutRoot)/_manifest/sbom_validation.json
-    ValidateSignature: true
+        - task: TfxInstaller@3
+          displayName: 'Use Node CLI for Azure DevOps (tfx-cli): v0.7.x'
 
-- task: PublishPipelineArtifact@1
-  displayName: 'Publish SBoM'
-  inputs:
-    targetPath: '$(buildOutRoot)\_manifest'
-    artifact: 'SBoM'
-    publishLocation: 'pipeline'
+        # Package and sign the VSIX
+        - task: PackageAzureDevOpsExtension@3
+          displayName: 'Package Extension: $(tasksRoot)'
+          inputs:
+            rootFolder: '$(tasksRoot)'
+            patternManifest: 'vss-extension.json'
+            outputPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
+            publisherId: 'MSIX'
+            extensionVersion: '$(major).$(minor).$(patch)'
+            extensionVisibility: public
+            updateTasksVersion: true
 
-# Sign the package
-- task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
-  displayName: 'ESRP CodeSigning'
-  inputs:
-    ConnectedServiceName: 'ESRP CodeSigning'
-    FolderPath: '$(buildOutRoot)'
-    Pattern: MsixPackagingExtension.vsix
-    signConfigType: inlineSignParams
-    inlineOperation: |
-     [
-      {
-          "KeyCode" : "CP-233016",
-          "OperationCode" : "OpcSign",
-          "Parameters" : {
-              "FileDigest" : "/fd SHA256"
-          },
-          "ToolName" : "sign",
-          "ToolVersion" : "1.0"
-      },
-      {
-          "KeyCode" : "CP-233016",
-          "OperationCode" : "OpcVerify",
-          "Parameters" : {},
-          "ToolName" : "sign",
-          "ToolVersion" : "1.0"
-      }
-     ]
+        # Generate and publish SBoM file
+        # It is placed under a _manifest folder by default
+        - task: ManifestGeneratorTask@0
+          displayName: 'Generate Software Bill of Material (SBoM)'
+          inputs:
+            BuildDropPath: $(buildOutRoot)
+            BuildComponentPath: '$(tasksRoot)'
+            AdditionalComponentDetectorArgs: '--DirectoryExclusionList $(tasksRoot)\test'
+            PackageName: 'MSIX Packaging Extension'
+            PackageVersion: '$(major).$(minor).$(patch)'
 
-- task: PublishPipelineArtifact@1
-  displayName: 'Publish VSIX artifact'
-  inputs:
-    targetPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
-    artifact: 'VSIX'
-    publishLocation: 'pipeline'
+        - task: DropValidatorTask@0
+          inputs:
+            BuildDropPath: $(buildOutRoot)
+            OutputPath: $(buildOutRoot)/_manifest/sbom_validation.json
+            ValidateSignature: true
 
-# Publish privately
-# Use different task IDs from public extension to prevent clashing.
-- task: PublishAzureDevOpsExtension@3
-  displayName: 'Publish Extension'
-  inputs:
-    connectedServiceName: 'Visual Studio Marketplace - MSIX'
-    fileType: vsix
-    vsixFile: '$(buildOutRoot)\MsixPackagingExtension.vsix'
-    extensionId: 'msix-ci-automation-task-dev'
-    extensionName: 'MSIX Packaging (Preview)'
-    extensionVersion: '$(major).$(minor).$(patch)'
-    updateTasksId: true
-    extensionVisibility: 'privatepreview'
+        # Sign the package
+        - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+          displayName: 'ESRP CodeSigning'
+          inputs:
+            ConnectedServiceName: 'ESRP CodeSigning'
+            FolderPath: '$(buildOutRoot)'
+            Pattern: MsixPackagingExtension.vsix
+            signConfigType: inlineSignParams
+            inlineOperation: |
+              [
+               {
+                   "KeyCode" : "CP-233016",
+                   "OperationCode" : "OpcSign",
+                   "Parameters" : {
+                       "FileDigest" : "/fd SHA256"
+                   },
+                   "ToolName" : "sign",
+                   "ToolVersion" : "1.0"
+               },
+               {
+                   "KeyCode" : "CP-233016",
+                   "OperationCode" : "OpcVerify",
+                   "Parameters" : {},
+                   "ToolName" : "sign",
+                   "ToolVersion" : "1.0"
+               }
+              ]
+
+        templateContext:
+          outputs:
+          - output: pipelineArtifact
+            displayName: 'Publish SBoM'
+            targetPath: '$(buildOutRoot)\_manifest'
+            artifactName: 'SBoM'
+            publishLocation: 'pipeline'
+
+          - output: pipelineArtifact
+            displayName: 'Publish VSIX artifact'
+            targetPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
+            artifactName: 'VSIX'
+            publishLocation: 'pipeline'
+
+          # Publish privately
+          # Use different task IDs from public extension to prevent clashing.
+          - output: adoExtension
+            displayName: 'Publish Extension'
+            connectedServiceName: 'Visual Studio Marketplace - MSIX'
+            fileType: vsix
+            vsixFile: '$(buildOutRoot)\MsixPackagingExtension.vsix'
+            extensionId: 'msix-ci-automation-task-dev'
+            extensionName: 'MSIX Packaging (Preview)'
+            extensionVersion: '$(major).$(minor).$(patch)'
+            updateTasksId: true
+            extensionVisibility: 'privatepreview'
