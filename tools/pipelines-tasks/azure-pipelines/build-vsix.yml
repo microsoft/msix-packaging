@@ -43,7 +43,7 @@ extends:
       jobs:
       - job: Build
         steps:
-        - template: templates/build-steps.yml@self
+        - template: /tools/pipelines-tasks/templates/build-steps.yml@self
 
         - task: TfxInstaller@3
           displayName: 'Use Node CLI for Azure DevOps (tfx-cli): v0.7.x'
