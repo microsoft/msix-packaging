@@ -7,8 +7,8 @@ trigger:
   paths:
     include:
     - tools/pipelines-tasks
-pr:
-  enabled: false
+
+pr: none
 
 variables:
   tasksRoot: 'tools/pipelines-tasks'
