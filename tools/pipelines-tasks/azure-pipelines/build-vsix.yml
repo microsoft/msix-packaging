@@ -106,6 +106,10 @@ extends:
               ]
 
         templateContext:
+          sdl:
+            baseline:
+              baselineFile: $(tasksRoot)\.gdnbaselines
+
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish SBoM'
