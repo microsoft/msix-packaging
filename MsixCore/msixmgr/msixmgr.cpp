@@ -707,7 +707,7 @@ int main(int argc, char * argv[])
                     else
                     {
                         OutputUnpackFailuresToFile(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors, outputFilePath);
-                        wcout << "Written error output to file: " << outputFilePath;
+                        wcout << "Wrote error output to file: " << outputFilePath;
                     }
                     // Telemetry : Workflow Log
                     QueryPerformanceCounter(&msixMgrLoad_EndCounter);
@@ -830,7 +830,7 @@ int main(int argc, char * argv[])
                         else
                         {
                             OutputUnpackFailuresToFile(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors, outputFilePath);
-                            wcout << "Written error output to file: " << outputFilePath;
+                            wcout << "Wrote error output to file: " << outputFilePath;
                         }
 
                         std::wcout << std::endl;
@@ -878,7 +878,7 @@ int main(int argc, char * argv[])
                     else
                     {
                         OutputUnpackFailuresToFile(packageSourcePath, skippedFiles, failedPackages, failedPackagesErrors, outputFilePath);
-                        wcout << "Written error output to file: " << outputFilePath;
+                        wcout << "Wrote error output to file: " << outputFilePath;
                     }
 
                     // Telemetry : Workflow Log

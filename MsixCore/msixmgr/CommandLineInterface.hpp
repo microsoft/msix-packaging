@@ -108,7 +108,7 @@ public:
     OperationType GetOperationType() { return m_operationType; }
     std::wstring GetOperationTypeAsString();
     ULONGLONG GetVHDSize() { return m_vhdSize; }
-    std::wstring GetOutputPath() { return m_outputPath; }
+    std::wstring GetOutputPath() { return m_unpackOutputLoggingPath; }
 private:
     int m_argc = 0;
     char ** m_argv = nullptr;
@@ -119,7 +119,7 @@ private:
     std::wstring m_packageFilePath;
     std::wstring m_packageFullName;
     std::wstring m_unpackDestination;
-    std::wstring m_outputPath;
+    std::wstring m_unpackOutputLoggingPath;
     std::wstring m_rootDirectory;
     std::wstring m_mountImagePath;
     std::wstring m_volumeId;
