@@ -13,6 +13,7 @@ param (
 
 $taskNames = (
     "AppInstallerFile",
+    "AVDAppAttachPublish",
     "MsixAppAttach",
     "MsixPackaging",
     "MsixSigning"

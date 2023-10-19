@@ -1,0 +1,142 @@
+{
+    "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+    "id": "59de78ad-c5b7-4750-89dd-7bb24a1eb964",
+    "name": "ArtifactPublish",
+    "friendlyName": "Publish MSIX App attach package to AVD-5" ,
+    "instanceNameFormat": "AVD App Attach",
+    "description": "Publish MSIX package to AVD",
+    "helpMarkDown": "",
+    "category": "Build",
+    "author": "ADS",
+    "version": {
+        "Major": 1,
+        "Minor": 0,
+        "Patch": 0
+    },
+    "inputs": [
+		  {
+		    "name": "VHDXPath",
+		    "type": "string",
+		    "label": "VHDX Path",
+		    "defaultValue": "",
+		    "required": true,
+		    "helpMarkDown": "Path to VHDX Package path."
+		  },
+		  {
+		    "name": "ConnectedServiceNameARM",
+		    "type": "connectedService:AzureRM",
+		    "label": "Azure subscription",
+		    "defaultValue": "",
+		    "required": true,
+		    "helpMarkDown": "Select the Azure Resource Manager subscription for the deployment.\n Please ensure to certify the same"
+		  },
+		  {
+		    "name": "ResourceGroupName",
+		    "type": "pickList",
+		    "label": "Resource group",
+		    "defaultValue": "",
+		    "required": true,
+		    "properties": {
+			  "EditableOptions": "True"
+		    },
+		    "helpMarkDown": "Select the Azure Resource group"
+		  },
+      {
+          "name": "StorageAccount",
+          "type": "pickList",
+          "label": "Storage Account",
+          "defaultValue": "",
+          "required": true,
+          "properties": {
+              "EditableOptions": "True"
+          },
+          "helpMarkDown": "Select the Azure Storage Account"
+      },
+      {
+          "name": "FileShare",
+          "type": "pickList",
+          "label": "File Share",
+          "defaultValue": "",
+          "required": true,
+          "properties": {
+              "EditableOptions": "True"
+          },
+          "helpMarkDown": "Select the Azure File Share for App Attach"
+      },
+      {
+          "name": "HostPool",
+          "type": "pickList",
+          "label": "Host Pool",
+          "defaultValue": "",
+          "required": true,
+          "properties": {
+              "EditableOptions": "True"
+          },
+          "helpMarkDown": "Select the Azure Host Pool for App Attach"
+      },
+      {
+          "name": "WorkSpace",
+          "type": "pickList",
+          "label": "Workspace",
+          "defaultValue": "",
+          "required": true,
+          "properties": {
+              "EditableOptions": "True"
+          },
+          "helpMarkDown": "Select the Azure Work Space for App Attach"
+      },
+      {
+          "name": "ApplicationGroup",
+          "type": "pickList",
+          "label": "Application Group",
+          "defaultValue": "",
+          "required": true,
+          "properties": {
+              "EditableOptions": "True"
+          },
+          "helpMarkDown": "Select the Azure Application Group for App Attach"
+      }
+	],
+	"dataSourceBindings": [
+		{
+			"target": "ResourceGroupName",
+			"endpointId": "$(ConnectedServiceNameARM)",
+			"dataSourceName": "AzureResourceGroups"
+		},
+		{
+			"target": "StorageAccount",
+			"endpointId": "$(ConnectedServiceNameARM)",
+			"endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(ResourceGroupName)/providers/Microsoft.Storage/storageAccounts?api-version=2023-01-01",
+			"resultSelector": "jsonpath:$.value[*].name"
+		},
+		{
+			"target": "FileShare",
+			"endpointId": "$(ConnectedServiceNameARM)",
+			"endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(ResourceGroupName)/providers/Microsoft.Storage/storageAccounts/$(StorageAccount)/fileServices/default/shares?api-version=2023-01-01",
+			"resultSelector": "jsonpath:$.value[*].name"
+		},
+		{
+			"target": "HostPool",
+			"endpointId": "$(ConnectedServiceNameARM)",
+			"endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(ResourceGroupName)/providers/Microsoft.DesktopVirtualization/hostPools?api-version=2022-02-10-preview",
+			"resultSelector": "jsonpath:$.value[*].name"
+		},
+		{
+			"target": "WorkSpace",
+			"endpointId": "$(ConnectedServiceNameARM)",
+			"endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(ResourceGroupName)/providers/Microsoft.DesktopVirtualization/workspaces?api-version=2022-02-10-preview",
+			"resultSelector": "jsonpath:$.value[*].name"
+		},
+		{
+			"target": "ApplicationGroup",
+			"endpointId": "$(ConnectedServiceNameARM)",
+			"endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(ResourceGroupName)/providers/Microsoft.DesktopVirtualization/applicationGroups?api-version=2022-02-10-preview",
+			"resultSelector": "jsonpath:$.value[*].name"
+		}
+	],
+    "execution": {
+		"Node10": {
+		  "target": "main.js"
+		}
+    }
+}

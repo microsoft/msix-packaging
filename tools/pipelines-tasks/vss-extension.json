@@ -2,7 +2,7 @@
   "manifestVersion":  1,
   "id": "msix-ci-automation-task",
   "name":  "MSIX Packaging",
-  "version":  "1.0.0",
+  "version":  "2.0.0",
   "publisher":  "MSIX",
   "targets":  [
     {
@@ -37,6 +37,9 @@
     },
     {
       "path":  "MsixSigning"
+    },
+    {
+      "path": "AVDAppAttachPublish"
     },
     {
       "path":  "images/msix-packaging-ext",
@@ -82,6 +85,16 @@
       ],
       "properties":  {
         "name":  "MsixSigning"
+      }
+    },
+    {
+      "id": "avd-appatttach-publish",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties": {
+        "name": "AVDAppAttachPublish"
       }
     }
   ]

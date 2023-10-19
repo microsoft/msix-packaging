@@ -5,6 +5,7 @@ This includes the source for Azure Pipelines tasks for:
 * Signing MSIX packages.
 * Creating VHDX disks for use with MSIX app attach.
 * Creating App Installer files.
+* App Attach VHDX artifact to AVD.
 
 ## Building
 

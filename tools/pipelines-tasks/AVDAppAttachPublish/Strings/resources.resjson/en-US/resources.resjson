@@ -1,0 +1,22 @@
+{
+  "loc.friendlyName": "Publish MSIX App attach package to AVD-5",
+  "loc.helpMarkDown": "",
+  "loc.description": "Publish MSIX package to AVD",
+  "loc.instanceNameFormat": "AVD App Attach",
+  "loc.input.label.VHDXPath": "VHDX Path",
+  "loc.input.help.VHDXPath": "Path to VHDX Package path.",
+  "loc.input.label.ConnectedServiceNameARM": "Azure subscription",
+  "loc.input.help.ConnectedServiceNameARM": "Select the Azure Resource Manager subscription for the deployment.\n Please ensure to certify the same",
+  "loc.input.label.ResourceGroupName": "Resource group",
+  "loc.input.help.ResourceGroupName": "Select the Azure Resource group",
+  "loc.input.label.StorageAccount": "Storage Account",
+  "loc.input.help.StorageAccount": "Select the Azure Storage Account",
+  "loc.input.label.FileShare": "File Share",
+  "loc.input.help.FileShare": "Select the Azure File Share for App Attach",
+  "loc.input.label.HostPool": "Host Pool",
+  "loc.input.help.HostPool": "Select the Azure Host Pool for App Attach",
+  "loc.input.label.WorkSpace": "Workspace",
+  "loc.input.help.WorkSpace": "Select the Azure Work Space for App Attach",
+  "loc.input.label.ApplicationGroup": "Application Group",
+  "loc.input.help.ApplicationGroup": "Select the Azure Application Group for App Attach"
+}
