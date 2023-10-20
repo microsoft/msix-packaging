@@ -8,4 +8,4 @@
 /tools/utils/ @ranm-msft @msftrubengu @johnmcpms @florelis
 
 # Azure Pipelines tasks
-/tools/pipelines-tasks @ranm-msft @msftrubengu @johnmcpms @florelis
+/tools/pipelines-tasks @ranm-msft @msftrubengu @johnmcpms @florelis @microsoft/MSIX-ENG-IDC
