@@ -26,12 +26,16 @@ resources:
     ref: refs/tags/release
 
 extends:
-  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+  template: v1/1ES.Unofficial.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
       image: windows-2019
       os: windows
+
+    sdl:
+      binskim:
+        analyzeTargetGlob: +|$(tasksRoot)\**\*.dll;+|$(tasksRoot)\**\*.exe;-|$(tasksRoot)\test\**\*'
 
     customBuildTags:
     - ES365AIMigrationTooling
