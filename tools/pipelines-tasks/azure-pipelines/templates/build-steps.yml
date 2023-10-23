@@ -26,4 +26,3 @@ steps:
   workingDirectory: '$(tasksRoot)'
   env:
     SYSTEM_CULTURE: 'en-US'
-

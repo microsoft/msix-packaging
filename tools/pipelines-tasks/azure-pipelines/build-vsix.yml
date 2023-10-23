@@ -17,8 +17,6 @@ variables:
   major: '1'
   minor: '1'
   patch: $[counter(variables['minor'], 0)]
-  # Upload results of Semmle analysis
-  LGTM.UploadSnapshot: true
 
 resources:
   repositories:
@@ -32,12 +30,11 @@ extends:
   parameters:
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
-      image: windows-2019
+      image: windows-2022
       os: windows
 
     customBuildTags:
     - ES365AIMigrationTooling
-
     stages:
     - stage: BuildVSIX
       jobs:
@@ -60,24 +57,6 @@ extends:
             extensionVisibility: public
             updateTasksVersion: true
 
-        # Generate and publish SBoM file
-        # It is placed under a _manifest folder by default
-        - task: ManifestGeneratorTask@0
-          displayName: 'Generate Software Bill of Material (SBoM)'
-          inputs:
-            BuildDropPath: $(buildOutRoot)
-            BuildComponentPath: '$(tasksRoot)'
-            AdditionalComponentDetectorArgs: '--DirectoryExclusionList $(tasksRoot)\test'
-            PackageName: 'MSIX Packaging Extension'
-            PackageVersion: '$(major).$(minor).$(patch)'
-
-        - task: DropValidatorTask@0
-          inputs:
-            BuildDropPath: $(buildOutRoot)
-            OutputPath: $(buildOutRoot)/_manifest/sbom_validation.json
-            ValidateSignature: true
-
-        # Sign the package
         - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
           displayName: 'ESRP CodeSigning'
           inputs:
@@ -106,17 +85,7 @@ extends:
               ]
 
         templateContext:
-          sdl:
-            baseline:
-              baselineFile: $(tasksRoot)\.gdnbaselines
-
           outputs:
-          - output: pipelineArtifact
-            displayName: 'Publish SBoM'
-            targetPath: '$(buildOutRoot)\_manifest'
-            artifactName: 'SBoM'
-            publishLocation: 'pipeline'
-
           - output: pipelineArtifact
             displayName: 'Publish VSIX artifact'
             targetPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
@@ -135,3 +104,11 @@ extends:
             extensionVersion: '$(major).$(minor).$(patch)'
             updateTasksId: true
             extensionVisibility: 'privatepreview'
+
+          sdl:
+            sbom:
+              enabled: true
+              packageName: 'MSIX Packaging Extension'
+              packageVersion: '$(major).$(minor).$(patch)'
+              buildComponentPath: '$(tasksRoot)'
+              additionalComponentDetectorArgs: '--DirectoryExclusionList $(tasksRoot)\test'
