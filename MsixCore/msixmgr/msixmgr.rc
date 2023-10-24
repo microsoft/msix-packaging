@@ -134,7 +134,7 @@ BEGIN
 	IDS_STRING_HELP_OPTION_MOUNT_FILETYPE "the type of file to mount or unmount. The following file types are currently supported: {VHD, VHDX, CIM}"
 	IDS_STRING_HELP_OPTION_UNPACK_VHDSIZE "the desired size of the VHD or VHDX file in MB. Must be between 5 and 2040000 MB. Use only for VHD or VHDX files"
 	IDS_STRING_HELP_OPTION_MOUNT_READONLY "boolean (true of false) indicating whether a VHD(X) should be mounted as read only. If not specified, the image is mounted as read-only by default"
-	IDS_STRING_HELP_OPTION_OUTPUT "optional parameter selects logging location to write the command line output to"
+	IDS_STRING_HELP_OPTION_UNPACK_OUTPUT "optional parameter selects logging location to write the command line output to"
 	END
 
 #endif    // English (United States) resources
