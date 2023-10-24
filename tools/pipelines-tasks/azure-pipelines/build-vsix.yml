@@ -36,6 +36,8 @@ extends:
     sdl:
       binskim:
         analyzeTargetGlob: +|$(tasksRoot)\**\*.dll;+|$(tasksRoot)\**\*.exe;-|$(tasksRoot)\test\**\*'
+      git:
+        submodules: false
 
     customBuildTags:
     - ES365AIMigrationTooling
