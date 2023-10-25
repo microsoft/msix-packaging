@@ -34,8 +34,8 @@ extends:
       os: windows
 
     sdl:
-      binskim:
-        analyzeTargetGlob: +|$(tasksRoot)\**\*.dll;+|$(tasksRoot)\**\*.exe;-|$(tasksRoot)\test\**\*'
+      baseline:
+        baselineFile: $(tasksRoot)\azure-pipelines\.gdnbaselines
       git:
         submodules: false
 
