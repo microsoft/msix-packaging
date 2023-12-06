@@ -155,8 +155,6 @@ extends:
                     & $executable  -FindPackage fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe
 
                     & .\msixtrace.ps1 -stop
-                  env:
-                    MY_ACCESS_TOKEN: $(System.AccessToken)
                   errorActionPreference: silentlyContinue
                   ignoreLASTEXITCODE: true
                 continueOnError: true
