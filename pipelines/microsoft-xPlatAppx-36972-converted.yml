@@ -35,8 +35,6 @@ extends:
       os: windows
       image: windows-2019
       name: Azure Pipelines
-    env:
-      MY_ACCESS_TOKEN: $(System.AccessToken)
     customBuildTags:
       - MigrationTooling-microsoft-xPlatAppx-36972-Tool
     stages:
@@ -101,6 +99,7 @@ extends:
                     git lfs fetch
                     git lfs pull
                 env:
+                  MY_ACCESS_TOKEN: $(System.AccessToken)
                   ArtifactDirectory: $(Pipeline.Workspace)
               - task: PowerShell@2
                 displayName: Run msixcore tests
