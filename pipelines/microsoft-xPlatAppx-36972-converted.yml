@@ -56,7 +56,7 @@ extends:
                 lfs: true
                 fetchTags: false
                 persistCredentials: true
-              - template: task-group-microsoft-xPlatAppx-release-msixmgr-v1-converted.yml@self
+              - template: /templates/task-group-microsoft-xPlatAppx-release-msixmgr-v1-converted.yml@self
                 parameters:
                   MSBuildArgs: /t:msixmgr
                   MSBuildArgs2: /t:GetMsixmgrProducts;MsixMgrWix /p:RunWixToolsOutOfProc=true /p:PostBuildEventUseInBuild=false
