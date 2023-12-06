@@ -157,6 +157,8 @@ extends:
                     & .\msixtrace.ps1 -stop
                   errorActionPreference: silentlyContinue
                   ignoreLASTEXITCODE: true
+                env:
+                  MY_ACCESS_TOKEN: $(System.AccessToken)
                 continueOnError: true
               - task: CopyFiles@2
                 displayName: "Copy Files to: $(Build.ArtifactStagingDirectory)"
