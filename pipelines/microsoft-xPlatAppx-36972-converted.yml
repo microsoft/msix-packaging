@@ -35,6 +35,8 @@ extends:
       os: windows
       image: windows-2019
       name: Azure Pipelines
+    env:
+      MY_ACCESS_TOKEN: $(System.AccessToken)
     customBuildTags:
       - MigrationTooling-microsoft-xPlatAppx-36972-Tool
     stages:
@@ -43,8 +45,6 @@ extends:
           - job: Phase_15
             displayName: Build and Release MsixMgr
             cancelTimeoutInMinutes: 1
-            env:
-              MY_ACCESS_TOKEN: $(System.AccessToken)
             templateContext:
               outputs:
                 - output: pipelineArtifact
