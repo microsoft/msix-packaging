@@ -1,13 +1,13 @@
 {
   "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
   "id": "59de78ad-c5b7-4750-89dd-7bb24a1eb964",
-  "name": "ArtifactPublish",
+  "name": "AVDAppAttachPublish",
   "friendlyName": "ms-resource:loc.friendlyName",
   "instanceNameFormat": "ms-resource:loc.instanceNameFormat",
   "description": "ms-resource:loc.description",
   "helpMarkDown": "ms-resource:loc.helpMarkDown",
-  "category": "Build",
-  "author": "ADS",
+  "category": "Deploy",
+  "author": "Microsoft Corporation",
   "version": {
     "Major": 1,
     "Minor": 0,
@@ -15,122 +15,122 @@
   },
   "inputs": [
     {
-      "name": "VHDXPath",
+      "name": "vhdxPath",
       "type": "string",
-      "label": "ms-resource:loc.input.label.VHDXPath",
+      "label": "ms-resource:loc.input.label.vhdxPath",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "ms-resource:loc.input.help.VHDXPath"
+      "helpMarkDown": "ms-resource:loc.input.help.vhdxPath"
     },
     {
-      "name": "ConnectedServiceNameARM",
+      "name": "connectedServiceNameARM",
       "type": "connectedService:AzureRM",
-      "label": "ms-resource:loc.input.label.ConnectedServiceNameARM",
+      "label": "ms-resource:loc.input.label.connectedServiceNameARM",
       "defaultValue": "",
       "required": true,
-      "helpMarkDown": "ms-resource:loc.input.help.ConnectedServiceNameARM"
+      "helpMarkDown": "ms-resource:loc.input.help.connectedServiceNameARM"
     },
     {
-      "name": "ResourceGroupName",
+      "name": "resourceGroupName",
       "type": "pickList",
-      "label": "ms-resource:loc.input.label.ResourceGroupName",
+      "label": "ms-resource:loc.input.label.resourceGroupName",
       "defaultValue": "",
       "required": true,
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "ms-resource:loc.input.help.ResourceGroupName"
+      "helpMarkDown": "ms-resource:loc.input.help.resourceGroupName"
     },
     {
-      "name": "StorageAccount",
+      "name": "storageAccount",
       "type": "pickList",
-      "label": "ms-resource:loc.input.label.StorageAccount",
+      "label": "ms-resource:loc.input.label.storageAccount",
       "defaultValue": "",
       "required": true,
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "ms-resource:loc.input.help.StorageAccount"
+      "helpMarkDown": "ms-resource:loc.input.help.storageAccount"
     },
     {
-      "name": "FileShare",
+      "name": "fileShare",
       "type": "pickList",
-      "label": "ms-resource:loc.input.label.FileShare",
+      "label": "ms-resource:loc.input.label.fileShare",
       "defaultValue": "",
       "required": true,
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "ms-resource:loc.input.help.FileShare"
+      "helpMarkDown": "ms-resource:loc.input.help.fileShare"
     },
     {
-      "name": "HostPool",
+      "name": "hostPool",
       "type": "pickList",
-      "label": "ms-resource:loc.input.label.HostPool",
+      "label": "ms-resource:loc.input.label.hostPool",
       "defaultValue": "",
       "required": true,
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "ms-resource:loc.input.help.HostPool"
+      "helpMarkDown": "ms-resource:loc.input.help.hostPool"
     },
     {
-      "name": "WorkSpace",
+      "name": "workSpace",
       "type": "pickList",
-      "label": "ms-resource:loc.input.label.WorkSpace",
+      "label": "ms-resource:loc.input.label.workSpace",
       "defaultValue": "",
       "required": true,
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "ms-resource:loc.input.help.WorkSpace"
+      "helpMarkDown": "ms-resource:loc.input.help.workSpace"
     },
     {
-      "name": "ApplicationGroup",
+      "name": "applicationGroup",
       "type": "pickList",
-      "label": "ms-resource:loc.input.label.ApplicationGroup",
+      "label": "ms-resource:loc.input.label.applicationGroup",
       "defaultValue": "",
       "required": true,
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "ms-resource:loc.input.help.ApplicationGroup"
+      "helpMarkDown": "ms-resource:loc.input.help.applicationGroup"
     }
   ],
   "dataSourceBindings": [
     {
-      "target": "ResourceGroupName",
-      "endpointId": "$(ConnectedServiceNameARM)",
+      "target": "resourceGroupName",
+      "endpointId": "$(connectedServiceNameARM)",
       "dataSourceName": "AzureResourceGroups"
     },
     {
-      "target": "StorageAccount",
-      "endpointId": "$(ConnectedServiceNameARM)",
-      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(ResourceGroupName)/providers/Microsoft.Storage/storageAccounts?api-version=2023-01-01",
+      "target": "storageAccount",
+      "endpointId": "$(connectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(resourceGroupName)/providers/Microsoft.Storage/storageAccounts?api-version=2023-01-01",
       "resultSelector": "jsonpath:$.value[*].name"
     },
     {
-      "target": "FileShare",
-      "endpointId": "$(ConnectedServiceNameARM)",
-      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(ResourceGroupName)/providers/Microsoft.Storage/storageAccounts/$(StorageAccount)/fileServices/default/shares?api-version=2023-01-01",
+      "target": "fileShare",
+      "endpointId": "$(connectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(resourceGroupName)/providers/Microsoft.Storage/storageAccounts/$(storageAccount)/fileServices/default/shares?api-version=2023-01-01",
       "resultSelector": "jsonpath:$.value[*].name"
     },
     {
-      "target": "HostPool",
-      "endpointId": "$(ConnectedServiceNameARM)",
-      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(ResourceGroupName)/providers/Microsoft.DesktopVirtualization/hostPools?api-version=2022-02-10-preview",
+      "target": "hostPool",
+      "endpointId": "$(connectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(resourceGroupName)/providers/Microsoft.DesktopVirtualization/hostPools?api-version=2022-02-10-preview",
       "resultSelector": "jsonpath:$.value[*].name"
     },
     {
-      "target": "WorkSpace",
-      "endpointId": "$(ConnectedServiceNameARM)",
-      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(ResourceGroupName)/providers/Microsoft.DesktopVirtualization/workspaces?api-version=2022-02-10-preview",
+      "target": "workSpace",
+      "endpointId": "$(connectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(resourceGroupName)/providers/Microsoft.DesktopVirtualization/workspaces?api-version=2022-02-10-preview",
       "resultSelector": "jsonpath:$.value[*].name"
     },
     {
-      "target": "ApplicationGroup",
-      "endpointId": "$(ConnectedServiceNameARM)",
-      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(ResourceGroupName)/providers/Microsoft.DesktopVirtualization/applicationGroups?api-version=2022-02-10-preview",
+      "target": "applicationGroup",
+      "endpointId": "$(connectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(resourceGroupName)/providers/Microsoft.DesktopVirtualization/applicationGroups?api-version=2022-02-10-preview",
       "resultSelector": "jsonpath:$.value[*].name"
     }
   ],
