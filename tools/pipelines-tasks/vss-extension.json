@@ -48,7 +48,7 @@
   ],
   "contributions":  [
     {
-      "id": "avd-app-atttach-publish",
+      "id": "avd-app-attach-publish",
       "type": "ms.vss-distributed-task.task",
       "targets": [
         "ms.vss-distributed-task.tasks"
