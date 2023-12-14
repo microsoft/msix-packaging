@@ -124,24 +124,36 @@ export const writeXml = (xmlObject: any, filePath: string) =>
     fs.writeFileSync(filePath, xmlBuilder.buildObject(xmlObject));
 }
 
+/**
+ * installs input Nuget package into given output Location.
+ * @param packagePath the path to the package(.nupkg or packages.config) file to be installed
+ * @param outputPath output location to install the nuget package into
+ * @param targetNetFramework target .Net framework to pick target and dependency DLLs complying with the package to be installed
+ * @param packageId optional parameter, package id to be installed. Required if package install mechanism is through providing package id(instead of packages.config)
+ * @param version optional parameter, package version to be installed. Required if package install mechanism is through providing package id(instead of packages.config)
+ */
 export async function installNuget(packagePath: string, outputPath: string, targetNetFramework: string, packageId?: string, version?: string) {
-    tl.pushd(packagePath);
+    try {
+        tl.pushd(packagePath);
 
-    const nugetToolSrc: string = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe";
+        const nugetToolSrc: string = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe";
 
-    await nugetHelper.downloadNugetTool(nugetToolSrc, packagePath);
-    let powershellRunner: ToolRunner = getPowershellRunner(NUGET_INSTALL_SCRIPT);
-    powershellRunner.arg(['-nugetToolPath', './nuget.exe']);
-    if (packageId && version) {
-        powershellRunner.arg(['-packageId', packageId]);
-        powershellRunner.arg(['-version', version]);
+        await nugetHelper.downloadNugetTool(nugetToolSrc, packagePath);
+        let powershellRunner: ToolRunner = getPowershellRunner(NUGET_INSTALL_SCRIPT);
+        powershellRunner.arg(['-nugetToolPath', './nuget.exe']);
+        if (packageId && version) {
+            powershellRunner.arg(['-packageId', packageId]);
+            powershellRunner.arg(['-version', version]);
+        }
+        powershellRunner.arg(['-outputDirectory', outputPath]);
+        let execResult = powershellRunner.execSync();
+        if (execResult.code) {
+            throw execResult.stderr;
+        }
+
+        await nugetHelper.copyTargetDlls(outputPath, targetNetFramework);
+        tl.popd();
+    } catch (error) {
+        console.error("Error finding target framework Dlls: " + error);
     }
-    powershellRunner.arg(['-outputDirectory', outputPath]);
-    var execResult = powershellRunner.execSync();
-    if (execResult.code) {
-        throw execResult.stderr;
-    }
-
-    await nugetHelper.copyTargetDlls(outputPath, targetNetFramework);
-    tl.popd();
 }

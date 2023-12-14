@@ -16,8 +16,6 @@ param([string]$inputJsonStr, [string]$targetDLL)
 
 try
 {
-    $scriptDir = $PSScriptRoot
-
     Add-Type -Path $targetDLL
 
     # Create and invoke AppAttachKernel object with configured json

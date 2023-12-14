@@ -17,11 +17,10 @@ param([string]$exceptionMessage, [string]$targetDLL, [string]$clientType, [strin
 try
 {
     Write-Output $exceptionMessage
-    $scriptDir = $PSScriptRoot
 
     Add-Type -Path $targetDLL
 
-    # Create and invoke AppAttachTelemetry object. 
+    # Create and invoke AppAttachTelemetry object.
     $telemetryProvider = [AppAttachTelemetry.TelemetryProvider]::s_instance
 
     $appAttachExceptionBuilderObj =  New-Object AppAttachTelemetry.Builders.AppAttachExceptionsBuilder

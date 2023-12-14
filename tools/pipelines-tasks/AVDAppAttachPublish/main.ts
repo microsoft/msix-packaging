@@ -10,7 +10,7 @@ import * as url from 'url';
 import * as fs from 'fs';
 import helpers = require('common-helpers/helpers');
 
-const HELPER_SCRIPT = path.join(__dirname, 'publishAVD.ps1');
+const HELPER_SCRIPT = path.join(__dirname, 'PublishAVD.ps1');
 const TARGET_DLL = path.join(__dirname, '/AppAttachFrameworkDLL/AppAttachKernel.dll');
 const AppAttachFrameworkDll = path.join(__dirname, '/AppAttachFrameworkDLL');
 
@@ -48,7 +48,7 @@ async function run(): Promise<void> {
 		let subscriptionID: string = tl.getEndpointDataParameter(connectedServiceName, 'subscriptionid', true)!;
 
 		let storageAccountName = tl.getInput('storageAccount', true)!;
-		var azureEndpoint: AzureEndpoint = await new AzureRMEndpoint(connectedServiceName).getEndpoint();
+		let azureEndpoint: AzureEndpoint = await new AzureRMEndpoint(connectedServiceName).getEndpoint();
 		let accessToken: string = (await azureEndpoint.applicationTokenCredentials.getToken()).toString();
 
 		const storageArmClient = new armStorage.StorageManagementClient(azureEndpoint.applicationTokenCredentials, (azureEndpoint.subscriptionID)!);
@@ -57,15 +57,14 @@ async function run(): Promise<void> {
 
 		let accessKeys = await storageArmClient.storageAccounts.listKeys(storageAccountResourceGroupName, storageAccountName, null);
 		let accessKey: string = accessKeys[0];
-		let StorageAccountConnectionString: string = "DefaultEndpointsProtocol=https;AccountName=" + storageAccountName + ";AccountKey=" + accessKey
-			+ ";EndpointSuffix=core.windows.net";
+		let storageAccountConnectionString: string = `DefaultEndpointsProtocol=https;AccountName={storageAccountName};AccountKey={accessKey};EndpointSuffix=core.windows.net`;
 		let username: string = (process.env.BUILD_REQUESTEDFOREMAIL)!;
 		const PUBLISH_TO_AZURE_TASK = '8';
 
 		const appattachConfig = {
 			'emailId': username,
 			'accessToken': accessToken,
-			'azureStorageKey': StorageAccountConnectionString,
+			'azureStorageKey': storageAccountConnectionString,
 			'azureWorkspace': tl.getInput('workSpace', true),
 			'azureStorageFileShare': tl.getInput('fileShare', true),
 			'azureStorageAccount': storageAccountName,

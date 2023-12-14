@@ -3,6 +3,11 @@ import * as tl from "azure-pipelines-task-lib/task";
 import * as fs from 'fs';
 import fetch from 'node-fetch';
 
+/**
+ * downloads nuget tool(nuget.exe).
+ * @param url weblink to download nuget tool
+ * @param downloadLoc location to download the nuget too into
+ */
 export async function downloadNugetTool(url: string, downloadLoc: string): Promise<void> {
     try {
         const response = await fetch(url);
@@ -26,6 +31,11 @@ export async function downloadNugetTool(url: string, downloadLoc: string): Promi
     }
 }
 
+/**
+ * picks installed nuget and copies target DLLs into output folder
+ * @param folderPath the path to the package(.nupkg or packages.config) file to be installed
+ * @param targetNetFramework target .Net framework to pick target and dependency DLLs complying with the package to be installed
+ */
 export async function copyTargetDlls(folderPath: string, targetNetFramework: string): Promise<void> {
     try {
         // Read the contents of the folder
@@ -40,7 +50,7 @@ export async function copyTargetDlls(folderPath: string, targetNetFramework: str
             // Find the highest version less than equal to 4.7.2 (to be compatible with AppAttachFramework)
             let targetNetFolder: string | undefined;
 
-            const targetFrameworkIndx = dotNetFrameworks.indexOf('net472');
+            const targetFrameworkIndx = dotNetFrameworks.indexOf(targetNetFramework);
             for (let i = targetFrameworkIndx; i >= 0; i--) {
                 if (libFolderContents.includes(dotNetFrameworks[i])) {
                     targetNetFolder = dotNetFrameworks[i];

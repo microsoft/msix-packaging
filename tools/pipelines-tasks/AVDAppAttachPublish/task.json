@@ -2,9 +2,9 @@
   "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
   "id": "59de78ad-c5b7-4750-89dd-7bb24a1eb964",
   "name": "AVDAppAttachPublish",
-  "friendlyName": "Publish MSIX App Attach package to AVD",
-  "instanceNameFormat": "AVD App Attach",
-  "description": "Publish MSIX package to AVD",
+  "friendlyName": "Publish MSIX app attach package to AVD",
+  "instanceNameFormat": "Publish MSIX app attach package to AVD",
+  "description": "Publish MSIX package to Azure Virtual Desktop",
   "helpMarkDown": "",
   "category": "Deploy",
   "author": "Microsoft Corporation",
@@ -39,40 +39,40 @@
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "Select the Azure Resource group for App Attach"
+      "helpMarkDown": "Azure Resource group containing AVD resources for app attach"
     },
     {
       "name": "storageAccount",
       "type": "pickList",
-      "label": "Storage Account",
+      "label": "Storage account",
       "defaultValue": "",
       "required": true,
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "Select the Azure Storage Account for App Attach"
+      "helpMarkDown": "Azure Storage Account containing target Azure File Share for app attach"
     },
     {
       "name": "fileShare",
       "type": "pickList",
-      "label": "File Share",
+      "label": "File share",
       "defaultValue": "",
       "required": true,
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "Select the Azure File Share for App Attach"
+      "helpMarkDown": "Azure File Share to upload app attach artifact and used for app attach"
     },
     {
       "name": "hostPool",
       "type": "pickList",
-      "label": "Host Pool",
+      "label": "Host pool",
       "defaultValue": "",
       "required": true,
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "Select the Azure Host Pool for App Attach"
+      "helpMarkDown": "Azure Host Pool for app attach"
     },
     {
       "name": "workSpace",
@@ -83,18 +83,18 @@
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "Select the Azure Work Space for App Attach"
+      "helpMarkDown": "AVD Work Space for app attach"
     },
     {
       "name": "applicationGroup",
       "type": "pickList",
-      "label": "Application Group",
+      "label": "Application group",
       "defaultValue": "",
       "required": true,
       "properties": {
         "EditableOptions": "True"
       },
-      "helpMarkDown": "Select the Azure Application Group for App Attach"
+      "helpMarkDown": "AVD Application Group for app attach"
     }
   ],
   "dataSourceBindings": [
