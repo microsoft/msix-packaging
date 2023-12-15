@@ -57,7 +57,7 @@ async function run(): Promise<void> {
 
 		let accessKeys = await storageArmClient.storageAccounts.listKeys(storageAccountResourceGroupName, storageAccountName, null);
 		let accessKey: string = accessKeys[0];
-		let storageAccountConnectionString: string = `DefaultEndpointsProtocol=https;AccountName={storageAccountName};AccountKey={accessKey};EndpointSuffix=core.windows.net`;
+		let storageAccountConnectionString: string = `DefaultEndpointsProtocol=https;AccountName=${storageAccountName};AccountKey=${accessKey};EndpointSuffix=core.windows.net`;
 		let username: string = (process.env.BUILD_REQUESTEDFOREMAIL)!;
 		const PUBLISH_TO_AZURE_TASK = '8';
 

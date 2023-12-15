@@ -47,4 +47,4 @@ mocha
 * msixmgr.exe (under `.\MsixAppAttach\lib`) was taken from the [MSIX Core 1.1. release](https://github.com/microsoft/msix-packaging/releases)
 * The MSBuildHelpers at `.\MsixPackaging\MSBuildHelpers` were taken from [azure-pipelines-tasks](https://github.com/microsoft/azure-pipelines-tasks/tree/master/Tasks/Common/MSBuildHelpers). There were only a minor changes to type annotations to make it compile with our configuration.
 * vswhere.exe under `.\MsixPackaging\MSBuildHelpers` was taken from [vswhere release 1.0.62](https://github.com/Microsoft/vswhere/releases/download/1.0.62/vswhere.exe)
-* AppAttachFramework(AppAttachKernel.nupkg) (under `.\common\lib`)
+* AppAttachFramework(AppAttachKernel.nupkg) (under `.\common\lib`) was taken from internal project that helps to build, package and app attach MSIX packages.
