@@ -72,6 +72,7 @@ function BuildCommonHelpers([switch]$installDependencies)
         # Build the directory
         Write-Host "Compiling common helpers"
         npx tsc
+        node installAppAttachFramework.js
         if (-not $?)
         {
             throw "Failed to build 'common'"

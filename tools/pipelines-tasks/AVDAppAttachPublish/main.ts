@@ -11,11 +11,9 @@ import * as fs from 'fs';
 import helpers = require('common-helpers/helpers');
 
 const HELPER_SCRIPT = path.join(__dirname, 'PublishAVD.ps1');
-const TARGET_DLL = path.join(__dirname, '/AppAttachFrameworkDLL/AppAttachKernel.dll');
-const AppAttachFrameworkDll = path.join(__dirname, '/AppAttachFrameworkDLL');
-
 const HELPER_SCRIPT_EXCEPTIONS_TELEMETRY = path.join(__dirname, 'ReportExceptionTelemetry.ps1');
-const TARGET_DLL_TELEMETRY = path.join(__dirname, '/AppAttachFrameworkDLL/AppAttachTelemetry.dll');
+const TARGET_DLL = path.join(__dirname,'node_modules/common-helpers/lib/AppAttachFrameworkDLL/AppAttachKernel.dll');
+const TARGET_DLL_TELEMETRY = path.join(__dirname, 'node_modules/common-helpers/lib/AppAttachFrameworkDLL/AppAttachTelemetry.dll');
 
 function isNonEmpty(str: string): boolean {
     return (!!str && !!str.trim());
@@ -34,15 +32,13 @@ function getResourceGroupNameFromUri(resourceUri: string): string {
 			return segments[resourceGroupIndex + 1];
 		}
 	}
-
+	
     return "";
 }
 
 async function run(): Promise<void> {
 	let isSuccessful = true;
 	try {
-		await helpers.installNuget(helpers.APPATTACH_FRAMEWORK_NUPKG_DIR, AppAttachFrameworkDll, 'net472');
-
 		let connectedServiceName = tl.getInput('connectedServiceNameARM', true)!;
 
 		let subscriptionID: string = tl.getEndpointDataParameter(connectedServiceName, 'subscriptionid', true)!;
@@ -101,10 +97,10 @@ async function run(): Promise<void> {
 			} else {
 				console.log(appAttachlogFile, data);
 			}
-		});
+		}); 
 	} catch (error) {
 		isSuccessful = false;
-		console.log(tl.loc("AppAttachPublish Error", error));
+		console.error(tl.loc("AppAttachPublish Error", error));
 		const powershellRunner: ToolRunner = helpers.getPowershellRunner(HELPER_SCRIPT_EXCEPTIONS_TELEMETRY);
 		powershellRunner.arg(['-exceptionMessage', "Test Exception Message"]);
 		powershellRunner.arg(['-targetDLL', TARGET_DLL_TELEMETRY]);
@@ -117,8 +113,8 @@ async function run(): Promise<void> {
 			Version: helpers.CLIENT_VERSION,
 			AppAttachImagePath: tl.getInput('vhdxPath', true),
 			IsSuccessful: isSuccessful
-		});
-	}
+		}); 
+	} 
 }
 
 function logTelemetry(params: any) {

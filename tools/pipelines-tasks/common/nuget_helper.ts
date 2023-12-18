@@ -71,6 +71,7 @@ export async function copyTargetDlls(folderPath: string, targetNetFramework: str
                     const dllPath = path.join(targetNetFolderPath, dll);
                     tl.cp(dllPath, folderPath, undefined, true);
                 });
+                tl.rmRF(path.join(folderPath, nugetPackFolder));
             }
             else {
                 console.log("target .net dependency libraries for " + nugetPackFolder + " not found");
