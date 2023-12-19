@@ -21,7 +21,7 @@ function isNonEmpty(str: string): boolean {
 
 function getResourceGroupNameFromUri(resourceUri: string): string {
 	if (isNonEmpty(resourceUri)) {
-		const parsedUrl = url.parse(resourceUri, true) as url.UrlWithParsedQuery;
+		const parsedUrl = url.parse(resourceUri, true);
 
 		const pathname = parsedUrl.pathname || '';
 		const segments = pathname.split('/');
