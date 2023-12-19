@@ -1,0 +1,168 @@
+# This pipeline was generated from the classic pipeline "CIGitHub-for-MsixCoreInstaller" on 2023-11-17 with https://aka.ms/1ESPTMigration (v1.0.0): https://dev.azure.com/microsoft/xPlatAppx/_build?definitionId=36972
+#
+# The following items require attention:
+# Variables were exported from the classic pipeline, confirm that `variables` values do not contain private information. If a variable contains private information, follow the guidance on handling secret variables: https://learn.microsoft.com/en-us/azure/devops/pipelines/process/set-secret-variables
+# Secret variable 'TDBuildAuthenticationAADSecret' detected in `variables`, follow the guidance on handling secret variables: https://learn.microsoft.com/en-us/azure/devops/pipelines/process/set-secret-variables
+# 'Allow scripts to access the OAuth token' was selected in pipeline.  Add the following YAML to any steps requiring access:
+#       env:
+#           MY_ACCESS_TOKEN: $(System.AccessToken)
+# The task group "Release msixmgr" was converted to a template: task-group-microsoft-xPlatAppx-release-msixmgr-v1-converted.yml with 1 change(s):
+# - The task PublishBuildArtifacts@1 ("Publish Artifact: drop") was removed and replaced as `job.templateContext.outputs` in this file
+# The following task is disabled in "Run Tests" and not included in the converted pipeline: "Download Pipeline Artifact"
+
+name: $(TeamProject)_$(BuildDefinitionName)_$(SourceBranchName)_$(Date:yyyyMMdd)$(Rev:.r)
+variables:
+  - name: AndroidChkBuilds
+    value: ""
+  - name: system.debug
+    value: false
+  - name: TDBuildAuthenticationAADSecret
+    value: null
+resources:
+  repositories:
+    - repository: 1esPipelines
+      type: git
+      name: 1ESPipelineTemplates/1ESPipelineTemplates
+      ref: refs/tags/release
+trigger:
+  branches:
+    include:
+      - master
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  parameters:
+    pool:
+      os: windows
+      image: windows-2019
+      name: Azure Pipelines
+    customBuildTags:
+      - MigrationTooling-microsoft-xPlatAppx-36972-Tool
+    stages:
+      - stage: Stage
+        jobs:
+          - job: Phase_15
+            displayName: Build and Release MsixMgr
+            cancelTimeoutInMinutes: 1
+            env:
+              MY_ACCESS_TOKEN: $(System.AccessToken)
+            templateContext:
+              outputs:
+                - output: pipelineArtifact
+                  artifactName: drop
+                  targetPath: $(Build.ArtifactStagingDirectory)
+                  displayName: "Publish Artifact: drop"
+            steps:
+              - checkout: self
+                clean: true
+                submodules: true
+                lfs: true
+                fetchTags: false
+                persistCredentials: true
+              - template: task-group-microsoft-xPlatAppx-release-msixmgr-v1-converted.yml@self
+                parameters:
+                  MSBuildArgs: /t:msixmgr
+                  MSBuildArgs2: /t:GetMsixmgrProducts;MsixMgrWix /p:RunWixToolsOutOfProc=true /p:PostBuildEventUseInBuild=false
+                  TDBuildAuthenticationAADSecret: $(TDBuildAuthenticationAADSecret)
+          - job: Job_1
+            displayName: Run Tests
+            dependsOn: Phase_15
+            templateContext:
+              outputs:
+                - output: pipelineArtifact
+                  artifactName: droplogs
+                  targetPath: $(Build.ArtifactStagingDirectory)
+                  displayName: "Publish Artifact: droplogs"
+                  condition: succeededOrFailed()
+            steps:
+              - checkout: self
+                clean: true
+                submodules: true
+                lfs: true
+                fetchTags: false
+              - task: DownloadBuildArtifacts@0
+                displayName: Download Build Artifacts
+                inputs:
+                  downloadType: specific
+                  downloadPath: $(Pipeline.Workspace)
+                  extractTars: false
+              - task: PowerShell@2
+                displayName: Find and install msixmgrSetup
+                inputs:
+                  targetType: inline
+                  script: |
+                    # Write your PowerShell commands here.
+
+                    $installtarget = dir -recurse $env:ArtifactDirectory\msixmgrSetup-*-x64.msi
+
+                    $installtarget
+
+                    start-process -wait -filepath msiexec -argumentlist /I, $installtarget.fullname, /qn
+
+                    git lfs fetch
+                    git lfs pull
+                env:
+                  ArtifactDirectory: $(Pipeline.Workspace)
+              - task: PowerShell@2
+                displayName: Run msixcore tests
+                inputs:
+                  filePath: MsixCore/Tests/test.ps1
+                  arguments: -binary $env:ProgramFiles\msixmgr -taketrace $true
+                  errorActionPreference: continue
+                  workingDirectory: MsixCore/Tests
+                continueOnError: true
+              - task: PowerShell@2
+                displayName: Debugging on agent machine commands
+                condition: succeededOrFailed()
+                inputs:
+                  targetType: inline
+                  script: |-
+                    #write-host "environment-variables"
+                    #dir env:
+
+                    #write-host "msixmgr directory"
+                    #dir $env:ProgramFiles\msixmgr
+
+                    #write-host "current directory"
+                    #convert-path .
+                    cd msixcore\tests
+                    convert-path .
+
+                    $executable = join-path $env:ProgramFiles "msixmgr\msixmgr.exe"
+
+                    & .\msixtrace.ps1 -start
+
+                    write-host "all packages"
+                    & $executable -FindPackage *
+
+                    write-host "fake does not exist package"
+                    & $executable  -FindPackage fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe
+
+                    write-host "add notepad"
+                    & $executable  -AddPackage notepadplus.msix -quietUx
+
+                    write-host "all packages"
+                    & $executable -FindPackage *
+
+                    write-host "fake does not exist package"
+                    & $executable -FindPackage fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe
+
+                    write-host "remove notepad"
+                    & $executable  -RemovePackage notepadplus_0.0.0.0_x64__8wekyb3d8bbwe
+
+                    write-host "all packages"
+                    & $executable  -FindPackage *
+
+                    write-host "fake does not exist package"
+                    & $executable  -FindPackage fakedoesnotexist_1.0.0.1_x64__8wekyb3d8bbwe
+
+                    & .\msixtrace.ps1 -stop
+                  errorActionPreference: silentlyContinue
+                  ignoreLASTEXITCODE: true
+                continueOnError: true
+              - task: CopyFiles@2
+                displayName: "Copy Files to: $(Build.ArtifactStagingDirectory)"
+                condition: succeededOrFailed()
+                inputs:
+                  SourceFolder: MsixCore/Tests
+                  Contents: msixtrace*.log
+                  TargetFolder: $(Build.ArtifactStagingDirectory)
