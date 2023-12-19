@@ -129,6 +129,9 @@ function InstallDevelopmentTools()
 
     # Test platform
     npm install -g mocha
+
+    #Install Nuget
+    winget install Microsoft.Nuget
 }
 
 # Installs the dependencies for every project (the common helpers and all tasks)

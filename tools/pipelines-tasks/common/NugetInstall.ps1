@@ -5,9 +5,6 @@
 .DESCRIPTION
     This script installs provided nuget package with given packageId and version
 
-.PARAMETER nugetToolPath
-    Nuget tool path, path to nuget.exe
-
 .PARAMETER packageId
     Nuget package Id that needs to be installed
 
@@ -19,16 +16,16 @@
 
 #>
 
-param([string]$nugetToolPath, [string]$packageId=$null, [string]$version=$null, [string]$outputDirectory)
+param([string]$packageId=$null, [string]$version=$null, [string]$outputDirectory)
 try
 {
     if ($packageId -and $version)
     {
-        & $nugetToolPath install $packageId -Version $version -NonInteractive -OutputDirectory $outputDirectory
+        & nuget install $packageId -Version $version -NonInteractive -OutputDirectory $outputDirectory
     }
     else
     {
-        & $nugetToolPath install 'packages.config' -NonInteractive -OutputDirectory $outputDirectory
+        & nuget install 'packages.config' -NonInteractive -OutputDirectory $outputDirectory
     }
 }
 catch

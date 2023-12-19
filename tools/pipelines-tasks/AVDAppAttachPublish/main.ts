@@ -15,25 +15,17 @@ const HELPER_SCRIPT_EXCEPTIONS_TELEMETRY = path.join(__dirname, 'ReportException
 const TARGET_DLL = path.join(__dirname,'node_modules/common-helpers/lib/AppAttachFrameworkDLL/AppAttachKernel.dll');
 const TARGET_DLL_TELEMETRY = path.join(__dirname, 'node_modules/common-helpers/lib/AppAttachFrameworkDLL/AppAttachTelemetry.dll');
 
-function isNonEmpty(str: string): boolean {
-    return (!!str && !!str.trim());
-}
-
 function getResourceGroupNameFromUri(resourceUri: string): string {
-	if (isNonEmpty(resourceUri)) {
-		const parsedUrl = url.parse(resourceUri, true);
+	const parsedUrl = url.parse(resourceUri, true);
 
-		const pathname = parsedUrl.pathname || '';
-		const segments = pathname.split('/');
+	const pathname = parsedUrl.pathname || '';
+	const segments = pathname.split('/');
 
-		const resourceGroupIndex = segments.indexOf('resourceGroups');
+	const resourceGroupIndex = segments.indexOf('resourceGroups');
 
-		if (resourceGroupIndex !== -1 && resourceGroupIndex < segments.length - 1) {
-			return segments[resourceGroupIndex + 1];
-		}
+	if (resourceGroupIndex !== -1 && resourceGroupIndex < segments.length - 1) {
+		return segments[resourceGroupIndex + 1];
 	}
-	
-    return "";
 }
 
 async function run(): Promise<void> {
@@ -50,6 +42,10 @@ async function run(): Promise<void> {
 
 		const storageArmClient = new armStorage.StorageManagementClient(azureEndpoint.applicationTokenCredentials, (azureEndpoint.subscriptionID)!);
 		let storageAccount: StorageAccount = await storageArmClient.storageAccounts.get(storageAccountName);
+		if (!storageAccount.id.trim()) {
+			throw "Invalid Storage Account"
+		}
+
 		let storageAccountResourceGroupName = getResourceGroupNameFromUri(storageAccount.id);
 
 		let accessKeys = await storageArmClient.storageAccounts.listKeys(storageAccountResourceGroupName, storageAccountName, null);
@@ -76,8 +72,8 @@ async function run(): Promise<void> {
 		};
 
 		const jsonString = JSON.stringify(appattachConfig);
-		appattachConfig['accessToken'] = "***";
-		appattachConfig['azureStorageKey'] = "***";
+		appattachConfig['accessToken'] = "***"; //  mask access token while displaying in log
+		appattachConfig['azureStorageKey'] = "***"; //  mask storage account key while displaying in log
 		tl.debug(JSON.stringify(appattachConfig));
 
 		const powershellRunner: ToolRunner = helpers.getPowershellRunner(HELPER_SCRIPT);

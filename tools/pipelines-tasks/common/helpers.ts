@@ -5,14 +5,11 @@ import tl = require('azure-pipelines-task-lib/task');
 import xml = require('xml2js');
 
 import { ToolRunner } from 'azure-pipelines-task-lib/toolrunner';
-import nugetHelper = require('./nuget_helper');
 
 export const MAKEAPPX_PATH = path.join(__dirname, 'lib', 'makeappx');
 
-export const APPATTACH_FRAMEWORK_NUPKG_DIR = path.join(__dirname, 'lib');
 export const CLIENT_TYPE = 'AzureDevOps';
 export const CLIENT_VERSION = '2.0.0';
-const NUGET_INSTALL_SCRIPT = path.join(__dirname, 'NugetInstall.ps1');
 
 /**
  * When running on an agent, returns the value of Agent.TempDirectory which is cleaned after
@@ -122,39 +119,4 @@ export const writeXml = (xmlObject: any, filePath: string) =>
 {
     const xmlBuilder = new xml.Builder();
     fs.writeFileSync(filePath, xmlBuilder.buildObject(xmlObject));
-}
-
-/**
- * installs input Nuget package into given output Location.
- * @param packagePath the path to the package(.nupkg or packages.config) file to be installed
- * @param outputPath output location to install the nuget package into
- * @param targetNetFramework target .Net framework to pick target and dependency DLLs complying with the package to be installed
- * @param packageId optional parameter, package id to be installed. Required if package install mechanism is through providing package id(instead of packages.config)
- * @param version optional parameter, package version to be installed. Required if package install mechanism is through providing package id(instead of packages.config)
- */
-export async function installNuget(packagePath: string, outputPath: string, targetNetFramework: string, packageId?: string, version?: string) {
-    try {
-        tl.pushd(packagePath);
-
-        const nugetToolSrc: string = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe";
-
-        await nugetHelper.downloadNugetTool(nugetToolSrc, packagePath);
-        let powershellRunner: ToolRunner = getPowershellRunner(NUGET_INSTALL_SCRIPT);
-        powershellRunner.arg(['-nugetToolPath', './nuget.exe']);
-        if (packageId && version) {
-            powershellRunner.arg(['-packageId', packageId]);
-            powershellRunner.arg(['-version', version]);
-        }
-        powershellRunner.arg(['-outputDirectory', outputPath]);
-        let execResult = powershellRunner.execSync();
-        if (execResult.code) {
-            throw execResult.stderr;
-        }
-
-        await nugetHelper.copyTargetDlls(outputPath, targetNetFramework);
-        tl.rmRF('nuget.exe');
-        tl.popd();
-    } catch (error) {
-        console.error("Error finding target framework Dlls: " + error);
-    }
 }
