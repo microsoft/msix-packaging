@@ -1,0 +1,400 @@
+# This template was generated from the task group "Release msixmgr" on 2023-11-17 with https://aka.ms/1ESPTMigration (v1.0.0): https://dev.azure.com/microsoft/xPlatAppx/_taskgroup/0d4960a2-f706-4dcf-bcdc-7dad94d125d7
+# Description: Build msix
+# Build msixmgr + msixmgrSetup
+# Publish
+# release MSI to Github
+#
+# The following items require attention:
+# The pipeline uses service connection "ESRP CodeSignin connection 3", you will need to grant the new pipeline access: https://dev.azure.com/microsoft/xPlatAppx/_settings/adminservices?resourceId=0b701fca-7198-4a11-aee4-84090fc83e58
+# The pipeline uses service connection "github.com_wcheng-msft", you will need to grant the new pipeline access: https://dev.azure.com/microsoft/xPlatAppx/_settings/adminservices?resourceId=26b61696-c93f-42f3-af20-4a0f32ec8336
+# The following tasks are disabled and not included in the converted pipeline: "GitHub release (delete) 1-time for deleting on name changes. Enable when needed.", "GitHub release (create official release) enable when necessary"
+# The task PublishBuildArtifacts@1 ("Publish Artifact: drop") was removed from this file and replaced as `job.templateContext.outputs` in the parent yaml: https://aka.ms/1esptoutputs
+
+parameters:
+  - name: MSBuildArgs
+    type: string
+  - name: MSBuildArgs2
+    type: string
+  - name: TDBuildAuthenticationAADSecret
+    type: string
+steps:
+  - task: PowerShell@2
+    displayName: Update version number in msixmgr.rc
+    inputs:
+      targetType: inline
+      script: |-
+        # Use the environment variables input below to pass secret variables to this script.
+        $rcFile = join-path (convert-path .) "MsixCore\msixmgr\msixmgr.rc"
+        $gitDescribe = git describe --match MSIX*release --tags --long
+        $parts = $gitDescribe.split('-')
+
+        #expected format is gittag-commitsSinceTag-commitID
+        #our git describe command searches only for msixmgr tags, we expect the format of the msixmgr tags to be msixmgr-<versionstring>
+        if ($parts.length -ge 4)
+        {
+             $version = "1.0"
+             for ($i = 0; $i -lt $parts.length - 2; $i++)
+             {
+                  if (($parts[$i] -as [float]) -ne $null)
+                  {
+                       $version = $parts[$i]
+                  }
+             }
+
+            $commitsSinceTag = $parts[$parts.length-2]
+
+            $version += ".$commitsSinceTag.0"
+            $version
+
+        ####WHEN RELEASE, HARDCODE HERE
+        ###    $version = "1.1.0.0"
+            $versionWithCommas = $version.replace('.', ',')
+
+            #define VER_FILEVERSION 1,0,0,0
+            $fileVersionLine = "#define VER_FILEVERSION $versionWithCommas"
+            #define VER_FILEVERSION_STR "1.0.0.0"
+            $fileVersionStrLine = "#define VER_FILEVERSION_STR `"$version`""
+            
+            $rcContent = Get-Content $rcFile
+            $newContent = @()
+            foreach ($line in $rcContent)
+            {
+                if ($line.contains("#define VER_FILEVERSION "))
+                {
+                    $newContent += $fileVersionLine
+                }
+                elseif ($line.contains("#define VER_FILEVERSION_STR"))
+                {
+                    $newContent += $fileVersionStrLine
+                }
+                else
+                {
+                    $newContent += $line
+                }
+            }
+
+            $newContent > $rcFile
+        }
+
+
+        # dir env:
+      errorActionPreference: silentlyContinue
+    continueOnError: true
+  - task: PowerShell@2
+    displayName: Enable Telemetry Logging
+    inputs:
+      targetType: inline
+      script: |-
+        # Enabling the Telemetry Logging by setting the Provider Group
+
+        $telemetry = Get-Content "MsixCore\msixmgr\msixmgrTelemetry.hpp"
+        $telemetry = $telemetry.replace("0000000000, 00000, 00000, 0000, 0000, 0000, 0000, 0000, 000, 0000, 0000", "0x4f50731a, 0x89cf, 0x4782, 0xb3, 0xe0, 0xdc, 0xe8, 0xc9, 0x4, 0x76, 0xba")
+        $telemetry | out-file -FilePath "MsixCore\msixmgr\msixmgrTelemetry.hpp" -Force
+  - task: BatchScript@1
+    displayName: Run script makewin.cmd x64
+    inputs:
+      filename: makewin.cmd
+      arguments: x64 -mt
+  - task: VSBuild@1
+    displayName: Build solution MsixCore\msixmgr.sln x64
+    inputs:
+      solution: MsixCore\msixmgr.sln
+      msbuildArgs: ${{parameters.MSBuildArgs}}
+      platform: x64
+      configuration: Release
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: ESRP CodeSigning x64 binaries
+    inputs:
+      ConnectedServiceName: ESRP CodeSignin connection 3
+      FolderPath: MsixCore
+      Pattern: msixmgr.exe,msix.dll,applyacls.dll
+      signConfigType: inlineSignParams
+      inlineOperation: |-
+        [
+          {
+            "keyCode": "CP-230012",
+            "operationSetCode": "SigntoolSign",
+            "parameters": [
+              {
+                "parameterName": "OpusName",
+                "parameterValue": "Microsoft"
+              },
+              {
+                "parameterName": "OpusInfo",
+                "parameterValue": "http://www.microsoft.com"
+              },
+              {
+                "parameterName": "FileDigest",
+                "parameterValue": "/fd \"SHA256\""
+              },
+              {
+                "parameterName": "PageHash",
+                "parameterValue": "/NPH"
+              },
+              {
+                "parameterName": "TimeStamp",
+                "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+              }
+            ],
+            "toolName": "sign",
+            "toolVersion": "1.0"
+          },
+          {
+            "keyCode": "CP-230012",
+            "operationSetCode": "SigntoolVerify",
+            "parameters": [ ],
+            "toolName": "sign",
+            "toolVersion": "1.0"
+          }
+        ]
+      VerboseLogin: true
+    continueOnError: true
+  - task: MicrosoftTDBuild.tdbuild-task.tdbuild-task.TouchdownBuildTask@1
+    displayName: Touchdown Build - 5230, PRODEXT
+    inputs:
+      teamId: "5230"
+      authId: 79bf82f7-9575-4031-898d-c2ce600461d4
+      authKey: ${{parameters.TDBuildAuthenticationAADSecret}}
+      isPreview: false
+      resourceFilePath: |-
+        MsixCore\x64\Release\msixmgr.exe.mui;O:MsixCore\msixmgr\loc
+        MsixCore\MsixMgrWix\en-us\strings.wxl;O:MsixCore\MsixMgrWix
+      gitAction: PULLREQUEST
+  - task: PowerShell@2
+    displayName: fix up WXL and create PR for Loc changes
+    inputs:
+      targetType: inline
+      script: |
+        $gitdescribe = git describe
+
+        dir MsixCore\MsixMgrWix |% {
+           $culture = $_.name
+           $filename = join-path $_.fullname "strings.wxl"
+           if (test-path $filename) {
+                $xml = [xml] (select-xml -path $filename -xpath /).node
+                $xml.WixLocalization.setattribute("Culture", $culture)
+                $xml.save($filename)
+           }
+        }
+
+        $hasMuiChange = (git status MsixCore/msixmgr/loc  |% {$_.contains("modified")}).contains($true)
+        $hasWxlChange =  (git status MsixCore/MsixMgrWix  |% {$_.contains("modified")}).contains($true)
+        If ($hasMuiChange -or $hasWxlChange)
+        {
+           git checkout -b localization-update-$gitdescribe-$env:build_buildid
+           git add MsixCore/msixmgr/loc
+           git add MsixCore/MsixMgrWix
+           git commit -m "localization changes from build"
+
+          $path = $env:Path
+          write-host "updating Path = $env:Path to point to $env:programfiles\git\cmd first"
+          $env:path = "$env:programfiles\git\cmd;$env:path"
+
+           & "$env:programfiles\githubcli\bin\hub.exe" pull-request -p --no-edit
+
+           write-host "updating path back to original "
+           $env:path = $path
+        }
+        git status
+
+        #dir -recurse MsixCore/msixmgr
+      errorActionPreference: continue
+  - task: VSBuild@1
+    displayName: Build GetMsixmgrProductsCA and MsixMgrWix x64
+    inputs:
+      solution: MsixCore\msixmgr.sln
+      msbuildArgs: ${{parameters.MSBuildArgs2}}
+      platform: x64
+      configuration: Release
+  - task: BatchScript@1
+    displayName: Run script makewin.cmd x86
+    inputs:
+      filename: makewin.cmd
+      arguments: x86 -mt
+  - task: VSBuild@1
+    displayName: Build solution MsixCore\msixmgr.sln x86
+    inputs:
+      solution: MsixCore\msixmgr.sln
+      msbuildArgs: ${{parameters.MSBuildArgs}}
+      platform: x86
+      configuration: Release
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: ESRP CodeSigning x86 binaries
+    inputs:
+      ConnectedServiceName: ESRP CodeSignin connection 3
+      FolderPath: MsixCore
+      Pattern: msixmgr.exe,msix.dll,applyacls.dll
+      signConfigType: inlineSignParams
+      inlineOperation: |-
+        [
+          {
+            "keyCode": "CP-230012",
+            "operationSetCode": "SigntoolSign",
+            "parameters": [
+              {
+                "parameterName": "OpusName",
+                "parameterValue": "Microsoft"
+              },
+              {
+                "parameterName": "OpusInfo",
+                "parameterValue": "http://www.microsoft.com"
+              },
+              {
+                "parameterName": "FileDigest",
+                "parameterValue": "/fd \"SHA256\""
+              },
+              {
+                "parameterName": "PageHash",
+                "parameterValue": "/NPH"
+              },
+              {
+                "parameterName": "TimeStamp",
+                "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+              }
+            ],
+            "toolName": "sign",
+            "toolVersion": "1.0"
+          },
+          {
+            "keyCode": "CP-230012",
+            "operationSetCode": "SigntoolVerify",
+            "parameters": [ ],
+            "toolName": "sign",
+            "toolVersion": "1.0"
+          }
+        ]
+      VerboseLogin: true
+    continueOnError: true
+  - task: VSBuild@1
+    displayName: Build GetMsixmgrProductsCA and MsixMgrWix x86
+    inputs:
+      solution: MsixCore\msixmgr.sln
+      msbuildArgs: ${{parameters.MSBuildArgs2}}
+      platform: x86
+      configuration: Release
+  - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@1
+    displayName: ESRP CodeSigning MSI packages
+    inputs:
+      ConnectedServiceName: ESRP CodeSignin connection 3
+      FolderPath: MsixCore\MsixMgrWix\bin
+      Pattern: "*.msi"
+      signConfigType: inlineSignParams
+      inlineOperation: |-
+        [
+          {
+            "keyCode": "CP-230012",
+            "operationSetCode": "SigntoolSign",
+            "parameters": [
+              {
+                "parameterName": "OpusName",
+                "parameterValue": "Microsoft"
+              },
+              {
+                "parameterName": "OpusInfo",
+                "parameterValue": "http://www.microsoft.com"
+              },
+              {
+                "parameterName": "FileDigest",
+                "parameterValue": "/fd \"SHA256\""
+              },
+              {
+                "parameterName": "PageHash",
+                "parameterValue": "/NPH"
+              },
+              {
+                "parameterName": "TimeStamp",
+                "parameterValue": "/tr \"http://rfc3161.gtm.corp.microsoft.com/TSS/HttpTspServer\" /td sha256"
+              }
+            ],
+            "toolName": "sign",
+            "toolVersion": "1.0"
+          },
+          {
+            "keyCode": "CP-230012",
+            "operationSetCode": "SigntoolVerify",
+            "parameters": [ ],
+            "toolName": "sign",
+            "toolVersion": "1.0"
+          }
+        ]
+      SessionTimeout: "20"
+    continueOnError: true
+  - task: PowerShell@2
+    displayName: Revert version number changes
+    condition: succeededOrFailed()
+    inputs:
+      targetType: inline
+      script: git checkout -- MsixCore/msixmgr/msixmgr.rc
+      errorActionPreference: silentlyContinue
+    continueOnError: true
+  - task: PowerShell@2
+    displayName: create zip of files
+    inputs:
+      targetType: inline
+      script: |
+        
+        $zipdir = join-path (convert-path .)  "MsixCore\x64\Release\zip"
+        $zipdir64 = join-path (convert-path .)  "MsixCore\x64\Release\zip\x64"
+        $zipdir86 = join-path (convert-path .)  "MsixCore\x64\Release\zip\x86"
+        $zipFile = join-path (convert-path .) "MsixCore\x64\Release\msixmgr.zip"
+
+        md $zipdir64 -erroraction ignore
+        copy MsixCore\x64\Release\msixmgr.exe $zipdir64
+        copy MsixCore\x64\Release\msix.dll $zipdir64
+        copy MsixCore\Dependencies\x64\*.dll $zipdir64
+        md $zipdir64\en-US -erroraction ignore
+        copy MsixCore\x64\Release\msixmgr.exe.mui $zipdir64\en-US
+        copy-item -recurse MsixCore\MsixMgr\loc\* $zipdir64
+
+        md $zipdir86 -erroraction ignore
+        copy MsixCore\x86\Release\msixmgr.exe $zipdir86
+        copy MsixCore\x86\Release\msix.dll $zipdir86
+        copy MsixCore\Dependencies\x86\*.dll $zipdir86
+        md $zipdir86\en-US -erroraction ignore
+        copy MsixCore\x86\Release\msixmgr.exe.mui $zipdir86\en-US
+        copy-item -recurse MsixCore\MsixMgr\loc\* $zipdir86
+
+        #copy-item -recurse MsixCore\MsixMgrWix\loc $zipdir
+
+        if (test-path $zipFile )  {del $zipFile }
+        add-type -assembly system.io.compression.filesystem
+        [System.IO.Compression.ZipFile]::CreateFromDirectory($zipdir, $zipfile)
+      errorActionPreference: silentlyContinue
+    continueOnError: true
+  - task: PowerShell@2
+    displayName: Copy and rename files to artifact staging directory
+    inputs:
+      targetType: inline
+      script: |-
+        $TargetDir = $env:TargetDir
+
+        copy MsixCore\x64\Release\msixmgr.zip $targetDir
+
+        $version =  (dir MsixCore\x64\Release\msixmgr.exe).versioninfo.fileversion
+
+        copy MsixCore\MsixMgrWix\bin\x64\Release\msixmgrSetup.msi $targetDir\msixmgrSetup-$version-x64.msi
+        copy MsixCore\MsixMgrWix\bin\x86\Release\msixmgrSetup.msi $targetDir\msixmgrSetup-$version-x86.msi
+        copy MsixCore\Tests\msixtrace.ps1 $targetDir\msixtrace.ps1
+      errorActionPreference: silentlyContinue
+    continueOnError: true
+    env:
+      TargetDir: $(Build.ArtifactStagingDirectory)
+  - task: GitHubRelease@0
+    displayName: GitHub release (delete preview)
+    inputs:
+      gitHubConnection: github.com_wcheng-msft
+      action: delete
+      tag: MSIX-Core-preview
+    continueOnError: true
+  - task: GitHubRelease@0
+    displayName: GitHub release (create preview)
+    inputs:
+      gitHubConnection: github.com_wcheng-msft
+      tagSource: manual
+      tag: MSIX-Core-preview
+      title: MSIX Core preview
+      releaseNotesSource: input
+      releaseNotes: This is MSIX Core preview build. This build contains the latest changes prior to official releases.
+      isPreRelease: true
+  - task: ms.vss-governance-buildtask.governance-build-task-component-detection.ComponentGovernanceComponentDetection@0
+    displayName: Component Detection
