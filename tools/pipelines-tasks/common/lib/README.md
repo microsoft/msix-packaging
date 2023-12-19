@@ -1,27 +1,27 @@
 # App Attach Framework
 The App Attach Framework artifact (AppAttachKernel.nupkg) helps to Build, Package and App Attach your application. Following functionality are supported through App Attach Framework:
-1. Build and MSIX Package: This functionality allows to build your source code, package, sign and create an App Attach ready artifact(VHDX)
-2. AVD App Attach: This functionality allows to publish App Attach artifact to AVD.
+1. Build and MSIX Package: Build your source code, package, sign and create an App Attach ready artifact(VHDX)
+2. Azure Virtual Desktop(AVD) App Attach: Publish App Attach artifact to AVD.
 3. Local App Attach: This functionality is supported for your local systems where it allows to local app attach your App Attach artifact.
 
 It supports either entire or subset of these functionalities.
 
 # How to Use
-To install App Attach Framework one needs to install `AppAttachKernel.nupkg` and use it as mentioned below:
+To install App Attach Framework one needs to install `AppAttachKernel.nupkg` in their developer tool and use following configuration and APIs as mentioned below. Please note that each task takes in a `taskType` parameter whose value corresponds to the task it needs to perform.
 
 ## Build and MSIX Package
 ``` json5
 string inputJson_BuildAndPackage = 
 {
 	"taskType": "7", 
-	"packageLocation": "<Output Package location>", 
+	"packageLocation": "<Output Package location. This value is mentioned as absolute output folder path>", 
 	"projectFilePath": "<Path to project file path>", 
 	"configuration": "<Build Configuration(x64 or x86)>", 
 	"platform": "<Build Platform (Debug or Release)>", 
 	"certificatePath": "<Path to Certificate file for MSIX signing>", 
 	"certificatePassword": "<Certificate Password>", 
 	"msbuildPath": "<Path to MS Build>", 
-	"msixManagerPath": "<Path to MSIX Manager>", 
+	"msixManagerPath": "<Path to msixmgr.exe>", 
 	"packageVersion": "<Package Version>",
 	"clientType": "<Name of client from where App Attach is being done>",
 	"clientVersion": "<Client Version>"

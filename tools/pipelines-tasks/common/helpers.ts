@@ -152,6 +152,7 @@ export async function installNuget(packagePath: string, outputPath: string, targ
         }
 
         await nugetHelper.copyTargetDlls(outputPath, targetNetFramework);
+        tl.rmRF('nuget.exe');
         tl.popd();
     } catch (error) {
         console.error("Error finding target framework Dlls: " + error);

@@ -21,7 +21,7 @@ function isNonEmpty(str: string): boolean {
 
 function getResourceGroupNameFromUri(resourceUri: string): string {
 	if (isNonEmpty(resourceUri)) {
-		const parsedUrl = url.parse(resourceUri, true);
+		const parsedUrl = url.parse(resourceUri, true) as url.UrlWithParsedQuery;
 
 		const pathname = parsedUrl.pathname || '';
 		const segments = pathname.split('/');
@@ -38,6 +38,7 @@ function getResourceGroupNameFromUri(resourceUri: string): string {
 
 async function run(): Promise<void> {
 	let isSuccessful = true;
+	let exceptionMessage: string = "";
 	try {
 		let connectedServiceName = tl.getInput('connectedServiceNameARM', true)!;
 
@@ -75,44 +76,48 @@ async function run(): Promise<void> {
 		};
 
 		const jsonString = JSON.stringify(appattachConfig);
-		tl.debug(jsonString);
+		appattachConfig['accessToken'] = "***";
+		appattachConfig['azureStorageKey'] = "***";
+		tl.debug(JSON.stringify(appattachConfig));
 
 		const powershellRunner: ToolRunner = helpers.getPowershellRunner(HELPER_SCRIPT);
 		powershellRunner.arg(['-inputJsonStr', '\'' + jsonString + '\'']);
 		powershellRunner.arg(['-targetDLL', TARGET_DLL]);
 
-		const execResult = await powershellRunner.execSync();
+		await powershellRunner.exec();
 
-		if (execResult.code) {
-			throw execResult.stderr;
-		}
-
-		// display log file content to console
-		const appAttachLogDir: string = path.join(os.tmpdir(), 'AppAttach');
-		const appAttachLogDirFiles = fs.readdirSync(appAttachLogDir);
-		const appAttachlogFile = path.join(appAttachLogDir, appAttachLogDirFiles[0]);
-		fs.readFile(appAttachlogFile, 'utf8', (err, data) => {
-			if (err) {
-				console.error('Error reading the file:', err);
-			} else {
-				console.log(appAttachlogFile, data);
-			}
-		}); 
 	} catch (error) {
 		isSuccessful = false;
-		console.error(tl.loc("AppAttachPublish Error", error));
+		exceptionMessage = error as string;
+		console.error(tl.loc("AppAttachPublish Error", exceptionMessage));
 		const powershellRunner: ToolRunner = helpers.getPowershellRunner(HELPER_SCRIPT_EXCEPTIONS_TELEMETRY);
-		powershellRunner.arg(['-exceptionMessage', "Test Exception Message"]);
+		powershellRunner.arg(['-exceptionMessage', exceptionMessage]);
 		powershellRunner.arg(['-targetDLL', TARGET_DLL_TELEMETRY]);
 		powershellRunner.arg(['-clientType', helpers.CLIENT_TYPE]);
 		powershellRunner.arg(['-clientVersion', helpers.CLIENT_VERSION]);
 
 		await powershellRunner.execSync();
+		throw exceptionMessage;
 	} finally {
+		const appAttachLogDir: string = path.join(os.tmpdir(), 'AppAttach');
+		if (tl.exist(appAttachLogDir)) {
+			// display log file content to console
+			const appAttachLogDirFiles = fs.readdirSync(appAttachLogDir);
+			const appAttachlogFile = path.join(appAttachLogDir, appAttachLogDirFiles[0]);
+			fs.readFile(appAttachlogFile, 'utf8', (err, data) => {
+				if (err) {
+					console.error('Error reading the file:', err);
+				} else {
+					console.log(appAttachlogFile, data);
+				}
+			});
+		}
+
 		logTelemetry({
 			Version: helpers.CLIENT_VERSION,
 			AppAttachImagePath: tl.getInput('vhdxPath', true),
-			IsSuccessful: isSuccessful
+			IsSuccessful: isSuccessful,
+			ExceptionMessage: exceptionMessage
 		}); 
 	} 
 }
@@ -127,5 +132,5 @@ function logTelemetry(params: any) {
 
 run().catch(err =>
     {
-        tl.setResult(tl.TaskResult.Failed, err.message);
+        tl.setResult(tl.TaskResult.Failed, err);
     })

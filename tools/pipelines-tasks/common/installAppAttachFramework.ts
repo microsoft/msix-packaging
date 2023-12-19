@@ -2,7 +2,7 @@ import commonHelpers = require('./helpers');
 import path = require('path');
 import tl = require('azure-pipelines-task-lib/task');
 
-async function run(): Promise<void> {
+function run(): void {
     try {
         const AppAttachFrameworkDll = path.join(__dirname, 'lib', 'AppAttachFrameworkDLL');
         if (tl.exist(AppAttachFrameworkDll)) {

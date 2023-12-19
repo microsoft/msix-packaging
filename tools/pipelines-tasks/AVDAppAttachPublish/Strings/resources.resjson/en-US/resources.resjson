@@ -6,7 +6,7 @@
   "loc.input.label.vhdxPath": "VHDX Path",
   "loc.input.help.vhdxPath": "Path to VHDX Package path.",
   "loc.input.label.connectedServiceNameARM": "Azure subscription",
-  "loc.input.help.connectedServiceNameARM": "Select the Azure Resource Manager subscription for the deployment.",
+  "loc.input.help.connectedServiceNameARM": "Azure Resource Manager subscription for the deployment.",
   "loc.input.label.resourceGroupName": "Resource group",
   "loc.input.help.resourceGroupName": "Azure Resource group containing AVD resources for app attach",
   "loc.input.label.storageAccount": "Storage account",

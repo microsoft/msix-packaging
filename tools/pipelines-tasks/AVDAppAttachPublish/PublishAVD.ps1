@@ -14,18 +14,14 @@
 
 param([string]$inputJsonStr, [string]$targetDLL)
 
-try
-{
-    Add-Type -Path $targetDLL
+Add-Type -Path $targetDLL
 
-    # Create and invoke AppAttachKernel object with configured json
-    $custObj = New-Object AppAttachKernel.AppAttachKernelController($inputJsonStr)
-    $token = New-Object 'System.Threading.CancellationToken'
+# Create and invoke AppAttachKernel object with configured json
+$custObj = New-Object AppAttachKernel.AppAttachKernelController($inputJsonStr)
+$token = New-Object 'System.Threading.CancellationToken'
 
-    $custObj.execute($token)
-}
-catch
+$appAttachFlowResponse = $custObj.execute($token)
+if ($appAttachFlowResponse.isError)
 {
-    Write-Error "Error Occurred:"
-    Write-Error $_
+    throw (($appAttachFlowResponse.getAppAttachOutputs())[0]).getMessage()
 }
