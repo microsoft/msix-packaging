@@ -34,7 +34,7 @@ extends:
     pool:
       os: windows
       image: windows-2019
-      name: Azure Pipelines
+      name: Azure-Pipelines-1ESPT-ExDShared
     customBuildTags:
       - MigrationTooling-microsoft-xPlatAppx-36972-Tool
     stages:
