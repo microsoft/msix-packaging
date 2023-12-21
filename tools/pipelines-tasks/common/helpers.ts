@@ -8,6 +8,9 @@ import { ToolRunner } from 'azure-pipelines-task-lib/toolrunner';
 
 export const MAKEAPPX_PATH = path.join(__dirname, 'lib', 'makeappx');
 
+export const CLIENT_TYPE = 'AzureDevOps';
+export const CLIENT_VERSION = '2.0.0';
+
 /**
  * When running on an agent, returns the value of Agent.TempDirectory which is cleaned after
  * each pipeline job.  When running locally, returns the local temp directory.

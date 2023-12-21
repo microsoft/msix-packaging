@@ -2,8 +2,8 @@
   "manifestVersion":  1,
   "id": "msix-ci-automation-task",
   "name":  "MSIX Packaging",
-  "version":  "1.0.0",
-  "publisher":  "MSIX",
+  "version":  "1.2.9",
+  "publisher":  "SamplePublisherADS",
   "targets":  [
     {
       "id":  "Microsoft.VisualStudio.Services"
@@ -25,25 +25,38 @@
     "type": "git",
     "uri": "https://github.com/microsoft/msix-packaging"
   },
-  "files":  [
+  "files": [
     {
-      "path":  "AppInstallerFile"
+      "path": "AppInstallerFile"
     },
     {
-      "path":  "MsixAppAttach"
+      "path": "AVDAppAttachPublish"
     },
     {
-      "path":  "MsixPackaging"
+      "path": "MsixAppAttach"
     },
     {
-      "path":  "MsixSigning"
+      "path": "MsixPackaging"
     },
     {
-      "path":  "images/msix-packaging-ext",
-      "addressable":  true
+      "path": "MsixSigning"
+    },
+    {
+      "path": "images/msix-packaging-ext",
+      "addressable": true
     }
   ],
   "contributions":  [
+    {
+      "id": "avd-app-attach-publish",
+      "type": "ms.vss-distributed-task.task",
+      "targets": [
+        "ms.vss-distributed-task.tasks"
+      ],
+      "properties": {
+        "name": "AVDAppAttachPublish"
+      }
+    },
     {
       "id":  "app-installer-file",
       "type":  "ms.vss-distributed-task.task",

@@ -1,0 +1,142 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Microsoft/azure-pipelines-task-lib/master/tasks.schema.json",
+  "id": "59de78ad-c5b7-4750-89dd-7bb24a1eb964",
+  "name": "AVDAppAttachPublish",
+  "friendlyName": "ms-resource:loc.friendlyName",
+  "instanceNameFormat": "ms-resource:loc.instanceNameFormat",
+  "description": "ms-resource:loc.description",
+  "helpMarkDown": "ms-resource:loc.helpMarkDown",
+  "category": "Deploy",
+  "author": "ADS",
+  "version": {
+    "Major": 1,
+    "Minor": 0,
+    "Patch": 0
+  },
+  "inputs": [
+    {
+      "name": "vhdxPath",
+      "type": "string",
+      "label": "ms-resource:loc.input.label.vhdxPath",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.vhdxPath"
+    },
+    {
+      "name": "connectedServiceNameARM",
+      "type": "connectedService:AzureRM",
+      "label": "ms-resource:loc.input.label.connectedServiceNameARM",
+      "defaultValue": "",
+      "required": true,
+      "helpMarkDown": "ms-resource:loc.input.help.connectedServiceNameARM"
+    },
+    {
+      "name": "resourceGroupName",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.resourceGroupName",
+      "defaultValue": "",
+      "required": true,
+      "properties": {
+        "EditableOptions": "True"
+      },
+      "helpMarkDown": "ms-resource:loc.input.help.resourceGroupName"
+    },
+    {
+      "name": "storageAccount",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.storageAccount",
+      "defaultValue": "",
+      "required": true,
+      "properties": {
+        "EditableOptions": "True"
+      },
+      "helpMarkDown": "ms-resource:loc.input.help.storageAccount"
+    },
+    {
+      "name": "fileShare",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.fileShare",
+      "defaultValue": "",
+      "required": true,
+      "properties": {
+        "EditableOptions": "True"
+      },
+      "helpMarkDown": "ms-resource:loc.input.help.fileShare"
+    },
+    {
+      "name": "hostPool",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.hostPool",
+      "defaultValue": "",
+      "required": true,
+      "properties": {
+        "EditableOptions": "True"
+      },
+      "helpMarkDown": "ms-resource:loc.input.help.hostPool"
+    },
+    {
+      "name": "workSpace",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.workSpace",
+      "defaultValue": "",
+      "required": true,
+      "properties": {
+        "EditableOptions": "True"
+      },
+      "helpMarkDown": "ms-resource:loc.input.help.workSpace"
+    },
+    {
+      "name": "applicationGroup",
+      "type": "pickList",
+      "label": "ms-resource:loc.input.label.applicationGroup",
+      "defaultValue": "",
+      "required": true,
+      "properties": {
+        "EditableOptions": "True"
+      },
+      "helpMarkDown": "ms-resource:loc.input.help.applicationGroup"
+    }
+  ],
+  "dataSourceBindings": [
+    {
+      "target": "resourceGroupName",
+      "endpointId": "$(connectedServiceNameARM)",
+      "dataSourceName": "AzureResourceGroups"
+    },
+    {
+      "target": "storageAccount",
+      "endpointId": "$(connectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(resourceGroupName)/providers/Microsoft.Storage/storageAccounts?api-version=2023-01-01",
+      "resultSelector": "jsonpath:$.value[*].name"
+    },
+    {
+      "target": "fileShare",
+      "endpointId": "$(connectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(resourceGroupName)/providers/Microsoft.Storage/storageAccounts/$(storageAccount)/fileServices/default/shares?api-version=2023-01-01",
+      "resultSelector": "jsonpath:$.value[*].name"
+    },
+    {
+      "target": "hostPool",
+      "endpointId": "$(connectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(resourceGroupName)/providers/Microsoft.DesktopVirtualization/hostPools?api-version=2022-02-10-preview",
+      "resultSelector": "jsonpath:$.value[*].name"
+    },
+    {
+      "target": "workSpace",
+      "endpointId": "$(connectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(resourceGroupName)/providers/Microsoft.DesktopVirtualization/workspaces?api-version=2022-02-10-preview",
+      "resultSelector": "jsonpath:$.value[*].name"
+    },
+    {
+      "target": "applicationGroup",
+      "endpointId": "$(connectedServiceNameARM)",
+      "endpointUrl": "{{endpoint.url}}subscriptions/{{endpoint.subscriptionId}}/resourcegroups/$(resourceGroupName)/providers/Microsoft.DesktopVirtualization/applicationGroups?api-version=2022-02-10-preview",
+      "resultSelector": "jsonpath:$.value[*].name"
+    }
+  ],
+  "execution": {
+    "Node10": {
+      "target": "main.js"
+    }
+  }
+}

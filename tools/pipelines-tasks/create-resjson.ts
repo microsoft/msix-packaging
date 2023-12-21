@@ -7,6 +7,7 @@ import shell = require('shelljs');
 const taskNames: string[] =
 [
     'AppInstallerFile',
+    'AVDAppAttachPublish',
     'MsixAppAttach',
     'MsixPackaging',
     'MsixSigning',

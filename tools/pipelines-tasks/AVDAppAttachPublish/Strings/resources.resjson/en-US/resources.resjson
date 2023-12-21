@@ -1,0 +1,22 @@
+{
+  "loc.friendlyName": "Publish MSIX app attach package to AVD-13",
+  "loc.helpMarkDown": "",
+  "loc.description": "Publish MSIX package to Azure Virtual Desktop",
+  "loc.instanceNameFormat": "Publish MSIX app attach package to AVD",
+  "loc.input.label.vhdxPath": "VHDX Path",
+  "loc.input.help.vhdxPath": "Path to VHDX Package path.",
+  "loc.input.label.connectedServiceNameARM": "Azure subscription",
+  "loc.input.help.connectedServiceNameARM": "Azure Resource Manager subscription for the deployment.",
+  "loc.input.label.resourceGroupName": "Resource group",
+  "loc.input.help.resourceGroupName": "Azure Resource group containing AVD resources for app attach",
+  "loc.input.label.storageAccount": "Storage account",
+  "loc.input.help.storageAccount": "Azure Storage Account containing target Azure File Share for app attach",
+  "loc.input.label.fileShare": "File share",
+  "loc.input.help.fileShare": "Azure File Share to upload app attach artifact and used for app attach",
+  "loc.input.label.hostPool": "Host pool",
+  "loc.input.help.hostPool": "Azure Host Pool for app attach",
+  "loc.input.label.workSpace": "Workspace",
+  "loc.input.help.workSpace": "AVD Work Space for app attach",
+  "loc.input.label.applicationGroup": "Application group",
+  "loc.input.help.applicationGroup": "AVD Application Group for app attach"
+}

@@ -17,6 +17,8 @@
   "dependencies": {
     "azure-devops-node-api": "^12.0.0",
     "azure-pipelines-task-lib": "^4.3.1",
+    "@azure/identity": "4.0.0",
+    "@azure/arm-storage": "18.2.0",
     "shelljs": "^0.8.5"
   },
   "devDependencies": {
