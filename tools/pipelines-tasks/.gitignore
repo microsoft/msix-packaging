@@ -32,3 +32,4 @@ ps_modules/
 
 # Don't exclude AppAttach Framework artifacts
 !common/lib/*.nupkg
+common/lib/AppAttachFrameworkDLL
