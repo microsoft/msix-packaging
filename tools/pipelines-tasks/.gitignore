@@ -29,3 +29,7 @@ ps_modules/
 
 # Don't exclude VS Code configuration for this project as it contains debug configuration
 !.vscode/
+
+# Don't exclude AppAttach Framework artifacts
+!common/lib/*.nupkg
+common/lib/AppAttachFrameworkDLL

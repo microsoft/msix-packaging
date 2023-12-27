@@ -13,6 +13,7 @@ param (
 
 $taskNames = (
     "AppInstallerFile",
+    "AVDAppAttachPublish",
     "MsixAppAttach",
     "MsixPackaging",
     "MsixSigning"
@@ -71,6 +72,7 @@ function BuildCommonHelpers([switch]$installDependencies)
         # Build the directory
         Write-Host "Compiling common helpers"
         npx tsc
+        node installAppAttachFramework.js
         if (-not $?)
         {
             throw "Failed to build 'common'"
@@ -118,6 +120,24 @@ function BuildCommonHelpers([switch]$installDependencies)
 # This needs Node.js v10 to already be installed, and will only install the
 # required global Node modules
 function InstallDevelopmentTools()
+{
+    # Typescript compiler
+    npm install -g typescript
+
+    # CLI tools to interact with Azure DevOps (e.g. build and publish the extension)
+    npm install -g tfx-cli
+
+    # Test platform
+    npm install -g mocha
+
+    #Install Nuget
+    winget install Microsoft.Nuget
+}
+
+# Installs the development tools required to work on the repo.
+# This needs Node.js v10 to already be installed, and will only install the
+# required global Node modules
+function InstallDevelopmentToolsForProduction()
 {
     # Typescript compiler
     npm install -g typescript
@@ -194,7 +214,7 @@ function Build() {
 # This doesn't create the extension .vsix package.
 function BuildForProduction()
 {
-    InstallDevelopmentTools
+    InstallDevelopmentToolsForProduction
     InstallAllDepenencies
     Build
 
