@@ -134,6 +134,21 @@ function InstallDevelopmentTools()
     winget install Microsoft.Nuget
 }
 
+# Installs the development tools required to work on the repo.
+# This needs Node.js v10 to already be installed, and will only install the
+# required global Node modules
+function InstallDevelopmentToolsForProduction()
+{
+    # Typescript compiler
+    npm install -g typescript
+
+    # CLI tools to interact with Azure DevOps (e.g. build and publish the extension)
+    npm install -g tfx-cli
+
+    # Test platform
+    npm install -g mocha
+}
+
 # Installs the dependencies for every project (the common helpers and all tasks)
 function InstallAllDepenencies()
 {
@@ -199,7 +214,7 @@ function Build() {
 # This doesn't create the extension .vsix package.
 function BuildForProduction()
 {
-    InstallDevelopmentTools
+    InstallDevelopmentToolsForProduction
     InstallAllDepenencies
     Build
 

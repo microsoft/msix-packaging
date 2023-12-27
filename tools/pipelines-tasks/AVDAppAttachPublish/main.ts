@@ -83,11 +83,22 @@ async function run(): Promise<void> {
 		powershellRunner.arg(['-inputJsonStr', '\'' + jsonString + '\'']);
 		powershellRunner.arg(['-targetDLL', TARGET_DLL]);
 
-		await powershellRunner.exec();
+		let execResult = await powershellRunner.execSync();
+		if (execResult.code) {
+			throw execResult.stderr;
+		}
 
 	} catch (error) {
 		isSuccessful = false;
 		exceptionMessage = error as string;
+
+		const regexPattern: RegExp = /FullyQualifiedErrorId\s*:\s*([^]+?)\n/;
+		const match = exceptionMessage.match(regexPattern);
+
+		if (match && match[1]) {
+			exceptionMessage = match[1].trim();
+		}
+
 		console.error(tl.loc("AppAttachPublish Error", exceptionMessage));
 		const powershellRunner: ToolRunner = helpers.getPowershellRunner(HELPER_SCRIPT_EXCEPTIONS_TELEMETRY);
 		powershellRunner.arg(['-exceptionMessage', exceptionMessage]);

@@ -70,8 +70,6 @@ async function installNuget(packagePath: string, outputPath: string, targetNetFr
     try {
         tl.pushd(packagePath);
 
-        const nugetToolSrc: string = "https://dist.nuget.org/win-x86-commandline/latest/nuget.exe";
-
         let powershellRunner: ToolRunner = helpers.getPowershellRunner(NUGET_INSTALL_SCRIPT);
         if (packageId && version) {
             powershellRunner.arg(['-packageId', packageId]);

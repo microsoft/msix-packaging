@@ -1,5 +1,14 @@
 {
-  "name": "ArtifactPublish",
+  "name": "msix-tasks-avd-app-attach-publish",
+  "version": "1.0.0",
+  "description": "Task to Publish MSIX application on AVD",
+  "repository": {
+    "type": "git",
+    "url": "git+github.com/microsoft/msix-packaging.git"
+  },
+  "scripts": {},
+  "author": "Microsoft Corporation",
+  "license": "MIT",
   "dependencies": {
     "@types/mocha": "^5.2.7",
     "@types/node": "^10.17.0",

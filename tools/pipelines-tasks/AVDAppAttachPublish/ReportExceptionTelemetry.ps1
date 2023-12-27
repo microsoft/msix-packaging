@@ -16,20 +16,18 @@ param([string]$exceptionMessage, [string]$targetDLL, [string]$clientType, [strin
 
 try
 {
-    Write-Output $exceptionMessage
-
     Add-Type -Path $targetDLL
 
     # Create and invoke AppAttachTelemetry object.
     $telemetryProvider = [AppAttachTelemetry.TelemetryProvider]::s_instance
 
     $appAttachExceptionBuilderObj =  New-Object AppAttachTelemetry.Builders.AppAttachExceptionsBuilder
-    $appAttachExceptionBuilderObj.SetIsSuccessful("False")
-    $appAttachExceptionBuilderObj.SetErrorCode($exceptionMessage)
-    $appAttachExceptionBuilderObj.SetErrorDesc($exceptionMessage)
-    $appAttachExceptionBuilderObj.SetClientType($clientType)
-    $appAttachExceptionBuilderObj.SetClientVersion($clientVersion)
-    $appAttachExceptionBuilderObj.SetState("ErrorOccurred")
+    $appAttachExceptionBuilderObj.SetIsSuccessful("False") | Out-Null
+    $appAttachExceptionBuilderObj.SetErrorCode($exceptionMessage) | Out-Null
+    $appAttachExceptionBuilderObj.SetErrorDesc($exceptionMessage) | Out-Null
+    $appAttachExceptionBuilderObj.SetClientType($clientType) | Out-Null
+    $appAttachExceptionBuilderObj.SetClientVersion($clientVersion) | Out-Null
+    $appAttachExceptionBuilderObj.SetState("ErrorOccurred") | Out-Null
     $appAttachExceptions = $appAttachExceptionBuilderObj.Build()
 
     $telemetryProvider.ReportException($appAttachExceptions)
