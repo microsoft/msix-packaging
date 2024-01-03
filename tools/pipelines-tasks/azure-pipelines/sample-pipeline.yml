@@ -9,6 +9,14 @@ variables:
   manifest: '$(tasksRoot)/test/assets/HelloWorldUWPApp/Package.appxmanifest'
   platform: 'x86'
   package: '$(Build.ArtifactStagingDirectory)/package.msix'
+  avdInputsFile: '$(tasksRoot)/test/assets/avdinputs.json'
+  subscriptionId: ''
+  rgName: ''
+  storageAccountName: ''
+  fileShareName: ''
+  hostPoolName: ''
+  workSpaceName: ''
+  applicationGroupName: ''
 
 pool:
   vmImage: 'windows-latest'
@@ -51,6 +59,31 @@ steps:
     fileVersion: '1.0.0.0'
     uri: 'https://example.com/AppInstallerFile'
     mainItemUri: 'https://example.com/App'
+
+- task: PowerShell@2
+  displayName: "Read AVD Config input data" 
+  inputs:
+    targetType: 'inline'
+    script: |
+      $avdInputsConfigData = (Get-Content -Raw -Path $avdInputsFile) | ConvertFrom-Json
+      $subscriptionId = $avdInputsConfigData.connectedServiceNameARM
+      $rgName = $avdInputsConfigData['resourceGroupName']
+      $storageAccountName = $avdInputsConfigData.storageAccount
+      $hostPoolName = $avdInputsConfigData.hostPool
+      $workSpaceName = $avdInputsConfigData.storageAccount
+      $fileShareName = $avdInputsConfigData.workSpace
+      $applicationGroupName = $avdInputsConfigData.applicationGroup
+
+- task: AVDAppAttachPublish@0
+  inputs:
+    vhdxPath: '$(Build.ArtifactStagingDirectory)/App.vhdx'
+    connectedServiceNameARM: $subscriptionId
+    resourceGroupName: $rgName
+    storageAccount: $storageAccountName
+    fileShare: $fileShareName
+    hostPool: $hostPoolName
+    workSpace: $workSpaceName
+    applicationGroup: $applicationGroupName
 
 - task: PublishPipelineArtifact@1
   displayName: 'Publish Pipeline Artifact'

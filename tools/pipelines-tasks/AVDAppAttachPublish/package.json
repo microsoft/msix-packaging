@@ -6,7 +6,6 @@
     "type": "git",
     "url": "git+github.com/microsoft/msix-packaging.git"
   },
-  "scripts": {},
   "author": "Microsoft Corporation",
   "license": "MIT",
   "dependencies": {
@@ -23,5 +22,8 @@
   },
   "devDependencies": {
     "typescript": "4.0.2"
+  },
+  "scripts": {
+    "postinstall": "rename \"node_modules\\azure-pipelines-tasks-azure-arm-rest\\openssl\\OpenSSL License.txt\" \"OpenSSL_License.txt\""
   }
 }

@@ -1,6 +1,25 @@
 # Steps for building the project.
 # These are common in PR builds and release builds
 
+variables:
+    # This value will be read by the version_config.json file 
+    rgName : ''
+    buildConfiguration: 'Release'
+    testAvdInputsFile: '$(tasksRoot)/test/assets/avdinputs.json'
+    # Set these variables to run AVD publish tests on required azure subscription service connection containing AVD resources.
+    # Not setting these variables will leave running AVD publish test cases
+    subscriptionId: ''
+    emailId: ''
+    clientId: ''
+    clientSecret: ''
+    tenantId: ''
+    resourceGroupName: ''
+    storageAccountName: ''
+    fileShareName: ''
+    hostPoolName: ''
+    workSpaceName: ''
+    applicationGroupName: ''
+
 steps:
 - task: NodeTool@0
   displayName: 'Use Node 16.x'
@@ -19,6 +38,25 @@ steps:
   displayName: 'Restore NuGet packages for test project'
   inputs:
     restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
+
+- task: PowerShell@2
+  displayName: "Set AVD Config input data for avd publish tests" 
+  inputs:
+    targetType: 'inline'
+    script: |
+      $avdInputsConfigData = (Get-Content -Path $testAvdInputsFile) | ConvertFrom-Json
+      $avdInputsConfigData.connectedServiceNameARM = $subscriptionId
+      $avdInputsConfigData.clientId = $clientId
+      $avdInputsConfigData.clientSecret = $clientSecret
+      $avdInputsConfigData.tenantId = $tenantId
+      $avdInputsConfigData.emailId = $emailId
+      $avdInputsConfigData.resourceGroupName = $resourceGroupName
+      $avdInputsConfigData.storageAccountName = $storageAccountName
+      $avdInputsConfigData.fileShareName = $fileShareName
+      $avdInputsConfigData.hostPoolName = $hostPoolName
+      $avdInputsConfigData.workSpaceName = $workSpaceName
+      $avdInputsConfigData.applicationGroupName = $applicationGroupName
+      $avdInputsConfigData | ConvertTo-Json | Set-Content -Path $testAvdInputsFile
 
 - powershell: |
     npx mocha

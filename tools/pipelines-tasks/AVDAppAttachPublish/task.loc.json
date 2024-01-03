@@ -7,7 +7,7 @@
   "description": "ms-resource:loc.description",
   "helpMarkDown": "ms-resource:loc.helpMarkDown",
   "category": "Deploy",
-  "author": "Microsoft Corporation",
+  "author": "ADS",
   "version": {
     "Major": 1,
     "Minor": 0,
@@ -135,7 +135,7 @@
     }
   ],
   "execution": {
-    "Node10": {
+    "Node16": {
       "target": "main.js"
     }
   }

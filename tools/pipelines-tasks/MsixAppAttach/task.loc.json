@@ -10,7 +10,7 @@
   "helpUrl": "https://aka.ms/msix-cicd",
   "helpMarkDown": "ms-resource:loc.helpMarkDown",
   "execution": {
-    "Node10": {
+    "Node16": {
       "target": "index.js",
       "platforms": [
         "windows"

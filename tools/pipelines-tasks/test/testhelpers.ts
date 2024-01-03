@@ -44,6 +44,9 @@ export const tempDirectory = path.join(os.tmpdir(), 'MsixTasksTests');
 // Directory used for the task's outputs
 export const outputDirectory = path.join(tempDirectory, 'output');
 
+// Path to avdinputs file
+export const avdInputsJsonPath = path.join(assetsDirectory, 'avdinputs.json');
+
 export const outputFilePath = (fileName: string): string =>
 {
     return path.join(outputDirectory, fileName);
@@ -58,6 +61,7 @@ export const expectedFilePath = (fileName: string): string =>
 export const TaskEntryPoints = {
     AppAttachTask: path.join(__dirname, '..', 'MsixAppAttach', 'index.js'),
     AppInstallerTask: path.join(__dirname, '..', 'AppInstallerFile', 'index.js'),
+    AVDAppAttachPublishTask: path.join(__dirname, '..', 'AVDAppAttachPublish', 'main.js'),
     PackagingTask: path.join(__dirname, '..', 'MsixPackaging', 'index.js'),
     SigningTask: path.join(__dirname, '..', 'MsixSigning', 'index.js'),
 }
@@ -187,6 +191,52 @@ export const setUpUpdateAppInstallerFileArguments = (taskMockRunner: tmrm.TaskMo
     taskMockRunner.setInput('method', 'update');
     taskMockRunner.setInput('existingFile', path.join(assetsDirectory, `existing-${testName}.appinstaller`));
     taskMockRunner.setInput('versionUpdateMethod', 'revision');
+}
+
+export const setUpAzureArmRestMock = (taskMockRunner: tmrm.TaskMockRunner): void => {
+    const azureArmRestMock = require('./azure-arm-rest-mock');
+    taskMockRunner.registerMock("azure-pipelines-tasks-azure-arm-rest/azure-arm-endpoint", azureArmRestMock);
+    taskMockRunner.registerMock("azure-pipelines-tasks-azure-arm-rest/azureModels", azureArmRestMock);
+    taskMockRunner.registerMock("azure-pipelines-tasks-azure-arm-rest/azure-arm-common", azureArmRestMock);
+    taskMockRunner.registerMock("azure-pipelines-tasks-azure-arm-rest/azure-arm-storage", azureArmRestMock);
+}
+
+export const setUpEndPointDataParamMock = (taskMockRunner: tmrm.TaskMockRunner, subscriptionId: string): void =>
+{
+    const tl = require('azure-pipelines-task-lib/task');
+    const tlClone = Object.assign({}, tl);
+
+    tlClone.getEndpointDataParameter = function (id: string, key: string, optional: boolean) {
+        key = key.toUpperCase();
+        if (key == 'SUBSCRIPTIONID') {
+            return subscriptionId;
+        }
+        throw new Error(`Endpoint auth data not present: ${id}`);
+    }
+    taskMockRunner.registerMock('azure-pipelines-task-lib/task', tlClone);
+
+}
+
+export const setUpAvdPublishInputs = (taskMockRunner: tmrm.TaskMockRunner): boolean =>
+{
+    const fileContent = fs.readFileSync(avdInputsJsonPath, 'utf-8');
+    const jsonData = JSON.parse(fileContent);
+    const subscriptionId: string = jsonData["connectedServiceNameARM"];
+
+    // TestVhdx.vhdx is created from appattach-success test and is input to this avd publish task
+    taskMockRunner.setInput("vhdxPath", path.join(outputDirectory, 'TestVhdx.vhdx')); 
+    taskMockRunner.setInput("connectedServiceNameARM", subscriptionId);
+    taskMockRunner.setInput("resourceGroupName", jsonData["resourceGroupName"]);
+    taskMockRunner.setInput("storageAccount", jsonData["storageAccount"]);
+    taskMockRunner.setInput("fileShare", jsonData["fileShare"]);
+    taskMockRunner.setInput("hostPool", jsonData["hostPool"]);
+    taskMockRunner.setInput("workSpace", jsonData["workSpace"]);
+    taskMockRunner.setInput("applicationGroup", jsonData["applicationGroup"]);    
+    process.env.BUILD_REQUESTEDFOREMAIL = jsonData["email"];
+
+    setUpEndPointDataParamMock(taskMockRunner, jsonData["connectedServiceNameARM"]);
+    setUpAzureArmRestMock(taskMockRunner);
+    return true;
 }
 
 /* Helpers for validating task results */

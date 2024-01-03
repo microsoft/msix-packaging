@@ -10,7 +10,7 @@
   "helpUrl": "https://aka.ms/msix-cicd",
   "helpMarkDown": "[Learn more about this task](https://aka.ms/msix-cicd)",
   "execution": {
-    "Node10": {
+    "Node16": {
       "target": "index.js",
       "platforms": [
         "windows"
