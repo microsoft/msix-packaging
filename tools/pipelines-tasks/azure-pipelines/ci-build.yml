@@ -29,11 +29,11 @@ schedules:
 pool:
   name: 'msix-packaging-pool'
 
+# Set the Azure variables to run AVD publish tests on required azure subscription service connection containing AVD resources.
+# Not setting these variables will leave running AVD publish test cases and will not fail the pipeline
 variables:
   tasksRoot: 'tools/pipelines-tasks'
   buildOutRoot: '$(Build.ArtifactStagingDirectory)/buildOutput'
-# Set these variables to run AVD publish tests on required azure subscription service connection containing AVD resources.
-# Not setting these variables will leave running AVD publish test cases and will not fail the pipeline
   subscriptionId: ''
   emailId: ''
   clientId: ''
