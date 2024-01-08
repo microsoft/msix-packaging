@@ -193,6 +193,10 @@ export const setUpUpdateAppInstallerFileArguments = (taskMockRunner: tmrm.TaskMo
     taskMockRunner.setInput('versionUpdateMethod', 'revision');
 }
 
+/**
+ * sets up mock for azure ARM library functions
+ * @param taskMockRunner input taskMockRunner to register mock functions
+ */
 export const setUpAzureArmRestMock = (taskMockRunner: tmrm.TaskMockRunner): void => {
     const azureArmRestMock = require('./azure-arm-rest-mock');
     taskMockRunner.registerMock("azure-pipelines-tasks-azure-arm-rest/azure-arm-endpoint", azureArmRestMock);
@@ -201,6 +205,11 @@ export const setUpAzureArmRestMock = (taskMockRunner: tmrm.TaskMockRunner): void
     taskMockRunner.registerMock("azure-pipelines-tasks-azure-arm-rest/azure-arm-storage", azureArmRestMock);
 }
 
+/**
+ * sets up mock for getEndpointDataParameter in azure pipelines task lib
+ * @param taskMockRunner input taskMockRunner to register mock functions
+ * @param subscriptionId subscription ID to be used to get end Point
+ */
 export const setUpEndPointDataParamMock = (taskMockRunner: tmrm.TaskMockRunner, subscriptionId: string): void =>
 {
     const tl = require('azure-pipelines-task-lib/task');
@@ -217,21 +226,30 @@ export const setUpEndPointDataParamMock = (taskMockRunner: tmrm.TaskMockRunner, 
 
 }
 
+/**
+ * sets up mock for getEndpointDataParameter in azure pipelines task lib
+ * @param taskMockRunner input taskMockRunner to register mock functions
+ */
 export const setUpAvdPublishInputs = (taskMockRunner: tmrm.TaskMockRunner): boolean =>
 {
     const fileContent = fs.readFileSync(avdInputsJsonPath, 'utf-8');
     const jsonData = JSON.parse(fileContent);
-    const subscriptionId: string = jsonData["connectedServiceNameARM"];
 
     // TestVhdx.vhdx is created from appattach-success test and is input to this avd publish task
     taskMockRunner.setInput("vhdxPath", path.join(outputDirectory, 'TestVhdx.vhdx')); 
-    taskMockRunner.setInput("connectedServiceNameARM", subscriptionId);
-    taskMockRunner.setInput("resourceGroupName", jsonData["resourceGroupName"]);
-    taskMockRunner.setInput("storageAccount", jsonData["storageAccount"]);
-    taskMockRunner.setInput("fileShare", jsonData["fileShare"]);
-    taskMockRunner.setInput("hostPool", jsonData["hostPool"]);
-    taskMockRunner.setInput("workSpace", jsonData["workSpace"]);
-    taskMockRunner.setInput("applicationGroup", jsonData["applicationGroup"]);    
+    const inputs = [
+        "connectedServiceNameARM",
+        "resourceGroupName",
+        "storageAccount",
+        "fileShare",
+        "hostPool",
+        "workSpace",
+        "applicationGroup"
+    ];
+
+    for (const input of inputs) {
+        taskMockRunner.setInput(input, jsonData[input]);
+    }
     process.env.BUILD_REQUESTEDFOREMAIL = jsonData["email"];
 
     setUpEndPointDataParamMock(taskMockRunner, jsonData["connectedServiceNameARM"]);

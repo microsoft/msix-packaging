@@ -67,7 +67,7 @@ steps:
     script: |
       $avdInputsConfigData = (Get-Content -Raw -Path $avdInputsFile) | ConvertFrom-Json
       $subscriptionId = $avdInputsConfigData.connectedServiceNameARM
-      $rgName = $avdInputsConfigData['resourceGroupName']
+      $rgName = $avdInputsConfigData.resourceGroupName
       $storageAccountName = $avdInputsConfigData.storageAccount
       $hostPoolName = $avdInputsConfigData.hostPool
       $workSpaceName = $avdInputsConfigData.storageAccount

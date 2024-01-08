@@ -7,7 +7,7 @@
   "description": "ms-resource:loc.description",
   "helpMarkDown": "ms-resource:loc.helpMarkDown",
   "category": "Deploy",
-  "author": "ADS",
+  "author": "Microsoft Corporation",
   "version": {
     "Major": 1,
     "Minor": 0,

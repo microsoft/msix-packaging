@@ -68,7 +68,7 @@ export class StorageAccounts {
             const keys = await storageClient.storageAccounts.listKeys(inpResourceGroupName, accountName);
             let storageAccountKeys: string[] = [];
             if (keys.keys && keys.keys.length > 0) {
-                keys.keys.forEach((key, index) => {
+                keys.keys.forEach((key) => {
                     storageAccountKeys.push(key.value!);
                 });
             } else {
