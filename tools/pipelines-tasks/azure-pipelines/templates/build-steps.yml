@@ -25,7 +25,7 @@ steps:
   inputs:
     targetType: 'inline'
     script: |
-      $avdInputsConfigData = (Get-Content -Path $testAvdInputsFile) | ConvertFrom-Json
+      $avdInputsConfigData = (Get-Content -Path '$(tasksRoot)/test/assets/avdinputs.json') | ConvertFrom-Json
       $avdInputsConfigData.connectedServiceNameARM = $subscriptionId
       $avdInputsConfigData.clientId = $clientId
       $avdInputsConfigData.clientSecret = $clientSecret
@@ -37,7 +37,7 @@ steps:
       $avdInputsConfigData.hostPoolName = $hostPoolName
       $avdInputsConfigData.workSpaceName = $workSpaceName
       $avdInputsConfigData.applicationGroupName = $applicationGroupName
-      $avdInputsConfigData | ConvertTo-Json | Set-Content -Path $testAvdInputsFile
+      $avdInputsConfigData | ConvertTo-Json | Set-Content -Path '$(tasksRoot)/test/assets/avdinputs.json'
 
 - powershell: |
     npx mocha

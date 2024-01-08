@@ -32,7 +32,6 @@ pool:
 variables:
   tasksRoot: 'tools/pipelines-tasks'
   buildOutRoot: '$(Build.ArtifactStagingDirectory)/buildOutput'
-  testAvdInputsFile: 'tools/pipelines-tasks/test/assets/avdinputs.json'
 # Set these variables to run AVD publish tests on required azure subscription service connection containing AVD resources.
 # Not setting these variables will leave running AVD publish test cases and will not fail the pipeline
   subscriptionId: ''
