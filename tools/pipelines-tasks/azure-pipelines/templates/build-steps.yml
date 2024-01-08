@@ -30,13 +30,13 @@ steps:
       $avdInputsConfigData.clientId = $clientId
       $avdInputsConfigData.clientSecret = $clientSecret
       $avdInputsConfigData.tenantId = $tenantId
-      $avdInputsConfigData.emailId = $emailId
+      $avdInputsConfigData.email = $emailId
       $avdInputsConfigData.resourceGroupName = $resourceGroupName
-      $avdInputsConfigData.storageAccountName = $storageAccountName
-      $avdInputsConfigData.fileShareName = $fileShareName
-      $avdInputsConfigData.hostPoolName = $hostPoolName
-      $avdInputsConfigData.workSpaceName = $workSpaceName
-      $avdInputsConfigData.applicationGroupName = $applicationGroupName
+      $avdInputsConfigData.storageAccount = $storageAccountName
+      $avdInputsConfigData.fileShare = $fileShareName
+      $avdInputsConfigData.hostPool = $hostPoolName
+      $avdInputsConfigData.workSpace = $workSpaceName
+      $avdInputsConfigData.applicationGroup = $applicationGroupName
       $avdInputsConfigData | ConvertTo-Json | Set-Content -Path '$(tasksRoot)/test/assets/avdinputs.json'
 
 - powershell: |
