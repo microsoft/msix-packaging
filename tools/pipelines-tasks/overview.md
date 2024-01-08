@@ -10,6 +10,7 @@ The *MSIX Packaging* Extension contains the following tasks that you can use to 
 2. **MSIX package signing** - to sign MSIX packages using a trusted certificate
 3. **App installer file for MSIX** - to create or update a .appinstaller file for MSIX apps
 4. **Create package for MSIX app attach** - to create a VHDX package for MSIX app attach
+5. **Publish MSIX app attach package to AVD** – to publish MSIX application to Azure Virtual Desktop (AVD)  
 
 ## Install the extension
 
@@ -45,7 +46,7 @@ You should see *Agent job 1* by default in your pipeline. Click on the plus symb
 
 Search for ***MSIX*** in the *Add tasks* search bar and you should see the tasks mentioned before in the *MSIX Packaging* Extension. You can custom build your pipeline by adding the tasks you need according to your requirements. But we will demonstrate how to configure all four tasks on this page.
 
-![Add a task](images/msix-packaging-ext/add-task.png)
+<img alt="ADO Extension Image1" src="https://github.com/microsoft/msix-packaging/assets/15215151/f04b53d6-d670-4cfd-8ddd-b6fa0f303114">
 
 ### MSIX build and package
 
@@ -94,6 +95,20 @@ Search for ***MSIX*** in the *Add tasks* search bar and you should see the tasks
 - **Package Path** - This is the path to the MSIX package/bundle.
 - **VHDX Output Path** - This is the path of the VHDX file that will be created by the task.
 - **VHDX size** - The maximum size in MBs of the VHDX.
+
+## Publish MSIX app attach package to AVD
+
+<img alt="ADO Extension Image2" src="https://github.com/microsoft/msix-packaging/assets/15215151/b62a15a8-2d11-4622-9356-5de85a931365">
+
+- **Display name** - Customize your task name.
+- **VHDX Path** - This is the path of the VHDX file that will be app attached(publish) to Azure Virtual Desktop (AVD).
+- **Azure Subscription** - This is the service connection to target azure subscription that your application needs to be app attached. Drop down lists all the azure subscriptions available to the current ADO logged in user and user can select any of these and establish service connection to it.
+- **Resource Group** - Choose the resource group that your app needs to be published. This resource group should contain all the target resources that are required for app attach, like storage account, host pool, workspace, application group. This drop-down lists all the resource groups available under the selected Azure subscription
+- **Storage account** - Choose the storage account that you application (or VHDX) is to be uploaded. This drop-down lists all the storage accounts available under selected resource group.
+- **File share** - Choose the file share in the selected storage account that your application (or VHDX) is to be uploaded. This drop-down lists all the file share available under the selected storage account.
+- **Host pool** - Choose the host pool that is to be used for app attaching the application. This drop-down list all the host pools available under the selected resource group.
+- **Workspace** – Choose the workspace that is to be used for app attaching the application. This drop-down list all the workspaces available under the selected resource group.
+- **Application group** – Choose the application group that is to be used for app attaching the application. This drop-down list all the application groups available under the selected resource group.
 
 After configuring all the tasks, you can use a *Publish build artifacts* task to drop all the artifacts from the temp location to Azure Pipelines artifacts or a file share of your choice.
 
