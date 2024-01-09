@@ -93,6 +93,14 @@ steps:
       }
      ]
 
+- task: UniversalPackages@0
+  inputs:
+    command: 'download'
+    downloadDirectory: '$(System.DefaultWorkingDirectory)'
+    feedsToUse: 'external'
+    feedDownloadExternal: 'Conversion Services/AppStreaming.PackagingServices.Artifacts'
+    packageDownloadExternal: 'AppAttachKernel'
+    versionDownloadExternal: '1.2.1'
 - task: PublishPipelineArtifact@1
   displayName: 'Publish VSIX artifact'
   inputs:
