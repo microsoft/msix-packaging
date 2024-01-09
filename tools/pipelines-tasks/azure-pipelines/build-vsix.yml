@@ -24,8 +24,6 @@ variables:
   LGTM.UploadSnapshot: true
 
 steps:
-- template: templates/build-steps.yml
-
 - task: TfxInstaller@3
   displayName: 'Use Node CLI for Azure DevOps (tfx-cli): v0.7.x'
 
