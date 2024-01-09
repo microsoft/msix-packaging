@@ -29,6 +29,15 @@ steps:
 - task: TfxInstaller@3
   displayName: 'Use Node CLI for Azure DevOps (tfx-cli): v0.7.x'
 
+- task: UniversalPackages@0
+  inputs:
+    command: 'download'
+    downloadDirectory: '$(System.DefaultWorkingDirectory)'
+    feedsToUse: 'external'
+    feedDownloadExternal: 'Conversion Services/AppStreaming.PackagingServices.Artifacts'
+    packageDownloadExternal: 'AppAttachKernel'
+    versionDownloadExternal: '1.2.1'
+
 # Package and sign the VSIX
 - task: PackageAzureDevOpsExtension@3
   displayName: 'Package Extension: $(tasksRoot)'
@@ -93,14 +102,6 @@ steps:
       }
      ]
 
-- task: UniversalPackages@0
-  inputs:
-    command: 'download'
-    downloadDirectory: '$(System.DefaultWorkingDirectory)'
-    feedsToUse: 'external'
-    feedDownloadExternal: 'Conversion Services/AppStreaming.PackagingServices.Artifacts'
-    packageDownloadExternal: 'AppAttachKernel'
-    versionDownloadExternal: '1.2.1'
 - task: PublishPipelineArtifact@1
   displayName: 'Publish VSIX artifact'
   inputs:
