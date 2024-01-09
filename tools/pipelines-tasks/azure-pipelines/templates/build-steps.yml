@@ -26,17 +26,17 @@ steps:
     targetType: 'inline'
     script: |
       $avdInputsConfigData = (Get-Content -Path '$(tasksRoot)/test/assets/avdinputs.json') | ConvertFrom-Json
-      $avdInputsConfigData.connectedServiceNameARM = $subscriptionId
-      $avdInputsConfigData.clientId = $clientId
-      $avdInputsConfigData.clientSecret = $clientSecret
-      $avdInputsConfigData.tenantId = $tenantId
-      $avdInputsConfigData.email = $emailId
-      $avdInputsConfigData.resourceGroupName = $resourceGroupName
-      $avdInputsConfigData.storageAccount = $storageAccountName
-      $avdInputsConfigData.fileShare = $fileShareName
-      $avdInputsConfigData.hostPool = $hostPoolName
-      $avdInputsConfigData.workSpace = $workSpaceName
-      $avdInputsConfigData.applicationGroup = $applicationGroupName
+      $avdInputsConfigData.connectedServiceNameARM = If ($subscriptionId) {$subscriptionId} Else {''}
+      $avdInputsConfigData.clientId = If ($clientId) {$clientId} Else {''}
+      $avdInputsConfigData.clientSecret = If ($clientSecret) {$clientSecret} Else {''}
+      $avdInputsConfigData.tenantId = If ($tenantId) {$tenantId} Else {''}
+      $avdInputsConfigData.email = If ($emailId) {$emailId} Else {''}
+      $avdInputsConfigData.resourceGroupName = If ($resourceGroupName) {$resourceGroupName} Else {''}
+      $avdInputsConfigData.storageAccount = If ($storageAccountName) {$storageAccountName} Else {''}
+      $avdInputsConfigData.fileShare = If ($fileShareName) {$fileShareName} Else {''}
+      $avdInputsConfigData.hostPool = If ($hostPoolName) {$hostPoolName} Else {''}
+      $avdInputsConfigData.workSpace = If ($workSpaceName) {$workSpaceName} Else {''}
+      $avdInputsConfigData.applicationGroup = If ($applicationGroupName) {$applicationGroupName} Else {''}
       $avdInputsConfigData | ConvertTo-Json | Set-Content -Path '$(tasksRoot)/test/assets/avdinputs.json'
 
 - powershell: |

@@ -1,13 +1,14 @@
 {
-    "email":  "",
-    "connectedServiceNameARM":  "",
-    "clientId":  "",
-    "clientSecret":  "",
-    "tenantId":  "",
-    "resourceGroupName":  "",
-    "storageAccount":  "",
-    "fileShare":  "",
-    "hostPool":  "",
-    "workSpace":  "",
-    "applicationGroup":  ""
+  "_comment": "These inputs are set in here (when testing locally) or as pipeline variables when running through pipeline. User can set these as per their Azure Virtual Desktop(AVD) Configuration to test AVD Publish task tests.",
+  "email": "",
+  "connectedServiceNameARM": "",
+  "clientId": "",
+  "clientSecret": "",
+  "tenantId": "",
+  "resourceGroupName": "",
+  "storageAccount": "",
+  "fileShare": "",
+  "hostPool": "",
+  "workSpace": "",
+  "applicationGroup": ""
 }

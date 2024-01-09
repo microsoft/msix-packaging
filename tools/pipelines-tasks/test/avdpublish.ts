@@ -6,7 +6,10 @@ import testHelpers = require('./testhelpers');
 
 describe('AVD publish task tests', function () {
     it('Should succeed with basic inputs', function (done: Mocha.Done) {
-        let subscriptionId: string = '', clientId: string = '', clientSecret: string = '', tenantId: string = '';
+        let subscriptionId: string = '';
+        let clientId: string = '';
+        let clientSecret: string = '';
+        let tenantId: string = '';
         const testRunner: ttm.MockTestRunner = testHelpers.runMockTest('avdpublish-success.js');
         try {
             const fileContent = fs.readFileSync(testHelpers.avdInputsJsonPath, 'utf-8');
@@ -19,6 +22,7 @@ describe('AVD publish task tests', function () {
         }
         catch (error) {
             console.error('AVDPublish test error: ', error);
+            done(new Error('Reading/Parsing avdinputs.json failed'));
         }
 
         if (!subscriptionId.trim() || !clientId.trim() || !clientSecret.trim() || !tenantId.trim()) {

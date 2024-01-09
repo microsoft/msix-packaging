@@ -1,3 +1,7 @@
+/// <summary>
+/// This is a mock for azure-pipelines-tasks-azure-arm-rest library. All required class or API mock in this library are added here
+/// </summary>
+
 import path = require('path');
 import fs = require('fs');
 import { ClientSecretCredential } from "@azure/identity";
