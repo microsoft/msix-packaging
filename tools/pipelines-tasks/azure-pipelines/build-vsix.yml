@@ -34,7 +34,7 @@ steps:
     downloadDirectory: '$(System.DefaultWorkingDirectory)'
     feedsToUse: 'external'
     externalFeedCredentials: 'AppAttach Framework Artifact'
-    feedDownloadExternal: 'Conversion Services/AppStreaming.PackagingServices.Artifacts'
+    feedDownloadExternal: 'AppStreaming.PackagingServices.Artifacts'
     packageDownloadExternal: 'AppAttachKernel'
     versionDownloadExternal: '1.2.1'
 
