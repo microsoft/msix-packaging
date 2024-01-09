@@ -23,6 +23,7 @@ variables:
   # Upload results of Semmle analysis
   LGTM.UploadSnapshot: true
 
+
 steps:
 - task: TfxInstaller@3
   displayName: 'Use Node CLI for Azure DevOps (tfx-cli): v0.7.x'
@@ -32,6 +33,7 @@ steps:
     command: 'download'
     downloadDirectory: '$(System.DefaultWorkingDirectory)'
     feedsToUse: 'external'
+    externalFeedCredentials: 'AppAttach Framework Artifact'
     feedDownloadExternal: 'Conversion Services/AppStreaming.PackagingServices.Artifacts'
     packageDownloadExternal: 'AppAttachKernel'
     versionDownloadExternal: '1.2.1'
