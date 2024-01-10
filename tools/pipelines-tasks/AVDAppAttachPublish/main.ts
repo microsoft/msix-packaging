@@ -11,9 +11,7 @@ import * as fs from 'fs';
 import helpers = require('common-helpers/helpers');
 
 const HELPER_SCRIPT = path.join(__dirname, 'PublishAVD.ps1');
-const HELPER_SCRIPT_EXCEPTIONS_TELEMETRY = path.join(__dirname, 'ReportExceptionTelemetry.ps1');
 const TARGET_DLL = path.join(__dirname,'node_modules/common-helpers/lib/AppAttachFrameworkDLL/AppAttachKernel.dll');
-const TARGET_DLL_TELEMETRY = path.join(__dirname, 'node_modules/common-helpers/lib/AppAttachFrameworkDLL/AppAttachTelemetry.dll');
 
 function isNonEmpty(str: string): boolean {
 	return (!!str && !!str.trim());
@@ -100,13 +98,6 @@ async function run(): Promise<void> {
 		}
 
 		console.error(tl.loc("AppAttachPublish Error", exceptionMessage));
-		const powershellRunner: ToolRunner = helpers.getPowershellRunner(HELPER_SCRIPT_EXCEPTIONS_TELEMETRY);
-		powershellRunner.arg(['-exceptionMessage', exceptionMessage]);
-		powershellRunner.arg(['-targetDLL', TARGET_DLL_TELEMETRY]);
-		powershellRunner.arg(['-clientType', helpers.CLIENT_TYPE]);
-		powershellRunner.arg(['-clientVersion', helpers.CLIENT_VERSION]);
-
-		await powershellRunner.execSync();
 		throw exceptionMessage;
 	} finally {
 		const appAttachLogDir: string = path.join(os.tmpdir(), 'AppAttach');
