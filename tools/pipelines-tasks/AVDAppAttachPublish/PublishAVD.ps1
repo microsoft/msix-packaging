@@ -21,7 +21,7 @@ $custObj = New-Object AppAttachKernel.AppAttachKernelController($inputJsonStr)
 $token = New-Object 'System.Threading.CancellationToken'
 
 $appAttachFlowResponse = $custObj.execute($token)
-if ($appAttachFlowResponse.isError)
+if ($appAttachFlowResponse.isError())
 {
     throw (($appAttachFlowResponse.getAppAttachOutputs())[0]).getMessage()
 }

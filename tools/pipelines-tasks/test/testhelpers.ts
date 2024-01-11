@@ -44,6 +44,9 @@ export const tempDirectory = path.join(os.tmpdir(), 'MsixTasksTests');
 // Directory used for the task's outputs
 export const outputDirectory = path.join(tempDirectory, 'output');
 
+// Path to avdinputs file
+export const avdInputsJsonPath = path.join(assetsDirectory, 'avdinputs.json');
+
 export const outputFilePath = (fileName: string): string =>
 {
     return path.join(outputDirectory, fileName);
@@ -58,6 +61,7 @@ export const expectedFilePath = (fileName: string): string =>
 export const TaskEntryPoints = {
     AppAttachTask: path.join(__dirname, '..', 'MsixAppAttach', 'index.js'),
     AppInstallerTask: path.join(__dirname, '..', 'AppInstallerFile', 'index.js'),
+    AVDAppAttachPublishTask: path.join(__dirname, '..', 'AVDAppAttachPublish', 'main.js'),
     PackagingTask: path.join(__dirname, '..', 'MsixPackaging', 'index.js'),
     SigningTask: path.join(__dirname, '..', 'MsixSigning', 'index.js'),
 }
@@ -187,6 +191,70 @@ export const setUpUpdateAppInstallerFileArguments = (taskMockRunner: tmrm.TaskMo
     taskMockRunner.setInput('method', 'update');
     taskMockRunner.setInput('existingFile', path.join(assetsDirectory, `existing-${testName}.appinstaller`));
     taskMockRunner.setInput('versionUpdateMethod', 'revision');
+}
+
+/**
+ * sets up mock for azure ARM library functions
+ * @param taskMockRunner input taskMockRunner to register mock functions
+ */
+export const setUpAzureArmRestMock = (taskMockRunner: tmrm.TaskMockRunner): void => {
+    const azureArmRestMock = require('./azure-arm-rest-mock');
+    taskMockRunner.registerMock("azure-pipelines-tasks-azure-arm-rest/azure-arm-endpoint", azureArmRestMock);
+    taskMockRunner.registerMock("azure-pipelines-tasks-azure-arm-rest/azureModels", azureArmRestMock);
+    taskMockRunner.registerMock("azure-pipelines-tasks-azure-arm-rest/azure-arm-common", azureArmRestMock);
+    taskMockRunner.registerMock("azure-pipelines-tasks-azure-arm-rest/azure-arm-storage", azureArmRestMock);
+}
+
+/**
+ * sets up mock for getEndpointDataParameter in azure pipelines task lib
+ * @param taskMockRunner input taskMockRunner to register mock functions
+ * @param subscriptionId subscription ID to be used to get end Point
+ */
+export const setUpEndPointDataParamMock = (taskMockRunner: tmrm.TaskMockRunner, subscriptionId: string): void =>
+{
+    const tl = require('azure-pipelines-task-lib/task');
+    const tlClone = Object.assign({}, tl);
+
+    tlClone.getEndpointDataParameter = function (id: string, key: string, optional: boolean) {
+        key = key.toUpperCase();
+        if (key == 'SUBSCRIPTIONID') {
+            return subscriptionId;
+        }
+        throw new Error(`Endpoint auth data not present: ${id}`);
+    }
+    taskMockRunner.registerMock('azure-pipelines-task-lib/task', tlClone);
+
+}
+
+/**
+ * sets up mock for getEndpointDataParameter in azure pipelines task lib
+ * @param taskMockRunner input taskMockRunner to register mock functions
+ */
+export const setUpAvdPublishInputs = (taskMockRunner: tmrm.TaskMockRunner): boolean =>
+{
+    const fileContent = fs.readFileSync(avdInputsJsonPath, 'utf-8');
+    const jsonData = JSON.parse(fileContent);
+
+    // TestVhdx.vhdx is created from appattach-success test and is input to this avd publish task
+    taskMockRunner.setInput("vhdxPath", path.join(outputDirectory, 'TestVhdx.vhdx')); 
+    const inputs = [
+        "connectedServiceNameARM",
+        "resourceGroupName",
+        "storageAccount",
+        "fileShare",
+        "hostPool",
+        "workSpace",
+        "applicationGroup"
+    ];
+
+    for (const input of inputs) {
+        taskMockRunner.setInput(input, jsonData[input]);
+    }
+    process.env.BUILD_REQUESTEDFOREMAIL = jsonData["email"];
+
+    setUpEndPointDataParamMock(taskMockRunner, jsonData["connectedServiceNameARM"]);
+    setUpAzureArmRestMock(taskMockRunner);
+    return true;
 }
 
 /* Helpers for validating task results */

@@ -20,6 +20,25 @@ steps:
   inputs:
     restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
 
+- task: PowerShell@2
+  displayName: "Set AVD Config input data for avd publish tests" 
+  inputs:
+    targetType: 'inline'
+    script: |
+      $avdInputsConfigData = (Get-Content -Path '$(tasksRoot)/test/assets/avdinputs.json') | ConvertFrom-Json
+      $avdInputsConfigData.connectedServiceNameARM = If ($subscriptionId) {$subscriptionId} Else {''}
+      $avdInputsConfigData.clientId = If ($clientId) {$clientId} Else {''}
+      $avdInputsConfigData.clientSecret = If ($clientSecret) {$clientSecret} Else {''}
+      $avdInputsConfigData.tenantId = If ($tenantId) {$tenantId} Else {''}
+      $avdInputsConfigData.email = If ($emailId) {$emailId} Else {''}
+      $avdInputsConfigData.resourceGroupName = If ($resourceGroupName) {$resourceGroupName} Else {''}
+      $avdInputsConfigData.storageAccount = If ($storageAccountName) {$storageAccountName} Else {''}
+      $avdInputsConfigData.fileShare = If ($fileShareName) {$fileShareName} Else {''}
+      $avdInputsConfigData.hostPool = If ($hostPoolName) {$hostPoolName} Else {''}
+      $avdInputsConfigData.workSpace = If ($workSpaceName) {$workSpaceName} Else {''}
+      $avdInputsConfigData.applicationGroup = If ($applicationGroupName) {$applicationGroupName} Else {''}
+      $avdInputsConfigData | ConvertTo-Json | Set-Content -Path '$(tasksRoot)/test/assets/avdinputs.json'
+
 - powershell: |
     npx mocha
   displayName: 'Run the tests'
