@@ -30,6 +30,9 @@ trigger:
       - master
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  sdl:
+   git:
+    submodules: true
   parameters:
     pool:
       os: windows
