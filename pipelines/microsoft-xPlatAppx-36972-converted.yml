@@ -33,7 +33,7 @@ extends:
   parameters:
     sdl:
       git:
-        submodules: true
+        submodules: recursive
     pool:
       os: windows
       image: windows-2019
@@ -55,7 +55,7 @@ extends:
             steps:
               - checkout: self
                 clean: true
-                submodules: true
+                submodules: recursive
                 lfs: true
                 fetchTags: false
                 persistCredentials: true
@@ -77,7 +77,7 @@ extends:
             steps:
               - checkout: self
                 clean: true
-                submodules: true
+                submodules: recursive
                 lfs: true
                 fetchTags: false
               - task: DownloadBuildArtifacts@0
