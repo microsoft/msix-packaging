@@ -31,6 +31,9 @@ trigger:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
   parameters:
+    sdl:
+      git:
+        submodules: true
     pool:
       os: windows
       image: windows-2019
