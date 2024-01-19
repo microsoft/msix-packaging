@@ -21,7 +21,7 @@ steps:
     restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
 
 - task: PowerShell@2
-  displayName: "Set AVD Config input data for avd publish tests" 
+  displayName: "Set AVD Config input data for avd publish tests"
   inputs:
     targetType: 'inline'
     script: |
@@ -60,7 +60,7 @@ steps:
     ram: '16384'
     addProjectDirToScanningExclusionList: true
   env:
-    # Required to publish the result
+  # Required to publish the result
     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
 - task: PublishSecurityAnalysisLogs@3
