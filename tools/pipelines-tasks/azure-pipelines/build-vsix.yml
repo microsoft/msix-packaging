@@ -30,6 +30,12 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    sdl:
+      git:
+        submodules: disable
+      baseline:
+        baselineFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnbaselines
+
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
       image: windows-2019
