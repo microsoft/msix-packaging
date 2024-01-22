@@ -35,6 +35,8 @@ extends:
         submodules: disable
       baseline:
         baselineFile: $(Build.SourcesDirectory)\guardian\SDL\SDL-Sources\.gdnbaselines
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\SDL-Sources\.gdnsuppress
 
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
@@ -52,6 +54,7 @@ extends:
           sdl:
             baseline:
               baselineFile: $(Build.SourcesDirectory)\guardian\SDL\Stage\.gdnbaselines
+            
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish VSIX artifact'
