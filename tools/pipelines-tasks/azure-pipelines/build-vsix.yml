@@ -34,7 +34,7 @@ extends:
       git:
         submodules: disable
       baseline:
-        baselineFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnbaselines
+        baselineFile: $(Build.SourcesDirectory)\guardian\SDL\SDL-Sources\.gdnbaselines
 
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
@@ -49,6 +49,9 @@ extends:
       jobs:
       - job: job
         templateContext:
+          sdl:
+            baseline:
+              baselineFile: $(Build.SourcesDirectory)\guardian\SDL\Stage\.gdnbaselines
           outputs:
           - output: pipelineArtifact
             displayName: 'Publish VSIX artifact'
