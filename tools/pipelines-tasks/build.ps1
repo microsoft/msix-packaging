@@ -189,7 +189,11 @@ function InstallAllDepenencies()
         -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
 
     # Export it as a .pfx
-    $password = ConvertTo-SecureString -String password -Force -AsPlainText
+    #$password = ConvertTo-SecureString -String password -Force -AsPlainText
+    $password = New-Object SecureString
+    foreach ($char in "password".ToCharArray()) {
+        $Password.AppendChar($char)
+    }
     Export-PfxCertificate -Cert $cert -FilePath $PSScriptRoot\test\assets\certificate.pfx -Password $password
 
     # Write it as a base64 string
