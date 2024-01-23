@@ -33,10 +33,10 @@ extends:
     sdl:
       git:
         submodules: disable
-      baseline:
-        baselineFile: $(Build.SourcesDirectory)\guardian\SDL\SDL-Sources\.gdnbaselines
-      suppression:
-        suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\SDL-Sources\.gdnsuppress
+      #baseline:
+       # baselineFile: $(Build.SourcesDirectory)\guardian\SDL\SDL-Sources\.gdnbaselines
+      #suppression:
+       # suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\SDL-Sources\.gdnsuppress
 
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
@@ -51,9 +51,9 @@ extends:
       jobs:
       - job: job
         templateContext:
-          sdl:
-            baseline:
-              baselineFile: $(Build.SourcesDirectory)\guardian\SDL\Stage\.gdnbaselines
+          #sdl:
+           # baseline:
+            #  baselineFile: $(Build.SourcesDirectory)\guardian\SDL\Stage\.gdnbaselines
             
           outputs:
           - output: pipelineArtifact
