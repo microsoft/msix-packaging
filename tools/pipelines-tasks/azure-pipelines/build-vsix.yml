@@ -33,6 +33,8 @@ extends:
     sdl:
       git:
         submodules: disable
+      spotBugs:        
+        enabled: false
       baseline:
         baselineFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnbaselines
       suppression:
