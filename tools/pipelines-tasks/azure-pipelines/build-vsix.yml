@@ -37,8 +37,8 @@ extends:
         enabled: false
       baseline:
         baselineFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnbaselines
-      suppression:
-        suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
+      #suppression:
+        #suppressionFile: $(Build.SourcesDirectory)\guardian\SDL\.gdnsuppress
 
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
