@@ -196,8 +196,8 @@ function InstallAllDepenencies()
     Export-PfxCertificate -Cert $cert -FilePath $PSScriptRoot\test\assets\certificate.pfx -Password $password
 
     # Write it as a base64 string
-    #$certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx)
-    #[System.Convert]::ToBase64String($certBytes) | Out-File $PSScriptRoot\test\assets\certificate.txt -Encoding utf8
+    $certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx)
+    [System.Convert]::ToBase64String($certBytes) | Out-File $PSScriptRoot\test\assets\certificate.txt
 
     # Remove the certificate from the cert store
     $certPath = "Cert:\CurrentUser\My\$($cert.Thumbprint)"
