@@ -59,6 +59,8 @@ extends:
             targetPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
             artifactName: 'VSIX'
             publishLocation: 'pipeline'
+            sbomBuildDropPath:  $(buildOutRoot)
+            #sbomBuildComponentPath: '$(tasksRoot)'
 
           # Publish privately
           # Use different task IDs from public extension to prevent clashing.
@@ -72,6 +74,8 @@ extends:
             extensionVersion: '$(major).$(minor).$(patch)'
             updateTasksId: true
             extensionVisibility: 'privatepreview'
+            #sbomBuildDropPath:  $(buildOutRoot)
+            #sbomBuildComponentPath: '$(tasksRoot)'
 
         steps:
         - template: /tools/pipelines-tasks/azure-pipelines/templates/build-steps.yml@self
