@@ -36,9 +36,9 @@ extends:
       spotBugs:        
         enabled: false
       baseline:
-        baselineFile: $(tasksRoot)\azure-pipelines\.gdnbaselines
+        baselineFile: $(Build.SourcesDirectory)\tools\pipelines-tasks\azure-pipelines\.gdnbaselines
       suppression:
-        suppressionFile: $(tasksRoot)\azure-pipelines\.gdnsuppress
+        suppressionFile: $(Build.SourcesDirectory)\tools\pipelines-tasks\azure-pipelines\.gdnsuppress
 
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
