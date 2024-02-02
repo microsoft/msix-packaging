@@ -66,6 +66,7 @@ extends:
           # Use different task IDs from public extension to prevent clashing.
           - output: adoExtension
             displayName: 'Publish Extension'
+            targetPath: $(buildOutRoot)
             connectedServiceName: 'Visual Studio Marketplace - MSIX'
             fileType: vsix
             vsixFile: '$(buildOutRoot)\MsixPackagingExtension.vsix'
@@ -74,7 +75,7 @@ extends:
             extensionVersion: '$(major).$(minor).$(patch)'
             updateTasksId: true
             extensionVisibility: 'privatepreview'
-            #sbomBuildDropPath:  $(buildOutRoot)
+            sbomBuildDropPath:  $(buildOutRoot)
             #sbomBuildComponentPath: '$(tasksRoot)'
 
         steps:
