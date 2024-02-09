@@ -15,7 +15,7 @@ $marketplacePatLocation = "$PSScriptRoot\pat.txt"
 
 function Set-MarketplacePat()
 {
-    Read-Host -Prompt "PAT" | ConvertTo-SecureString -AsPlainText | ConvertFrom-SecureString | Set-Content -Path $marketplacePatLocation
+    Read-Host -Prompt "PAT" -AsSecureString | ConvertFrom-SecureString | Set-Content -Path $marketplacePatLocation
 }
 
 function Get-MarketplacePat()

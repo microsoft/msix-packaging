@@ -189,12 +189,11 @@ function InstallAllDepenencies()
         -TextExtension @("2.5.29.37={text}1.3.6.1.5.5.7.3.3", "2.5.29.19={text}")
 
     # Export it as a .pfx
-    $password = ConvertTo-SecureString -String password -Force -AsPlainText
+    $password = New-Object SecureString
+    foreach ($char in "password".ToCharArray()) {
+        $password.AppendChar($char)
+    }
     Export-PfxCertificate -Cert $cert -FilePath $PSScriptRoot\test\assets\certificate.pfx -Password $password
-
-    # Write it as a base64 string
-    $certBytes = $cert.Export([System.Security.Cryptography.X509Certificates.X509ContentType]::Pfx)
-    [System.Convert]::ToBase64String($certBytes) | Out-File $PSScriptRoot\test\assets\certificate.txt -Encoding utf8
 
     # Remove the certificate from the cert store
     $certPath = "Cert:\CurrentUser\My\$($cert.Thumbprint)"
