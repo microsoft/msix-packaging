@@ -11,7 +11,7 @@ import * as fs from 'fs';
 import helpers = require('common-helpers/helpers');
 
 const HELPER_SCRIPT = path.join(__dirname, 'PublishAVD.ps1');
-const TARGET_DLL = path.join(__dirname,'node_modules/common-helpers/lib/AppAttachFrameworkDLL/AppAttachKernel.dll');
+const TARGET_DLL_PATH = path.join(__dirname,'node_modules/common-helpers/lib/AppAttachFrameworkDLL/');
 
 function isNonEmpty(str: string): boolean {
 	return (!!str && !!str.trim());
@@ -79,11 +79,11 @@ async function run(): Promise<void> {
 
 		const powershellRunner: ToolRunner = helpers.getPowershellRunner(HELPER_SCRIPT);
 		powershellRunner.arg(['-inputJsonStr', '\'' + jsonString + '\'']);
-		powershellRunner.arg(['-targetDLL', TARGET_DLL]);
+		powershellRunner.arg(['-dllPath', TARGET_DLL_PATH]);
 
-		let execResult = await powershellRunner.execSync();
-		if (execResult.code) {
-			throw execResult.stderr;
+		let execResult = await powershellRunner.exec();
+		if (execResult !== 0) {
+			throw 'Error executing AppAttach PublishAVD script';
 		}
 
 	} catch (error) {
@@ -99,21 +99,7 @@ async function run(): Promise<void> {
 
 		console.error(tl.loc("AppAttachPublish Error", exceptionMessage));
 		throw exceptionMessage;
-	} finally {
-		const appAttachLogDir: string = path.join(os.tmpdir(), 'AppAttach');
-		if (tl.exist(appAttachLogDir)) {
-			// display log file content to console
-			const appAttachLogDirFiles = fs.readdirSync(appAttachLogDir);
-			const appAttachlogFile = path.join(appAttachLogDir, appAttachLogDirFiles[0]);
-			fs.readFile(appAttachlogFile, 'utf8', (err, data) => {
-				if (err) {
-					console.error('Error reading the file:', err);
-				} else {
-					console.log(appAttachlogFile, data);
-				}
-			});
-		}
-
+	} finally {		
 		logTelemetry({
 			Version: helpers.CLIENT_VERSION,
 			AppAttachImagePath: tl.getInput('vhdxPath', true),
