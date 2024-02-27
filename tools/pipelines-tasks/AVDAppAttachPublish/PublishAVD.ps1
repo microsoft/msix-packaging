@@ -53,5 +53,12 @@ $appAttachFlowResponse = $custObj.execute($token, $messageHandler)
 
 if ($appAttachFlowResponse.isError())
 {
-    throw (($appAttachFlowResponse.getAppAttachOutputs())[0]).getMessage()
+    $appAttachOutputs = $appAttachFlowResponse.getAppAttachOutputs()
+    foreach ($output in $appAttachOutputs) {
+        $message = $output.getMessage()
+        Write-Error $message
+        throw $message
+    }
+
+    exit 1
 }

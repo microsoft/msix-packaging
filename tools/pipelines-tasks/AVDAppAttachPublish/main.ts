@@ -5,9 +5,7 @@ import armStorage = require('azure-pipelines-tasks-azure-arm-rest/azure-arm-stor
 import { AzureRMEndpoint } from 'azure-pipelines-tasks-azure-arm-rest/azure-arm-endpoint';
 import { AzureEndpoint, StorageAccount } from 'azure-pipelines-tasks-azure-arm-rest/azureModels';
 import * as telemetry from "azure-pipelines-tasks-utility-common/telemetry";
-import * as os from 'os';
 import * as url from 'url';
-import * as fs from 'fs';
 import helpers = require('common-helpers/helpers');
 
 const HELPER_SCRIPT = path.join(__dirname, 'PublishAVD.ps1');
@@ -81,14 +79,22 @@ async function run(): Promise<void> {
 		powershellRunner.arg(['-inputJsonStr', '\'' + jsonString + '\'']);
 		powershellRunner.arg(['-dllPath', TARGET_DLL_PATH]);
 
-		let execResult = await powershellRunner.exec();
-		if (execResult !== 0) {
-			throw 'Error executing AppAttach PublishAVD script';
+		try {
+			await powershellRunner.exec();
+		}
+		catch (error) {
+			console.error(error);
+			throw error;
 		}
 
 	} catch (error) {
 		isSuccessful = false;
-		exceptionMessage = error as string;
+
+		if (error instanceof Error) {
+			exceptionMessage = error.message;
+		} else {
+			exceptionMessage = String(error);
+		}	
 
 		const regexPattern: RegExp = /FullyQualifiedErrorId\s*:\s*([^]+?)\n/;
 		const match = exceptionMessage.match(regexPattern);
