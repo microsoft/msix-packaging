@@ -5,13 +5,11 @@ import armStorage = require('azure-pipelines-tasks-azure-arm-rest/azure-arm-stor
 import { AzureRMEndpoint } from 'azure-pipelines-tasks-azure-arm-rest/azure-arm-endpoint';
 import { AzureEndpoint, StorageAccount } from 'azure-pipelines-tasks-azure-arm-rest/azureModels';
 import * as telemetry from "azure-pipelines-tasks-utility-common/telemetry";
-import * as os from 'os';
 import * as url from 'url';
-import * as fs from 'fs';
 import helpers = require('common-helpers/helpers');
 
 const HELPER_SCRIPT = path.join(__dirname, 'PublishAVD.ps1');
-const TARGET_DLL = path.join(__dirname,'node_modules/common-helpers/lib/AppAttachFrameworkDLL/AppAttachKernel.dll');
+const TARGET_DLL_PATH = path.join(__dirname,'node_modules/common-helpers/lib/AppAttachFrameworkDLL/');
 
 function isNonEmpty(str: string): boolean {
 	return (!!str && !!str.trim());
@@ -79,16 +77,24 @@ async function run(): Promise<void> {
 
 		const powershellRunner: ToolRunner = helpers.getPowershellRunner(HELPER_SCRIPT);
 		powershellRunner.arg(['-inputJsonStr', '\'' + jsonString + '\'']);
-		powershellRunner.arg(['-targetDLL', TARGET_DLL]);
+		powershellRunner.arg(['-dllPath', TARGET_DLL_PATH]);
 
-		let execResult = await powershellRunner.execSync();
-		if (execResult.code) {
-			throw execResult.stderr;
+		try {
+			await powershellRunner.exec();
+		}
+		catch (error) {
+			console.error(error);
+			throw error;
 		}
 
 	} catch (error) {
 		isSuccessful = false;
-		exceptionMessage = error as string;
+
+		if (error instanceof Error) {
+			exceptionMessage = error.message;
+		} else {
+			exceptionMessage = String(error);
+		}	
 
 		const regexPattern: RegExp = /FullyQualifiedErrorId\s*:\s*([^]+?)\n/;
 		const match = exceptionMessage.match(regexPattern);
@@ -99,21 +105,7 @@ async function run(): Promise<void> {
 
 		console.error(tl.loc("AppAttachPublish Error", exceptionMessage));
 		throw exceptionMessage;
-	} finally {
-		const appAttachLogDir: string = path.join(os.tmpdir(), 'AppAttach');
-		if (tl.exist(appAttachLogDir)) {
-			// display log file content to console
-			const appAttachLogDirFiles = fs.readdirSync(appAttachLogDir);
-			const appAttachlogFile = path.join(appAttachLogDir, appAttachLogDirFiles[0]);
-			fs.readFile(appAttachlogFile, 'utf8', (err, data) => {
-				if (err) {
-					console.error('Error reading the file:', err);
-				} else {
-					console.log(appAttachlogFile, data);
-				}
-			});
-		}
-
+	} finally {		
 		logTelemetry({
 			Version: helpers.CLIENT_VERSION,
 			AppAttachImagePath: tl.getInput('vhdxPath', true),
