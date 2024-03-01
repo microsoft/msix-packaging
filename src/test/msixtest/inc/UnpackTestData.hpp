@@ -5,6 +5,7 @@
 #pragma once
 #include <map>
 #include <string>
+#include <cstdint>
 
 namespace MsixTest {
 
