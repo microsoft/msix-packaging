@@ -80,6 +80,9 @@ namespace MSIX {
         ULARGE_INTEGER pos = {0};
         ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
 
+        // track the sequence of file names to sort the central directory upon Close
+        m_fileNameSequence.push_back(name);
+
         // Write lfh
         LocalFileHeader lfh;
         lfh.SetData(name, isCompressed);
@@ -140,11 +143,17 @@ namespace MSIX {
         ULARGE_INTEGER startOfCdh = {0};
         ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &startOfCdh));
         std::size_t cdhsSize = 0;
-        for (auto& cdh : m_centralDirectories)
+        for (const auto& fileName : m_fileNameSequence)
         {
-            cdhsSize += cdh.second.Size();
-            cdh.second.WriteTo(m_stream);
+            auto it = m_centralDirectories.find(fileName);
+            if (it != m_centralDirectories.end())
+            {
+                auto& cdh = it->second;
+                cdhsSize += cdh.Size();
+                cdh.WriteTo(m_stream);
+            }
         }
+        m_fileNameSequence.clear();
 
         // Write zip64 end of cds
         ULARGE_INTEGER startOfZip64EndOfCds = {0};
