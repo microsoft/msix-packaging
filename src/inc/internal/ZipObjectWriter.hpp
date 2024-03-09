@@ -68,5 +68,6 @@ namespace MSIX {
 
         State m_state = State::ReadyForLfhOrClose;
         std::pair<std::uint64_t, LocalFileHeader> m_lastLFH;
+        std::vector<std::string> m_fileNameSequence;
     };
 }
