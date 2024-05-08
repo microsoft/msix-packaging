@@ -182,6 +182,10 @@ if(XERCES_TESTS)
   add_subdirectory(samples)
 endif()
 
+if (NOT WIN32)
+  add_compile_options(-Wmisleading-indentation)
+endif()
+
 # Display configuration summary
 message(STATUS "")
 message(STATUS "Xerces-C++ configuration summary")
