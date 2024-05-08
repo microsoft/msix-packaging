@@ -32,6 +32,9 @@ jobs:
 
     # Note: We skip BVTs in Debug mode because of assert() and release_arm64
     # Only do BVTs for release_x86 because the emulator
+    # The task will output to strerr Requested but did not find extension point with identifier Xcode.InterfaceBuilderBuildSupport.PlatformDefinition
+    # This is something not related to us and it seems like the fix is updating the tools which we don't control.
+    # https://github.com/fastlane/fastlane/discussions/20921
   - task: Bash@3
     displayName: iOS BVTs
     inputs:
@@ -39,7 +42,7 @@ jobs:
       filePath: './src/test/mobile/testios.sh'
       arguments: '-p iOSBVT/iOSBVT.xcodeproj -o TEST-MsixSDK-$(_artifact).xml'
       workingDirectory: './src/test/mobile/'
-      failOnStderr: true
+      failOnStderr: false
     condition: and(succeeded(), contains(variables['Agent.JobName'], 'release_x86'))
 
   - task: PublishTestResults@2
