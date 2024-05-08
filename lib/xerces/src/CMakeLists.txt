@@ -46,7 +46,7 @@ set_target_properties(xerces-c-missing PROPERTIES FOLDER "Library")
 
 if (NOT WIN32)
   message(STATUS "Adding -Wmisleading-indentation")
-  add_compile_options(-Wmisleading-indentation)
+  add_compile_options(-Wno-misleading-indentation)
 endif()
 
 #libxerces_c_la_LIBADD = ${LTLIBOBJS}
