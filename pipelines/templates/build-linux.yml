@@ -1,7 +1,7 @@
 jobs:
 - job: Linux
   pool:
-    vmImage: ubuntu-18.04
+    vmImage: ubuntu-latest
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:
