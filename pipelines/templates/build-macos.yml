@@ -1,7 +1,7 @@
 jobs:
 - job: macOS
   pool:
-    vmImage:  macOS-10.15
+    vmImage:  macOS-latest
   strategy:
     # TODO: add builds using xerces if needed.
     matrix:
