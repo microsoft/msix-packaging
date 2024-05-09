@@ -5,6 +5,7 @@
 #include "UnpackTestData.hpp"
 
 #include <map>
+#include <cstdint>
 
 namespace MsixTest { namespace Unpack {
 

@@ -4,9 +4,9 @@
 ndk=
 arch=x86
 build=MinSizeRel
-version=19
+version=24
 sdk=
-sdkver=24
+sdkver=34
 dataCompressionLib=NDK_libz
 bundle=off
 xmlparser=javaxml
