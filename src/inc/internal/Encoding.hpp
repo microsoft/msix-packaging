@@ -5,6 +5,7 @@
 #pragma once
 
 #include <string>
+#include <cstdint>
 
 namespace MSIX { namespace Encoding {
 

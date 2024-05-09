@@ -1,7 +1,7 @@
 # MSIX\lib
 # Copyright (C) 2017 Microsoft.  All rights reserved.
 # See LICENSE file in the project root for full license information.
-cmake_minimum_required(VERSION 3.4.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.29.0 FATAL_ERROR)
 
 add_custom_target(LIBS)
 
@@ -34,7 +34,7 @@ if(XML_PARSER MATCHES xerces)
         if(NOT ${XERCES_COMPILE_FLAGS})
             set(XERCES_COMPILE_FLAGS "")
         endif()
-        string(APPEND XERCES_COMPILE_FLAGS "-Wno-cast-qual -Wno-unused-parameter -Wno-unused-variable -Wno-memset-transposed-args")
+        string(APPEND XERCES_COMPILE_FLAGS "-Wno-cast-qual -Wno-unused-parameter -Wno-unused-variable -Wno-memset-transposed-args -Wno-misleading-indentation")
         set_target_properties(xerces-c PROPERTIES COMPILE_FLAGS "${XERCES_COMPILE_FLAGS}")
     endif()
 endif()
