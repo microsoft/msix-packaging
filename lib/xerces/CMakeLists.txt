@@ -19,7 +19,7 @@
 
 # Run "cmake" to generate the build files for your platform
 
-cmake_minimum_required(VERSION 3.29.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.28.0 FATAL_ERROR)
 
 # Use new variable expansion policy.
 if (POLICY CMP0053)

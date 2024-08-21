@@ -2,7 +2,7 @@
 # Copyright (C) 2019 Microsoft.  All rights reserved.
 # See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 3.29.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.28.0 FATAL_ERROR)
 project (msixtest)
 
 if(WIN32)
