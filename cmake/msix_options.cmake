@@ -31,13 +31,7 @@ if(USE_STATIC_MSVC)
     if(NOT WIN32)
         message(FATAL_ERROR "-DUSE_STATIC_MSVC=on can only be used for Windows")
     endif()
-    # By default these flags have /MD set. Modified it to use /MT instead.
-    foreach(buildType RELEASE MINSIZEREL RELWITHDEBINFO)
-        set(cxxFlag "CMAKE_CXX_FLAGS_${buildType}")
-        string(REPLACE "/MD" "/MT" ${cxxFlag} "${${cxxFlag}}")
-    endforeach()
-    set(cxxFlagDebug "CMAKE_CXX_FLAGS_DEBUG")
-    string(REPLACE "/MDd" "/MTd" ${cxxFlagDebug} "${${cxxFlagDebug}}")
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 endif()
 
 # Set xml parser if not set
