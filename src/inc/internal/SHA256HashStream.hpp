@@ -17,7 +17,7 @@ namespace MSIX {
 
         HRESULT STDMETHODCALLTYPE Write(const void* buffer, ULONG countBytes, ULONG* bytesWritten) noexcept override try
         {
-            m_hasher.Add(reinterpret_cast<const uint8_t*>(buffer), countBytes);
+            m_hasher.HashData(reinterpret_cast<const uint8_t*>(buffer), countBytes);
             if (bytesWritten)
             {
                 *bytesWritten = countBytes;
@@ -25,9 +25,9 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        SHA256::HashBuffer GetHash()
+        void FinalizeAndGetHashValue(std::vector<uint8_t>& hash)
         {
-            return m_hasher.Get();
+            m_hasher.FinalizeAndGetHashValue(hash);
         }
 
     private:

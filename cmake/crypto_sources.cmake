@@ -77,6 +77,7 @@ list(APPEND XSRC
     ${CRYPTO}/asn1/nsseq.c
     ${CRYPTO}/asn1/p5_pbe.c
     ${CRYPTO}/asn1/p5_pbev2.c
+    ${CRYPTO}/asn1/p5_scrypt.c
     ${CRYPTO}/asn1/p8_pkey.c
     ${CRYPTO}/asn1/t_bitst.c
     ${CRYPTO}/asn1/t_pkey.c
@@ -309,6 +310,7 @@ list(APPEND XSRC
     ${CRYPTO}/pkcs12/p12_npas.c
     ${CRYPTO}/pkcs12/p12_p8d.c
     ${CRYPTO}/pkcs12/p12_p8e.c
+    ${CRYPTO}/pkcs12/p12_sbag.c
     ${CRYPTO}/pkcs12/p12_utl.c
     ${CRYPTO}/pkcs12/pk12err.c
 
