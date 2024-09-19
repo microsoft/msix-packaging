@@ -4,6 +4,8 @@
 // 
 #pragma once
 
+#include <format>
+#include <iostream>
 #include <vector>
 #include <tuple>
 #include <type_traits>
@@ -19,7 +21,10 @@ namespace MSIX { namespace Meta {
 // there is exactly one value that this field is allowed to be
 template <typename T>
 static void ExactValueValidation(T value, T spec) {
-    ThrowErrorIfNot(Error::InvalidParameter, spec == value, "Incorrect value specified at field.");
+    if (spec != value) {
+        std::cout << "Value in field doesn't match expection; expected " << spec << ", got " << value << std::endl;
+        ThrowErrorIfNot(Error::InvalidParameter, spec == value, "Incorrect value specified at field.");
+    }
 }
 
 // there is exactly one value that this field is not allowed to be
