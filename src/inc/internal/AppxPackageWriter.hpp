@@ -34,6 +34,7 @@ public:
     virtual void Close(
         MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
         IStream* signingCertificate,
+        const char* pass,
         IStream* privateKey) = 0;
 };
 MSIX_INTERFACE(IPackageWriter, 0x32e89da5,0x7cbb,0x4443,0x8c,0xf0,0xb8,0x4e,0xed,0xb5,0x1d,0x0a);
@@ -52,6 +53,7 @@ namespace MSIX {
         void Close(
             MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
             IStream* signingCertificate,
+            const char* pass,
             IStream* privateKey) override;
 
         // IAppxPackageWriter

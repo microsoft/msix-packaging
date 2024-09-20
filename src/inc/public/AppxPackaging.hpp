@@ -1810,6 +1810,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE SignPackage(
     LPCSTR package,
     MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
     LPCSTR signingCertificate,
+    LPCSTR pass,
     LPCSTR privateKey
 ) noexcept;
 

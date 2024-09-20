@@ -67,6 +67,7 @@ void SignPackage(
     IAppxPackageReader* package,
     MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
     IStream* signingCertificate,
+    const char* pass,
     IStream* privateKey)
 {
     std::unique_ptr<SignatureAccumulator> signatureAccumulator = std::make_unique<SignatureAccumulator>();
@@ -109,7 +110,7 @@ void SignPackage(
     // continue that process with Close.
     auto packageWriter = ComPtr<IPackageWriter>::Make<AppxPackageWriter>(packageAsIPackage.Get(), std::move(signatureAccumulator));
 
-    packageWriter->Close(signingCertificateFormat, signingCertificate, privateKey);
+    packageWriter->Close(signingCertificateFormat, signingCertificate, pass, privateKey);
 }
 
 // SignatureAccumulator

@@ -72,6 +72,7 @@ namespace MSIX {
     void AppxPackageWriter::Close(
         MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
         IStream* signingCertificate,
+        const char* pass,
         IStream* privateKey)
     {
         bool signing = static_cast<bool>(m_signatureAccumulator);
@@ -111,7 +112,7 @@ namespace MSIX {
             }
 
             auto digestData = m_signatureAccumulator->GetSignatureObject(m_zipWriter.Get());
-            auto signatureStream = SignatureCreator::Sign(digestData.Get(), signingCertificateFormat, signingCertificate, privateKey);
+            auto signatureStream = SignatureCreator::Sign(digestData.Get(), signingCertificateFormat, signingCertificate, pass, privateKey);
             AddFileToPackage(APPXSIGNATURE_P7X, signatureStream.Get(), true, false, nullptr, false, false);
         }
 
@@ -160,7 +161,7 @@ namespace MSIX {
         failState.release();
 
         // Merge with standalone signing path, with no signing information.
-        Close(MSIX_CERTIFICATE_FORMAT::MSIX_CERTIFICATE_FORMAT_UNKNOWN, nullptr, nullptr);
+        Close(MSIX_CERTIFICATE_FORMAT::MSIX_CERTIFICATE_FORMAT_UNKNOWN, nullptr, nullptr, nullptr);
 
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();

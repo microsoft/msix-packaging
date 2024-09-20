@@ -24,6 +24,7 @@ namespace MSIX
             SigningInfo(
                 MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
                 IStream* signingCertificate,
+                const char* pass,
                 IStream* privateKey)
             {
                 switch (signingCertificateFormat)
@@ -35,7 +36,7 @@ namespace MSIX
                     unique_BIO certBIO{ BIO_new_mem_buf(reinterpret_cast<void*>(certBytes.data()), static_cast<int>(certBytes.size())) };
                     unique_PKCS12 cert{ d2i_PKCS12_bio(certBIO.get(), nullptr) };
 
-                    ParsePKCS12(cert.get(), nullptr, "Unable to open PFX file");
+                    ParsePKCS12(cert.get(), pass, "Unable to open PFX file - incorrect password?");
                 }
                     break;
 
@@ -220,13 +221,14 @@ namespace MSIX
         AppxSignatureObject* digests,
         MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
         IStream* signingCertificate,
+        const char* pass,
         IStream* privateKey)
     {
         OpenSSL_add_all_algorithms();
         CustomOpenSSLObjects customObjects{};
 
         // Read in the signing info based on format, etc.
-        SigningInfo signingInfo{ signingCertificateFormat, signingCertificate, privateKey };
+        SigningInfo signingInfo{ signingCertificateFormat, signingCertificate, pass, privateKey };
 
         // Create the blob to be signed
         std::vector<uint8_t> signedData = CreateDataToBeSigned(digests, customObjects);

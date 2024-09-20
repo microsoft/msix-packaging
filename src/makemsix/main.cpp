@@ -635,6 +635,7 @@ Command CreateSignCommand()
             Option{ "-p", "Package file path.", true, 1, "package" },
             Option{ "-c", "Certificate file path.", true, 1, "cert" },
             Option{ "-cf", "Certificate format.", false, 1, "format" },
+            Option{ "-pass", "Certificat epassword.", false, 1, "password" },
             // TODO: Potentially support other types of certificate files, along with separate private keys.
             // TODO: Support passing in the certificate chain separately.
             // TODO: Windows signing allows choosing whether to validate the block hashes, could add here.
@@ -666,6 +667,7 @@ Command CreateSignCommand()
                 const_cast<char*>(invocation.GetOptionValue("-p").c_str()),
                 GetCertificateFormat(invocation),
                 const_cast<char*>(invocation.GetOptionValue("-c").c_str()),
+                const_cast<char*>(invocation.GetOptionValue("-pass").c_str()),
                 nullptr);
         });
 

@@ -17,6 +17,7 @@ namespace MSIX {
             AppxSignatureObject* digests,
             MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
             IStream* signingCertificate,
+            const char* pass,
             IStream* privateKey);
     };
 }

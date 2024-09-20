@@ -35,6 +35,7 @@ void SignPackage(
     IAppxPackageReader* package,
     MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
     IStream* signingCertificate,
+    const char* pass,
     IStream* privateKey);
 
 // Allows signature data to be accumulated, either for creation or validation of a signature.

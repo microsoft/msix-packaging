@@ -318,6 +318,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE SignPackage(
     LPCSTR package,
     MSIX_CERTIFICATE_FORMAT signingCertificateFormat,
     LPCSTR signingCertificate,
+    LPCSTR pass,
     LPCSTR privateKey
 ) noexcept try
 {
@@ -356,7 +357,7 @@ MSIX_API HRESULT STDMETHODCALLTYPE SignPackage(
     MSIX::ComPtr<IAppxPackageReader> reader;
     ThrowHrIfFailed(factory->CreatePackageReader(packageStream.Get(), &reader));
 
-    MSIX::SignPackage(reader.Get(), signingCertificateFormat, certificateStream.Get(), privateKeyStream.Get());
+    MSIX::SignPackage(reader.Get(), signingCertificateFormat, certificateStream.Get(), pass, privateKeyStream.Get());
 
     return static_cast<HRESULT>(MSIX::Error::OK);
 } CATCH_RETURN();
