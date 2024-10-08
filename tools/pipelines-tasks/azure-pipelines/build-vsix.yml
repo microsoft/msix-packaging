@@ -66,7 +66,7 @@ extends:
           - output: adoExtension
             displayName: 'Publish Extension'
             targetPath: $(buildOutRoot)
-            connectedServiceName: 'Visual Studio Marketplace - MSIX'
+            connectedServiceName: 'Visual Studio Marketplace - Msix-Packaging'
             fileType: vsix
             vsixFile: '$(buildOutRoot)\MsixPackagingExtension.vsix'
             extensionId: 'msix-ci-automation-task-dev'
@@ -112,17 +112,22 @@ extends:
             ValidateSignature: true
 
         # Sign the package
-        - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@4
+        - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
           displayName: 'ESRP CodeSigning'
           inputs:
-            ConnectedServiceName: 'ESRP CodeSigning'
+            ConnectedServiceName: $(ConnectedServiceName)
+            AppRegistrationClientId: $(AppRegistrationClientId)
+            AppRegistrationTenantId: $(AppRegistrationTenantId)
+            AuthAKVName: $(AuthAKVName) 
+            AuthCertName: $(AuthCertName)
+            AuthSignCertName: $(AuthSignCertName)
             FolderPath: '$(buildOutRoot)'
             Pattern: MsixPackagingExtension.vsix
             signConfigType: inlineSignParams
             inlineOperation: |
               [
                {
-                   "KeyCode" : "CP-233016",
+                   "KeyCode" : "CP-401405",
                    "OperationCode" : "OpcSign",
                    "Parameters" : {
                        "FileDigest" : "/fd SHA256"
@@ -131,7 +136,7 @@ extends:
                    "ToolVersion" : "1.0"
                },
                {
-                   "KeyCode" : "CP-233016",
+                   "KeyCode" : "CP-401405",
                    "OperationCode" : "OpcVerify",
                    "Parameters" : {},
                    "ToolName" : "sign",

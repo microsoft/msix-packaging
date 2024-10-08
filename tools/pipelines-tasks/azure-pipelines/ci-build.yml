@@ -14,7 +14,7 @@ pr:
   paths:
     include:
     - tools/pipelines-tasks
-
+ 
 # Schedule weekly build
 # Cron syntax: "mm HH DD MM DW" = minutes, hours, days, months, day of week (UTC time)
 schedules:
@@ -26,9 +26,6 @@ schedules:
     - master
   always: true
 
-pool:
-  name: 'msix-packaging-pool'
-
 # Set the variables to run AVD publish tests on required azure subscription service connection containing AVD resources:
 # subscriptionId, emailId, clientId, clientSecret, tenantId, resourceGroupName, storageAccountName, fileShareName, hostPoolName, workSpaceName, applicationGroupName
 # Not setting these variables will leave running AVD publish test cases and will not fail the pipeline
@@ -36,5 +33,36 @@ variables:
   tasksRoot: 'tools/pipelines-tasks'
   buildOutRoot: '$(Build.ArtifactStagingDirectory)/buildOutput'
 
-steps:
-- template: templates/build-steps.yml
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+
+  parameters:
+    sdl:
+      git:
+        submodules: disable
+      baseline:
+        baselineFile: $(Build.SourcesDirectory)\tools\pipelines-tasks\azure-pipelines\.gdnbaselines
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\tools\pipelines-tasks\azure-pipelines\.gdnsuppress
+
+    pool:
+      name: Azure-Pipelines-1ESPT-ExDShared
+      image: windows-2019
+      os: windows
+
+    customBuildTags:
+    - ES365AIMigrationTooling
+
+    stages:
+    - stage: stage
+      jobs:
+      - job: job
+        steps:
+        - template: /tools/pipelines-tasks/azure-pipelines/templates/build-steps.yml@self
