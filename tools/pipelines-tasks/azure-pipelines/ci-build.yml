@@ -1,3 +1,8 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
+# This pipeline will be extended to the OneESPT template
+# The pool section has been filled with placeholder values, replace the pool section with your hosted pool, os, and image name. If you are using a Linux image, you must specify an additional windows image for SDL: https://eng.ms/docs/cloud-ai-platform/devdiv/one-engineering-system-1es/1es-docs/1es-pipeline-templates/features/sdlanalysis/overview#how-to-specify-a-windows-pool-for-the-sdl-source-analysis-stage
+
 # Build and test pipeline for CI
 
 # Branches that trigger a build on commit
@@ -14,7 +19,7 @@ pr:
   paths:
     include:
     - tools/pipelines-tasks
-
+ 
 # Schedule weekly build
 # Cron syntax: "mm HH DD MM DW" = minutes, hours, days, months, day of week (UTC time)
 schedules:
@@ -26,15 +31,41 @@ schedules:
     - master
   always: true
 
-pool:
-  name: 'msix-packaging-pool'
-
-# Set the variables to run AVD publish tests on required azure subscription service connection containing AVD resources:
+  # Set the variables to run AVD publish tests on required azure subscription service connection containing AVD resources:
 # subscriptionId, emailId, clientId, clientSecret, tenantId, resourceGroupName, storageAccountName, fileShareName, hostPoolName, workSpaceName, applicationGroupName
 # Not setting these variables will leave running AVD publish test cases and will not fail the pipeline
 variables:
   tasksRoot: 'tools/pipelines-tasks'
   buildOutRoot: '$(Build.ArtifactStagingDirectory)/buildOutput'
 
-steps:
-- template: templates/build-steps.yml
+resources:
+  repositories:
+  - repository: 1ESPipelineTemplates
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
+
+  parameters:
+    pool:
+      name: zure-Pipelines-1ESPT-ExDShared
+      image: windows-2019
+      os: windows
+
+    customBuildTags:
+    - ES365AIMigrationTooling
+
+    stages:
+    - stage: stage
+      jobs:
+      - job: job
+        templateContext:
+          outputs:
+          - output: nuget
+            displayName: 'Restore NuGet packages for test project'
+            packageParentPath: '$(Build.ArtifactStagingDirectory)'
+            restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
+        steps:
+        - template: /tools/pipelines-tasks/azure-pipelines/templates/build-steps.yml@self
