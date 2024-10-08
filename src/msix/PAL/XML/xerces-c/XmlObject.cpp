@@ -223,7 +223,7 @@ public:
     }  
 
     void InternalRelease()
-    {   delete(m_ptr);
+    {   delete[] m_ptr;
         m_ptr = nullptr;
     }
 
