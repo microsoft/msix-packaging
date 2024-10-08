@@ -50,7 +50,7 @@ extends:
 
   parameters:
     pool:
-      name: zure-Pipelines-1ESPT-ExDShared
+      name: Azure-Pipelines-1ESPT-ExDShared
       image: windows-2019
       os: windows
 
