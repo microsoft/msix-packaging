@@ -26,6 +26,9 @@
 #include <xercesc/internal/MemoryManagerImpl.hpp>
 #include <xercesc/util/OutOfMemoryException.hpp>
 
+#include <cstdint>
+#include <new>
+
 XERCES_CPP_NAMESPACE_BEGIN
 
 MemoryManager* MemoryManagerImpl::getExceptionMemoryManager()
@@ -35,13 +38,7 @@ MemoryManager* MemoryManagerImpl::getExceptionMemoryManager()
 
 void* MemoryManagerImpl::allocate(XMLSize_t size)
 {
-    void* memptr;
-    try {
-        memptr = ::operator new(size);
-    }
-    catch(...) {
-        throw OutOfMemoryException();
-    }
+    void* memptr = new(std::nothrow) uint8_t[size];
     if(memptr==NULL && size!=0)
         throw OutOfMemoryException();
     return memptr;
@@ -49,8 +46,7 @@ void* MemoryManagerImpl::allocate(XMLSize_t size)
 
 void MemoryManagerImpl::deallocate(void* p)
 {
-    if (p)
-        ::operator delete(p);
+    delete[] static_cast<uint8_t*>(p);
 }
 
 XERCES_CPP_NAMESPACE_END
