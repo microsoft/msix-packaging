@@ -64,11 +64,5 @@ extends:
     - stage: stage
       jobs:
       - job: job
-        templateContext:
-          outputs:
-          - output: nuget
-            displayName: 'Restore NuGet packages for test project'
-            packageParentPath: '$(Build.ArtifactStagingDirectory)'
-            restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
         steps:
         - template: /tools/pipelines-tasks/azure-pipelines/templates/build-steps.yml@self
