@@ -55,7 +55,7 @@ extends:
 
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
-      image: windows-2019
+      image: windows-2022
       os: windows
 
     customBuildTags:
