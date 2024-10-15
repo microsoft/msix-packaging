@@ -16,7 +16,7 @@ variables:
   # Version number
   major: '1'
   minor: '2'
-  patch: $[counter(variables['minor'], 0)]
+  patch: $[counter(variables['minor'], 0)]E
   # Upload results of Semmle analysis
   LGTM.UploadSnapshot: true
 
@@ -26,7 +26,7 @@ resources:
     type: git
     name: 1ESPipelineTemplates/1ESPipelineTemplates
     ref: refs/tags/release
-
+S
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
@@ -115,7 +115,7 @@ extends:
         - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@4
           displayName: 'ESRP CodeSigning'
           inputs:
-            ConnectedServiceName: 'ESRP CodeSigning'
+            ConnectedServiceName: 'Msix-packaging ESRP Code Signing'
             FolderPath: '$(buildOutRoot)'
             Pattern: MsixPackagingExtension.vsix
             signConfigType: inlineSignParams
