@@ -47,6 +47,10 @@ extends:
     sdl:
       git:
         submodules: disable
+      baseline:
+        baselineFile: $(Build.SourcesDirectory)\tools\pipelines-tasks\azure-pipelines\.gdnbaselines
+      suppression:
+        suppressionFile: $(Build.SourcesDirectory)\tools\pipelines-tasks\azure-pipelines\.gdnsuppress
 
     pool:
       name: Azure-Pipelines-1ESPT-ExDShared
