@@ -1,6 +1,6 @@
-# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
-# Please make sure to check all the converted content, it is your team's responsibility to make sure that the pipeline is still valid and functions as expected.
-# The Task 'NuGetCommand@2' has been converted to an output named 'Restore NuGet packages for test project' in the templateContext section.
+# Steps for building the project.
+# These are common in PR builds and release builds
+
 steps:
 - task: NodeTool@0
   displayName: 'Use Node 16.x'
@@ -14,8 +14,14 @@ steps:
     filePath: '$(tasksRoot)/build.ps1'
     arguments: 'BuildForProduction'
 
+# Run the tests
+- task: NuGetCommand@2
+  displayName: 'Restore NuGet packages for test project'
+  inputs:
+    restoreSolution: '$(tasksRoot)/test/assets/HelloWorldUWPApp/HelloWorldApp.sln'
+
 - task: PowerShell@2
-  displayName: "Set AVD Config input data for avd publish tests"
+  displayName: "Set AVD Config input data for avd publish tests" 
   inputs:
     targetType: 'inline'
     script: |
@@ -40,6 +46,10 @@ steps:
   env:
     SYSTEM_CULTURE: 'en-US'
 
+# Code analysis tasks required by policy
+# Note that CodeQL is a heavy task that is recommended to run in a separate pipeline
+# and only weekly. We include it here as the project is small enough as to not
+# make much of a difference, but we may need to separate it in the future.
 - task: Semmle@1
   displayName: 'Run CodeQL (Semmle) scan'
   inputs:
@@ -50,7 +60,7 @@ steps:
     ram: '16384'
     addProjectDirToScanningExclusionList: true
   env:
-  # Required to publish the result
+    # Required to publish the result
     SYSTEM_ACCESSTOKEN: $(System.AccessToken)
 
 - task: PublishSecurityAnalysisLogs@3
@@ -65,7 +75,7 @@ steps:
 
 - task: ComponentGovernanceComponentDetection@0
   displayName: 'Component Detection'
-  
+
 - task: PublishSecurityAnalysisLogs@3
   displayName: 'Publish Security Analysis Logs'
   inputs:
