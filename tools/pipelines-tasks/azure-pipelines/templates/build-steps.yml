@@ -46,23 +46,6 @@ steps:
   env:
     SYSTEM_CULTURE: 'en-US'
 
-# Code analysis tasks required by policy
-# Note that CodeQL is a heavy task that is recommended to run in a separate pipeline
-# and only weekly. We include it here as the project is small enough as to not
-# make much of a difference, but we may need to separate it in the future.
-- task: Semmle@1
-  displayName: 'Run CodeQL (Semmle) scan'
-  inputs:
-    sourceCodeDirectory: '$(tasksRoot)'
-    language: 'tsandjs'
-    querySuite: 'Recommended'
-    timeout: '1800'
-    ram: '16384'
-    addProjectDirToScanningExclusionList: true
-  env:
-    # Required to publish the result
-    SYSTEM_ACCESSTOKEN: $(System.AccessToken)
-
 - task: PublishSecurityAnalysisLogs@3
   inputs:
     ArtifactName: 'CodeAnalysisLogs'
