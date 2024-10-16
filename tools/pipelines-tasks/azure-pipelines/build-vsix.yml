@@ -66,7 +66,7 @@ extends:
           - output: adoExtension
             displayName: 'Publish Extension'
             targetPath: $(buildOutRoot)
-            connectedServiceName: 'Visual Studio Marketplace - MSIX'
+            connectedServiceName: 'Visual Studio Marketplace - Msix-Packaging'
             fileType: vsix
             vsixFile: '$(buildOutRoot)\MsixPackagingExtension.vsix'
             extensionId: 'msix-ci-automation-task-dev'
