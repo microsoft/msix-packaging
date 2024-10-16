@@ -127,7 +127,7 @@ extends:
             inlineOperation: |
               [
                {
-                   "KeyCode" : "CP-233016",
+                   "KeyCode" : "CP-401405",
                    "OperationCode" : "OpcSign",
                    "Parameters" : {
                        "FileDigest" : "/fd SHA256"
@@ -136,7 +136,7 @@ extends:
                    "ToolVersion" : "1.0"
                },
                {
-                   "KeyCode" : "CP-233016",
+                   "KeyCode" : "CP-401405",
                    "OperationCode" : "OpcVerify",
                    "Parameters" : {},
                    "ToolName" : "sign",
