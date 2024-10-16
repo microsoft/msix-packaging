@@ -112,10 +112,15 @@ extends:
             ValidateSignature: true
 
         # Sign the package
-        - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@4
+        - task: SFP.build-tasks.custom-build-task-1.EsrpCodeSigning@5
           displayName: 'ESRP CodeSigning'
           inputs:
-            ConnectedServiceName: 'Msix-packaging ESRP Code Signing'
+            ConnectedServiceName: $(ConnectedServiceName)
+            AppRegistrationClientId: $(AppRegistrationClientId)
+            AppRegistrationTenantId: $(AppRegistrationTenantId)
+            AuthAKVName: $(AuthAKVName) 
+            AuthCertName: $(AuthCertName)
+            AuthSignCertName: $(AuthSignCertName)
             FolderPath: '$(buildOutRoot)'
             Pattern: MsixPackagingExtension.vsix
             signConfigType: inlineSignParams
