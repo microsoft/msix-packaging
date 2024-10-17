@@ -91,6 +91,7 @@ extends:
             outputPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
             publisherId: 'MSIX'
             extensionVersion: '$(major).$(minor).$(patch)'
+            extensionId: 'msix-ci-automation-task-dev'
             extensionName: 'MSIX Packaging (Preview)'
             extensionVisibility: public
             updateTasksVersion: true
