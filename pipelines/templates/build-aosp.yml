@@ -27,7 +27,7 @@ jobs:
       targetType: filePath
       filePath: ./makeaosp.sh
       arguments: $(_arguments)
-      #failOnStderr: true
+      failOnStderr: true
     condition: succeeded()
 
     # Note: We only test for release_emulator
