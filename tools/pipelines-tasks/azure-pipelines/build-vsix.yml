@@ -16,7 +16,7 @@ variables:
   # Version number
   major: '1'
   minor: '2'
-  patch: $[counter(variables['minor'], 0)]
+  patch: $[counter(variables['minor'], 32)]
   # Upload results of Semmle analysis
   LGTM.UploadSnapshot: true
 
