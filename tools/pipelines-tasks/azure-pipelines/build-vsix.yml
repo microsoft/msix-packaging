@@ -14,9 +14,9 @@ variables:
   tasksRoot: 'tools/pipelines-tasks'
   buildOutRoot: '$(Build.ArtifactStagingDirectory)/buildOutput'
   # Version number
-  major: '1'
-#  minor: '3'
-  patch: $[counter(variables['minor'], 44)]
+  majorVersion: '1'
+  minorVersion: '2'
+  patch: $[counter(variables['minorVersion'], 44)]
   # Upload results of Semmle analysis
   LGTM.UploadSnapshot: true
 
@@ -71,7 +71,7 @@ extends:
             vsixFile: '$(buildOutRoot)\MsixPackagingExtension.vsix'
             extensionId: 'msix-ci-automation-task-dev'
             extensionName: 'MSIX Packaging (Preview)'
-            extensionVersion: '$(major).2.$(patch)'
+            extensionVersion: '$(majorVersion).$(minorVersion).$(patch)'
             updateTasksId: true
             extensionVisibility: 'privatepreview'
             sbomBuildDropPath:  $(buildOutRoot)
@@ -90,7 +90,7 @@ extends:
             patternManifest: 'vss-extension.json'
             outputPath: '$(buildOutRoot)\MsixPackagingExtension.vsix'
             publisherId: 'MSIX'
-            extensionVersion: '$(major).2.$(patch)'
+            extensionVersion: '$(majorVersion).$(minorVersion).$(patch)'
             extensionVisibility: public
             updateTasksVersion: true
 
@@ -103,7 +103,7 @@ extends:
             BuildComponentPath: '$(tasksRoot)'
             AdditionalComponentDetectorArgs: '--DirectoryExclusionList $(tasksRoot)\test'
             PackageName: 'MSIX Packaging Extension'
-            PackageVersion: '$(major).2.$(patch)'
+            PackageVersion: '$(majorVersion).$(minorVersion).$(patch)'
 
         - task: DropValidatorTask@0
           inputs:
