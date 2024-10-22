@@ -46,8 +46,8 @@ struct SignatureAccumulator
     // TODO: Take in hash algorithm and options for what to accumulate
     SignatureAccumulator() = default;
 
-    SignatureAccumulator(const SignatureAccumulator&) = default;
-    SignatureAccumulator& operator=(const SignatureAccumulator&) = default;
+    SignatureAccumulator(const SignatureAccumulator&) = delete;
+    SignatureAccumulator& operator=(const SignatureAccumulator&) = delete;
 
     SignatureAccumulator(SignatureAccumulator&&) = default;
     SignatureAccumulator& operator=(SignatureAccumulator&&) = default;
