@@ -36,7 +36,7 @@ namespace MSIX
                     unique_BIO certBIO{ BIO_new_mem_buf(reinterpret_cast<void*>(certBytes.data()), static_cast<int>(certBytes.size())) };
                     unique_PKCS12 cert{ d2i_PKCS12_bio(certBIO.get(), nullptr) };
 
-                    ParsePKCS12(cert.get(), pass, "Unable to open PFX file - incorrect password?");
+                    ParsePKCS12(cert.get(), pass, "Unable to open PFX file");
                 }
                     break;
 
