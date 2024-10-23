@@ -8,6 +8,6 @@
 namespace MsixTest {
     namespace Pack
     {
-        void ValidatePackageStream(const std::string& packageName);
+        void ValidatePackageStream(const std::string& packageName, bool isSigned = false);
     } 
 }

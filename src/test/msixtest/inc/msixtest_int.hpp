@@ -28,6 +28,7 @@ namespace MsixTest {
             Flat,
             BadFlat,
             Pack,
+            Sign,
             Manifest,
         } Directory;
 
