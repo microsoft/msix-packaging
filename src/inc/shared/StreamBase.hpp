@@ -58,7 +58,7 @@ namespace MSIX {
             if (bytesWritten) { bytesWritten->QuadPart = 0; }
             ThrowErrorIf(Error::InvalidParameter, (nullptr == stream), "invalid parameter.");
 
-            static const ULONGLONG size = 1024;
+            static const ULONGLONG size = 1 << 20;
             std::vector<std::int8_t> bytes(size);
             std::int64_t read = 0;
             std::int64_t written = 0;
@@ -105,7 +105,7 @@ namespace MSIX {
         virtual HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER, DWORD, ULARGE_INTEGER*) noexcept override { return static_cast<HRESULT>(Error::NotImplemented); }
 
         // Changes the size of the stream object.
-        virtual HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER) noexcept override { return static_cast<HRESULT>(Error::NotSupported); }
+        virtual HRESULT STDMETHODCALLTYPE SetSize(ULARGE_INTEGER) noexcept override { return static_cast<HRESULT>(Error::NotImplemented); }
 
         // Retrieves the STATSTG structure for this stream.
         virtual HRESULT STDMETHODCALLTYPE Stat(STATSTG* statStg, DWORD /*grfStatFlag*/) noexcept override try

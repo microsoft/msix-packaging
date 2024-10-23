@@ -87,6 +87,9 @@ namespace MSIX {
         DeflateWrite                = ERROR_FACILITY + 0x0082,
         DeflateRead                 = ERROR_FACILITY + 0x0083,
 
+        // Generic errors
+        SupportExcludedByBuild      = ERROR_FACILITY + 0x0091,
+
         // XML parsing errors
         XmlWarning                  = XML_FACILITY + 0x0001,
         XmlError                    = XML_FACILITY + 0x0002,

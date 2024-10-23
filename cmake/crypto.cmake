@@ -37,7 +37,11 @@ file( COPY ${OpenSSL_SOURCE_PATH}/include/openssl DESTINATION ${OpenSLL_INCLUDE_
 if(WIN32)
     # TODO: Replicate build flags for cl
     # Flags taken from OpenSSL Configure file for VC-WIN64A target.  More care may be required for other targets.
-    set(TARGET_COMPILE_FLAGS -W3 -Gs0 -Gy -nologo -DOPENSSL_SYSNAME_WIN32 -DWIN32_LEAN_AND_MEAN -DL_ENDIAN -DUNICODE -D_UNICODE)
+    if ((CMAKE_BUILD_TYPE MATCHES Release) OR (CMAKE_BUILD_TYPE MATCHES MinSizeRel))
+        set(TARGET_COMPILE_FLAGS -O1 -W3 -Gs0 -Gy -nologo -DOPENSSL_SYSNAME_WIN32 -DWIN32_LEAN_AND_MEAN -DL_ENDIAN -DUNICODE -D_UNICODE)
+    else()
+        set(TARGET_COMPILE_FLAGS -Zi -W3 -Gs0 -Gy -nologo -DOPENSSL_SYSNAME_WIN32 -DWIN32_LEAN_AND_MEAN -DL_ENDIAN -DUNICODE -D_UNICODE)
+    endif()
 else()
     set( TARGET_COMPILE_FLAGS -fno-rtti -fno-stack-protector -O1 -fno-unwind-tables -fno-asynchronous-unwind-tables
         -fno-math-errno -fno-unroll-loops -fmerge-all-constants)
@@ -84,6 +88,12 @@ endif()
 
 # Begin configure public headers
 file( READ "${MSIX_PROJECT_ROOT}/cmake/openssl/opensslconf.h.cmake" CONF )
+set(CONDITIONAL_CONF "")
+
+if(NOT MSIX_PACK)
+    set(CONDITIONAL_CONF "${CONDITIONAL_CONF}
+#define OPENSSL_NO_DES")
+endif()
 set( CONF "
 #define OPENSSL_NO_GMP
 #define OPENSSL_NO_JPAKE
@@ -100,7 +110,6 @@ set( CONF "
 #define OPENSSL_NO_BF
 #define OPENSSL_NO_IDEA
 #define OPENSSL_NO_ENGINE
-#define OPENSSL_NO_DES
 #define OPENSSL_NO_MDC2
 #define OPENSSL_NO_SEED
 #define OPENSSL_NO_DEPRECATED
@@ -124,6 +133,9 @@ set( CONF "
 #define OPENSSL_NO_CMS
 #define OPENSSL_NO_SRP
 #define OPENSSL_NO_SM2
+
+${CONDITIONAL_CONF}
+
 ${CONF}" )
 file( WRITE "${OpenSLL_INCLUDE_PATH}/openssl/opensslconf.h.cmake" "${CONF}" )
 

@@ -35,6 +35,13 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/lib")
 
+## Require that the target is little endian
+include(TestBigEndian)
+TEST_BIG_ENDIAN(IS_BIG_ENDIAN)
+if(IS_BIG_ENDIAN)
+    message(FATAL_ERROR "Big endian targets are not supported at this time")
+endif()
+
 ## Git (and its revision)
 find_package(Git) # QUIET) # if we don't find git or FindGit.cmake is not on the system we ignore it.
 

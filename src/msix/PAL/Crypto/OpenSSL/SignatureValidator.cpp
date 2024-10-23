@@ -239,7 +239,7 @@ namespace MSIX
         if ((asn1Sequence->encoding & 0x80) == 0)
         {
             spcIndirectDataContent = &asn1Sequence->content;
-            spcIndirectDataContentSize = (asn1Sequence->encoding & 0x7F);          
+            spcIndirectDataContentSize = (asn1Sequence->encoding & 0x7F);
         }
         else
         if ((asn1Sequence->encoding & 0x81) == 0x81) 
@@ -264,6 +264,7 @@ namespace MSIX
         unique_BIO bioMem(BIO_new_mem_buf(spcIndirectDataContent, spcIndirectDataContentSize));
         signatureDigest.swap(bioMem);
         
+        // TODO: We can potentially do better to decode the ASN1 and ensure that it's the correct SIP GUID and version
         // Scan through the spcIndirectData for the APPX header
         bool found = false;
         while (spcIndirectDataContent < spcIndirectDataContentEnd && !found)
@@ -285,8 +286,8 @@ namespace MSIX
             (spcIndirectDataContentSize - sizeof(DigestName)) / sizeof(DigestHash),
             (spcIndirectDataContentSize - sizeof(DigestName)) % sizeof(DigestHash)
         );
-	}
-	
+    }
+
     // This callback will be invoked during certificate verification
     int VerifyCallback(int ok, X509_STORE_CTX *ctx)
     {
@@ -384,6 +385,7 @@ namespace MSIX
         return false;
     }
 
+    // TODO: Needs a pass to ensure proper behavior and correctness
     bool SignatureValidator::Validate(
         IMsixFactory* factory,
         MSIX_VALIDATION_OPTION option,
@@ -408,11 +410,11 @@ namespace MSIX
         std::uint32_t p7sSize = end.u.LowPart - sizeof(fileID);
         std::vector<std::uint8_t> p7s(p7sSize);
         ULONG actualRead = 0;
-        ThrowHrIfFailed(stream->Read(p7s.data(), p7s.size(), &actualRead));
+        ThrowHrIfFailed(stream->Read(p7s.data(), static_cast<ULONG>(p7s.size()), &actualRead));
         ThrowErrorIf(Error::SignatureInvalid, (actualRead != p7s.size()), "read error");
 
         // Load the p7s into a BIO buffer
-        unique_BIO bmem(BIO_new_mem_buf(p7s.data(), p7s.size()));
+        unique_BIO bmem(BIO_new_mem_buf(p7s.data(), static_cast<int>(p7s.size())));
         // Initialize the PKCS7 object from the BIO buffer
         unique_PKCS7 p7(d2i_PKCS7_bio(bmem.get(), nullptr));
 
@@ -445,7 +447,7 @@ namespace MSIX
         {
             auto certBuffer = Helper::CreateBufferFromStream(appxCert.second);
             // Load the cert into memory
-            unique_BIO bcert(BIO_new_mem_buf(certBuffer.data(), certBuffer.size()));
+            unique_BIO bcert(BIO_new_mem_buf(certBuffer.data(), static_cast<int>(certBuffer.size())));
 
             // Create a cert from the memory buffer
             unique_X509 cert(PEM_read_bio_X509(bcert.get(), nullptr, nullptr, nullptr));

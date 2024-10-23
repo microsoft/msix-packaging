@@ -9,10 +9,11 @@
 #include "ComHelper.hpp"
 #include "ZipObject.hpp"
 
-#include <vector>
 #include <map>
 #include <memory>
 #include <utility>
+#include <string>
+#include <vector>
 
 #include <zlib.h>
 
@@ -33,6 +34,11 @@ public:
     // to the central directories map
     virtual void EndFile(std::uint32_t crc, std::uint64_t compressedSize, std::uint64_t uncompressedSize, bool forceDataDescriptor) = 0;
 
+    virtual void RemoveFiles(const std::vector<std::string>& files) = 0;
+
+    // Writes the central directory to the given stream, as if it were closing.
+    virtual void WriteCentralDirectoryToStream(IStream* stream) = 0;
+
     // Ends zip file by writing the central directory records, zip64 locator,
     // zip64 end of central directory and the end of central directories.
     virtual void Close() = 0;
@@ -41,24 +47,29 @@ MSIX_INTERFACE(IZipWriter, 0x350dd671,0x0c40,0x4cd7,0x9a,0x5b,0x27,0x45,0x6d,0x6
 
 namespace MSIX {
 
-    class ZipObjectWriter final : public ComClass<ZipObjectWriter, IStorageObject, IZipWriter>, ZipObject
+    class ZipObjectWriter final : public ComClass<ZipObjectWriter, IZipObject, IZipWriter>
     {
     public:
-        ZipObjectWriter(const ComPtr<IStream>& stream);
+        ZipObjectWriter(IStream* stream);
 
-        ZipObjectWriter(const ComPtr<IStorageObject>& storageObject);
+        ZipObjectWriter(IZipObject* zipObject);
 
-        // IStorage methods
-        std::vector<std::string> GetFileNames(FileNameOptions options) override;
-        ComPtr<IStream> GetFile(const std::string& fileName) override;
-        std::string GetFileName() override { NOTIMPLEMENTED };
+        // IZipObject
+        ComPtr<IStream> GetStream() override;
+        MSIX::EndCentralDirectoryRecord& GetEndCentralDirectoryRecord() override;
+        MSIX::Zip64EndOfCentralDirectoryLocator& GetZip64Locator() override;
+        MSIX::Zip64EndOfCentralDirectoryRecord& GetZip64EndOfCentralDirectory() override;
+        std::vector<std::pair<std::string, CentralDirectoryFileHeader>>& GetCentralDirectories() override;
+        MSIX::ComPtr<IStream> GetEntireZipFileStream(const std::string& fileName) override;
 
         // IZipWriter
         std::pair<std::uint32_t, ComPtr<IStream>> PrepareToAddFile(const std::string& name, bool isCompressed) override;
         void EndFile(std::uint32_t crc, std::uint64_t compressedSize, std::uint64_t uncompressedSize, bool forceDataDescriptor) override;
+        void RemoveFiles(const std::vector<std::string>& files) override;
+        void WriteCentralDirectoryToStream(IStream* stream) override;
         void Close() override;
 
-    protected:
+    private:
         enum class State
         {
             ReadyForLfhOrClose,
@@ -66,6 +77,7 @@ namespace MSIX {
             Closed,
         };
 
+        ComPtr<IZipObject> m_zipObject;
         State m_state = State::ReadyForLfhOrClose;
         std::pair<std::uint64_t, LocalFileHeader> m_lastLFH;
         std::vector<std::string> m_fileNameSequence;

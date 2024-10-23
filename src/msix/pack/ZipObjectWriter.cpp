@@ -12,73 +12,79 @@
 #include "StreamHelper.hpp"
 #include "Encoding.hpp"
 
+#include <utility>
+
 namespace MSIX {
 
-    // We only use this for writting. If we ever decide to validate it, it needs to move to 
-    // ZipObject and ZipObjectReader must validate it
-    class DataDescriptor final : public Meta::StructuredObject<
-        Meta::Field4Bytes, // 0 - data descriptor header signature  4 bytes(0x08074b50)
-        Meta::Field4Bytes, // 1 - crc -32                           4 bytes
-        Meta::Field8Bytes, // 2 - compressed size                   8 bytes(zip64)
-        Meta::Field8Bytes  // 3 - uncompressed size                 8 bytes(zip64)
-    >
+    ZipObjectWriter::ZipObjectWriter(IStream* stream)
     {
-    public:
-        DataDescriptor(std::uint32_t crc, std::uint64_t compressSize, std::uint64_t uncompressSize)
-        {
-            Field<0>() = static_cast<std::uint32_t>(Signatures::DataDescriptor);
-            Field<1>() = crc;
-            Field<2>() = compressSize;
-            Field<3>() = uncompressSize;
-        }
-    };
-
-    ZipObjectWriter::ZipObjectWriter(const ComPtr<IStream>& stream) : ZipObject(stream)
-    {
+        m_zipObject = ComPtr<IZipObject>::Make<ZipObject>(stream, false);
     }
 
     // This is used for editing a package (aka signing)
-    ZipObjectWriter::ZipObjectWriter(const ComPtr<IStorageObject>& storageObject) : ZipObject(storageObject)
+    ZipObjectWriter::ZipObjectWriter(IZipObject* zipObject) : m_zipObject(zipObject)
     {
         // The storage object provided should had already initialize all the data.
-        ThrowErrorIfNot(Error::Zip64EOCDRecord, m_endCentralDirectoryRecord.GetIsZip64(),
+        ThrowErrorIfNot(Error::Zip64EOCDRecord, m_zipObject->GetEndCentralDirectoryRecord().GetIsZip64(),
             "Editing non zip64 packages not supported");
 
         // Move the stream at the start of central directory record so we can start overwritting.
-        // Central directory data in already in m_centralDirectories.
+        // Central directory data is already in m_centralDirectories.
         LARGE_INTEGER pos = {0};
-        pos.QuadPart = m_zip64EndOfCentralDirectory.GetOffsetStartOfCD();
-        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
+        pos.QuadPart = m_zipObject->GetZip64EndOfCentralDirectory().GetOffsetStartOfCD();
+        ThrowHrIfFailed(m_zipObject->GetStream()->Seek(pos, StreamBase::Reference::START, nullptr));
     }
 
-    // IStorage
-    std::vector<std::string> ZipObjectWriter::GetFileNames(FileNameOptions options)
+    // IZipObject
+    ComPtr<IStream> ZipObjectWriter::GetStream()
     {
-        // TODO: implement
-        NOTIMPLEMENTED;
+        return m_zipObject->GetStream();
     }
 
-    ComPtr<IStream> ZipObjectWriter::GetFile(const std::string& fileName)
+    MSIX::EndCentralDirectoryRecord& ZipObjectWriter::GetEndCentralDirectoryRecord()
     {
-        // TODO: implement
-        NOTIMPLEMENTED;
+        return m_zipObject->GetEndCentralDirectoryRecord();
+    }
+
+    MSIX::Zip64EndOfCentralDirectoryLocator& ZipObjectWriter::GetZip64Locator()
+    {
+        return m_zipObject->GetZip64Locator();
+    }
+
+    MSIX::Zip64EndOfCentralDirectoryRecord& ZipObjectWriter::GetZip64EndOfCentralDirectory()
+    {
+        return m_zipObject->GetZip64EndOfCentralDirectory();
+    }
+
+    std::vector<std::pair<std::string, CentralDirectoryFileHeader>>& ZipObjectWriter::GetCentralDirectories()
+    {
+        return m_zipObject->GetCentralDirectories();
+    }
+
+    MSIX::ComPtr<IStream> ZipObjectWriter::GetEntireZipFileStream(const std::string& fileName)
+    {
+        return m_zipObject->GetEntireZipFileStream(fileName);
     }
 
     // IZipWriter
     std::pair<std::uint32_t, ComPtr<IStream>> ZipObjectWriter::PrepareToAddFile(const std::string& name, bool isCompressed)
     {
+        auto zipStream = m_zipObject->GetStream();
+
         ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForLfhOrClose, "Invalid zip writer state");
 
-        auto result = m_centralDirectories.find(name);
-        if (result != m_centralDirectories.end())
+        for (const auto& cd : m_zipObject->GetCentralDirectories())
         {
-            auto message = "Adding duplicated file " + Encoding::DecodeFileName(name) + "to package";
-            ThrowErrorAndLog(Error::DuplicateFile, message.c_str());
+            if (cd.first == name)
+            {
+                auto message = "Adding duplicated file " + Encoding::DecodeFileName(name) + "to package";
+                ThrowErrorAndLog(Error::DuplicateFile, message.c_str());
+            }
         }
 
         // Get position were the lfh is going to be written
         ULARGE_INTEGER pos = {0};
-        ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
+        ThrowHrIfFailed(zipStream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
 
         // track the sequence of file names to sort the central directory upon Close
         m_fileNameSequence.push_back(name);
@@ -86,22 +92,24 @@ namespace MSIX {
         // Write lfh
         LocalFileHeader lfh;
         lfh.SetData(name, isCompressed);
-        lfh.WriteTo(m_stream);
+        lfh.WriteTo(zipStream);
 
         m_lastLFH = std::make_pair(static_cast<std::uint64_t>(pos.QuadPart), std::move(lfh));
         m_state = ZipObjectWriter::State::ReadyForFile;
 
-        ComPtr<IStream> zipStream = ComPtr<IStream>::Make<ZipFileStream>(name, isCompressed, m_stream.Get());
+        ComPtr<IStream> newZipStream = ComPtr<IStream>::Make<ZipFileStream>(name, isCompressed, zipStream.Get());
         if (isCompressed)
         {
-            zipStream = ComPtr<IStream>::Make<DeflateStream>(zipStream);
+            newZipStream = ComPtr<IStream>::Make<DeflateStream>(newZipStream);
         }
 
-        return std::make_pair(static_cast<std::uint32_t>(m_lastLFH.second.Size()), std::move(zipStream));
+        return std::make_pair(static_cast<std::uint32_t>(m_lastLFH.second.Size()), std::move(newZipStream));
     }
 
     void ZipObjectWriter::EndFile(std::uint32_t crc, std::uint64_t compressedSize, std::uint64_t uncompressedSize, bool forceDataDescriptor)
     {
+        auto zipStream = m_zipObject->GetStream();
+
         ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForFile, "Invalid zip writer state");
 
         if (forceDataDescriptor ||
@@ -110,65 +118,111 @@ namespace MSIX {
         {
             // Create and write data descriptor 
             DataDescriptor descriptor = DataDescriptor(crc, compressedSize, uncompressedSize);
-            descriptor.WriteTo(m_stream);
+            descriptor.WriteTo(zipStream);
         }
         else
         {
             // The sizes can fit in the LFH, rewrite it with the new data
-            Helper::StreamPositionReset resetAfterLFHWrite{ m_stream.Get() };
+            Helper::StreamPositionReset resetAfterLFHWrite{ zipStream.Get() };
 
             LARGE_INTEGER lfhLocation;
             lfhLocation.QuadPart = static_cast<LONGLONG>(m_lastLFH.first);
-            ThrowHrIfFailed(m_stream->Seek(lfhLocation, StreamBase::Reference::START, nullptr));
+            ThrowHrIfFailed(zipStream->Seek(lfhLocation, StreamBase::Reference::START, nullptr));
 
             // We cannot change the size of the LFH, ensure that we don't accidentally
             size_t currentSize = m_lastLFH.second.Size();
             m_lastLFH.second.SetData(crc, compressedSize, uncompressedSize);
             ThrowErrorIf(Error::Unexpected, currentSize != m_lastLFH.second.Size(), "Cannot change the LFH size when updating it");
 
-            m_lastLFH.second.WriteTo(m_stream);
+            m_lastLFH.second.WriteTo(zipStream);
         }
 
         // Create and add cdh to map
         CentralDirectoryFileHeader cdh;
         cdh.SetData(m_lastLFH.second.GetFileName(), crc, compressedSize, uncompressedSize, m_lastLFH.first, m_lastLFH.second.GetCompressionMethod(), forceDataDescriptor);
-        m_centralDirectories.insert(std::make_pair(m_lastLFH.second.GetFileName(), std::move(cdh)));
+        m_zipObject->GetCentralDirectories().emplace_back(std::make_pair(m_lastLFH.second.GetFileName(), std::move(cdh)));
         m_state = ZipObjectWriter::State::ReadyForLfhOrClose;
+    }
+
+    void ZipObjectWriter::RemoveFiles(const std::vector<std::string>& files)
+    {
+        std::vector<size_t> centralDirectoryIndexes;
+
+        // Search from the back to find all of the files, as they are most likely there
+        for (size_t i = m_zipObject->GetCentralDirectories().size(); i > 0; --i)
+        {
+            const auto& cd = m_zipObject->GetCentralDirectories()[i - 1];
+            auto itr = std::find(files.begin(), files.end(), cd.first);
+            if (itr != files.end())
+            {
+                centralDirectoryIndexes.emplace_back(i - 1);
+
+                // Early out if we find all of the files
+                if (centralDirectoryIndexes.size() == files.size())
+                {
+                    break;
+                }
+            }
+        }
+
+        // None of the given files were found
+        if (centralDirectoryIndexes.empty())
+        {
+            return;
+        }
+
+        // Ensure that all of the files are at the end of the stream,
+        // at least until we want to support more adventurous editing.
+        size_t minimumIndex = m_zipObject->GetCentralDirectories().size() - centralDirectoryIndexes.size();
+        for (size_t i : centralDirectoryIndexes)
+        {
+            ThrowErrorIf(Error::NotSupported, i < minimumIndex, "Removing files from the middle of the archive is not supported");
+        }
+
+        // Now that we know we have a contiguous block of files at the end, we can safely remove them from the stream.
+        // Do that by simply moving the stream to point to the start of the LFH of the file.
+        CentralDirectoryFileHeader& cdToRemove = m_zipObject->GetCentralDirectories()[minimumIndex].second;
+        LARGE_INTEGER pos = { 0 };
+        pos.QuadPart = cdToRemove.GetRelativeOffsetOfLocalHeader();
+        ThrowHrIfFailed(m_zipObject->GetStream()->Seek(pos, MSIX::StreamBase::Reference::START, nullptr));
+
+        // Remove the CD entries at the end
+        m_zipObject->GetCentralDirectories().resize(minimumIndex);
+    }
+
+    void ZipObjectWriter::WriteCentralDirectoryToStream(IStream* stream)
+    {
+        ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForLfhOrClose, "Invalid zip writer state");
+
+        // Write central directories
+        ULARGE_INTEGER offsetToStartOfCD = { 0 };
+        ThrowHrIfFailed(m_zipObject->GetStream()->Seek({ 0 }, StreamBase::Reference::CURRENT, &offsetToStartOfCD));
+
+        std::size_t cdhsSize = 0;
+        for (auto& cdh : m_zipObject->GetCentralDirectories())
+        {
+            cdhsSize += cdh.second.Size();
+            cdh.second.WriteTo(stream);
+        }
+
+        // Write zip64 end of cds
+        ULARGE_INTEGER startOfZip64EndOfCds{};
+        startOfZip64EndOfCds.QuadPart = offsetToStartOfCD.QuadPart + cdhsSize;
+        m_zipObject->GetZip64EndOfCentralDirectory().SetData(m_zipObject->GetCentralDirectories().size(), static_cast<std::uint64_t>(cdhsSize),
+            static_cast<std::uint64_t>(offsetToStartOfCD.QuadPart));
+        m_zipObject->GetZip64EndOfCentralDirectory().WriteTo(stream);
+
+        // Write zip64 locator
+        m_zipObject->GetZip64Locator().SetData(static_cast<std::uint64_t>(startOfZip64EndOfCds.QuadPart));
+        m_zipObject->GetZip64Locator().WriteTo(stream);
+
+        // Because we only use zip64, EndCentralDirectoryRecord never changes
+        m_zipObject->GetEndCentralDirectoryRecord().WriteTo(stream);
     }
 
     void ZipObjectWriter::Close()
     {
-        ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForLfhOrClose, "Invalid zip writer state");
-        // Write central directories
-        ULARGE_INTEGER startOfCdh = {0};
-        ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &startOfCdh));
-        std::size_t cdhsSize = 0;
-        for (const auto& fileName : m_fileNameSequence)
-        {
-            auto it = m_centralDirectories.find(fileName);
-            if (it != m_centralDirectories.end())
-            {
-                auto& cdh = it->second;
-                cdhsSize += cdh.Size();
-                cdh.WriteTo(m_stream);
-            }
-        }
-        m_fileNameSequence.clear();
-
-        // Write zip64 end of cds
-        ULARGE_INTEGER startOfZip64EndOfCds = {0};
-        ThrowHrIfFailed(m_stream->Seek({0}, StreamBase::Reference::CURRENT, &startOfZip64EndOfCds));
-        m_zip64EndOfCentralDirectory.SetData(m_centralDirectories.size(), static_cast<std::uint64_t>(cdhsSize), 
-            static_cast<std::uint64_t>(startOfCdh.QuadPart));
-        m_zip64EndOfCentralDirectory.WriteTo(m_stream);
-
-        // Write zip64 locator
-        m_zip64Locator.SetData(static_cast<std::uint64_t>(startOfZip64EndOfCds.QuadPart));
-        m_zip64Locator.WriteTo(m_stream);
-
-        // Because we only use zip64, EndCentralDirectoryRecord never changes
-        m_endCentralDirectoryRecord.WriteTo(m_stream);
-
+        WriteCentralDirectoryToStream(m_zipObject->GetStream().Get());
         m_state = ZipObjectWriter::State::Closed;
     }
 

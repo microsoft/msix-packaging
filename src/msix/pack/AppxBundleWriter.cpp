@@ -5,6 +5,7 @@
 
 #include "AppxPackaging.hpp"
 #include "AppxBundleWriter.hpp"
+#include "AppxFactory.hpp"
 #include "MsixErrors.hpp"
 #include "Exceptions.hpp"
 #include "ContentType.hpp"
@@ -14,7 +15,6 @@
 #include "ScopeExit.hpp"
 #include "FileNameValidation.hpp"
 #include "StringHelper.hpp"
-#include "VectorStream.hpp"
 
 #include <ctime>
 #include <iomanip>

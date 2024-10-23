@@ -10,7 +10,7 @@
 #ifdef BUNDLE_SUPPORT
 #define THROW_IF_BUNDLE_NOT_ENABLED
 #else
-#define THROW_IF_BUNDLE_NOT_ENABLED { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, "Bundle support not enabled", MSIX::Error::NotSupported); }
+#define THROW_IF_BUNDLE_NOT_ENABLED { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, "Bundle support not enabled", MSIX::Error::SupportExcludedByBuild); }
 #endif // BUNDLE_SUPPORT
 #endif // THROW_IF_BUNDLE_NOT_ENABLED
 
@@ -18,6 +18,6 @@
 #ifdef MSIX_PACK
 #define THROW_IF_PACK_NOT_ENABLED
 #else
-#define THROW_IF_PACK_NOT_ENABLED { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, "Packaging support not enabled", MSIX::Error::NotSupported); }
+#define THROW_IF_PACK_NOT_ENABLED { MSIX::RaiseException<MSIX::Exception>(__LINE__, __FILE__, "Packaging support not enabled", MSIX::Error::SupportExcludedByBuild ); }
 #endif // MSIX_PACK
 #endif // THROW_IF_PACK_NOT_ENABLED

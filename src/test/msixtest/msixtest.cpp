@@ -56,6 +56,8 @@ namespace MsixTest {
                 return m_root + "testData/unpack/badFlat";
             case Pack:
                 return m_root + "testData/pack";
+            case Sign:
+                return m_root + "testData/sign";
             case Manifest:
                 return m_root + "testData/manifest";
         }

@@ -32,6 +32,11 @@ namespace MSIX {
     // APPX-specific header placed in the P7X file, before the actual signature
     const DWORD P7X_FILE_ID = 0x58434b50;
 
+    // APPX-SIP default version
+    const DWORD APPX_SIP_DEFAULT_VERSION = 0x01010000;
+
+#define APPX_SIP_GUID_BYTES 0x4B, 0xDF, 0xC5, 0x0A, 0x07, 0xCE, 0xE2, 0x4D, 0xB7, 0x6E, 0x23, 0xC8, 0x39, 0xA0, 0x9F, 0xD1
+
     enum class DigestName : std::uint32_t
     {
         HEAD = 0x58505041, // APPX
@@ -60,8 +65,10 @@ namespace MSIX {
     class AppxSignatureObject final : public ComClass<AppxSignatureObject, IVerifierObject>
     {
     public:
+        // Used in signing; we create an empty object to fill with digests.
+        AppxSignatureObject() = default;
 
-        AppxSignatureObject(IMsixFactory* factory, MSIX_VALIDATION_OPTION validationOptions,const ComPtr<IStream>& stream);
+        AppxSignatureObject(IMsixFactory* factory, MSIX_VALIDATION_OPTION validationOptions, const ComPtr<IStream>& stream);
 
         // IVerifierObject
         const std::string& GetPublisher() override  { return m_publisher; }

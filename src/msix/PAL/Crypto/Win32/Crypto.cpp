@@ -70,7 +70,7 @@ namespace MSIX {
         BCRYPT_ALG_HANDLE algHandleT;
 
         // Open an algorithm handle
-        // This code passes BCRYPT_HASH_REUSABLE_FLAG with BCryptAlgorithmProvider(...) to load a provider which supports reusable hash
+        BCRYPT_ALG_HANDLE algHandleT{};
         ThrowStatusIfFailed(BCryptOpenAlgorithmProvider(
             &algHandleT,                 // Alg Handle pointer
             BCRYPT_SHA256_ALGORITHM,    // Cryptographic Algorithm name (null terminated unicode string)
@@ -81,7 +81,7 @@ namespace MSIX {
 
         // Create a hash handle
         ThrowStatusIfFailed(BCryptCreateHash(
-            algHandle.get(),            // Handle to an algorithm provider                 
+            context->algHandle.get(),   // Handle to an algorithm provider
             &hashHandleT,               // A pointer to a hash handle - can be a hash or hmac object
             nullptr,                    // Pointer to the buffer that receives the hash/hmac object
             0,                          // Size of the buffer in bytes
@@ -130,6 +130,11 @@ namespace MSIX {
         hashEngine.HashData(buffer, cbBuffer);
         hashEngine.FinalizeAndGetHashValue(hash);
         return true;
+    }
+
+    void SHA256::SHA256ContextDeleter::operator()(SHA256Context* context)
+    {
+        delete context;
     }
 
     std::string Base64::ComputeBase64(const std::vector<std::uint8_t>& buffer)

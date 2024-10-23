@@ -47,6 +47,18 @@ jobs:
       debug_64_pack:
         _arguments: x64 -d --pack
         _artifact: WIN32-x64chk-pack
+      release_32_sign:
+        _arguments: x86 --pack -co
+        _artifact: WIN32-sign
+      release_64_sign:
+        _arguments: x64 --pack -co
+        _artifact: WIN32-x64-sign
+      debug_32_sign:
+        _arguments: x86 -d --pack -co
+        _artifact: WIN32chk-sign
+      debug_64_sign:
+        _arguments: x64 -d --pack -co
+        _artifact: WIN32-x64chk-sign
 
   steps:
   - task: BatchScript@1
