@@ -214,7 +214,7 @@ namespace MSIX {
                     std::string packageFullName = packageIdInternal->GetPackageFullName();
                     std::ostringstream errorBuilder;
                         errorBuilder << "The package with file name " << fileName << " and package full name " << packageFullName << " is not valid in the bundle because its manifest declares a value for " 
-                            << ElementsToTest[i] << " which is not supported in bundles. The minimum supported value is " << MinimumAllowedOSVersion << ".";
+                            << wstring_to_utf8(ElementsToTest[i]) << " which is not supported in bundles. The minimum supported value is " << MinimumAllowedOSVersion << ".";
                     ThrowErrorAndLog(Error::AppxManifestSemanticError, errorBuilder.str().c_str());
                 }
             }
