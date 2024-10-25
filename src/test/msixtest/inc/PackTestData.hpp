@@ -15,7 +15,7 @@ namespace MsixTest { namespace Pack {
     void MakeManifestStream(IStream** manifestStream);
 
     // Get files unpacked after packing testData/pack/input
-    const std::map<std::string, std::uint64_t>& GetExpectedFiles();
+    const std::map<std::string, std::uint64_t>& GetExpectedFiles(bool isSigned = false);
 
     namespace TestConstants {
 

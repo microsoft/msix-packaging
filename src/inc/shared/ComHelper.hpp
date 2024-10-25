@@ -154,10 +154,16 @@ namespace MSIX {
         template <class U>
         ComPtr<U> As() const
         {
-            ComPtr<U> out;
-            ThrowHrIfFailed(m_ptr->QueryInterface(UuidOfImpl<U>::iid, reinterpret_cast<void**>(&out)));
+            return ComPtr<U>::From(m_ptr);
+        }
+
+        static ComPtr<T> From(IUnknown* iunk)
+        {
+            ComPtr<T> out;
+            ThrowHrIfFailed(iunk->QueryInterface(UuidOfImpl<T>::iid, reinterpret_cast<void**>(&out)));
             return out;
         }
+
     protected:
         T* m_ptr = nullptr;
 

@@ -78,7 +78,7 @@ namespace MsixTest { namespace Pack {
         *manifestStream = stream.Detach(); 
     }
 
-    const std::map<std::string, std::uint64_t>& GetExpectedFiles()
+    const std::map<std::string, std::uint64_t>& GetExpectedFiles(bool isSigned)
     {
         static const std::map<std::string, std::uint64_t> files = 
         {
@@ -95,6 +95,14 @@ namespace MsixTest { namespace Pack {
             { "Assets/StoreLogo.png", 1451 },
             { "Assets/Wide310x150Logo.scale-200.png", 3204 }
         };
+        if (isSigned) {
+            static const std::map<std::string, std::uint64_t> files_signed = [&](){
+                std::map<std::string, std::uint64_t> temp = files;
+                temp["AppxSignature.p7x"] = 2671;
+                return temp;
+            }();
+            return files_signed;
+        }
         return files;
     }
 } }

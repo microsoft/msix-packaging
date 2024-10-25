@@ -212,6 +212,20 @@ struct Invocation
         return opt->params[0];
     }
 
+    const std::string* TryGetOptionValue(const std::string& name) const
+    {
+        const InvokedOption* opt = GetInvokedOption(name);
+        if (!opt)
+        {
+            return nullptr;
+        }
+        if (opt->option.ParameterCount != 1)
+        {
+            throw std::runtime_error("Given option does not take exactly one parameter");
+        }
+        return &(opt->params[0]);
+    }
+
 private:
     mutable std::string error;
     std::string         toolName;
@@ -418,6 +432,26 @@ MSIX_APPLICABILITY_OPTIONS GetApplicabilityOption(const Invocation& invocation)
     return applicability;
 }
 
+#ifdef MSIX_PACK
+MSIX_CERTIFICATE_FORMAT GetCertificateFormat(const Invocation& invocation)
+{
+    MSIX_CERTIFICATE_FORMAT format = MSIX_CERTIFICATE_FORMAT::MSIX_CERTIFICATE_FORMAT_UNKNOWN;
+
+    const std::string* formatStringPtr = invocation.TryGetOptionValue("-cf");
+    if (formatStringPtr)
+    {
+        const std::string& formatStr = *formatStringPtr;
+
+        if (formatStr == "pfx")
+        {
+            format = MSIX_CERTIFICATE_FORMAT::MSIX_CERTIFICATE_FORMAT_PFX;
+        }
+    }
+
+    return format;
+}
+#endif
+
 MSIX_BUNDLE_OPTIONS GetBundleOptions(const Invocation& invocation)
 {
     MSIX_BUNDLE_OPTIONS bundleOptions = MSIX_BUNDLE_OPTIONS::MSIX_OPTION_NONE;
@@ -594,6 +628,52 @@ Command CreatePackCommand()
     return result;
 }
 
+Command CreateSignCommand()
+{
+    Command result{ "sign", "Signs an existing package in-place",
+        {
+            Option{ "-p", "Package file path.", true, 1, "package" },
+            Option{ "-c", "Certificate file path.", true, 1, "cert" },
+            Option{ "-cf", "Certificate format.", false, 1, "format" },
+            Option{ "-pass", "Certificate password.", false, 1, "password" },
+            // TODO: Potentially support other types of certificate files, along with separate private keys.
+            // TODO: Support passing in the certificate chain separately.
+            // TODO: Windows signing allows choosing whether to validate the block hashes, could add here.
+            // TODO: Potentially allow non-inplace by making an output file param.
+            // TODO: Full package content hash is optional
+            // TODO: Flag to control CI catalog generation
+            Option{ TOOL_HELP_COMMAND_STRING, "Displays this help text." },
+        }
+    };
+    result.SetDescription({
+        "Signs the given <package> file, modifying it to either include or replace a",
+        "signature. The <cert> file contains the signing certificate.",
+        "The following certificate formats are supported, and the format will be",
+        "inferred from the file name if not provided:",
+        "    pfx: [*.pfx] A PKCS12 containing both public and private keys",
+        "",
+        "WARNING: This feature is not yet complete. It has only had manual testing",
+        "         and does not yet allow for verification of custom certificates",
+        "         used during signing. It also required building with openssl."
+        });
+
+    result.SetInvocationFunc([](const Invocation& invocation)
+        {
+            std::cout << "WARNING: The signing feature is not complete, see the help for this command for more information." << std::endl;
+            std::cout << std::endl;
+
+            return SignPackage(
+                MSIX_SIGNING_OPTIONS::MSIX_SIGNING_OPTIONS_NONE,
+                const_cast<char*>(invocation.GetOptionValue("-p").c_str()),
+                GetCertificateFormat(invocation),
+                const_cast<char*>(invocation.GetOptionValue("-c").c_str()),
+                const_cast<char*>(invocation.GetOptionValue("-pass").c_str()),
+                nullptr);
+        });
+
+    return result;
+}
+
 Command CreateBundleCommand()
 {
     Command result{ "bundle", "Create a new app bundle from files on disk",
@@ -666,6 +746,7 @@ int main(int argc, char* argv[])
         CreateUnbundleCommand(),
         #ifdef MSIX_PACK
         CreatePackCommand(),
+        CreateSignCommand(),
         CreateBundleCommand(),
         #endif
     };

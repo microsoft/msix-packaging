@@ -77,6 +77,7 @@ list(APPEND XSRC
     ${CRYPTO}/asn1/nsseq.c
     ${CRYPTO}/asn1/p5_pbe.c
     ${CRYPTO}/asn1/p5_pbev2.c
+    ${CRYPTO}/asn1/p5_scrypt.c
     ${CRYPTO}/asn1/p8_pkey.c
     ${CRYPTO}/asn1/t_bitst.c
     ${CRYPTO}/asn1/t_pkey.c
@@ -309,6 +310,7 @@ list(APPEND XSRC
     ${CRYPTO}/pkcs12/p12_npas.c
     ${CRYPTO}/pkcs12/p12_p8d.c
     ${CRYPTO}/pkcs12/p12_p8e.c
+    ${CRYPTO}/pkcs12/p12_sbag.c
     ${CRYPTO}/pkcs12/p12_utl.c
     ${CRYPTO}/pkcs12/pk12err.c
 
@@ -478,6 +480,30 @@ if(WIN32)
 else()
     list(APPEND XSRC
     ${CRYPTO}/rand/rand_unix.c
+    )
+endif()
+
+if(MSIX_PACK)
+    # Enable better error reporting in signing scenarios
+    list(APPEND XSRC
+    ${CRYPTO}/ocsp/ocsp_err.c
+    )
+
+    # Added for DES support
+    list(APPEND XSRC
+    ${CRYPTO}/evp/e_des.c
+    ${CRYPTO}/evp/e_des3.c
+    ${CRYPTO}/evp/e_xcbc_d.c
+    ${CRYPTO}/des/cfb_enc.c
+    ${CRYPTO}/des/ecb_enc.c
+    ${CRYPTO}/des/cfb64enc.c
+    ${CRYPTO}/des/cfb64ede.c
+    ${CRYPTO}/des/ofb64enc.c
+    ${CRYPTO}/des/ofb64ede.c
+    ${CRYPTO}/des/ecb3_enc.c
+    ${CRYPTO}/des/des_enc.c
+    ${CRYPTO}/des/xcbc_enc.c
+    ${CRYPTO}/des/set_key.c
     )
 endif()
 

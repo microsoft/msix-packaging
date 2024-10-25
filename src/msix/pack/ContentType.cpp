@@ -120,19 +120,20 @@ namespace MSIX {
 
     const std::string ContentType::GetPayloadFileContentType(APPX_FOOTPRINT_FILE_TYPE footprintFile)
     {
-        if (footprintFile == APPX_FOOTPRINT_FILE_TYPE_MANIFEST)
+        switch (footprintFile)
         {
+        case APPX_FOOTPRINT_FILE_TYPE_MANIFEST:
             return "application/vnd.ms-appx.manifest+xml";
-        }
-        if (footprintFile == APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP)
-        {
+        case APPX_FOOTPRINT_FILE_TYPE_BLOCKMAP:
             return "application/vnd.ms-appx.blockmap+xml";
-        }
-        if (footprintFile == APPX_FOOTPRINT_FILE_TYPE_SIGNATURE)
-        {
+        case APPX_FOOTPRINT_FILE_TYPE_SIGNATURE:
             return "application/vnd.ms-appx.signature";
+        case APPX_FOOTPRINT_FILE_TYPE_CODEINTEGRITY:
+            return "application/vnd.ms-pkiseccat";
+        case APPX_FOOTPRINT_FILE_TYPE_CONTENTGROUPMAP:
+            return "application/vnd.ms-appx.streammap+xml";
         }
-        // TODO: add other ones if needed, otherwise throw
+
         ThrowErrorAndLog(Error::NotSupported, "Payload file content type not found");
     }
 

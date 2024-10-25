@@ -7,8 +7,11 @@
 #include "ObjectBase.hpp"
 #include "ComHelper.hpp"
 #include "ZipObject.hpp"
-#include "VectorStream.hpp"
+#include "MemoryStream.hpp"
 #include "MsixFeatureSelector.hpp"
+#include "ZipFileStream.hpp"
+#include "InflateStream.hpp"
+#include "RangeStream.hpp"
 #include "TimeHelpers.hpp"
 
 #include <memory>
@@ -230,7 +233,7 @@ void CentralDirectoryFileHeader::Read(const ComPtr<IStream>& stream, bool isZip6
     {
         LARGE_INTEGER zero = {0};
         ThrowHrIfFailed(stream->Seek(zero, StreamBase::Reference::CURRENT, &pos));
-        auto vectorStream = ComPtr<IStream>::Make<VectorStream>(&Field<18>());
+        auto vectorStream = ComPtr<IStream>::Make<MemoryStream>(&Field<18>());
         m_extendedInfo.Read(vectorStream.Get(), pos, Field<9>(), Field<8>(), Field<16>(), Field<13>());
     }
 
@@ -288,7 +291,7 @@ void LocalFileHeader::Read(const ComPtr<IStream> &stream, CentralDirectoryFileHe
 
     StreamBase::Read(stream, &Field<2>());
     ThrowErrorIfNot(Error::ZipLocalFileHeader, ((Field<2>().get() & static_cast<std::uint16_t>(UnsupportedFlagsMask)) == 0), "unsupported flag(s) specified");
-    ThrowErrorIfNot(Error::ZipLocalFileHeader, (IsGeneralPurposeBitSet() == directoryEntry.IsGeneralPurposeBitSet()), "inconsistent general purpose bits specified");
+    ThrowErrorIfNot(Error::ZipLocalFileHeader, (IsDataDescriptorBitSet() == directoryEntry.IsDataDescriptorBitSet()), "inconsistent general purpose bits specified");
 
     StreamBase::Read(stream, &Field<3>());
     Meta::OnlyEitherValueValidation<std::uint16_t>(Field<3>(), static_cast<std::uint16_t>(CompressionType::Deflate),
@@ -297,10 +300,10 @@ void LocalFileHeader::Read(const ComPtr<IStream> &stream, CentralDirectoryFileHe
     StreamBase::Read(stream, &Field<4>());
     StreamBase::Read(stream, &Field<5>());
     StreamBase::Read(stream, &Field<6>());
-    ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (Field<6>().get() == 0)), "Invalid Zip CRC");
+    ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsDataDescriptorBitSet() || (Field<6>().get() == 0)), "Invalid Zip CRC");
 
     StreamBase::Read(stream, &Field<7>());
-    ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (Field<7>().get() == 0)), "Invalid Zip compressed size");
+    ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsDataDescriptorBitSet() || (Field<7>().get() == 0)), "Invalid Zip compressed size");
 
     StreamBase::Read(stream, &Field<8>());
 
@@ -481,15 +484,179 @@ void EndCentralDirectoryRecord::Read(const ComPtr<IStream>& stream)
     }
 }
 
-// Use for editing a package
-ZipObject::ZipObject(const ComPtr<IStorageObject>& storageObject)
+//////////////////////////////////////////////////////////////////////////////////////////////
+//                                       ZipObject                                          //
+//////////////////////////////////////////////////////////////////////////////////////////////
+ZipObject::ZipObject(IStream* stream, bool readStream) : m_stream(stream)
 {
-    auto other = reinterpret_cast<ZipObject*>(storageObject.Get());
-    m_endCentralDirectoryRecord = other->m_endCentralDirectoryRecord;
-    m_zip64Locator = other->m_zip64Locator;
-    m_zip64EndOfCentralDirectory = other->m_zip64EndOfCentralDirectory;
-    m_centralDirectories = std::move(other->m_centralDirectories);
-    m_stream = std::move(m_stream);
+    // Used by the writer to create an empty zip object
+    if (!readStream)
+    {
+        return;
+    }
+
+    LARGE_INTEGER pos = { 0 };
+    pos.QuadPart = m_endCentralDirectoryRecord.Size();
+    pos.QuadPart *= -1;
+    ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
+    m_endCentralDirectoryRecord.Read(m_stream.Get());
+
+    // find where the zip central directory exists.
+    std::uint64_t offsetStartOfCD = 0;
+    std::uint64_t totalNumberOfEntries = 0;
+    if (!m_endCentralDirectoryRecord.GetIsZip64())
+    {
+        offsetStartOfCD = m_endCentralDirectoryRecord.GetStartOfCentralDirectory();
+        totalNumberOfEntries = m_endCentralDirectoryRecord.GetNumberOfCentralDirectoryEntries();
+    }
+    else
+    {   // Make sure that we have a zip64 end of central directory locator
+        pos.QuadPart = m_endCentralDirectoryRecord.Size() + m_zip64Locator.Size();
+        pos.QuadPart *= -1;
+        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::END, nullptr));
+        m_zip64Locator.Read(m_stream.Get());
+
+        // now read the end of zip central directory record
+        pos.QuadPart = m_zip64Locator.GetRelativeOffset();
+        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
+        m_zip64EndOfCentralDirectory.Read(m_stream.Get());
+        offsetStartOfCD = m_zip64EndOfCentralDirectory.GetOffsetStartOfCD();
+        totalNumberOfEntries = m_zip64EndOfCentralDirectory.GetTotalNumberOfEntries();
+    }
+
+    // read the zip central directory
+    pos.QuadPart = offsetStartOfCD;
+    ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
+    for (std::uint32_t index = 0; index < totalNumberOfEntries; index++)
+    {
+        auto centralFileHeader = CentralDirectoryFileHeader();
+        centralFileHeader.Read(m_stream.Get(), m_endCentralDirectoryRecord.GetIsZip64());
+        // TODO: ensure that there are no collisions on name!
+        m_centralDirectories.emplace_back(std::make_pair(centralFileHeader.GetFileName(), std::move(centralFileHeader)));
+    }
+
+    if (m_endCentralDirectoryRecord.GetIsZip64())
+    {   // We should have no data between the end of the last central directory header and the start of the EoCD
+        ULARGE_INTEGER uPos = { 0 };
+        ThrowHrIfFailed(m_stream->Seek({ 0 }, StreamBase::Reference::CURRENT, &uPos));
+        ThrowErrorIfNot(Error::ZipHiddenData, (uPos.QuadPart == m_zip64Locator.GetRelativeOffset()), "hidden data unsupported");
+    }
+}
+
+// IStoreageObject
+std::vector<std::string> ZipObject::GetFileNames(FileNameOptions)
+{
+    std::vector<std::string> result;
+    for (const auto& cd : m_centralDirectories)
+    {
+        result.push_back(cd.first);
+    }
+    return result;
+}
+
+// ZipObject::GetFile has cache semantics. If not found on m_streams, get the file from the central directories.
+// Not finding a file is non-fatal
+ComPtr<IStream> ZipObject::GetFile(const std::string& fileName)
+{
+    auto result = m_streams.find(fileName);
+    if (result == m_streams.end())
+    {
+        // Find the central directory item in question
+        CentralDirectoryFileHeader* targetCDptr = nullptr;
+        for (auto& cd : m_centralDirectories)
+        {
+            if (cd.first == fileName)
+            {
+                targetCDptr = &cd.second;
+            }
+        }
+        if (!targetCDptr)
+        {
+            return {};
+        }
+        CentralDirectoryFileHeader& targetCD = *targetCDptr;
+
+        LARGE_INTEGER pos = { 0 };
+        pos.QuadPart = targetCD.GetRelativeOffsetOfLocalHeader();
+        ThrowHrIfFailed(m_stream->Seek(pos, MSIX::StreamBase::Reference::START, nullptr));
+        LocalFileHeader lfh = LocalFileHeader();
+        lfh.Read(m_stream.Get(), targetCD);
+
+        auto fileStream = ComPtr<IStream>::Make<ZipFileStream>(
+            fileName,
+            targetCD.GetCompressionMethod() == CompressionType::Deflate,
+            targetCD.GetRelativeOffsetOfLocalHeader() + lfh.Size(),
+            targetCD.GetCompressedSize(),
+            m_stream.Get()
+            );
+
+        if (targetCD.GetCompressionMethod() == CompressionType::Deflate)
+        {
+            fileStream = ComPtr<IStream>::Make<InflateStream>(std::move(fileStream), targetCD.GetUncompressedSize());
+        }
+        ComPtr<IStream> result(fileStream);
+        m_streams.insert(std::make_pair(fileName, std::move(fileStream)));
+        return result;
+    }
+    return result->second;
+}
+
+std::string ZipObject::GetFileName()
+{
+    return m_stream.As<IStreamInternal>()->GetName();
+}
+
+ComPtr<IStream> ZipObject::GetStream()
+{
+    return m_stream;
+}
+
+MSIX::EndCentralDirectoryRecord& ZipObject::GetEndCentralDirectoryRecord()
+{
+    return m_endCentralDirectoryRecord;
+}
+
+MSIX::Zip64EndOfCentralDirectoryLocator& ZipObject::GetZip64Locator()
+{
+    return m_zip64Locator;
+}
+
+MSIX::Zip64EndOfCentralDirectoryRecord& ZipObject::GetZip64EndOfCentralDirectory()
+{
+    return m_zip64EndOfCentralDirectory;
+}
+
+std::vector<std::pair<std::string, CentralDirectoryFileHeader>>& ZipObject::GetCentralDirectories()
+{
+    return m_centralDirectories;
+}
+
+MSIX::ComPtr<IStream> ZipObject::GetEntireZipFileStream(const std::string& fileName)
+{
+    // Find the file in the CD
+    CentralDirectoryFileHeader* targetCDptr = nullptr;
+    for (auto& cd : m_centralDirectories)
+    {
+        if (cd.first == fileName)
+        {
+            targetCDptr = &cd.second;
+        }
+    }
+    if (!targetCDptr)
+    {
+        return {};
+    }
+    CentralDirectoryFileHeader& targetCD = *targetCDptr;
+
+    LARGE_INTEGER pos = { 0 };
+    pos.QuadPart = targetCD.GetRelativeOffsetOfLocalHeader();
+    ThrowHrIfFailed(m_stream->Seek(pos, MSIX::StreamBase::Reference::START, nullptr));
+    LocalFileHeader lfh = LocalFileHeader();
+    lfh.Read(m_stream.Get(), targetCD);
+
+    uint64_t streamSize = lfh.Size() + targetCD.GetCompressedSize() + (lfh.IsDataDescriptorBitSet() ? DataDescriptor{}.Size() : 0);
+
+    return ComPtr<IStream>::Make<RangeStream>(targetCD.GetRelativeOffsetOfLocalHeader(), streamSize, m_stream.Get());
 }
 
 } // namespace MSIX

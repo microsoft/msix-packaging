@@ -13,19 +13,22 @@ namespace MsixTest {
     namespace Pack
     {
         // For windows, just use the MSIX SDK and Windows AppxPackaging APIs to validate the package.
-        void ValidatePackageStream(const std::string& packageName)
+        void ValidatePackageStream(const std::string& packageName, bool isSigned)
         {
             // verify output package exists
             auto packageStream = MsixTest::StreamFile(packageName, true, true);
 
             // Verify new package can be unpacked via MSIX SDK
             auto outputDir = MsixTest::TestPath::GetInstance()->GetPath(MsixTest::TestPath::Directory::Output);
+            auto validationOption = isSigned ?
+                MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_ALLOWSIGNATUREORIGINUNKNOWN
+              : MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE;
             REQUIRE_SUCCEEDED(UnpackPackageFromStream(MSIX_PACKUNPACK_OPTION::MSIX_PACKUNPACK_OPTION_NONE,
-                                                      MSIX_VALIDATION_OPTION::MSIX_VALIDATION_OPTION_SKIPSIGNATURE,
+                                                      validationOption,
                                                       packageStream.Get(),
                                                       const_cast<char*>(outputDir.c_str())));
 
-            auto files = MsixTest::Pack::GetExpectedFiles();
+            auto files = MsixTest::Pack::GetExpectedFiles(isSigned);
             CHECK(MsixTest::Directory::CompareDirectory(outputDir, files));
 
             // Clean directory

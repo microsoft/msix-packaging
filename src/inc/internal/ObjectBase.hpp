@@ -4,6 +4,8 @@
 // 
 #pragma once
 
+#include <format>
+#include <iostream>
 #include <vector>
 #include <tuple>
 #include <type_traits>
@@ -19,22 +21,30 @@ namespace MSIX { namespace Meta {
 // there is exactly one value that this field is allowed to be
 template <typename T>
 static void ExactValueValidation(T value, T spec) {
-    ThrowErrorIfNot(Error::InvalidParameter, spec == value, "Incorrect value specified at field.");
+    std::string message = "Value in field doesn't match expectation; expected " +
+        std::to_string(spec) + ", got " + std::to_string(value);
+    ThrowErrorIfNot(Error::InvalidParameter, spec == value, message.c_str());
 }
 
 // there is exactly one value that this field is not allowed to be
 template <typename T>
 static void NotValueValidation(T value, T spec) {
-    ThrowErrorIf(Error::InvalidParameter, spec == value, "Incorrect value specified at field.");
+    std::string message =
+        "Value in field is disallowed match expectation; got disallowed value " +
+        std::to_string(value);
+    ThrowErrorIf(Error::InvalidParameter, spec == value, message.c_str());
 }
 
 // there are exactly two values that this field is allowed to be
 template <typename T>
 static void OnlyEitherValueValidation(T value, T spec1, T spec2)
 {
+    std::string message = "Value in field doesn't match expectations; expected either " +
+        std::to_string(spec1) + " or " + std::to_string(spec2) + ", got " +
+        std::to_string(value);
     ThrowErrorIf(Error::InvalidParameter, 
         spec1 != value && spec2 != value,
-        "Incorrect value specified at field.");
+        message.c_str());
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////

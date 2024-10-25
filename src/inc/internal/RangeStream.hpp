@@ -103,7 +103,7 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        std::uint64_t Size() { return m_size; }
+        std::uint64_t GetSize() override { return m_size; }
 
     protected:
         std::uint64_t m_offset;
