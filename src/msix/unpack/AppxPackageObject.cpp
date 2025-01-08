@@ -343,9 +343,6 @@ namespace MSIX {
                         }
                         return result;
                     });
-
-                    auto blockMapStream = m_appxBlockMap->GetValidationStream(fileName, fileStream);
-                    m_files[opcFileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(blockMapStream));
                     filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), opcFileName), filesToProcess.end());
                 }
             }
@@ -557,10 +554,6 @@ namespace MSIX {
         for (const auto& fileName : GetFileNames(FileNameOptions::PayloadOnly))
         {
             auto file = GetAppxFile(fileName);
-            // Clients expect the stream's pointer to be at the start of the file!
-            ComPtr<IStream> stream;
-            ThrowHrIfFailed(file->GetStream(&stream));
-            ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
             files.push_back(std::move(file));
         }
         *filesEnumerator = ComPtr<IAppxFilesEnumerator>::
@@ -634,10 +627,6 @@ namespace MSIX {
         ThrowErrorIf(Error::InvalidParameter, (fileName == nullptr || file == nullptr || *file != nullptr), "bad pointer");
         auto result = GetAppxFile(Encoding::EncodeFileName(fileName));
         ThrowErrorIfNot(Error::FileNotFound, result, "requested file not in package")
-        // Clients expect the stream's pointer to be at the start of the file!
-        ComPtr<IStream> stream;
-        ThrowHrIfFailed(result->GetStream(&stream));
-        ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::START, nullptr));
         *file = result.Detach();
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
