@@ -72,10 +72,10 @@ namespace MSIX {
         std::vector<std::string> ZipObjectReader::GetFileNames(FileNameOptions)
     {
         std::vector<std::string> result;
-        std::for_each(m_centralDirectories.begin(), m_centralDirectories.end(), [&result](auto it)
+        for (auto& dir : m_centralDirectories)
         {
-            result.push_back(it.first);
-        });
+            result.push_back(dir.first);
+        }
         return result;
     }
 
