@@ -90,7 +90,7 @@ Zip64ExtendedInformation::Zip64ExtendedInformation()
     SetSize(NonOptionalSize);
 }
 
-void Zip64ExtendedInformation::Read(const ComPtr<IStream>& stream, ULARGE_INTEGER start, uint32_t uncompressedSize, uint32_t compressedSize, uint32_t offset, uint16_t disk)
+void Zip64ExtendedInformation::Read(const ComPtr<IStream>& stream, uint64_t start, uint32_t uncompressedSize, uint32_t compressedSize, uint32_t offset, uint16_t disk)
 {
     StreamBase::Read(stream, &Field<0>());
     Meta::ExactValueValidation<std::uint32_t>(Field<0>(), static_cast<std::uint32_t>(HeaderIDs::Zip64ExtendedInfo));
@@ -112,7 +112,7 @@ void Zip64ExtendedInformation::Read(const ComPtr<IStream>& stream, ULARGE_INTEGE
     if (IsValueInExtendedInfo(offset))
     {
         StreamBase::Read(stream, &Field<4>());
-        ThrowErrorIfNot(Error::ZipBadExtendedData, Field<4>().get() < start.QuadPart, "invalid relative header offset");
+        ThrowErrorIfNot(Error::ZipBadExtendedData, Field<4>().get() < start, "invalid relative header offset");
     }
 
     if (IsValueInExtendedInfo(disk))
@@ -168,7 +168,7 @@ void CentralDirectoryFileHeader::SetData(const std::string& name, std::uint32_t 
     }
 }
 
-void CentralDirectoryFileHeader::Read(const ComPtr<IStream>& stream, bool isZip64)
+void CentralDirectoryFileHeader::Read(const ComPtr<IStream>& stream, uint64_t baseOffset, bool isZip64)
 {
     m_isZip64 = isZip64;
     StreamBase::Read(stream, &Field<0>());
@@ -209,11 +209,10 @@ void CentralDirectoryFileHeader::Read(const ComPtr<IStream>& stream, bool isZip6
 
     StreamBase::Read(stream, &Field<15>());
     StreamBase::Read(stream, &Field<16>());
-    ULARGE_INTEGER pos = {0};
-    ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
+
     if (!m_isZip64 || !IsValueInExtendedInfo(Field<16>()))
     {
-        ThrowErrorIf(Error::ZipCentralDirectoryHeader, (Field<16>().get() >= pos.QuadPart), "invalid relative header offset");
+        ThrowErrorIf(Error::ZipCentralDirectoryHeader, (Field<16>().get() >= baseOffset), "invalid relative header offset");
     }
 
     if (Field<17>().Size())
@@ -228,8 +227,7 @@ void CentralDirectoryFileHeader::Read(const ComPtr<IStream>& stream, bool isZip6
     // Only process for Zip64ExtendedInformation
     if (Field<18>().Size() > 2 && Field<18>().get()[0] == 0x01 && Field<18>().get()[1] == 0x00)
     {
-        LARGE_INTEGER zero = {0};
-        ThrowHrIfFailed(stream->Seek(zero, StreamBase::Reference::CURRENT, &pos));
+        auto pos = StreamBase::Pos(stream) + baseOffset;
         auto vectorStream = ComPtr<IStream>::Make<VectorStream>(&Field<18>());
         m_extendedInfo.Read(vectorStream.Get(), pos, Field<9>(), Field<8>(), Field<16>(), Field<13>());
     }
@@ -279,39 +277,44 @@ void LocalFileHeader::SetData(std::uint32_t crc, std::uint64_t compressedSize, s
 
 void LocalFileHeader::Read(const ComPtr<IStream> &stream, CentralDirectoryFileHeader& directoryEntry)
 {
-    StreamBase::Read(stream, &Field<0>());
+    std::vector<std::uint8_t> bytes(Size(), 0);
+    StreamBase::ReadData(stream, bytes);
+    auto buffer = ComPtr<IStream>::Make<VectorStream>(&bytes);
+
+    StreamBase::Read(buffer, &Field<0>());
     Meta::ExactValueValidation<std::uint32_t>(Field<0>(), static_cast<std::uint32_t>(Signatures::LocalFileHeader));
 
-    StreamBase::Read(stream, &Field<1>());
+    StreamBase::Read(buffer, &Field<1>());
     Meta::OnlyEitherValueValidation<std::uint16_t>(Field<1>(), static_cast<std::uint16_t>(ZipVersions::Zip32DefaultVersion),
                                               static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension));
 
-    StreamBase::Read(stream, &Field<2>());
+    StreamBase::Read(buffer, &Field<2>());
     ThrowErrorIfNot(Error::ZipLocalFileHeader, ((Field<2>().get() & static_cast<std::uint16_t>(UnsupportedFlagsMask)) == 0), "unsupported flag(s) specified");
     ThrowErrorIfNot(Error::ZipLocalFileHeader, (IsGeneralPurposeBitSet() == directoryEntry.IsGeneralPurposeBitSet()), "inconsistent general purpose bits specified");
 
-    StreamBase::Read(stream, &Field<3>());
+    StreamBase::Read(buffer, &Field<3>());
     Meta::OnlyEitherValueValidation<std::uint16_t>(Field<3>(), static_cast<std::uint16_t>(CompressionType::Deflate),
                                               static_cast<std::uint16_t>(CompressionType::Store));
 
-    StreamBase::Read(stream, &Field<4>());
-    StreamBase::Read(stream, &Field<5>());
-    StreamBase::Read(stream, &Field<6>());
+    StreamBase::Read(buffer, &Field<4>());
+    StreamBase::Read(buffer, &Field<5>());
+    StreamBase::Read(buffer, &Field<6>());
     ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (Field<6>().get() == 0)), "Invalid Zip CRC");
 
-    StreamBase::Read(stream, &Field<7>());
+    StreamBase::Read(buffer, &Field<7>());
     ThrowErrorIfNot(Error::ZipLocalFileHeader, (!IsGeneralPurposeBitSet() || (Field<7>().get() == 0)), "Invalid Zip compressed size");
 
-    StreamBase::Read(stream, &Field<8>());
+    StreamBase::Read(buffer, &Field<8>());
 
-    StreamBase::Read(stream, &Field<9>());
+    StreamBase::Read(buffer, &Field<9>());
     ThrowErrorIfNot(Error::ZipLocalFileHeader, (Field<9>().get() != 0), "unsupported file name size");
     Field<11>().get().resize(GetFileNameLength(), 0);
 
-    StreamBase::Read(stream, &Field<10>());
+    StreamBase::Read(buffer, &Field<10>());
     // Even if we don't validate them, we need to read the extra field
     if (Field<10>().get() != 0) {Field<12>().get().resize(Field<10>().get(), 0); }
 
+    // since fields 11 and 12 size's weren't know up-front, they weren't read into the buffer, so use the underlying stream instead
     if (Field<11>().Size())
     {
         ThrowHrIfFailed(stream->Read(reinterpret_cast<void*>(Field<11>().get().data()), static_cast<ULONG>(Field<11>().Size()), nullptr));
@@ -346,47 +349,52 @@ void Zip64EndOfCentralDirectoryRecord::SetData(std::uint64_t numCentralDirs, std
 
 void Zip64EndOfCentralDirectoryRecord::Read(const ComPtr<IStream>& stream)
 {
-    StreamBase::Read(stream, &Field<0>());
+    std::vector<std::uint8_t> bytes(Size(), 0);
+    StreamBase::ReadData(stream, bytes);
+    auto buffer = ComPtr<IStream>::Make<VectorStream>(&bytes);
+
+    StreamBase::Read(buffer, &Field<0>());
     Meta::ExactValueValidation<std::uint32_t>(Field<0>(), static_cast<std::uint32_t>(Signatures::Zip64EndOfCD));
 
-    StreamBase::Read(stream, &Field<1>());
+    StreamBase::Read(buffer, &Field<1>());
     //4.3.14.1 The value stored into the "size of zip64 end of central
     //    directory record" should be the size of the remaining
     //    record and should not include the leading 12 bytes.
     ThrowErrorIfNot(Error::Zip64EOCDRecord, (Field<1>().get() == (this->Size() - 12)), "invalid size of zip64 EOCD");
 
-    StreamBase::Read(stream, &Field<2>());
+    StreamBase::Read(buffer, &Field<2>());
     Meta::ExactValueValidation<std::uint16_t>(Field<2>(), static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension));
 
-    StreamBase::Read(stream, &Field<3>());
+    StreamBase::Read(buffer, &Field<3>());
     Meta::ExactValueValidation<std::uint16_t>(Field<3>(), static_cast<std::uint16_t>(ZipVersions::Zip64FormatExtension));
 
-    StreamBase::Read(stream, &Field<4>());
+    StreamBase::Read(buffer, &Field<4>());
     Meta::ExactValueValidation<std::uint32_t>(Field<4>(), 0);
 
-    StreamBase::Read(stream, &Field<5>());
+    StreamBase::Read(buffer, &Field<5>());
     Meta::ExactValueValidation<std::uint32_t>(Field<5>(), 0);
 
-    StreamBase::Read(stream, &Field<6>());
+    StreamBase::Read(buffer, &Field<6>());
     Meta::NotValueValidation<std::uint64_t>(Field<6>(), 0);
 
-    StreamBase::Read(stream, &Field<7>());
+    StreamBase::Read(buffer, &Field<7>());
     Meta::NotValueValidation<std::uint64_t>(Field<7>(), 0);
     ThrowErrorIfNot(Error::Zip64EOCDRecord, (Field<7>().get() == GetTotalNumberOfEntries()), "invalid total number of entries");
 
     ULARGE_INTEGER pos = {0};
     ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
-    StreamBase::Read(stream, &Field<8>());
+    StreamBase::Read(buffer, &Field<8>());
     ThrowErrorIfNot(Error::Zip64EOCDRecord, ((Field<8>().get() != 0) && (Field<8>().get() < pos.QuadPart)), "invalid size of central directory");
 
     ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
-    StreamBase::Read(stream, &Field<9>());
+    StreamBase::Read(buffer, &Field<9>());
     ThrowErrorIfNot(Error::Zip64EOCDRecord, ((Field<9>().get() != 0) && (Field<9>().get() < pos.QuadPart)), "invalid size of central directory");
 
-    if (Field<10>().Size())
-    {
-        ThrowHrIfFailed(stream->Read(reinterpret_cast<void*>(Field<10>().get().data()), static_cast<ULONG>(Field<10>().Size()), nullptr));
-    }
+    // not used and Field<10> size is never set, so don't bother reading
+    //if (Field<10>().Size())
+    //{
+    //    ThrowHrIfFailed(stream->Read(reinterpret_cast<void*>(Field<10>().get().data()), static_cast<ULONG>(Field<10>().Size()), nullptr));
+    //}
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -406,18 +414,22 @@ void Zip64EndOfCentralDirectoryLocator::SetData(std::uint64_t zip64EndCdrOffset)
 
 void Zip64EndOfCentralDirectoryLocator::Read(const ComPtr<IStream>& stream)
 {
-    StreamBase::Read(stream, &Field<0>());
+    std::vector<std::uint8_t> bytes(Size(), 0);
+    StreamBase::ReadData(stream, bytes);
+    auto buffer = ComPtr<IStream>::Make<VectorStream>(&bytes);
+
+    StreamBase::Read(buffer, &Field<0>());
     Meta::ExactValueValidation<std::uint32_t>(Field<0>(), static_cast<std::uint32_t>(Signatures::Zip64EndOfCDLocator));
 
-    StreamBase::Read(stream, &Field<1>());
+    StreamBase::Read(buffer, &Field<1>());
     Meta::ExactValueValidation<std::uint32_t>(Field<1>(), 0);
 
     ULARGE_INTEGER pos = {0};
-    StreamBase::Read(stream, &Field<2>());
+    StreamBase::Read(buffer, &Field<2>());
     ThrowHrIfFailed(stream->Seek({0}, StreamBase::Reference::CURRENT, &pos));
     ThrowErrorIfNot(Error::Zip64EOCDLocator, ((Field<2>().get() != 0) && (Field<2>().get() < pos.QuadPart)), "Invalid relative offset");
 
-    StreamBase::Read(stream, &Field<3>());
+    StreamBase::Read(buffer, &Field<3>());
     Meta::ExactValueValidation<std::uint32_t>(Field<3>(), 1);
 }
 
@@ -439,22 +451,26 @@ EndCentralDirectoryRecord::EndCentralDirectoryRecord()
 
 void EndCentralDirectoryRecord::Read(const ComPtr<IStream>& stream)
 {
-    StreamBase::Read(stream, &Field<0>());
+    std::vector<std::uint8_t> bytes(Size(), 0);
+    StreamBase::ReadData(stream, bytes);
+    auto buffer = ComPtr<IStream>::Make<VectorStream>(&bytes);
+
+    StreamBase::Read(buffer, &Field<0>());
     Meta::ExactValueValidation<std::uint32_t>(Field<0>(), static_cast<std::uint32_t>(Signatures::EndOfCentralDirectory));
 
-    StreamBase::Read(stream, &Field<1>());
+    StreamBase::Read(buffer, &Field<1>());
     Meta::OnlyEitherValueValidation<std::uint32_t>(Field<1>(), 0, 0xFFFF);
 
-    StreamBase::Read(stream, &Field<2>());
+    StreamBase::Read(buffer, &Field<2>());
     Meta::OnlyEitherValueValidation<std::uint32_t>(Field<2>(), 0, 0xFFFF);
     ThrowErrorIf(Error::ZipEOCDRecord, (Field<1>().get() != Field<2>().get()), "field missmatch");
 
-    StreamBase::Read(stream, &Field<3>());
-    StreamBase::Read(stream, &Field<4>());
+    StreamBase::Read(buffer, &Field<3>());
+    StreamBase::Read(buffer, &Field<4>());
     ThrowErrorIf(Error::ZipEOCDRecord, (Field<3>().get() != Field<4>().get()), "field missmatch");
 
-    StreamBase::Read(stream, &Field<5>());
-    StreamBase::Read(stream, &Field<6>());
+    StreamBase::Read(buffer, &Field<5>());
+    StreamBase::Read(buffer, &Field<6>());
 
     m_isZip64 = (
         IsValueInExtendedInfo(Field<1>()) ||
@@ -472,7 +488,7 @@ void EndCentralDirectoryRecord::Read(const ComPtr<IStream>& stream)
             "unsupported offset of start of central directory");
     }
 
-    StreamBase::Read(stream, &Field<7>());
+    StreamBase::Read(buffer, &Field<7>());
     Meta::ExactValueValidation<std::uint32_t>(Field<7>(), 0);
 
     if (Field<8>().Size())

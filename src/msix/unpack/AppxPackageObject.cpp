@@ -177,15 +177,15 @@ namespace MSIX {
                     auto stream = footPrintFile->GetValidationStream(this);
                     if (fileName == CODEINTEGRITY_CAT)
                     {
-                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), "AppxMetadata\\CodeIntegrity.cat", std::move(stream));;
+                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), "AppxMetadata\\CodeIntegrity.cat", [s = std::move(stream)](){ return s; });
                     }
                     else if (fileName == APPXBUNDLEMANIFEST_XML)
                     {
-                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), "AppxMetadata\\AppxBundleManifest.xml", std::move(stream));;
+                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), "AppxMetadata\\AppxBundleManifest.xml", [s = std::move(stream)](){ return s; });
                     }
                     else
                     {
-                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(stream));;
+                        m_files[fileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, [s = std::move(stream)](){ return s; });
                     }
                 }
                 filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), fileName), filesToProcess.end());
@@ -314,7 +314,7 @@ namespace MSIX {
                     // Validation is done, now see if the package is applicable.
                     applicability.AddPackageIfApplicable(reader, packageType, package);
 
-                    m_files[packageName] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, std::move(packageStream));
+                    m_files[packageName] = ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), packageName, [s = std::move(packageStream)](){ return s; });
                     // Intentionally don't remove from fileToProcess. For bundles, it is possible to don't unpack packages, like
                     // resource packages that are not languages packages.
                 }
@@ -331,9 +331,19 @@ namespace MSIX {
                 {
                     auto opcFileName = Encoding::EncodeFileName(fileName);
                     m_payloadFiles.push_back(opcFileName);
-                    auto fileStream = m_container->GetFile(opcFileName);
-                    ThrowErrorIfNot(Error::FileNotFound, fileStream, "File described in blockmap not contained in OPC container");
-                    VerifyFile(fileStream, fileName, blockMapInternal);
+                    m_files[opcFileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName,
+                        [opcFileName, fileName, blockMapInternal, result = ComPtr<IStream>(), this]() mutable {
+                        if (nullptr == result.Get())
+                        {
+                            auto fileStream = m_container->GetFile(opcFileName);
+                            ThrowErrorIfNot(Error::FileNotFound, fileStream, "File described in blockmap not contained in OPC container");
+                            VerifyFile(fileStream, fileName, blockMapInternal);
+                            result = m_appxBlockMap->GetValidationStream(fileName, fileStream);
+                            ThrowHrIfFailed(result->Seek({0}, StreamBase::Reference::START, nullptr));
+                        }
+                        return result;
+                    });
+
                     auto blockMapStream = m_appxBlockMap->GetValidationStream(fileName, fileStream);
                     m_files[opcFileName] = MSIX::ComPtr<IAppxFile>::Make<MSIX::AppxFile>(m_factory.Get(), fileName, std::move(blockMapStream));
                     filesToProcess.erase(std::remove(filesToProcess.begin(), filesToProcess.end(), opcFileName), filesToProcess.end());
