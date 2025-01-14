@@ -23,14 +23,9 @@ namespace MSIX {
     class AppxFile : public ComClass<AppxFile, IAppxFile, IAppxFileUtf8>
     {
     public:
-        AppxFile(IMsixFactory* factory, const std::string& name, const ComPtr<IStream>& stream) : m_factory(factory), m_name(name), m_stream(stream)
-        {
-            LARGE_INTEGER start = { 0 };
-            ULARGE_INTEGER end = { 0 };
-            ThrowHrIfFailed(m_stream->Seek(start, StreamBase::Reference::END, &end));
-            ThrowHrIfFailed(m_stream->Seek(start, StreamBase::Reference::START, nullptr));
-            m_size = end.u.LowPart;
-        }
+        AppxFile(IMsixFactory* factory, const std::string& name, std::function<ComPtr<IStream>()>&& streamFunc)
+            : m_factory(factory), m_name(name), m_streamFunc(std::move(streamFunc))
+        { }
 
         // IAppxFile methods
         virtual HRESULT STDMETHODCALLTYPE GetCompressionOption(APPX_COMPRESSION_OPTION* compressionOption) noexcept override
@@ -39,7 +34,7 @@ namespace MSIX {
             {
                 *compressionOption = APPX_COMPRESSION_OPTION_NONE;
                 ComPtr<IStreamInternal> streamInt;
-                HRESULT hr = m_stream->QueryInterface(UuidOfImpl<IStreamInternal>::iid, reinterpret_cast<void**>(&streamInt));
+                HRESULT hr = m_streamFunc()->QueryInterface(UuidOfImpl<IStreamInternal>::iid, reinterpret_cast<void**>(&streamInt));
                 if (SUCCEEDED(hr))
                 {
                     *compressionOption = streamInt->IsCompressed() ? APPX_COMPRESSION_OPTION_NORMAL : APPX_COMPRESSION_OPTION_NONE;
@@ -62,7 +57,9 @@ namespace MSIX {
         {
             if (size)
             {
-                *size = m_size;
+                STATSTG statstg {};
+                ThrowHrIfFailed(m_streamFunc()->Stat(&statstg, 0));
+                *size = static_cast<uint64_t>(statstg.cbSize.QuadPart);
             }
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
@@ -70,7 +67,7 @@ namespace MSIX {
         virtual HRESULT STDMETHODCALLTYPE GetStream(IStream** stream) noexcept override try
         {
             ThrowErrorIf(Error::InvalidParameter, (stream == nullptr || *stream != nullptr), "bad pointer");
-            *stream = m_stream.As<IStream>().Detach();
+            *stream = m_streamFunc().As<IStream>().Detach();
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
@@ -87,8 +84,7 @@ namespace MSIX {
 
     protected:
         std::string m_name;
-        ComPtr<IStream> m_stream;
+        std::function<ComPtr<IStream>()> m_streamFunc;
         IMsixFactory* m_factory;
-        std::uint64_t m_size;
     };
 }

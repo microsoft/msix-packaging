@@ -345,7 +345,7 @@ namespace MSIX { namespace Encoding {
     // Douglas Crockford's base 32 alphabet variant is 0-9, A-Z except for i, l, o, and u.
     const char base32DigitList[] = "0123456789abcdefghjkmnpqrstvwxyz";
 
-    std::string Base32Encoding(const std::vector<std::uint8_t>& bytes)
+    std::string Base32Encoding(const std::vector<uint8_t>& bytes)
     {
         const size_t publisherIdSize = 13;
         const size_t byteCount = 8;

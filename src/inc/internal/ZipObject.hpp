@@ -108,7 +108,7 @@ namespace MSIX {
 
         // The incoming values are those from the central directory record. Their value there determines
         // whether we attempt to read them here.
-        void Read(const ComPtr<IStream>& stream, ULARGE_INTEGER start, uint32_t uncompressedSize, uint32_t compressedSize, uint32_t offset, uint16_t disk);
+        void Read(const ComPtr<IStream>& stream, uint64_t start, uint32_t uncompressedSize, uint32_t compressedSize, uint32_t offset, uint16_t disk);
 
         std::uint64_t GetUncompressedSize() const               { return Field<2>(); }
         std::uint64_t GetCompressedSize() const                 { return Field<3>(); }
@@ -166,7 +166,7 @@ namespace MSIX {
         void SetData(const std::string& name, std::uint32_t crc, std::uint64_t compressedSize,
             std::uint64_t uncompressedSize, std::uint64_t relativeOffset,  std::uint16_t compressionMethod, bool forceDataDescriptor);
 
-        void Read(const ComPtr<IStream>& stream, bool isZip64);
+        void Read(const ComPtr<IStream>& stream, uint64_t baseOffset, bool isZip64);
 
         GeneralPurposeBitFlags GetGeneralPurposeBitFlags() const noexcept { return static_cast<GeneralPurposeBitFlags>(Field<3>().get()); }
 

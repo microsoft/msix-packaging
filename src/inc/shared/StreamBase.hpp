@@ -143,6 +143,20 @@ namespace MSIX {
             return result;
         }
 
+        static void ReadData(const ComPtr<IStream>& stream, std::vector<std::uint8_t>& data)
+        {
+            ULONG size = 0;
+            ThrowHrIfFailed(stream->Read(reinterpret_cast<void*>(data.data()), static_cast<ULONG>(data.size()), &size));
+            ThrowErrorIfNot(Error::FileRead, size == data.size(), "entire vector not read!");
+        }
+
+        static uint64_t Pos(const ComPtr<IStream>& stream)
+        {
+            ULARGE_INTEGER uPos{0};
+            ThrowHrIfFailed(stream->Seek({0}, Reference::CURRENT, &uPos));
+            return uPos.QuadPart;
+        }
+
         template <class T>
         static void Write(const ComPtr<IStream>& stream, T* value)
         {
