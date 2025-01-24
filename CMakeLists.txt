@@ -11,8 +11,11 @@ message(STATUS "--------------------------------")
 
 message(STATUS "CMake version: ${CMAKE_VERSION}")
 
-# specify that this binary is to be built with C++14
-set(CMAKE_CXX_STANDARD 14)
+
+if(NOT ${CMAKE_CXX_STANDARD})
+    # if not otherwise set, specify that this binary is to be built with C++14
+    set(CMAKE_CXX_STANDARD 14)
+endif()
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
