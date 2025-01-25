@@ -2,7 +2,7 @@
 # Copyright (C) 2017 Microsoft.  All rights reserved.
 # See LICENSE file in the project root for full license information.
 
-cmake_minimum_required(VERSION 3.29.0 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.28.0 FATAL_ERROR)
 
 project(msix)
 
@@ -271,13 +271,6 @@ if(WIN32)
     string(REPLACE ";" " " DELAYFLAGS "${DELAYFLAGS}")
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS "${DELAYFLAGS} /LTCG")
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /DEF:${CMAKE_CURRENT_BINARY_DIR}/windowsexports.def")
-    if(USE_STATIC_MSVC)
-        if(CMAKE_BUILD_TYPE MATCHES Debug)
-            set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB:MSVCRTD")
-        else()
-            set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " /NODEFAULTLIB:MSVCRT")
-        endif()
-    endif()
     target_link_libraries(${PROJECT_NAME} PRIVATE bcrypt crypt32 wintrust runtimeobject.lib delayimp.lib)
 endif()
 
