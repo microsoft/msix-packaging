@@ -8,7 +8,7 @@ option(IOS   "Build for iOS"     OFF)
 option(AOSP  "Build for Android" OFF)
 option(LINUX "Build for Linux"   OFF)
 
-option(USE_VALIDATION_PARSER "Turn on to validates using the resouce schemas. Default (OFF) validates XML files are just valid XML" OFF)
+option(USE_VALIDATION_PARSER "Turn on to validates using the resource schemas. Default (OFF) validates XML files are just valid XML" OFF)
 option(USE_SHARED_ZLIB "Choose the type of dependency for zlib, Use the -DUSE_SHARED_ZLIB=on to have a shared dependency. Default is 'off' (static)" OFF)
 option(USE_STATIC_MSVC "Windows only. Pass /MT as a compiler flag to use the staic version of the run-time library. Default is 'off' (dynamic)" OFF)
 option(SKIP_BUNDLES "Removes bundle functionality from the MSIX SDK. Default is 'off'" OFF)
