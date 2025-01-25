@@ -43,7 +43,7 @@ MemoryManager* MemoryMonitor::getExceptionMemoryManager()
 
 void* MemoryMonitor::allocate(XMLSize_t size)
 {
-    void *key = ::operator new(size);
+    void *key = new uint8_t[size];
     fHashTable->put(key, (unsigned int)size);
     return key;
 }
@@ -56,7 +56,7 @@ void MemoryMonitor::deallocate(void* p)
     if (p != 0)
     {
         fHashTable->removeKey(p);
-        ::operator delete(p);
+        delete[] static_cast<uint8_t*>(p);
     }
 }
 
