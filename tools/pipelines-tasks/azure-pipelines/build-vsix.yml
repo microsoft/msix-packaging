@@ -116,10 +116,11 @@ extends:
           displayName: 'ESRP CodeSigning'
           inputs:
             ConnectedServiceName: $(ConnectedServiceName)
+            UseMSIAuthentication: true
             AppRegistrationClientId: $(AppRegistrationClientId)
             AppRegistrationTenantId: $(AppRegistrationTenantId)
+            EsrpClientId: $(AppRegistrationClientId_old)
             AuthAKVName: $(AuthAKVName) 
-            AuthCertName: $(AuthCertName)
             AuthSignCertName: $(AuthSignCertName)
             FolderPath: '$(buildOutRoot)'
             Pattern: MsixPackagingExtension.vsix
