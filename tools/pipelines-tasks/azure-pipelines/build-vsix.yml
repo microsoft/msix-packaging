@@ -118,8 +118,7 @@ extends:
             ConnectedServiceName: $(ConnectedServiceName)
             AppRegistrationClientId: $(AppRegistrationClientId)
             AppRegistrationTenantId: $(AppRegistrationTenantId)
-            AuthAKVName: $(AuthAKVName) 
-            AuthCertName: $(AuthCertName)
+            AuthAKVName: $(AuthAKVName)
             AuthSignCertName: $(AuthSignCertName)
             FolderPath: '$(buildOutRoot)'
             Pattern: MsixPackagingExtension.vsix
