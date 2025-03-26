@@ -6,6 +6,8 @@
 
 #include <string>
 #include <algorithm>
+#include <string>
+#include <type_traits>
 #include <vector>
 
 #include "AppxBundleManifest.hpp"
@@ -14,22 +16,27 @@ namespace MSIX {
 
     struct Bcp47Entry
     {
-        const char* icu;
-        const char* bcp47;
+        // Change the string constant type here to match that of the Bcp47Entry constants
+        // in bcp47List - that is, u8"" if those strings regain the u8 prefix.
+        typedef std::remove_const<std::remove_reference<decltype(""[0])>::type>::type u8char;
+        const u8char* icu;
+        const size_t len;
+        const u8char* bcp47;
 
-        Bcp47Entry(const char* i, const char* b) : icu(i), bcp47(b) {}
+        template<size_t new_len>
+        Bcp47Entry(const u8char (&i)[new_len], const u8char* b) : icu(i), len(new_len), bcp47(b) {}
 
-        inline bool operator==(const char* otherIcui) const {
-            return 0 == strcmp(icu, otherIcui);
+        inline bool operator==(const u8char* otherIcui) const {
+            return 0 == std::char_traits<u8char>::compare(icu, otherIcui, len);
         }
     };
 
     // We've seen cases were uloc_toLanguageTag returns zh-CN. Add here any inconsistencies.
     // Some AppxBundleManifests have zh-CN, zh-TW, zh-HK as languages.
     static const Bcp47Entry bcp47List[] = {
-        Bcp47Entry(u8"zh-cn", u8"zh-Hans-CN"),
-        Bcp47Entry(u8"zh-hk", u8"zh-Hant-HK"),
-        Bcp47Entry(u8"zh-tw", u8"zh-Hant-TW"),
+        Bcp47Entry("zh-cn", "zh-Hans-CN"),
+        Bcp47Entry("zh-hk", "zh-Hant-HK"),
+        Bcp47Entry("zh-tw", "zh-Hant-TW"),
     };
 
     Bcp47Tag::Bcp47Tag(const std::string& fullTag, bool allowPseudoLocale)

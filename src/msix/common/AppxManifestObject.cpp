@@ -11,69 +11,77 @@
 #include "AppxPackageInfo.hpp"
 
 #include <array>
+#include <type_traits>
+#include <string>
 
 namespace MSIX {
 
     template<typename T>
     struct Entry
     {
-        const char* tdf;
+        // Change the string constant type here to match that of the Entry constants
+        // in targetDeviceFamilyList and capabilitiesList - that is, u8"" if those
+        // strings regain the u8 prefix.
+        typedef std::remove_const<std::remove_reference<decltype(""[0])>::type>::type u8char;
+        const u8char* tdf;
+        const size_t len;
         const T value;
 
-        Entry(const char* t, const T p) : tdf(t), value(p) {}
+        template<size_t new_len>
+        Entry(const u8char (&t)[new_len], const T p) : tdf(t), len(new_len), value(p) {}
 
-        inline bool operator==(const char* otherTdf) const {
-            return 0 == strcmp(tdf, otherTdf);
+        inline bool operator==(const u8char *otherTdf) const {
+            return 0 == std::char_traits<u8char>::compare(tdf, otherTdf, len);
         }
     };
 
     // ALL THE TargetDeviceFamily ENTRIES MUST BE LOWER-CASE
     static const Entry<MSIX_PLATFORMS> targetDeviceFamilyList[] = {
-        Entry<MSIX_PLATFORMS>(u8"windows.universal",      MSIX_PLATFORM_WINDOWS10),
-        Entry<MSIX_PLATFORMS>(u8"windows.mobile",         MSIX_PLATFORM_WINDOWS10),
-        Entry<MSIX_PLATFORMS>(u8"windows.desktop",        MSIX_PLATFORM_WINDOWS10),
-        Entry<MSIX_PLATFORMS>(u8"windows.xbox",           MSIX_PLATFORM_WINDOWS10),
-        Entry<MSIX_PLATFORMS>(u8"windows.team",           MSIX_PLATFORM_WINDOWS10),
-        Entry<MSIX_PLATFORMS>(u8"windows.holographic",    MSIX_PLATFORM_WINDOWS10),
-        Entry<MSIX_PLATFORMS>(u8"windows.iot",            MSIX_PLATFORM_WINDOWS10),
-        Entry<MSIX_PLATFORMS>(u8"windows.server",         MSIX_PLATFORM_WINDOWS10),
-        Entry<MSIX_PLATFORMS>(u8"apple.ios.all",          MSIX_PLATFORM_IOS),
-        Entry<MSIX_PLATFORMS>(u8"apple.ios.phone",        MSIX_PLATFORM_IOS),
-        Entry<MSIX_PLATFORMS>(u8"apple.ios.tablet",       MSIX_PLATFORM_IOS),
-        Entry<MSIX_PLATFORMS>(u8"apple.ios.tv",           MSIX_PLATFORM_IOS),
-        Entry<MSIX_PLATFORMS>(u8"apple.ios.watch",        MSIX_PLATFORM_IOS),
-        Entry<MSIX_PLATFORMS>(u8"apple.macos.all",        MSIX_PLATFORM_MACOS),
-        Entry<MSIX_PLATFORMS>(u8"google.android.all",     MSIX_PLATFORM_AOSP),
-        Entry<MSIX_PLATFORMS>(u8"google.android.phone",   MSIX_PLATFORM_AOSP),
-        Entry<MSIX_PLATFORMS>(u8"google.android.tablet",  MSIX_PLATFORM_AOSP),
-        Entry<MSIX_PLATFORMS>(u8"google.android.desktop", MSIX_PLATFORM_AOSP),
-        Entry<MSIX_PLATFORMS>(u8"google.android.tv",      MSIX_PLATFORM_AOSP),
-        Entry<MSIX_PLATFORMS>(u8"google.android.watch",   MSIX_PLATFORM_AOSP),
-        Entry<MSIX_PLATFORMS>(u8"msixcore.desktop",       MSIX_PLATFORM_CORE),
-        Entry<MSIX_PLATFORMS>(u8"msixcore.server",        MSIX_PLATFORM_CORE),
-        Entry<MSIX_PLATFORMS>(u8"linux.all",              MSIX_PLATFORM_LINUX),
-        Entry<MSIX_PLATFORMS>(u8"web.edge.all",           MSIX_PLATFORM_WEB),
-        Entry<MSIX_PLATFORMS>(u8"web.blink.all",          MSIX_PLATFORM_WEB),
-        Entry<MSIX_PLATFORMS>(u8"web.chromium.all",       MSIX_PLATFORM_WEB),
-        Entry<MSIX_PLATFORMS>(u8"web.webkit.all",         MSIX_PLATFORM_WEB),
-        Entry<MSIX_PLATFORMS>(u8"web.safari.all",         MSIX_PLATFORM_WEB),
-        Entry<MSIX_PLATFORMS>(u8"web.all",                MSIX_PLATFORM_WEB),
-        Entry<MSIX_PLATFORMS>(u8"platform.all",           static_cast<MSIX_PLATFORMS>(MSIX_PLATFORM_ALL)),
+        Entry<MSIX_PLATFORMS>("windows.universal",      MSIX_PLATFORM_WINDOWS10),
+        Entry<MSIX_PLATFORMS>("windows.mobile",         MSIX_PLATFORM_WINDOWS10),
+        Entry<MSIX_PLATFORMS>("windows.desktop",        MSIX_PLATFORM_WINDOWS10),
+        Entry<MSIX_PLATFORMS>("windows.xbox",           MSIX_PLATFORM_WINDOWS10),
+        Entry<MSIX_PLATFORMS>("windows.team",           MSIX_PLATFORM_WINDOWS10),
+        Entry<MSIX_PLATFORMS>("windows.holographic",    MSIX_PLATFORM_WINDOWS10),
+        Entry<MSIX_PLATFORMS>("windows.iot",            MSIX_PLATFORM_WINDOWS10),
+        Entry<MSIX_PLATFORMS>("windows.server",         MSIX_PLATFORM_WINDOWS10),
+        Entry<MSIX_PLATFORMS>("apple.ios.all",          MSIX_PLATFORM_IOS),
+        Entry<MSIX_PLATFORMS>("apple.ios.phone",        MSIX_PLATFORM_IOS),
+        Entry<MSIX_PLATFORMS>("apple.ios.tablet",       MSIX_PLATFORM_IOS),
+        Entry<MSIX_PLATFORMS>("apple.ios.tv",           MSIX_PLATFORM_IOS),
+        Entry<MSIX_PLATFORMS>("apple.ios.watch",        MSIX_PLATFORM_IOS),
+        Entry<MSIX_PLATFORMS>("apple.macos.all",        MSIX_PLATFORM_MACOS),
+        Entry<MSIX_PLATFORMS>("google.android.all",     MSIX_PLATFORM_AOSP),
+        Entry<MSIX_PLATFORMS>("google.android.phone",   MSIX_PLATFORM_AOSP),
+        Entry<MSIX_PLATFORMS>("google.android.tablet",  MSIX_PLATFORM_AOSP),
+        Entry<MSIX_PLATFORMS>("google.android.desktop", MSIX_PLATFORM_AOSP),
+        Entry<MSIX_PLATFORMS>("google.android.tv",      MSIX_PLATFORM_AOSP),
+        Entry<MSIX_PLATFORMS>("google.android.watch",   MSIX_PLATFORM_AOSP),
+        Entry<MSIX_PLATFORMS>("msixcore.desktop",       MSIX_PLATFORM_CORE),
+        Entry<MSIX_PLATFORMS>("msixcore.server",        MSIX_PLATFORM_CORE),
+        Entry<MSIX_PLATFORMS>("linux.all",              MSIX_PLATFORM_LINUX),
+        Entry<MSIX_PLATFORMS>("web.edge.all",           MSIX_PLATFORM_WEB),
+        Entry<MSIX_PLATFORMS>("web.blink.all",          MSIX_PLATFORM_WEB),
+        Entry<MSIX_PLATFORMS>("web.chromium.all",       MSIX_PLATFORM_WEB),
+        Entry<MSIX_PLATFORMS>("web.webkit.all",         MSIX_PLATFORM_WEB),
+        Entry<MSIX_PLATFORMS>("web.safari.all",         MSIX_PLATFORM_WEB),
+        Entry<MSIX_PLATFORMS>("web.all",                MSIX_PLATFORM_WEB),
+        Entry<MSIX_PLATFORMS>("platform.all",           static_cast<MSIX_PLATFORMS>(MSIX_PLATFORM_ALL)),
     };
 
     static const Entry<APPX_CAPABILITIES> capabilitiesList[] = {
-        Entry<APPX_CAPABILITIES>(u8"internetClient",             APPX_CAPABILITY_INTERNET_CLIENT),
-        Entry<APPX_CAPABILITIES>(u8"internetClientServer",       APPX_CAPABILITY_INTERNET_CLIENT_SERVER),
-        Entry<APPX_CAPABILITIES>(u8"privateNetworkClientServer", APPX_CAPABILITY_PRIVATE_NETWORK_CLIENT_SERVER),
-        Entry<APPX_CAPABILITIES>(u8"documentsLibrary",           APPX_CAPABILITY_DOCUMENTS_LIBRARY),
-        Entry<APPX_CAPABILITIES>(u8"picturesLibrary",            APPX_CAPABILITY_PICTURES_LIBRARY),
-        Entry<APPX_CAPABILITIES>(u8"videosLibrary",              APPX_CAPABILITY_VIDEOS_LIBRARY),
-        Entry<APPX_CAPABILITIES>(u8"musicLibrary",               APPX_CAPABILITY_MUSIC_LIBRARY),
-        Entry<APPX_CAPABILITIES>(u8"enterpriseAuthentication",   APPX_CAPABILITY_ENTERPRISE_AUTHENTICATION),
-        Entry<APPX_CAPABILITIES>(u8"sharedUserCertificates",     APPX_CAPABILITY_SHARED_USER_CERTIFICATES),
-        Entry<APPX_CAPABILITIES>(u8"removableStorage",           APPX_CAPABILITY_REMOVABLE_STORAGE),
-        Entry<APPX_CAPABILITIES>(u8"appointments",               APPX_CAPABILITY_APPOINTMENTS),
-        Entry<APPX_CAPABILITIES>(u8"contacts",                   APPX_CAPABILITY_CONTACTS),
+        Entry<APPX_CAPABILITIES>("internetClient",             APPX_CAPABILITY_INTERNET_CLIENT),
+        Entry<APPX_CAPABILITIES>("internetClientServer",       APPX_CAPABILITY_INTERNET_CLIENT_SERVER),
+        Entry<APPX_CAPABILITIES>("privateNetworkClientServer", APPX_CAPABILITY_PRIVATE_NETWORK_CLIENT_SERVER),
+        Entry<APPX_CAPABILITIES>("documentsLibrary",           APPX_CAPABILITY_DOCUMENTS_LIBRARY),
+        Entry<APPX_CAPABILITIES>("picturesLibrary",            APPX_CAPABILITY_PICTURES_LIBRARY),
+        Entry<APPX_CAPABILITIES>("videosLibrary",              APPX_CAPABILITY_VIDEOS_LIBRARY),
+        Entry<APPX_CAPABILITIES>("musicLibrary",               APPX_CAPABILITY_MUSIC_LIBRARY),
+        Entry<APPX_CAPABILITIES>("enterpriseAuthentication",   APPX_CAPABILITY_ENTERPRISE_AUTHENTICATION),
+        Entry<APPX_CAPABILITIES>("sharedUserCertificates",     APPX_CAPABILITY_SHARED_USER_CERTIFICATES),
+        Entry<APPX_CAPABILITIES>("removableStorage",           APPX_CAPABILITY_REMOVABLE_STORAGE),
+        Entry<APPX_CAPABILITIES>("appointments",               APPX_CAPABILITY_APPOINTMENTS),
+        Entry<APPX_CAPABILITIES>("contacts",                   APPX_CAPABILITY_CONTACTS),
     };
 
     AppxManifestObject::AppxManifestObject(IMsixFactory* factory, const ComPtr<IStream>& stream) : m_factory(factory), m_stream(stream)
