@@ -1,11 +1,2 @@
 # MSIX SDK
 * @wcheng-msft @jyvenugo @sarjanas-msft @letao-msft
-
-# MsixCoreInstaller owners
-/MsixCore/ @wcheng-msft @jyvenugo @sarjanas-msft @letao-msft @microsoft/MSIX-ENG-IDC
-
-# Utils library
-/tools/utils/ @wcheng-msft @jyvenugo @sarjanas-msft @letao-msft @microsoft/MSIX-ENG-IDC
-
-# Azure Pipelines tasks
-/tools/pipelines-tasks @microsoft/MSIX-ENG-IDC
