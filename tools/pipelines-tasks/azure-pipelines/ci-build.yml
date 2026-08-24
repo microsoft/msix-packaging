@@ -29,9 +29,10 @@ schedules:
 # Set the variables to run AVD publish tests on required azure subscription service connection containing AVD resources:
 # subscriptionId, emailId, clientId, clientSecret, tenantId, resourceGroupName, storageAccountName, fileShareName, hostPoolName, workSpaceName, applicationGroupName
 # Not setting these variables will leave running AVD publish test cases and will not fail the pipeline
-variables:
-  tasksRoot: 'tools/pipelines-tasks'
-  buildOutRoot: '$(Build.ArtifactStagingDirectory)/buildOutput'
+# --- This pipeline is disabled.  Retained only for CFSClean compliance validation.
+#variables:
+#  tasksRoot: 'tools/pipelines-tasks'
+#  buildOutRoot: '$(Build.ArtifactStagingDirectory)/buildOutput'
 
 resources:
   repositories:
@@ -44,6 +45,10 @@ extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
 
   parameters:
+    featureFlags:
+      networkisolation:
+        policy: 'Permissive,CFSClean'
+
     sdl:
       git:
         submodules: disable
@@ -65,4 +70,7 @@ extends:
       jobs:
       - job: job
         steps:
-        - template: /tools/pipelines-tasks/azure-pipelines/templates/build-steps.yml@self
+#        - template: /tools/pipelines-tasks/azure-pipelines/templates/build-steps.yml@self
+        - powershell: |
+            Write-Host "This pipeline is disabled.  Retained only for CFSClean compliance validation."
+          displayName: CFSClean validation
