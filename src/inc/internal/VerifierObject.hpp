@@ -15,8 +15,8 @@
 #ifndef WIN32
 interface IVerifierObject : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IVerifierObject : public IUnknown
 #endif
 // An internal interface for objects that are used to verify structured data represented by an underlying stream.

@@ -16,8 +16,8 @@
 #ifndef WIN32
 interface IBundleInfo : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IBundleInfo : public IUnknown
 #endif
 {
@@ -30,8 +30,8 @@ MSIX_INTERFACE(IBundleInfo, 0xff82ffcd,0x747a,0x4df9,0x88,0x79,0x85,0x3a,0xb9,0x
 #ifndef WIN32
 interface IAppxBundleManifestPackageInfoInternal : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IAppxBundleManifestPackageInfoInternal : public IUnknown
 #endif
 {

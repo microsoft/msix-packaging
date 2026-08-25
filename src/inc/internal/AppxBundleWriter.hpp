@@ -19,8 +19,8 @@
 #ifndef WIN32
 interface IBundleWriter : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IBundleWriter : public IUnknown
 #endif
 {

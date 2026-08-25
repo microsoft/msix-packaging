@@ -39,8 +39,8 @@ XERCES_CPP_NAMESPACE_USE
 #ifndef WIN32
 interface IXercesElement : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IXercesElement : public IUnknown
 #endif
 {

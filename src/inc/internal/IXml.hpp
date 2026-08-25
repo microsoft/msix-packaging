@@ -84,8 +84,8 @@ enum class XmlAttributeName : std::uint8_t
 #ifndef WIN32
 interface IXmlElement : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IXmlElement : public IUnknown
 #endif
 // An internal interface for XML elements

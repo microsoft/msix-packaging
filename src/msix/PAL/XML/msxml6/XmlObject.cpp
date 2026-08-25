@@ -22,8 +22,8 @@
 
 #include <msxml6.h>
 
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 // {2730f595-0c80-4f3e-8891-753b2e8c305d}
 class IMSXMLElement : public IUnknown
 // An internal interface for XML document object model

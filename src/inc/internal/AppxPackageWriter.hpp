@@ -20,8 +20,8 @@
 #ifndef WIN32
 interface IPackageWriter : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IPackageWriter : public IUnknown
 #endif
 {

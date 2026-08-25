@@ -35,8 +35,8 @@ inline constexpr FileNameOptions operator |(FileNameOptions a, FileNameOptions b
 #ifndef WIN32
 interface IStorageObject : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IStorageObject : public IUnknown
 #endif
 {

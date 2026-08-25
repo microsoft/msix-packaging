@@ -22,8 +22,8 @@
 #ifndef WIN32
 interface IAppxManifestObject : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IAppxManifestObject : public IUnknown
 #endif
 {
@@ -36,8 +36,8 @@ MSIX_INTERFACE(IAppxManifestObject, 0xeff6d561,0xa236,0x4058,0x9f,0x1d,0x8f,0x93
 #ifndef WIN32
 interface IAppxManifestTargetDeviceFamilyInternal : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IAppxManifestTargetDeviceFamilyInternal : public IUnknown
 #endif
 {
@@ -50,8 +50,8 @@ MSIX_INTERFACE(IAppxManifestTargetDeviceFamilyInternal, 0xdaf72e2b,0x6252,0x4ed3
 #ifndef WIN32
 interface IAppxManifestQualifiedResourceInternal : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IAppxManifestQualifiedResourceInternal : public IUnknown
 #endif
 {
@@ -64,8 +64,8 @@ MSIX_INTERFACE(IAppxManifestQualifiedResourceInternal, 0x9e2fb304,0xcec6,0x4ef0,
 #ifndef WIN32
 interface IAppxManifestMainPackageDependencyInternal : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IAppxManifestMainPackageDependencyInternal : public IUnknown
 #endif
 {

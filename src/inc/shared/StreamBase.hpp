@@ -19,8 +19,8 @@
 #ifndef WIN32
 interface IStreamInternal : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IStreamInternal : public IUnknown
 #endif
 {

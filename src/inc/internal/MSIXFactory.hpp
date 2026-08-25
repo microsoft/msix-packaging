@@ -13,8 +13,8 @@
 #ifndef WIN32
 interface IMsixFactory : public IUnknown
 #else
-#include "UnKnwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IMsixFactory : public IUnknown
 #endif
 {

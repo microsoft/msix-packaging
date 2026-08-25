@@ -30,8 +30,8 @@
 #ifndef WIN32
 interface IPackage : public IUnknown
 #else
-#include "Unknwn.h"
-#include "Objidl.h"
+#include "unknwn.h"
+#include "objidl.h"
 class IPackage : public IUnknown
 #endif
 {
