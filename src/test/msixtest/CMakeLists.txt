@@ -125,6 +125,5 @@ target_link_libraries(${PROJECT_NAME} ${MsixTestLibs})
 # For windows copy the library
 if(WIN32)
     add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy "bin/msix.dll" "msixtest/msix.dll"
-        WORKING_DIRECTORY "${MSIX_BINARY_ROOT}")
+        COMMAND ${CMAKE_COMMAND} -E copy "${MSIX_BINARY_ROOT}/bin/${CMAKE_CFG_INTDIR}/msix.dll" "${MSIX_TEST_OUTPUT_DIRECTORY}/msixtest/msix.dll")
 endif()
