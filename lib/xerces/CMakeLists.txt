@@ -34,7 +34,7 @@ endif(POLICY CMP0067)
 
 # Try C++14, then fall back to C++11 and C++98.  Used for feature tests
 # for optional features.
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 # Use folders (for IDE project grouping)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
