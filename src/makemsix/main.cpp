@@ -656,6 +656,7 @@ Command CreateBundleCommand()
 #pragma endregion
 
 // Defines the grammar of commands and each command's associated options,
+#pragma warning(suppress: 4007) // Suppress 'main': must be '__cdecl'
 int main(int argc, char* argv[])
 {
     std::cout << "Microsoft (R) makemsix version " << SDK_VERSION << std::endl;

@@ -41,7 +41,7 @@ namespace MSIX
         }
 
         template <class Lambda>
-        void WalkDirectory(const std::string& root, WalkOptions options, Lambda& visitor)
+        void WalkDirectory(const std::string& root, WalkOptions options, Lambda visitor)
         {
             static std::string dot(".");
             static std::string dotdot("..");
@@ -323,7 +323,7 @@ namespace MSIX
         auto rootSize = m_root.size() + 1; // plus separator
         WalkDirectory(m_root, WalkOptions::Recursive | WalkOptions::Files, [&](
                 std::string root,
-                WalkOptions option,
+                WalkOptions /*option*/,
                 std::string&& name,
                 std::uint64_t lastWrite)
             {

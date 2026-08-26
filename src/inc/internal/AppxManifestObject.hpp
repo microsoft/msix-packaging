@@ -135,7 +135,7 @@ namespace MSIX {
         {}
 
         // IAppxManifestApplication
-        HRESULT STDMETHODCALLTYPE GetStringValue(LPCWSTR name, LPWSTR* value) noexcept override
+        HRESULT STDMETHODCALLTYPE GetStringValue(LPCWSTR /*name*/, LPWSTR* /*value*/) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
@@ -146,7 +146,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
         // IAppxManifestApplicationUtf8
-        HRESULT STDMETHODCALLTYPE GetStringValue(LPCSTR name, LPSTR* value) noexcept override
+        HRESULT STDMETHODCALLTYPE GetStringValue(LPCSTR /*name*/, LPSTR* /*value*/) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
@@ -368,7 +368,7 @@ namespace MSIX {
     class AppxManifestQualifiedResource final : public ComClass<AppxManifestQualifiedResource, IAppxManifestQualifiedResource, IAppxManifestQualifiedResourceUtf8, IAppxManifestQualifiedResourceInternal>
     {
     public:
-        AppxManifestQualifiedResource(IMsixFactory* factory, std::string& language, std::string& scale, std::string& DXFeatureLevel) :
+        AppxManifestQualifiedResource(IMsixFactory* factory, std::string& language, std::string& /*scale*/, std::string& /*DXFeatureLevel*/) :
             m_factory(factory), m_language(language)
         {
             //TODO: Process and assign scale and DXFeatureLevel
@@ -381,12 +381,12 @@ namespace MSIX {
             return m_factory->MarshalOutString(m_language, language);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetScale(UINT32 *scale) noexcept override try
+        HRESULT STDMETHODCALLTYPE GetScale(UINT32 */*scale*/) noexcept override try
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL *dxFeatureLevel) noexcept override try
+        HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL */*dxFeatureLevel*/) noexcept override try
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         } CATCH_RETURN();
@@ -446,7 +446,7 @@ namespace MSIX {
         // IVerifierObject
         bool HasStream() override { return !!m_stream; }
         ComPtr<IStream> GetStream() override { return m_stream; }
-        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
+        ComPtr<IStream> GetValidationStream(const std::string& /*part*/, const ComPtr<IStream>&) override { NOTSUPPORTED; }
         const std::string& GetPublisher() override { NOTSUPPORTED; }
 
         // IAppxManifestObject

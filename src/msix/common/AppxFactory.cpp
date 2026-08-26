@@ -97,6 +97,8 @@ namespace MSIX {
         auto zip = ComPtr<IZipWriter>::Make<ZipObjectWriter>(outputStream);
         auto result = ComPtr<IAppxBundleWriter>::Make<AppxBundleWriter>(self.Get(), zip, bundleVersion);
         *bundleWriter = result.Detach();
+        #else
+        (void) bundleVersion;
         #endif
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -119,6 +121,8 @@ namespace MSIX {
         ComPtr<IStream> input(inputStream);
         auto result = ComPtr<IAppxBundleManifestReader>::Make<AppxBundleManifestObject>(this, input);
         *manifestReader = result.Detach();
+        #else
+        (void) inputStream;
         #endif
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
@@ -175,7 +179,7 @@ namespace MSIX {
     ComPtr<IStream> AppxFactory::GetResource(const std::string& resource)
     {
         // Short-circuit the case where there were no resources and throw not found immediately.
-        if (Resource::resourceLength <= 1)
+        if constexpr (Resource::resourceLength <= 1)
         {
             ThrowErrorAndLog(Error::FileNotFound, resource.c_str());
         }

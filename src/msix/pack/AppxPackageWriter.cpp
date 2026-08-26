@@ -115,7 +115,7 @@ namespace MSIX {
 
     // IAppxPackageWriter3
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddPayloadFiles(UINT32 fileCount,
-        APPX_PACKAGE_WRITER_PAYLOAD_STREAM* payloadFiles, UINT64 memoryLimit) noexcept try
+        APPX_PACKAGE_WRITER_PAYLOAD_STREAM* payloadFiles, UINT64 /*memoryLimit*/) noexcept try
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
             auto failState = MSIX::scope_exit([this]
@@ -136,7 +136,7 @@ namespace MSIX {
 
     // IAppxPackageWriter3Utf8
     HRESULT STDMETHODCALLTYPE AppxPackageWriter::AddPayloadFiles(UINT32 fileCount,
-        APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8* payloadFiles, UINT64 memoryLimit) noexcept try
+        APPX_PACKAGE_WRITER_PAYLOAD_STREAM_UTF8* payloadFiles, UINT64 /*memoryLimit*/) noexcept try
     {
         ThrowErrorIf(Error::InvalidState, m_state != WriterState::Open, "Invalid package writer state");
         auto failState = MSIX::scope_exit([this]

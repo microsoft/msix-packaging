@@ -147,6 +147,9 @@ MSIX_API HRESULT STDMETHODCALLTYPE CoCreateAppxBundleFactory(
     #if defined(WIN32) && defined(BUNDLE_SUPPORT)
         return CoCreateAppxBundleFactoryWithHeap(CoTaskMemAlloc, CoTaskMemFree, validationOption, applicabilityOptions, appxBundleFactory);
     #else
+        (void) applicabilityOptions;
+        (void) appxBundleFactory;
+        (void) validationOption;
         return static_cast<HRESULT>(MSIX::Error::NotSupported);
     #endif
 }

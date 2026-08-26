@@ -26,7 +26,7 @@ namespace MSIX {
 
         HRESULT STDMETHODCALLTYPE Seek(LARGE_INTEGER move, DWORD origin, ULARGE_INTEGER *newPosition) noexcept override;
         HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override;
-        HRESULT STDMETHODCALLTYPE Write(void const *buffer, ULONG countBytes, ULONG *bytesWritten) noexcept override
+        HRESULT STDMETHODCALLTYPE Write(void const */*buffer*/, ULONG /*countBytes*/, ULONG */*bytesWritten*/) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }

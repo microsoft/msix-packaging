@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <vector>
 #include <array>
-#include <cstdint>
 
 #include "Encoding.hpp"
 #include "Exceptions.hpp"
@@ -186,7 +185,7 @@ namespace MSIX { namespace Encoding {
     //    where wwww = uuuuu - 1
     //
     //-----------------------------------------------------------------------------
-    void ValidateCodepoint(std::uint32_t codepoint, std::uint32_t sequenceSize)
+    void ValidateCodepoint(std::uint32_t codepoint, std::uint32_t /*sequenceSize*/)
     {
         // The valid range of Unicode code points is [U+0000, U+10FFFF]. DecodeFileName cannot generate a value larger
         // than 0x10FFFF: The "4 Byte sequence" section of code is responsible for the most significant change to the
@@ -315,7 +314,7 @@ namespace MSIX { namespace Encoding {
                     }
                     ValidateCodepoint(codepoint, sequenceSize);
 
-                    if (codepoint <= 0xFFFF) { result.push_back(codepoint); }
+                    if (codepoint <= 0xFFFF) { result.push_back(static_cast<wchar_t>(codepoint)); }
                     else
                     {   // Because of the expected range of codepoints [0x010000, 0x10FFFF], the
                         // subtraction never underflows.  What you end up with is the 11 bits after
@@ -323,9 +322,9 @@ namespace MSIX { namespace Encoding {
                         // max for the codepoint is 0x10FFFF, the max for the 11 bits minus 0x1000
                         // is 0x3FF (and the minimum is 0). OR'ed with D800 gives the range
                         // [0xD800, 0xDBFF] which is the range of the high surrogate.
-                        wchar_t ch1 = ((codepoint & 0x00FC00) >> 10) |
+                        wchar_t ch1 = static_cast<wchar_t>(((codepoint & 0x00FC00) >> 10) |
                                       (((codepoint & 0x1F0000) - 0x010000) >> 10) |
-                                      0x00D800;
+                                      0x00D800);
                         result.push_back(ch1);
                         // Since the codepoint is AND'ed with 0x3FF (the bottom 10 bits of the
                         // codepoint) and OR'ed with 0xDC00, the possible range is 0xDC00 through

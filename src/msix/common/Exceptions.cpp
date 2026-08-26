@@ -24,7 +24,7 @@ FARPROC WINAPI MsixDelayLoadFailureHandler(unsigned /*dliNotify*/, PDelayLoadInf
     }
     ThrowErrorAndLog(HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND), "Failed delayloading");
 }
-const PfnDliHook __pfnDliFailureHook2 = MsixDelayLoadFailureHandler;
+PfnDliHook __pfnDliFailureHook2 = MsixDelayLoadFailureHandler;
 #endif
 
 namespace MSIX {

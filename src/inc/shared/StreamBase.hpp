@@ -135,7 +135,7 @@ namespace MSIX {
         virtual std::string GetName() override { NOTIMPLEMENTED; }
 
         template <class T>
-        static ULONG Read(const ComPtr<IStream>& stream, T* value)
+        static ULONG Read(const ComPtr<IStream>& stream, _Out_cap_(sizeof(T)) T* value)
         {
             ULONG result = 0;
             ThrowHrIfFailed(stream->Read(value, static_cast<ULONG>(sizeof(T)), &result));

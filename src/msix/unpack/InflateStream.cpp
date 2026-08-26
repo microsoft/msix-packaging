@@ -63,7 +63,7 @@ namespace MSIX {
             {
             case CompressionStatus::Error:
                 self->Cleanup();
-                ThrowErrorIfNot(Error::InflateCorruptData, false, "inflate failed unexpectedly.");
+                ThrowErrorAndLog(Error::InflateCorruptData, "inflate failed unexpectedly.");
                 break;
             case CompressionStatus::Ok:
             case CompressionStatus::End:
@@ -74,7 +74,7 @@ namespace MSIX {
         }), // State::READY_TO_INFLATE
 
         // State::READY_TO_COPY
-        InflateHandler([](InflateStream* self, void* buffer, ULONG countBytes)
+        InflateHandler([](InflateStream* self, _Out_cap_(countBytes) void* buffer, ULONG countBytes)
         {
             // Check if we're actually at the end of stream.
             if (self->m_fileCurrentPosition >= self->m_uncompressedSize)
@@ -184,7 +184,7 @@ namespace MSIX {
         // Can't seek beyond the end of the uncompressed stream
         seekPosition.QuadPart = std::min(seekPosition.QuadPart, static_cast<LONGLONG>(m_uncompressedSize));
 
-        if (seekPosition.QuadPart != m_seekPosition)
+        if (seekPosition.QuadPart != static_cast<LONGLONG>(m_seekPosition))
         {
             m_seekPosition = seekPosition.QuadPart;
             // If the caller is trying to seek back to an earlier

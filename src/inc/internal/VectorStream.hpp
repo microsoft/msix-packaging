@@ -18,7 +18,7 @@ namespace MSIX {
     public:
         VectorStream(std::vector<std::uint8_t>* data) : m_data(data) {}
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
+        HRESULT STDMETHODCALLTYPE Read(_Out_cap_(countBytes) void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
         {
             ULONG amountToRead = std::min(countBytes, static_cast<ULONG>(m_data->size() - m_offset));
             if (amountToRead > 0) { memcpy(buffer, &(m_data->at(m_offset)), amountToRead); }                

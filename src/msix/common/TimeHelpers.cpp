@@ -6,6 +6,7 @@
 #include "TimeHelpers.hpp"
 
 #include <chrono>
+#include <ctime>
 
 namespace MSIX {
 
@@ -13,9 +14,15 @@ namespace MSIX {
     {
         // Convert system time to local time so the zip file item can have the same time of the zip archive when
         // it is shown in zip utility tools.
+
         const auto now = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
-        const auto localTime = std::localtime(&now);
-        Initialize(localTime);
+        struct tm localTime;
+#ifdef WIN32
+        localtime_s(&localTime, &now);
+#else
+        localtime_r(&now, &localTime);
+#endif
+        Initialize(&localTime);
     }
 
     MsDosDateAndTime::MsDosDateAndTime(const std::tm* time)

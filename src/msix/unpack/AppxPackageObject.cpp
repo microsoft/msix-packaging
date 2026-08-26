@@ -36,7 +36,7 @@
 namespace MSIX {
 
     AppxPackageObject::AppxPackageObject(IMsixFactory* factory, MSIX_VALIDATION_OPTION validation,
-        MSIX_APPLICABILITY_OPTIONS applicabilityFlags, const ComPtr<IStorageObject>& container) :
+        MSIX_APPLICABILITY_OPTIONS /*applicabilityFlags*/, const ComPtr<IStorageObject>& container) :
         m_factory(factory),
         m_validation(validation),
         m_container(container)

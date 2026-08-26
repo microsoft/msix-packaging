@@ -121,7 +121,7 @@ public:
 
     VARIANT* AddressOf()
     {
-        VariantClear(&m_variant);
+        (void)VariantClear(&m_variant);
         return &m_variant;
     }
 
@@ -220,10 +220,10 @@ public:
         Bstr xPath(xpath);
         ThrowHrIfFailed(m_element->selectNodes(xPath, &list));
 
-        long count = 0;
+        LONG count = 0;
         ThrowHrIfFailed(list->get_length(&count));
         std::vector<ComPtr<IMsixElement>> elementsEnum;
-        for(long index=0; index < count; index++)
+        for(LONG index=0; index < count; index++)
         {
             ComPtr<IXMLDOMNode> node;
             ThrowHrIfFailed(list->get_item(index, &node));
@@ -286,10 +286,10 @@ protected:
         Bstr xPath(xpath);
         ThrowHrIfFailed(m_element->selectNodes(xPath, &list));
 
-        long count = 0;
+        LONG count = 0;
         ThrowHrIfFailed(list->get_length(&count));
         std::vector<ComPtr<IMsixElement>> elementsEnum;
-        for(long index=0; index < count; index++)
+        for(LONG index=0; index < count; index++)
         {
             ComPtr<IXMLDOMNode> node;
             ThrowHrIfFailed(list->get_item(index, &node));
@@ -351,7 +351,7 @@ public:
                 ComPtr<IStream> resource(m_factory->GetResource(item.schema));
                 auto schema = ComPtr<IMSXMLDom>::Make<MSXMLDom>(resource, emptyManager)->GetDomDocument();
 
-                long readyState = 0;
+                LONG readyState = 0;
                 ThrowHrIfFailed(schema->get_readyState(&readyState));
                 ThrowErrorIfNot(Error::Unexpected, (4 == readyState), "The document has not been completely loaded.");
 
@@ -412,12 +412,12 @@ public:
                 ComPtr<IXMLDOMNodeList> namespaceAliasesToStrip;
                 Bstr ignorableNamespaces(L"@IgnorableNamespaces");
                 ThrowHrIfFailed(element->selectNodes(ignorableNamespaces, &namespaceAliasesToStrip));
-                long count = 0;
+                LONG count = 0;
                 ThrowHrIfFailed(namespaceAliasesToStrip->get_length(&count));
                 ThrowErrorIf(Error::XmlError, (count > 1), "Only one IgnorableNamespaces attribute allowed");
 
                 std::vector<std::wstring> aliasesToLookup;
-                for(long index=0; index < count; index++)
+                for(LONG index=0; index < count; index++)
                 {   // get the list of ignorable namespace aliases
                     ComPtr<IXMLDOMNode> node;
                     ThrowHrIfFailed(namespaceAliasesToStrip->get_item(index, &node));
@@ -450,15 +450,15 @@ public:
                     Variant attributeValue;
                     ThrowHrIfFailed(attribute->get_nodeValue(attributeValue.AddressOf()));
                     ThrowErrorIf(Error::XmlError, (VT_NULL == attributeValue.Get().vt), "ignorable namespace alias has empty target namespace URI.");
-                    std::wstring uri(reinterpret_cast<WCHAR*>(attributeValue.Get().bstrVal));
+                    std::wstring uri(attributeValue.Get().bstrVal);
                     std::transform(uri.begin(), uri.end(), uri.begin(), ::tolower);
                     // next we look for that uri against our namespace manager
                     const auto& result = std::find(namespaces.begin(), namespaces.end(), uri.c_str());
                     if (result == namespaces.end())
                     {   // the namespace specified is unknown to us.  remove everything with the specified alias!
                         std::wostringstream xPath;
-                        xPath << L"//*[namespace-uri()='"       << reinterpret_cast<WCHAR*>(attributeValue.Get().bstrVal)
-                              << L"' or //@*[namespace-uri()='" << reinterpret_cast<WCHAR*>(attributeValue.Get().bstrVal)
+                        xPath << L"//*[namespace-uri()='"       << attributeValue.Get().bstrVal
+                              << L"' or //@*[namespace-uri()='" << attributeValue.Get().bstrVal
                               << L"']]";
                         Bstr query(xPath.str());
                         ComPtr<IXMLDOMNodeList> ignorableNodes;
@@ -479,7 +479,7 @@ public:
         if (VARIANT_FALSE == success) { ThrowHrIfFailed(m_xmlDocument->get_parseError(&error)); }
         if (stripIgnorableNamespaces && nullptr == error.Get())
         {
-            long readyState = 0;
+            LONG readyState = 0;
             ThrowHrIfFailed(m_xmlDocument->get_readyState(&readyState));
             ThrowErrorIfNot(Error::Unexpected, (4 == readyState), "The document has not been completely loaded.");
             ThrowHrIfFailed(m_xmlDocument->validate(&error));
@@ -487,7 +487,7 @@ public:
 
         if(error)
         {
-            long errorCode = 0, lineNumber = 0, columnNumber = 0;
+            LONG errorCode = 0, lineNumber = 0, columnNumber = 0;
             ThrowHrIfFailed(error->get_errorCode(&errorCode));
             if (0 != errorCode)
             {
@@ -504,13 +504,13 @@ public:
                 // XML into generic Xml errors and leave the full details in the log.
                 if (UNDECLAREDPREFIX == errorCode || DECLARATION_NOTFOUND == errorCode)
                 {   // file is either invalid XML, or it's valid, but no schema was found for it.
-                    errorCode = static_cast<long>(Error::XmlFatal);
+                    errorCode = static_cast<LONG>(Error::XmlFatal);
                 }
                 else if (ELEMENT_EMPTY == errorCode || INVALID_CONTENT == errorCode)
                 {   // file is valid XML, but it failed according to the schema provided.
-                    errorCode = static_cast<long>(Error::XmlError);
+                    errorCode = static_cast<LONG>(Error::XmlError);
                 }
-                ThrowErrorIf(errorCode, (true), message.str().c_str());
+                ThrowErrorAndLog(errorCode, message.str().c_str());
             }
         }
     }
@@ -536,9 +536,9 @@ public:
         ComPtr<IMSXMLElement> element = root.As<IMSXMLElement>();
         ComPtr<IXMLDOMNodeList> list = element->SelectNodes(query);
 
-        long count = 0;
+        LONG count = 0;
         ThrowHrIfFailed(list->get_length(&count));
-        for(long index=0; index < count; index++)
+        for(LONG index=0; index < count; index++)
         {
             ComPtr<IXMLDOMNode> node;
             ThrowHrIfFailed(list->get_item(index, &node));
@@ -571,7 +571,7 @@ public:
 
     ~MSXMLFactory() { if (m_CoInitialized) { CoUninitialize(); m_CoInitialized = false; } }
 
-    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType footPrintType, const ComPtr<IStream>& stream) override
+    ComPtr<IXmlDom> CreateDomFromStream(XmlContentType /*footPrintType*/, const ComPtr<IStream>& stream) override
     {
         NamespaceManager emptyManager;
 

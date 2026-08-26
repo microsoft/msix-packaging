@@ -47,7 +47,7 @@ namespace MSIX {
         {
             bool result = false;
             XmlVisitor visitor{ &result,
-                [](void* c, const MSIX::ComPtr<IXmlElement>& element)
+                [](void* c, const MSIX::ComPtr<IXmlElement>& /*element*/)
             {
                 *reinterpret_cast<bool*>(c) = true;
                 return false;

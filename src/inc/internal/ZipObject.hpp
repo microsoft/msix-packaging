@@ -455,7 +455,6 @@ namespace MSIX {
     {
     public:
         ZipObject(const ComPtr<IStream>& stream) : m_stream(stream) {}
-        ZipObject(const ComPtr<IStorageObject>& storageObject);
 
     protected:
         EndCentralDirectoryRecord m_endCentralDirectoryRecord;

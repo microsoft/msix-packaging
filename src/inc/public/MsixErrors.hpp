@@ -6,6 +6,11 @@
 #ifndef MSIX_MSIX_ERRORS__H
 #define MSIX_MSIX_ERRORS__H
 
+#ifdef WIN32
+#include <cstdint>
+#endif
+
+
 namespace MSIX {
 
     static const std::uint32_t ERROR_FACILITY = 0x8BAD0000;              // Facility 2989

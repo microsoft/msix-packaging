@@ -43,7 +43,7 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         }
 
-        virtual HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* contentType) noexcept override
+        virtual HRESULT STDMETHODCALLTYPE GetContentType(LPWSTR* /*contentType*/) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }
@@ -72,7 +72,7 @@ namespace MSIX {
         } CATCH_RETURN();
 
         // IAppxFileUtf8
-        virtual HRESULT STDMETHODCALLTYPE GetContentType(LPSTR* contentType) noexcept override
+        virtual HRESULT STDMETHODCALLTYPE GetContentType(LPSTR* /*contentType*/) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }

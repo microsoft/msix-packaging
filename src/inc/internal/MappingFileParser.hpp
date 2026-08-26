@@ -9,13 +9,13 @@
 
 namespace MSIX {
 
-    typedef enum : UINT32
+    enum HandlerState : UINT32
     {
         Continue = 0,
         Stop,
         SkipSection,
         Fail
-    } HandlerState;
+    };
 
     enum SectionID
     {

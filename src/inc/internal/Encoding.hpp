@@ -5,7 +5,6 @@
 #pragma once
 
 #include <string>
-#include <cstdint>
 
 namespace MSIX { namespace Encoding {
 
@@ -13,6 +12,6 @@ namespace MSIX { namespace Encoding {
     std::string EncodeFileName(const std::string& fileName);
 
     std::string Base32Encoding(const std::vector<uint8_t>& bytes);
-    std::vector<std::uint8_t> GetBase64DecodedValue(const std::string& value);
+    std::vector<uint8_t> GetBase64DecodedValue(const std::string& value);
 
 } /*Encoding */ } /* MSIX */

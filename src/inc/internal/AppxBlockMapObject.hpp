@@ -123,7 +123,7 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE ValidateFileHash(IStream *fileStream, BOOL *isValid) noexcept override
+        HRESULT STDMETHODCALLTYPE ValidateFileHash(IStream */*fileStream*/, BOOL */*isValid*/) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }

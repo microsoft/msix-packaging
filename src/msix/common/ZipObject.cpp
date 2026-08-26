@@ -497,15 +497,4 @@ void EndCentralDirectoryRecord::Read(const ComPtr<IStream>& stream)
     }
 }
 
-// Use for editing a package
-ZipObject::ZipObject(const ComPtr<IStorageObject>& storageObject)
-{
-    auto other = reinterpret_cast<ZipObject*>(storageObject.Get());
-    m_endCentralDirectoryRecord = other->m_endCentralDirectoryRecord;
-    m_zip64Locator = other->m_zip64Locator;
-    m_zip64EndOfCentralDirectory = other->m_zip64EndOfCentralDirectory;
-    m_centralDirectories = std::move(other->m_centralDirectories);
-    m_stream = std::move(m_stream);
-}
-
 } // namespace MSIX

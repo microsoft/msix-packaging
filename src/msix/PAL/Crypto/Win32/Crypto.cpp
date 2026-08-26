@@ -14,6 +14,7 @@
 
 #include <memory>
 #include <vector>
+#include <wincrypt.h>
 
 struct unique_hash_handle_deleter {
     void operator()(BCRYPT_HASH_HANDLE h) const {

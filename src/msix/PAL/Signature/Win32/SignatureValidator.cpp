@@ -346,7 +346,7 @@ namespace MSIX
                 &cbDecoded))
         {
             unique_local_alloc_handle basicConstraints(basicConstraintsT);
-            return basicConstraintsT->fCA ? true : false;
+            return basicConstraintsT->fCA;
         }
         return false;
     }
@@ -494,7 +494,7 @@ namespace MSIX
 
 
     bool SignatureValidator::Validate(
-        IMsixFactory* factory,
+        IMsixFactory* /*factory*/,
         MSIX_VALIDATION_OPTION option,
         const ComPtr<IStream>& stream,
         AppxSignatureObject* signatureObject,

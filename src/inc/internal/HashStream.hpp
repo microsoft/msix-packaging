@@ -3,7 +3,10 @@
 //  See LICENSE file in the project root for full license information.
 // 
 #pragma once
+#ifndef NOMINMAX
 #define NOMINMAX /* windows.h, or more correctly windef.h, defines min as a macro... */
+#endif
+
 #include "MSIXWindows.hpp"
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
@@ -98,7 +101,7 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        void CacheRead(void* buffer, ULONG countBytes, ULONG* actualRead)
+        void CacheRead(_Out_cap_(countBytes) void* buffer, ULONG countBytes, ULONG* actualRead)
         {
             ThrowErrorIf(Error::Stg_E_Invalidpointer, (buffer == nullptr), "bad input");
             ULONG bytesToRead = std::min((std::uint32_t)countBytes, static_cast<std::uint32_t>((std::uint64_t)m_cacheBuffer->size() - m_relativePosition));
@@ -112,7 +115,7 @@ namespace MSIX {
             if (actualRead) { *actualRead = bytesToRead; }
         }
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) noexcept override try
+        HRESULT STDMETHODCALLTYPE Read(_Out_cap_(countBytes) void* buffer, ULONG countBytes, ULONG* actualRead) noexcept override try
         {
             Validate();
             if (m_cacheBuffer.get() == nullptr)

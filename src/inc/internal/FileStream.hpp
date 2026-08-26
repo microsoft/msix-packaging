@@ -85,7 +85,7 @@ namespace MSIX {
             return static_cast<HRESULT>(Error::OK);
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
+        HRESULT STDMETHODCALLTYPE Read(_Out_cap_(countBytes) void* buffer, ULONG countBytes, ULONG* bytesRead) noexcept override try
         {
             if (bytesRead) { *bytesRead = 0; }
             ULONG result = static_cast<ULONG>(std::fread(buffer, sizeof(std::uint8_t), countBytes, m_file));

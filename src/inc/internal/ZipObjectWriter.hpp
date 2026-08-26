@@ -46,8 +46,6 @@ namespace MSIX {
     public:
         ZipObjectWriter(const ComPtr<IStream>& stream);
 
-        ZipObjectWriter(const ComPtr<IStorageObject>& storageObject);
-
         // IStorage methods
         std::vector<std::string> GetFileNames(FileNameOptions options) override;
         ComPtr<IStream> GetFile(const std::string& fileName) override;

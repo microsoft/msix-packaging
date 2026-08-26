@@ -4,8 +4,8 @@
 //
 #include <windows.h>
 #include <VersionHelpers.h>
-#include <wrl\wrappers\corewrappers.h>
-#include <wrl\client.h>
+#include <wrl/wrappers/corewrappers.h>
+#include <wrl/client.h>
 #include <windows.system.userprofile.h>
 
 #include "Applicability.hpp"

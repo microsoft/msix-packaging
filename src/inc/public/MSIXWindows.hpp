@@ -21,7 +21,9 @@
     #endif
 
     #define UNICODE
+#ifndef NOMINMAX
     #define NOMINMAX
+#endif
     #include <windows.h>
     // Windows.h defines max and min, which does NOT play nice at all with std::min / std::max usage from <algorithm>
     #undef max

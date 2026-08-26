@@ -176,7 +176,7 @@ public:
     std::tuple<Types...> fields;
 
     template<std::size_t index = 0, typename FuncT, class... Args>
-    inline typename std::enable_if<index == last_index, void>::type for_each(FuncT, Args&&... args) { }
+    inline typename std::enable_if<index == last_index, void>::type for_each(FuncT, Args&&... /*args*/) { }
 
     template<std::size_t index = 0, typename FuncT, class... Args>
     inline typename std::enable_if<index < last_index, void>::type for_each(FuncT f, Args&&... args)
@@ -202,7 +202,7 @@ public:
     size_t Size()
     {
         size_t result = 0;
-        this->for_each([](auto& field, std::size_t index, size_t& result)
+        this->for_each([](auto& field, std::size_t /*index*/, size_t& result)
         {
             result += field.Size();
         }, result);
@@ -213,7 +213,7 @@ public:
     {
         THROW_IF_PACK_NOT_ENABLED
         std::vector<std::uint8_t> bytes;
-        this->for_each([](auto& field, std::size_t index, std::vector<std::uint8_t>& bytes)
+        this->for_each([](auto& field, std::size_t /*index*/, std::vector<std::uint8_t>& bytes)
         {
             field.GetBytes(bytes);
         }, bytes);

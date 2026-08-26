@@ -53,7 +53,7 @@ namespace MSIX {
          // IVerifierObject
         bool HasStream() override { return !!m_stream; }
         ComPtr<IStream> GetStream() override { return m_stream; }
-        ComPtr<IStream> GetValidationStream(const std::string& part, const ComPtr<IStream>&) override { NOTSUPPORTED; }
+        ComPtr<IStream> GetValidationStream(const std::string& /*part*/, const ComPtr<IStream>&) override { NOTSUPPORTED; }
         const std::string& GetPublisher() override { NOTSUPPORTED; }
 
         // IAppxBundleManifestReader
@@ -91,7 +91,7 @@ namespace MSIX {
             return S_OK;
         }
 
-        HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL *dxFeatureLevel) noexcept override
+        HRESULT STDMETHODCALLTYPE GetDXFeatureLevel(DX_FEATURE_LEVEL */*dxFeatureLevel*/) noexcept override
         {
             return static_cast<HRESULT>(Error::NotImplemented);
         }

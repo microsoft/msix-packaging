@@ -3,7 +3,10 @@
 //  See LICENSE file in the project root for full license information.
 // 
 #pragma once
+#ifndef NOMINMAX
 #define NOMINMAX /* windows.h, or more correctly windef.h, defines min as a macro... */
+#endif
+
 #include "MSIXWindows.hpp"
 #include "Exceptions.hpp"
 #include "StreamBase.hpp"
@@ -59,7 +62,7 @@ namespace MSIX {
             // Build a vector of all HashStream->RangeStream's for the blocks in the blockmap
             std::uint64_t offset = 0;
             std::uint64_t sizeRemaining = m_streamSize;
-            for (auto block = blocks.begin(); ((sizeRemaining != 0) && (block != blocks.end())); block++)
+            for (auto block = blocks.begin(); ((sizeRemaining != 0) && (block != blocks.end())); ++block)
             {
                 auto rangeStream = ComPtr<IStream>::Make<RangeStream>(offset, std::min(sizeRemaining, BLOCKMAP_BLOCK_SIZE), stream.Get());                
                 auto hashStream = ComPtr<IStream>::Make<HashStream>(rangeStream, block->hash);
@@ -104,7 +107,7 @@ namespace MSIX {
             return S_OK;
         } CATCH_RETURN();
 
-        HRESULT STDMETHODCALLTYPE Read(void* buffer, ULONG countBytes, ULONG* actualRead) noexcept override try
+        HRESULT STDMETHODCALLTYPE Read(_Out_cap_(countBytes) void* buffer, ULONG countBytes, ULONG* actualRead) noexcept override try
         {
             std::uint32_t bytesRead = 0;
             if (m_relativePosition < m_streamSize)
@@ -114,7 +117,7 @@ namespace MSIX {
                 {
                     if ((m_currentBlock->offset + m_currentBlock->size) <= m_relativePosition)
                     {
-                        m_currentBlock++;
+                        ++m_currentBlock;
                     }
                     else if (m_currentBlock->offset <= m_relativePosition)
                     {

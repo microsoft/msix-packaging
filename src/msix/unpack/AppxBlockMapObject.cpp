@@ -34,8 +34,8 @@ namespace MSIX {
     static Block GetBlock(const ComPtr<IXmlElement>& element, std::uint64_t fallbackSize)
     {
         Block result {0};
-        auto sizeAttr = GetNumber<std::uint64_t>(element, XmlAttributeName::Size, -1);
-        if (sizeAttr == -1)
+        auto sizeAttr = GetNumber<std::uint64_t>(element, XmlAttributeName::Size, UINT64_MAX);
+        if (sizeAttr == UINT64_MAX)
         {
             result.blockSize = BLOCKMAP_BLOCK_SIZE;
             result.compressedSize = fallbackSize;
@@ -140,7 +140,7 @@ namespace MSIX {
         return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
-    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetHashMethod(IUri **hashMethod) noexcept
+    HRESULT STDMETHODCALLTYPE AppxBlockMapObject::GetHashMethod(IUri **/*hashMethod*/) noexcept
     {   // Ultimately, this IUri object represents the HashMethod attribute in the blockmap:
         return static_cast<HRESULT>(Error::NotImplemented);
     }

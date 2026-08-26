@@ -37,28 +37,14 @@ namespace MSIX {
     {
     }
 
-    // This is used for editing a package (aka signing)
-    ZipObjectWriter::ZipObjectWriter(const ComPtr<IStorageObject>& storageObject) : ZipObject(storageObject)
-    {
-        // The storage object provided should had already initialize all the data.
-        ThrowErrorIfNot(Error::Zip64EOCDRecord, m_endCentralDirectoryRecord.GetIsZip64(),
-            "Editing non zip64 packages not supported");
-
-        // Move the stream at the start of central directory record so we can start overwritting.
-        // Central directory data in already in m_centralDirectories.
-        LARGE_INTEGER pos = {0};
-        pos.QuadPart = m_zip64EndOfCentralDirectory.GetOffsetStartOfCD();
-        ThrowHrIfFailed(m_stream->Seek(pos, StreamBase::Reference::START, nullptr));
-    }
-
     // IStorage
-    std::vector<std::string> ZipObjectWriter::GetFileNames(FileNameOptions options)
+    std::vector<std::string> ZipObjectWriter::GetFileNames(FileNameOptions /*options*/)
     {
         // TODO: implement
         NOTIMPLEMENTED;
     }
 
-    ComPtr<IStream> ZipObjectWriter::GetFile(const std::string& fileName)
+    ComPtr<IStream> ZipObjectWriter::GetFile(const std::string& /*fileName*/)
     {
         // TODO: implement
         NOTIMPLEMENTED;
