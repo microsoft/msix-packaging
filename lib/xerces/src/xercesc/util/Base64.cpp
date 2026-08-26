@@ -24,6 +24,8 @@
 #include <xercesc/internal/XMLReader.hpp>
 #include <xercesc/framework/MemoryManager.hpp>
 
+#include <cstddef>
+
 XERCES_CPP_NAMESPACE_BEGIN
 
 // ---------------------------------------------------------------------------
@@ -97,7 +99,7 @@ static void* getExternalMemory(  MemoryManager* const allocator
                                , XMLSize_t const   sizeToAllocate)
 {
    return allocator ? allocator->allocate(sizeToAllocate)
-       : ::operator new(sizeToAllocate);
+       : new uint8_t[sizeToAllocate];
 }
 
 /***
@@ -107,7 +109,7 @@ static void returnExternalMemory(  MemoryManager* const allocator
                                  , void*                buffer)
 {
     allocator ? allocator->deallocate(buffer)
-        : ::operator delete(buffer);
+        : delete[] static_cast<uint8_t*>(buffer);
 }
 
 /**
