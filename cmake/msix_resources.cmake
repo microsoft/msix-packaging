@@ -27,12 +27,17 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
     # Used by namespace manager
     if (XML_PARSER MATCHES msxml6)
         set(CHAR_TYPE  "wchar_t")
-        set(STR_COMP   "wcscmp")
         set(STR_PREFIX "L")
     else() # xerces
-        set(CHAR_TYPE  "char")
-        set(STR_COMP   "strcmp")
-        set(STR_PREFIX "u8")
+        # Previously, this was set to use u8 prefixes. However, with c++20 u8 means that
+        # we start getting char8_t and its ilk. While this does generally mean that it's
+        # not consistent what encoding we use here, wiring up everything to convert back
+        # and forth in a standard manner is exceedingly difficult.
+        #
+        # If you want to go down that rabbit hole, change STR_PREFIX to "u8"; CHAR_TYPE,
+        # as defined below, will then be 'char' on c++14/17, and 'char8_t' on c++20.
+        set(STR_PREFIX "")
+        set(CHAR_TYPE  "std::remove_const<std::remove_reference<decltype(${STR_PREFIX}\"\"[0])>::type>::type")
     endif()
 
     if(USE_VALIDATION_PARSER)
@@ -317,7 +322,7 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
                 list(GET ${TRIPLET} 0 NAMESPACE)
                 list(GET ${TRIPLET} 1 ALIAS)
                 list(GET ${TRIPLET} 2 FILE)
-                string(APPEND RESULT "SchemaEntry(" "${STR_PREFIX}" \" "${NAMESPACE}" \", "${STR_PREFIX}" \" "${ALIAS}" \" , u8\" "${FILE}" \" "),\n\t\t")
+                string(APPEND RESULT "SchemaEntry(" "${STR_PREFIX}" \" "${NAMESPACE}" \", "${STR_PREFIX}" \" "${ALIAS}" \" , \" "${FILE}" \" "),\n\t\t")
             endforeach()
             set(${OUTPUT} ${RESULT} PARENT_SCOPE)
         endfunction()
@@ -335,11 +340,13 @@ if ((XML_PARSER MATCHES msxml6) OR (XML_PARSER MATCHES xerces))
         const ${CHAR_TYPE}*  uri;
         const ${CHAR_TYPE}*  alias;
         const char*          schema;
+        const size_t         len;
     
-        SchemaEntry(const ${CHAR_TYPE}* u, const ${CHAR_TYPE}* a, const char* s) : uri(u), alias(a), schema(s) {}
+        template<size_t new_len>
+        SchemaEntry(const ${CHAR_TYPE} (&u)[new_len], const ${CHAR_TYPE}* a, const char* s) : uri(u), alias(a), schema(s), len(new_len) {}
     
         inline bool operator==(const ${CHAR_TYPE}* otherUri) const {
-            return 0 == ${STR_COMP}(uri, otherUri);
+            return 0 == std::char_traits<${CHAR_TYPE}>::compare(uri, otherUri, len);
         }
     };
     
