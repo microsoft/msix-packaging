@@ -63,8 +63,9 @@ namespace MSIX {
             Failed = 3
         }
         WriterState;
-
-        void AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
+        
+        // Returns the offset of the file in the bundle
+        std::uint64_t AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
             bool addToBlockMap, const char* contentType, bool forceContentTypeOverride = false);
 
         void AddPackageReferenceInternal(std::string fileName, IStream* packageStream, bool isDefaultApplicablePackage);

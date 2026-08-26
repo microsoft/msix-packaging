@@ -62,6 +62,10 @@ namespace MSIX {
                 {
                     ThrowHrIfFailed(AddPackageReference(utf8_to_wstring(file.second).c_str(), stream.Get(), false));
                 }
+                else
+                {
+                    ThrowHrIfFailed(AddPayloadPackage(utf8_to_wstring(file.second).c_str(), stream.Get(), false));
+                }
             }
         }
 
@@ -92,6 +96,10 @@ namespace MSIX {
                 {
                     ThrowHrIfFailed(AddPackageReference(utf8_to_wstring(outputPath).c_str(), stream.Get(), false));
                 }
+                else
+                {
+                    ThrowHrIfFailed(AddPayloadPackage(utf8_to_wstring(outputPath).c_str(), stream.Get(), false));
+                }
             }
         }
         failState.release();
@@ -116,8 +124,7 @@ namespace MSIX {
     // IAppxBundleWriter
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream) noexcept try
     {
-        // TODO: implement
-        NOTIMPLEMENTED;
+        return AddPayloadPackage(fileName, packageStream, FALSE);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::Close() noexcept try
@@ -176,8 +183,20 @@ namespace MSIX {
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddPayloadPackage(LPCWSTR fileName, IStream* packageStream, 
         BOOL isDefaultApplicablePackage) noexcept try
     {
-        // TODO: implement
-        NOTIMPLEMENTED;
+        auto appxFactory = m_factory.As<IAppxFactory>();
+        ComPtr<IAppxPackageReader> reader;
+        ThrowHrIfFailed(appxFactory->CreatePackageReader(packageStream, &reader));
+
+        std::string name = wstring_to_utf8(fileName);
+        std::uint64_t offset = AddFileToPackage(name, packageStream, false, true, nullptr);
+
+        // Reset stream for reader safety
+        LARGE_INTEGER start = { 0 };
+        ThrowHrIfFailed(packageStream->Seek(start, StreamBase::Reference::START, nullptr));
+
+        std::uint64_t size = m_bundleWriterHelper.GetStreamSize(packageStream);
+        m_bundleWriterHelper.AddPackage(name, reader.Get(), offset, size, !!isDefaultApplicablePackage);
+        return static_cast<HRESULT>(Error::OK);
     } CATCH_RETURN();
 
     HRESULT STDMETHODCALLTYPE AppxBundleWriter::AddExternalPackageReference(LPCWSTR fileName,
@@ -222,7 +241,7 @@ namespace MSIX {
         AddFileToPackage(name, stream, compressionOpt != APPX_COMPRESSION_OPTION_NONE, true, contentType);
     }
 
-    void AppxBundleWriter::AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
+    std::uint64_t AppxBundleWriter::AddFileToPackage(const std::string& name, IStream* stream, bool toCompress,
         bool addToBlockMap, const char* contentType, bool forceContentTypeOverride)
     {
         std::string opcFileName;
@@ -253,10 +272,10 @@ namespace MSIX {
         // Add file to block map.
         if (addToBlockMap)
         {
-            m_blockMapWriter.AddFile(name, uncompressedSize, fileInfo.first);
+            m_blockMapWriter.AddFile(name, uncompressedSize, std::get<1>(fileInfo));
         }
 
-        auto& zipFileStream = fileInfo.second;
+        auto& zipFileStream = std::get<2>(fileInfo);
 
         std::uint64_t bytesToRead = uncompressedSize;
         std::uint32_t crc = 0;
@@ -303,6 +322,7 @@ namespace MSIX {
         // This could be the compressed or uncompressed size
         auto streamSize = zipFileStream.As<IStreamInternal>()->GetSize();
         m_zipWriter->EndFile(crc, streamSize, uncompressedSize, true);
+        return std::get<0>(fileInfo);
     }
 
     void AppxBundleWriter::ValidateCompressionOption(APPX_COMPRESSION_OPTION compressionOpt)

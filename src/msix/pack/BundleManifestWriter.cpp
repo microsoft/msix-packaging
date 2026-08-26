@@ -26,6 +26,8 @@ namespace MSIX {
     static const char* packageArchitectureAttribute = "Architecture";
     static const char* packageResourceIdAttribute = "ResourceId";
     static const char* fileNameAttribute = "FileName";
+    static const char* offsetAttribute = "Offset";
+    static const char* sizeAttribute = "Size";
     static const char* resourcesManifestElement = "Resources";
     static const char* resourceManifestElement = "Resource";
     static const char* resourceLanguageAttribute = "Language";
@@ -133,19 +135,17 @@ namespace MSIX {
             m_xmlWriter.AddAttribute(packageResourceIdAttribute, packageInfo.resourceId);
         }
 
-        if(!packageInfo.fileName.empty())
+        if(packageInfo.fileName.empty())
         {
-            m_xmlWriter.AddAttribute(fileNameAttribute, packageInfo.fileName);
+             // If the file name is empty, we shouldn't be here.
+             ThrowError(Error::Unexpected);
         }
+        m_xmlWriter.AddAttribute(fileNameAttribute, packageInfo.fileName);
 
-        if(packageInfo.offset > 0)
+        if(packageInfo.size > 0)
         {
-            //TODO: not applicable for flat bundle
-        }
-
-        if (packageInfo.size > 0 && packageInfo.offset > 0)
-        {
-            //TODO: not applicable for flat bundles
+            m_xmlWriter.AddAttribute(offsetAttribute, std::to_string(packageInfo.offset));
+            m_xmlWriter.AddAttribute(sizeAttribute, std::to_string(packageInfo.size));
         }
 
         //WriteResourcesElement

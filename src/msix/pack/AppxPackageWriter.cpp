@@ -194,10 +194,10 @@ namespace MSIX {
         // Add file to block map.
         if (addToBlockMap)
         {
-            m_blockMapWriter.AddFile(name, uncompressedSize, fileInfo.first);
+            m_blockMapWriter.AddFile(name, uncompressedSize, std::get<1>(fileInfo));
         }
 
-        auto& zipFileStream = fileInfo.second;
+        auto& zipFileStream = std::get<2>(fileInfo);
 
         std::uint64_t bytesToRead = uncompressedSize;
         std::uint32_t crc = 0;

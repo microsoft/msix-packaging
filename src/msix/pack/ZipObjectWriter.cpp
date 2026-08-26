@@ -65,7 +65,7 @@ namespace MSIX {
     }
 
     // IZipWriter
-    std::pair<std::uint32_t, ComPtr<IStream>> ZipObjectWriter::PrepareToAddFile(const std::string& name, bool isCompressed)
+    std::tuple<std::uint64_t, std::uint32_t, ComPtr<IStream>> ZipObjectWriter::PrepareToAddFile(const std::string& name, bool isCompressed)
     {
         ThrowErrorIf(Error::InvalidState, m_state != ZipObjectWriter::State::ReadyForLfhOrClose, "Invalid zip writer state");
 
@@ -97,7 +97,7 @@ namespace MSIX {
             zipStream = ComPtr<IStream>::Make<DeflateStream>(zipStream);
         }
 
-        return std::make_pair(static_cast<std::uint32_t>(m_lastLFH.second.Size()), std::move(zipStream));
+        return std::make_tuple(m_lastLFH.first, static_cast<std::uint32_t>(m_lastLFH.second.Size()), std::move(zipStream));
     }
 
     void ZipObjectWriter::EndFile(std::uint32_t crc, std::uint64_t compressedSize, std::uint64_t uncompressedSize, bool forceDataDescriptor)

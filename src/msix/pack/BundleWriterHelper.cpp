@@ -147,7 +147,7 @@ namespace MSIX {
     {
         packagesVector.push_back(packageInfo);
 
-        if (packageInfo.offset == 0)
+        if (packageInfo.offset == 0 && packageInfo.size == 0)
         {
             this->hasExternalPackages = true;
         }

@@ -13,6 +13,7 @@
 #include <map>
 #include <memory>
 #include <utility>
+#include <tuple>
 
 #include <zlib.h>
 
@@ -26,8 +27,8 @@ class IZipWriter : public IUnknown
 #endif
 {
 public:
-    // Writes the lfh header to the stream and return the size of the header
-    virtual std::pair<std::uint32_t, MSIX::ComPtr<IStream>> PrepareToAddFile(const std::string& name, bool isCompressed) = 0;
+    // Writes the lfh header to the stream and return the offset of the header, size of the header and the stream
+    virtual std::tuple<std::uint64_t, std::uint32_t, MSIX::ComPtr<IStream>> PrepareToAddFile(const std::string& name, bool isCompressed) = 0;
 
     // Ends the file, rewrites the LFH or writes data descriptor and adds an entry
     // to the central directories map
@@ -54,7 +55,7 @@ namespace MSIX {
         std::string GetFileName() override { NOTIMPLEMENTED };
 
         // IZipWriter
-        std::pair<std::uint32_t, ComPtr<IStream>> PrepareToAddFile(const std::string& name, bool isCompressed) override;
+        std::tuple<std::uint64_t, std::uint32_t, ComPtr<IStream>> PrepareToAddFile(const std::string& name, bool isCompressed) override;
         void EndFile(std::uint32_t crc, std::uint64_t compressedSize, std::uint64_t uncompressedSize, bool forceDataDescriptor) override;
         void Close() override;
 
